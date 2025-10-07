@@ -75,7 +75,6 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               width="85"
               height="48"
               className="h-12 w-auto"
-              loading="lazy"
               data-testid="logo-image"
             />
           </Link>

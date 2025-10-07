@@ -16,7 +16,6 @@ export default function Hero({ onScheduleClick }: HeroProps) {
           alt="Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX"
           width="1920"
           height="1080"
-          fetchpriority="high"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
