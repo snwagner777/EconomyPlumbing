@@ -78,42 +78,14 @@ export default function ScheduleAppointment() {
                 </Card>
               </div>
 
-              {/* ServiceTitan Scheduler Placeholder */}
+              {/* ServiceTitan Scheduler */}
               <Card className="overflow-hidden" data-testid="card-scheduler">
                 <CardContent className="p-0">
-                  <div className="bg-gradient-to-br from-primary/5 to-accent/5 p-12 text-center">
-                    <div className="max-w-2xl mx-auto">
-                      <h3 className="text-2xl font-bold mb-4" data-testid="text-servicetitan-title">
-                        ServiceTitan Web Scheduler
-                      </h3>
-                      <div className="bg-background/80 backdrop-blur-sm rounded-lg p-8 mb-6">
-                        <div className="flex items-center justify-center mb-4">
-                          <div className="animate-pulse">
-                            <Calendar className="w-16 h-16 text-primary/60" />
-                          </div>
-                        </div>
-                        <p className="text-lg font-semibold text-muted-foreground mb-2">
-                          LOADING
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          ServiceTitan scheduler will be integrated here
-                        </p>
-                      </div>
-                      <div className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          <strong>All fields are required*</strong>
-                        </p>
-                        <div className="text-left space-y-2 text-sm text-muted-foreground">
-                          <p>• Name</p>
-                          <p>• Phone number</p>
-                          <p>• Email</p>
-                          <p>• Street address</p>
-                          <p>• City, State, Zip code</p>
-                          <p>• How can we help?</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <iframe 
+                    src="https://go.servicetitan.com/webscheduler?tenantid=576158144&campaignid=3261493" 
+                    style={{ width: '100%', height: '700px' }}
+                    title="ServiceTitan Web Scheduler"
+                  />
                 </CardContent>
               </Card>
             </div>
