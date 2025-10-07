@@ -2,207 +2,343 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Homepage -->
   <url>
-    <loc>https://economyplumbingservices.com/</loc>
+    <loc>https://plumbersthatcare.com/</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   
-  <!-- Service Pages -->
+  <!-- Main Service Pages -->
   <url>
-    <loc>https://economyplumbingservices.com/water-heater-services</loc>
+    <loc>https://plumbersthatcare.com/water-heater-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/drain-cleaning</loc>
+    <loc>https://plumbersthatcare.com/drain-cleaning</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/leak-repair</loc>
+    <loc>https://plumbersthatcare.com/leak-repair</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/toilet-faucet</loc>
+    <loc>https://plumbersthatcare.com/toilet-faucet</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/gas-services</loc>
+    <loc>https://plumbersthatcare.com/gas-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/backflow</loc>
+    <loc>https://plumbersthatcare.com/backflow</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/commercial-plumbing</loc>
+    <loc>https://plumbersthatcare.com/commercial-plumbing</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- Service Area Pages -->
+  <!-- Additional Service Pages -->
   <url>
-    <loc>https://economyplumbingservices.com/service-areas</loc>
+    <loc>https://plumbersthatcare.com/backflow-testing</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/austin</loc>
+    <loc>https://plumbersthatcare.com/drainage-solutions</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/cedar-park</loc>
+    <loc>https://plumbersthatcare.com/drain-cleaning-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/leander</loc>
+    <loc>https://plumbersthatcare.com/faucet-installation</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/round-rock</loc>
+    <loc>https://plumbersthatcare.com/garbage-disposal-repair</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/georgetown</loc>
+    <loc>https://plumbersthatcare.com/gas-leak-detection</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/pflugerville</loc>
+    <loc>https://plumbersthatcare.com/gas-line-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/liberty-hill</loc>
+    <loc>https://plumbersthatcare.com/hydro-jetting-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/buda</loc>
+    <loc>https://plumbersthatcare.com/permit-resolution-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/kyle</loc>
+    <loc>https://plumbersthatcare.com/rooter-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/marble-falls</loc>
+    <loc>https://plumbersthatcare.com/sewage-pump-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/burnet</loc>
+    <loc>https://plumbersthatcare.com/services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/horseshoe-bay</loc>
+    <loc>https://plumbersthatcare.com/toilet-repair-services</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/kingsland</loc>
+    <loc>https://plumbersthatcare.com/water-heater-guide</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/granite-shoals</loc>
+    <loc>https://plumbersthatcare.com/water-leak-repair</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/service-areas/bertram</loc>
-    <lastmod>2025-10-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://economyplumbingservices.com/service-areas/spicewood</loc>
+    <loc>https://plumbersthatcare.com/water-pressure-solutions</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   
-  <!-- Other Pages -->
+  <!-- Service Area Pages -->
   <url>
-    <loc>https://economyplumbingservices.com/about</loc>
+    <loc>https://plumbersthatcare.com/service-area</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-austin</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-in-cedar-park--tx</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-leander</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/round-rock-plumber</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-georgetown</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-pflugerville</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-liberty-hill</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-buda</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-kyle</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-marble-falls</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-burnet</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-horseshoe-bay</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-kingsland</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-granite-shoals</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-bertram</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/plumber-spicewood</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  
+  <!-- Main Pages -->
+  <url>
+    <loc>https://plumbersthatcare.com/about</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/contact</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/faq</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/blog</loc>
+    <loc>https://plumbersthatcare.com/privacy-policy</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/refund_returns</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/membership-benefits</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Store Pages -->
+  <url>
+    <loc>https://plumbersthatcare.com/store</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://plumbersthatcare.com/shop</loc>
+    <lastmod>2025-10-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Blog Pages -->
+  <url>
+    <loc>https://plumbersthatcare.com/blog</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/store</loc>
-    <lastmod>2025-10-07</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <!-- Blog Posts -->
-  <url>
-    <loc>https://economyplumbingservices.com/blog/tankless-vs-traditional-water-heater</loc>
+    <loc>https://plumbersthatcare.com/blog/tankless-vs-traditional-water-heater</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/blog/signs-water-heater-replacement</loc>
+    <loc>https://plumbersthatcare.com/blog/signs-water-heater-replacement</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/blog/prevent-frozen-pipes-texas-winter</loc>
+    <loc>https://plumbersthatcare.com/blog/prevent-frozen-pipes-texas-winter</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/blog/water-heater-maintenance-tips</loc>
+    <loc>https://plumbersthatcare.com/blog/water-heater-maintenance-tips</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://economyplumbingservices.com/blog/common-plumbing-emergencies</loc>
+    <loc>https://plumbersthatcare.com/blog/common-plumbing-emergencies</loc>
     <lastmod>2025-10-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
