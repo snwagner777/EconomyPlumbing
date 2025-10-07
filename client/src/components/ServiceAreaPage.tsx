@@ -6,7 +6,7 @@ import { Phone, MapPin, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
-import heroImage from "@assets/stock_images/professional_plumber_13d3a463.jpg";
+import heroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
 
 declare global {
   interface Window {

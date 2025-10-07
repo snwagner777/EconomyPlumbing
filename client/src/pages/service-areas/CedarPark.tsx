@@ -13,7 +13,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import FAQSection from "@/components/FAQSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import type { ServiceArea } from "@shared/schema";
-import heroImage from "@assets/stock_images/professional_plumber_13d3a463.jpg";
+import heroImage from "@assets/stock_images/professional_plumber_d3924ca6.jpg";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },

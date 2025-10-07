@@ -28,7 +28,7 @@ export const localBusinessSchema = {
     "+15123689159",
     "+18304603565"
   ],
-  "email": "service@economyplumbingservices.com",
+  "email": "hello@plumbersthatcare.com",
   "priceRange": "$$",
   "sameAs": [
     "https://www.facebook.com/economyplumbingservices",
