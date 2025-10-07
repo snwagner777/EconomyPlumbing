@@ -41,10 +41,14 @@ Preferred communication style: Simple, everyday language.
   - Product schema URLs corrected from non-existent /store/checkout to /store
   - LocalBusiness and FAQ schemas properly implemented on Home page
   
-- **Performance Optimizations (PageSpeed 100 Ready):**
+- **Performance Optimizations:**
   - Hero images optimized with width="1920" height="1080" attributes for CLS prevention
-  - Added fetchPriority="high" to all LCP hero images (Home, ServicePage, ServiceAreaPage)
+  - Removed fetchPriority attribute to fix React compatibility warnings (browser naturally prioritizes hero images)
+  - Logo images have explicit width="85" height="48" dimensions to prevent layout shift
+  - Lazy loading enabled on footer logo and all below-the-fold images
+  - Header logo loads eagerly to prevent visual flash
   - Preconnect links updated with crossorigin attributes for fonts and ServiceTitan
+  - Google Fonts configured with font-display: swap for better text rendering
   
 - **Meta Description Optimization:**
   - All 28 meta descriptions optimized to strict 150-160 character range
