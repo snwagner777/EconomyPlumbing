@@ -1,5 +1,5 @@
 import { Switch, Route, Redirect, useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -8,6 +8,8 @@ import { initDynamicPhoneNumbers, replacePhoneNumbers } from "@/lib/dynamicPhone
 import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import CookieBanner from "@/components/CookieBanner";
+
+// Critical pages - eagerly loaded for best UX
 import Home from "@/pages/Home";
 import WaterHeaterServices from "@/pages/WaterHeaterServices";
 import DrainCleaning from "@/pages/DrainCleaning";
@@ -15,47 +17,58 @@ import LeakRepair from "@/pages/LeakRepair";
 import ToiletFaucet from "@/pages/ToiletFaucet";
 import GasServices from "@/pages/GasServices";
 import CommercialPlumbing from "@/pages/CommercialPlumbing";
-import ServiceAreas from "@/pages/ServiceAreas";
-import AustinServiceArea from "@/pages/service-areas/Austin";
-import CedarParkServiceArea from "@/pages/service-areas/CedarPark";
-import LeanderServiceArea from "@/pages/service-areas/Leander";
-import RoundRockServiceArea from "@/pages/service-areas/RoundRock";
-import GeorgetownServiceArea from "@/pages/service-areas/Georgetown";
-import PflugervilleServiceArea from "@/pages/service-areas/Pflugerville";
-import LibertyHillServiceArea from "@/pages/service-areas/LibertyHill";
-import BudaServiceArea from "@/pages/service-areas/Buda";
-import KyleServiceArea from "@/pages/service-areas/Kyle";
-import MarbleFallsServiceArea from "@/pages/service-areas/MarbleFalls";
-import BurnetServiceArea from "@/pages/service-areas/Burnet";
-import HorseshoeBayServiceArea from "@/pages/service-areas/HorseshoeBay";
-import KingslandServiceArea from "@/pages/service-areas/Kingsland";
-import GraniteShoalsServiceArea from "@/pages/service-areas/GraniteShoals";
-import BertramServiceArea from "@/pages/service-areas/Bertram";
-import SpicewoodServiceArea from "@/pages/service-areas/Spicewood";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
-import About from "@/pages/About";
-import Store from "@/pages/Store";
-import Checkout from "@/pages/Checkout";
-import ScheduleAppointment from "@/pages/ScheduleAppointment";
 import BackflowTesting from "@/pages/BackflowTesting";
-import DrainageSolutions from "@/pages/DrainageSolutions";
-import FaucetInstallation from "@/pages/FaucetInstallation";
-import GarbageDisposalRepair from "@/pages/GarbageDisposalRepair";
-import GasLeakDetection from "@/pages/GasLeakDetection";
-import HydroJetting from "@/pages/HydroJetting";
-import PermitResolution from "@/pages/PermitResolution";
-import RooterServices from "@/pages/RooterServices";
-import SewagePumpServices from "@/pages/SewagePumpServices";
-import WaterPressureSolutions from "@/pages/WaterPressureSolutions";
-import WaterHeaterGuide from "@/pages/WaterHeaterGuide";
-import Services from "@/pages/Services";
-import Contact from "@/pages/Contact";
-import FAQ from "@/pages/FAQ";
-import PrivacyPolicy from "@/pages/PrivacyPolicy";
-import RefundReturns from "@/pages/RefundReturns";
-import MembershipBenefits from "@/pages/MembershipBenefits";
 import NotFound from "@/pages/not-found";
+
+// Lazy load less critical pages for better performance
+const ServiceAreas = lazy(() => import("@/pages/ServiceAreas"));
+const AustinServiceArea = lazy(() => import("@/pages/service-areas/Austin"));
+const CedarParkServiceArea = lazy(() => import("@/pages/service-areas/CedarPark"));
+const LeanderServiceArea = lazy(() => import("@/pages/service-areas/Leander"));
+const RoundRockServiceArea = lazy(() => import("@/pages/service-areas/RoundRock"));
+const GeorgetownServiceArea = lazy(() => import("@/pages/service-areas/Georgetown"));
+const PflugervilleServiceArea = lazy(() => import("@/pages/service-areas/Pflugerville"));
+const LibertyHillServiceArea = lazy(() => import("@/pages/service-areas/LibertyHill"));
+const BudaServiceArea = lazy(() => import("@/pages/service-areas/Buda"));
+const KyleServiceArea = lazy(() => import("@/pages/service-areas/Kyle"));
+const MarbleFallsServiceArea = lazy(() => import("@/pages/service-areas/MarbleFalls"));
+const BurnetServiceArea = lazy(() => import("@/pages/service-areas/Burnet"));
+const HorseshoeBayServiceArea = lazy(() => import("@/pages/service-areas/HorseshoeBay"));
+const KingslandServiceArea = lazy(() => import("@/pages/service-areas/Kingsland"));
+const GraniteShoalsServiceArea = lazy(() => import("@/pages/service-areas/GraniteShoals"));
+const BertramServiceArea = lazy(() => import("@/pages/service-areas/Bertram"));
+const SpicewoodServiceArea = lazy(() => import("@/pages/service-areas/Spicewood"));
+const Blog = lazy(() => import("@/pages/Blog"));
+const BlogPost = lazy(() => import("@/pages/BlogPost"));
+const About = lazy(() => import("@/pages/About"));
+const Store = lazy(() => import("@/pages/Store"));
+const Checkout = lazy(() => import("@/pages/Checkout"));
+const ScheduleAppointment = lazy(() => import("@/pages/ScheduleAppointment"));
+const DrainageSolutions = lazy(() => import("@/pages/DrainageSolutions"));
+const FaucetInstallation = lazy(() => import("@/pages/FaucetInstallation"));
+const GarbageDisposalRepair = lazy(() => import("@/pages/GarbageDisposalRepair"));
+const GasLeakDetection = lazy(() => import("@/pages/GasLeakDetection"));
+const HydroJetting = lazy(() => import("@/pages/HydroJetting"));
+const PermitResolution = lazy(() => import("@/pages/PermitResolution"));
+const RooterServices = lazy(() => import("@/pages/RooterServices"));
+const SewagePumpServices = lazy(() => import("@/pages/SewagePumpServices"));
+const WaterPressureSolutions = lazy(() => import("@/pages/WaterPressureSolutions"));
+const WaterHeaterGuide = lazy(() => import("@/pages/WaterHeaterGuide"));
+const Services = lazy(() => import("@/pages/Services"));
+const Contact = lazy(() => import("@/pages/Contact"));
+const FAQ = lazy(() => import("@/pages/FAQ"));
+const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
+const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
+const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
+
+// Simple loading fallback
+function PageLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+  );
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -75,7 +88,8 @@ function Router() {
   return (
     <>
       <ScrollToTop />
-      <Switch>
+      <Suspense fallback={<PageLoader />}>
+        <Switch>
       <Route path="/" component={Home} />
       
       {/* Main service pages */}
@@ -150,7 +164,8 @@ function Router() {
       <Route path="/about" component={About} />
       
       <Route component={NotFound} />
-      </Switch>
+        </Switch>
+      </Suspense>
     </>
   );
 }

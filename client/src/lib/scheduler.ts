@@ -14,7 +14,7 @@ const loadServiceTitanScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
     // Check if script already exists
     const existingScript = document.querySelector('script[src*="servicetitan.com"]');
-    if (existingScript || window.STWidgetManager) {
+    if (existingScript || typeof window.STWidgetManager !== 'undefined') {
       schedulerReady = true;
       resolve(true);
       return;

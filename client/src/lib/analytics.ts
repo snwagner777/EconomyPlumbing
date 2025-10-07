@@ -17,7 +17,7 @@ export const initGA = () => {
   }
 
   // Check if GA is already initialized (prevent double-loading on hot reload)
-  if (window.gtag) {
+  if (typeof window.gtag !== 'undefined') {
     console.log('Google Analytics already initialized');
     return;
   }
