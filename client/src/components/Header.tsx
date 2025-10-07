@@ -17,6 +17,7 @@ declare global {
 export default function Header({ onScheduleClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [serviceAreasOpen, setServiceAreasOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
   const [location] = useLocation();
@@ -40,6 +41,26 @@ export default function Header({ onScheduleClick }: HeaderProps) {
     { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
     { name: "Permit Resolution", path: "/permit-resolution-services" },
     { name: "Commercial Plumbing", path: "/commercial-plumbing" },
+  ];
+
+  const serviceAreas = [
+    { name: "All Service Areas", path: "/service-area", featured: true },
+    { name: "Austin", path: "/plumber-austin", region: "Austin Metro" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx", region: "Austin Metro" },
+    { name: "Leander", path: "/plumber-leander", region: "Austin Metro" },
+    { name: "Round Rock", path: "/round-rock-plumber", region: "Austin Metro" },
+    { name: "Georgetown", path: "/plumber-georgetown", region: "Austin Metro" },
+    { name: "Pflugerville", path: "/plumber-pflugerville", region: "Austin Metro" },
+    { name: "Liberty Hill", path: "/plumber-liberty-hill", region: "Austin Metro" },
+    { name: "Buda", path: "/plumber-buda", region: "Austin Metro" },
+    { name: "Kyle", path: "/plumber-kyle", region: "Austin Metro" },
+    { name: "Marble Falls", path: "/plumber-marble-falls", region: "Marble Falls Area" },
+    { name: "Burnet", path: "/plumber-burnet", region: "Marble Falls Area" },
+    { name: "Horseshoe Bay", path: "/plumber-horseshoe-bay", region: "Marble Falls Area" },
+    { name: "Kingsland", path: "/plumber-kingsland", region: "Marble Falls Area" },
+    { name: "Granite Shoals", path: "/plumber-granite-shoals", region: "Marble Falls Area" },
+    { name: "Bertram", path: "/plumber-bertram", region: "Marble Falls Area" },
+    { name: "Spicewood", path: "/plumber-spicewood", region: "Marble Falls Area" },
   ];
 
   return (
@@ -79,29 +100,56 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <div
                   onMouseEnter={() => setServicesOpen(true)}
                   onMouseLeave={() => setServicesOpen(false)}
-                  className="absolute top-full left-0 mt-1 w-72 bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto"
+                  className="absolute top-full left-0 pt-2 w-72"
                 >
-                  {services.map((service) => (
-                    <Link
-                      key={service.path}
-                      href={service.path}
-                      className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
-                      data-testid={`link-service-${service.path.slice(1)}`}
-                    >
-                      {service.name}
-                    </Link>
-                  ))}
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
+                    {services.map((service) => (
+                      <Link
+                        key={service.path}
+                        href={service.path}
+                        className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
+                        data-testid={`link-service-${service.path.slice(1)}`}
+                      >
+                        {service.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
 
-            <Link 
-              href="/service-area" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-service-areas"
-            >
-              Service Area
-            </Link>
+            <div className="relative">
+              <button
+                onMouseEnter={() => setServiceAreasOpen(true)}
+                onMouseLeave={() => setServiceAreasOpen(false)}
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                data-testid="button-service-areas-menu"
+              >
+                Service Area
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {serviceAreasOpen && (
+                <div
+                  onMouseEnter={() => setServiceAreasOpen(true)}
+                  onMouseLeave={() => setServiceAreasOpen(false)}
+                  className="absolute top-full left-0 pt-2 w-64"
+                >
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
+                    {serviceAreas.map((area) => (
+                      <Link
+                        key={area.path}
+                        href={area.path}
+                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
+                        data-testid={`link-area-${area.path.slice(1)}`}
+                      >
+                        {area.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
             
             <div className="relative">
               <button
@@ -118,36 +166,38 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <div
                   onMouseEnter={() => setAboutOpen(true)}
                   onMouseLeave={() => setAboutOpen(false)}
-                  className="absolute top-full left-0 mt-1 w-56 bg-card border border-card-border rounded-md shadow-lg py-2"
+                  className="absolute top-full left-0 pt-2 w-56"
                 >
-                  <Link
-                    href="/about"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-about"
-                  >
-                    About Us
-                  </Link>
-                  <Link
-                    href="/blog"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-blog"
-                  >
-                    Blog
-                  </Link>
-                  <Link
-                    href="/faq"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-faq"
-                  >
-                    FAQ
-                  </Link>
-                  <Link
-                    href="/membership-benefits"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-membership"
-                  >
-                    Membership Benefits
-                  </Link>
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
+                    <Link
+                      href="/about"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-about"
+                    >
+                      About Us
+                    </Link>
+                    <Link
+                      href="/blog"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-blog"
+                    >
+                      Blog
+                    </Link>
+                    <Link
+                      href="/faq"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-faq"
+                    >
+                      FAQ
+                    </Link>
+                    <Link
+                      href="/membership-benefits"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-membership"
+                    >
+                      Membership Benefits
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -167,29 +217,31 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <div
                   onMouseEnter={() => setStoreOpen(true)}
                   onMouseLeave={() => setStoreOpen(false)}
-                  className="absolute top-full left-0 mt-1 w-56 bg-card border border-card-border rounded-md shadow-lg py-2"
+                  className="absolute top-full left-0 pt-2 w-56"
                 >
-                  <Link
-                    href="/store"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-store"
-                  >
-                    Products & Memberships
-                  </Link>
-                  <Link
-                    href="/privacy-policy"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-privacy"
-                  >
-                    Privacy Policy
-                  </Link>
-                  <Link
-                    href="/refund_returns"
-                    className="block px-4 py-2 text-sm hover-elevate"
-                    data-testid="link-refunds"
-                  >
-                    Refund & Returns
-                  </Link>
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
+                    <Link
+                      href="/store"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-store"
+                    >
+                      Products & Memberships
+                    </Link>
+                    <Link
+                      href="/privacy-policy"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-privacy"
+                    >
+                      Privacy Policy
+                    </Link>
+                    <Link
+                      href="/refund_returns"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-refunds"
+                    >
+                      Refund & Returns
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
@@ -250,9 +302,20 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 </Link>
               ))}
             </div>
-            <Link href="/service-area" className="block py-2 text-sm font-medium" data-testid="mobile-link-service-areas">
-              Service Area
-            </Link>
+
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Service Area</p>
+              {serviceAreas.map((area) => (
+                <Link
+                  key={area.path}
+                  href={area.path}
+                  className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold text-primary' : ''}`}
+                  data-testid={`mobile-link-area-${area.path.slice(1)}`}
+                >
+                  {area.name}
+                </Link>
+              ))}
+            </div>
             
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">About Us</p>
