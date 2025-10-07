@@ -112,7 +112,7 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
               <div>
                 <Label htmlFor="service">Service Needed</Label>
                 <Select value={formData.service} onValueChange={(value) => setFormData({ ...formData, service: value })}>
-                  <SelectTrigger data-testid="select-service">
+                  <SelectTrigger id="service" data-testid="select-service">
                     <SelectValue placeholder="Select a service" />
                   </SelectTrigger>
                   <SelectContent>
@@ -129,7 +129,7 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
               <div>
                 <Label htmlFor="location">Location</Label>
                 <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
-                  <SelectTrigger data-testid="select-location">
+                  <SelectTrigger id="location" data-testid="select-location">
                     <SelectValue placeholder="Select your city" />
                   </SelectTrigger>
                   <SelectContent>
@@ -147,7 +147,7 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
               <div>
                 <Label htmlFor="urgency">Urgency Level</Label>
                 <Select value={formData.urgency} onValueChange={(value) => setFormData({ ...formData, urgency: value })}>
-                  <SelectTrigger data-testid="select-urgency">
+                  <SelectTrigger id="urgency" data-testid="select-urgency">
                     <SelectValue placeholder="Select urgency" />
                   </SelectTrigger>
                   <SelectContent>
