@@ -817,16 +817,16 @@ Call (512) 649-2811 or schedule service online.`,
           "Frozen pipe emergencies during rare winter freezes like the 2021 Texas winter storm",
           "Increased water usage during triple-digit summer temperatures straining water heaters"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why is my Austin water so hard?",
             answer: "Austin's water comes from the Highland Lakes and the Edwards Aquifer, which naturally contain high levels of calcium and magnesium. This hard water can cause scale buildup in pipes, water heaters, and fixtures. We recommend water softeners or regular descaling treatments for Austin homes."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Do oak tree roots commonly damage sewer lines in Austin?",
             answer: "Yes, Austin's beloved heritage oak trees have aggressive root systems that frequently infiltrate and damage sewer lines, especially in older neighborhoods like Hyde Park and Tarrytown. We offer camera inspections to identify root intrusion and trenchless repair solutions to fix the damage."
-          }
-        ]),
+          })
+        ],
         testimonials: null, // Use actual Google reviews - no fake testimonials
         population: "978,908",
         zipCodes: ["78701", "78702", "78703", "78704", "78705", "78712", "78717", "78719", "78721", "78722", "78723", "78724", "78725", "78726", "78727", "78728", "78729", "78730", "78731", "78732", "78733", "78734", "78735", "78736", "78737", "78738", "78739", "78741", "78742", "78744", "78745", "78746", "78747", "78748", "78749", "78750", "78751", "78752", "78753", "78754", "78756", "78757", "78758", "78759"],
@@ -855,16 +855,16 @@ Call (512) 649-2811 or schedule service online.`,
           "Increased demand during summer recreation season at nearby parks and pools",
           "Winter freeze protection needed for exposed outdoor plumbing and irrigation systems"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why do Cedar Park homes have so many slab leaks?",
             answer: "Cedar Park is built on expansive clay soil that shifts with moisture changes. During our hot, dry summers, the soil contracts, and during wet periods it expands. This constant movement can stress pipes embedded in concrete slabs, leading to cracks and leaks. We specialize in slab leak detection and rerouting solutions for Cedar Park homes."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Should I replace my well water system with city water?",
             answer: "Many older Cedar Park properties still use well water. While city water is now available throughout Cedar Park, some homeowners prefer to keep their wells for irrigation. We can help you evaluate your options and convert to city water if desired, or maintain your existing well system."
-          }
-        ]),
+          })
+        ],
         testimonials: null, // Use actual Google reviews - no fake testimonials
         population: "77,595",
         zipCodes: ["78613", "78641"],
@@ -893,30 +893,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring foundation shifts from wet season causing pipe stress in homes built on expansive clay",
           "Fall HVAC changeover revealing water heater inefficiencies accumulated over hot summer months"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why does my water pressure drop so much in the evening in Leander?",
             answer: "Leander's rapid growth has outpaced water infrastructure in some neighborhoods, particularly in Crystal Falls and Summerlyn. During peak evening hours when families are cooking, bathing, and running sprinklers, the system experiences high demand. Additionally, the elevation changes throughout Leander (especially in hillside developments) can create natural pressure variations. We can install pressure boosting systems or whole-house pressure regulators to ensure consistent flow regardless of neighborhood demand."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Should I be concerned about plumbing in a home built during Leander's 2000-2010 building boom?",
             answer: "Yes, homes built during Leander's rapid expansion period often had plumbing installed quickly to meet demand, and these systems are now 15-25 years old. We frequently see undersized water heaters (40-gallon tanks in 4-bedroom homes), builder-grade fixtures failing, and the first generation of PEX connections developing leaks. We recommend a comprehensive plumbing inspection for any Leander home built before 2010, with special attention to water heater capacity, slab leak risk assessment, and main water line condition."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Jennifer L.",
             neighborhood: "Crystal Falls",
             text: "Our 2008 home had the original water heater fail during a holiday party. Economy Plumbing had someone at our Crystal Falls house within 90 minutes and installed a new tankless system the same day. They knew exactly which models work best in our neighborhood!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "David H.",
             neighborhood: "Mason Hills",
             text: "Found a slab leak under our Mason Hills home's foundation. Economy Plumbing used their electronic detection equipment to pinpoint it without destroying our floors, then rerouted the line through the attic. Professional work at a fair price.",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "87,511",
         zipCodes: ["78641", "78645", "78646"],
         latitude: "30.5788",
@@ -944,30 +944,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring flash floods along Brushy Creek affecting homes in low-lying areas with backflow and drainage issues",
           "Fall water heater failures as families return from summer activities and resume normal usage patterns revealing accumulated wear"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why is Round Rock's water so hard and what can I do about it?",
             answer: "Round Rock receives water from Lake Travis, which flows through limestone formations giving it hardness levels of 25-35 grains per gallon - among the hardest in Texas. This causes white buildup on fixtures, reduces water heater efficiency, and shortens appliance life. We recommend whole-house water softeners for Round Rock homes, particularly high-efficiency dual-tank systems that can handle the extreme hardness. For homes in Teravista and newer developments, we often install combination softener-filter systems that also address chlorine and sediment issues."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "My Round Rock home was built in 2005-2010. What plumbing issues should I watch for?",
             answer: "Homes built during Round Rock's major expansion period often have three key issues: first-generation PEX piping that's now showing connection failures, undersized 40-gallon water heaters inadequate for modern family needs, and builder-grade fixtures reaching end-of-life. Additionally, the expansive clay soil in eastern Round Rock neighborhoods has had 15-20 years to cycle through wet and dry periods, often causing slab leaks in homes from this era. We recommend comprehensive plumbing inspections including slab leak detection for any Round Rock home from this period."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Tom R.",
             neighborhood: "Brushy Creek",
             text: "Economy Plumbing completely repiped our 1995 Brushy Creek home, replacing all the old galvanized lines. They worked clean, finished in three days, and our water pressure is incredible now. Best investment we've made in the house!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Amanda S.",
             neighborhood: "Forest Creek",
             text: "Our Forest Creek neighborhood has extremely hard water. Economy Plumbing installed a whole-house softener and the difference is amazing - no more scale on fixtures and our water heater is running more efficiently. They really know Round Rock's water issues!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "124,790",
         zipCodes: ["78664", "78665", "78680", "78681", "78682", "78683"],
         latitude: "30.5083",
@@ -995,30 +995,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring San Gabriel River flooding affecting homes along Rivery and River Chase with backflow prevention needs",
           "Fall when Sun City snowbirds return en masse revealing plumbing issues that developed during summer months of vacancy"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "I live in historic Georgetown. Can you repipe without damaging my Victorian home's character?",
             answer: "Absolutely. We specialize in historic home repiping in Georgetown's Victorian district. We use techniques like fishing PEX lines through existing wall cavities, accessing from attics and crawl spaces, and making minimal, reversible access points that can be properly restored. We work with local historic preservation guidelines and can coordinate with your contractor for any cosmetic restoration. Our goal is modern plumbing performance while maintaining your home's architectural integrity and historic value."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "What plumbing considerations are unique to Sun City Georgetown?",
             answer: "Sun City homes have specific needs: consistent water temperature for safety (avoiding scalding), easily accessible shutoff valves, water heater systems designed for one-story living, and often medical-grade requirements for oxygen equipment or dialysis. We also see higher demand for low-maintenance fixtures, touchless faucets for mobility issues, and leak detection systems for snowbirds who leave homes vacant. Additionally, Sun City's homes are now 15-20 years old, meaning original water heaters and fixtures are reaching end-of-life and need proactive replacement."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Robert and Helen M.",
             neighborhood: "Sun City",
             text: "We're snowbirds and needed our Sun City home's plumbing inspected before leaving for the summer. Economy Plumbing found a small leak we didn't know about, replaced our aging water heater, and installed a leak detection system. Peace of mind when we're away!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Patricia K.",
             neighborhood: "Historic District",
             text: "Economy Plumbing repiped our 1895 Victorian home near the square. They were incredibly careful with our original woodwork and plaster, and the new system works beautifully. They understand historic Georgetown homes!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "67,176",
         zipCodes: ["78626", "78627", "78628", "78633"],
         latitude: "30.6333",
@@ -1046,30 +1046,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring heavy rains revealing poor drainage around homes built on clay soil causing foundation shifts and pipe stress",
           "Fall return-to-school season revealing plumbing issues that developed during lighter summer usage patterns"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why do so many Pflugerville homes from the 2000s building boom have plumbing problems?",
             answer: "Pflugerville's population doubled between 2000-2010, and construction couldn't keep pace with demand. Many homes were built quickly with builder-grade materials - 40-gallon water heaters in 4-bedroom homes, thin-wall PEX connections, and basic fixtures. These systems are now 15-25 years old and failing simultaneously across neighborhoods like Blackhawk and Falcon Pointe. Additionally, the expansive clay soil has cycled through 15-20 years of wet/dry periods, causing foundation movement and subsequent slab leaks. We recommend proactive inspections and upgrades before catastrophic failures occur."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Does living near Lake Pflugerville affect my home's plumbing?",
             answer: "Yes, in several ways. Homes near the lake often experience greater water pressure fluctuations during summer recreation season. The higher water table near the lake can also affect foundation stability and increase humidity levels that accelerate pipe corrosion. Additionally, many lake-adjacent homes have irrigation systems that were oversized for large lawns, and these systems can create pressure drops affecting indoor plumbing. We can install pressure regulators and properly size irrigation systems to prevent these issues."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Marcus T.",
             neighborhood: "Blackhawk",
             text: "Our Blackhawk home is 18 years old and the original water heater finally gave out. Economy Plumbing recommended a tankless system perfect for our family's needs and installed it the same day. They know these Pflugerville neighborhoods inside and out!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Rachel G.",
             neighborhood: "Falcon Pointe",
             text: "Had a slab leak detected under our Falcon Pointe home. Economy Plumbing used non-invasive electronic detection to find it, then rerouted the line without tearing up our floors. Saved us thousands and finished in one day!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "65,176",
         zipCodes: ["78660", "78691"],
         latitude: "30.4398",
@@ -1097,30 +1097,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring heavy rains causing temporary well water quality issues as surface runoff affects aquifer recharge",
           "Fall when Santa Rita Ranch amenities close revealing plumbing issues in homes as full-time usage resumes"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Should I keep my well system or connect to Liberty Hill city water?",
             answer: "This depends on several factors unique to your property. Well water in Liberty Hill is typically very hard (25-35 grains) but free of chlorine. City water is treated and consistent but also hard and requires ongoing payment. If your well is producing adequately and you're willing to maintain filtration and softening systems, keeping it can be economical. However, wells require power (problematic during outages), periodic maintenance, and testing. For Santa Rita Ranch and newer developments, city water is standard. We can test your well water, assess your system, and help you make an informed decision based on your specific situation and long-term plans."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Why is Liberty Hill water so hard and what damage does it cause?",
             answer: "Liberty Hill sits on Edwards limestone and granite formations. As water percolates through this rock, it absorbs calcium and magnesium, creating hardness levels of 25-35 grains per gallon - extremely hard even by Texas standards. This causes white scale buildup that clogs aerators and showerheads, reduces water heater efficiency by up to 40%, and can eventually block pipes. In Liberty Hill's hot climate, water heaters work extra hard and scale accumulates faster. We strongly recommend whole-house water softening for all Liberty Hill homes, with annual water heater flushing to remove sediment before it causes damage."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Kevin and Dana P.",
             neighborhood: "Santa Rita Ranch",
             text: "Our Santa Rita Ranch home had terrible water pressure and hard water stains everywhere. Economy Plumbing installed a water softener and pressure booster system - complete transformation! They understand Liberty Hill's water challenges.",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Bill R.",
             neighborhood: "Clearwater Ranch",
             text: "We're on a well system at our Clearwater Ranch estate. Economy Plumbing set us up with proper filtration, a new pressure tank, and softening system. They know well systems inside and out - highly recommend for Liberty Hill well owners.",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "10,428",
         zipCodes: ["78642"],
         latitude: "30.6650",
@@ -1148,30 +1148,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Winter freeze events particularly damaging in older homes with minimal insulation and exposed pipe runs",
           "Fall return of cooler weather revealing water heater inefficiencies as heating demands increase after idle summer months"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "My Buda home is near Onion Creek. What plumbing precautions should I take?",
             answer: "Homes near Onion Creek need special flood protection for plumbing systems. We recommend backflow preventers on all sewer connections to prevent creek flooding from backing up into your home, sump pumps in crawl spaces or basements, and elevating water heaters and HVAC systems above potential flood levels. After any flooding event, we recommend thorough inspections of sewer lines for damage and water heater checks for sediment intrusion. Many Buda flood insurance policies require these protective devices, and we can ensure your home meets all requirements while providing maximum protection."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Why does my new Buda home already have plumbing problems?",
             answer: "Buda's rapid growth meant many homes were built quickly between 2010-2020 to meet demand. We frequently see builder-grade 40-gallon water heaters inadequate for modern family needs, thin-wall PEX connections beginning to fail, and fixtures from the 'value' tier already breaking down. Additionally, Buda sits on expansive clay soil that's had 5-15 years to cycle through wet and dry periods, causing foundation settlement that stresses pipes. For homes in Shadow Creek, Sunfield, and other new developments, we recommend comprehensive plumbing inspections even on homes less than 10 years old, with particular attention to slab leak risk and water heater capacity."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Chris and Amy W.",
             neighborhood: "Shadow Creek",
             text: "Our Shadow Creek home flooded during a storm and the sewer backed up into our home. Economy Plumbing installed a backflow preventer and new sump pump system. They know Buda's flooding risks and how to protect homes!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Miguel R.",
             neighborhood: "Garlic Creek",
             text: "Economy Plumbing replaced our undersized builder water heater with a proper 50-gallon system for our family. They explained that many Buda homes from our era have this problem. Great service and honest advice!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "16,030",
         zipCodes: ["78610"],
         latitude: "30.0827",
@@ -1199,30 +1199,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring foundation movement from heavy rains causing pipe stress in homes built on Kyle's expansive clay soil",
           "Fall when families settle into routines revealing plumbing issues that went unnoticed during busy summer months"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why does my Kyle home's water pressure drop so much in the evenings?",
             answer: "Kyle's infrastructure is catching up to its explosive growth, and some neighborhoods experience pressure drops during peak evening hours (6-9 PM) when everyone is cooking, bathing, and running sprinklers. This is especially common in Hometown Kyle, Waterleaf, and other newer developments where demand has exceeded original main capacity. We can install whole-house pressure boosting systems or pressure storage tanks to ensure consistent flow regardless of neighborhood demand. Additionally, we can add pressure regulators to protect your plumbing when pressure spikes during low-demand periods."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Is it worth upgrading the plumbing in my Kyle starter home?",
             answer: "Absolutely. Many Kyle homes purchased by first-time buyers have builder-grade 40-gallon water heaters, basic fixtures, and minimal water treatment. Upgrading to a 50-gallon or tankless water heater, installing a whole-house water softener for Kyle's hard water, and replacing basic fixtures with quality models will improve your daily comfort, reduce utility bills, and increase your home's value. These upgrades typically pay for themselves within 5-7 years through energy savings and reduced repair costs, and they make your home much more attractive to buyers when you're ready to sell."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Jessica and Ryan M.",
             neighborhood: "Hometown Kyle",
             text: "As first-time homebuyers in Hometown Kyle, we didn't know much about plumbing maintenance. Economy Plumbing did a complete inspection, upgraded our water heater, and installed a water softener. They educated us every step of the way!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Carlos V.",
             neighborhood: "Bunton Creek",
             text: "Found a slab leak under our Bunton Creek home - our worst nightmare! Economy Plumbing responded immediately, found the leak with electronic equipment, and rerouted the line through our attic. They saved our floors and our sanity!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "57,470",
         zipCodes: ["78640"],
         latitude: "29.9891",
@@ -1250,30 +1250,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring flooding along Colorado River affecting lakefront properties with backflow risks and drainage challenges",
           "Fall lake level drops exposing dock plumbing and irrigation intake systems that need seasonal adjustment"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "What special plumbing considerations do Marble Falls lakefront homes require?",
             answer: "Lakefront properties in Marble Falls need several specialized systems: backflow preventers to protect against lake water entering home plumbing, outdoor shower and boat wash stations with proper drainage, irrigation systems with lake intake management for varying water levels, and humidity control since lake properties experience 20-30% higher moisture levels that accelerate pipe corrosion. We also recommend whole-house surge protection since lakefront homes are more vulnerable to lightning strikes. For seasonal occupants, we can install automatic shutoff systems and leak detection that alert you remotely if problems develop while you're away."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Can you work on historic homes in Marble Falls' Victorian district?",
             answer: "Yes, we specialize in historic home plumbing in Marble Falls. The Victorian district homes often have original cast iron, galvanized, or even lead pipes that need replacement. We use minimally invasive techniques like PEX repiping through existing wall cavities, attic access, and careful excavation that preserves historic foundations. We understand local preservation guidelines and work to maintain your home's character while providing modern plumbing performance. We can also source period-appropriate fixtures or retrofit modern internals into vintage fixtures to maintain aesthetic consistency."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Linda and George T.",
             neighborhood: "Lakeside Estates",
             text: "Our lakefront home needed a complete outdoor plumbing system for our boat dock and outdoor kitchen. Economy Plumbing designed a custom system that handles lake water and city water perfectly. They're true lake house specialists!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Barbara S.",
             neighborhood: "Victorian District",
             text: "Economy Plumbing completely repiped our 1895 Victorian home while preserving all the original woodwork and character. They understand Marble Falls historic homes and worked with incredible care and expertise.",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "9,413",
         zipCodes: ["78654", "78657"],
         latitude: "30.5754",
@@ -1301,30 +1301,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring flooding along Colorado River affecting low-lying properties with drainage and backflow prevention needs",
           "Fall when lake levels drop exposing seasonal irrigation and lake house plumbing systems requiring winterization"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "Why is Burnet's water so hard and what can I do about it?",
             answer: "Burnet sits on Edwards limestone and granite formations, and as water percolates through these rocks, it absorbs calcium and magnesium creating hardness levels of 25-35 grains per gallon - among the hardest in Texas. This causes white scale on fixtures, dramatically reduces water heater efficiency (sometimes by 40% or more), and can eventually clog pipes. For Burnet homes, we strongly recommend whole-house water softening systems, preferably high-capacity models designed for extreme hardness. We also recommend annual water heater flushing to remove accumulated sediment before it causes damage. For well water homes, we can test your specific water and design a comprehensive treatment system."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "I'm buying a historic home in downtown Burnet. What plumbing issues should I expect?",
             answer: "Historic Burnet homes often have original galvanized or cast iron pipes, sometimes dating back to the early 1900s. These pipes corrode from the inside out, causing rusty water, low pressure, and eventually leaks. Many historic homes also have outdated fixtures, insufficient water heater capacity for modern needs, and plumbing that doesn't meet current codes. We recommend comprehensive plumbing inspections before purchase, budgeting for likely repiping (which we can do with minimal wall damage using modern techniques), and planning for water heater upgrades. We work within historic preservation guidelines and can help maintain your home's character while modernizing its plumbing."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Tom H.",
             neighborhood: "Downtown Burnet",
             text: "Our historic building near the courthouse square needed complete plumbing upgrades to meet code. Economy Plumbing worked with the city and historical society to do it right. They understand Burnet's historic properties!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Susan and Jim K.",
             neighborhood: "Shady Grove",
             text: "We're on a well system and had terrible hard water issues. Economy Plumbing installed a comprehensive treatment system and our water quality is amazing now. They know Burnet's well water challenges inside and out!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "6,710",
         zipCodes: ["78611"],
         latitude: "30.7582",
@@ -1352,30 +1352,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring golf season opening revealing plumbing issues in clubhouse facilities and golf course irrigation systems",
           "Fall when second-home owners return finding plumbing failures that occurred during summer vacancy periods"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "What plumbing systems should my Horseshoe Bay vacation home have?",
             answer: "Luxury vacation homes in Horseshoe Bay benefit from several specialized systems: whole-house leak detection with remote monitoring so you're alerted immediately if problems develop while you're away, automatic water shutoff systems that close the main valve if leaks are detected, recirculation pumps for instant hot water at every fixture, whole-house water treatment for resort-quality water, and winterization capabilities for extended vacancies. We also recommend smart home integration so you can monitor water usage, control systems remotely, and receive alerts on your phone. For lakefront properties, we design custom outdoor kitchens, pool systems, and dock facilities that meet the highest standards."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Can you service high-end European fixtures and appliances common in Horseshoe Bay?",
             answer: "Absolutely. We specialize in luxury European brands popular in Horseshoe Bay including Dornbracht, Gessi, Duravit, and others. We maintain relationships with specialty suppliers for parts, understand the technical requirements of these sophisticated systems, and have experience with the integration challenges they present. Whether it's a Miele dishwasher requiring specific water pressure and temperature, a European wall-hung toilet system, or a high-end spa shower with multiple body jets, we have the expertise to install, maintain, and repair these premium systems. We also offer preventive maintenance contracts for Horseshoe Bay luxury homes to keep everything running perfectly."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Richard and Patricia W.",
             neighborhood: "The Waters",
             text: "Our lakefront condo at The Waters needed a complete plumbing upgrade including a spa bathroom and outdoor kitchen. Economy Plumbing delivered resort-quality work with attention to every detail. They understand Horseshoe Bay's standards!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Donald M.",
             neighborhood: "Summit Rock",
             text: "We're only in our Summit Rock home seasonally. Economy Plumbing installed a complete monitoring and shutoff system that alerts us to any issues. They've maintained our complex plumbing systems perfectly for years. True luxury plumbing specialists!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "4,756",
         zipCodes: ["78657"],
         latitude: "30.5405",
@@ -1403,30 +1403,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring flooding at river confluence requiring backflow preventer maintenance and sump pump readiness in vulnerable areas",
           "Fall lake level stabilization exposing dock plumbing and irrigation intake systems requiring adjustment or repair"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "How does Lake LBJ's water level affect my Kingsland home's plumbing?",
             answer: "Unlike other Highland Lakes, Lake LBJ maintains relatively constant water levels year-round, which is actually beneficial for plumbing systems. However, we still see seasonal variations of 1-3 feet that can affect dock plumbing, lake water intake for irrigation, and boat lift systems. For lakefront homes, we recommend installing adjustable intake systems for irrigation that can accommodate level changes, using flexible connections for dock water supplies, and proper backflow prevention since lake water can sometimes approach home water lines during high water events. We also suggest annual inspections before summer season to ensure all lake-related plumbing is functioning properly."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "What should I know about plumbing in Kingsland's historic properties?",
             answer: "Many Kingsland historic homes and the famous Antlers Hotel date to the early 1900s railroad resort era. These properties often have original galvanized or cast iron pipes, vintage fixtures with non-standard parts, and plumbing that doesn't meet modern codes. We specialize in historic property plumbing, using techniques that preserve character while providing modern performance - PEX repiping through existing pipe chases, retrofitting modern internals into vintage fixtures, and working within preservation guidelines. For commercial historic properties, we understand health code requirements while respecting the building's heritage. We can also source period-appropriate fixtures or create custom solutions that maintain authentic appearance."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Mark and Debbie F.",
             neighborhood: "Lakefront",
             text: "Our lake house dock had major plumbing issues including the outdoor shower and boat wash station. Economy Plumbing redesigned the whole system to handle Lake LBJ water level changes. They're true lake plumbing experts!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Gary T.",
             neighborhood: "Historic Kingsland",
             text: "Bought a 1920s home in historic Kingsland that needed complete repiping. Economy Plumbing did beautiful work preserving all the original character while giving us modern, reliable plumbing. Highly recommend for historic properties!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "7,246",
         zipCodes: ["78639"],
         latitude: "30.6597",
@@ -1454,30 +1454,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring storms and flooding affecting lakefront properties with drainage challenges and backflow prevention needs",
           "Fall when summer residents depart revealing plumbing failures that occurred during peak usage months"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "My Sherwood Shores home is from the 1960s. What plumbing issues should I expect?",
             answer: "Original Sherwood Shores homes (1960s-1970s) typically have galvanized steel or early copper pipes that are now 50-60 years old - well past their expected lifespan. We commonly see severe corrosion causing rusty water and low pressure, pinhole leaks in copper pipes, outdated fixtures, and water heaters that are grossly undersized for modern needs. The good news is that Granite Shoals' granite bedrock, while challenging, means foundations are stable and we can repipe using modern PEX through attics and crawl spaces with minimal wall damage. We recommend comprehensive plumbing inspections for all Sherwood Shores homes, with budgeting for likely full repiping within the next few years if it hasn't been done already."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "What makes lakefront plumbing different in Granite Shoals?",
             answer: "Granite Shoals lakefront homes on Lake LBJ need several specialized considerations: outdoor showers and boat wash stations with proper drainage, dock water supplies using corrosion-resistant materials (stainless steel or special brass) since lake moisture accelerates corrosion, irrigation systems that can draw from the lake with proper backflow prevention, and humidity control since lake properties experience 20-30% higher moisture that damages pipes faster. We also recommend whole-house surge protection since waterfront homes are more vulnerable to lightning. For seasonal occupants, automatic shutoff systems and remote monitoring prevent disasters while you're away."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Carol and Jim B.",
             neighborhood: "Sherwood Shores",
             text: "Our 1968 Sherwood Shores home had original galvanized pipes that finally gave out. Economy Plumbing completely repiped using PEX through the attic - minimal wall damage and now we have great pressure and clean water!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Steve R.",
             neighborhood: "Lakecrest",
             text: "Needed a complete outdoor plumbing system for our lake house including dock water, outdoor kitchen, and boat wash station. Economy Plumbing designed a custom system using marine-grade materials. They know Granite Shoals lakefront needs!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "5,651",
         zipCodes: ["78654"],
         latitude: "30.5891",
@@ -1505,30 +1505,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring Oatmeal Festival (Labor Day) bringing visitor influx that stresses downtown plumbing and septic systems",
           "Fall when families settle into school routines revealing plumbing issues that went unnoticed during active summer months"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "I'm buying a historic home in downtown Bertram. What plumbing should I expect?",
             answer: "Historic Bertram homes, especially those dating to the railroad era (1880s-1920s), typically have original galvanized or cast iron pipes, outdated fixtures, and plumbing that doesn't meet current codes. We commonly see severe corrosion, low water pressure from mineral buildup, and inadequate water heater capacity. The good news is we can modernize these systems while preserving historic character - using PEX repiping through existing chases, accessing from attics or crawl spaces, and making minimal, reversible modifications. We recommend comprehensive inspections before purchase and budgeting for likely repiping. We work within historic preservation considerations and can help maintain your home's authentic character."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "Should I keep my Bertram well system or connect to city water?",
             answer: "This depends on your well's performance, your water quality needs, and long-term plans. Bertram well water is typically very hard (25-35 grains) from limestone, but it's free of chlorine and ongoing costs. Wells require electricity (problematic in outages), periodic maintenance, and water treatment systems. City water provides consistent pressure and quality but comes with monthly bills. We can test your well water, assess your system's condition, and help you decide. Many Bertram residents keep wells for irrigation while using city water for the house - we can design hybrid systems that give you the best of both worlds."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Mary Beth T.",
             neighborhood: "Historic Downtown",
             text: "Our 1910 home near Main Street needed complete plumbing updates. Economy Plumbing preserved all our original woodwork while giving us modern, code-compliant plumbing. They understand Bertram's historic homes!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Frank M.",
             neighborhood: "North Bertram",
             text: "We're on a well system and had terrible pressure and hard water issues. Economy Plumbing installed a new pressure tank, updated our pump, and added a whole-house treatment system. They know Bertram well water inside and out!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "2,020",
         zipCodes: ["78605"],
         latitude: "30.7442",
@@ -1556,30 +1556,30 @@ Call (512) 649-2811 or schedule service online.`,
           "Spring wildfire season (post-2011 fires) keeping homeowners vigilant about outdoor plumbing and proper clearances",
           "Fall when second-home owners return after summer finding plumbing failures that developed during vacancy"
         ],
-        uniqueFaqs: JSON.stringify([
-          {
+        uniqueFaqs: [
+          JSON.stringify({
             question: "What plumbing systems does my Spicewood luxury home need?",
             answer: "High-end Spicewood homes on Lake Travis benefit from several sophisticated systems: whole-house water treatment (often reverse osmosis) for resort-quality water, hot water recirculation for instant hot water at every fixture, smart home integration with remote monitoring and control, automatic leak detection with shutoff capabilities, outdoor kitchen and pool systems with proper drainage and backflow prevention, and dock plumbing designed for Lake Travis water level changes. For second homes, we recommend comprehensive monitoring systems that alert you to any issues remotely. We specialize in integrating these complex systems seamlessly, often working with architects and builders during construction to ensure optimal placement and performance."
-          },
-          {
+          }),
+          JSON.stringify({
             question: "How does Lake Travis water level affect my Spicewood home's plumbing?",
             answer: "Lake Travis can fluctuate 20-40 feet seasonally, which significantly affects waterfront plumbing. Dock water supplies need flexible connections that accommodate level changes, irrigation intake systems require adjustable depth capability or must switch to city water during low periods, and boat lifts may need plumbing modifications based on lake levels. We design Lake Travis systems with this variability in mind, using adjustable intakes, dual-source irrigation (lake and city), and proper backflow prevention since lake water can approach property water lines during high water. We also recommend monitoring systems that alert you to level-related plumbing issues before they cause damage."
-          }
-        ]),
-        testimonials: JSON.stringify([
-          {
+          })
+        ],
+        testimonials: [
+          JSON.stringify({
             name: "Michael and Jennifer K.",
             neighborhood: "Lakecliff",
             text: "Our Lakecliff estate needed a complete luxury plumbing system including infinity pool, outdoor kitchen, wine room cooling, and smart home integration. Economy Plumbing delivered flawless work. They're true luxury Lake Travis specialists!",
             rating: 5
-          },
-          {
+          }),
+          JSON.stringify({
             name: "Robert S.",
             neighborhood: "The Reserve",
             text: "We're only in our Reserve home seasonally. Economy Plumbing installed comprehensive monitoring with automatic shutoff and remote alerts. They've maintained our complex systems perfectly - dock, pool, outdoor kitchen, everything. Highly recommend!",
             rating: 5
-          }
-        ]),
+          })
+        ],
         population: "11,980",
         zipCodes: ["78669"],
         latitude: "30.4756",
