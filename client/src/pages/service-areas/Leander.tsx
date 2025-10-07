@@ -23,7 +23,6 @@ const SERVICES = [
   { name: "Gas Services", path: "/gas-services" },
   { name: "Backflow Services", path: "/backflow" },
   { name: "Commercial Plumbing", path: "/commercial-plumbing" },
-  { name: "Emergency Services", path: "/emergency" },
 ];
 
 export default function LeanderServiceArea() {
