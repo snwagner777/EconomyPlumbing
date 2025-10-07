@@ -42,12 +42,12 @@ export default function Store() {
           </section>
 
           {/* Memberships Section */}
-          <section className="py-16 lg:py-24">
+          <section className="py-16 lg:py-24 bg-muted/30">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Maintenance Memberships</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">VIP Maintenance Memberships</h2>
                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Keep your plumbing in top shape with annual maintenance plans
+                  Priority service, exclusive discounts, and peace of mind protection for your home
                 </p>
               </div>
 
@@ -56,49 +56,63 @@ export default function Store() {
                   <p className="text-muted-foreground">Loading memberships...</p>
                 </div>
               ) : memberships.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                   {memberships.map((membership) => (
                     <Card 
                       key={membership.id} 
-                      className="p-6 flex flex-col"
+                      className="flex flex-col overflow-hidden hover-elevate transition-all"
                       data-testid={`card-membership-${membership.slug}`}
                     >
-                      <div className="mb-6">
-                        <h3 className="text-2xl font-bold mb-2">{membership.name}</h3>
-                        <div className="flex items-baseline gap-2 mb-4">
-                          <span className="text-4xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
-                          {membership.name.toLowerCase().includes('platinum') ? (
-                            <span className="text-muted-foreground">/3 years</span>
-                          ) : (
-                            <span className="text-muted-foreground">/year</span>
-                          )}
-                        </div>
-                        <p className="text-muted-foreground">{membership.description}</p>
-                      </div>
-
-                      {membership.features && membership.features.length > 0 && (
-                        <div className="mb-6 flex-1">
-                          <p className="font-semibold mb-3">Includes:</p>
-                          <ul className="space-y-2">
-                            {membership.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                                <span className="text-sm">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
+                      {membership.image && (
+                        <div className="bg-gradient-to-b from-primary/5 to-transparent p-8 flex items-center justify-center border-b">
+                          <img 
+                            src={membership.image} 
+                            alt={membership.name}
+                            className="w-32 h-32 object-contain"
+                          />
                         </div>
                       )}
+                      
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="mb-4">
+                          <h3 className="text-xl font-bold mb-2">{membership.name}</h3>
+                          <div className="flex items-baseline gap-2 mb-3">
+                            <span className="text-3xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
+                            {membership.name.toLowerCase().includes('platinum') ? (
+                              <span className="text-sm text-muted-foreground">/3 years</span>
+                            ) : (
+                              <span className="text-sm text-muted-foreground">/year</span>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-2">{membership.description}</p>
+                        </div>
 
-                      <Button 
-                        className="w-full bg-primary" 
-                        asChild
-                        data-testid={`button-purchase-${membership.slug}`}
-                      >
-                        <a href={`/store/checkout/${membership.slug}`}>
-                          Purchase Now
-                        </a>
-                      </Button>
+                        {membership.features && membership.features.length > 0 && (
+                          <div className="mb-6 flex-1">
+                            <ul className="space-y-2">
+                              {membership.features.slice(0, 4).map((feature, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                  <span className="text-sm">{feature}</span>
+                                </li>
+                              ))}
+                              {membership.features.length > 4 && (
+                                <li className="text-sm text-muted-foreground">+ {membership.features.length - 4} more benefits</li>
+                              )}
+                            </ul>
+                          </div>
+                        )}
+
+                        <Button 
+                          className="w-full bg-primary mt-auto" 
+                          asChild
+                          data-testid={`button-purchase-${membership.slug}`}
+                        >
+                          <a href={`/store/checkout/${membership.slug}`}>
+                            Purchase Now
+                          </a>
+                        </Button>
+                      </div>
                     </Card>
                   ))}
                 </div>
@@ -115,59 +129,61 @@ export default function Store() {
             <section className="py-16 lg:py-24">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Plumbing Products</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Professional Plumbing Products</h2>
                   <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    Professional-grade plumbing products for your home
+                    High-quality products recommended by our expert plumbers
                   </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                   {physicalProducts.map((product) => (
                     <Card 
                       key={product.id} 
-                      className="p-6 flex flex-col"
+                      className="flex flex-col overflow-hidden hover-elevate transition-all"
                       data-testid={`card-product-${product.slug}`}
                     >
                       {product.image && (
-                        <div className="mb-4">
+                        <div className="bg-gradient-to-b from-muted/50 to-transparent p-8 flex items-center justify-center border-b">
                           <img 
                             src={product.image} 
                             alt={product.name}
-                            className="w-full h-48 object-contain rounded-md"
+                            className="w-full h-40 object-contain"
                           />
                         </div>
                       )}
                       
-                      <div className="mb-6">
-                        <h3 className="text-2xl font-bold mb-2">{product.name}</h3>
-                        <div className="flex items-baseline gap-2 mb-4">
-                          <span className="text-4xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
+                      <div className="p-6 flex flex-col flex-1">
+                        <div className="mb-4">
+                          <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                          <div className="flex items-baseline gap-2 mb-3">
+                            <span className="text-3xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
+                          </div>
+                          <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
                         </div>
-                        <p className="text-muted-foreground text-sm">{product.description}</p>
+
+                        {product.features && product.features.length > 0 && (
+                          <div className="mb-6 flex-1">
+                            <ul className="space-y-2">
+                              {product.features.map((feature, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                  <span className="text-sm">{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        <Button 
+                          className="w-full bg-primary mt-auto" 
+                          asChild
+                          data-testid={`button-purchase-${product.slug}`}
+                        >
+                          <a href={`/store/checkout/${product.slug}`}>
+                            Purchase Now
+                          </a>
+                        </Button>
                       </div>
-
-                      {product.features && product.features.length > 0 && (
-                        <div className="mb-6 flex-1">
-                          <ul className="space-y-2">
-                            {product.features.map((feature, idx) => (
-                              <li key={idx} className="flex items-start gap-2">
-                                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                                <span className="text-sm">{feature}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-
-                      <Button 
-                        className="w-full bg-primary" 
-                        asChild
-                        data-testid={`button-purchase-${product.slug}`}
-                      >
-                        <a href={`/store/checkout/${product.slug}`}>
-                          Purchase Now
-                        </a>
-                      </Button>
                     </Card>
                   ))}
                 </div>
