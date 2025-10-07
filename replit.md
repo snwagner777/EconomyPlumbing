@@ -69,6 +69,16 @@ Preferred communication style: Simple, everyday language.
   - Schema injection support for multiple schemas per page
   - All pages use comprehensive SEO component for consistency
 
+- **Schema Requirements for New Pages:**
+  - **IMPORTANT:** All new pages MUST include appropriate schema markup
+  - Service pages: Use `ServicePage` component (includes Service schema + optional FAQ schema)
+  - FAQ pages: Use `SEOHead` with `createFAQSchema()` for all Q&A content
+  - Product pages: Include Product schema via `createProductSchema()`
+  - Blog posts: Include BlogPosting schema via `createBlogPostSchema()`
+  - Location pages: Use `ServiceAreaPage` component with appropriate schema
+  - Home/main pages: Include LocalBusiness schema with sameAs social media links
+  - Always pass schema through `SEOHead.schema` prop for consistent head injection
+
 ### Backend Architecture
 
 **Server Framework:**
