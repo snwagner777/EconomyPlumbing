@@ -25,11 +25,11 @@ import {
   CheckCircle,
   Truck,
 } from "lucide-react";
-import waterHeaterImage from "@assets/generated_images/Tankless_water_heater_closeup_7279af49.png";
-import drainImage from "@assets/generated_images/Drain_cleaning_professional_service_e8a953c5.png";
-import leakImage from "@assets/generated_images/Leak_repair_service_work_cb3145cc.png";
-import toiletImage from "@assets/generated_images/Toilet_and_faucet_installation_18dec30d.png";
-import commercialImage from "@assets/generated_images/Commercial_plumbing_services_bd7b6306.png";
+import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
+import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
+import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
+import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec30d.webp";
+import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
 import testimonial1 from "@assets/generated_images/Customer_testimonial_portrait_f033b456.png";
 import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f29d918d.png";
 import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
