@@ -5,7 +5,7 @@ export default function FaucetInstallation() {
   return (
     <ServicePage
       title="Faucet Installation & Repair | Kitchen & Bath Faucet Replacement TX"
-      metaDescription="Austin & Marble Falls faucet installation & repair. Kitchen, bathroom, shower valves. Fix leaks, upgrade fixtures. Same-day service. (512) 368-9159."
+      metaDescription="Austin & Marble Falls faucet installation & repair. Kitchen, bathroom, shower valves. Fix leaks, upgrade fixtures. Same-day service. Call (512) 368-9159."
       canonical="https://economyplumbingservices.com/faucet-installation"
       heroImage={faucetImage}
       heroImageAlt="Professional faucet installation and repair service in Central Texas"

@@ -5,7 +5,7 @@ export default function GasLeakDetection() {
   return (
     <ServicePage
       title="Gas Leak Detection & Repair | Emergency Gas Line Service TX"
-      metaDescription="24/7 emergency gas leak detection & repair in Austin & Marble Falls. Electronic detection, immediate response. Licensed technicians. (512) 368-9159."
+      metaDescription="24/7 emergency gas leak detection & repair in Austin & Marble Falls. Electronic detection, immediate response. Licensed gas technicians. (512) 368-9159."
       canonical="https://economyplumbingservices.com/gas-leak-detection"
       heroImage={gasLeakImage}
       heroImageAlt="Professional gas leak detection and emergency repair service in Central Texas"

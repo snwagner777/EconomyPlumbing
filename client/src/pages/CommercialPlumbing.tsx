@@ -5,7 +5,7 @@ export default function CommercialPlumbing() {
   return (
     <ServicePage
       title="Commercial Plumbing Services | Austin & Marble Falls Businesses"
-      metaDescription="Austin & Marble Falls commercial plumbing: maintenance, emergency repairs, code compliance. Restaurants, offices, retail. Licensed. (512) 368-9159."
+      metaDescription="Austin & Marble Falls commercial plumbing: maintenance, emergency repairs, code compliance. Restaurants, offices, retail. Licensed plumbers. (512) 368-9159."
       canonical="https://economyplumbingservices.com/commercial-plumbing"
       heroImage={commercialImage}
       heroImageAlt="Professional commercial plumbing services for businesses in Austin and Marble Falls TX"

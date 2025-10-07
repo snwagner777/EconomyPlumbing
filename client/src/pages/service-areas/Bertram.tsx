@@ -13,7 +13,7 @@ export default function BertramServiceArea() {
     <ServiceAreaPage
       city="Bertram"
       state="TX"
-      metaDescription="Professional plumbing services in Bertram, TX. Water heater installation, drain cleaning, leak repair, and gas services. Licensed & insured. Call (830) 460-3565."
+      metaDescription="Professional plumbing services in Bertram, TX. Water heater install, drain cleaning, leak repair, gas services. Licensed & insured. Call (830) 460-3565."
       canonical="https://economyplumbingservices.com/plumber-in-bertram--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
