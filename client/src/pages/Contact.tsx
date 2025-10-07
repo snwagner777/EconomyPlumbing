@@ -55,7 +55,7 @@ export default function Contact() {
                       <Clock className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Hours</p>
-                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:00 AM - 6:00 PM<br />Sat-Sun: 8:00 AM - 5:00 PM</p>
+                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:30 AM - 5:30 PM<br />Sat-Sun: By Appointment</p>
                       </div>
                     </div>
                   </div>
@@ -82,7 +82,7 @@ export default function Contact() {
                       <Clock className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Hours</p>
-                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:00 AM - 6:00 PM<br />Sat-Sun: 8:00 AM - 5:00 PM</p>
+                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:30 AM - 5:30 PM<br />Sat-Sun: By Appointment</p>
                       </div>
                     </div>
                   </div>
