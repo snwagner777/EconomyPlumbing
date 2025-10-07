@@ -2,6 +2,7 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SchedulerModal from "@/components/SchedulerModal";
+import ContactFormSection from "@/components/ContactFormSection";
 import {
   Accordion,
   AccordionContent,
@@ -224,6 +225,8 @@ export default function FAQ() {
           </div>
         </div>
       </section>
+
+      <ContactFormSection />
 
       <Footer />
     </div>
