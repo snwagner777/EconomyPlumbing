@@ -66,7 +66,8 @@ export default function ServicePage({
   faqs,
   relatedServices,
 }: ServicePageProps) {
-  const serviceSchema = createServiceSchema(heroTitle, metaDescription, typeof window !== 'undefined' ? window.location.href : '');
+  const canonicalUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonicalUrl);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
 
   return (
@@ -74,6 +75,7 @@ export default function ServicePage({
       <SEOHead
         title={title}
         description={metaDescription}
+        canonical={canonicalUrl}
         schema={schemas}
       />
 

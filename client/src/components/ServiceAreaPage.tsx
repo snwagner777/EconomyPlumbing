@@ -53,12 +53,14 @@ export default function ServiceAreaPage({
   const phone = PHONE_NUMBERS[area];
   const phoneLink = phone.replace(/\D/g, '');
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
+  const canonicalUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="min-h-screen">
       <SEOHead
         title={`${city} Plumber | Water Heater Repair & Plumbing Services`}
         description={metaDescription}
+        canonical={canonicalUrl}
       />
 
       <Header />

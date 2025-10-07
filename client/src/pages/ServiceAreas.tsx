@@ -136,6 +136,7 @@ export default function ServiceAreas() {
       <SEOHead
         title="Our Service Area | Economy Plumbing Services Central Texas"
         description="Central Texas plumber serving Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Same-day service. (512) 368-9159."
+        canonical="https://economyplumbingservices.com/service-area"
       />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />

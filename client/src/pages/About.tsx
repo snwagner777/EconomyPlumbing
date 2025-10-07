@@ -44,6 +44,7 @@ export default function About() {
       <SEOHead
         title="About Economy Plumbing Services | Austin & Marble Falls Plumbers"
         description="Austin & Marble Falls trusted plumber since 2005. Licensed, experienced plumbers committed to quality service. 24/7 emergency plumbing. Call today!"
+        canonical="https://economyplumbingservices.com/about"
       />
       
       <div className="min-h-screen flex flex-col">

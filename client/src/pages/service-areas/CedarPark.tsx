@@ -86,6 +86,7 @@ export default function CedarParkServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Cedar Park plumber for Lakeline, Buttercup Creek, Whitestone. Expert water heater installation, drain cleaning, gas lines. Same-day service. (512) 368-9159."}
+        canonical="https://economyplumbingservices.com/plumber-in-cedar-park--tx"
       />
 
       <JsonLd data={localBusinessSchema} />

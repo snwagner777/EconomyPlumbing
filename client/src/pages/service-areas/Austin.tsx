@@ -88,6 +88,7 @@ export default function AustinServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Austin plumber serving Downtown, South Congress, East Austin. Expert water heater repair, drain cleaning, leak detection. Same-day service. (512) 368-9159."}
+        canonical="https://economyplumbingservices.com/plumber-austin"
       />
 
       <JsonLd data={localBusinessSchema} />

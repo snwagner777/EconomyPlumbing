@@ -8,6 +8,7 @@ export default function PrivacyPolicy() {
       <SEOHead
         title="Privacy Policy | Economy Plumbing Services"
         description="Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information. Your privacy is important to us."
+        canonical="https://economyplumbingservices.com/privacy-policy"
       />
 
       <Header />

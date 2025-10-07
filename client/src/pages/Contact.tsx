@@ -12,6 +12,7 @@ export default function Contact() {
       <SEOHead
         title="Contact Us | Economy Plumbing Services Austin & Marble Falls TX"
         description="Contact Economy Plumbing Austin (512) 368-9159, Marble Falls (830) 460-3565. Schedule online. 24/7 emergency plumbing available. Visit our offices."
+        canonical="https://economyplumbingservices.com/contact"
       />
 
       <Header />
