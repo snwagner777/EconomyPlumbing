@@ -42,7 +42,7 @@ export default function Hero({ onScheduleClick }: HeroProps) {
           <div className="flex flex-wrap gap-4 mb-12">
             <Button 
               size="lg" 
-              onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
+              onClick={() => (window as any).STWidgetManager("ws-open")}
               className="bg-primary text-primary-foreground text-lg px-8"
               data-testid="button-schedule-hero"
             >

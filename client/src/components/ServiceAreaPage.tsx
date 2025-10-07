@@ -104,7 +104,7 @@ export default function ServiceAreaPage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
+                onClick={() => (window as any).STWidgetManager("ws-open")}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -216,7 +216,7 @@ export default function ServiceAreaPage({
                   <p className="text-foreground font-medium">{city} and surrounding areas</p>
                 </div>
                 <Button 
-                  onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
+                  onClick={() => (window as any).STWidgetManager("ws-open")}
                   className="w-full bg-primary"
                   size="lg"
                   data-testid="button-schedule-contact"
@@ -281,7 +281,7 @@ export default function ServiceAreaPage({
 
           <Button 
             size="lg"
-            onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
+            onClick={() => (window as any).STWidgetManager("ws-open")}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >
