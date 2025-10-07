@@ -13,11 +13,13 @@ export default function BlogCard({ post }: BlogCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-shadow border border-card-border">
       {post.featuredImage ? (
-        <img
-          src={post.featuredImage}
-          alt={post.title}
-          className="w-full h-48 object-cover"
-        />
+        <Link href={`/blog/${post.slug}`} data-testid={`link-image-${post.slug}`}>
+          <img
+            src={post.featuredImage}
+            alt={post.title}
+            className="w-full h-48 object-cover cursor-pointer hover-elevate"
+          />
+        </Link>
       ) : (
         <div className="w-full h-48 bg-muted flex items-center justify-center">
           <span className="text-muted-foreground">No image available</span>
