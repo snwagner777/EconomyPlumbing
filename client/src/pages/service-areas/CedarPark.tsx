@@ -35,12 +35,12 @@ export default function CedarParkServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Austin", path: "/austin" },
-    { name: "Leander", path: "/leander" },
-    { name: "Round Rock", path: "/round-rock" },
-    { name: "Georgetown", path: "/georgetown" },
-    { name: "Liberty Hill", path: "/liberty-hill" },
-    { name: "Pflugerville", path: "/pflugerville" },
+    { name: "Austin", path: "/plumber-austin" },
+    { name: "Leander", path: "/plumber-leander" },
+    { name: "Round Rock", path: "/round-rock-plumber" },
+    { name: "Georgetown", path: "/plumber-georgetown" },
+    { name: "Liberty Hill", path: "/plumber-liberty-hill" },
+    { name: "Pflugerville", path: "/plumber-pflugerville" },
   ];
 
   const phone = "(512) 649-2811";

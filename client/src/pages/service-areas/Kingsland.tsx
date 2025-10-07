@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function KingslandServiceArea() {
   const nearbyCities = [
-    { name: "Marble Falls", path: "/marble-falls" },
-    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
-    { name: "Granite Shoals", path: "/granite-shoals" },
-    { name: "Burnet", path: "/burnet" },
+    { name: "Marble Falls", path: "/plumber-marble-falls" },
+    { name: "Horseshoe Bay", path: "/plumber-horseshoe-bay" },
+    { name: "Granite Shoals", path: "/plumber-granite-shoals" },
+    { name: "Burnet", path: "/plumber-burnet" },
   ];
 
   return (

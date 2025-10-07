@@ -35,11 +35,11 @@ export default function LeanderServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Cedar Park", path: "/cedar-park" },
-    { name: "Liberty Hill", path: "/liberty-hill" },
-    { name: "Georgetown", path: "/georgetown" },
-    { name: "Round Rock", path: "/round-rock" },
-    { name: "Austin", path: "/austin" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Liberty Hill", path: "/plumber-liberty-hill" },
+    { name: "Georgetown", path: "/plumber-georgetown" },
+    { name: "Round Rock", path: "/round-rock-plumber" },
+    { name: "Austin", path: "/plumber-austin" },
   ];
 
   const phone = "(512) 649-2811";

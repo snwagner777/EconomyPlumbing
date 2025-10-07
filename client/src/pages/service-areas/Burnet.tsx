@@ -2,11 +2,11 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function BurnetServiceArea() {
   const nearbyCities = [
-    { name: "Marble Falls", path: "/marble-falls" },
-    { name: "Bertram", path: "/bertram" },
-    { name: "Granite Shoals", path: "/granite-shoals" },
-    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
-    { name: "Kingsland", path: "/kingsland" },
+    { name: "Marble Falls", path: "/plumber-marble-falls" },
+    { name: "Bertram", path: "/plumber-bertram" },
+    { name: "Granite Shoals", path: "/plumber-granite-shoals" },
+    { name: "Horseshoe Bay", path: "/plumber-horseshoe-bay" },
+    { name: "Kingsland", path: "/plumber-kingsland" },
   ];
 
   return (

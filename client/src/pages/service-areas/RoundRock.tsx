@@ -35,11 +35,11 @@ export default function RoundRockServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Georgetown", path: "/georgetown" },
-    { name: "Pflugerville", path: "/pflugerville" },
-    { name: "Cedar Park", path: "/cedar-park" },
-    { name: "Austin", path: "/austin" },
-    { name: "Leander", path: "/leander" },
+    { name: "Georgetown", path: "/plumber-georgetown" },
+    { name: "Pflugerville", path: "/plumber-pflugerville" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Austin", path: "/plumber-austin" },
+    { name: "Leander", path: "/plumber-leander" },
   ];
 
   const phone = "(512) 649-2811";

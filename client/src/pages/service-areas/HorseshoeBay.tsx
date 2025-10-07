@@ -2,11 +2,11 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function HorseshoeBayServiceArea() {
   const nearbyCities = [
-    { name: "Marble Falls", path: "/marble-falls" },
-    { name: "Kingsland", path: "/kingsland" },
-    { name: "Granite Shoals", path: "/granite-shoals" },
-    { name: "Burnet", path: "/burnet" },
-    { name: "Spicewood", path: "/spicewood" },
+    { name: "Marble Falls", path: "/plumber-marble-falls" },
+    { name: "Kingsland", path: "/plumber-kingsland" },
+    { name: "Granite Shoals", path: "/plumber-granite-shoals" },
+    { name: "Burnet", path: "/plumber-burnet" },
+    { name: "Spicewood", path: "/plumber-spicewood" },
   ];
 
   return (

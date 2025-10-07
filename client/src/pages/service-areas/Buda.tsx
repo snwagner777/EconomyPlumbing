@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function BudaServiceArea() {
   const nearbyCities = [
-    { name: "Kyle", path: "/kyle" },
-    { name: "Austin", path: "/austin" },
-    { name: "Cedar Park", path: "/cedar-park" },
-    { name: "Round Rock", path: "/round-rock" },
+    { name: "Kyle", path: "/plumber-kyle" },
+    { name: "Austin", path: "/plumber-austin" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Round Rock", path: "/round-rock-plumber" },
   ];
 
   return (

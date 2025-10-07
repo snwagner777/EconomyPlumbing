@@ -35,14 +35,14 @@ export default function AustinServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Cedar Park", path: "/cedar-park" },
-    { name: "Round Rock", path: "/round-rock" },
-    { name: "Pflugerville", path: "/pflugerville" },
-    { name: "Buda", path: "/buda" },
-    { name: "Kyle", path: "/kyle" },
-    { name: "Leander", path: "/leander" },
-    { name: "Georgetown", path: "/georgetown" },
-    { name: "Liberty Hill", path: "/liberty-hill" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Round Rock", path: "/round-rock-plumber" },
+    { name: "Pflugerville", path: "/plumber-pflugerville" },
+    { name: "Buda", path: "/plumber-buda" },
+    { name: "Kyle", path: "/plumber-kyle" },
+    { name: "Leander", path: "/plumber-leander" },
+    { name: "Georgetown", path: "/plumber-georgetown" },
+    { name: "Liberty Hill", path: "/plumber-liberty-hill" },
   ];
 
   const phone = "(512) 649-2811";

@@ -35,10 +35,10 @@ export default function PflugervilleServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Round Rock", path: "/round-rock" },
-    { name: "Austin", path: "/austin" },
-    { name: "Georgetown", path: "/georgetown" },
-    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Round Rock", path: "/round-rock-plumber" },
+    { name: "Austin", path: "/plumber-austin" },
+    { name: "Georgetown", path: "/plumber-georgetown" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
   ];
 
   const phone = "(512) 649-2811";
