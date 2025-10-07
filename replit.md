@@ -177,8 +177,8 @@ Preferred communication style: Simple, everyday language.
   - Facebook/Instagram: (512) 575-3157
   - Yelp: (512) 893-7316
   - Nextdoor: (512) 846-9146
-  - Replaces both displayed phone text and tel: links site-wide
-  - Legacy numbers from original site: Austin (512) 368-9159, Marble Falls (830) 460-3565
+  - Replaces both displayed phone text and tel: links site-wide for Austin (512) numbers only
+  - Marble Falls (830) 460-3565 remains static and is not affected by dynamic insertion
 
 ### SEO & Analytics
 - JSON-LD structured data for local business schema

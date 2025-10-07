@@ -125,11 +125,11 @@ export function replacePhoneNumbers(): void {
   const source = getTrafficSource();
   const phoneConfig = PHONE_NUMBERS[source] || PHONE_NUMBERS.default;
 
-  // All numbers that could appear on the page (legacy + all tracking numbers)
+  // All 512 numbers that could appear on the page (legacy + all tracking numbers)
+  // Note: 830 numbers are excluded and remain static
   const allNumbersToReplace = [
-    // Legacy hardcoded numbers
+    // Legacy hardcoded 512 number
     '(512) 368-9159', '512-368-9159', '512.368.9159', '5123689159', 'tel:+15123689159',
-    '(830) 460-3565', '830-460-3565', '830.460.3565', '8304603565', 'tel:+18304603565',
     // Default tracking number
     '(512) 649-2811', '512-649-2811', '512.649.2811', '5126492811', 'tel:+15126492811',
     // Facebook/Instagram tracking number
