@@ -25,7 +25,10 @@ Preferred communication style: Simple, everyday language.
 - Class Variance Authority (CVA) for component variant management
 
 **Design System:**
-- Primary brand color: Teal/Turquoise (HSL 186 85% 45%) representing water theme
+- Primary brand color: Teal #3BA7A6 (HSL 179 48% 44%) representing water theme
+- Secondary color: Blue #1E88E5 (HSL 208 81% 51%)
+- Charcoal text: #111827 (HSL 220 39% 11%)
+- Silver accents: #B0BEC5 (HSL 200 14% 73%)
 - Typography: Inter for body/headings, Poppins for accent/numbers
 - Comprehensive light/dark mode support with CSS custom properties
 - Professional, trustworthy aesthetic targeting emergency service customers
