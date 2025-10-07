@@ -12,6 +12,7 @@ import { Phone, CheckCircle, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SchedulerModal from "@/components/SchedulerModal";
+import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 
 interface FAQ {
   question: string;
@@ -65,6 +66,8 @@ export default function ServicePage({
     <div className="min-h-screen">
       <title>{title}</title>
       <meta name="description" content={metaDescription} />
+
+      {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       <Header onScheduleClick={() => setSchedulerOpen(true)} />
