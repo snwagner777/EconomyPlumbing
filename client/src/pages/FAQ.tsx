@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import { createFAQSchema } from "@/components/SEO/JsonLd";
 
 const faqCategories = [
   {
@@ -144,14 +145,17 @@ const faqCategories = [
 export default function FAQ() {
   const [schedulerOpen, setSchedulerOpen] = useState(false);
 
+  // Flatten all FAQs for schema
+  const allFAQs = faqCategories.flatMap(category => category.faqs);
+  const faqSchema = createFAQSchema(allFAQs);
+
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Frequently Asked Questions | Economy Plumbing Services TX</title>
-        <meta name="description" content="Common plumbing questions answered. Learn about our services, pricing, water heaters, drain cleaning, gas lines, and more. Expert plumbing advice for Austin & Marble Falls." />
-        <meta property="og:title" content="FAQ | Economy Plumbing Services" />
-        <meta property="og:description" content="Get answers to your plumbing questions from the experts at Economy Plumbing Services." />
-      </Helmet>
+      <SEOHead
+        title="Frequently Asked Questions | Economy Plumbing Services TX"
+        description="Common plumbing questions answered. Learn about our services, pricing, water heaters, drain cleaning, gas lines, and more. Expert plumbing advice for Austin & Marble Falls."
+        schema={faqSchema}
+      />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       <Header onScheduleClick={() => setSchedulerOpen(true)} />

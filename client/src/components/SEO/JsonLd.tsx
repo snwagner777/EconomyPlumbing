@@ -30,6 +30,13 @@ export const localBusinessSchema = {
   ],
   "email": "service@economyplumbingservices.com",
   "priceRange": "$$",
+  "sameAs": [
+    "https://www.facebook.com/economyplumbingservices",
+    "https://www.instagram.com/economyplumbing",
+    "https://www.linkedin.com/company/economy-plumbing-services",
+    "https://www.yelp.com/biz/economy-plumbing-services",
+    "https://nextdoor.com/pages/economy-plumbing-services"
+  ],
   "address": [
     {
       "@type": "PostalAddress",
