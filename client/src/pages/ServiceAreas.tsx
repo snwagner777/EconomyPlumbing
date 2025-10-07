@@ -187,7 +187,7 @@ export default function ServiceAreas() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
             {cities.map((city) => {
               const isExpanded = expandedNeighborhoods[city.name];
               const displayNeighborhoods = isExpanded ? city.neighborhoods : city.neighborhoods.slice(0, 4);
@@ -197,29 +197,29 @@ export default function ServiceAreas() {
               const citySlug = city.name.toLowerCase().replace(/\s+/g, '-');
               
               return (
-                <Card key={city.name} className="p-5" data-testid={`card-city-${city.path.split('/').pop()}`}>
-                  <h3 className="text-xl font-bold mb-2" data-testid={`heading-city-${citySlug}`}>
+                <Card key={city.name} className="p-4" data-testid={`card-city-${city.path.split('/').pop()}`}>
+                  <h3 className="text-lg font-bold mb-1" data-testid={`heading-city-${citySlug}`}>
                     {city.name}
                   </h3>
                   <a 
                     href={`tel:${city.phoneLink}`}
-                    className="text-primary font-poppins font-bold text-base mb-3 inline-block hover-elevate px-2 py-1 rounded-md"
+                    className="text-primary font-poppins font-bold text-sm mb-2 inline-block hover-elevate px-2 py-1 rounded-md"
                     data-testid={`link-phone-${citySlug}`}
                   >
                     {city.phone}
                   </a>
-                  <p className="text-muted-foreground text-sm mb-3">
+                  <p className="text-muted-foreground text-xs mb-2">
                     {city.description}
                   </p>
                   
-                  <div className="mb-3">
-                    <h4 className="font-semibold text-sm mb-2">Neighborhoods Served:</h4>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="mb-2">
+                    <h4 className="font-semibold text-xs mb-1">Neighborhoods Served:</h4>
+                    <div className="flex flex-wrap gap-1">
                       {displayNeighborhoods.map((neighborhood, idx) => (
                         <Badge 
                           key={idx} 
                           variant="secondary"
-                          className="text-xs"
+                          className="text-xs py-0"
                           data-testid={`badge-neighborhood-${citySlug}-${idx}`}
                         >
                           {neighborhood}
@@ -228,7 +228,7 @@ export default function ServiceAreas() {
                       {hasMore && !isExpanded && (
                         <Badge 
                           variant="outline"
-                          className="text-xs cursor-pointer hover-elevate"
+                          className="text-xs cursor-pointer hover-elevate py-0"
                           onClick={() => toggleNeighborhoods(city.name)}
                           data-testid={`badge-show-more-${citySlug}`}
                         >
@@ -238,7 +238,7 @@ export default function ServiceAreas() {
                       {hasMore && isExpanded && (
                         <Badge 
                           variant="outline"
-                          className="text-xs cursor-pointer hover-elevate"
+                          className="text-xs cursor-pointer hover-elevate py-0"
                           onClick={() => toggleNeighborhoods(city.name)}
                           data-testid={`badge-show-less-${citySlug}`}
                         >
@@ -248,7 +248,7 @@ export default function ServiceAreas() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-muted-foreground mb-3">
+                  <p className="text-xs text-muted-foreground mb-2">
                     <span className="font-semibold">Zip Codes:</span> {city.zipCodes}
                   </p>
 
@@ -259,7 +259,7 @@ export default function ServiceAreas() {
                     data-testid={`button-learn-more-${citySlug}`}
                   >
                     <Link href={city.path}>
-                      Learn More About {city.name}
+                      Learn More
                     </Link>
                   </Button>
                 </Card>
@@ -334,14 +334,14 @@ export default function ServiceAreas() {
           <div className="max-w-5xl mx-auto">
             <div className="aspect-[16/9] w-full rounded-lg overflow-hidden border shadow-sm">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d886116.3834857594!2d-98.36794814296875!3d30.464798900000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8644b599a0cc032f%3A0x5d9b464bd469d57a!2sAustin%2C%20TX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d890000!2d-98.2!3d30.55!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1sen!2sus!4v1696358715235!5m2!1sen!2sus"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Economy Plumbing Services Coverage Area Map"
+                title="Economy Plumbing Services Coverage Area - Travis, Williamson & Burnet Counties"
                 data-testid="map-coverage-area"
               />
             </div>
