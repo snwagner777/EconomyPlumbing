@@ -14,6 +14,7 @@ export default function HorseshoeBayServiceArea() {
       city="Horseshoe Bay"
       state="TX"
       metaDescription="Quality plumbing services in Horseshoe Bay, TX. Water heater services, drain cleaning, leak repair, and emergency plumbing. Call (830) 460-3565 for service."
+      canonical="https://economyplumbingservices.com/plumber-in-horseshoe-bay--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
     />

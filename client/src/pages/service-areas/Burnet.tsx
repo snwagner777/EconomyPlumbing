@@ -14,6 +14,7 @@ export default function BurnetServiceArea() {
       city="Burnet"
       state="TX"
       metaDescription="Professional plumbing services in Burnet, TX. Water heater installation, drain cleaning, leak repair, and more. Licensed & insured. Call (830) 460-3565."
+      canonical="https://economyplumbingservices.com/plumber-in-burnet--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
     />
