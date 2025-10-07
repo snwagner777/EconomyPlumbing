@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
-import heroImage from "@assets/stock_images/professional_plumber_64fd1f1d.jpg";
+import heroImage from "@assets/stock_images/beautiful_modern_tex_4efa2f65.jpg";
 
 declare global {
   interface Window {
