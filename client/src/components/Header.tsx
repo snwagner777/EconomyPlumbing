@@ -17,6 +17,8 @@ declare global {
 export default function Header({ onScheduleClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
+  const [storeOpen, setStoreOpen] = useState(false);
   const [location] = useLocation();
 
   const services = [
@@ -100,40 +102,104 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             >
               Service Area
             </Link>
-            <Link 
-              href="/blog" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-blog"
-            >
-              Blog
-            </Link>
-            <Link 
-              href="/store" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-store"
-            >
-              Store
-            </Link>
-            <Link 
-              href="/membership-benefits" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-membership"
-            >
-              VIP Membership
-            </Link>
+            
+            <div className="relative">
+              <button
+                onMouseEnter={() => setAboutOpen(true)}
+                onMouseLeave={() => setAboutOpen(false)}
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                data-testid="button-about-menu"
+              >
+                About Us
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {aboutOpen && (
+                <div
+                  onMouseEnter={() => setAboutOpen(true)}
+                  onMouseLeave={() => setAboutOpen(false)}
+                  className="absolute top-full left-0 mt-1 w-56 bg-card border border-card-border rounded-md shadow-lg py-2"
+                >
+                  <Link
+                    href="/about"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-about"
+                  >
+                    About Us
+                  </Link>
+                  <Link
+                    href="/blog"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-blog"
+                  >
+                    Blog
+                  </Link>
+                  <Link
+                    href="/faq"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-faq"
+                  >
+                    FAQ
+                  </Link>
+                  <Link
+                    href="/membership-benefits"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-membership"
+                  >
+                    Membership Benefits
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            <div className="relative">
+              <button
+                onMouseEnter={() => setStoreOpen(true)}
+                onMouseLeave={() => setStoreOpen(false)}
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                data-testid="button-store-menu"
+              >
+                Store
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {storeOpen && (
+                <div
+                  onMouseEnter={() => setStoreOpen(true)}
+                  onMouseLeave={() => setStoreOpen(false)}
+                  className="absolute top-full left-0 mt-1 w-56 bg-card border border-card-border rounded-md shadow-lg py-2"
+                >
+                  <Link
+                    href="/store"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-store"
+                  >
+                    Shop Products
+                  </Link>
+                  <Link
+                    href="/privacy-policy"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-privacy"
+                  >
+                    Privacy Policy
+                  </Link>
+                  <Link
+                    href="/refund_returns"
+                    className="block px-4 py-2 text-sm hover-elevate"
+                    data-testid="link-refunds"
+                  >
+                    Refund & Returns
+                  </Link>
+                </div>
+              )}
+            </div>
+            
             <Link 
               href="/contact" 
               className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
               data-testid="link-contact"
             >
               Contact
-            </Link>
-            <Link 
-              href="/faq" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-faq"
-            >
-              FAQ
             </Link>
           </nav>
 
@@ -187,20 +253,38 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             <Link href="/service-area" className="block py-2 text-sm font-medium" data-testid="mobile-link-service-areas">
               Service Area
             </Link>
-            <Link href="/blog" className="block py-2 text-sm font-medium" data-testid="mobile-link-blog">
-              Blog
-            </Link>
-            <Link href="/store" className="block py-2 text-sm font-medium" data-testid="mobile-link-store">
-              Store
-            </Link>
-            <Link href="/membership-benefits" className="block py-2 text-sm font-medium" data-testid="mobile-link-membership">
-              VIP Membership
-            </Link>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">About Us</p>
+              <Link href="/about" className="block py-2 pl-4 text-sm" data-testid="mobile-link-about">
+                About Us
+              </Link>
+              <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog">
+                Blog
+              </Link>
+              <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq">
+                FAQ
+              </Link>
+              <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership">
+                Membership Benefits
+              </Link>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">Store</p>
+              <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store">
+                Shop Products
+              </Link>
+              <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy">
+                Privacy Policy
+              </Link>
+              <Link href="/refund_returns" className="block py-2 pl-4 text-sm" data-testid="mobile-link-refunds">
+                Refund & Returns
+              </Link>
+            </div>
+            
             <Link href="/contact" className="block py-2 text-sm font-medium" data-testid="mobile-link-contact">
               Contact
-            </Link>
-            <Link href="/faq" className="block py-2 text-sm font-medium" data-testid="mobile-link-faq">
-              FAQ
             </Link>
             <div className="pt-4 space-y-3">
               <a 
