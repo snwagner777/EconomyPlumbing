@@ -135,7 +135,7 @@ export default function ServiceAreas() {
     <div className="min-h-screen">
       <SEOHead
         title="Our Service Area | Economy Plumbing Services Central Texas"
-        description="Serving 16+ Central Texas cities: Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Licensed plumbers. Call (512) 368-9159 for same-day service."
+        description="Central Texas plumber serving Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Same-day service. (512) 368-9159."
       />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />

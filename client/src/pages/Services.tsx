@@ -99,7 +99,7 @@ export default function Services() {
     <div className="min-h-screen">
       <SEOHead
         title="Plumbing Services | Complete Plumbing Solutions Austin & Marble Falls TX"
-        description="Comprehensive plumbing services in Austin & Marble Falls. Water heaters, drain cleaning, leak repair, gas lines, backflow testing, commercial plumbing. Licensed plumbers available 24/7."
+        description="Austin & Marble Falls plumbing: water heaters, drain cleaning, leak repair, gas lines, backflow testing. Licensed plumbers 24/7. Call (512) 368-9159."
       />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />

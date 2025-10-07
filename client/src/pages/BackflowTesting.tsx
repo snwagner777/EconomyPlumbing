@@ -5,7 +5,7 @@ export default function BackflowTesting() {
   return (
     <ServicePage
       title="Backflow Testing & Certification | Annual Backflow Inspection TX"
-      metaDescription="Certified backflow prevention testing and inspection in Austin & Marble Falls. Annual backflow testing, device installation, repair. Licensed backflow testers. City-compliant reports."
+      metaDescription="Certified backflow testing & inspection in Austin & Marble Falls. Annual testing, installation, repair. Licensed testers. City-compliant. (512) 368-9159."
       heroImage={backflowImage}
       heroImageAlt="Certified backflow testing and prevention service in Central Texas"
       heroTitle="Backflow Testing & Prevention"

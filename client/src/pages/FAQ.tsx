@@ -153,7 +153,7 @@ export default function FAQ() {
     <div className="min-h-screen">
       <SEOHead
         title="Frequently Asked Questions | Economy Plumbing Services TX"
-        description="Common plumbing questions answered. Learn about our services, pricing, water heaters, drain cleaning, gas lines, and more. Expert plumbing advice for Austin & Marble Falls."
+        description="Plumbing FAQs answered: services, pricing, water heaters, drain cleaning, gas lines. Expert advice for Austin & Marble Falls homeowners. Call us today!"
         schema={faqSchema}
       />
 

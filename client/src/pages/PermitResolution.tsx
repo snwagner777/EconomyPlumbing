@@ -5,7 +5,7 @@ export default function PermitResolution() {
   return (
     <ServicePage
       title="Plumbing Permit Resolution Services | Code Compliance Help TX"
-      metaDescription="Expert plumbing permit resolution in Austin & Marble Falls. Fix unpermitted work, code violations, failed inspections. Bring plumbing up to code. Work with city inspectors."
+      metaDescription="Austin & Marble Falls plumbing permit resolution. Fix unpermitted work, code violations, failed inspections. Work with city inspectors. (512) 368-9159."
       heroImage={permitImage}
       heroImageAlt="Professional plumbing permit resolution and code compliance service in Central Texas"
       heroTitle="Permit Resolution Services"

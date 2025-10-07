@@ -5,7 +5,7 @@ export default function SewagePumpServices() {
   return (
     <ServicePage
       title="Sump Pump & Sewage Pump Services | Pump Installation & Repair TX"
-      metaDescription="Expert sump pump and sewage pump services in Austin & Marble Falls. Installation, repair, replacement, battery backup. Prevent basement flooding. Emergency pump service available."
+      metaDescription="Austin & Marble Falls sump & sewage pump services. Installation, repair, replacement, battery backup. Prevent flooding. Emergency service. (512) 368-9159."
       heroImage={pumpImage}
       heroImageAlt="Professional sump pump and sewage pump services in Central Texas"
       heroTitle="Sump & Sewage Pump Services"

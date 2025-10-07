@@ -5,7 +5,7 @@ export default function DrainageSolutions() {
   return (
     <ServicePage
       title="Drainage Solutions | French Drains, Yard Drainage & Sump Pumps TX"
-      metaDescription="Professional drainage solutions in Austin & Marble Falls. French drains, yard drainage systems, sump pump installation. Fix standing water, foundation issues. Free drainage consultation."
+      metaDescription="Austin & Marble Falls drainage solutions: French drains, yard systems, sump pumps. Fix standing water, foundation issues. Free consultation. (512) 368-9159."
       heroImage={drainageImage}
       heroImageAlt="Professional drainage solutions and French drain installation in Central Texas"
       heroTitle="Drainage Solutions"

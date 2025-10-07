@@ -5,7 +5,7 @@ export default function HydroJetting() {
   return (
     <ServicePage
       title="Hydro Jetting Services | High-Pressure Drain Cleaning TX"
-      metaDescription="Professional hydro jetting services in Austin & Marble Falls. Clear stubborn clogs, grease buildup, tree roots. Video inspection available. Commercial & residential drain cleaning."
+      metaDescription="Austin & Marble Falls hydro jetting: clear stubborn clogs, grease, tree roots. Video inspection. Commercial & residential drain cleaning. (512) 368-9159."
       heroImage={hydroJetImage}
       heroImageAlt="Professional hydro jetting and high-pressure drain cleaning in Central Texas"
       heroTitle="Hydro Jetting Services"

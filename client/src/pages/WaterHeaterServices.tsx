@@ -5,7 +5,7 @@ export default function WaterHeaterServices() {
   return (
     <ServicePage
       title="Water Heater Repair & Replacement | Austin & Marble Falls TX"
-      metaDescription="Expert water heater installation, repair, and replacement in Austin & Marble Falls. Same-day service for tankless and traditional water heaters. All brands serviced. Free estimates!"
+      metaDescription="Austin & Marble Falls water heater installation, repair, replacement. Tankless & traditional. Same-day service. All brands. Free estimates. (512) 368-9159."
       heroImage={waterHeaterImage}
       heroImageAlt="Professional water heater installation and repair service in Austin and Marble Falls TX"
       heroTitle="Water Heater Services"

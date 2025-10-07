@@ -43,7 +43,7 @@ export default function About() {
     <>
       <SEOHead
         title="About Economy Plumbing Services | Austin & Marble Falls Plumbers"
-        description="Learn about Economy Plumbing Services - your trusted plumbing experts in Austin & Marble Falls, TX. Licensed, experienced plumbers committed to quality service since 2005."
+        description="Austin & Marble Falls trusted plumber since 2005. Licensed, experienced plumbers committed to quality service. 24/7 emergency plumbing. Call today!"
       />
       
       <div className="min-h-screen flex flex-col">

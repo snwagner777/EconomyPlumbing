@@ -20,7 +20,7 @@ export default function Store() {
     <>
       <SEOHead
         title="Plumbing Products & Memberships | Economy Plumbing Store"
-        description="Shop plumbing maintenance memberships and quality plumbing products from Economy Plumbing. Save on annual maintenance and get priority service with VIP memberships."
+        description="Shop VIP plumbing memberships & quality products. Save on annual maintenance, get priority service. Austin & Marble Falls. Protect your home today!"
         canonical="https://economyplumbingservices.com/store"
       />
 

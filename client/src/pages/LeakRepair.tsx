@@ -5,7 +5,7 @@ export default function LeakRepair() {
   return (
     <ServicePage
       title="Leak Detection & Repair | Austin & Marble Falls Plumber"
-      metaDescription="Fast leak detection and repair services in Austin & Marble Falls. Slab leaks, pipe leaks, faucet leaks. Insurance claim assistance. Emergency service available 24/7."
+      metaDescription="Fast leak detection & repair in Austin & Marble Falls. Slab leaks, pipe leaks, faucet leaks. Insurance help. Emergency 24/7 service. (512) 368-9159."
       heroImage={leakImage}
       heroImageAlt="Professional leak detection and repair service in Austin and Marble Falls TX"
       heroTitle="Leak Repair Services"
