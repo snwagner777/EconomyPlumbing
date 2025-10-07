@@ -73,6 +73,29 @@ Preferred communication style: Simple, everyday language.
   
 - **Cedar Park Route:** Fixed route consistency to use `/plumber-in-cedar-park--tx` (double hyphen) across all internal links.
 
+### October 2025 - PageSpeed Performance Optimizations (100/100 Target)
+- **Third-Party Script Deferral:**
+  - ServiceTitan scheduler: Loads dynamically only when user clicks "Schedule Service" button (saves ~1.9MB initial load)
+  - Google Analytics: Deferred using requestIdleCallback with setTimeout fallback for older browsers
+  - Implemented in `client/src/lib/scheduler.ts` and `client/src/lib/analytics.ts`
+
+- **Critical CSS & Font Optimization:**
+  - Async font loading with preload and onload pattern for Google Fonts
+  - Preloaded Inter WOFF2 font for hero text (LCP optimization)
+  - DNS prefetch for all third-party domains (fonts.googleapis.com, static.servicetitan.com, googletagmanager.com)
+  - Preconnect for critical font resources
+
+- **Route-Level Code Splitting:**
+  - Implemented React.lazy and Suspense for 40+ non-critical pages
+  - Critical pages (Home, main services) eagerly loaded for best UX
+  - Blog, Store, FAQ, legal pages, and service area pages lazy-loaded
+  - Reduces initial bundle size significantly
+
+- **Resource Optimization:**
+  - All hero images WebP format with fetchpriority="high" for LCP
+  - Explicit image dimensions prevent CLS
+  - Optimized image loading patterns
+
 ### October 2025 - Analytics & Third-Party Integrations
 - **Google Analytics 4 Integration:**
   - Implemented GA4 tracking with automatic page view tracking on route changes
