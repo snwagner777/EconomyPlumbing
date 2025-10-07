@@ -15,6 +15,7 @@ import {
   Building2,
   Flame,
   Shield,
+  ArrowRight,
 } from "lucide-react";
 import {
   DollarSign,
@@ -33,6 +34,7 @@ import testimonial1 from "@assets/generated_images/Customer_testimonial_portrait
 import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f29d918d.png";
 import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { useState } from "react";
 import { Helmet } from "react-helmet";
 import {
@@ -289,9 +291,45 @@ export default function Home() {
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.map((service) => (
+              {services.slice(0, 5).map((service) => (
                 <ServiceCard key={service.title} {...service} />
               ))}
+              
+              <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border bg-primary/5">
+                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-white mb-4">
+                  <ArrowRight className="w-8 h-8" />
+                </div>
+                <h3 className="text-2xl font-semibold mb-3">View All Our Services</h3>
+                <p className="text-muted-foreground mb-4">
+                  Explore our complete range of plumbing services for your home or business.
+                </p>
+                <ul className="space-y-2 mb-4">
+                  <li className="text-sm flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Gas Line Services</span>
+                  </li>
+                  <li className="text-sm flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Backflow Prevention</span>
+                  </li>
+                  <li className="text-sm flex items-start gap-2">
+                    <span className="text-primary mt-1">•</span>
+                    <span>Emergency Plumbing</span>
+                  </li>
+                </ul>
+                <a 
+                  href="#footer-services" 
+                  className="inline-flex items-center gap-2 text-primary font-medium hover-elevate px-2 py-1 rounded-md"
+                  data-testid="link-view-all-services"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                >
+                  View All Services
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </Card>
             </div>
 
             <div className="text-center mt-12">
