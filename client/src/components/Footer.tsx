@@ -104,8 +104,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Economy Plumbing Services. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm">
-            <Link href="/privacy" className="hover:text-primary">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-primary">Terms of Service</Link>
+            <Link href="/privacy-policy" className="hover:text-primary">Privacy Policy</Link>
           </div>
         </div>
       </div>
