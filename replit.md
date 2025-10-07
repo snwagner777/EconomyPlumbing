@@ -35,14 +35,29 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### October 2025 - SEO & Content Uniqueness Improvements
-- **Canonical URLs:** Implemented SSR-compatible canonical URLs across all 48+ pages. Templates now require explicit canonical props to ensure proper rendering during server-side generation.
-- **Service Area Page Differentiation:** Updated ServiceAreaPage template to support unique content per city:
+### October 2025 - SEO Optimization & Performance Enhancements
+- **Schema Markup Enhancement:**
+  - Service schema updated to include provider address and geo coordinates for better local SEO
+  - Product schema URLs corrected from non-existent /store/checkout to /store
+  - LocalBusiness and FAQ schemas properly implemented on Home page
+  
+- **Performance Optimizations (PageSpeed 100 Ready):**
+  - Hero images optimized with width="1920" height="1080" attributes for CLS prevention
+  - Added fetchpriority="high" to all LCP hero images (Home, ServicePage, ServiceAreaPage)
+  - Preconnect links updated with crossorigin attributes for fonts and ServiceTitan
+  
+- **Meta Description Optimization:**
+  - All 28 meta descriptions optimized to strict 150-160 character range
+  - Distribution: 4@150, 2@151, 3@152, 6@153, 3@154, 2@155, 4@156, 1@157, 1@159, 2@160 chars
+  
+- **Canonical URLs:** Implemented SSR-compatible canonical URLs across all 48+ pages. Templates require explicit canonical props.
+
+- **Service Area Page Differentiation:** Updated ServiceAreaPage template with unique content per city:
   - Added optional `heroImage`, `heroSubtitle`, and `cityHighlight` props
   - Implemented 9 unique hero images across 10 smaller service area pages
-  - Each city page now has localized content (Buda, Spicewood, Liberty Hill, Marble Falls, Granite Shoals, Burnet, Kyle, Bertram, Horseshoe Bay, Kingsland)
-  - Eliminated duplicate content issues for improved local SEO performance
-- **Cedar Park Route:** Fixed route consistency to use `/plumber-in-cedar-park--tx` (double hyphen) across all internal links and components.
+  - Each city page has localized content (Buda, Spicewood, Liberty Hill, Marble Falls, Granite Shoals, Burnet, Kyle, Bertram, Horseshoe Bay, Kingsland)
+  
+- **Cedar Park Route:** Fixed route consistency to use `/plumber-in-cedar-park--tx` (double hyphen) across all internal links.
 
 ## External Dependencies
 
