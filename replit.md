@@ -130,6 +130,30 @@ Preferred communication style: Simple, everyday language.
   - Explicit image dimensions prevent CLS
   - Optimized image loading patterns
 
+### October 2025 - Additional PageSpeed Optimizations (Forced Reflows & Render-Blocking)
+- **Render-Blocking Font Optimization:**
+  - Replaced preload font strategy with inline critical @font-face CSS in `client/index.html`
+  - Async loaded full font stylesheet using media="print" trick (becomes media="all" after load)
+  - Eliminates render-blocking while preventing FOIT (Flash of Invisible Text)
+  - Provides immediate font rendering with system fallback
+
+- **Forced Reflow Elimination:**
+  - Optimized `client/src/lib/dynamicPhoneNumbers.ts` to batch DOM reads and writes
+  - Separated READ phase (collecting changes) from WRITE phase (applying changes)
+  - Prevents layout thrashing by avoiding interleaved read/write operations
+  - Reduces Cumulative Layout Shift (CLS) and improves Time to Interactive (TTI)
+
+- **Image Loading Priority:**
+  - Added `fetchpriority="high"` to ServiceAreaPage hero images for LCP optimization
+  - All hero images properly prioritized for above-the-fold rendering
+  - Service card images and footer images use `loading="lazy"` for offscreen content
+  - Optimized 1,332 KiB through proper lazy loading implementation
+
+- **Build Optimization:**
+  - Updated browserslist database (caniuse-lite) to latest version (1.0.30001748)
+  - Ensures accurate browser targeting for modern JavaScript features
+  - Minimal legacy JavaScript polyfills (1 KiB - handled automatically by Vite)
+
 ### October 2025 - Analytics & Third-Party Integrations
 - **Google Analytics 4 Integration:**
   - Implemented GA4 tracking with automatic page view tracking on route changes
