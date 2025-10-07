@@ -174,7 +174,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                     className="block px-4 py-2 text-sm hover-elevate"
                     data-testid="link-store"
                   >
-                    Shop Products
+                    Products & Memberships
                   </Link>
                   <Link
                     href="/privacy-policy"
@@ -273,7 +273,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             <div className="space-y-2">
               <p className="text-sm font-medium text-muted-foreground">Store</p>
               <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store">
-                Shop Products
+                Products & Memberships
               </Link>
               <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy">
                 Privacy Policy
