@@ -88,8 +88,8 @@ Preferred communication style: Simple, everyday language.
 **Route Patterns:**
 - `/` - Home
 - `/{service-name}` - Service detail pages
-- `/service-areas` - Service area overview
-- `/service-areas/{city-name}` - Location-specific pages
+- `/service-area` - Service area overview page (exact replica of plumbersthatcare.com/service-area)
+- `/{city-plumber-url}` - Location-specific pages (e.g., /plumber-austin, /round-rock-plumber)
 - `/blog` - Blog listing
 - `/blog/:slug` - Individual posts
 - `/store` - Product catalog
