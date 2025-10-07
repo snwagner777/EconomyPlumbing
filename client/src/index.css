@@ -50,11 +50,11 @@
 
   --primary: 186 85% 45%;
 
-  --primary-foreground: 186 85% 98%;
+  --primary-foreground: 210 100% 98%;
 
-  --secondary: 210 15% 89%;
+  --secondary: 211 100% 50%;
 
-  --secondary-foreground: 210 15% 25%;
+  --secondary-foreground: 210 100% 98%;
 
   --muted: 210 18% 92%;
 
@@ -166,13 +166,13 @@
 
   --popover-border: 210 10% 23%;
 
-  --primary: 186 75% 35%;
+  --primary: 186 75% 45%;
 
-  --primary-foreground: 186 75% 98%;
+  --primary-foreground: 210 100% 98%;
 
-  --secondary: 222 15% 22%;
+  --secondary: 211 100% 60%;
 
-  --secondary-foreground: 210 15% 90%;
+  --secondary-foreground: 210 100% 98%;
 
   --muted: 222 18% 20%;
 
