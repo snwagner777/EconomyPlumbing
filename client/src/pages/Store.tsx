@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import type { Product } from "@shared/schema";
+import { openScheduler } from "@/lib/scheduler";
 
 export default function Store() {
   
@@ -244,7 +245,7 @@ export default function Store() {
                     <Button 
                       size="lg"
                       className="bg-primary"
-                      onClick={() => (window as any).STWidgetManager("ws-open")}
+                      onClick={() => openScheduler()}
                       data-testid="button-schedule-consultation"
                     >
                       Schedule Consultation

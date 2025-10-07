@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/Economy Plumbing Services logo_1759801055079.jpg";
+import { openScheduler } from "@/lib/scheduler";
 
 interface HeaderProps {
   onScheduleClick?: () => void;
@@ -265,14 +266,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               (512) 368-9159
             </a>
             <Button 
-              onClick={() => {
-                console.log('Button clicked, STWidgetManager:', typeof (window as any).STWidgetManager);
-                if ((window as any).STWidgetManager) {
-                  (window as any).STWidgetManager("ws-open");
-                } else {
-                  console.error('STWidgetManager not found on window object');
-                }
-              }}
+              onClick={openScheduler}
               className="bg-primary text-primary-foreground"
               data-testid="button-schedule-header"
             >
@@ -374,7 +368,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <Phone className="w-5 h-5" />
                 (830) 460-3565 <span className="text-sm font-normal">Marble Falls</span>
               </a>
-              <Button onClick={() => (window as any).STWidgetManager("ws-open")} className="w-full bg-primary" data-testid="mobile-button-schedule">
+              <Button onClick={openScheduler} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service
               </Button>
             </div>

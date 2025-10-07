@@ -1,12 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/stock_images/modern_luxury_bathro_0f267931.jpg";
-
-declare global {
-  interface Window {
-    STWidgetManager: (action: string) => void;
-  }
-}
+import { openScheduler } from "@/lib/scheduler";
 
 interface HeroProps {
   onScheduleClick?: () => void;
@@ -42,7 +37,7 @@ export default function Hero({ onScheduleClick }: HeroProps) {
           <div className="flex flex-wrap gap-4 mb-12">
             <Button 
               size="lg" 
-              onClick={() => (window as any).STWidgetManager("ws-open")}
+              onClick={openScheduler}
               className="bg-primary text-primary-foreground text-lg px-8"
               data-testid="button-schedule-hero"
             >

@@ -13,12 +13,7 @@ import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
-
-declare global {
-  interface Window {
-    STWidgetManager: (action: string) => void;
-  }
-}
+import { openScheduler } from "@/lib/scheduler";
 
 interface FAQ {
   question: string;
@@ -106,7 +101,7 @@ export default function ServicePage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => (window as any).STWidgetManager("ws-open")}
+                onClick={openScheduler}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -223,7 +218,7 @@ export default function ServicePage({
 
           <Button 
             size="lg"
-            onClick={() => (window as any).STWidgetManager("ws-open")}
+            onClick={openScheduler}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >

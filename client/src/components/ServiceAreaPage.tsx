@@ -8,12 +8,7 @@ import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import defaultHeroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
-
-declare global {
-  interface Window {
-    STWidgetManager: (action: string) => void;
-  }
-}
+import { openScheduler } from "@/lib/scheduler";
 
 interface NearbyCity {
   name: string;
@@ -104,7 +99,7 @@ export default function ServiceAreaPage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => (window as any).STWidgetManager("ws-open")}
+                onClick={openScheduler}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -216,7 +211,7 @@ export default function ServiceAreaPage({
                   <p className="text-foreground font-medium">{city} and surrounding areas</p>
                 </div>
                 <Button 
-                  onClick={() => (window as any).STWidgetManager("ws-open")}
+                  onClick={openScheduler}
                   className="w-full bg-primary"
                   size="lg"
                   data-testid="button-schedule-contact"
@@ -281,7 +276,7 @@ export default function ServiceAreaPage({
 
           <Button 
             size="lg"
-            onClick={() => (window as any).STWidgetManager("ws-open")}
+            onClick={openScheduler}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >

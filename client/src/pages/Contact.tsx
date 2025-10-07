@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { openScheduler } from "@/lib/scheduler";
 
 export default function Contact() {
   return (
@@ -89,7 +90,7 @@ export default function Contact() {
 
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    onClick={() => (window as any).STWidgetManager("ws-open")}
+                    onClick={() => openScheduler()}
                     size="lg"
                     data-testid="button-schedule"
                   >
