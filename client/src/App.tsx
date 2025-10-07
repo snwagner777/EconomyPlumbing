@@ -34,6 +34,7 @@ import BlogPost from "@/pages/BlogPost";
 import About from "@/pages/About";
 import Store from "@/pages/Store";
 import Checkout from "@/pages/Checkout";
+import ScheduleAppointment from "@/pages/ScheduleAppointment";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -65,6 +66,10 @@ function Router() {
       <Route path="/service-areas/granite-shoals" component={GraniteShoalsServiceArea} />
       <Route path="/service-areas/bertram" component={BertramServiceArea} />
       <Route path="/service-areas/spicewood" component={SpicewoodServiceArea} />
+      <Route path="/schedule-appointment" component={ScheduleAppointment} />
+      <Route path="/fall-plumbing-tips">
+        {() => <BlogPost params={{ slug: "fall-plumbing-tips" }} />}
+      </Route>
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/blog" component={Blog} />
       <Route path="/about" component={About} />

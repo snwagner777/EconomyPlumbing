@@ -49,6 +49,25 @@ export const contactSubmissions = pgTable("contact_submissions", {
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 });
 
+export const serviceAreas = pgTable("service_areas", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  cityName: text("city_name").notNull(),
+  slug: text("slug").notNull().unique(),
+  region: text("region").notNull(), // 'austin' or 'marble-falls'
+  metaDescription: text("meta_description").notNull(),
+  introContent: text("intro_content").notNull(),
+  neighborhoods: text("neighborhoods").array(),
+  landmarks: text("landmarks").array(),
+  localPainPoints: text("local_pain_points").array(),
+  seasonalIssues: text("seasonal_issues").array(),
+  uniqueFaqs: text("unique_faqs").array(), // JSON stringified FAQ objects
+  testimonials: text("testimonials").array(), // JSON stringified testimonial objects
+  population: text("population"),
+  zipCodes: text("zip_codes").array(),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -68,6 +87,10 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   submittedAt: true,
 });
 
+export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
+  id: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
@@ -76,3 +99,5 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+export type ServiceArea = typeof serviceAreas.$inferSelect;
+export type InsertServiceArea = z.infer<typeof insertServiceAreaSchema>;
