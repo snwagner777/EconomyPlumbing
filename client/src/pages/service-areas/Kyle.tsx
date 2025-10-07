@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import kyleHero from "@assets/stock_images/plumber_fixing_sink__ddae57ac.jpg";
 
 export default function KyleServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function KyleServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-kyle--tx"
       area="austin"
       nearbyCities={nearbyCities}
+      heroImage={kyleHero}
+      heroSubtitle="Expert plumbing services for Kyle residents. Quick response, quality repairs, and exceptional customer service every time."
+      cityHighlight="Serving Kyle's rapidly expanding community with reliable plumbing services. We're equipped to handle both residential and commercial projects."
     />
   );
 }

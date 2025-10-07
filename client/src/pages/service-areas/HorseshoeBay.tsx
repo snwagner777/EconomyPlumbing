@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import horseshoeBayHero from "@assets/stock_images/plumber_working_bath_98208ff5.jpg";
 
 export default function HorseshoeBayServiceArea() {
   const nearbyCities = [
@@ -17,6 +18,9 @@ export default function HorseshoeBayServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-horseshoe-bay--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={horseshoeBayHero}
+      heroSubtitle="Horseshoe Bay's plumbing experts. Specialized service for lakefront properties, residential homes, and vacation rentals."
+      cityHighlight="Serving Horseshoe Bay's unique plumbing needs. We understand lakefront properties and provide specialized solutions for this waterfront community."
     />
   );
 }

@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import budaHero from "@assets/stock_images/plumber_fixing_sink__b2426749.jpg";
 
 export default function BudaServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function BudaServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-buda--tx"
       area="austin"
       nearbyCities={nearbyCities}
+      heroImage={budaHero}
+      heroSubtitle="Trusted plumbing experts serving Buda families and businesses. Fast response times, quality workmanship, and competitive rates."
+      cityHighlight="Serving Buda's growing community with reliable plumbing services. From new construction to emergency repairs, we're your local plumbing partner."
     />
   );
 }

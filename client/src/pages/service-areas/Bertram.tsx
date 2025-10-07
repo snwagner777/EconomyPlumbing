@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import bertramHero from "@assets/stock_images/plumber_water_heater_1d323d32.jpg";
 
 export default function BertramServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function BertramServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-bertram--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={bertramHero}
+      heroSubtitle="Bertram's trusted local plumber for water heater services, drain cleaning, and emergency repairs. Honest pricing, quality work."
+      cityHighlight="Proudly serving Bertram and the surrounding Burnet County area with professional plumbing services tailored to your community's needs."
     />
   );
 }

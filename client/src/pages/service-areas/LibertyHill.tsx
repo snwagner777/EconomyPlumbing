@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import libertyHillHero from "@assets/stock_images/plumber_working_bath_208b62e3.jpg";
 
 export default function LibertyHillServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function LibertyHillServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-liberty-hill--tx"
       area="austin"
       nearbyCities={nearbyCities}
+      heroImage={libertyHillHero}
+      heroSubtitle="Professional plumbing services for Liberty Hill's growing community. Same-day service, expert technicians, and upfront pricing."
+      cityHighlight="As Liberty Hill continues to grow, we're here to serve both established neighborhoods and new developments with top-quality plumbing services."
     />
   );
 }

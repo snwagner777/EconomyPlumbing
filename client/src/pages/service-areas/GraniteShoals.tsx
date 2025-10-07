@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import graniteShoalsHero from "@assets/stock_images/plumber_water_heater_89ac0930.jpg";
 
 export default function GraniteShoalsServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function GraniteShoalsServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-granite-shoals--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={graniteShoalsHero}
+      heroSubtitle="Granite Shoals plumbing specialists providing water heater services, leak repairs, and drain cleaning. Your local plumbing experts."
+      cityHighlight="Located in the heart of the Highland Lakes, we provide specialized plumbing services for Granite Shoals homes and businesses."
     />
   );
 }

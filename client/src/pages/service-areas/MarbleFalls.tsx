@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import marbleFallsHero from "@assets/stock_images/plumber_fixing_sink__a8fb92e9.jpg";
 
 export default function MarbleFallsServiceArea() {
   const nearbyCities = [
@@ -18,6 +19,9 @@ export default function MarbleFallsServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-marble-falls--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={marbleFallsHero}
+      heroSubtitle="Marble Falls' trusted plumbing experts since 2012. Specializing in water heaters, drain cleaning, and emergency plumbing services."
+      cityHighlight="Serving Marble Falls and the Highland Lakes area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />
   );
 }

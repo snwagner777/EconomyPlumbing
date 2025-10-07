@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import kingslandHero from "@assets/stock_images/plumber_working_on_p_780517d7.jpg";
 
 export default function KingslandServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function KingslandServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-kingsland--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={kingslandHero}
+      heroSubtitle="Kingsland plumbing services with a focus on quality and customer satisfaction. Water heaters, leaks, drains, and more."
+      cityHighlight="Your trusted plumber in Kingsland and the Highland Lakes region. Fast service, competitive pricing, and guaranteed satisfaction."
     />
   );
 }

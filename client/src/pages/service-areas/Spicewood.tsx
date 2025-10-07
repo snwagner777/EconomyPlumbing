@@ -1,4 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
+import spicewoodHero from "@assets/stock_images/plumber_water_heater_57dd8e1a.jpg";
 
 export default function SpicewoodServiceArea() {
   const nearbyCities = [
@@ -16,6 +17,9 @@ export default function SpicewoodServiceArea() {
       canonical="https://economyplumbingservices.com/plumber-in-spicewood--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
+      heroImage={spicewoodHero}
+      heroSubtitle="Quality plumbing services for Spicewood homes and lake properties. Specialized in water heater installations and emergency repairs."
+      cityHighlight="Proudly serving Spicewood and the surrounding Hill Country area. We understand the unique plumbing needs of lakefront properties and rural homes."
     />
   );
 }
