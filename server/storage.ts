@@ -764,28 +764,128 @@ Call (512) 649-2811 or schedule service online.`,
     const products: Product[] = [
       {
         id: randomUUID(),
-        name: "Basic Plumbing Membership",
-        slug: "basic-plumbing-membership",
-        description: "Annual plumbing maintenance and priority service",
-        price: 29900, // $299/year
-        category: "membership",
-        image: null,
+        name: "Bio-Pure Septic & Drain + RV Restore & Maintain 32 oz.",
+        slug: "bio-pure-septic-drain-rv-restore-maintain-32-oz",
+        description: "Proprietary Microbial Bio-Enzyme Power Breaks Down, Digests Waste & Eliminates Odors (24/7) - Wonderful Citrus Ginger Scent - 4 Septic Treatments + 16 Drain Treatments or 1 Septic Shock",
+        price: 2953, // $29.53
+        category: "product",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/bio-pure.png",
         stripeProductId: null,
         stripePriceId: null,
-        features: ["Annual drain inspection", "Priority scheduling", "10% off repairs", "Free estimates"],
+        features: [
+          "Perfect for septic systems or as a drain maintenance product",
+          "Great for frequently clogged drains",
+          "Citrus Ginger scent",
+          "4 Septic Treatments + 16 Drain Treatments or 1 Septic Shock"
+        ],
         active: true
       },
       {
         id: randomUUID(),
-        name: "Premium Plumbing Membership",
-        slug: "premium-plumbing-membership",
-        description: "Complete plumbing care with water heater maintenance",
-        price: 49900, // $499/year
+        name: "Silver VIP Membership - Tank Type",
+        slug: "silver-vip-membership-tank",
+        description: "Includes water heater flush of up to two (2) tank-type water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 1 year, as well as preferred customer emergency scheduling.",
+        price: 13925, // $139.25
         category: "membership",
-        image: null,
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/silver-tank-type.png",
         stripeProductId: null,
         stripePriceId: null,
-        features: ["Everything in Basic", "Water heater flush & inspection", "15% off repairs", "Emergency priority"],
+        features: [
+          "Water heater flush for up to 2 tank-type water heaters",
+          "General plumbing checkup",
+          "Preferred customer pricing for 1 year",
+          "Preferred customer emergency scheduling"
+        ],
+        active: true
+      },
+      {
+        id: randomUUID(),
+        name: "Silver VIP Membership - Tankless",
+        slug: "silver-vip-membership-tankless",
+        description: "Includes water heater flush of up to two (2) tankless water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 1 year, as well as preferred customer emergency scheduling.",
+        price: 21212, // $212.12
+        category: "membership",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/tankless+vip+silver.png",
+        stripeProductId: null,
+        stripePriceId: null,
+        features: [
+          "Water heater flush for up to 2 tankless water heaters",
+          "General plumbing checkup",
+          "Preferred customer pricing for 1 year",
+          "Preferred customer emergency scheduling"
+        ],
+        active: true
+      },
+      {
+        id: randomUUID(),
+        name: "Platinum VIP Membership - Tank Type",
+        slug: "platinum-vip-membership-tank",
+        description: "Includes (3) annual water heater flush of up to two (2) tank-type water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 3 years, as well as preferred customer emergency scheduling.",
+        price: 31977, // $319.77
+        category: "membership",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/platinum-tank-type.png",
+        stripeProductId: null,
+        stripePriceId: null,
+        features: [
+          "3 annual water heater flushes for up to 2 tank-type water heaters",
+          "General plumbing checkup (3 times over 3 years)",
+          "Preferred customer pricing for 3 years",
+          "Preferred customer emergency scheduling"
+        ],
+        active: true
+      },
+      {
+        id: randomUUID(),
+        name: "Platinum VIP Membership - Tankless",
+        slug: "platinum-vip-membership-tankless",
+        description: "Includes (3) annual water heater flush of up to two (2) tankless water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 3 years, as well as preferred customer emergency scheduling.",
+        price: 59980, // $599.80
+        category: "membership",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/platinum-tankless.png",
+        stripeProductId: null,
+        stripePriceId: null,
+        features: [
+          "3 annual water heater flushes for up to 2 tankless water heaters",
+          "General plumbing checkup (3 times over 3 years)",
+          "Preferred customer pricing for 3 years",
+          "Preferred customer emergency scheduling"
+        ],
+        active: true
+      },
+      {
+        id: randomUUID(),
+        name: "Commercial VIP",
+        slug: "commercial-vip",
+        description: "Enroll your business in our commercial VIP program today! Become a VIP customer at your business & receive Priority Service for emergencies, Membership savings on EVERY service item, and Yearly plumbing inspection at no charge.",
+        price: 11900, // $119.00
+        category: "membership",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/commercial+VIP-98834175.png",
+        stripeProductId: null,
+        stripePriceId: null,
+        features: [
+          "Priority service for emergencies",
+          "Membership savings on every service item",
+          "Yearly plumbing inspection at no charge",
+          "No auto-renewal - no obligation"
+        ],
+        active: true
+      },
+      {
+        id: randomUUID(),
+        name: "Rental VIP",
+        slug: "rental-vip",
+        description: "Enroll all your rental properties in our VIP program today! Every rental property in our coverage area will get Priority service in the event of an emergency and Savings on every task completed.",
+        price: 10910, // $109.10
+        category: "membership",
+        image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/commercial+VIP-98834175.png",
+        stripeProductId: null,
+        stripePriceId: null,
+        features: [
+          "Priority service in emergency situations",
+          "Savings on every task completed",
+          "Ideal for property managers",
+          "Covers all rental properties in coverage area"
+        ],
         active: true
       }
     ];

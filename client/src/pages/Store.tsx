@@ -5,18 +5,16 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { useState } from "react";
-import SchedulerModal from "@/components/SchedulerModal";
 import type { Product } from "@shared/schema";
 
 export default function Store() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
   
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ['/api/products'],
   });
 
   const memberships = products?.filter(p => p.category === 'membership') || [];
+  const physicalProducts = products?.filter(p => p.category === 'product') || [];
 
   return (
     <>
@@ -28,7 +26,7 @@ export default function Store() {
       </Helmet>
 
       <div className="min-h-screen flex flex-col">
-        <Header onScheduleClick={() => setSchedulerOpen(true)} />
+        <Header />
         
         <main className="flex-1">
           {/* Hero Section */}
@@ -108,6 +106,71 @@ export default function Store() {
             </div>
           </section>
 
+          {/* Products Section */}
+          {physicalProducts.length > 0 && (
+            <section className="py-16 lg:py-24">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Plumbing Products</h2>
+                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Professional-grade plumbing products for your home
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {physicalProducts.map((product) => (
+                    <Card 
+                      key={product.id} 
+                      className="p-6 flex flex-col"
+                      data-testid={`card-product-${product.slug}`}
+                    >
+                      {product.image && (
+                        <div className="mb-4">
+                          <img 
+                            src={product.image} 
+                            alt={product.name}
+                            className="w-full h-48 object-contain rounded-md"
+                          />
+                        </div>
+                      )}
+                      
+                      <div className="mb-6">
+                        <h3 className="text-2xl font-bold mb-2">{product.name}</h3>
+                        <div className="flex items-baseline gap-2 mb-4">
+                          <span className="text-4xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
+                        </div>
+                        <p className="text-muted-foreground text-sm">{product.description}</p>
+                      </div>
+
+                      {product.features && product.features.length > 0 && (
+                        <div className="mb-6 flex-1">
+                          <ul className="space-y-2">
+                            {product.features.map((feature, idx) => (
+                              <li key={idx} className="flex items-start gap-2">
+                                <Check className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      <Button 
+                        className="w-full bg-primary" 
+                        asChild
+                        data-testid={`button-purchase-${product.slug}`}
+                      >
+                        <a href={`/store/checkout/${product.slug}`}>
+                          Purchase Now
+                        </a>
+                      </Button>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
           {/* Benefits Section */}
           <section className="py-16 lg:py-24 bg-muted/30">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -162,7 +225,7 @@ export default function Store() {
                     <Button 
                       size="lg"
                       className="bg-primary"
-                      onClick={() => setSchedulerOpen(true)}
+                      onClick={() => (window as any).STWidgetManager("ws-open")}
                       data-testid="button-schedule-consultation"
                     >
                       Schedule Consultation
@@ -183,7 +246,6 @@ export default function Store() {
         </main>
 
         <Footer />
-        <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       </div>
     </>
   );
