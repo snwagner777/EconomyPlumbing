@@ -2,6 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/generated_images/Plumber_installing_water_heater_3f7d8a09.png";
 
+declare global {
+  interface Window {
+    STWidgetManager: (action: string) => void;
+  }
+}
+
 interface HeroProps {
   onScheduleClick?: () => void;
 }
@@ -33,7 +39,7 @@ export default function Hero({ onScheduleClick }: HeroProps) {
           <div className="flex flex-wrap gap-4 mb-12">
             <Button 
               size="lg" 
-              onClick={onScheduleClick}
+              onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
               className="bg-primary text-primary-foreground text-lg px-8"
               data-testid="button-schedule-hero"
             >

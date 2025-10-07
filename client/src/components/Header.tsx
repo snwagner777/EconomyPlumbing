@@ -8,6 +8,12 @@ interface HeaderProps {
   onScheduleClick?: () => void;
 }
 
+declare global {
+  interface Window {
+    STWidgetManager: (action: string) => void;
+  }
+}
+
 export default function Header({ onScheduleClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -141,7 +147,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               (512) 649-2811
             </a>
             <Button 
-              onClick={onScheduleClick}
+              onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
               className="bg-primary text-primary-foreground"
               data-testid="button-schedule-header"
             >
@@ -213,7 +219,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <Phone className="w-5 h-5" />
                 (830) 460-3565 <span className="text-sm font-normal">Marble Falls</span>
               </a>
-              <Button onClick={onScheduleClick} className="w-full bg-primary" data-testid="mobile-button-schedule">
+              <Button onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service
               </Button>
             </div>

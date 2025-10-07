@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -6,8 +5,13 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
 import heroImage from "@assets/stock_images/professional_plumber_13d3a463.jpg";
+
+declare global {
+  interface Window {
+    STWidgetManager: (action: string) => void;
+  }
+}
 
 interface NearbyCity {
   name: string;
@@ -44,7 +48,6 @@ export default function ServiceAreaPage({
   area,
   nearbyCities,
 }: ServiceAreaPageProps) {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
   const phone = PHONE_NUMBERS[area];
   const phoneLink = phone.replace(/\D/g, '');
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
@@ -54,8 +57,7 @@ export default function ServiceAreaPage({
       <title>{city} Plumber | Water Heater Repair & Plumbing Services</title>
       <meta name="description" content={metaDescription} />
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
@@ -84,7 +86,7 @@ export default function ServiceAreaPage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => setSchedulerOpen(true)}
+                onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -191,7 +193,7 @@ export default function ServiceAreaPage({
                   <p className="text-foreground font-medium">{city} and surrounding areas</p>
                 </div>
                 <Button 
-                  onClick={() => setSchedulerOpen(true)}
+                  onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
                   className="w-full bg-primary"
                   size="lg"
                   data-testid="button-schedule-contact"

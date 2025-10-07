@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,8 +10,13 @@ import {
 import { Phone, CheckCircle, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
+
+declare global {
+  interface Window {
+    STWidgetManager: (action: string) => void;
+  }
+}
 
 interface FAQ {
   question: string;
@@ -60,8 +64,6 @@ export default function ServicePage({
   faqs,
   relatedServices,
 }: ServicePageProps) {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
-
   return (
     <div className="min-h-screen">
       <title>{title}</title>
@@ -69,8 +71,7 @@ export default function ServicePage({
 
       {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
@@ -93,7 +94,7 @@ export default function ServicePage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => setSchedulerOpen(true)}
+                onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -210,7 +211,7 @@ export default function ServicePage({
 
           <Button 
             size="lg"
-            onClick={() => setSchedulerOpen(true)}
+            onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >
