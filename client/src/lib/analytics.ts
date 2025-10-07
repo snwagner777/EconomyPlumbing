@@ -29,23 +29,34 @@ export const initGA = () => {
     return;
   }
 
-  // Add Google Analytics script to the head
-  const script1 = document.createElement('script');
-  script1.async = true;
-  script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
-  document.head.appendChild(script1);
+  // Defer GA loading using requestIdleCallback for better performance
+  const loadGA = () => {
+    // Add Google Analytics script to the head
+    const script1 = document.createElement('script');
+    script1.async = true;
+    script1.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
+    document.head.appendChild(script1);
 
-  // Initialize gtag
-  const script2 = document.createElement('script');
-  script2.textContent = `
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '${measurementId}');
-  `;
-  document.head.appendChild(script2);
+    // Initialize gtag
+    const script2 = document.createElement('script');
+    script2.textContent = `
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '${measurementId}');
+    `;
+    document.head.appendChild(script2);
 
-  console.log('Google Analytics initialized successfully');
+    console.log('Google Analytics initialized successfully');
+  };
+
+  // Use requestIdleCallback for non-critical GA loading
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadGA);
+  } else {
+    // Fallback for browsers without requestIdleCallback
+    setTimeout(loadGA, 1);
+  }
 };
 
 export const trackPageView = (url: string) => {

@@ -1,4 +1,4 @@
-// ServiceTitan scheduler utility with proper async handling and error reporting
+// ServiceTitan scheduler utility with on-demand loading for performance optimization
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
@@ -7,35 +7,66 @@ declare global {
 
 let isCheckingScheduler = false;
 let schedulerReady = false;
+let scriptLoading = false;
 
-// Wait for STWidgetManager to be available
-const waitForScheduler = (): Promise<boolean> => {
+// Load ServiceTitan script dynamically (only when needed)
+const loadServiceTitanScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
-    // Check if already loaded
-    if (window.STWidgetManager && typeof window.STWidgetManager === 'function') {
+    // Check if script already exists
+    const existingScript = document.querySelector('script[src*="servicetitan.com"]');
+    if (existingScript || window.STWidgetManager) {
       schedulerReady = true;
       resolve(true);
       return;
     }
 
-    // Wait up to 5 seconds for the script to load
+    // Prevent multiple simultaneous loads
+    if (scriptLoading) {
+      // Wait for the existing load to complete
+      const checkInterval = setInterval(() => {
+        if (schedulerReady) {
+          clearInterval(checkInterval);
+          resolve(true);
+        }
+      }, 100);
+      return;
+    }
+
+    scriptLoading = true;
+
+    // Create and inject the ServiceTitan script
+    const script = document.createElement('script');
+    script.innerHTML = `
+      (function(q,w,e,r,t,y,u){q[t]=q[t]||function(){(q[t].q = q[t].q || []).push(arguments)};
+        q[t].l=1*new Date();y=w.createElement(e);u=w.getElementsByTagName(e)[0];y.async=true;
+        y.src=r;u.parentNode.insertBefore(y,u);q[t]('init', '3ce4a586-8427-4716-9ac6-46cb8bf7ac4f');
+      })(window, document, 'script', 'https://static.servicetitan.com/webscheduler/shim.js', 'STWidgetManager');
+    `;
+    document.body.appendChild(script);
+
+    // Wait for it to initialize
     const maxAttempts = 50;
     let attempts = 0;
-
     const checkInterval = setInterval(() => {
       attempts++;
-
       if (window.STWidgetManager && typeof window.STWidgetManager === 'function') {
         schedulerReady = true;
+        scriptLoading = false;
         clearInterval(checkInterval);
         resolve(true);
       } else if (attempts >= maxAttempts) {
+        scriptLoading = false;
         clearInterval(checkInterval);
         console.error('ServiceTitan scheduler failed to load after 5 seconds');
         resolve(false);
       }
     }, 100);
   });
+};
+
+// Wait for STWidgetManager to be available (legacy function, now loads on demand)
+const waitForScheduler = (): Promise<boolean> => {
+  return loadServiceTitanScript();
 };
 
 // Open the scheduler with proper error handling
