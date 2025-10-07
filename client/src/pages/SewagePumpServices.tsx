@@ -70,7 +70,9 @@ export default function SewagePumpServices() {
       ]}
       relatedServices={[
         { title: "Drainage Solutions", path: "/drainage-solutions" },
-        { title: "Water Leak Repair", path: "/water-leak-repair" }
+        { title: "Water Leak Repair", path: "/water-leak-repair" },
+        { title: "Leak Repair Services", path: "/leak-repair" },
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" }
       ]}
     />
   );

@@ -71,7 +71,8 @@ export default function WaterPressureSolutions() {
       relatedServices={[
         { title: "Water Leak Repair", path: "/water-leak-repair" },
         { title: "Faucet Installation", path: "/faucet-installation" },
-        { title: "Water Heater Services", path: "/water-heater-services" }
+        { title: "Water Heater Services", path: "/water-heater-services" },
+        { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
     />
   );

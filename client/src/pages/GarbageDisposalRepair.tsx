@@ -71,7 +71,8 @@ export default function GarbageDisposalRepair() {
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
         { title: "Faucet Installation", path: "/faucet-installation" },
-        { title: "Leak Repair", path: "/leak-repair" }
+        { title: "Leak Repair", path: "/leak-repair" },
+        { title: "Toilet & Faucet Services", path: "/toilet-faucet" }
       ]}
     />
   );

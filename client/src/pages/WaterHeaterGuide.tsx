@@ -71,7 +71,8 @@ export default function WaterHeaterGuide() {
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
-        { title: "Gas Line Services", path: "/gas-services" }
+        { title: "Gas Line Services", path: "/gas-services" },
+        { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
     />
   );

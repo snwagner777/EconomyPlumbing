@@ -71,7 +71,8 @@ export default function DrainCleaning() {
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Leak Repair", path: "/leak-repair" },
-        { title: "Commercial Plumbing", path: "/commercial-plumbing" }
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" },
+        { title: "Hydro Jetting", path: "/hydro-jetting-services" }
       ]}
     />
   );

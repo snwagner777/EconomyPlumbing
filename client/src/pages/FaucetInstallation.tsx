@@ -71,7 +71,8 @@ export default function FaucetInstallation() {
       relatedServices={[
         { title: "Toilet & Faucet", path: "/toilet-faucet" },
         { title: "Leak Repair", path: "/leak-repair" },
-        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" }
+        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+        { title: "Garbage Disposal Repair", path: "/garbage-disposal-repair" }
       ]}
     />
   );

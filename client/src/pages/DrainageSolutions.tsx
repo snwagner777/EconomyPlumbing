@@ -71,7 +71,8 @@ export default function DrainageSolutions() {
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
         { title: "Sump Pump Services", path: "/sewage-pump-services" },
-        { title: "Water Leak Repair", path: "/water-leak-repair" }
+        { title: "Water Leak Repair", path: "/water-leak-repair" },
+        { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
     />
   );

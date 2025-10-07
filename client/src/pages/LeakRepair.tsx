@@ -71,7 +71,8 @@ export default function LeakRepair() {
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Drain Cleaning", path: "/drain-cleaning" },
-        { title: "Toilet & Faucet Services", path: "/toilet-faucet" }
+        { title: "Toilet & Faucet Services", path: "/toilet-faucet" },
+        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" }
       ]}
     />
   );

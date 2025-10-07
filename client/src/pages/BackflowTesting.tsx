@@ -71,7 +71,8 @@ export default function BackflowTesting() {
       relatedServices={[
         { title: "Backflow Services", path: "/backflow" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
-        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" }
+        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+        { title: "Permit Resolution", path: "/permit-resolution-services" }
       ]}
     />
   );

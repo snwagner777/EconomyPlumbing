@@ -71,7 +71,8 @@ export default function CommercialPlumbing() {
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
         { title: "Backflow Services", path: "/backflow" },
-        { title: "Gas Services", path: "/gas-services" }
+        { title: "Gas Services", path: "/gas-services" },
+        { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
     />
   );

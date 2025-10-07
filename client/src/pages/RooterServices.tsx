@@ -70,7 +70,9 @@ export default function RooterServices() {
       ]}
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
-        { title: "Hydro Jetting", path: "/hydro-jetting-services" }
+        { title: "Hydro Jetting", path: "/hydro-jetting-services" },
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" },
+        { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
     />
   );

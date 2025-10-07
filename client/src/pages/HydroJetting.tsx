@@ -71,7 +71,8 @@ export default function HydroJetting() {
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
         { title: "Rooter Services", path: "/rooter-services" },
-        { title: "Commercial Plumbing", path: "/commercial-plumbing" }
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" },
+        { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
     />
   );
