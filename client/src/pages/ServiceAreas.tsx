@@ -258,7 +258,7 @@ export default function ServiceAreas() {
                     data-testid={`button-learn-more-${citySlug}`}
                   >
                     <Link href={city.path}>
-                      Learn More
+                      Plumbers in {city.name}
                     </Link>
                   </Button>
                 </Card>

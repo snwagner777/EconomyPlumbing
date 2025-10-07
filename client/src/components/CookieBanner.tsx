@@ -37,7 +37,7 @@ export default function CookieBanner() {
                 className="underline hover:text-primary"
                 data-testid="link-privacy"
               >
-                Learn more
+                View our privacy policy
               </a>
             </p>
           </div>

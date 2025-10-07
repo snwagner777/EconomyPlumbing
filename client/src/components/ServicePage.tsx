@@ -245,7 +245,7 @@ export default function ServicePage({
                 <Card className="p-6 hover-elevate cursor-pointer h-full" data-testid={`link-related-${service.path.slice(1)}`}>
                   <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
                   <div className="flex items-center text-primary mt-4">
-                    <span className="text-sm">Learn More</span>
+                    <span className="text-sm">Learn more about {service.title}</span>
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </div>
                 </Card>

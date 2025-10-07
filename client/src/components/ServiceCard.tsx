@@ -44,7 +44,7 @@ export default function ServiceCard({ icon: Icon, title, description, features, 
         className="inline-flex items-center gap-2 text-primary font-medium hover-elevate px-2 py-1 rounded-md"
         data-testid={`link-learn-more-${link.slice(1)}`}
       >
-        Learn More
+        Learn more about {title}
         <ArrowRight className="w-4 h-4" />
       </Link>
     </Card>
