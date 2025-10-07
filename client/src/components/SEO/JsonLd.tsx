@@ -19,7 +19,7 @@ export const localBusinessSchema = {
   "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
   "url": "https://economyplumbingservices.com",
   "telephone": [
-    "+15126492811",
+    "+15123689159",
     "+18304603565"
   ],
   "priceRange": "$$",
@@ -149,7 +149,7 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
     "provider": {
       "@type": "Plumber",
       "name": "Economy Plumbing Services",
-      "telephone": ["+15126492811", "+18304603565"],
+      "telephone": ["+15123689159", "+18304603565"],
       "url": "https://economyplumbingservices.com"
     },
     "areaServed": {

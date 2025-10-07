@@ -40,8 +40,8 @@ export default function PflugervilleServiceArea() {
     { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
   ];
 
-  const phone = "(512) 649-2811";
-  const phoneLink = "5126492811";
+  const phone = "(512) 368-9159";
+  const phoneLink = "5123689159";
   const cityName = serviceArea?.cityName || "Pflugerville";
 
   const faqs = serviceArea?.uniqueFaqs 
@@ -58,7 +58,7 @@ export default function PflugervilleServiceArea() {
       "addressRegion": "TX",
       "addressCountry": "US"
     },
-    "telephone": "+15126492811",
+    "telephone": "+15123689159",
     "areaServed": {
       "@type": "City",
       "name": cityName,

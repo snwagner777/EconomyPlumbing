@@ -36,7 +36,7 @@ export default function RefundReturns() {
           </ul>
 
           <h3>How to Cancel</h3>
-          <p>To cancel your VIP membership, contact us by phone at (512) 649-2811 or email. Cancellation requests must be submitted in writing.</p>
+          <p>To cancel your VIP membership, contact us by phone at (512) 368-9159 or email. Cancellation requests must be submitted in writing.</p>
 
           <h2>Product Returns</h2>
           <h3>Return Eligibility</h3>
@@ -59,7 +59,7 @@ export default function RefundReturns() {
           <h3>Return Process</h3>
           <p>To initiate a return:</p>
           <ol>
-            <li>Contact us at (512) 649-2811 to obtain a return authorization</li>
+            <li>Contact us at (512) 368-9159 to obtain a return authorization</li>
             <li>Pack the item securely in its original packaging</li>
             <li>Include your receipt and return authorization number</li>
             <li>Ship the item to our address (return shipping costs are the customer's responsibility unless the item is defective)</li>
@@ -103,7 +103,7 @@ export default function RefundReturns() {
           <h2>Contact Information</h2>
           <p>For questions about refunds, returns, or our satisfaction guarantee, please contact us:</p>
           <ul>
-            <li><strong>Austin Area:</strong> (512) 649-2811</li>
+            <li><strong>Austin Area:</strong> (512) 368-9159</li>
             <li><strong>Marble Falls Area:</strong> (830) 460-3565</li>
             <li><strong>Address:</strong> 701 Tillery St #12, Austin, TX 78702</li>
           </ul>

@@ -28,7 +28,7 @@ interface ServiceAreaPageProps {
 }
 
 const PHONE_NUMBERS = {
-  austin: "(512) 649-2811",
+  austin: "(512) 368-9159",
   "marble-falls": "(830) 460-3565"
 };
 

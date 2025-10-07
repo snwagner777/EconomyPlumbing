@@ -11,7 +11,7 @@ export default function Contact() {
     <div className="min-h-screen">
       <Helmet>
         <title>Contact Us | Economy Plumbing Services Austin & Marble Falls TX</title>
-        <meta name="description" content="Contact Economy Plumbing Services. Call (512) 649-2811 for Austin area or (830) 460-3565 for Marble Falls. Schedule service online or visit our offices." />
+        <meta name="description" content="Contact Economy Plumbing Services. Call (512) 368-9159 for Austin area or (830) 460-3565 for Marble Falls. Schedule service online or visit our offices." />
         <meta property="og:title" content="Contact Us | Economy Plumbing" />
         <meta property="og:description" content="Get in touch with Economy Plumbing Services for all your plumbing needs in Central Texas." />
       </Helmet>
@@ -41,7 +41,7 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Phone</p>
-                        <a href="tel:5126492811" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(512) 649-2811</a>
+                        <a href="tel:5123689159" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(512) 368-9159</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -102,7 +102,7 @@ export default function Contact() {
                     variant="outline"
                     data-testid="button-emergency"
                   >
-                    <a href="tel:5126492811">24/7 Emergency Service</a>
+                    <a href="tel:5123689159">24/7 Emergency Service</a>
                   </Button>
                 </div>
               </div>

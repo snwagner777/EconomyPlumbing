@@ -253,7 +253,7 @@ export default function Home() {
         </title>
         <meta
           name="description"
-          content="Professional plumbing services in Austin & Marble Falls, TX. Water heater repair & replacement, drain cleaning, leak repair & emergency plumbing. Licensed plumbers. Call (512) 649-2811."
+          content="Professional plumbing services in Austin & Marble Falls, TX. Water heater repair & replacement, drain cleaning, leak repair & emergency plumbing. Licensed plumbers. Call (512) 368-9159."
         />
         <meta
           property="og:title"
@@ -376,7 +376,7 @@ export default function Home() {
                   className="bg-primary"
                   data-testid="button-call-austin-cta"
                 >
-                  <a href="tel:5126492811">Call Austin: (512) 649-2811</a>
+                  <a href="tel:5123689159">Call Austin: (512) 368-9159</a>
                 </Button>
                 <Button
                   asChild
@@ -408,7 +408,7 @@ export default function Home() {
               <ServiceAreaCard
                 title="Austin Metro Area"
                 address="701 Tillery St #12, Austin, TX 78702"
-                phone="(512) 649-2811"
+                phone="(512) 368-9159"
                 cities={[
                   "Austin",
                   "Cedar Park",

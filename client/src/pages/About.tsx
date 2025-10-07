@@ -228,8 +228,8 @@ export default function About() {
                   <div className="mt-8 pt-8 border-t border-border">
                     <p className="text-sm text-muted-foreground mb-2">Call us today for a free estimate</p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-lg font-semibold">
-                      <a href="tel:5126492811" className="hover:text-primary" data-testid="link-phone-austin">
-                        Austin: (512) 649-2811
+                      <a href="tel:5123689159" className="hover:text-primary" data-testid="link-phone-austin">
+                        Austin: (512) 368-9159
                       </a>
                       <span className="hidden sm:inline text-muted-foreground">|</span>
                       <a href="tel:8304603565" className="hover:text-primary" data-testid="link-phone-marble-falls">

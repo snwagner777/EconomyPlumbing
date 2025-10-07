@@ -44,8 +44,8 @@ export default function AustinServiceArea() {
     { name: "Liberty Hill", path: "/plumber-liberty-hill" },
   ];
 
-  const phone = "(512) 649-2811";
-  const phoneLink = "5126492811";
+  const phone = "(512) 368-9159";
+  const phoneLink = "5123689159";
   const cityName = serviceArea?.cityName || "Austin";
 
   const faqs = serviceArea?.uniqueFaqs 
@@ -62,7 +62,7 @@ export default function AustinServiceArea() {
       "addressRegion": "TX",
       "addressCountry": "US"
     },
-    "telephone": "+15126492811",
+    "telephone": "+15123689159",
     "areaServed": {
       "@type": "City",
       "name": cityName,

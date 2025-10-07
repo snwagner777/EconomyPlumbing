@@ -257,12 +257,12 @@ export default function Header({ onScheduleClick }: HeaderProps) {
 
           <div className="hidden lg:flex items-center gap-4">
             <a 
-              href="tel:5126492811" 
+              href="tel:5123689159" 
               className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
               data-testid="link-phone-austin"
             >
               <Phone className="w-5 h-5" />
-              (512) 649-2811
+              (512) 368-9159
             </a>
             <Button 
               onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
@@ -352,12 +352,12 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             </div>
             <div className="pt-4 space-y-3">
               <a 
-                href="tel:5126492811" 
+                href="tel:5123689159" 
                 className="flex items-center gap-2 text-primary font-poppins font-bold text-lg"
                 data-testid="mobile-phone-austin"
               >
                 <Phone className="w-5 h-5" />
-                (512) 649-2811 <span className="text-sm font-normal">Austin</span>
+                (512) 368-9159 <span className="text-sm font-normal">Austin</span>
               </a>
               <a 
                 href="tel:8304603565" 

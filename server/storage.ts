@@ -119,7 +119,7 @@ Our team is available for both emergency drain cleaning and scheduled maintenanc
 
 Don't let drain problems escalate into costly repairs. Contact Economy Plumbing Services today for professional drain cleaning, restoration, and maintenance services in Austin and Marble Falls.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Learn the three essential steps to professional drain restoration and how to prevent future plumbing problems.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-05-20"),
@@ -208,7 +208,7 @@ Our backflow services include:
 
 Don't risk your water quality or legal compliance. Contact Economy Plumbing Services to schedule professional backflow testing and ensure your water system is safe and compliant.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Understanding the importance of professional backflow testing and why it's essential for protecting your water supply.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-05-15"),
@@ -271,7 +271,7 @@ Six months after the initial service call, Clara's kitchen sink continues to dra
 
 Like Clara, you can trust Economy Plumbing Services for reliable, professional plumbing solutions in Austin and surrounding areas. We're committed to providing transparent pricing, quality workmanship, and exceptional customer service.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Read how Economy Plumbing Services helped Clara solve her kitchen drain problem with professional service and expert care.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-06-03"),
@@ -314,7 +314,7 @@ Fall is an ideal time to schedule professional plumbing maintenance. A qualified
 
 Economy Plumbing Services is here to help you prepare your plumbing system for fall and winter. Our experienced technicians can perform comprehensive inspections and maintenance to keep your system running smoothly.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Prepare your plumbing for fall and winter with these essential maintenance tips from Economy Plumbing Services.",
         author: "Economy Plumbing",
         publishDate: new Date("2024-10-15"),
@@ -412,7 +412,7 @@ Contact a professional plumber immediately if you notice:
 
 The small investment in replacing your rubber washing machine hoses with stainless steel alternatives can save you thousands of dollars in water damage. Economy Plumbing Services can assess your current setup and provide professional installation of high-quality, durable hoses.
 
-Call (512) 649-2811 or schedule inspection online.`,
+Call (512) 368-9159 or schedule inspection online.`,
         excerpt: "Learn why rubber washing machine hoses are a major risk and how to prevent costly water damage in your home.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-04-10"),
@@ -526,7 +526,7 @@ While some maintenance tasks can be performed by homeowners, professional servic
 
 Don't wait for problems to develop. Contact Economy Plumbing Services to schedule comprehensive plumbing maintenance and protect your Austin home from costly repairs.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Discover why regular plumbing maintenance is essential for preventing costly repairs and extending the life of your plumbing system.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-03-25"),
@@ -642,7 +642,7 @@ The most effective approach to commercial drainage management is implementing a 
 
 Economy Plumbing Services provides professional hydro jetting solutions for commercial properties throughout Austin and Central Texas. Our experienced team uses state-of-the-art equipment to solve your drainage challenges efficiently and effectively.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Learn how hydro jetting provides powerful, environmentally safe drainage solutions for commercial properties.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-02-18"),
@@ -746,7 +746,7 @@ Our Groupon deals are available to customers throughout the Austin metropolitan 
 
 Don't miss out on these limited-time Groupon specials! Visit Groupon today to find our current deals, or contact Economy Plumbing Services directly to learn more about our services and current promotions.
 
-Call (512) 649-2811 or schedule service online.`,
+Call (512) 368-9159 or schedule service online.`,
         excerpt: "Save big on professional plumbing services with our limited-time Groupon specials. Quality service at affordable prices.",
         author: "Economy Plumbing",
         publishDate: new Date("2025-01-12"),

@@ -12,7 +12,7 @@ export default function LibertyHillServiceArea() {
     <ServiceAreaPage
       city="Liberty Hill"
       state="TX"
-      metaDescription="Quality plumbing services in Liberty Hill, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 649-2811 for service."
+      metaDescription="Quality plumbing services in Liberty Hill, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 368-9159 for service."
       area="austin"
       nearbyCities={nearbyCities}
     />

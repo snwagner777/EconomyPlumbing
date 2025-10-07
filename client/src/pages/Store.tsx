@@ -256,7 +256,7 @@ export default function Store() {
                       asChild
                       data-testid="button-call-us"
                     >
-                      <a href="tel:5126492811">Call (512) 649-2811</a>
+                      <a href="tel:5123689159">Call (512) 368-9159</a>
                     </Button>
                   </div>
                 </div>

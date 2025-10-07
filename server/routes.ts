@@ -110,7 +110,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!stripeSecretKey) {
         return res.status(503).json({ 
-          message: "Payment processing is not configured. Please contact us directly at (512) 649-2811." 
+          message: "Payment processing is not configured. Please contact us directly at (512) 368-9159." 
         });
       }
 

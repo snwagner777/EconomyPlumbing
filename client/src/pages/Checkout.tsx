@@ -125,7 +125,7 @@ export default function Checkout() {
                 Our online store is currently being set up. Please contact us directly to purchase memberships.
               </p>
               <Button asChild className="w-full bg-primary" data-testid="button-contact-us">
-                <a href="tel:5126492811">Call (512) 649-2811</a>
+                <a href="tel:5123689159">Call (512) 368-9159</a>
               </Button>
             </Card>
           </main>
@@ -243,8 +243,8 @@ export default function Checkout() {
               <p>Secure payment processing powered by Stripe</p>
               <p className="mt-2">
                 Questions? Call us at{" "}
-                <a href="tel:5126492811" className="text-primary hover:underline">
-                  (512) 649-2811
+                <a href="tel:5123689159" className="text-primary hover:underline">
+                  (512) 368-9159
                 </a>
               </p>
             </div>

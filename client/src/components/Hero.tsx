@@ -52,9 +52,9 @@ export default function Hero({ onScheduleClick }: HeroProps) {
               asChild
               data-testid="button-call-hero"
             >
-              <a href="tel:5126492811" className="flex items-center gap-2">
+              <a href="tel:5123689159" className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                (512) 649-2811
+                (512) 368-9159
               </a>
             </Button>
           </div>

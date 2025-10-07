@@ -6,7 +6,7 @@ export default function ServiceAreaCardExample() {
       <ServiceAreaCard
         title="Austin Metro Area"
         address="701 Tillery St #12, Austin, TX 78702"
-        phone="(512) 649-2811"
+        phone="(512) 368-9159"
         cities={[
           "Austin",
           "Cedar Park",

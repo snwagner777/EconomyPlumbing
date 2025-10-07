@@ -137,11 +137,11 @@ export default function BlogPost() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <a
-                  href="tel:5126492811"
+                  href="tel:5123689159"
                   className="text-2xl font-bold hover:underline"
                   data-testid="link-phone-austin"
                 >
-                  (512) 649-2811
+                  (512) 368-9159
                 </a>
                 <span className="text-white/80">Austin</span>
               </div>

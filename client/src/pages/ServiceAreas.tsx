@@ -12,8 +12,8 @@ import { Helmet } from "react-helmet";
 const cities = [
   {
     name: "Austin",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Serving all Austin neighborhoods including Downtown, South Austin, East Austin, and West Austin.",
     neighborhoods: ["Downtown Austin", "South Congress (SoCo)", "East Austin", "Hyde Park", "Mueller", "Zilker", "Tarrytown", "Clarksville"],
     zipCodes: "78701-78799",
@@ -21,8 +21,8 @@ const cities = [
   },
   {
     name: "Cedar Park",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Complete plumbing services for Cedar Park residents and businesses.",
     neighborhoods: ["Buttercup Creek", "Cedar Park Center", "Lakeline", "Whitestone", "Vista Oaks", "Cypress Creek"],
     zipCodes: "78613, 78630",
@@ -30,8 +30,8 @@ const cities = [
   },
   {
     name: "Leander",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Trusted plumbing services throughout Leander and surrounding areas.",
     neighborhoods: ["Crystal Falls", "Travisso", "Mason Hills", "Northline", "Summerlyn", "Lakeline Ranch"],
     zipCodes: "78641, 78645",
@@ -39,8 +39,8 @@ const cities = [
   },
   {
     name: "Round Rock",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Professional plumbing services for all Round Rock communities.",
     neighborhoods: ["Teravista", "Forest Creek", "Stone Canyon", "Walsh Ranch", "Brushy Creek", "Cat Hollow"],
     zipCodes: "78664, 78665, 78681",
@@ -48,8 +48,8 @@ const cities = [
   },
   {
     name: "Georgetown",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Serving Georgetown's historic downtown and modern developments.",
     neighborhoods: ["Sun City", "Wolf Ranch", "Berry Creek", "Downtown Georgetown", "Georgetown Village", "Westlake"],
     zipCodes: "78626, 78628, 78633",
@@ -57,8 +57,8 @@ const cities = [
   },
   {
     name: "Pflugerville",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Complete plumbing solutions for Pflugerville homes and businesses.",
     neighborhoods: ["Falcon Pointe", "Blackhawk", "Springbrook Centre", "Wilshire", "Park at Blackhawk", "Cambridge Heights"],
     zipCodes: "78660",
@@ -66,8 +66,8 @@ const cities = [
   },
   {
     name: "Liberty Hill",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Reliable plumbing services for Liberty Hill and surrounding rural areas.",
     neighborhoods: ["Rancho Sienna", "Sweetwater", "Liberty Hill ISD Area", "Rural Liberty Hill", "Heritage Oaks", "Old Town"],
     zipCodes: "78642",
@@ -75,8 +75,8 @@ const cities = [
   },
   {
     name: "Buda",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Professional plumbing services for Buda's growing community.",
     neighborhoods: ["Garlic Creek", "Bradshaw Crossing", "Buda Mill & Grain", "Elm Grove", "Sunfield", "Green Meadows"],
     zipCodes: "78610",
@@ -84,8 +84,8 @@ const cities = [
   },
   {
     name: "Kyle",
-    phone: "(512) 649-2811",
-    phoneLink: "5126492811",
+    phone: "(512) 368-9159",
+    phoneLink: "5123689159",
     description: "Trusted plumbing solutions for Kyle residents and businesses.",
     neighborhoods: ["Plum Creek", "Hometown Kyle", "Waterleaf", "Kyle Crossing", "Meridian", "The Greens"],
     zipCodes: "78640",
@@ -166,9 +166,9 @@ export default function ServiceAreas() {
                 variant="outline"
                 data-testid="button-call-hero"
               >
-                <a href="tel:5126492811" className="flex items-center gap-2">
+                <a href="tel:5123689159" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
-                  Call (512) 649-2811
+                  Call (512) 368-9159
                 </a>
               </Button>
             </div>
@@ -300,9 +300,9 @@ export default function ServiceAreas() {
                 size="lg"
                 data-testid="button-call-austin-emergency"
               >
-                <a href="tel:5126492811" className="flex items-center gap-2">
+                <a href="tel:5123689159" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
-                  Austin Area: (512) 649-2811
+                  Austin Area: (512) 368-9159
                 </a>
               </Button>
               <Button 
@@ -423,11 +423,11 @@ export default function ServiceAreas() {
                   <h3 className="text-2xl font-bold mb-2">Austin Area Office</h3>
                   <p className="opacity-90 mb-4">701 Tillery St #12, Austin, TX 78702</p>
                   <a 
-                    href="tel:5126492811"
+                    href="tel:5123689159"
                     className="text-2xl font-poppins font-bold hover-elevate inline-block px-3 py-2 rounded-md"
                     data-testid="link-phone-office-austin"
                   >
-                    (512) 649-2811
+                    (512) 368-9159
                   </a>
                 </div>
               </div>
@@ -468,7 +468,7 @@ export default function ServiceAreas() {
                 className="border-white text-white hover:bg-white/10"
                 data-testid="button-call-footer"
               >
-                <a href="tel:5126492811" className="flex items-center gap-2">
+                <a href="tel:5123689159" className="flex items-center gap-2">
                   Call Now
                 </a>
               </Button>

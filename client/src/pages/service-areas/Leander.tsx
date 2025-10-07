@@ -41,8 +41,8 @@ export default function LeanderServiceArea() {
     { name: "Austin", path: "/plumber-austin" },
   ];
 
-  const phone = "(512) 649-2811";
-  const phoneLink = "5126492811";
+  const phone = "(512) 368-9159";
+  const phoneLink = "5123689159";
   const cityName = serviceArea?.cityName || "Leander";
 
   const faqs = serviceArea?.uniqueFaqs 
@@ -59,7 +59,7 @@ export default function LeanderServiceArea() {
       "addressRegion": "TX",
       "addressCountry": "US"
     },
-    "telephone": "+15126492811",
+    "telephone": "+15123689159",
     "areaServed": {
       "@type": "City",
       "name": cityName,

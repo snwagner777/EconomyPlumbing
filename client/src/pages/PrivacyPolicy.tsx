@@ -99,7 +99,7 @@ export default function PrivacyPolicy() {
           <h2>Contact Us</h2>
           <p>If you have questions about this Privacy Policy, please contact us:</p>
           <ul>
-            <li>By phone: (512) 649-2811 (Austin) or (830) 460-3565 (Marble Falls)</li>
+            <li>By phone: (512) 368-9159 (Austin) or (830) 460-3565 (Marble Falls)</li>
             <li>By mail: 701 Tillery St #12, Austin, TX 78702</li>
           </ul>
         </div>
