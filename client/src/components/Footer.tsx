@@ -22,7 +22,7 @@ export default function Footer() {
             </p>
             <div className="flex gap-3">
               <a 
-                href="https://facebook.com/econoplumbing" 
+                href="https://www.facebook.com/economyplumbingservices" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-primary transition-colors"
@@ -32,7 +32,7 @@ export default function Footer() {
                 <Facebook className="w-6 h-6" />
               </a>
               <a 
-                href="https://instagram.com/plumbersthatcare_atx" 
+                href="https://www.instagram.com/economyplumbing" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-primary transition-colors"
@@ -42,7 +42,7 @@ export default function Footer() {
                 <Instagram className="w-6 h-6" />
               </a>
               <a 
-                href="https://yelp.com/biz/economy-plumbing-services-austin-3" 
+                href="https://www.yelp.com/biz/economy-plumbing-services" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-primary transition-colors"
@@ -52,7 +52,7 @@ export default function Footer() {
                 <SiYelp className="w-6 h-6" />
               </a>
               <a 
-                href="https://nextdoor.com/page/economy-plumbing-services-austin-tx-1" 
+                href="https://nextdoor.com/pages/economy-plumbing-services" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-primary transition-colors"
