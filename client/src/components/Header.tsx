@@ -72,7 +72,10 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             <img 
               src={logoImage} 
               alt="Economy Plumbing Services logo" 
+              width="85"
+              height="48"
               className="h-12 w-auto"
+              loading="lazy"
               data-testid="logo-image"
             />
           </Link>

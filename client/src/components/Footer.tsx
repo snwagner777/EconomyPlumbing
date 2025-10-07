@@ -12,7 +12,10 @@ export default function Footer() {
             <img 
               src={logoImage} 
               alt="Economy Plumbing Services" 
+              width="85"
+              height="48"
               className="h-12 w-auto mb-4 rounded-lg"
+              loading="lazy"
             />
             <p className="text-sm mb-4">
               Central Texas' Best Little Plumbing Company Since 2012
