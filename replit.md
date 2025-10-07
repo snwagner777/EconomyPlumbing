@@ -43,12 +43,22 @@ Preferred communication style: Simple, everyday language.
   
 - **Performance Optimizations:**
   - Hero images optimized with width="1920" height="1080" attributes for CLS prevention
-  - Removed fetchPriority attribute to fix React compatibility warnings (browser naturally prioritizes hero images)
+  - Added `fetchpriority="high"` to all hero images for LCP optimization (PageSpeed recommendation)
+  - Created TypeScript JSX namespace augmentation (`client/src/types/jsx.d.ts`) for proper fetchpriority support
   - Logo images have explicit width="85" height="48" dimensions to prevent layout shift
   - Lazy loading enabled on footer logo and all below-the-fold images
   - Header logo loads eagerly to prevent visual flash
   - Preconnect links updated with crossorigin attributes for fonts and ServiceTitan
   - Google Fonts configured with font-display: swap for better text rendering
+  
+- **Image Optimization (October 2025):**
+  - Converted all hero images from PNG/JPG to WebP format using Sharp library
+  - Homepage hero: 101KB JPG → 27KB WebP (73% reduction)
+  - Backflow image: 100KB JPG → 14KB WebP (86% reduction)
+  - Service page images: 7.4MB PNG → 104KB WebP (98.6% reduction)
+  - All optimized images stored in `attached_assets/optimized/` directory
+  - Logo: PNG → WebP conversion completed
+  - Total bandwidth savings: ~7.4MB across all hero images
   
 - **Meta Description Optimization:**
   - All 28 meta descriptions optimized to strict 150-160 character range
