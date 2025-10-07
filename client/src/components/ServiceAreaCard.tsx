@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { MapPin, Phone } from "lucide-react";
 
 interface ServiceAreaCardProps {
@@ -16,11 +17,15 @@ export default function ServiceAreaCard({ title, address, phone, cities }: Servi
         <MapPin className="w-5 h-5 text-primary mt-1" />
         <p className="text-foreground">{address}</p>
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="flex flex-wrap gap-2 mb-6">
         {cities.map((city) => (
-          <div key={city} className="text-sm text-muted-foreground">
+          <Badge 
+            key={city} 
+            variant="secondary" 
+            className="text-sm px-3 py-1 rounded-full"
+          >
             {city}
-          </div>
+          </Badge>
         ))}
       </div>
       <a 
