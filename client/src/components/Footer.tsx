@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { Facebook } from "lucide-react";
 import logoImage from "@assets/Economy Plumbing Services logo_1759801055079.jpg";
 
 export default function Footer() {
@@ -15,9 +16,21 @@ export default function Footer() {
             <p className="text-sm mb-4">
               Central Texas' Best Little Plumbing Company Since 2012
             </p>
-            <p className="text-sm">
+            <p className="text-sm mb-4">
               Texas Master Plumber License #M-41147
             </p>
+            <div className="flex gap-3">
+              <a 
+                href="https://facebook.com/econoplumbing" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors"
+                aria-label="Visit our Facebook page"
+                data-testid="link-facebook"
+              >
+                <Facebook className="w-6 h-6" />
+              </a>
+            </div>
           </div>
 
           <div>
