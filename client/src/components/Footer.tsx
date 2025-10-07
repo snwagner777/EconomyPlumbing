@@ -52,7 +52,7 @@ export default function Footer() {
                 <SiYelp className="w-6 h-6" />
               </a>
               <a 
-                href="https://nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/" 
+                href="https://nextdoor.com/page/economy-plumbing-services-austin-tx-1" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-300 hover:text-primary transition-colors"
