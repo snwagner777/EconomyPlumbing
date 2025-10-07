@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import gasLeakImage from "@assets/generated_images/Emergency_plumbing_service_arrival_3f78c39e.png";
+import gasLeakImage from "@assets/stock_images/gas_leak_detector_me_55d3f048.jpg";
 
 export default function GasLeakDetection() {
   return (

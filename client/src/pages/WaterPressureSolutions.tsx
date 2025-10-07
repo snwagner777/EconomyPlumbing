@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import pressureImage from "@assets/generated_images/Tankless_water_heater_closeup_7279af49.png";
+import pressureImage from "@assets/stock_images/water_pressure_gauge_ba1aafde.jpg";
 
 export default function WaterPressureSolutions() {
   return (

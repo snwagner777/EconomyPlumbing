@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import pumpImage from "@assets/generated_images/Tankless_water_heater_closeup_7279af49.png";
+import pumpImage from "@assets/stock_images/sewage_pump_sump_pum_ab93819a.jpg";
 
 export default function SewagePumpServices() {
   return (

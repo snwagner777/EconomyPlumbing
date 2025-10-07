@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import drainageImage from "@assets/generated_images/Plumber_installing_water_heater_3f7d8a09.png";
+import drainageImage from "@assets/stock_images/outdoor_drainage_sys_77a8cb62.jpg";
 
 export default function DrainageSolutions() {
   return (

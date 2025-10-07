@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import gasImage from "@assets/generated_images/Commercial_plumbing_services_bd7b6306.png";
+import gasImage from "@assets/stock_images/gas_line_installatio_9713d531.jpg";
 
 export default function GasServices() {
   return (

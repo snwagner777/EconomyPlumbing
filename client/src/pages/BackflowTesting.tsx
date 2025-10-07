@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import backflowImage from "@assets/generated_images/Commercial_plumbing_services_bd7b6306.png";
+import backflowImage from "@assets/stock_images/backflow_preventer_p_c5a67665.jpg";
 
 export default function BackflowTesting() {
   return (
