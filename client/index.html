@@ -14,11 +14,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     
-    <!-- Preload hero image for LCP optimization -->
-    <link rel="preload" as="image" href="/assets/optimized/modern_luxury_bathro_0f267931.webp" fetchpriority="high">
+    <!-- Preload critical fonts for LCP -->
+    <link rel="preload" as="font" type="font/woff2" href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZJhiI2B.woff2" crossorigin>
     
-    <!-- Non-blocking font load with media print trick - becomes render-blocking after load -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" media="print" onload="this.media='all';this.onload=null;">
+    <!-- Async load fonts -->
+    <link rel="preload" as="style" onload="this.onload=null;this.rel='stylesheet'" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap"></noscript>
     
     <title>Economy Plumbing Services | Austin & Marble Falls Plumber</title>
