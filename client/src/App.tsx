@@ -31,6 +31,9 @@ import BertramServiceArea from "@/pages/service-areas/Bertram";
 import SpicewoodServiceArea from "@/pages/service-areas/Spicewood";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
+import About from "@/pages/About";
+import Store from "@/pages/Store";
+import Checkout from "@/pages/Checkout";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -64,6 +67,9 @@ function Router() {
       <Route path="/service-areas/spicewood" component={SpicewoodServiceArea} />
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/blog" component={Blog} />
+      <Route path="/about" component={About} />
+      <Route path="/store/checkout/:slug" component={Checkout} />
+      <Route path="/store" component={Store} />
       <Route component={NotFound} />
     </Switch>
   );

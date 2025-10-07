@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Sitemaps
+Sitemap: https://economyplumbingservices.com/sitemap.xml
+
+# Disallow admin or internal pages if any exist
+# Disallow: /admin

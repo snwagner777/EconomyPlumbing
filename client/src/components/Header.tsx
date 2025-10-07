@@ -98,6 +98,13 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             >
               Store
             </Link>
+            <Link 
+              href="/about" 
+              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+              data-testid="link-about"
+            >
+              About
+            </Link>
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
@@ -158,6 +165,9 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             </Link>
             <Link href="/store" className="block py-2 text-sm font-medium" data-testid="mobile-link-store">
               Store
+            </Link>
+            <Link href="/about" className="block py-2 text-sm font-medium" data-testid="mobile-link-about">
+              About
             </Link>
             <div className="pt-4 space-y-3">
               <a 

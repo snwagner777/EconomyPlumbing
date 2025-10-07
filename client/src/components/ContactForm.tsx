@@ -5,8 +5,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Phone, Mail, Clock } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ContactForm() {
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -17,9 +21,38 @@ export default function ContactForm() {
     message: ""
   });
 
+  const contactMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      const res = await apiRequest("POST", "/api/contact", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success!",
+        description: "Thank you for contacting us! We'll get back to you soon.",
+      });
+      setFormData({
+        name: "",
+        phone: "",
+        email: "",
+        service: "",
+        location: "",
+        urgency: "",
+        message: ""
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit form. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
+    contactMutation.mutate(formData);
   };
 
   return (
@@ -135,8 +168,14 @@ export default function ContactForm() {
                 </p>
               </div>
 
-              <Button type="submit" className="w-full bg-primary" size="lg" data-testid="button-submit-estimate">
-                Get Free Estimate
+              <Button 
+                type="submit" 
+                className="w-full bg-primary" 
+                size="lg" 
+                disabled={contactMutation.isPending}
+                data-testid="button-submit-estimate"
+              >
+                {contactMutation.isPending ? "Submitting..." : "Get Free Estimate"}
               </Button>
             </form>
           </div>
