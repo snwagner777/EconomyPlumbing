@@ -119,7 +119,7 @@ export default function ServicePage({
                 asChild
                 data-testid="button-call-hero"
               >
-                <a href="tel:5123689159" className="flex items-center gap-2">
+                <a href="tel:+15123689159" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   Call Now: (512) 368-9159
                 </a>
@@ -202,7 +202,7 @@ export default function ServicePage({
               asChild
               data-testid="button-call-austin-cta"
             >
-              <a href="tel:5123689159" className="flex items-center gap-2">
+              <a href="tel:+15123689159" className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 Austin: (512) 368-9159
               </a>
@@ -214,7 +214,7 @@ export default function ServicePage({
               asChild
               data-testid="button-call-marble-falls-cta"
             >
-              <a href="tel:8304603565" className="flex items-center gap-2">
+              <a href="tel:+18304603565" className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 Marble Falls: (830) 460-3565
               </a>

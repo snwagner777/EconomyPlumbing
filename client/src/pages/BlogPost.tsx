@@ -136,7 +136,7 @@ export default function BlogPost() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <a
-                  href="tel:5123689159"
+                  href="tel:+15123689159"
                   className="text-2xl font-bold hover:underline"
                   data-testid="link-phone-austin"
                 >
@@ -147,7 +147,7 @@ export default function BlogPost() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <a
-                  href="tel:8304603565"
+                  href="tel:+18304603565"
                   className="text-2xl font-bold hover:underline"
                   data-testid="link-phone-marble"
                 >

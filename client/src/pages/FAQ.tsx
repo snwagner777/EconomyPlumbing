@@ -217,7 +217,7 @@ export default function FAQ() {
               variant="outline"
               data-testid="button-call"
             >
-              <a href="tel:5123689159" className="flex items-center gap-2">
+              <a href="tel:+15123689159" className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 (512) 368-9159
               </a>

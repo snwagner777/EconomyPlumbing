@@ -257,7 +257,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
 
           <div className="hidden lg:flex items-center gap-4">
             <a 
-              href="tel:5123689159" 
+              href="tel:+15123689159" 
               className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
               data-testid="link-phone-austin"
             >
@@ -359,7 +359,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             </div>
             <div className="pt-4 space-y-3">
               <a 
-                href="tel:5123689159" 
+                href="tel:+15123689159" 
                 className="flex items-center gap-2 text-primary font-poppins font-bold text-lg"
                 data-testid="mobile-phone-austin"
               >
@@ -367,7 +367,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 (512) 368-9159 <span className="text-sm font-normal">Austin</span>
               </a>
               <a 
-                href="tel:8304603565" 
+                href="tel:+18304603565" 
                 className="flex items-center gap-2 text-primary font-poppins font-bold text-lg"
                 data-testid="mobile-phone-marble-falls"
               >

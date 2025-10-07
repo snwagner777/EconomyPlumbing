@@ -165,7 +165,7 @@ export default function ServiceAreas() {
                 variant="outline"
                 data-testid="button-call-hero"
               >
-                <a href="tel:5123689159" className="flex items-center gap-2">
+                <a href="tel:+15123689159" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   Call (512) 368-9159
                 </a>
@@ -299,7 +299,7 @@ export default function ServiceAreas() {
                 size="lg"
                 data-testid="button-call-austin-emergency"
               >
-                <a href="tel:5123689159" className="flex items-center gap-2">
+                <a href="tel:+15123689159" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   Austin Area: (512) 368-9159
                 </a>
@@ -309,7 +309,7 @@ export default function ServiceAreas() {
                 size="lg"
                 data-testid="button-call-marble-falls-emergency"
               >
-                <a href="tel:8304603565" className="flex items-center gap-2">
+                <a href="tel:+18304603565" className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   Marble Falls: (830) 460-3565
                 </a>
@@ -422,7 +422,7 @@ export default function ServiceAreas() {
                   <h3 className="text-2xl font-bold mb-2">Austin Area Office</h3>
                   <p className="opacity-90 mb-4">701 Tillery St #12, Austin, TX 78702</p>
                   <a 
-                    href="tel:5123689159"
+                    href="tel:+15123689159"
                     className="text-2xl font-poppins font-bold hover-elevate inline-block px-3 py-2 rounded-md"
                     data-testid="link-phone-office-austin"
                   >
@@ -439,7 +439,7 @@ export default function ServiceAreas() {
                   <h3 className="text-2xl font-bold mb-2">Marble Falls Area Office</h3>
                   <p className="opacity-90 mb-4">2409 Commerce Street, Marble Falls, TX 78654</p>
                   <a 
-                    href="tel:8304603565"
+                    href="tel:+18304603565"
                     className="text-2xl font-poppins font-bold hover-elevate inline-block px-3 py-2 rounded-md"
                     data-testid="link-phone-office-marble-falls"
                   >
@@ -467,7 +467,7 @@ export default function ServiceAreas() {
                 className="border-white text-white hover:bg-white/10"
                 data-testid="button-call-footer"
               >
-                <a href="tel:5123689159" className="flex items-center gap-2">
+                <a href="tel:+15123689159" className="flex items-center gap-2">
                   Call Now
                 </a>
               </Button>

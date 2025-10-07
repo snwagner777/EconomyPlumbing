@@ -195,14 +195,14 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                 </h4>
                 <div className="space-y-2">
                   <a 
-                    href="tel:5123689159" 
+                    href="tel:+15123689159" 
                     className="block text-lg font-poppins font-bold text-primary hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-austin"
                   >
                     Austin Area: (512) 368-9159
                   </a>
                   <a 
-                    href="tel:8304603565" 
+                    href="tel:+18304603565" 
                     className="block text-lg font-poppins font-bold text-primary hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-marble-falls"
                   >

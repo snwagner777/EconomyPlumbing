@@ -40,7 +40,7 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Phone</p>
-                        <a href="tel:5123689159" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(512) 368-9159</a>
+                        <a href="tel:+15123689159" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(512) 368-9159</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -67,7 +67,7 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Phone</p>
-                        <a href="tel:8304603565" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(830) 460-3565</a>
+                        <a href="tel:+18304603565" className="text-primary text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(830) 460-3565</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -101,7 +101,7 @@ export default function Contact() {
                     variant="outline"
                     data-testid="button-emergency"
                   >
-                    <a href="tel:5123689159">24/7 Emergency Service</a>
+                    <a href="tel:+15123689159">24/7 Emergency Service</a>
                   </Button>
                 </div>
               </div>

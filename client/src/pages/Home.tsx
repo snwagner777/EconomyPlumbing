@@ -356,7 +356,7 @@ export default function Home() {
                   className="bg-primary"
                   data-testid="button-call-austin-cta"
                 >
-                  <a href="tel:5123689159">Call Austin: (512) 368-9159</a>
+                  <a href="tel:+15123689159">Call Austin: (512) 368-9159</a>
                 </Button>
                 <Button
                   asChild
@@ -364,7 +364,7 @@ export default function Home() {
                   variant="outline"
                   data-testid="button-call-marble-falls-cta"
                 >
-                  <a href="tel:8304603565">Call Marble Falls: (830) 460-3565</a>
+                  <a href="tel:+18304603565">Call Marble Falls: (830) 460-3565</a>
                 </Button>
               </div>
             </div>
