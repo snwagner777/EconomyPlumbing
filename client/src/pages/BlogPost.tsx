@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
+import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
@@ -117,8 +119,11 @@ export default function BlogPost() {
             <div
               className="prose prose-lg max-w-none mb-12"
               data-testid="text-content"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            >
+              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                {post.content}
+              </ReactMarkdown>
+            </div>
           </div>
         </article>
 
