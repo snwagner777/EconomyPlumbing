@@ -153,6 +153,10 @@ export function replacePhoneNumbers(): void {
     textNodes.push(node);
   }
 
+  // Batch DOM updates to prevent forced reflows
+  // First, collect all changes (READ phase)
+  const updates: Array<{node: Node, newText: string}> = [];
+  
   textNodes.forEach(textNode => {
     if (textNode.textContent) {
       let text = textNode.textContent;
@@ -167,18 +171,29 @@ export function replacePhoneNumbers(): void {
       });
 
       if (replaced && textNode.textContent !== text) {
-        textNode.textContent = text;
+        updates.push({node: textNode, newText: text});
       }
     }
   });
 
-  // Replace tel: links
+  // Then apply all changes at once (WRITE phase)
+  updates.forEach(({node, newText}) => {
+    node.textContent = newText;
+  });
+
+  // Replace tel: links - batch reads first, then writes
   const links = document.querySelectorAll('a[href^="tel:"]');
+  const linkUpdates: Array<{link: Element, newHref: string}> = [];
+  
   links.forEach(link => {
     const href = link.getAttribute('href');
     if (href && allNumbersToReplace.includes(href)) {
-      link.setAttribute('href', phoneConfig.tel);
+      linkUpdates.push({link, newHref: phoneConfig.tel});
     }
+  });
+
+  linkUpdates.forEach(({link, newHref}) => {
+    link.setAttribute('href', newHref);
   });
 }
 
