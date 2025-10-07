@@ -31,6 +31,8 @@ interface ContactFormSectionProps {
   defaultService?: string;
   defaultLocation?: string;
   pageContext?: string;
+  phoneNumber?: string;
+  phoneLabel?: string;
   className?: string;
 }
 
@@ -40,6 +42,8 @@ export default function ContactFormSection({
   defaultService,
   defaultLocation,
   pageContext = "Website Contact Form",
+  phoneNumber = "(512) 649-2811",
+  phoneLabel = "Austin",
   className = ""
 }: ContactFormSectionProps) {
   const { toast } = useToast();
@@ -101,7 +105,7 @@ export default function ContactFormSection({
             className="bg-primary"
             data-testid="button-call-now"
           >
-            <a href="tel:5126492811">Call (512) 649-2811</a>
+            <a href={`tel:${phoneNumber.replace(/\D/g, '')}`}>Call {phoneNumber}</a>
           </Button>
         </Card>
       </section>
@@ -261,9 +265,10 @@ export default function ContactFormSection({
 
             <p className="text-sm text-center text-muted-foreground">
               Or call us directly at{" "}
-              <a href="tel:5126492811" className="text-primary hover:underline">
-                (512) 649-2811
+              <a href={`tel:${phoneNumber.replace(/\D/g, '')}`} className="text-primary hover:underline">
+                {phoneNumber}
               </a>
+              {phoneLabel && <span className="text-muted-foreground"> ({phoneLabel})</span>}
             </p>
           </form>
         </Form>

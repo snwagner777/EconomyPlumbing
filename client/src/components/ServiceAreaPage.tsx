@@ -273,6 +273,8 @@ export default function ServiceAreaPage({
         description={`Fill out the form and we'll contact you within 1 hour to discuss your plumbing needs in ${city}.`}
         defaultLocation={city}
         pageContext={`${city} Service Area Page`}
+        phoneNumber={phone}
+        phoneLabel={areaName}
         className="py-16 lg:py-24"
       />
 
