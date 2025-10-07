@@ -43,7 +43,7 @@ Preferred communication style: Simple, everyday language.
   
 - **Performance Optimizations (PageSpeed 100 Ready):**
   - Hero images optimized with width="1920" height="1080" attributes for CLS prevention
-  - Added fetchpriority="high" to all LCP hero images (Home, ServicePage, ServiceAreaPage)
+  - Added fetchPriority="high" to all LCP hero images (Home, ServicePage, ServiceAreaPage)
   - Preconnect links updated with crossorigin attributes for fonts and ServiceTitan
   
 - **Meta Description Optimization:**
@@ -58,6 +58,25 @@ Preferred communication style: Simple, everyday language.
   - Each city page has localized content (Buda, Spicewood, Liberty Hill, Marble Falls, Granite Shoals, Burnet, Kyle, Bertram, Horseshoe Bay, Kingsland)
   
 - **Cedar Park Route:** Fixed route consistency to use `/plumber-in-cedar-park--tx` (double hyphen) across all internal links.
+
+### October 2025 - Analytics & Third-Party Integrations
+- **Google Analytics 4 Integration:**
+  - Implemented GA4 tracking with automatic page view tracking on route changes
+  - Created analytics utility (`client/src/lib/analytics.ts`) for event tracking
+  - Added custom hook (`client/src/hooks/use-analytics.tsx`) for route-based tracking
+  - Environment variable: `VITE_GA_MEASUREMENT_ID` (configured in Replit Secrets)
+
+- **ServiceTitan Scheduler Enhancement:**
+  - Fixed async loading issue where scheduler failed when clicked before script loaded
+  - Created scheduler utility (`client/src/lib/scheduler.ts`) with proper async handling
+  - Implemented 5-second wait timeout with error logging
+  - Added user-friendly fallback with phone numbers when scheduler unavailable
+  - All "Schedule Service" buttons now use `openScheduler()` utility (10 buttons across 6 components)
+
+- **Phone Link Standardization:**
+  - All phone links updated to include +1 country code (e.g., `tel:+15123689159`)
+  - Ensures proper mobile device compatibility across all browsers
+  - Phone links work on mobile devices; desktop behavior varies by browser/OS configuration
 
 ## External Dependencies
 

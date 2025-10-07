@@ -16,6 +16,19 @@ export const initGA = () => {
     return;
   }
 
+  // Check if GA is already initialized (prevent double-loading on hot reload)
+  if (window.gtag) {
+    console.log('Google Analytics already initialized');
+    return;
+  }
+
+  // Check if script is already in the DOM
+  const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`);
+  if (existingScript) {
+    console.log('Google Analytics script already exists');
+    return;
+  }
+
   // Add Google Analytics script to the head
   const script1 = document.createElement('script');
   script1.async = true;
@@ -31,6 +44,8 @@ export const initGA = () => {
     gtag('config', '${measurementId}');
   `;
   document.head.appendChild(script2);
+
+  console.log('Google Analytics initialized successfully');
 };
 
 export const trackPageView = (url: string) => {
