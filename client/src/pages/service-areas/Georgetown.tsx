@@ -84,7 +84,7 @@ export default function GeorgetownServiceArea() {
     <div className="min-h-screen">
       <Helmet>
         <title>{cityName} Plumber | Water Heater Repair & Plumbing Services</title>
-        <meta name="description" content={serviceArea?.metaDescription || `Expert plumbing services in ${cityName}, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing.`} />
+        <meta name="description" content={serviceArea?.metaDescription || "Georgetown plumber for Sun City, Wolf Ranch, Berry Creek. Expert water heater repair, drain cleaning, emergency plumbing. Licensed plumbers. (512) 368-9159."} />
         <meta property="og:title" content={`${cityName} Plumber | Economy Plumbing Services`} />
         <meta property="og:description" content={serviceArea?.metaDescription || `Expert plumbing services in ${cityName}, TX.`} />
         <meta property="og:type" content="website" />
