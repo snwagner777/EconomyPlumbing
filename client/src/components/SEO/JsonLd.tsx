@@ -179,7 +179,20 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
       "@type": "Plumber",
       "name": "Economy Plumbing Services",
       "telephone": ["+15123689159", "+18304603565"],
-      "url": "https://economyplumbingservices.com"
+      "url": "https://economyplumbingservices.com",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "701 Tillery St #12",
+        "addressLocality": "Austin",
+        "addressRegion": "TX",
+        "postalCode": "78702",
+        "addressCountry": "US"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": "30.2672",
+        "longitude": "-97.7431"
+      }
     },
     "areaServed": {
       "@type": "State",
@@ -197,7 +210,7 @@ export function createProductSchema(product: any) {
     "description": product.description,
     "offers": {
       "@type": "Offer",
-      "url": `https://economyplumbingservices.com/store/checkout/${product.slug}`,
+      "url": "https://economyplumbingservices.com/store",
       "priceCurrency": "USD",
       "price": product.price,
       "availability": "https://schema.org/InStock",
