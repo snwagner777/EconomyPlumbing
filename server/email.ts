@@ -10,7 +10,13 @@ async function getCredentials() {
     ? 'depl ' + process.env.WEB_REPL_RENEWAL 
     : null;
 
+  console.log('[Email Debug] Getting Resend credentials...');
+  console.log('[Email Debug] Hostname:', hostname ? 'set' : 'NOT SET');
+  console.log('[Email Debug] REPL_IDENTITY:', process.env.REPL_IDENTITY ? 'set' : 'NOT SET');
+  console.log('[Email Debug] WEB_REPL_RENEWAL:', process.env.WEB_REPL_RENEWAL ? 'set' : 'NOT SET');
+
   if (!xReplitToken) {
+    console.error('[Email Error] X_REPLIT_TOKEN not found for repl/depl');
     throw new Error('X_REPLIT_TOKEN not found for repl/depl');
   }
 
@@ -24,7 +30,12 @@ async function getCredentials() {
     }
   ).then(res => res.json()).then(data => data.items?.[0]);
 
+  console.log('[Email Debug] Connection settings retrieved:', connectionSettings ? 'yes' : 'NO');
+  console.log('[Email Debug] API key exists:', connectionSettings?.settings?.api_key ? 'yes' : 'NO');
+  console.log('[Email Debug] From email:', connectionSettings?.settings?.from_email || 'NOT SET');
+
   if (!connectionSettings || (!connectionSettings.settings.api_key)) {
+    console.error('[Email Error] Resend not connected properly');
     throw new Error('Resend not connected');
   }
   return {
@@ -51,11 +62,18 @@ export async function sendContactFormEmail(data: {
   message?: string;
   pageContext?: string;
 }) {
+  console.log('[Email] Starting sendContactFormEmail for:', data.name);
+  
   try {
+    console.log('[Email] Getting Resend client...');
     const { client, fromEmail } = await getUncachableResendClient();
     const contactEmail = process.env.CONTACT_EMAIL;
 
+    console.log('[Email] From email:', fromEmail || 'NOT SET');
+    console.log('[Email] To email (CONTACT_EMAIL):', contactEmail || 'NOT SET');
+
     if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured');
       throw new Error('CONTACT_EMAIL not configured');
     }
 
@@ -94,6 +112,9 @@ export async function sendContactFormEmail(data: {
       </div>
     `;
 
+    console.log('[Email] Attempting to send email...');
+    console.log('[Email] Subject:', `New Contact: ${data.name} - ${data.service || 'Inquiry'}`);
+    
     const result = await client.emails.send({
       from: fromEmail,
       to: contactEmail,
@@ -101,9 +122,11 @@ export async function sendContactFormEmail(data: {
       html: emailHtml,
     });
 
+    console.log('[Email] ✓ Email sent successfully! Result:', JSON.stringify(result, null, 2));
     return result;
   } catch (error) {
-    console.error('Failed to send email:', error);
+    console.error('[Email Error] ✗ Failed to send email:', error);
+    console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
 }
