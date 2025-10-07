@@ -13,7 +13,6 @@ import {
   Wrench,
   Bath,
   Building2,
-  AlertCircle,
   Flame,
   Shield,
 } from "lucide-react";
@@ -30,7 +29,6 @@ import drainImage from "@assets/generated_images/Drain_cleaning_professional_ser
 import leakImage from "@assets/generated_images/Leak_repair_service_work_cb3145cc.png";
 import toiletImage from "@assets/generated_images/Toilet_and_faucet_installation_18dec30d.png";
 import commercialImage from "@assets/generated_images/Commercial_plumbing_services_bd7b6306.png";
-import emergencyImage from "@assets/generated_images/Emergency_plumbing_service_arrival_3f78c39e.png";
 import testimonial1 from "@assets/generated_images/Customer_testimonial_portrait_f033b456.png";
 import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f29d918d.png";
 import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
@@ -126,15 +124,6 @@ export default function Home() {
       ],
       link: "/commercial-plumbing",
       image: commercialImage,
-    },
-    {
-      icon: AlertCircle,
-      title: "Emergency Services",
-      description:
-        "Fast response for plumbing emergencies when you need help most.",
-      features: ["Rapid response", "Available weekends", "Upfront pricing"],
-      link: "/emergency",
-      image: emergencyImage,
     },
     {
       icon: Flame,
