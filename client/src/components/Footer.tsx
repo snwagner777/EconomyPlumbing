@@ -30,7 +30,6 @@ export default function Footer() {
               <li><Link href="/gas-services" className="hover:text-primary" data-testid="footer-link-gas">Gas Services</Link></li>
               <li><Link href="/backflow" className="hover:text-primary" data-testid="footer-link-backflow">Backflow Services</Link></li>
               <li><Link href="/commercial-plumbing" className="hover:text-primary" data-testid="footer-link-commercial">Commercial Plumbing</Link></li>
-              <li><Link href="/emergency" className="hover:text-primary" data-testid="footer-link-emergency">Emergency Services</Link></li>
             </ul>
           </div>
 
