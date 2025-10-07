@@ -38,6 +38,7 @@ interface RelatedService {
 interface ServicePageProps {
   title: string;
   metaDescription: string;
+  canonical: string;
   heroImage: string;
   heroImageAlt: string;
   heroTitle: string;
@@ -54,6 +55,7 @@ interface ServicePageProps {
 export default function ServicePage({
   title,
   metaDescription,
+  canonical,
   heroImage,
   heroImageAlt,
   heroTitle,
@@ -66,8 +68,7 @@ export default function ServicePage({
   faqs,
   relatedServices,
 }: ServicePageProps) {
-  const canonicalUrl = typeof window !== 'undefined' ? window.location.href : '';
-  const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonicalUrl);
+  const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
 
   return (
@@ -75,7 +76,7 @@ export default function ServicePage({
       <SEOHead
         title={title}
         description={metaDescription}
-        canonical={canonicalUrl}
+        canonical={canonical}
         schema={schemas}
       />
 

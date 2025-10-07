@@ -24,6 +24,7 @@ interface ServiceAreaPageProps {
   city: string;
   state: string;
   metaDescription: string;
+  canonical: string;
   area: "austin" | "marble-falls";
   nearbyCities: NearbyCity[];
 }
@@ -47,20 +48,20 @@ export default function ServiceAreaPage({
   city,
   state,
   metaDescription,
+  canonical,
   area,
   nearbyCities,
 }: ServiceAreaPageProps) {
   const phone = PHONE_NUMBERS[area];
   const phoneLink = phone.replace(/\D/g, '');
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
-  const canonicalUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (
     <div className="min-h-screen">
       <SEOHead
         title={`${city} Plumber | Water Heater Repair & Plumbing Services`}
         description={metaDescription}
-        canonical={canonicalUrl}
+        canonical={canonical}
       />
 
       <Header />

@@ -6,6 +6,7 @@ export default function GarbageDisposalRepair() {
     <ServicePage
       title="Garbage Disposal Repair & Installation | Fix Jammed Disposal TX"
       metaDescription="Austin & Marble Falls garbage disposal repair & installation. Fix jammed, leaking, broken disposals. New installations. Same-day service. (512) 368-9159."
+      canonical="https://economyplumbingservices.com/garbage-disposal-repair"
       heroImage={disposalImage}
       heroImageAlt="Professional garbage disposal repair and installation service in Central Texas"
       heroTitle="Garbage Disposal Services"

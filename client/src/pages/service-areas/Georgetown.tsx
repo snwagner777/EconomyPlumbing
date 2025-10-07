@@ -36,7 +36,7 @@ export default function GeorgetownServiceArea() {
   const nearbyCities = [
     { name: "Round Rock", path: "/round-rock-plumber" },
     { name: "Leander", path: "/plumber-leander" },
-    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
     { name: "Liberty Hill", path: "/plumber-liberty-hill" },
     { name: "Pflugerville", path: "/plumber-pflugerville" },
   ];

@@ -6,6 +6,7 @@ export default function EmergencyPlumbing() {
     <ServicePage
       title="24/7 Emergency Plumber | Fast Response Austin & Marble Falls"
       metaDescription="24/7 emergency plumbing services in Austin & Marble Falls. Fast response for burst pipes, water heater failures, sewer backups. Upfront pricing. Available nights & weekends."
+      canonical="https://economyplumbingservices.com/emergency"
       heroImage={emergencyImage}
       heroImageAlt="24/7 emergency plumbing service in Austin and Marble Falls TX"
       heroTitle="Emergency Plumbing Services"

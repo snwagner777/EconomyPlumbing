@@ -34,7 +34,7 @@ export default function LeanderServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
     { name: "Liberty Hill", path: "/plumber-liberty-hill" },
     { name: "Georgetown", path: "/plumber-georgetown" },
     { name: "Round Rock", path: "/round-rock-plumber" },

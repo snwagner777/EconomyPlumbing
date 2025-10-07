@@ -34,7 +34,7 @@ export default function AustinServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
     { name: "Round Rock", path: "/round-rock-plumber" },
     { name: "Pflugerville", path: "/plumber-pflugerville" },
     { name: "Buda", path: "/plumber-buda" },

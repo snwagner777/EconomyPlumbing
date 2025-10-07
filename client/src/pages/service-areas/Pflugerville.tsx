@@ -37,7 +37,7 @@ export default function PflugervilleServiceArea() {
     { name: "Round Rock", path: "/round-rock-plumber" },
     { name: "Austin", path: "/plumber-austin" },
     { name: "Georgetown", path: "/plumber-georgetown" },
-    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
   ];
 
   const phone = "(512) 368-9159";

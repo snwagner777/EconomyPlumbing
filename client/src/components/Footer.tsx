@@ -105,7 +105,7 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Service Areas</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/plumber-austin" className="hover:text-primary" data-testid="footer-link-austin">Austin</Link></li>
-              <li><Link href="/plumber-in-cedar-park–tx" className="hover:text-primary" data-testid="footer-link-cedar-park">Cedar Park</Link></li>
+              <li><Link href="/plumber-in-cedar-park--tx" className="hover:text-primary" data-testid="footer-link-cedar-park">Cedar Park</Link></li>
               <li><Link href="/plumber-marble-falls" className="hover:text-primary" data-testid="footer-link-marble-falls">Marble Falls</Link></li>
               <li><Link href="/round-rock-plumber" className="hover:text-primary" data-testid="footer-link-round-rock">Round Rock</Link></li>
               <li><Link href="/service-area" className="hover:text-primary" data-testid="footer-link-view-all-areas">View All Areas</Link></li>

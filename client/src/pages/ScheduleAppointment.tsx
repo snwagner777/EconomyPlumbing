@@ -108,7 +108,7 @@ export default function ScheduleAppointment() {
                 <div className="text-center" data-testid="area-austin-metro">
                   <h3 className="text-xl font-semibold mb-3">Austin Metro</h3>
                   <p className="text-muted-foreground">
-                    <Link href="/plumber-austin" className="hover:text-primary hover:underline">Austin</Link>, <Link href="/plumber-in-cedar-park–tx" className="hover:text-primary hover:underline">Cedar Park</Link>, <Link href="/plumber-leander" className="hover:text-primary hover:underline">Leander</Link>, <Link href="/round-rock-plumber" className="hover:text-primary hover:underline">Round Rock</Link>, <Link href="/plumber-georgetown" className="hover:text-primary hover:underline">Georgetown</Link>
+                    <Link href="/plumber-austin" className="hover:text-primary hover:underline">Austin</Link>, <Link href="/plumber-in-cedar-park--tx" className="hover:text-primary hover:underline">Cedar Park</Link>, <Link href="/plumber-leander" className="hover:text-primary hover:underline">Leander</Link>, <Link href="/round-rock-plumber" className="hover:text-primary hover:underline">Round Rock</Link>, <Link href="/plumber-georgetown" className="hover:text-primary hover:underline">Georgetown</Link>
                   </p>
                 </div>
 

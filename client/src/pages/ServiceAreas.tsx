@@ -26,7 +26,7 @@ const cities = [
     description: "Complete plumbing services for Cedar Park residents and businesses.",
     neighborhoods: ["Buttercup Creek", "Cedar Park Center", "Lakeline", "Whitestone", "Vista Oaks", "Cypress Creek"],
     zipCodes: "78613, 78630",
-    path: "/plumber-in-cedar-park–tx"
+    path: "/plumber-in-cedar-park--tx"
   },
   {
     name: "Leander",

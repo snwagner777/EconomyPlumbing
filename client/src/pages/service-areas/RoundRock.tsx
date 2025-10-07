@@ -36,7 +36,7 @@ export default function RoundRockServiceArea() {
   const nearbyCities = [
     { name: "Georgetown", path: "/plumber-georgetown" },
     { name: "Pflugerville", path: "/plumber-pflugerville" },
-    { name: "Cedar Park", path: "/plumber-in-cedar-park–tx" },
+    { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
     { name: "Austin", path: "/plumber-austin" },
     { name: "Leander", path: "/plumber-leander" },
   ];
