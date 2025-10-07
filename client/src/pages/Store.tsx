@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -18,12 +18,11 @@ export default function Store() {
 
   return (
     <>
-      <Helmet>
-        <title>Plumbing Products & Memberships | Economy Plumbing Store</title>
-        <meta name="description" content="Shop plumbing maintenance memberships and quality plumbing products from Economy Plumbing. Save on annual maintenance and get priority service." />
-        <meta property="og:title" content="Plumbing Products & Memberships | Economy Plumbing Store" />
-        <meta property="og:description" content="Shop plumbing maintenance memberships and quality plumbing products from Economy Plumbing." />
-      </Helmet>
+      <SEOHead
+        title="Plumbing Products & Memberships | Economy Plumbing Store"
+        description="Shop plumbing maintenance memberships and quality plumbing products from Economy Plumbing. Save on annual maintenance and get priority service with VIP memberships."
+        canonical="https://economyplumbingservices.com/store"
+      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

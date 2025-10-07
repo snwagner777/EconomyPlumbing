@@ -11,7 +11,8 @@ import { Phone, CheckCircle, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
-import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
 
 declare global {
   interface Window {
@@ -65,12 +66,16 @@ export default function ServicePage({
   faqs,
   relatedServices,
 }: ServicePageProps) {
+  const serviceSchema = createServiceSchema(heroTitle, metaDescription, typeof window !== 'undefined' ? window.location.href : '');
+  const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
+
   return (
     <div className="min-h-screen">
-      <title>{title}</title>
-      <meta name="description" content={metaDescription} />
-
-      {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}
+      <SEOHead
+        title={title}
+        description={metaDescription}
+        schema={schemas}
+      />
 
       <Header />
 

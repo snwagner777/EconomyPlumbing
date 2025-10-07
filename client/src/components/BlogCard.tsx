@@ -17,7 +17,10 @@ export default function BlogCard({ post }: BlogCardProps) {
           <img
             src={post.featuredImage}
             alt={post.title}
+            width="800"
+            height="400"
             className="w-full h-48 object-cover cursor-pointer hover-elevate"
+            loading="lazy"
           />
         </Link>
       ) : (

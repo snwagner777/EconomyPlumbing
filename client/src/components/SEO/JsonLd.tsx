@@ -16,25 +16,48 @@ export const localBusinessSchema = {
   "@type": "Plumber",
   "name": "Economy Plumbing Services",
   "image": "https://economyplumbingservices.com/logo.jpg",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://economyplumbingservices.com/logo.jpg",
+    "width": "512",
+    "height": "512"
+  },
   "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
   "url": "https://economyplumbingservices.com",
   "telephone": [
     "+15123689159",
     "+18304603565"
   ],
+  "email": "service@economyplumbingservices.com",
   "priceRange": "$$",
   "address": [
     {
       "@type": "PostalAddress",
+      "streetAddress": "701 Tillery St #12",
       "addressLocality": "Austin",
       "addressRegion": "TX",
+      "postalCode": "78702",
       "addressCountry": "US"
     },
     {
       "@type": "PostalAddress",
+      "streetAddress": "2409 Commerce Street",
       "addressLocality": "Marble Falls",
       "addressRegion": "TX",
+      "postalCode": "78654",
       "addressCountry": "US"
+    }
+  ],
+  "geo": [
+    {
+      "@type": "GeoCoordinates",
+      "latitude": "30.2672",
+      "longitude": "-97.7431"
+    },
+    {
+      "@type": "GeoCoordinates",
+      "latitude": "30.5744",
+      "longitude": "-98.2734"
     }
   ],
   "areaServed": [

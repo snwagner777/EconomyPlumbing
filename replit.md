@@ -38,7 +38,36 @@ Preferred communication style: Simple, everyday language.
 - Component-based architecture with reusable UI components
 - Service-specific pages using shared `ServicePage` template
 - Location-specific pages using shared `ServiceAreaPage` template
-- SEO optimization with React Helmet for meta tags and JSON-LD structured data
+- Comprehensive SEO optimization with enhanced meta tags and JSON-LD structured data
+
+**SEO & Performance Optimization:**
+- **Enhanced Schema Markup:**
+  - Complete LocalBusiness schema with full addresses (Austin: 701 Tillery St #12, Marble Falls: 2409 Commerce Street)
+  - Geo coordinates for both locations (Austin: 30.2672, -97.7431; Marble Falls: 30.5744, -98.2734)
+  - Service schema for all service pages
+  - FAQ schema for pages with frequently asked questions
+  - Product schema for store items
+  - BlogPosting schema for blog content
+
+- **OpenGraph & Social Media:**
+  - Complete OpenGraph tags (og:title, og:description, og:image, og:url, og:type)
+  - og:image with 1200x630px dimensions
+  - og:site_name and og:locale for better social sharing
+  - Twitter Card tags (twitter:card, twitter:title, twitter:description, twitter:image)
+  - Optimized for Facebook, Twitter, LinkedIn sharing
+
+- **Performance Optimizations:**
+  - Resource preconnect hints for Google Fonts and ServiceTitan
+  - Images with explicit width/height attributes for better CLS scores
+  - Lazy loading for below-the-fold images
+  - Font display optimization for faster text rendering
+  - Optimized viewport meta tag
+
+- **SEO Component System:**
+  - Centralized SEOHead component (`client/src/components/SEO/SEOHead.tsx`)
+  - Automatic canonical URL generation
+  - Schema injection support for multiple schemas per page
+  - All pages use comprehensive SEO component for consistency
 
 ### Backend Architecture
 

@@ -36,9 +36,8 @@ import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_0
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useState } from "react";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import {
-  JsonLd,
   localBusinessSchema,
   createFAQSchema,
 } from "@/components/SEO/JsonLd";
@@ -246,31 +245,12 @@ export default function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>
-          Economy Plumbing Services | Austin & Marble Falls Plumbers | Water
-          Heater Experts
-        </title>
-        <meta
-          name="description"
-          content="Professional plumbing services in Austin & Marble Falls, TX. Water heater repair & replacement, drain cleaning, leak repair & emergency plumbing. Licensed plumbers. Call (512) 368-9159."
-        />
-        <meta
-          property="og:title"
-          content="Economy Plumbing Services | Austin & Marble Falls Plumbers"
-        />
-        <meta
-          property="og:description"
-          content="Professional plumbing services in Austin & Marble Falls, TX. Water heater repair & replacement, drain cleaning, leak repair & emergency plumbing."
-        />
-        <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content="https://economyplumbingservices.com/"
-        />
-      </Helmet>
-      <JsonLd data={localBusinessSchema} />
-      <JsonLd data={faqSchema} />
+      <SEOHead
+        title="Economy Plumbing Services | Austin & Marble Falls Plumbers | Water Heater Experts"
+        description="Professional plumbing services in Austin & Marble Falls, TX. Water heater repair & replacement, drain cleaning, leak repair & emergency plumbing. Licensed plumbers. Call (512) 368-9159."
+        canonical="https://economyplumbingservices.com/"
+        schema={[localBusinessSchema, faqSchema]}
+      />
 
       <div className="min-h-screen">
         <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />

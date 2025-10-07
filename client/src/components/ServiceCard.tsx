@@ -19,7 +19,10 @@ export default function ServiceCard({ icon: Icon, title, description, features, 
           <img 
             src={image} 
             alt={`Economy Plumbing ${title} - professional plumbing service`}
+            width="800"
+            height="400"
             className="w-full h-48 object-cover"
+            loading="lazy"
           />
         </div>
       )}
