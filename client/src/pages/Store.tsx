@@ -66,8 +66,12 @@ export default function Store() {
                       <div className="mb-6">
                         <h3 className="text-2xl font-bold mb-2">{membership.name}</h3>
                         <div className="flex items-baseline gap-2 mb-4">
-                          <span className="text-4xl font-bold text-primary">${(membership.price / 100).toFixed(0)}</span>
-                          <span className="text-muted-foreground">/year</span>
+                          <span className="text-4xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
+                          {membership.name.toLowerCase().includes('platinum') ? (
+                            <span className="text-muted-foreground">/3 years</span>
+                          ) : (
+                            <span className="text-muted-foreground">/year</span>
+                          )}
                         </div>
                         <p className="text-muted-foreground">{membership.description}</p>
                       </div>

@@ -50,7 +50,7 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-primary" data-testid="footer-link-about">About Us</Link></li>
               <li><Link href="/blog" className="hover:text-primary" data-testid="footer-link-blog">Blog</Link></li>
               <li><Link href="/store" className="hover:text-primary" data-testid="footer-link-store">Store</Link></li>
-              <li><Link href="/contact" className="hover:text-primary" data-testid="footer-link-contact">Contact</Link></li>
+              <li><Link href="/contact" className="hover:text-primary" data-testid="footer-link-contact">Contact Us</Link></li>
             </ul>
           </div>
         </div>

@@ -199,7 +199,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
               data-testid="link-contact"
             >
-              Contact
+              Contact Us
             </Link>
           </nav>
 
@@ -284,7 +284,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             </div>
             
             <Link href="/contact" className="block py-2 text-sm font-medium" data-testid="mobile-link-contact">
-              Contact
+              Contact Us
             </Link>
             <div className="pt-4 space-y-3">
               <a 

@@ -1,16 +1,12 @@
-import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactForm from "@/components/ContactForm";
-import SchedulerModal from "@/components/SchedulerModal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
 import { Helmet } from "react-helmet";
 
 export default function Contact() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
-
   return (
     <div className="min-h-screen">
       <Helmet>
@@ -20,8 +16,7 @@ export default function Contact() {
         <meta property="og:description" content="Get in touch with Economy Plumbing Services for all your plumbing needs in Central Texas." />
       </Helmet>
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="bg-primary text-primary-foreground py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -95,7 +90,7 @@ export default function Contact() {
 
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    onClick={() => setSchedulerOpen(true)}
+                    onClick={() => (window as any).STWidgetManager("ws-open")}
                     size="lg"
                     data-testid="button-schedule"
                   >

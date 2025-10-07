@@ -39,15 +39,22 @@ export default function MembershipBenefits() {
     }
   ];
 
-  const membershipTiers = memberships.map((membership) => ({
-    name: membership.name,
-    slug: membership.slug,
-    price: `$${(membership.price / 100).toFixed(2)}`,
-    description: membership.description,
-    features: membership.features || [],
-    image: membership.image,
-    popular: membership.name.toLowerCase().includes('platinum') && membership.name.toLowerCase().includes('tank')
-  }));
+  const membershipTiers = memberships.map((membership) => {
+    const isPlatinum = membership.name.toLowerCase().includes('platinum');
+    const priceDisplay = isPlatinum 
+      ? `$${(membership.price / 100).toFixed(2)} / 3 years`
+      : `$${(membership.price / 100).toFixed(2)} / year`;
+    
+    return {
+      name: membership.name,
+      slug: membership.slug,
+      price: priceDisplay,
+      description: membership.description,
+      features: membership.features || [],
+      image: membership.image,
+      popular: isPlatinum && membership.name.toLowerCase().includes('tank')
+    };
+  });
 
   return (
     <div className="min-h-screen">
