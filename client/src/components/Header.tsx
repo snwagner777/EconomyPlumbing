@@ -81,7 +81,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
               data-testid="link-service-areas"
             >
-              Service Areas
+              Service Area
             </Link>
             <Link 
               href="/blog" 
@@ -157,7 +157,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               ))}
             </div>
             <Link href="/service-area" className="block py-2 text-sm font-medium" data-testid="mobile-link-service-areas">
-              Service Areas
+              Service Area
             </Link>
             <Link href="/blog" className="block py-2 text-sm font-medium" data-testid="mobile-link-blog">
               Blog
