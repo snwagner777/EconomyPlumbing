@@ -11,7 +11,6 @@ import ToiletFaucet from "@/pages/ToiletFaucet";
 import GasServices from "@/pages/GasServices";
 import BackflowServices from "@/pages/BackflowServices";
 import CommercialPlumbing from "@/pages/CommercialPlumbing";
-import EmergencyPlumbing from "@/pages/EmergencyPlumbing";
 import ServiceAreas from "@/pages/ServiceAreas";
 import AustinServiceArea from "@/pages/service-areas/Austin";
 import CedarParkServiceArea from "@/pages/service-areas/CedarPark";
@@ -48,7 +47,6 @@ function Router() {
       <Route path="/gas-services" component={GasServices} />
       <Route path="/backflow" component={BackflowServices} />
       <Route path="/commercial-plumbing" component={CommercialPlumbing} />
-      <Route path="/emergency" component={EmergencyPlumbing} />
       <Route path="/service-area" component={ServiceAreas} />
       <Route path="/plumber-austin" component={AustinServiceArea} />
       <Route path="/plumber-in-cedar-park–tx" component={CedarParkServiceArea} />
