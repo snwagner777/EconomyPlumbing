@@ -9,7 +9,7 @@ Dynamic phone tracking allows you to display different phone numbers based on th
 ## Current Phone Numbers
 
 The website currently displays these static phone numbers:
-- **Austin Area**: (512) 649-2811
+- **Austin Area**: (512) 368-9159
 - **Marble Falls Area**: (830) 460-3565
 
 ## Popular Phone Tracking Services
@@ -56,19 +56,19 @@ Update phone number elements with the `data-swap` attribute:
 
 **Before:**
 ```tsx
-<a href="tel:5126492811">
-  (512) 649-2811
+<a href="tel:5123689159">
+  (512) 368-9159
 </a>
 ```
 
 **After:**
 ```tsx
 <a 
-  href="tel:5126492811" 
+  href="tel:5123689159" 
   className="callrail-phone-number"
   data-swap="YOUR_CALLRAIL_TARGET_ID"
 >
-  (512) 649-2811
+  (512) 368-9159
 </a>
 ```
 
@@ -87,13 +87,13 @@ Example implementation in Header:
 ```tsx
 // client/src/components/Header.tsx
 <a 
-  href="tel:5126492811" 
+  href="tel:5123689159" 
   className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md callrail-phone-number"
   data-swap="austin-target-id"
   data-testid="link-phone-austin"
 >
   <Phone className="w-5 h-5" />
-  (512) 649-2811
+  (512) 368-9159
 </a>
 ```
 
@@ -117,7 +117,7 @@ export class PhoneTrackingService {
     'google-ads-marble-falls': '+18304603599',
     'facebook-austin': '+15126492888',
     'facebook-marble-falls': '+18304603588',
-    'organic-austin': '+15126492811',
+    'organic-austin': '+15123689159',
     'organic-marble-falls': '+18304603565'
   };
 
@@ -171,7 +171,7 @@ import { useTrackingPhone } from '@/hooks/useTrackingPhone';
 
 export default function Header({ onScheduleClick }: HeaderProps) {
   const { data: phoneData } = useTrackingPhone('austin');
-  const displayNumber = phoneData?.phoneNumber || '(512) 649-2811';
+  const displayNumber = phoneData?.phoneNumber || '(512) 368-9159';
   
   return (
     <a 
@@ -206,7 +206,7 @@ https://economyplumbingservices.com/?utm_source=facebook&utm_medium=paid&utm_cam
 **Organic Traffic:**
 ```
 https://economyplumbingservices.com/
-→ Shows: (512) 649-2811 (Main business number)
+→ Shows: (512) 368-9159 (Main business number)
 ```
 
 ### Geographic Tracking
@@ -216,14 +216,14 @@ Display numbers based on visitor location (requires IP geolocation):
 ```typescript
 export function getPhoneByLocation(userLocation: string): string {
   const locationMap = {
-    'austin': '(512) 649-2811',
-    'cedar-park': '(512) 649-2811',
+    'austin': '(512) 368-9159',
+    'cedar-park': '(512) 368-9159',
     'marble-falls': '(830) 460-3565',
     'burnet': '(830) 460-3565',
     // ... other locations
   };
   
-  return locationMap[userLocation.toLowerCase()] || '(512) 649-2811';
+  return locationMap[userLocation.toLowerCase()] || '(512) 368-9159';
 }
 ```
 
@@ -245,10 +245,10 @@ const handlePhoneClick = (phoneNumber: string, channel: string) => {
 };
 
 <a 
-  href="tel:5126492811"
-  onClick={() => handlePhoneClick('512-649-2811', 'header-click')}
+  href="tel:5123689159"
+  onClick={() => handlePhoneClick('512-368-9159', 'header-click')}
 >
-  (512) 649-2811
+  (512) 368-9159
 </a>
 ```
 
@@ -358,7 +358,7 @@ CALLRAIL_API_KEY=your_callrail_api_key
 CALLRAIL_COMPANY_ID=your_company_id
 
 # Default phone numbers
-DEFAULT_AUSTIN_PHONE=5126492811
+DEFAULT_AUSTIN_PHONE=5123689159
 DEFAULT_MARBLE_FALLS_PHONE=8304603565
 ```
 
