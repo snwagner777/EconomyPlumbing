@@ -279,6 +279,8 @@ export default function Header({ onScheduleClick }: HeaderProps) {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2"
+            aria-label={mobileMenuOpen ? "Close mobile menu" : "Open mobile menu"}
+            aria-expanded={mobileMenuOpen}
             data-testid="button-mobile-menu"
           >
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
