@@ -14,12 +14,24 @@ export default function Header({ onScheduleClick }: HeaderProps) {
   const [location] = useLocation();
 
   const services = [
+    { name: "All Services", path: "/services", featured: true },
     { name: "Water Heater Services", path: "/water-heater-services" },
+    { name: "Water Heater Guide", path: "/water-heater-guide" },
     { name: "Drain Cleaning", path: "/drain-cleaning" },
+    { name: "Hydro Jetting", path: "/hydro-jetting-services" },
+    { name: "Rooter Services", path: "/rooter-services" },
     { name: "Leak Repair", path: "/leak-repair" },
     { name: "Toilet & Faucet", path: "/toilet-faucet" },
-    { name: "Gas Services", path: "/gas-services" },
-    { name: "Backflow Services", path: "/backflow" },
+    { name: "Faucet Installation", path: "/faucet-installation" },
+    { name: "Garbage Disposal", path: "/garbage-disposal-repair" },
+    { name: "Gas Line Services", path: "/gas-services" },
+    { name: "Gas Leak Detection", path: "/gas-leak-detection" },
+    { name: "Backflow Prevention", path: "/backflow" },
+    { name: "Backflow Testing", path: "/backflow-testing" },
+    { name: "Drainage Solutions", path: "/drainage-solutions" },
+    { name: "Sump & Sewage Pumps", path: "/sewage-pump-services" },
+    { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+    { name: "Permit Resolution", path: "/permit-resolution-services" },
     { name: "Commercial Plumbing", path: "/commercial-plumbing" },
   ];
 
@@ -60,13 +72,13 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <div
                   onMouseEnter={() => setServicesOpen(true)}
                   onMouseLeave={() => setServicesOpen(false)}
-                  className="absolute top-full left-0 mt-1 w-64 bg-card border border-card-border rounded-md shadow-lg py-2"
+                  className="absolute top-full left-0 mt-1 w-72 bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto"
                 >
                   {services.map((service) => (
                     <Link
                       key={service.path}
                       href={service.path}
-                      className="block px-4 py-2 text-sm hover-elevate"
+                      className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
                       data-testid={`link-service-${service.path.slice(1)}`}
                     >
                       {service.name}
@@ -98,11 +110,25 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               Store
             </Link>
             <Link 
-              href="/about" 
+              href="/membership-benefits" 
               className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-about"
+              data-testid="link-membership"
             >
-              About
+              VIP Membership
+            </Link>
+            <Link 
+              href="/contact" 
+              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+              data-testid="link-contact"
+            >
+              Contact
+            </Link>
+            <Link 
+              href="/faq" 
+              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+              data-testid="link-faq"
+            >
+              FAQ
             </Link>
           </nav>
 
@@ -136,7 +162,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
 
       {mobileMenuOpen && (
         <div className="lg:hidden border-t bg-card">
-          <div className="px-4 py-4 space-y-3">
+          <div className="px-4 py-4 space-y-3 max-h-[80vh] overflow-y-auto">
             <Link href="/" className="block py-2 text-sm font-medium" data-testid="mobile-link-home">
               Home
             </Link>
@@ -146,7 +172,7 @@ export default function Header({ onScheduleClick }: HeaderProps) {
                 <Link
                   key={service.path}
                   href={service.path}
-                  className="block py-2 pl-4 text-sm"
+                  className={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold text-primary' : ''}`}
                   data-testid={`mobile-link-${service.path.slice(1)}`}
                 >
                   {service.name}
@@ -162,8 +188,14 @@ export default function Header({ onScheduleClick }: HeaderProps) {
             <Link href="/store" className="block py-2 text-sm font-medium" data-testid="mobile-link-store">
               Store
             </Link>
-            <Link href="/about" className="block py-2 text-sm font-medium" data-testid="mobile-link-about">
-              About
+            <Link href="/membership-benefits" className="block py-2 text-sm font-medium" data-testid="mobile-link-membership">
+              VIP Membership
+            </Link>
+            <Link href="/contact" className="block py-2 text-sm font-medium" data-testid="mobile-link-contact">
+              Contact
+            </Link>
+            <Link href="/faq" className="block py-2 text-sm font-medium" data-testid="mobile-link-faq">
+              FAQ
             </Link>
             <div className="pt-4 space-y-3">
               <a 
