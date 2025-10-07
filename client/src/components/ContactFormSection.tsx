@@ -180,7 +180,6 @@ export default function ContactFormSection({
                         <SelectItem value="gas">Gas Services</SelectItem>
                         <SelectItem value="backflow">Backflow Testing</SelectItem>
                         <SelectItem value="commercial">Commercial Plumbing</SelectItem>
-                        <SelectItem value="emergency">Emergency Service</SelectItem>
                         <SelectItem value="other">Other</SelectItem>
                       </SelectContent>
                     </Select>

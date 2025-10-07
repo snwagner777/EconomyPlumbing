@@ -115,7 +115,6 @@ export default function ContactForm() {
                     <SelectItem value="leak">Leak Detection & Repair</SelectItem>
                     <SelectItem value="toilet-faucet">Toilet & Faucet Services</SelectItem>
                     <SelectItem value="commercial">Commercial Plumbing</SelectItem>
-                    <SelectItem value="emergency">Emergency Service</SelectItem>
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
