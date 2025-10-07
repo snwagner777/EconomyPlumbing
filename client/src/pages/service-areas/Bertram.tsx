@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function BertramServiceArea() {
   const nearbyCities = [
-    { name: "Burnet", path: "/service-areas/burnet" },
-    { name: "Marble Falls", path: "/service-areas/marble-falls" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
+    { name: "Burnet", path: "/burnet" },
+    { name: "Marble Falls", path: "/marble-falls" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Liberty Hill", path: "/liberty-hill" },
   ];
 
   return (

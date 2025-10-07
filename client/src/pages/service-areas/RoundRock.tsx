@@ -34,11 +34,11 @@ export default function RoundRockServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Pflugerville", path: "/service-areas/pflugerville" },
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Leander", path: "/service-areas/leander" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Pflugerville", path: "/pflugerville" },
+    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Austin", path: "/austin" },
+    { name: "Leander", path: "/leander" },
   ];
 
   const phone = "(512) 649-2811";

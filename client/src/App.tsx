@@ -50,27 +50,25 @@ function Router() {
       <Route path="/commercial-plumbing" component={CommercialPlumbing} />
       <Route path="/emergency" component={EmergencyPlumbing} />
       <Route path="/service-areas" component={ServiceAreas} />
-      <Route path="/service-areas/austin" component={AustinServiceArea} />
-      <Route path="/service-areas/cedar-park" component={CedarParkServiceArea} />
-      <Route path="/service-areas/leander" component={LeanderServiceArea} />
-      <Route path="/service-areas/round-rock" component={RoundRockServiceArea} />
-      <Route path="/service-areas/georgetown" component={GeorgetownServiceArea} />
-      <Route path="/service-areas/pflugerville" component={PflugervilleServiceArea} />
-      <Route path="/service-areas/liberty-hill" component={LibertyHillServiceArea} />
-      <Route path="/service-areas/buda" component={BudaServiceArea} />
-      <Route path="/service-areas/kyle" component={KyleServiceArea} />
-      <Route path="/service-areas/marble-falls" component={MarbleFallsServiceArea} />
-      <Route path="/service-areas/burnet" component={BurnetServiceArea} />
-      <Route path="/service-areas/horseshoe-bay" component={HorseshoeBayServiceArea} />
-      <Route path="/service-areas/kingsland" component={KingslandServiceArea} />
-      <Route path="/service-areas/granite-shoals" component={GraniteShoalsServiceArea} />
-      <Route path="/service-areas/bertram" component={BertramServiceArea} />
-      <Route path="/service-areas/spicewood" component={SpicewoodServiceArea} />
+      <Route path="/austin" component={AustinServiceArea} />
+      <Route path="/cedar-park" component={CedarParkServiceArea} />
+      <Route path="/leander" component={LeanderServiceArea} />
+      <Route path="/round-rock" component={RoundRockServiceArea} />
+      <Route path="/georgetown" component={GeorgetownServiceArea} />
+      <Route path="/pflugerville" component={PflugervilleServiceArea} />
+      <Route path="/liberty-hill" component={LibertyHillServiceArea} />
+      <Route path="/buda" component={BudaServiceArea} />
+      <Route path="/kyle" component={KyleServiceArea} />
+      <Route path="/marble-falls" component={MarbleFallsServiceArea} />
+      <Route path="/burnet" component={BurnetServiceArea} />
+      <Route path="/horseshoe-bay" component={HorseshoeBayServiceArea} />
+      <Route path="/kingsland" component={KingslandServiceArea} />
+      <Route path="/granite-shoals" component={GraniteShoalsServiceArea} />
+      <Route path="/bertram" component={BertramServiceArea} />
+      <Route path="/spicewood" component={SpicewoodServiceArea} />
       <Route path="/schedule-appointment" component={ScheduleAppointment} />
-      <Route path="/fall-plumbing-tips">
-        {() => <BlogPost params={{ slug: "fall-plumbing-tips" }} />}
-      </Route>
       <Route path="/blog/:slug" component={BlogPost} />
+      <Route path="/fall-plumbing-tips" component={BlogPost} />
       <Route path="/blog" component={Blog} />
       <Route path="/about" component={About} />
       <Route path="/store/checkout/:slug" component={Checkout} />

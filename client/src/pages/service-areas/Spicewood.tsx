@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function SpicewoodServiceArea() {
   const nearbyCities = [
-    { name: "Marble Falls", path: "/service-areas/marble-falls" },
-    { name: "Horseshoe Bay", path: "/service-areas/horseshoe-bay" },
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Burnet", path: "/service-areas/burnet" },
+    { name: "Marble Falls", path: "/marble-falls" },
+    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
+    { name: "Austin", path: "/austin" },
+    { name: "Burnet", path: "/burnet" },
   ];
 
   return (

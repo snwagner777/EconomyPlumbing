@@ -10,8 +10,9 @@ import { format } from "date-fns";
 import type { BlogPost } from "@shared/schema";
 
 export default function BlogPost() {
-  const [, params] = useRoute("/blog/:slug");
-  const slug = params?.slug || "";
+  const [matchBlog, paramsBlog] = useRoute("/blog/:slug");
+  const [matchFallTips] = useRoute("/fall-plumbing-tips");
+  const slug = matchFallTips ? "fall-plumbing-tips" : (paramsBlog?.slug || "");
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],

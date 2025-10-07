@@ -2,12 +2,12 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function MarbleFallsServiceArea() {
   const nearbyCities = [
-    { name: "Burnet", path: "/service-areas/burnet" },
-    { name: "Horseshoe Bay", path: "/service-areas/horseshoe-bay" },
-    { name: "Kingsland", path: "/service-areas/kingsland" },
-    { name: "Granite Shoals", path: "/service-areas/granite-shoals" },
-    { name: "Spicewood", path: "/service-areas/spicewood" },
-    { name: "Bertram", path: "/service-areas/bertram" },
+    { name: "Burnet", path: "/burnet" },
+    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
+    { name: "Kingsland", path: "/kingsland" },
+    { name: "Granite Shoals", path: "/granite-shoals" },
+    { name: "Spicewood", path: "/spicewood" },
+    { name: "Bertram", path: "/bertram" },
   ];
 
   return (

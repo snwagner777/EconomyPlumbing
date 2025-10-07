@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function LibertyHillServiceArea() {
   const nearbyCities = [
-    { name: "Leander", path: "/service-areas/leander" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
-    { name: "Round Rock", path: "/service-areas/round-rock" },
+    { name: "Leander", path: "/leander" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Round Rock", path: "/round-rock" },
   ];
 
   return (

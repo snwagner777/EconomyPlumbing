@@ -34,12 +34,12 @@ export default function CedarParkServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Leander", path: "/service-areas/leander" },
-    { name: "Round Rock", path: "/service-areas/round-rock" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
-    { name: "Pflugerville", path: "/service-areas/pflugerville" },
+    { name: "Austin", path: "/austin" },
+    { name: "Leander", path: "/leander" },
+    { name: "Round Rock", path: "/round-rock" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Liberty Hill", path: "/liberty-hill" },
+    { name: "Pflugerville", path: "/pflugerville" },
   ];
 
   const phone = "(512) 649-2811";

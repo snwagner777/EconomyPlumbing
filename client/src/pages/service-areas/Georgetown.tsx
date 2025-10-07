@@ -34,11 +34,11 @@ export default function GeorgetownServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Round Rock", path: "/service-areas/round-rock" },
-    { name: "Leander", path: "/service-areas/leander" },
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
-    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
-    { name: "Pflugerville", path: "/service-areas/pflugerville" },
+    { name: "Round Rock", path: "/round-rock" },
+    { name: "Leander", path: "/leander" },
+    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Liberty Hill", path: "/liberty-hill" },
+    { name: "Pflugerville", path: "/pflugerville" },
   ];
 
   const phone = "(512) 649-2811";

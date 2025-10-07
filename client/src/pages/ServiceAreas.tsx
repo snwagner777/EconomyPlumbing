@@ -12,25 +12,25 @@ export default function ServiceAreas() {
   const [schedulerOpen, setSchedulerOpen] = useState(false);
 
   const austinMetroCities = [
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
-    { name: "Leander", path: "/service-areas/leander" },
-    { name: "Round Rock", path: "/service-areas/round-rock" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Pflugerville", path: "/service-areas/pflugerville" },
-    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
-    { name: "Buda", path: "/service-areas/buda" },
-    { name: "Kyle", path: "/service-areas/kyle" },
+    { name: "Austin", path: "/austin" },
+    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Leander", path: "/leander" },
+    { name: "Round Rock", path: "/round-rock" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Pflugerville", path: "/pflugerville" },
+    { name: "Liberty Hill", path: "/liberty-hill" },
+    { name: "Buda", path: "/buda" },
+    { name: "Kyle", path: "/kyle" },
   ];
 
   const marbleFallsCities = [
-    { name: "Marble Falls", path: "/service-areas/marble-falls" },
-    { name: "Burnet", path: "/service-areas/burnet" },
-    { name: "Horseshoe Bay", path: "/service-areas/horseshoe-bay" },
-    { name: "Kingsland", path: "/service-areas/kingsland" },
-    { name: "Granite Shoals", path: "/service-areas/granite-shoals" },
-    { name: "Bertram", path: "/service-areas/bertram" },
-    { name: "Spicewood", path: "/service-areas/spicewood" },
+    { name: "Marble Falls", path: "/marble-falls" },
+    { name: "Burnet", path: "/burnet" },
+    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
+    { name: "Kingsland", path: "/kingsland" },
+    { name: "Granite Shoals", path: "/granite-shoals" },
+    { name: "Bertram", path: "/bertram" },
+    { name: "Spicewood", path: "/spicewood" },
   ];
 
   return (

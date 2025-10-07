@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function GraniteShoalsServiceArea() {
   const nearbyCities = [
-    { name: "Marble Falls", path: "/service-areas/marble-falls" },
-    { name: "Horseshoe Bay", path: "/service-areas/horseshoe-bay" },
-    { name: "Kingsland", path: "/service-areas/kingsland" },
-    { name: "Burnet", path: "/service-areas/burnet" },
+    { name: "Marble Falls", path: "/marble-falls" },
+    { name: "Horseshoe Bay", path: "/horseshoe-bay" },
+    { name: "Kingsland", path: "/kingsland" },
+    { name: "Burnet", path: "/burnet" },
   ];
 
   return (

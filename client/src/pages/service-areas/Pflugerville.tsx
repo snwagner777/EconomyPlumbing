@@ -34,10 +34,10 @@ export default function PflugervilleServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Round Rock", path: "/service-areas/round-rock" },
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
+    { name: "Round Rock", path: "/round-rock" },
+    { name: "Austin", path: "/austin" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Cedar Park", path: "/cedar-park" },
   ];
 
   const phone = "(512) 649-2811";

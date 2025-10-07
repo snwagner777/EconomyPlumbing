@@ -2,10 +2,10 @@ import ServiceAreaPage from "@/components/ServiceAreaPage";
 
 export default function KyleServiceArea() {
   const nearbyCities = [
-    { name: "Buda", path: "/service-areas/buda" },
-    { name: "Austin", path: "/service-areas/austin" },
-    { name: "Pflugerville", path: "/service-areas/pflugerville" },
-    { name: "Round Rock", path: "/service-areas/round-rock" },
+    { name: "Buda", path: "/buda" },
+    { name: "Austin", path: "/austin" },
+    { name: "Pflugerville", path: "/pflugerville" },
+    { name: "Round Rock", path: "/round-rock" },
   ];
 
   return (

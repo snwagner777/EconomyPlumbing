@@ -34,11 +34,11 @@ export default function LeanderServiceArea() {
   });
 
   const nearbyCities = [
-    { name: "Cedar Park", path: "/service-areas/cedar-park" },
-    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
-    { name: "Georgetown", path: "/service-areas/georgetown" },
-    { name: "Round Rock", path: "/service-areas/round-rock" },
-    { name: "Austin", path: "/service-areas/austin" },
+    { name: "Cedar Park", path: "/cedar-park" },
+    { name: "Liberty Hill", path: "/liberty-hill" },
+    { name: "Georgetown", path: "/georgetown" },
+    { name: "Round Rock", path: "/round-rock" },
+    { name: "Austin", path: "/austin" },
   ];
 
   const phone = "(512) 649-2811";
