@@ -171,8 +171,9 @@ Preferred communication style: Simple, everyday language.
 **Call Tracking Services:**
 - ✅ LIVE - Dynamic phone number insertion with 90-day cookie tracking
   - Implementation: `client/src/lib/dynamicPhoneNumbers.ts`
-  - Detects traffic source from URL parameters (utm_source, fbclid) and referrers
+  - Detects traffic source from URL parameters (utm_source, gclid, fbclid) and referrers
   - Default (no source): (512) 649-2811
+  - Google: (512) 368-9159
   - Facebook/Instagram: (512) 575-3157
   - Yelp: (512) 893-7316
   - Nextdoor: (512) 846-9146

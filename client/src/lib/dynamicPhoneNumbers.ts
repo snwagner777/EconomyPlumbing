@@ -12,6 +12,11 @@ const PHONE_NUMBERS: Record<string, PhoneConfig> = {
     raw: '5126492811',
     tel: 'tel:+15126492811'
   },
+  google: {
+    display: '(512) 368-9159',
+    raw: '5123689159',
+    tel: 'tel:+15123689159'
+  },
   facebook: {
     display: '(512) 575-3157',
     raw: '5125753157',
@@ -59,13 +64,18 @@ function setCookie(name: string, value: string, days: number): void {
 function detectTrafficSource(): string {
   const urlParams = new URLSearchParams(window.location.search);
   const referrer = document.referrer.toLowerCase();
+  const utmSource = urlParams.get('utm_source')?.toLowerCase();
+
+  // Check for Google (gclid parameter, utm_source, or referrer)
+  if (urlParams.has('gclid') || utmSource === 'google' || referrer.includes('google.com')) {
+    return 'google';
+  }
 
   // Check for Facebook/Instagram
   if (urlParams.has('fbclid') || referrer.includes('facebook.com') || referrer.includes('instagram.com')) {
     return 'facebook';
   }
   
-  const utmSource = urlParams.get('utm_source')?.toLowerCase();
   if (utmSource === 'facebook' || utmSource === 'instagram' || utmSource === 'fb' || utmSource === 'ig') {
     return 'facebook';
   }
