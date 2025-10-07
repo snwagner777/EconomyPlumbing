@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRoute } from "wouter";
 import ReactMarkdown from "react-markdown";
@@ -9,6 +8,8 @@ import BlogCard from "@/components/BlogCard";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Phone } from "lucide-react";
 import { format } from "date-fns";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import { createBlogPostSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
 
 export default function BlogPost() {
@@ -25,15 +26,9 @@ export default function BlogPost() {
     queryKey: ["/api/blog"],
   });
 
-  useEffect(() => {
-    if (post) {
-      document.title = `${post.title} | Economy Plumbing Blog`;
-      const metaDescription = document.querySelector('meta[name="description"]');
-      if (metaDescription && post.metaDescription) {
-        metaDescription.setAttribute("content", post.metaDescription);
-      }
-    }
-  }, [post]);
+  const canonicalUrl = matchFallTips 
+    ? "https://economyplumbingservices.com/fall-plumbing-tips"
+    : `https://economyplumbingservices.com/blog/${slug}`;
 
   const relatedPosts = allPosts
     ?.filter(
@@ -74,12 +69,16 @@ export default function BlogPost() {
     );
   }
 
+  const blogPostSchema = post ? createBlogPostSchema(post) : undefined;
+
   return (
     <div className="min-h-screen flex flex-col">
-      <title>{post.title} | Economy Plumbing Blog</title>
-      {post.metaDescription && (
-        <meta name="description" content={post.metaDescription} />
-      )}
+      <SEOHead
+        title={`${post.title} | Economy Plumbing Blog`}
+        description={post.metaDescription || ""}
+        canonical={canonicalUrl}
+        schema={blogPostSchema ? [blogPostSchema] : undefined}
+      />
 
       <Header />
 

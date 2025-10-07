@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import { Button } from "@/components/ui/button";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import type { BlogPost } from "@shared/schema";
 
 export default function Blog() {
@@ -13,17 +14,6 @@ export default function Blog() {
     queryKey: ["/api/blog"],
   });
 
-  useEffect(() => {
-    document.title = "Plumbing Tips & Advice Blog | Economy Plumbing";
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        "content",
-        "Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
-      );
-    }
-  }, []);
-
   const categories = ["All", "Water Heaters", "Drains", "Emergency Tips", "Maintenance", "Leak Repair", "Commercial"];
 
   const filteredPosts = posts?.filter(
@@ -32,6 +22,11 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <SEOHead
+        title="Plumbing Tips & Advice Blog | Economy Plumbing"
+        description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
+        canonical="https://economyplumbingservices.com/blog"
+      />
 
       <Header />
 
