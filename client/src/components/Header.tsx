@@ -107,17 +107,14 @@ export default function Header({ onScheduleClick }: HeaderProps) {
           </nav>
 
           <div className="hidden lg:flex items-center gap-4">
-            <div className="text-right">
-              <a 
-                href="tel:5126492811" 
-                className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
-                data-testid="link-phone-austin"
-              >
-                <Phone className="w-5 h-5" />
-                (512) 649-2811
-              </a>
-              <p className="text-xs text-muted-foreground">Austin Area</p>
-            </div>
+            <a 
+              href="tel:5126492811" 
+              className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
+              data-testid="link-phone-austin"
+            >
+              <Phone className="w-5 h-5" />
+              (512) 649-2811
+            </a>
             <Button 
               onClick={onScheduleClick}
               className="bg-primary text-primary-foreground"
