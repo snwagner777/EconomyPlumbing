@@ -5,6 +5,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { initDynamicPhoneNumbers, replacePhoneNumbers } from "@/lib/dynamicPhoneNumbers";
+import CookieBanner from "@/components/CookieBanner";
 import Home from "@/pages/Home";
 import WaterHeaterServices from "@/pages/WaterHeaterServices";
 import DrainCleaning from "@/pages/DrainCleaning";
@@ -159,6 +160,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
+        <CookieBanner />
         <Toaster />
         <Router />
       </TooltipProvider>
