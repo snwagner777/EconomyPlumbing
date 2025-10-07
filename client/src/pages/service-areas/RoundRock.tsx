@@ -13,6 +13,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import FAQSection from "@/components/FAQSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import type { ServiceArea } from "@shared/schema";
+import heroImage from "@assets/stock_images/professional_plumber_13d3a463.jpg";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },
@@ -96,28 +97,35 @@ export default function RoundRockServiceArea() {
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       <Header onScheduleClick={() => setSchedulerOpen(true)} />
 
-      <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center bg-primary">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary to-primary/80" />
+      <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
+        <div className="absolute inset-0">
+          <img
+            src={heroImage}
+            alt={`Professional plumbing services in ${cityName}, Texas`}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/60" />
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full">
           <div className="max-w-3xl">
             <div className="flex items-center gap-2 mb-4">
-              <MapPin className="w-6 h-6 text-primary-foreground" />
-              <span className="text-primary-foreground/90 text-lg" data-testid="text-area-name">
+              <MapPin className="w-6 h-6 text-white" />
+              <span className="text-white/90 text-lg" data-testid="text-area-name">
                 Austin Metro Area
               </span>
             </div>
-            <h1 className="text-4xl lg:text-6xl font-bold text-primary-foreground mb-4" data-testid="heading-city">
+            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-4" data-testid="heading-city">
               Professional Plumber in {cityName}, TX
             </h1>
-            <p className="text-xl text-primary-foreground/90 mb-8" data-testid="text-hero-subtitle">
+            <p className="text-xl text-white/90 mb-8" data-testid="text-hero-subtitle">
               {serviceArea?.introContent || `Expert plumbing services for ${cityName} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`}
             </p>
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
                 onClick={() => setSchedulerOpen(true)}
-                className="bg-white text-primary hover:bg-white/90"
+                className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
                 Schedule Service
