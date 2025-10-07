@@ -9,7 +9,6 @@ import DrainCleaning from "@/pages/DrainCleaning";
 import LeakRepair from "@/pages/LeakRepair";
 import ToiletFaucet from "@/pages/ToiletFaucet";
 import GasServices from "@/pages/GasServices";
-import BackflowServices from "@/pages/BackflowServices";
 import CommercialPlumbing from "@/pages/CommercialPlumbing";
 import ServiceAreas from "@/pages/ServiceAreas";
 import AustinServiceArea from "@/pages/service-areas/Austin";
@@ -64,7 +63,7 @@ function Router() {
       <Route path="/leak-repair" component={LeakRepair} />
       <Route path="/toilet-faucet" component={ToiletFaucet} />
       <Route path="/gas-services" component={GasServices} />
-      <Route path="/backflow" component={BackflowServices} />
+      <Route path="/backflow" component={BackflowTesting} />
       <Route path="/commercial-plumbing" component={CommercialPlumbing} />
       
       {/* Additional service pages */}

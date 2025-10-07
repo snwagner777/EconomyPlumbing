@@ -26,7 +26,6 @@ export default function Header({ onScheduleClick }: HeaderProps) {
     { name: "Garbage Disposal", path: "/garbage-disposal-repair" },
     { name: "Gas Line Services", path: "/gas-services" },
     { name: "Gas Leak Detection", path: "/gas-leak-detection" },
-    { name: "Backflow Prevention", path: "/backflow" },
     { name: "Backflow Testing", path: "/backflow-testing" },
     { name: "Drainage Solutions", path: "/drainage-solutions" },
     { name: "Sump & Sewage Pumps", path: "/sewage-pump-services" },
