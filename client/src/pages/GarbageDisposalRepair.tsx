@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import disposalImage from "@assets/generated_images/Drain_cleaning_professional_service_e8a953c5.png";
+import disposalImage from "@assets/generated_images/Toilet_and_faucet_installation_18dec30d.png";
 
 export default function GarbageDisposalRepair() {
   return (

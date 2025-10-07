@@ -78,23 +78,59 @@ Preferred communication style: Simple, everyday language.
 
 **Client-Side Routes:**
 - Home page with hero, services overview, testimonials
-- Service pages: water heater, drain cleaning, leak repair, toilet/faucet, gas, backflow, commercial, emergency
+- Service pages: 20+ service-specific pages using shared `ServicePage` template
 - Service area pages: Austin metro (9 cities) and Marble Falls area (7 cities)
 - Blog listing and individual post pages
 - Store with product/membership listings
 - Checkout flow (Stripe integration prepared)
-- About page
+- About, Contact, FAQ, Privacy Policy, Refund/Returns pages
+- VIP Membership benefits page
 
-**Route Patterns:**
-- `/` - Home
-- `/{service-name}` - Service detail pages
-- `/service-area` - Service area overview page (exact replica of plumbersthatcare.com/service-area)
-- `/{city-plumber-url}` - Location-specific pages (e.g., /plumber-austin, /round-rock-plumber)
-- `/blog` - Blog listing
-- `/blog/:slug` - Individual posts
-- `/store` - Product catalog
-- `/checkout/:slug` - Checkout page
-- `/about` - About company
+**Main Service Pages:**
+- `/water-heater-services` - Water heater installation, repair, tankless
+- `/drain-cleaning` - Professional drain cleaning services
+- `/leak-repair` - Water leak detection and repair
+- `/toilet-faucet` - Toilet and faucet installation/repair
+- `/gas-services` - Gas line installation and repair
+- `/backflow` - Backflow prevention services
+- `/commercial-plumbing` - Commercial plumbing services
+
+**Additional Service Pages:**
+- `/backflow-testing` - Annual backflow testing & certification
+- `/drainage-solutions` - French drains, yard drainage, sump pumps
+- `/faucet-installation` - Kitchen & bath faucet services
+- `/garbage-disposal-repair` - Disposal installation & repair
+- `/gas-leak-detection` - Emergency gas leak detection
+- `/hydro-jetting-services` - High-pressure drain cleaning
+- `/permit-resolution-services` - Code compliance & permits
+- `/rooter-services` - Sewer & drain rooter cleaning
+- `/sewage-pump-services` - Sump & sewage pump installation
+- `/water-pressure-solutions` - Water pressure diagnosis & repair
+- `/water-heater-guide` - Water heater buying guide
+- `/services` - Complete services overview page
+
+**Service Area Routes:**
+- `/service-area` - Service area overview page
+- Austin Metro: `/plumber-austin`, `/plumber-in-cedar-park--tx`, `/plumber-leander`, `/plumber-in-leander--tx524c3ae3`, `/round-rock-plumber`, `/plumber-georgetown`, `/plumber-pflugerville`, `/plumber-liberty-hill`, `/plumber-buda`, `/plumber-kyle`
+- Marble Falls Area: `/plumber-marble-falls`, `/plumber-burnet`, `/plumber-horseshoe-bay`, `/plumber-kingsland`, `/plumber-granite-shoals`, `/plumber-bertram`, `/plumber-spicewood`
+
+**Utility Pages:**
+- `/contact` - Contact form and office locations
+- `/faq` - Frequently asked questions
+- `/privacy-policy` - Privacy policy
+- `/refund_returns` - Refund and returns policy
+- `/membership-benefits` - VIP membership benefits
+- `/about` - About the company
+
+**Blog & Store:**
+- `/blog` - Blog listing page
+- `/blog/:slug` - Individual blog posts
+- `/store` - Product catalog and VIP memberships
+- `/shop` - Alias to store
+- `/store/checkout/:slug` - Checkout page
+- `/category/memberships` - Membership category
+- `/category/products` - Products category
+- `/signin` - Redirects to store
 
 ## External Dependencies
 
