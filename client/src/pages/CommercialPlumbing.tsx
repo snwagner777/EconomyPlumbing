@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import commercialImage from "@assets/generated_images/Commercial_plumbing_services_bd7b6306.png";
+import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
 
 export default function CommercialPlumbing() {
   return (

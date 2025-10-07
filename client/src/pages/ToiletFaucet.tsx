@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import toiletImage from "@assets/generated_images/Toilet_and_faucet_installation_18dec30d.png";
+import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec30d.webp";
 
 export default function ToiletFaucet() {
   return (

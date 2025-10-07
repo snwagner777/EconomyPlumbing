@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import leakImage from "@assets/generated_images/Leak_repair_service_work_cb3145cc.png";
+import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 
 export default function LeakRepair() {
   return (

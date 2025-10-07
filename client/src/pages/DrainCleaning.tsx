@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import drainImage from "@assets/generated_images/Drain_cleaning_professional_service_e8a953c5.png";
+import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
 export default function DrainCleaning() {
   return (

@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import heaterGuideImage from "@assets/generated_images/Tankless_water_heater_closeup_7279af49.png";
+import heaterGuideImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
 
 export default function WaterHeaterGuide() {
   return (
