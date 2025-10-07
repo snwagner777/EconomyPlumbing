@@ -33,6 +33,17 @@ export default function ServiceAreas() {
     { name: "Spicewood", path: "/plumber-spicewood" },
   ];
 
+  const services = [
+    { title: "Water Heater Services", description: "Installation, repair & maintenance", path: "/water-heater-services" },
+    { title: "Drain Cleaning", description: "Professional drain & sewer services", path: "/drain-cleaning" },
+    { title: "Leak Repair", description: "Fast & permanent leak solutions", path: "/leak-repair" },
+    { title: "Toilet & Faucet", description: "Installation & repair services", path: "/toilet-faucet" },
+    { title: "Gas Services", description: "Gas line installation & safety", path: "/gas-services" },
+    { title: "Backflow Services", description: "Testing & certification", path: "/backflow" },
+    { title: "Commercial Plumbing", description: "Business & property services", path: "/commercial-plumbing" },
+    { title: "Emergency Services", description: "Fast response when needed", path: "/emergency" },
+  ];
+
   return (
     <div className="min-h-screen">
       <title>Service Areas | Economy Plumbing Services in Central Texas</title>
@@ -194,38 +205,14 @@ export default function ServiceAreas() {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Water Heater Services</h3>
-              <p className="text-sm text-muted-foreground">Installation, repair & maintenance</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Drain Cleaning</h3>
-              <p className="text-sm text-muted-foreground">Professional drain & sewer services</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Leak Repair</h3>
-              <p className="text-sm text-muted-foreground">Fast & permanent leak solutions</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Toilet & Faucet</h3>
-              <p className="text-sm text-muted-foreground">Installation & repair services</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Gas Services</h3>
-              <p className="text-sm text-muted-foreground">Gas line installation & safety</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Backflow Services</h3>
-              <p className="text-sm text-muted-foreground">Testing & certification</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Commercial Plumbing</h3>
-              <p className="text-sm text-muted-foreground">Business & property services</p>
-            </Card>
-            <Card className="p-6">
-              <h3 className="font-semibold mb-2">Emergency Services</h3>
-              <p className="text-sm text-muted-foreground">Fast response when needed</p>
-            </Card>
+            {services.map((service) => (
+              <Link key={service.path} href={service.path}>
+                <Card className="p-6 hover-elevate cursor-pointer h-full" data-testid={`link-service-${service.path.slice(1)}`}>
+                  <h3 className="font-semibold mb-2">{service.title}</h3>
+                  <p className="text-sm text-muted-foreground">{service.description}</p>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
