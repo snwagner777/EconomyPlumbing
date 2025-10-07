@@ -1,6 +1,6 @@
 import { Link } from "wouter";
-import { Facebook, Instagram } from "lucide-react";
-import { SiYelp, SiNextdoor } from "react-icons/si";
+import { Facebook, Instagram, MapPin } from "lucide-react";
+import { SiYelp, SiNextdoor, SiGooglemaps } from "react-icons/si";
 import logoImage from "@assets/Economy Plumbing Services logo_1759801055079.jpg";
 
 export default function Footer() {
@@ -60,6 +60,30 @@ export default function Footer() {
                 data-testid="link-nextdoor"
               >
                 <SiNextdoor className="w-6 h-6" />
+              </a>
+            </div>
+            <div className="flex flex-col gap-2 mt-4">
+              <a 
+                href="https://www.google.com/maps/place/701+Tillery+St+%2312,+Austin,+TX+78702" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors flex items-center gap-2 text-sm"
+                aria-label="View Austin location on Google Maps"
+                data-testid="link-google-maps-austin"
+              >
+                <SiGooglemaps className="w-5 h-5" />
+                <span>Austin Office</span>
+              </a>
+              <a 
+                href="https://www.google.com/maps/place/2409+Commerce+Street,+Marble+Falls,+TX+78654" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors flex items-center gap-2 text-sm"
+                aria-label="View Marble Falls location on Google Maps"
+                data-testid="link-google-maps-marble-falls"
+              >
+                <SiGooglemaps className="w-5 h-5" />
+                <span>Marble Falls Office</span>
               </a>
             </div>
           </div>
