@@ -60,7 +60,7 @@ export default function MembershipBenefits() {
     <div className="min-h-screen">
       <Helmet>
         <title>Membership Benefits | Economy Plumbing Services TX</title>
-        <meta name="description" content="Join our VIP membership program for priority service, discounted rates, annual maintenance, and more. Save on all plumbing services in Austin & Marble Falls." />
+        <meta name="description" content="Join our VIP membership program for residential and commercial properties. Get priority service, discounted rates, annual maintenance, and more in Austin & Marble Falls." />
         <meta property="og:title" content="Membership Benefits | Economy Plumbing" />
         <meta property="og:description" content="Get priority service and exclusive savings with our VIP membership program." />
       </Helmet>
@@ -71,7 +71,7 @@ export default function MembershipBenefits() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl lg:text-5xl font-bold mb-6">Membership Benefits</h1>
           <p className="text-xl opacity-90 max-w-3xl mx-auto">
-            Protect your home, save money, and get priority service with our exclusive VIP membership program
+            Protect your home or business, save money, and get priority service with our exclusive VIP membership program
           </p>
         </div>
       </section>
@@ -81,7 +81,7 @@ export default function MembershipBenefits() {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-bold mb-4">Why Join Our VIP Program?</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              VIP members enjoy exclusive benefits designed to save money and provide peace of mind
+              VIP members enjoy exclusive benefits designed to save money and provide peace of mind for both residential and commercial properties
             </p>
           </div>
 
@@ -152,7 +152,7 @@ export default function MembershipBenefits() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-bold mb-4">Ready to Become a VIP Member?</h2>
           <p className="text-lg text-muted-foreground mb-8">
-            Join today and start enjoying priority service, exclusive discounts, and peace of mind protection for your home.
+            Join today and start enjoying priority service, exclusive discounts, and peace of mind protection for your home or business.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button 
