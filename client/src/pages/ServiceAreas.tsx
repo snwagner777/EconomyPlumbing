@@ -41,7 +41,6 @@ export default function ServiceAreas() {
     { title: "Gas Services", description: "Gas line installation & safety", path: "/gas-services" },
     { title: "Backflow Services", description: "Testing & certification", path: "/backflow" },
     { title: "Commercial Plumbing", description: "Business & property services", path: "/commercial-plumbing" },
-    { title: "Emergency Services", description: "Fast response when needed", path: "/emergency" },
   ];
 
   return (
