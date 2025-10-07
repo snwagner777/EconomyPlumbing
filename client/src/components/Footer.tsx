@@ -1,5 +1,6 @@
 import { Link } from "wouter";
-import { Facebook } from "lucide-react";
+import { Facebook, Instagram } from "lucide-react";
+import { SiYelp, SiNextdoor } from "react-icons/si";
 import logoImage from "@assets/Economy Plumbing Services logo_1759801055079.jpg";
 
 export default function Footer() {
@@ -29,6 +30,36 @@ export default function Footer() {
                 data-testid="link-facebook"
               >
                 <Facebook className="w-6 h-6" />
+              </a>
+              <a 
+                href="https://instagram.com/plumbersthatcare_atx" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors"
+                aria-label="Visit our Instagram page"
+                data-testid="link-instagram"
+              >
+                <Instagram className="w-6 h-6" />
+              </a>
+              <a 
+                href="https://yelp.com/biz/economy-plumbing-services-austin-3" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors"
+                aria-label="Visit our Yelp page"
+                data-testid="link-yelp"
+              >
+                <SiYelp className="w-6 h-6" />
+              </a>
+              <a 
+                href="https://nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-300 hover:text-primary transition-colors"
+                aria-label="Visit our Nextdoor page"
+                data-testid="link-nextdoor"
+              >
+                <SiNextdoor className="w-6 h-6" />
               </a>
             </div>
           </div>

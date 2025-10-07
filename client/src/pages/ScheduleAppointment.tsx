@@ -109,21 +109,21 @@ export default function ScheduleAppointment() {
                 <div className="text-center" data-testid="area-austin-metro">
                   <h3 className="text-xl font-semibold mb-3">Austin Metro</h3>
                   <p className="text-muted-foreground">
-                    Austin, Cedar Park, Leander, Round Rock, Georgetown
+                    <Link href="/plumber-austin" className="hover:text-primary hover:underline">Austin</Link>, <Link href="/plumber-in-cedar-park–tx" className="hover:text-primary hover:underline">Cedar Park</Link>, <Link href="/plumber-leander" className="hover:text-primary hover:underline">Leander</Link>, <Link href="/round-rock-plumber" className="hover:text-primary hover:underline">Round Rock</Link>, <Link href="/plumber-georgetown" className="hover:text-primary hover:underline">Georgetown</Link>
                   </p>
                 </div>
 
                 <div className="text-center" data-testid="area-hill-country">
                   <h3 className="text-xl font-semibold mb-3">Hill Country</h3>
                   <p className="text-muted-foreground">
-                    Marble Falls, Burnet, Horseshoe Bay, Kingsland
+                    <Link href="/plumber-marble-falls" className="hover:text-primary hover:underline">Marble Falls</Link>, <Link href="/plumber-burnet" className="hover:text-primary hover:underline">Burnet</Link>, <Link href="/plumber-horseshoe-bay" className="hover:text-primary hover:underline">Horseshoe Bay</Link>, <Link href="/plumber-kingsland" className="hover:text-primary hover:underline">Kingsland</Link>
                   </p>
                 </div>
 
                 <div className="text-center" data-testid="area-south-austin">
                   <h3 className="text-xl font-semibold mb-3">South Austin</h3>
                   <p className="text-muted-foreground">
-                    Buda, Kyle, Dripping Springs, Wimberley
+                    <Link href="/plumber-buda" className="hover:text-primary hover:underline">Buda</Link>, <Link href="/plumber-kyle" className="hover:text-primary hover:underline">Kyle</Link>, Dripping Springs, Wimberley
                   </p>
                 </div>
               </div>
@@ -131,7 +131,7 @@ export default function ScheduleAppointment() {
               <div className="text-center mt-8" data-testid="area-north-austin">
                 <h3 className="text-xl font-semibold mb-3">North Austin</h3>
                 <p className="text-muted-foreground">
-                  Pflugerville, Liberty Hill, Bertram, Lago Vista
+                  <Link href="/plumber-pflugerville" className="hover:text-primary hover:underline">Pflugerville</Link>, <Link href="/plumber-liberty-hill" className="hover:text-primary hover:underline">Liberty Hill</Link>, <Link href="/plumber-bertram" className="hover:text-primary hover:underline">Bertram</Link>, Lago Vista
                 </p>
               </div>
             </div>
