@@ -6,6 +6,7 @@ import { Phone, MapPin, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import heroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
 
 declare global {
@@ -55,8 +56,10 @@ export default function ServiceAreaPage({
 
   return (
     <div className="min-h-screen">
-      <title>{city} Plumber | Water Heater Repair & Plumbing Services</title>
-      <meta name="description" content={metaDescription} />
+      <SEOHead
+        title={`${city} Plumber | Water Heater Repair & Plumbing Services`}
+        description={metaDescription}
+      />
 
       <Header />
 

@@ -1,4 +1,3 @@
-import { Helmet } from "react-helmet";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -6,6 +5,7 @@ import { CheckCircle2, Users, Award, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import SchedulerModal from "@/components/SchedulerModal";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function About() {
   const [schedulerOpen, setSchedulerOpen] = useState(false);
@@ -41,13 +41,10 @@ export default function About() {
 
   return (
     <>
-      <Helmet>
-        <title>About Economy Plumbing Services | Austin & Marble Falls Plumbers</title>
-        <meta name="description" content="Learn about Economy Plumbing Services - your trusted plumbing experts serving Austin and Marble Falls, Texas since 2005. Licensed, experienced, and committed to quality." />
-        <meta property="og:title" content="About Economy Plumbing Services | Austin & Marble Falls Plumbers" />
-        <meta property="og:description" content="Learn about Economy Plumbing Services - your trusted plumbing experts serving Austin and Marble Falls, Texas since 2005. Licensed, experienced, and committed to quality." />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SEOHead
+        title="About Economy Plumbing Services | Austin & Marble Falls Plumbers"
+        description="Learn about Economy Plumbing Services - your trusted plumbing experts in Austin & Marble Falls, TX. Licensed, experienced plumbers committed to quality service since 2005."
+      />
       
       <div className="min-h-screen flex flex-col">
         <Header onScheduleClick={() => setSchedulerOpen(true)} />

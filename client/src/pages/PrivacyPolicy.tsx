@@ -1,14 +1,14 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Privacy Policy | Economy Plumbing Services</title>
-        <meta name="description" content="Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information." />
-      </Helmet>
+      <SEOHead
+        title="Privacy Policy | Economy Plumbing Services"
+        description="Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information. Your privacy is important to us."
+      />
 
       <Header />
 

@@ -17,7 +17,7 @@ import {
   CheckCircle,
   ArrowRight
 } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 const serviceCategories = [
   {
@@ -97,12 +97,10 @@ export default function Services() {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Plumbing Services | Complete Plumbing Solutions Austin & Marble Falls TX</title>
-        <meta name="description" content="Comprehensive plumbing services in Austin & Marble Falls. Water heaters, drain cleaning, leak repair, gas lines, backflow testing, commercial plumbing. Licensed, insured plumbers." />
-        <meta property="og:title" content="Our Services | Economy Plumbing" />
-        <meta property="og:description" content="Full-service plumbing company serving Central Texas with expert water heater, drain, repair, and commercial plumbing services." />
-      </Helmet>
+      <SEOHead
+        title="Plumbing Services | Complete Plumbing Solutions Austin & Marble Falls TX"
+        description="Comprehensive plumbing services in Austin & Marble Falls. Water heaters, drain cleaning, leak repair, gas lines, backflow testing, commercial plumbing. Licensed plumbers available 24/7."
+      />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       <Header onScheduleClick={() => setSchedulerOpen(true)} />

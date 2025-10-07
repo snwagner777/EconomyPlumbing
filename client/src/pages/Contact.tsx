@@ -4,17 +4,15 @@ import ContactForm from "@/components/ContactForm";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function Contact() {
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Contact Us | Economy Plumbing Services Austin & Marble Falls TX</title>
-        <meta name="description" content="Contact Economy Plumbing Services. Call (512) 368-9159 for Austin area or (830) 460-3565 for Marble Falls. Schedule service online or visit our offices." />
-        <meta property="og:title" content="Contact Us | Economy Plumbing" />
-        <meta property="og:description" content="Get in touch with Economy Plumbing Services for all your plumbing needs in Central Texas." />
-      </Helmet>
+      <SEOHead
+        title="Contact Us | Economy Plumbing Services Austin & Marble Falls TX"
+        description="Contact Economy Plumbing for expert service. Austin (512) 368-9159, Marble Falls (830) 460-3565. Schedule online or visit our offices. 24/7 emergency plumbing available."
+      />
 
       <Header />
 

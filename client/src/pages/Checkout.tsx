@@ -1,4 +1,4 @@
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -113,9 +113,10 @@ export default function Checkout() {
   if (!stripePublicKey) {
     return (
       <>
-        <Helmet>
-          <title>Checkout | Economy Plumbing Store</title>
-        </Helmet>
+        <SEOHead
+          title="Checkout | Economy Plumbing Store"
+          description="Complete your plumbing membership or product purchase. Secure checkout with Stripe payment processing. Shop Economy Plumbing Services."
+        />
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1 flex items-center justify-center">
@@ -138,9 +139,10 @@ export default function Checkout() {
   if (productLoading) {
     return (
       <>
-        <Helmet>
-          <title>Loading... | Economy Plumbing Store</title>
-        </Helmet>
+        <SEOHead
+          title="Loading... | Economy Plumbing Store"
+          description="Loading your checkout information. Please wait while we prepare your secure payment page."
+        />
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1 flex items-center justify-center">
@@ -155,9 +157,10 @@ export default function Checkout() {
   if (!product) {
     return (
       <>
-        <Helmet>
-          <title>Product Not Found | Economy Plumbing Store</title>
-        </Helmet>
+        <SEOHead
+          title="Product Not Found | Economy Plumbing Store"
+          description="The product you're looking for could not be found. Browse our VIP memberships and plumbing products."
+        />
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1 flex items-center justify-center">
@@ -179,10 +182,10 @@ export default function Checkout() {
 
   return (
     <>
-      <Helmet>
-        <title>Checkout - {product.name} | Economy Plumbing Store</title>
-        <meta name="description" content={`Purchase ${product.name} - ${product.description}`} />
-      </Helmet>
+      <SEOHead
+        title={`Checkout - ${product.name} | Economy Plumbing Store`}
+        description={`Purchase ${product.name} - ${product.description}. Secure payment processing. VIP memberships & plumbing products.`}
+      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

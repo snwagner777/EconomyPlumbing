@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Shield, Clock, Phone } from "lucide-react";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import type { Product } from "@shared/schema";
 
 export default function MembershipBenefits() {
@@ -58,12 +58,10 @@ export default function MembershipBenefits() {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Membership Benefits | Economy Plumbing Services TX</title>
-        <meta name="description" content="Join our VIP membership program for residential and commercial properties. Get priority service, discounted rates, annual maintenance, and more in Austin & Marble Falls." />
-        <meta property="og:title" content="Membership Benefits | Economy Plumbing" />
-        <meta property="og:description" content="Get priority service and exclusive savings with our VIP membership program." />
-      </Helmet>
+      <SEOHead
+        title="Membership Benefits | Economy Plumbing Services TX"
+        description="Join our VIP membership for priority service, 15-20% discounts, annual maintenance & 24/7 support. Save money on plumbing repairs in Austin & Marble Falls. Sign up today!"
+      />
 
       <Header />
 

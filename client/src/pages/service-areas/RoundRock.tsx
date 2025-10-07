@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -82,13 +82,10 @@ export default function RoundRockServiceArea() {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>{cityName} Plumber | Water Heater Repair & Plumbing Services</title>
-        <meta name="description" content={serviceArea?.metaDescription || "Round Rock plumber for Teravista, Forest Creek, Walsh Ranch. Expert water heater repair, drain cleaning, leak detection. Emergency plumbing. (512) 368-9159."} />
-        <meta property="og:title" content={`${cityName} Plumber | Economy Plumbing Services`} />
-        <meta property="og:description" content={serviceArea?.metaDescription || `Expert plumbing services in ${cityName}, TX.`} />
-        <meta property="og:type" content="website" />
-      </Helmet>
+      <SEOHead
+        title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
+        description={serviceArea?.metaDescription || "Round Rock plumber for Teravista, Forest Creek, Walsh Ranch. Expert water heater repair, drain cleaning, leak detection. Emergency plumbing. (512) 368-9159."}
+      />
 
       <JsonLd data={localBusinessSchema} />
       {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}

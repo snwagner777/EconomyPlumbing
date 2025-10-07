@@ -1,14 +1,14 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function RefundReturns() {
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Refund & Returns Policy | Economy Plumbing Services</title>
-        <meta name="description" content="Economy Plumbing Services refund and returns policy for products and services." />
-      </Helmet>
+      <SEOHead
+        title="Refund & Returns Policy | Economy Plumbing Services"
+        description="Economy Plumbing refund & returns policy. 30-day satisfaction guarantee on services. VIP membership cancellation & product return details. Call (512) 368-9159 for questions."
+      />
 
       <Header />
 

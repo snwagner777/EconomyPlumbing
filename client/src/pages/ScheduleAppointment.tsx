@@ -1,20 +1,17 @@
-import { Helmet } from "react-helmet";
 import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Calendar, Shield, Bell } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function ScheduleAppointment() {
   return (
     <>
-      <Helmet>
-        <title>Schedule Your Appointment | Economy Plumbing Services</title>
-        <meta 
-          name="description" 
-          content="Book your plumbing service online with Economy Plumbing Services. Choose your preferred date and time, and we'll take care of the rest." 
-        />
-      </Helmet>
+      <SEOHead
+        title="Schedule Your Appointment | Economy Plumbing Services"
+        description="Book your plumbing service online with Economy Plumbing. Choose your preferred date and time for same-day service in Austin & Marble Falls. Licensed plumbers available 24/7."
+      />
 
       <Header />
       

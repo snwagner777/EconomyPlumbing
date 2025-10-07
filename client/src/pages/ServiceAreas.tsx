@@ -7,7 +7,7 @@ import { Phone, MapPin, Clock, Users, Award, Home as HomeIcon } from "lucide-rea
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SchedulerModal from "@/components/SchedulerModal";
-import { Helmet } from "react-helmet";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 const cities = [
   {
@@ -133,12 +133,10 @@ export default function ServiceAreas() {
 
   return (
     <div className="min-h-screen">
-      <Helmet>
-        <title>Our Service Area | Economy Plumbing Services Central Texas</title>
-        <meta name="description" content="Economy Plumbing Services proudly serves Central Texas communities with reliable, professional plumbing solutions. From Austin to the Highland Lakes, we're your local plumbing experts." />
-        <meta property="og:title" content="Service Area | Economy Plumbing Services" />
-        <meta property="og:description" content="Serving Central Texas communities from Austin to Marble Falls with expert plumbing services." />
-      </Helmet>
+      <SEOHead
+        title="Our Service Area | Economy Plumbing Services Central Texas"
+        description="Serving 16+ Central Texas cities: Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Licensed plumbers. Call (512) 368-9159 for same-day service."
+      />
 
       <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       <Header onScheduleClick={() => setSchedulerOpen(true)} />
