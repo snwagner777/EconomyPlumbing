@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
-import heroImage from "@assets/stock_images/modern_luxury_bathro_0f267931.jpg";
+import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
 
 interface HeroProps {
@@ -16,7 +16,7 @@ export default function Hero({ onScheduleClick }: HeroProps) {
           alt="Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX"
           width="1920"
           height="1080"
-          fetchPriority="high"
+          fetchpriority="high"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
