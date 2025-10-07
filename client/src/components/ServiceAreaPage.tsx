@@ -7,7 +7,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import heroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
+import defaultHeroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
 
 declare global {
   interface Window {
@@ -27,6 +27,9 @@ interface ServiceAreaPageProps {
   canonical: string;
   area: "austin" | "marble-falls";
   nearbyCities: NearbyCity[];
+  heroImage?: string;
+  heroSubtitle?: string;
+  cityHighlight?: string;
 }
 
 const PHONE_NUMBERS = {
@@ -51,10 +54,15 @@ export default function ServiceAreaPage({
   canonical,
   area,
   nearbyCities,
+  heroImage,
+  heroSubtitle,
+  cityHighlight,
 }: ServiceAreaPageProps) {
   const phone = PHONE_NUMBERS[area];
   const phoneLink = phone.replace(/\D/g, '');
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
+  const displayHeroImage = heroImage || defaultHeroImage;
+  const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   return (
     <div className="min-h-screen">
@@ -69,7 +77,7 @@ export default function ServiceAreaPage({
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
           <img
-            src={heroImage}
+            src={displayHeroImage}
             alt={`Professional plumbing services in ${city}, Texas`}
             className="w-full h-full object-cover"
           />
@@ -88,7 +96,7 @@ export default function ServiceAreaPage({
               Professional Plumber in {city}, {state}
             </h1>
             <p className="text-xl text-white/90 mb-8" data-testid="text-hero-subtitle">
-              Expert plumbing services for {city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.
+              {displaySubtitle}
             </p>
             <div className="flex flex-wrap gap-4">
               <Button 
@@ -153,6 +161,11 @@ export default function ServiceAreaPage({
               <h2 className="text-3xl lg:text-4xl font-bold mb-6" data-testid="heading-why-choose">
                 Why Choose Economy Plumbing in {city}?
               </h2>
+              {cityHighlight && (
+                <p className="text-lg text-muted-foreground mb-6" data-testid="text-city-highlight">
+                  {cityHighlight}
+                </p>
+              )}
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
                   <CheckCircle className="w-6 h-6 text-primary flex-shrink-0 mt-1" />
