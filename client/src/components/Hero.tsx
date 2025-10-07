@@ -18,7 +18,7 @@ export default function Hero({ onScheduleClick }: HeroProps) {
       <div className="absolute inset-0">
         <img
           src={heroImage}
-          alt="Economy Plumbing professional plumber installing water heater in modern Austin home"
+          alt="Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX"
           width="1920"
           height="1080"
           className="w-full h-full object-cover"
