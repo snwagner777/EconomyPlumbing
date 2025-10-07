@@ -187,7 +187,7 @@ export default function ServiceAreas() {
             </p>
           </div>
 
-          <div className="grid gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
             {cities.map((city) => {
               const isExpanded = expandedNeighborhoods[city.name];
               const displayNeighborhoods = isExpanded ? city.neighborhoods : city.neighborhoods.slice(0, 4);
@@ -197,74 +197,71 @@ export default function ServiceAreas() {
               const citySlug = city.name.toLowerCase().replace(/\s+/g, '-');
               
               return (
-                <Card key={city.name} className="p-6 lg:p-8" data-testid={`card-city-${city.path.split('/').pop()}`}>
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
-                    <div className="flex-1">
-                      <h3 className="text-2xl font-bold mb-2" data-testid={`heading-city-${citySlug}`}>
-                        {city.name}
-                      </h3>
-                      <a 
-                        href={`tel:${city.phoneLink}`}
-                        className="text-primary font-poppins font-bold text-lg mb-4 inline-block hover-elevate px-2 py-1 rounded-md"
-                        data-testid={`link-phone-${citySlug}`}
-                      >
-                        {city.phone}
-                      </a>
-                      <p className="text-muted-foreground mb-4">
-                        {city.description}
-                      </p>
-                      
-                      <div className="mb-4">
-                        <h4 className="font-semibold mb-2">Neighborhoods Served:</h4>
-                        <div className="flex flex-wrap gap-2">
-                          {displayNeighborhoods.map((neighborhood, idx) => (
-                            <Badge 
-                              key={idx} 
-                              variant="secondary"
-                              className="text-sm"
-                              data-testid={`badge-neighborhood-${citySlug}-${idx}`}
-                            >
-                              {neighborhood}
-                            </Badge>
-                          ))}
-                          {hasMore && !isExpanded && (
-                            <Badge 
-                              variant="outline"
-                              className="text-sm cursor-pointer hover-elevate"
-                              onClick={() => toggleNeighborhoods(city.name)}
-                              data-testid={`badge-show-more-${citySlug}`}
-                            >
-                              +{moreCount} more
-                            </Badge>
-                          )}
-                          {hasMore && isExpanded && (
-                            <Badge 
-                              variant="outline"
-                              className="text-sm cursor-pointer hover-elevate"
-                              onClick={() => toggleNeighborhoods(city.name)}
-                              data-testid={`badge-show-less-${citySlug}`}
-                            >
-                              Show less
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-
-                      <p className="text-sm text-muted-foreground mb-4">
-                        <span className="font-semibold">Zip Codes:</span> {city.zipCodes}
-                      </p>
-
-                      <Button 
-                        asChild 
-                        variant="outline"
-                        data-testid={`button-learn-more-${citySlug}`}
-                      >
-                        <Link href={city.path}>
-                          Learn More About {city.name}
-                        </Link>
-                      </Button>
+                <Card key={city.name} className="p-5" data-testid={`card-city-${city.path.split('/').pop()}`}>
+                  <h3 className="text-xl font-bold mb-2" data-testid={`heading-city-${citySlug}`}>
+                    {city.name}
+                  </h3>
+                  <a 
+                    href={`tel:${city.phoneLink}`}
+                    className="text-primary font-poppins font-bold text-base mb-3 inline-block hover-elevate px-2 py-1 rounded-md"
+                    data-testid={`link-phone-${citySlug}`}
+                  >
+                    {city.phone}
+                  </a>
+                  <p className="text-muted-foreground text-sm mb-3">
+                    {city.description}
+                  </p>
+                  
+                  <div className="mb-3">
+                    <h4 className="font-semibold text-sm mb-2">Neighborhoods Served:</h4>
+                    <div className="flex flex-wrap gap-1.5">
+                      {displayNeighborhoods.map((neighborhood, idx) => (
+                        <Badge 
+                          key={idx} 
+                          variant="secondary"
+                          className="text-xs"
+                          data-testid={`badge-neighborhood-${citySlug}-${idx}`}
+                        >
+                          {neighborhood}
+                        </Badge>
+                      ))}
+                      {hasMore && !isExpanded && (
+                        <Badge 
+                          variant="outline"
+                          className="text-xs cursor-pointer hover-elevate"
+                          onClick={() => toggleNeighborhoods(city.name)}
+                          data-testid={`badge-show-more-${citySlug}`}
+                        >
+                          +{moreCount} more
+                        </Badge>
+                      )}
+                      {hasMore && isExpanded && (
+                        <Badge 
+                          variant="outline"
+                          className="text-xs cursor-pointer hover-elevate"
+                          onClick={() => toggleNeighborhoods(city.name)}
+                          data-testid={`badge-show-less-${citySlug}`}
+                        >
+                          Show less
+                        </Badge>
+                      )}
                     </div>
                   </div>
+
+                  <p className="text-xs text-muted-foreground mb-3">
+                    <span className="font-semibold">Zip Codes:</span> {city.zipCodes}
+                  </p>
+
+                  <Button 
+                    asChild 
+                    variant="outline"
+                    size="sm"
+                    data-testid={`button-learn-more-${citySlug}`}
+                  >
+                    <Link href={city.path}>
+                      Learn More About {city.name}
+                    </Link>
+                  </Button>
                 </Card>
               );
             })}
@@ -283,14 +280,14 @@ export default function ServiceAreas() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-4 max-w-5xl mx-auto mb-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 max-w-5xl mx-auto mb-8">
             {emergencyAreas.map((area, idx) => (
               <div 
                 key={idx}
-                className="bg-background p-4 rounded-lg text-center border hover-elevate"
+                className="bg-background p-3 rounded-lg text-center border hover-elevate"
                 data-testid={`card-emergency-${area.toLowerCase().replace(/\s+/g, '-')}`}
               >
-                <p className="font-medium">{area}</p>
+                <p className="font-medium text-sm">{area}</p>
               </div>
             ))}
           </div>
@@ -329,19 +326,24 @@ export default function ServiceAreas() {
             <h2 className="text-3xl lg:text-4xl font-bold mb-4" data-testid="heading-coverage">
               Our Coverage Area
             </h2>
-            <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+            <p className="text-lg text-muted-foreground max-w-3xl mx-auto mb-8">
               See our complete service area across Central Texas
             </p>
           </div>
           
-          <div className="bg-muted/30 rounded-lg p-8 text-center">
-            <div className="max-w-3xl mx-auto">
-              <p className="text-lg mb-4">
-                <strong>Austin Metro Area:</strong> Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, Kyle
-              </p>
-              <p className="text-lg">
-                <strong>Marble Falls Area:</strong> Marble Falls, Burnet, Horseshoe Bay, Kingsland, Granite Shoals, Bertram, Spicewood
-              </p>
+          <div className="max-w-5xl mx-auto">
+            <div className="aspect-[16/9] w-full rounded-lg overflow-hidden border shadow-sm">
+              <iframe
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d886116.3834857594!2d-98.36794814296875!3d30.464798900000004!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8644b599a0cc032f%3A0x5d9b464bd469d57a!2sAustin%2C%20TX!5e0!3m2!1sen!2sus!4v1234567890123!5m2!1sen!2sus"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                title="Economy Plumbing Services Coverage Area Map"
+                data-testid="map-coverage-area"
+              />
             </div>
           </div>
         </div>
