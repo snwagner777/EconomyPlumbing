@@ -198,6 +198,7 @@ Preferred communication style: Simple, everyday language.
 
 **Email Integration (Resend):**
 - ✅ LIVE - Resend connector configured for transactional emails
+- Business email: hello@plumbersthatcare.com
 - Contact forms throughout site send to: cdd5d54b6e6c4413@teamchat.zoom.us (Zoom Team Chat)
 - Forms include page context for tracking (e.g., "Water Heater Services - Service Page")
 - Email utility: `server/email.ts`
@@ -206,6 +207,13 @@ Preferred communication style: Simple, everyday language.
   - All service area pages (via ServiceAreaPage template)
   - Contact page
   - Includes name, phone, email, service type, location, urgency, message
+
+**Social Media Links (Correct URLs):**
+- Facebook: https://facebook.com/econoplumbing
+- Instagram: https://instagram.com/plumbersthatcare_atx
+- Yelp: https://yelp.com/biz/economy-plumbing-services-austin-3
+- Nextdoor: https://nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/
+- These are used in Footer component and Schema sameAs field
 
 **Call Tracking Services:**
 - ✅ LIVE - Dynamic phone number insertion with 90-day cookie tracking

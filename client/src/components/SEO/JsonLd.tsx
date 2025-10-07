@@ -31,11 +31,10 @@ export const localBusinessSchema = {
   "email": "hello@plumbersthatcare.com",
   "priceRange": "$$",
   "sameAs": [
-    "https://www.facebook.com/economyplumbingservices",
-    "https://www.instagram.com/economyplumbing",
-    "https://www.linkedin.com/company/economy-plumbing-services",
-    "https://www.yelp.com/biz/economy-plumbing-services",
-    "https://nextdoor.com/pages/economy-plumbing-services"
+    "https://facebook.com/econoplumbing",
+    "https://instagram.com/plumbersthatcare_atx",
+    "https://yelp.com/biz/economy-plumbing-services-austin-3",
+    "https://nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/"
   ],
   "address": [
     {
