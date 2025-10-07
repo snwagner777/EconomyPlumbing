@@ -265,7 +265,14 @@ export default function Header({ onScheduleClick }: HeaderProps) {
               (512) 368-9159
             </a>
             <Button 
-              onClick={() => (window as any).STWidgetManager("ws-open")}
+              onClick={() => {
+                console.log('Button clicked, STWidgetManager:', typeof (window as any).STWidgetManager);
+                if ((window as any).STWidgetManager) {
+                  (window as any).STWidgetManager("ws-open");
+                } else {
+                  console.error('STWidgetManager not found on window object');
+                }
+              }}
               className="bg-primary text-primary-foreground"
               data-testid="button-schedule-header"
             >
