@@ -85,22 +85,23 @@ function detectTrafficSource(): string {
 
 // Get the current traffic source (from cookie or detection)
 export function getTrafficSource(): string {
-  // Check if we already have a source in cookie
-  const cookieSource = getCookie(COOKIE_NAME);
+  // Always detect current source first
+  const detectedSource = detectTrafficSource();
   
+  // If we detected a non-default source, use it and update the cookie
+  if (detectedSource !== 'default') {
+    setCookie(COOKIE_NAME, detectedSource, COOKIE_DAYS);
+    return detectedSource;
+  }
+  
+  // No source detected, check if we have a stored source in cookie
+  const cookieSource = getCookie(COOKIE_NAME);
   if (cookieSource && PHONE_NUMBERS[cookieSource]) {
     return cookieSource;
   }
-
-  // Detect new source
-  const newSource = detectTrafficSource();
   
-  // Only set cookie if it's not default (we want to track actual sources)
-  if (newSource !== 'default') {
-    setCookie(COOKIE_NAME, newSource, COOKIE_DAYS);
-  }
-  
-  return newSource;
+  // No cookie either, return default
+  return 'default';
 }
 
 // Get phone number configuration for current source
@@ -114,21 +115,19 @@ export function replacePhoneNumbers(): void {
   const source = getTrafficSource();
   const phoneConfig = PHONE_NUMBERS[source] || PHONE_NUMBERS.default;
 
-  // Old numbers to replace (current hardcoded numbers)
-  const oldAustinNumbers = [
-    '(512) 368-9159',
-    '512-368-9159',
-    '512.368.9159',
-    '5123689159',
-    'tel:+15123689159'
-  ];
-
-  const oldMarbleFallsNumbers = [
-    '(830) 460-3565',
-    '830-460-3565',
-    '830.460.3565',
-    '8304603565',
-    'tel:+18304603565'
+  // All numbers that could appear on the page (legacy + all tracking numbers)
+  const allNumbersToReplace = [
+    // Legacy hardcoded numbers
+    '(512) 368-9159', '512-368-9159', '512.368.9159', '5123689159', 'tel:+15123689159',
+    '(830) 460-3565', '830-460-3565', '830.460.3565', '8304603565', 'tel:+18304603565',
+    // Default tracking number
+    '(512) 649-2811', '512-649-2811', '512.649.2811', '5126492811', 'tel:+15126492811',
+    // Facebook/Instagram tracking number
+    '(512) 575-3157', '512-575-3157', '512.575.3157', '5125753157', 'tel:+15125753157',
+    // Yelp tracking number
+    '(512) 893-7316', '512-893-7316', '512.893.7316', '5128937316', 'tel:+15128937316',
+    // Nextdoor tracking number
+    '(512) 846-9146', '512-846-9146', '512.846.9146', '5128469146', 'tel:+15128469146'
   ];
 
   // Replace text content
@@ -149,8 +148,8 @@ export function replacePhoneNumbers(): void {
       let text = textNode.textContent;
       let replaced = false;
 
-      // Replace all old number formats with new number
-      [...oldAustinNumbers, ...oldMarbleFallsNumbers].forEach(oldNum => {
+      // Replace all number formats with the correct tracking number
+      allNumbersToReplace.forEach(oldNum => {
         if (text.includes(oldNum) && !oldNum.startsWith('tel:')) {
           text = text.replace(new RegExp(oldNum.replace(/[().\s-]/g, '\\$&'), 'g'), phoneConfig.display);
           replaced = true;
@@ -167,7 +166,7 @@ export function replacePhoneNumbers(): void {
   const links = document.querySelectorAll('a[href^="tel:"]');
   links.forEach(link => {
     const href = link.getAttribute('href');
-    if (href && (oldAustinNumbers.includes(href) || oldMarbleFallsNumbers.includes(href))) {
+    if (href && allNumbersToReplace.includes(href)) {
       link.setAttribute('href', phoneConfig.tel);
     }
   });

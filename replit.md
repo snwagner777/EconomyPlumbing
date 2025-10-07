@@ -169,11 +169,15 @@ Preferred communication style: Simple, everyday language.
   - Includes name, phone, email, service type, location, urgency, message
 
 **Call Tracking Services:**
-- Documentation for CallRail, CallTrackingMetrics, and DialogTech in `DYNAMIC_PHONE_TRACKING.md`
-- Static phone numbers currently displayed:
-  - Austin: (512) 368-9159
-  - Marble Falls: (830) 460-3565
-- Dynamic insertion ready for implementation
+- ✅ LIVE - Dynamic phone number insertion with 90-day cookie tracking
+  - Implementation: `client/src/lib/dynamicPhoneNumbers.ts`
+  - Detects traffic source from URL parameters (utm_source, fbclid) and referrers
+  - Default (no source): (512) 649-2811
+  - Facebook/Instagram: (512) 575-3157
+  - Yelp: (512) 893-7316
+  - Nextdoor: (512) 846-9146
+  - Replaces both displayed phone text and tel: links site-wide
+  - Legacy numbers from original site: Austin (512) 368-9159, Marble Falls (830) 460-3565
 
 ### SEO & Analytics
 - JSON-LD structured data for local business schema

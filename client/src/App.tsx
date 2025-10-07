@@ -4,6 +4,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { initDynamicPhoneNumbers, replacePhoneNumbers } from "@/lib/dynamicPhoneNumbers";
 import Home from "@/pages/Home";
 import WaterHeaterServices from "@/pages/WaterHeaterServices";
 import DrainCleaning from "@/pages/DrainCleaning";
@@ -58,6 +59,8 @@ function ScrollToTop() {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Re-run phone number replacement on route change
+    setTimeout(replacePhoneNumbers, 100);
   }, [location]);
 
   return null;
@@ -148,6 +151,11 @@ function Router() {
 }
 
 function App() {
+  useEffect(() => {
+    // Initialize dynamic phone number tracking
+    initDynamicPhoneNumbers();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
