@@ -70,7 +70,6 @@ export default function GasServices() {
       ]}
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
-        { title: "Emergency Services", path: "/emergency" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Leak Repair", path: "/leak-repair" }
       ]}

@@ -71,7 +71,6 @@ export default function LeakRepair() {
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Drain Cleaning", path: "/drain-cleaning" },
-        { title: "Emergency Services", path: "/emergency" },
         { title: "Toilet & Faucet Services", path: "/toilet-faucet" }
       ]}
     />

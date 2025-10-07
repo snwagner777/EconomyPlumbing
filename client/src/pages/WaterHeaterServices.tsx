@@ -70,7 +70,6 @@ export default function WaterHeaterServices() {
       ]}
       relatedServices={[
         { title: "Leak Repair Services", path: "/leak-repair" },
-        { title: "Emergency Plumbing", path: "/emergency" },
         { title: "Gas Services", path: "/gas-services" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" }
       ]}

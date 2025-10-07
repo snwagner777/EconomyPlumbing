@@ -86,8 +86,7 @@ const serviceCategories = [
     services: [
       { name: "Commercial Plumbing", path: "/commercial-plumbing" },
       { name: "Restaurant Plumbing", path: "/commercial-plumbing" },
-      { name: "Backflow Certification", path: "/backflow-testing" },
-      { name: "Emergency Service", path: "/emergency" }
+      { name: "Backflow Certification", path: "/backflow-testing" }
     ]
   }
 ];
