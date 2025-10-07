@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, Redirect } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -34,12 +34,31 @@ import About from "@/pages/About";
 import Store from "@/pages/Store";
 import Checkout from "@/pages/Checkout";
 import ScheduleAppointment from "@/pages/ScheduleAppointment";
+import BackflowTesting from "@/pages/BackflowTesting";
+import DrainageSolutions from "@/pages/DrainageSolutions";
+import FaucetInstallation from "@/pages/FaucetInstallation";
+import GarbageDisposalRepair from "@/pages/GarbageDisposalRepair";
+import GasLeakDetection from "@/pages/GasLeakDetection";
+import HydroJetting from "@/pages/HydroJetting";
+import PermitResolution from "@/pages/PermitResolution";
+import RooterServices from "@/pages/RooterServices";
+import SewagePumpServices from "@/pages/SewagePumpServices";
+import WaterPressureSolutions from "@/pages/WaterPressureSolutions";
+import WaterHeaterGuide from "@/pages/WaterHeaterGuide";
+import Services from "@/pages/Services";
+import Contact from "@/pages/Contact";
+import FAQ from "@/pages/FAQ";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import RefundReturns from "@/pages/RefundReturns";
+import MembershipBenefits from "@/pages/MembershipBenefits";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      
+      {/* Main service pages */}
       <Route path="/water-heater-services" component={WaterHeaterServices} />
       <Route path="/drain-cleaning" component={DrainCleaning} />
       <Route path="/leak-repair" component={LeakRepair} />
@@ -47,10 +66,31 @@ function Router() {
       <Route path="/gas-services" component={GasServices} />
       <Route path="/backflow" component={BackflowServices} />
       <Route path="/commercial-plumbing" component={CommercialPlumbing} />
+      
+      {/* Additional service pages */}
+      <Route path="/backflow-testing" component={BackflowTesting} />
+      <Route path="/drainage-solutions" component={DrainageSolutions} />
+      <Route path="/drain-cleaning-services" component={DrainCleaning} />
+      <Route path="/faucet-installation" component={FaucetInstallation} />
+      <Route path="/garbage-disposal-repair" component={GarbageDisposalRepair} />
+      <Route path="/gas-leak-detection" component={GasLeakDetection} />
+      <Route path="/gas-line-services" component={GasServices} />
+      <Route path="/hydro-jetting-services" component={HydroJetting} />
+      <Route path="/permit-resolution-services" component={PermitResolution} />
+      <Route path="/rooter-services" component={RooterServices} />
+      <Route path="/sewage-pump-services" component={SewagePumpServices} />
+      <Route path="/services" component={Services} />
+      <Route path="/toilet-repair-services" component={ToiletFaucet} />
+      <Route path="/water-heater-guide" component={WaterHeaterGuide} />
+      <Route path="/water-leak-repair" component={LeakRepair} />
+      <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
+      
+      {/* Service areas */}
       <Route path="/service-area" component={ServiceAreas} />
       <Route path="/plumber-austin" component={AustinServiceArea} />
-      <Route path="/plumber-in-cedar-park–tx" component={CedarParkServiceArea} />
+      <Route path="/plumber-in-cedar-park--tx" component={CedarParkServiceArea} />
       <Route path="/plumber-leander" component={LeanderServiceArea} />
+      <Route path="/plumber-in-leander--tx524c3ae3" component={LeanderServiceArea} />
       <Route path="/round-rock-plumber" component={RoundRockServiceArea} />
       <Route path="/plumber-georgetown" component={GeorgetownServiceArea} />
       <Route path="/plumber-pflugerville" component={PflugervilleServiceArea} />
@@ -64,13 +104,31 @@ function Router() {
       <Route path="/plumber-granite-shoals" component={GraniteShoalsServiceArea} />
       <Route path="/plumber-bertram" component={BertramServiceArea} />
       <Route path="/plumber-spicewood" component={SpicewoodServiceArea} />
-      <Route path="/schedule-appointment" component={ScheduleAppointment} />
+      
+      {/* Utility pages */}
+      <Route path="/contact" component={Contact} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/privacy-policy" component={PrivacyPolicy} />
+      <Route path="/refund_returns" component={RefundReturns} />
+      <Route path="/membership-benefits" component={MembershipBenefits} />
+      
+      {/* Store & Shop */}
+      <Route path="/store/checkout/:slug" component={Checkout} />
+      <Route path="/store" component={Store} />
+      <Route path="/shop" component={Store} />
+      <Route path="/category/memberships" component={Store} />
+      <Route path="/category/products" component={Store} />
+      <Route path="/signin">{() => <Redirect to="/store" />}</Route>
+      
+      {/* Blog */}
       <Route path="/blog/:slug" component={BlogPost} />
       <Route path="/fall-plumbing-tips" component={BlogPost} />
       <Route path="/blog" component={Blog} />
+      
+      {/* Other pages */}
+      <Route path="/schedule-appointment" component={ScheduleAppointment} />
       <Route path="/about" component={About} />
-      <Route path="/store/checkout/:slug" component={Checkout} />
-      <Route path="/store" component={Store} />
+      
       <Route component={NotFound} />
     </Switch>
   );
