@@ -33,6 +33,17 @@ Preferred communication style: Simple, everyday language.
 ### Routing
 - **Client-Side Routes:** Includes Home, About, Contact, Services (20+ specific pages), Service Areas (16 specific city pages), Blog, Store, FAQ, Privacy Policy, Refund/Returns, and VIP Membership benefits.
 
+## Recent Changes
+
+### October 2025 - SEO & Content Uniqueness Improvements
+- **Canonical URLs:** Implemented SSR-compatible canonical URLs across all 48+ pages. Templates now require explicit canonical props to ensure proper rendering during server-side generation.
+- **Service Area Page Differentiation:** Updated ServiceAreaPage template to support unique content per city:
+  - Added optional `heroImage`, `heroSubtitle`, and `cityHighlight` props
+  - Implemented 9 unique hero images across 10 smaller service area pages
+  - Each city page now has localized content (Buda, Spicewood, Liberty Hill, Marble Falls, Granite Shoals, Burnet, Kyle, Bertram, Horseshoe Bay, Kingsland)
+  - Eliminated duplicate content issues for improved local SEO performance
+- **Cedar Park Route:** Fixed route consistency to use `/plumber-in-cedar-park--tx` (double hyphen) across all internal links and components.
+
 ## External Dependencies
 
 - **Payment Processing:** Stripe (`@stripe/stripe-js`, `@stripe/react-stripe-js`) for checkout.
