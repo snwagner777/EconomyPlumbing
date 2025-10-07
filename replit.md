@@ -132,10 +132,10 @@ Preferred communication style: Simple, everyday language.
 
 ### October 2025 - Additional PageSpeed Optimizations (Forced Reflows & Render-Blocking)
 - **Render-Blocking Font Optimization:**
-  - Replaced preload font strategy with inline critical @font-face CSS in `client/index.html`
-  - Async loaded full font stylesheet using media="print" trick (becomes media="all" after load)
-  - Eliminates render-blocking while preventing FOIT (Flash of Invisible Text)
-  - Provides immediate font rendering with system fallback
+  - Implemented non-blocking font loading using media="print" trick in `client/index.html`
+  - Font stylesheet loads asynchronously, then switches to media="all" after load
+  - Uses font-display=swap to show fallback text immediately while fonts load
+  - Reduces render-blocking resources while maintaining text visibility
 
 - **Forced Reflow Elimination:**
   - Optimized `client/src/lib/dynamicPhoneNumbers.ts` to batch DOM reads and writes
