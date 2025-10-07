@@ -1,5 +1,6 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
+import SchedulerModal from "@/components/SchedulerModal";
 import ServiceCard from "@/components/ServiceCard";
 import WhyChooseCard from "@/components/WhyChooseCard";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
@@ -171,6 +172,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
+      <SchedulerModal />
       <Header />
       <Hero />
 
