@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ContactFormSection from "@/components/ContactFormSection";
 import heroImage from "@assets/stock_images/professional_plumber_13d3a463.jpg";
 
 declare global {
@@ -258,7 +259,7 @@ export default function ServiceAreaPage({
 
           <Button 
             size="lg"
-            onClick={() => setSchedulerOpen(true)}
+            onClick={() => window.STWidgetManager && window.STWidgetManager("ws-open")}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >
@@ -266,6 +267,14 @@ export default function ServiceAreaPage({
           </Button>
         </div>
       </section>
+
+      <ContactFormSection 
+        title={`Request Service in ${city}`}
+        description={`Fill out the form and we'll contact you within 1 hour to discuss your plumbing needs in ${city}.`}
+        defaultLocation={city}
+        pageContext={`${city} Service Area Page`}
+        className="py-16 lg:py-24"
+      />
 
       <Footer />
     </div>

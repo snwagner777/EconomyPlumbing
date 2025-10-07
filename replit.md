@@ -149,9 +149,20 @@ Preferred communication style: Simple, everyday language.
 ### Third-Party Service Integration Points
 
 **ServiceTitan (Online Scheduler):**
-- Integration guide provided in `SERVICETITAN_INTEGRATION.md`
-- Placeholder buttons throughout site ready for embed code
-- SchedulerModal component built for service type selection (plumbing/water treatment/irrigation)
+- ✅ LIVE - Fully integrated with tenant ID: 3ce4a586-8427-4716-9ac6-46cb8bf7ac4f
+- All schedule buttons use: `window.STWidgetManager("ws-open")`
+- Working across all pages (service pages, location pages, headers)
+
+**Email Integration (Resend):**
+- ✅ LIVE - Resend connector configured for transactional emails
+- Contact forms throughout site send to: cdd5d54b6e6c4413@teamchat.zoom.us (Zoom Team Chat)
+- Forms include page context for tracking (e.g., "Water Heater Services - Service Page")
+- Email utility: `server/email.ts`
+- Contact forms on:
+  - All service pages (via ServicePage template)
+  - All service area pages (via ServiceAreaPage template)
+  - Contact page
+  - Includes name, phone, email, service type, location, urgency, message
 
 **Call Tracking Services:**
 - Documentation for CallRail, CallTrackingMetrics, and DialogTech in `DYNAMIC_PHONE_TRACKING.md`

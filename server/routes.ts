@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import Stripe from "stripe";
+import { sendContactFormEmail } from "./email";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/blog", async (req, res) => {
@@ -52,9 +53,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const validatedData = insertContactSubmissionSchema.parse(req.body);
       const submission = await storage.createContactSubmission(validatedData);
       
-      // TODO: Send email to cdd5d54b6e6c4413@teamchat.zoom.us
-      // Email integration needs to be configured by user
-      // Use Resend or SendGrid integration from Replit
+      // Send email notification
+      try {
+        await sendContactFormEmail({
+          name: validatedData.name,
+          phone: validatedData.phone,
+          email: validatedData.email || undefined,
+          service: validatedData.service || undefined,
+          location: validatedData.location || undefined,
+          urgency: validatedData.urgency || undefined,
+          message: validatedData.message || undefined,
+          pageContext: validatedData.pageContext || undefined,
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Continue even if email fails - submission is still saved
+      }
       
       res.json({ 
         success: true, 

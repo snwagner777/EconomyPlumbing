@@ -9,7 +9,11 @@ import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-export default function ContactForm() {
+interface ContactFormProps {
+  pageContext?: string;
+}
+
+export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -18,7 +22,8 @@ export default function ContactForm() {
     service: "",
     location: "",
     urgency: "",
-    message: ""
+    message: "",
+    pageContext: pageContext
   });
 
   const contactMutation = useMutation({
@@ -38,7 +43,8 @@ export default function ContactForm() {
         service: "",
         location: "",
         urgency: "",
-        message: ""
+        message: "",
+        pageContext: pageContext
       });
     },
     onError: (error: Error) => {

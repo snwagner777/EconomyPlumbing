@@ -30,6 +30,7 @@ interface ContactFormSectionProps {
   description?: string;
   defaultService?: string;
   defaultLocation?: string;
+  pageContext?: string;
   className?: string;
 }
 
@@ -38,6 +39,7 @@ export default function ContactFormSection({
   description = "Contact us today for expert plumbing services. We'll respond within 1 hour during business hours.",
   defaultService,
   defaultLocation,
+  pageContext = "Website Contact Form",
   className = ""
 }: ContactFormSectionProps) {
   const { toast } = useToast();
@@ -53,6 +55,7 @@ export default function ContactFormSection({
       location: defaultLocation || "",
       urgency: "",
       message: "",
+      pageContext: pageContext,
     },
   });
 

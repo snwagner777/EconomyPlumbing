@@ -46,6 +46,7 @@ export const contactSubmissions = pgTable("contact_submissions", {
   location: text("location"),
   urgency: text("urgency"),
   message: text("message"),
+  pageContext: text("page_context"),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 });
 

@@ -10,6 +10,7 @@ import {
 import { Phone, CheckCircle, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import ContactFormSection from "@/components/ContactFormSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 
 declare global {
@@ -219,6 +220,13 @@ export default function ServicePage({
           </Button>
         </div>
       </section>
+
+      <ContactFormSection 
+        title="Request Your Free Estimate"
+        description="Fill out the form below and we'll contact you within 1 hour during business hours to discuss your plumbing needs."
+        pageContext={`${heroTitle} - Service Page`}
+        className="py-16 lg:py-24 bg-muted/30"
+      />
 
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
