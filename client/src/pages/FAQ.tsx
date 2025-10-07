@@ -23,7 +23,7 @@ const faqCategories = [
       },
       {
         question: "Are you licensed and insured?",
-        answer: "Yes, we are fully licensed, bonded, and insured. Our plumbers hold all required certifications including Master Plumber licenses, gas fitting certifications, and backflow tester certifications."
+        answer: "Yes, we are fully licensed and insured. Our plumbers hold all required certifications including Master Plumber licenses, gas fitting certifications, and backflow tester certifications."
       },
       {
         question: "Do you offer emergency services?",

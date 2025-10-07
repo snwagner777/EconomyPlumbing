@@ -237,7 +237,7 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
               <div>
                 <h4 className="font-semibold mb-3">Licensed & Insured</h4>
                 <p className="text-muted-foreground">Texas Master Plumber License #M-41147</p>
-                <p className="text-muted-foreground">Fully Insured & Bonded</p>
+                <p className="text-muted-foreground">Fully Insured</p>
               </div>
 
               <div>
