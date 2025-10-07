@@ -2,7 +2,11 @@ import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/generated_images/Plumber_installing_water_heater_3f7d8a09.png";
 
-export default function Hero() {
+interface HeroProps {
+  onScheduleClick?: () => void;
+}
+
+export default function Hero({ onScheduleClick }: HeroProps) {
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       <div className="absolute inset-0">
@@ -29,6 +33,7 @@ export default function Hero() {
           <div className="flex flex-wrap gap-4 mb-12">
             <Button 
               size="lg" 
+              onClick={onScheduleClick}
               className="bg-primary text-primary-foreground text-lg px-8"
               data-testid="button-schedule-hero"
             >

@@ -19,8 +19,11 @@ import testimonial1 from "@assets/generated_images/Customer_testimonial_portrait
 import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f29d918d.png";
 import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 export default function Home() {
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
+  
   const services = [
     {
       icon: Droplets,
@@ -172,9 +175,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <SchedulerModal />
-      <Header />
-      <Hero />
+      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
+      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Hero onScheduleClick={() => setSchedulerOpen(true)} />
 
       <section className="py-16 lg:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -192,7 +195,7 @@ export default function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button size="lg" className="bg-primary" data-testid="button-schedule-services">
+            <Button onClick={() => setSchedulerOpen(true)} size="lg" className="bg-primary" data-testid="button-schedule-services">
               Schedule Service Today
             </Button>
           </div>

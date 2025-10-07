@@ -1,19 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Droplets, Leaf, Sprout } from "lucide-react";
 
-export default function SchedulerModal() {
-  const [open, setOpen] = useState(false);
+interface SchedulerModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+export default function SchedulerModal({ open, onOpenChange }: SchedulerModalProps) {
   const [selectedService, setSelectedService] = useState<string | null>(null);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setOpen(true);
-    }, 1000);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   const services = [
     { id: "plumbing", name: "Plumbing", icon: Droplets },
@@ -27,12 +23,12 @@ export default function SchedulerModal() {
     console.log("Selected service:", serviceId);
     // For now, just close the modal after selection
     setTimeout(() => {
-      setOpen(false);
+      onOpenChange(false);
     }, 500);
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md" data-testid="modal-scheduler">
         <DialogHeader>
           <DialogTitle className="text-2xl text-center mb-2">Welcome to Web Scheduler</DialogTitle>
@@ -62,7 +58,7 @@ export default function SchedulerModal() {
         <div className="text-center">
           <Button 
             variant="ghost" 
-            onClick={() => setOpen(false)}
+            onClick={() => onOpenChange(false)}
             data-testid="button-close-scheduler"
           >
             Close

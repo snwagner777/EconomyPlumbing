@@ -4,7 +4,11 @@ import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/Economy Plumbing Services logo_1759801055079.jpg";
 
-export default function Header() {
+interface HeaderProps {
+  onScheduleClick?: () => void;
+}
+
+export default function Header({ onScheduleClick }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [location] = useLocation();
@@ -109,11 +113,11 @@ export default function Header() {
               <p className="text-xs text-muted-foreground">Austin Area</p>
             </div>
             <Button 
-              asChild 
+              onClick={onScheduleClick}
               className="bg-primary text-primary-foreground"
               data-testid="button-schedule-header"
             >
-              <Link href="/contact">Schedule Service</Link>
+              Schedule Service
             </Button>
           </div>
 
@@ -172,7 +176,7 @@ export default function Header() {
                 <Phone className="w-5 h-5" />
                 (830) 460-3565 <span className="text-sm font-normal">Marble Falls</span>
               </a>
-              <Button className="w-full bg-primary" data-testid="mobile-button-schedule">
+              <Button onClick={onScheduleClick} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service
               </Button>
             </div>
