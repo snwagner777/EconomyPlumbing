@@ -44,23 +44,11 @@ export default function Hero({ onScheduleClick }: HeroProps) {
               variant="outline" 
               className="text-white border-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg"
               asChild
-              data-testid="button-call-austin-hero"
+              data-testid="button-call-hero"
             >
               <a href="tel:5126492811" className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                Austin: (512) 649-2811
-              </a>
-            </Button>
-            <Button 
-              size="lg" 
-              variant="outline" 
-              className="text-white border-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg"
-              asChild
-              data-testid="button-call-marble-falls-hero"
-            >
-              <a href="tel:8304603565" className="flex items-center gap-2">
-                <Phone className="w-5 h-5" />
-                Marble Falls: (830) 460-3565
+                (512) 649-2811
               </a>
             </Button>
           </div>
