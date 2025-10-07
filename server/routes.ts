@@ -4,8 +4,32 @@ import { storage } from "./storage";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
+import path from "path";
+import fs from "fs";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Serve robots.txt
+  app.get("/robots.txt", (req, res) => {
+    const robotsPath = path.resolve(import.meta.dirname, "..", "public", "robots.txt");
+    if (fs.existsSync(robotsPath)) {
+      res.type("text/plain");
+      res.sendFile(robotsPath);
+    } else {
+      res.status(404).send("Not found");
+    }
+  });
+
+  // Serve sitemap.xml
+  app.get("/sitemap.xml", (req, res) => {
+    const sitemapPath = path.resolve(import.meta.dirname, "..", "public", "sitemap.xml");
+    if (fs.existsSync(sitemapPath)) {
+      res.type("application/xml");
+      res.sendFile(sitemapPath);
+    } else {
+      res.status(404).send("Not found");
+    }
+  });
+
   app.get("/api/blog", async (req, res) => {
     try {
       const posts = await storage.getBlogPosts();
