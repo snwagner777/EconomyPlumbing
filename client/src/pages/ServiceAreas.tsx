@@ -200,7 +200,7 @@ export default function ServiceAreas() {
                   </h3>
                   <a 
                     href={`tel:${city.phoneLink}`}
-                    className="text-primary font-poppins font-bold text-sm mb-2 inline-block hover-elevate px-2 py-1 rounded-md"
+                    className="text-foreground font-poppins font-bold text-sm mb-2 inline-block hover-elevate px-2 py-1 rounded-md"
                     data-testid={`link-phone-${citySlug}`}
                   >
                     {city.phone}

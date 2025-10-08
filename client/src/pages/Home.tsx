@@ -295,7 +295,7 @@ export default function Home() {
                 </ul>
                 <a 
                   href="#footer-services" 
-                  className="inline-flex items-center gap-2 text-primary font-medium hover-elevate px-2 py-1 rounded-md"
+                  className="inline-flex items-center gap-2 text-foreground font-medium hover-elevate px-2 py-1 rounded-md"
                   data-testid="link-view-all-services"
                   onClick={(e) => {
                     e.preventDefault();
