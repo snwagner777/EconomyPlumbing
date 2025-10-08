@@ -22,9 +22,9 @@ Preferred communication style: Simple, everyday language.
 ### Backend
 - **Framework:** Express.js with TypeScript.
 - **API:** RESTful design with endpoints for `/api/blog`, `/api/blog/:slug`, `/api/products`, `/api/products/:slug`, `/api/contact`, and `/api/reviews`.
-- **Data Layer:** Drizzle ORM for PostgreSQL (currently in-memory with planned migration).
-- **Data Models:** Users, Blog Posts, Products, Contact Submissions.
-- **Google Reviews Integration:** Fetches and caches Google Places API reviews with daily background refresh (non-blocking server startup). Reviews are auto-categorized into 11 service types (e.g., water_heater, drain) based on keyword analysis. Provides an API endpoint (`/api/reviews`) with 30-minute browser caching (Cache-Control headers), filtering by category, keywords, and minimum rating.
+- **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
+- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews.
+- **Google Reviews Integration:** Fetches real reviews from Google Places API and stores in PostgreSQL database. Background refresh every 24 hours (non-blocking server startup) fetches latest reviews and updates database. Reviews auto-categorized into 11 service types (e.g., water_heater, drain, toilet) based on keyword analysis. Provides API endpoint (`/api/reviews`) with 30-minute browser caching (Cache-Control headers), filtering by category, keywords, and minimum rating. Single source of truth for all review displays across the site.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
