@@ -279,12 +279,10 @@ function CheckoutForm({ product, clientSecret, paymentIntentId }: { product: Pro
         <PaymentElement 
           options={{
             layout: {
-              type: 'tabs',
+              type: 'accordion',
               defaultCollapsed: false,
-            },
-            wallets: {
-              applePay: 'auto',
-              googlePay: 'auto',
+              radios: true,
+              spacedAccordionItems: true,
             },
           }}
         />
