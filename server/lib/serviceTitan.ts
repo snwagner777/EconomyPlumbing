@@ -207,27 +207,36 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Create membership for customer
+   * Create invoice with membership pricebook item
+   * This creates the membership and activates it for the customer
    */
-  async createMembership(customerId: number, membershipTypeId: number): Promise<ServiceTitanMembership> {
+  async createMembershipInvoice(
+    customerId: number, 
+    membershipTypeId: number,
+    amount: number
+  ): Promise<ServiceTitanInvoice> {
     try {
-      const membershipData = {
+      const invoiceData = {
         customerId,
-        membershipTypeId,
-        // Add other required fields based on your membership setup
+        items: [{
+          skuId: membershipTypeId, // The membership pricebook item
+          quantity: 1,
+          price: amount,
+        }],
+        // Add other required invoice fields
       };
 
-      const result = await this.request<{ data: ServiceTitanMembership }>(
-        '/memberships',
+      const result = await this.request<{ data: ServiceTitanInvoice }>(
+        '/accounting/v2/invoices',
         {
           method: 'POST',
-          body: JSON.stringify(membershipData),
+          body: JSON.stringify(invoiceData),
         }
       );
 
       return result.data;
     } catch (error) {
-      console.error('[ServiceTitan] Create membership error:', error);
+      console.error('[ServiceTitan] Create membership invoice error:', error);
       throw error;
     }
   }
@@ -258,7 +267,7 @@ class ServiceTitanAPI {
    * Complete membership purchase workflow
    * 1. Search for customer
    * 2. Create customer if not found
-   * 3. Create membership
+   * 3. Create invoice with membership item (activates membership)
    * 4. Mark invoice as paid
    */
   async processMembershipPurchase(
@@ -302,30 +311,25 @@ class ServiceTitanAPI {
         console.log(`[ServiceTitan] Found existing customer with ID: ${customer.id}`);
       }
 
-      // Step 3: Create membership
-      console.log('[ServiceTitan] Creating membership...');
-      const membership = await this.createMembership(customer.id, membershipTypeId);
-      console.log(`[ServiceTitan] Created membership with ID: ${membership.id}`);
+      // Step 3: Create invoice with membership pricebook item
+      // This creates AND activates the membership
+      console.log('[ServiceTitan] Creating membership invoice...');
+      const invoice = await this.createMembershipInvoice(
+        customer.id, 
+        membershipTypeId,
+        purchaseData.amount / 100 // Convert cents to dollars
+      );
+      console.log(`[ServiceTitan] Created invoice with ID: ${invoice.id}`);
 
-      // Step 4: Get invoice ID and mark as paid
-      // TODO: IMPORTANT - Update this based on your ServiceTitan API response
-      // The actual invoice ID should come from:
-      // 1. The membership creation response (if it includes invoiceId)
-      // 2. A separate query to get the invoice (e.g., GET /invoices?customerId=X&membershipId=Y)
-      // 3. The ServiceTitan webhook when the invoice is created
-      // 
-      // For now, we'll use the membership ID as a placeholder, but this MUST be updated
-      // with the real invoice ID retrieval logic before production use.
-      const invoiceId = membership.id; // PLACEHOLDER - replace with actual invoice ID
-      
+      // Step 4: Mark invoice as paid
       console.log('[ServiceTitan] Marking invoice as paid...');
-      await this.markInvoicePaid(invoiceId, purchaseData.amount / 100); // Convert cents to dollars
+      await this.markInvoicePaid(invoice.id, purchaseData.amount / 100); // Convert cents to dollars
       console.log('[ServiceTitan] Invoice marked as paid');
 
       return {
         customerId: customer.id,
-        membershipId: membership.id,
-        invoiceId,
+        membershipId: invoice.id, // The invoice ID serves as membership reference
+        invoiceId: invoice.id,
       };
     } catch (error) {
       console.error('[ServiceTitan] Process membership purchase error:', error);
