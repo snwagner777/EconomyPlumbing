@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import { Link } from "wouter";
@@ -11,7 +12,7 @@ interface ServiceCardProps {
   image?: string;
 }
 
-export default function ServiceCard({ icon: Icon, title, description, features, link, image }: ServiceCardProps) {
+const ServiceCard = memo(({ icon: Icon, title, description, features, link, image }: ServiceCardProps) => {
   return (
     <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border">
       {image && (
@@ -49,4 +50,8 @@ export default function ServiceCard({ icon: Icon, title, description, features, 
       </Link>
     </Card>
   );
-}
+});
+
+ServiceCard.displayName = "ServiceCard";
+
+export default ServiceCard;

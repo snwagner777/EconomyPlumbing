@@ -22,8 +22,19 @@ app.use(compression({
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from attached_assets directory
-app.use('/attached_assets', express.static(path.resolve(import.meta.dirname, '..', 'attached_assets')));
+// Serve static files from attached_assets directory with aggressive caching
+app.use('/attached_assets', express.static(path.resolve(import.meta.dirname, '..', 'attached_assets'), {
+  maxAge: '1y', // Cache for 1 year
+  immutable: true, // Assets are immutable (versioned)
+  setHeaders: (res, filePath) => {
+    // Set cache headers for static assets
+    if (filePath.endsWith('.jpg') || filePath.endsWith('.jpeg') || 
+        filePath.endsWith('.png') || filePath.endsWith('.webp') || 
+        filePath.endsWith('.svg') || filePath.endsWith('.gif')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    }
+  }
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();

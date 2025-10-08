@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, ArrowRight } from "lucide-react";
@@ -9,7 +10,7 @@ interface BlogCardProps {
   post: BlogPost;
 }
 
-export default function BlogCard({ post }: BlogCardProps) {
+const BlogCard = memo(({ post }: BlogCardProps) => {
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-shadow border border-card-border">
       {post.featuredImage ? (
@@ -63,4 +64,8 @@ export default function BlogCard({ post }: BlogCardProps) {
       </div>
     </Card>
   );
-}
+});
+
+BlogCard.displayName = "BlogCard";
+
+export default BlogCard;

@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { type LucideIcon } from "lucide-react";
 
 interface WhyChooseCardProps {
@@ -6,7 +7,7 @@ interface WhyChooseCardProps {
   description: string;
 }
 
-export default function WhyChooseCard({ icon: Icon, title, description }: WhyChooseCardProps) {
+const WhyChooseCard = memo(({ icon: Icon, title, description }: WhyChooseCardProps) => {
   return (
     <div className="text-center">
       <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mx-auto mb-4">
@@ -16,4 +17,8 @@ export default function WhyChooseCard({ icon: Icon, title, description }: WhyCho
       <p className="text-muted-foreground">{description}</p>
     </div>
   );
-}
+});
+
+WhyChooseCard.displayName = "WhyChooseCard";
+
+export default WhyChooseCard;

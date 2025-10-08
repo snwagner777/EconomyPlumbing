@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Star } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,7 +12,7 @@ interface TestimonialCardProps {
   image?: string;
 }
 
-export default function TestimonialCard({ name, location, service, rating, testimonial, image }: TestimonialCardProps) {
+const TestimonialCard = memo(({ name, location, service, rating, testimonial, image }: TestimonialCardProps) => {
   const initials = name.split(' ').map(n => n[0]).join('');
   
   return (
@@ -38,4 +39,8 @@ export default function TestimonialCard({ name, location, service, rating, testi
       </div>
     </Card>
   );
-}
+});
+
+TestimonialCard.displayName = "TestimonialCard";
+
+export default TestimonialCard;
