@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
+import ReviewsSection from "@/components/ReviewsSection";
 
 const serviceCategories = [
   {
@@ -199,6 +200,12 @@ export default function Services() {
           </Button>
         </div>
       </section>
+
+      <ReviewsSection 
+        title="Trusted by Central Texas Homeowners"
+        maxReviews={3}
+        minRating={4}
+      />
 
       <Footer />
     </div>

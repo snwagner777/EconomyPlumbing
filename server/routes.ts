@@ -148,8 +148,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       let filteredReviews = reviews.map(r => ({
         authorName: r.authorName,
-        authorUrl: r.authorUrl,
-        profilePhotoUrl: r.profilePhotoUrl,
+        authorUrl: r.authorUrl ?? null,
+        profilePhotoUrl: r.profilePhotoUrl ?? null,
         rating: r.rating,
         text: r.text,
         relativeTime: r.relativeTime,

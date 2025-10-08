@@ -15,8 +15,13 @@ export default function ReviewsSection({
   title = "What Our Customers Say",
   maxReviews = 3
 }: ReviewsSectionProps) {
+  const keywordsParam = keywords.length > 0 ? keywords.join(',') : '';
+  const queryString = keywordsParam 
+    ? `?keywords=${encodeURIComponent(keywordsParam)}&minRating=${minRating}`
+    : `?minRating=${minRating}`;
+    
   const { data: reviews, isLoading } = useQuery<GoogleReview[]>({
-    queryKey: ['/api/reviews', { keywords: keywords.join(','), minRating }],
+    queryKey: [`/api/reviews${queryString}`],
     staleTime: 1000 * 60 * 30,
   });
 

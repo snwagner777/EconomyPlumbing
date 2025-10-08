@@ -35,6 +35,43 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
+### October 2025 - Google Reviews Integration
+- **Automated Review System:**
+  - Google Places API integration fetches and caches reviews automatically
+  - Backend endpoint (`/api/reviews`) with smart caching and filtering
+  - Reviews auto-update on first load or manual refresh
+  - Keyword filtering for contextual review display per page
+  - Minimum rating filter (default: 4+ stars only)
+  
+- **ReviewsSection Component:**
+  - Responsive grid layout with author photos, ratings, review text
+  - Direct links to Google profiles for attribution
+  - Loading skeletons for smooth UX
+  - Customizable title, max reviews count, keyword filters
+  
+- **Strategic Placement:**
+  - Homepage: General reviews (3 shown)
+  - Services page: Service-related reviews filtered by keywords
+  - Austin service area: Location-specific reviews ("austin", "professional")
+  - All pages link to full Google reviews
+  
+- **Technical Implementation:**
+  - Google Reviews stored in memory storage (MemStorage)
+  - Reviews persist until manual refresh
+  - Full schema support (GoogleReview type)
+  - Environment variables: `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID`
+
+### October 2025 - Domain Migration & OpenGraph Setup
+- **Critical SEO Fix:** Migrated all canonical URLs, schema markup, and OpenGraph tags from economyplumbingservices.com to plumbersthatcare.com (48+ pages)
+- **OpenGraph Image:** Created optimized 1200x630px og-image.jpg from hero image (47KB, JPEG progressive)
+- **Complete Domain Update:** All internal links, documentation, and JSON-LD schemas now use correct production domain
+
+### October 2025 - ServiceTitan Scheduler Site-Wide Fix
+- **Bug Fix:** Replaced mock SchedulerModal with real ServiceTitan integration across 11 pages
+- **Pages Updated:** Home, Services, ServiceAreas, About, FAQ, Austin, CedarPark, Leander, Georgetown, Pflugerville, RoundRock
+- **Technical:** All "Schedule Service" buttons now call `openScheduler()` utility, loads ServiceTitan script on-demand
+- **Domain Requirement:** Scheduler only functions on whitelisted domain plumbersthatcare.com
+
 ### October 2025 - SEO Optimization & Performance Enhancements
 - **Schema Markup Enhancement:**
   - Service schema updated to include provider address and geo coordinates for better local SEO

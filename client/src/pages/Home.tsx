@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import ServiceCard from "@/components/ServiceCard";
 import WhyChooseCard from "@/components/WhyChooseCard";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
-import TestimonialCard from "@/components/TestimonialCard";
+import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
 import {
@@ -415,32 +415,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="py-16 lg:py-24 bg-muted/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-                What Our Customers Say
-              </h2>
-              <p className="text-lg text-muted-foreground">
-                Don't just take our word for it. Here's what our satisfied
-                customers have to say about Economy Plumbing Services.
-              </p>
-              <div className="mt-4">
-                <span className="text-4xl font-bold text-primary">4.9/5</span>
-                <p className="text-muted-foreground">Stars on Google Reviews</p>
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {testimonials.map((testimonial) => (
-                <TestimonialCard
-                  key={testimonial.name + testimonial.service}
-                  {...testimonial}
-                />
-              ))}
-            </div>
-          </div>
-        </section>
+        <ReviewsSection 
+          title="What Our Customers Say"
+          maxReviews={3}
+          minRating={4}
+        />
 
         <ContactForm />
         <Footer />

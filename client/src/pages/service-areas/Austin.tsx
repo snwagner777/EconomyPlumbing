@@ -9,6 +9,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import FAQSection from "@/components/FAQSection";
+import ReviewsSection from "@/components/ReviewsSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
@@ -259,6 +260,12 @@ export default function AustinServiceArea() {
           className="py-16 lg:py-24"
         />
       )}
+
+      <ReviewsSection 
+        title={`${cityName} Customer Reviews`}
+        maxReviews={3}
+        minRating={4}
+      />
 
       <ContactFormSection 
         title={`Get a Free Estimate in ${cityName}`}
