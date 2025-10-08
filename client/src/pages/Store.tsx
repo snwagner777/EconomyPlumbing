@@ -1,5 +1,6 @@
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -58,66 +59,62 @@ export default function Store() {
               ) : memberships.length > 0 ? (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                   {memberships.map((membership) => (
-                    <Card 
-                      key={membership.id} 
-                      className="flex flex-col overflow-hidden hover-elevate transition-all"
+                    <Link 
+                      key={membership.id}
+                      href={`/store/checkout/${membership.slug}`}
                       data-testid={`card-membership-${membership.slug}`}
                     >
-                      {membership.image && (
-                        <div className="bg-gradient-to-b from-primary/5 to-transparent p-8 flex items-center justify-center border-b">
-                          <img 
-                            src={membership.image} 
-                            alt={membership.name}
-                            width="128"
-                            height="128"
-                            loading="lazy"
-                            decoding="async"
-                            className="w-32 h-32 object-contain"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="p-6 flex flex-col flex-1">
-                        <div className="mb-4">
-                          <h3 className="text-xl font-bold mb-2">{membership.name}</h3>
-                          <div className="flex items-baseline gap-2 mb-3">
-                            <span className="text-3xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
-                            {membership.name.toLowerCase().includes('platinum') ? (
-                              <span className="text-sm text-muted-foreground">/3 years</span>
-                            ) : (
-                              <span className="text-sm text-muted-foreground">/year</span>
-                            )}
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-2">{membership.description}</p>
-                        </div>
-
-                        {membership.features && membership.features.length > 0 && (
-                          <div className="mb-6 flex-1">
-                            <ul className="space-y-2">
-                              {membership.features.slice(0, 4).map((feature, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                  <span className="text-sm">{feature}</span>
-                                </li>
-                              ))}
-                              {membership.features.length > 4 && (
-                                <li className="text-sm text-muted-foreground">+ {membership.features.length - 4} more benefits</li>
-                              )}
-                            </ul>
+                      <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
+                        {membership.image && (
+                          <div className="bg-gradient-to-b from-primary/5 to-transparent p-8 flex items-center justify-center border-b">
+                            <img 
+                              src={membership.image} 
+                              alt={membership.name}
+                              width="128"
+                              height="128"
+                              loading="lazy"
+                              decoding="async"
+                              className="w-32 h-32 object-contain"
+                            />
                           </div>
                         )}
+                        
+                        <div className="p-6 flex flex-col flex-1">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold mb-2">{membership.name}</h3>
+                            <div className="flex items-baseline gap-2 mb-3">
+                              <span className="text-3xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
+                              {membership.name.toLowerCase().includes('platinum') ? (
+                                <span className="text-sm text-muted-foreground">/3 years</span>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">/year</span>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{membership.description}</p>
+                          </div>
 
-                        <Button 
-                          className="w-full bg-primary mt-auto" 
-                          asChild
-                          data-testid={`button-purchase-${membership.slug}`}
-                        >
-                          <a href={`/store/checkout/${membership.slug}`}>
+                          {membership.features && membership.features.length > 0 && (
+                            <div className="mb-6 flex-1">
+                              <ul className="space-y-2">
+                                {membership.features.slice(0, 4).map((feature, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                    <span className="text-sm">{feature}</span>
+                                  </li>
+                                ))}
+                                {membership.features.length > 4 && (
+                                  <li className="text-sm text-muted-foreground">+ {membership.features.length - 4} more benefits</li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+
+                          <div className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-center font-medium mt-auto">
                             Purchase Now
-                          </a>
-                        </Button>
-                      </div>
-                    </Card>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
                   ))}
                 </div>
               ) : (
@@ -141,58 +138,54 @@ export default function Store() {
 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
                   {physicalProducts.map((product) => (
-                    <Card 
-                      key={product.id} 
-                      className="flex flex-col overflow-hidden hover-elevate transition-all"
+                    <Link 
+                      key={product.id}
+                      href={`/store/checkout/${product.slug}`}
                       data-testid={`card-product-${product.slug}`}
                     >
-                      {product.image && (
-                        <div className="bg-gradient-to-b from-muted/50 to-transparent p-8 flex items-center justify-center border-b">
-                          <img 
-                            src={product.image} 
-                            alt={product.name}
-                            width="320"
-                            height="160"
-                            loading="lazy"
-                            decoding="async"
-                            className="w-full h-40 object-contain"
-                          />
-                        </div>
-                      )}
-                      
-                      <div className="p-6 flex flex-col flex-1">
-                        <div className="mb-4">
-                          <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                          <div className="flex items-baseline gap-2 mb-3">
-                            <span className="text-3xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
-                          </div>
-                          <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
-                        </div>
-
-                        {product.features && product.features.length > 0 && (
-                          <div className="mb-6 flex-1">
-                            <ul className="space-y-2">
-                              {product.features.map((feature, idx) => (
-                                <li key={idx} className="flex items-start gap-2">
-                                  <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                  <span className="text-sm">{feature}</span>
-                                </li>
-                              ))}
-                            </ul>
+                      <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
+                        {product.image && (
+                          <div className="bg-gradient-to-b from-muted/50 to-transparent p-8 flex items-center justify-center border-b">
+                            <img 
+                              src={product.image} 
+                              alt={product.name}
+                              width="320"
+                              height="160"
+                              loading="lazy"
+                              decoding="async"
+                              className="w-full h-40 object-contain"
+                            />
                           </div>
                         )}
+                        
+                        <div className="p-6 flex flex-col flex-1">
+                          <div className="mb-4">
+                            <h3 className="text-xl font-bold mb-2">{product.name}</h3>
+                            <div className="flex items-baseline gap-2 mb-3">
+                              <span className="text-3xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
+                          </div>
 
-                        <Button 
-                          className="w-full bg-primary mt-auto" 
-                          asChild
-                          data-testid={`button-purchase-${product.slug}`}
-                        >
-                          <a href={`/store/checkout/${product.slug}`}>
+                          {product.features && product.features.length > 0 && (
+                            <div className="mb-6 flex-1">
+                              <ul className="space-y-2">
+                                {product.features.map((feature, idx) => (
+                                  <li key={idx} className="flex items-start gap-2">
+                                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                    <span className="text-sm">{feature}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          <div className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-center font-medium mt-auto">
                             Purchase Now
-                          </a>
-                        </Button>
-                      </div>
-                    </Card>
+                          </div>
+                        </div>
+                      </Card>
+                    </Link>
                   ))}
                 </div>
               </div>
