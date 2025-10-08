@@ -53,6 +53,7 @@ export interface IStorage {
   getGoogleReviews(): Promise<GoogleReview[]>;
   saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
   clearGoogleReviews(): Promise<void>;
+  replaceGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
   
   // Google OAuth tokens
   getGoogleOAuthToken(service?: string): Promise<GoogleOAuthToken | undefined>;
@@ -1872,6 +1873,33 @@ Call (512) 368-9159 or schedule service online.`,
     this.googleReviews.clear();
   }
 
+  async replaceGoogleReviews(reviews: InsertGoogleReview[]): Promise<void> {
+    if (reviews.length === 0) {
+      console.warn("No reviews to save - skipping in-memory update to preserve existing data");
+      return;
+    }
+    
+    this.googleReviews.clear();
+    for (const review of reviews) {
+      const id = randomUUID();
+      const googleReview: GoogleReview = {
+        id,
+        authorName: review.authorName,
+        authorUrl: review.authorUrl ?? null,
+        profilePhotoUrl: review.profilePhotoUrl ?? null,
+        rating: review.rating,
+        text: review.text,
+        relativeTime: review.relativeTime,
+        timestamp: review.timestamp,
+        fetchedAt: new Date(),
+        categories: review.categories,
+        source: review.source,
+        reviewId: review.reviewId ?? null,
+      };
+      this.googleReviews.set(id, googleReview);
+    }
+  }
+
   async getGoogleOAuthToken(service: string = 'google_my_business'): Promise<GoogleOAuthToken | undefined> {
     // MemStorage stub - not used in production
     return undefined;
@@ -1983,6 +2011,26 @@ export class DatabaseStorage implements IStorage {
 
   async clearGoogleReviews(): Promise<void> {
     await db.delete(googleReviews);
+  }
+
+  /**
+   * Replace all Google reviews with new reviews in a single atomic transaction.
+   * This prevents data loss if the save operation fails.
+   */
+  async replaceGoogleReviews(reviews: InsertGoogleReview[]): Promise<void> {
+    if (reviews.length === 0) {
+      console.warn("No reviews to save - skipping database update to preserve existing data");
+      return;
+    }
+
+    // Use a transaction to ensure atomicity: either both delete and insert succeed, or neither happens
+    await db.transaction(async (tx) => {
+      // Delete all existing reviews
+      await tx.delete(googleReviews);
+      
+      // Insert new reviews
+      await tx.insert(googleReviews).values(reviews);
+    });
   }
 
   async getGoogleOAuthToken(service: string = 'google_my_business'): Promise<GoogleOAuthToken | undefined> {

@@ -145,12 +145,13 @@ async function refreshReviewsPeriodically() {
       const uniqueReviews = deduplicateReviews(allReviews);
       log(`Background: After deduplication: ${uniqueReviews.length} unique reviews`);
 
+      // Use atomic transaction-based replace to prevent data loss
+      await storage.replaceGoogleReviews(uniqueReviews);
+      
       if (uniqueReviews.length > 0) {
-        await storage.clearGoogleReviews();
-        await storage.saveGoogleReviews(uniqueReviews);
         log(`Background: Successfully saved ${uniqueReviews.length} reviews to database`);
       } else {
-        log("Background: No reviews fetched from any source");
+        log("Background: No reviews fetched - existing reviews preserved");
       }
     } catch (error) {
       log(`Background: Error refreshing reviews - ${error}`);
