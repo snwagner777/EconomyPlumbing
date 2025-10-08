@@ -22,6 +22,7 @@ import NotFound from "@/pages/not-found";
 
 // Lazy load less critical pages for better performance
 const ServiceAreas = lazy(() => import("@/pages/ServiceAreas"));
+const ServiceAreaPage = lazy(() => import("@/pages/ServiceAreaPage"));
 const AustinServiceArea = lazy(() => import("@/pages/service-areas/Austin"));
 const CedarParkServiceArea = lazy(() => import("@/pages/service-areas/CedarPark"));
 const LeanderServiceArea = lazy(() => import("@/pages/service-areas/Leander"));
@@ -121,6 +122,7 @@ function Router() {
       
       {/* Service areas */}
       <Route path="/service-area" component={ServiceAreas} />
+      <Route path="/service-area/:slug" component={ServiceAreaPage} />
       <Route path="/plumber-austin" component={AustinServiceArea} />
       <Route path="/plumber-in-cedar-park--tx" component={CedarParkServiceArea} />
       <Route path="/plumber-leander" component={LeanderServiceArea} />

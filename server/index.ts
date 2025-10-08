@@ -42,6 +42,43 @@ app.use((req, res, next) => {
   next();
 });
 
+// Seed service areas if database is empty
+async function seedServiceAreas() {
+  try {
+    log("Checking service areas in database...");
+    const existingAreas = await storage.getAllServiceAreas();
+    log(`Found ${existingAreas.length} existing service areas`);
+    
+    if (existingAreas.length > 0) {
+      log("Service areas already exist in database");
+      return;
+    }
+
+    log("Seeding service areas to database...");
+    
+    // Import service area data from MemStorage
+    const { MemStorage } = await import("./storage");
+    const memStorage = new MemStorage();
+    const serviceAreas = await memStorage.getAllServiceAreas();
+    log(`Loaded ${serviceAreas.length} service areas from MemStorage`);
+    
+    // Insert each service area into database
+    let count = 0;
+    for (const area of serviceAreas) {
+      await storage.createServiceArea(area);
+      count++;
+      if (count % 5 === 0) {
+        log(`Seeded ${count}/${serviceAreas.length} service areas...`);
+      }
+    }
+    
+    log(`Successfully seeded ${serviceAreas.length} service areas`);
+  } catch (error) {
+    log(`ERROR seeding service areas: ${error}`);
+    console.error("Full error:", error);
+  }
+}
+
 // Background task to periodically refresh Google reviews (every 24 hours)
 async function refreshReviewsPeriodically() {
   const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
@@ -72,6 +109,9 @@ async function refreshReviewsPeriodically() {
 
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Seed service areas if needed (non-blocking)
+  seedServiceAreas().catch(err => log(`Seed service areas failed - ${err}`));
   
   // Start periodic review refresh (non-blocking)
   refreshReviewsPeriodically();

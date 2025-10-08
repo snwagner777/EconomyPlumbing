@@ -44,6 +44,7 @@ export interface IStorage {
   // Service areas
   getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined>;
   getAllServiceAreas(): Promise<ServiceArea[]>;
+  createServiceArea(area: InsertServiceArea): Promise<ServiceArea>;
   
   // Google reviews
   getGoogleReviews(): Promise<GoogleReview[]>;
@@ -1810,6 +1811,15 @@ Call (512) 368-9159 or schedule service online.`,
     return Array.from(this.serviceAreas.values());
   }
 
+  async createServiceArea(area: InsertServiceArea): Promise<ServiceArea> {
+    const newArea: ServiceArea = {
+      id: area.id || randomUUID(),
+      ...area
+    } as ServiceArea;
+    this.serviceAreas.set(newArea.id, newArea);
+    return newArea;
+  }
+
   async getGoogleReviews(): Promise<GoogleReview[]> {
     return Array.from(this.googleReviews.values());
   }
@@ -1911,6 +1921,14 @@ export class DatabaseStorage implements IStorage {
 
   async getAllServiceAreas(): Promise<ServiceArea[]> {
     return await db.select().from(serviceAreas);
+  }
+
+  async createServiceArea(area: InsertServiceArea): Promise<ServiceArea> {
+    const [created] = await db
+      .insert(serviceAreas)
+      .values(area)
+      .returning();
+    return created;
   }
 
   async getGoogleReviews(): Promise<GoogleReview[]> {
