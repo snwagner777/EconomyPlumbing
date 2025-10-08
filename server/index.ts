@@ -113,15 +113,18 @@ async function refreshReviewsPeriodically() {
       
       const allReviews: any[] = [];
 
-      // TEMPORARY: Re-enabling DataForSEO for one-time import
-      const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
-      const placeId = process.env.GOOGLE_PLACE_ID;
-      if (placeId) {
-        log("Background: Fetching Google reviews from DataForSEO...");
-        const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
-        log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
-        allReviews.push(...dataForSeoReviews);
-      }
+      // NOTE: DataForSEO was used ONE-TIME to fetch all historical reviews (333 imported)
+      // Now we rely on Google Places API for ongoing updates (max 5 newest reviews per refresh)
+      // If you need to re-run DataForSEO, temporarily uncomment the code below:
+      
+      // const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
+      // const placeId = process.env.GOOGLE_PLACE_ID;
+      // if (placeId) {
+      //   log("Background: Fetching Google reviews from DataForSEO...");
+      //   const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+      //   log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+      //   allReviews.push(...dataForSeoReviews);
+      // }
 
       // Fetch new Google reviews from Places API (max 5, newest)
       log("Background: Fetching newest Google reviews from Places API...");
