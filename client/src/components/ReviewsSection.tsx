@@ -286,19 +286,16 @@ export default function ReviewsSection({
                     )}
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                       {review.authorName === 'Anonymous' 
-                        ? 'VC' 
+                        ? 'GC' 
                         : review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()
                       }
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
                     <h3 className="font-semibold text-foreground">
-                      {review.authorName === 'Anonymous' ? 'A.C.' : review.authorName}
+                      {review.authorName === 'Anonymous' ? 'Google Customer' : review.authorName}
                     </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {review.authorName === 'Anonymous' && 'Google Customer • '}
-                      {review.relativeTime}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
                   </div>
                 </div>
 
