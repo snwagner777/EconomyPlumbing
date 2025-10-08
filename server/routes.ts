@@ -34,6 +34,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/blog", async (req, res) => {
     try {
       const posts = await storage.getBlogPosts();
+      // Cache blog list for 10 minutes (public, revalidate)
+      res.set('Cache-Control', 'public, max-age=600, must-revalidate');
       res.json(posts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog posts" });
@@ -46,6 +48,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!post) {
         return res.status(404).json({ message: "Blog post not found" });
       }
+      // Cache individual blog posts for 1 hour
+      res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
       res.json(post);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog post" });
@@ -55,6 +59,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", async (req, res) => {
     try {
       const products = await storage.getProducts();
+      // Cache product list for 15 minutes
+      res.set('Cache-Control', 'public, max-age=900, must-revalidate');
       res.json(products);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch products" });
@@ -67,6 +73,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!product) {
         return res.status(404).json({ message: "Product not found" });
       }
+      // Cache individual products for 30 minutes
+      res.set('Cache-Control', 'public, max-age=1800, must-revalidate');
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch product" });
@@ -109,6 +117,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/service-areas", async (req, res) => {
     try {
       const areas = await storage.getAllServiceAreas();
+      // Cache service areas list for 1 hour (rarely changes)
+      res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
       res.json(areas);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch service areas" });
@@ -122,6 +132,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!area) {
         return res.status(404).json({ message: "Service area not found" });
       }
+      // Cache individual service areas for 2 hours
+      res.set('Cache-Control', 'public, max-age=7200, must-revalidate');
       res.json(area);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch service area" });
@@ -134,6 +146,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reviews = await storage.getGoogleReviews();
       
       if (reviews.length === 0) {
+        // Cache empty result for 5 minutes only
+        res.set('Cache-Control', 'public, max-age=300, must-revalidate');
         return res.json({
           ratingValue: null,
           reviewCount: 0
@@ -142,6 +156,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
       const avgRating = (totalRating / reviews.length).toFixed(1);
+      
+      // Cache stats for 30 minutes (same as reviews)
+      res.set('Cache-Control', 'public, max-age=1800, must-revalidate');
 
       res.json({
         ratingValue: avgRating,

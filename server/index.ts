@@ -1,4 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
@@ -6,6 +7,18 @@ import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
 
 const app = express();
+
+// Enable gzip/brotli compression for all responses
+app.use(compression({
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  },
+  level: 6 // Balance between compression and speed
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

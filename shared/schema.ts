@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -21,7 +21,11 @@ export const blogPosts = pgTable("blog_posts", {
   featuredImage: text("featured_image"),
   metaDescription: text("meta_description"),
   published: boolean("published").notNull().default(true),
-});
+}, (table) => ({
+  publishDateIdx: index("blog_posts_publish_date_idx").on(table.publishDate),
+  categoryIdx: index("blog_posts_category_idx").on(table.category),
+  publishedIdx: index("blog_posts_published_idx").on(table.published),
+}));
 
 export const products = pgTable("products", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -35,7 +39,10 @@ export const products = pgTable("products", {
   stripePriceId: text("stripe_price_id"),
   features: text("features").array(),
   active: boolean("active").notNull().default(true),
-});
+}, (table) => ({
+  categoryIdx: index("products_category_idx").on(table.category),
+  activeIdx: index("products_active_idx").on(table.active),
+}));
 
 export const contactSubmissions = pgTable("contact_submissions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -48,7 +55,9 @@ export const contactSubmissions = pgTable("contact_submissions", {
   message: text("message"),
   pageContext: text("page_context"),
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
-});
+}, (table) => ({
+  submittedAtIdx: index("contact_submissions_submitted_at_idx").on(table.submittedAt),
+}));
 
 export const serviceAreas = pgTable("service_areas", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -67,7 +76,9 @@ export const serviceAreas = pgTable("service_areas", {
   zipCodes: text("zip_codes").array(),
   latitude: text("latitude"),
   longitude: text("longitude"),
-});
+}, (table) => ({
+  regionIdx: index("service_areas_region_idx").on(table.region),
+}));
 
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
@@ -99,7 +110,10 @@ export const googleReviews = pgTable("google_reviews", {
   timestamp: integer("timestamp").notNull(),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
   categories: text("categories").array().notNull().default(sql`ARRAY[]::text[]`),
-});
+}, (table) => ({
+  ratingIdx: index("google_reviews_rating_idx").on(table.rating),
+  timestampIdx: index("google_reviews_timestamp_idx").on(table.timestamp),
+}));
 
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
   id: true,
