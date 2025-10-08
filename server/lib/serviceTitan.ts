@@ -159,35 +159,28 @@ class ServiceTitanAPI {
     state: string;
     zip: string;
   }): Promise<ServiceTitanCustomer> {
+    const address = {
+      street: data.street,
+      city: data.city,
+      state: data.state,
+      zip: data.zip,
+      country: 'USA',
+    };
+
     const customerData = data.type === 'residential' 
       ? {
           name: data.name,
-          email: data.email,
-          phoneNumber: data.phone,
-          address: {
-            street: data.street,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-          },
           type: 'Residential',
+          address: address,
+          phoneNumber: data.phone,
+          email: data.email,
         }
       : {
           name: data.companyName,
-          email: data.email,
-          phoneNumber: data.phone,
-          address: {
-            street: data.street,
-            city: data.city,
-            state: data.state,
-            zip: data.zip,
-          },
           type: 'Commercial',
-          contacts: [{
-            name: data.contactName,
-            email: data.email,
-            phoneNumber: data.phone,
-          }],
+          address: address,
+          phoneNumber: data.phone,
+          email: data.email,
         };
 
     try {
