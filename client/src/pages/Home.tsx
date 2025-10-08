@@ -29,9 +29,9 @@ import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8
 import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec30d.webp";
 import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
-import testimonial1 from "@assets/generated_images/Customer_testimonial_portrait_f033b456.png";
-import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f29d918d.png";
-import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
+import testimonial1 from "@assets/optimized/Customer_testimonial_portrait_f033b456.webp";
+import testimonial2 from "@assets/optimized/Female_customer_testimonial_f29d918d.webp";
+import testimonial3 from "@assets/optimized/Senior_customer_testimonial_027f5302.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { SEOHead } from "@/components/SEO/SEOHead";

@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import budaHero from "@assets/stock_images/plumber_fixing_sink__b2426749.jpg";
+import budaHero from "@assets/optimized/plumber_fixing_sink__b2426749.webp";
 
 export default function BudaServiceArea() {
   const nearbyCities = [

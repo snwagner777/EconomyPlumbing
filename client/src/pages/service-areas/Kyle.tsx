@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import kyleHero from "@assets/stock_images/plumber_fixing_sink__ddae57ac.jpg";
+import kyleHero from "@assets/optimized/plumber_fixing_sink__ddae57ac.webp";
 
 export default function KyleServiceArea() {
   const nearbyCities = [

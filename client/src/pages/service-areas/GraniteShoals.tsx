@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import graniteShoalsHero from "@assets/stock_images/plumber_water_heater_89ac0930.jpg";
+import graniteShoalsHero from "@assets/optimized/plumber_water_heater_89ac0930.webp";
 
 export default function GraniteShoalsServiceArea() {
   const nearbyCities = [

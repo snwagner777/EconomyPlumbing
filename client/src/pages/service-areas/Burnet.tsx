@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import burnetHero from "@assets/stock_images/plumber_working_bath_2fe77426.jpg";
+import burnetHero from "@assets/optimized/plumber_working_bath_2fe77426.webp";
 
 export default function BurnetServiceArea() {
   const nearbyCities = [

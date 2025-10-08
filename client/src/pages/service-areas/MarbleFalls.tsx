@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import marbleFallsHero from "@assets/stock_images/plumber_fixing_sink__a8fb92e9.jpg";
+import marbleFallsHero from "@assets/optimized/plumber_fixing_sink__a8fb92e9.webp";
 
 export default function MarbleFallsServiceArea() {
   const nearbyCities = [

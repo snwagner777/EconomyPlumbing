@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import spicewoodHero from "@assets/stock_images/plumber_water_heater_57dd8e1a.jpg";
+import spicewoodHero from "@assets/optimized/plumber_water_heater_57dd8e1a.webp";
 
 export default function SpicewoodServiceArea() {
   const nearbyCities = [

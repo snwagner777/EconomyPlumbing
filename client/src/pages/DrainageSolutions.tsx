@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import drainageImage from "@assets/stock_images/outdoor_drainage_sys_77a8cb62.jpg";
+import drainageImage from "@assets/optimized/outdoor_drainage_sys_77a8cb62.webp";
 
 export default function DrainageSolutions() {
   return (

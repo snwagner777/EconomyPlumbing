@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import bertramHero from "@assets/stock_images/plumber_water_heater_1d323d32.jpg";
+import bertramHero from "@assets/optimized/plumber_water_heater_1d323d32.webp";
 
 export default function BertramServiceArea() {
   const nearbyCities = [

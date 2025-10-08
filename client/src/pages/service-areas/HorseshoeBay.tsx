@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import horseshoeBayHero from "@assets/stock_images/plumber_working_bath_98208ff5.jpg";
+import horseshoeBayHero from "@assets/optimized/plumber_working_bath_98208ff5.webp";
 
 export default function HorseshoeBayServiceArea() {
   const nearbyCities = [

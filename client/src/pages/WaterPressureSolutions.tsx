@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import pressureImage from "@assets/stock_images/water_pressure_gauge_ba1aafde.jpg";
+import pressureImage from "@assets/optimized/water_pressure_gauge_ba1aafde.webp";
 
 export default function WaterPressureSolutions() {
   return (

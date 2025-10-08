@@ -1,6 +1,6 @@
 import ServiceCard from '../ServiceCard';
 import { Droplets } from 'lucide-react';
-import waterHeaterImage from "@assets/generated_images/Tankless_water_heater_closeup_7279af49.png";
+import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
 
 export default function ServiceCardExample() {
   return (

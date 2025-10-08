@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import emergencyImage from "@assets/generated_images/Emergency_plumbing_service_arrival_3f78c39e.png";
+import emergencyImage from "@assets/optimized/Emergency_plumbing_service_arrival_3f78c39e.webp";
 
 export default function EmergencyPlumbing() {
   return (

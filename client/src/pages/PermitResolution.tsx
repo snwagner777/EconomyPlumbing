@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import permitImage from "@assets/generated_images/Plumber_installing_water_heater_3f7d8a09.png";
+import permitImage from "@assets/optimized/Plumber_installing_water_heater_3f7d8a09.webp";
 
 export default function PermitResolution() {
   return (

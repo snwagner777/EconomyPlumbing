@@ -14,7 +14,7 @@ import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
-import heroImage from "@assets/stock_images/plumber_working_on_p_e4a794f0.jpg";
+import heroImage from "@assets/optimized/plumber_working_on_p_e4a794f0.webp";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },

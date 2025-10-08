@@ -9,7 +9,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { JsonLd } from "@/components/SEO/JsonLd";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
-import defaultHeroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
+import defaultHeroImage from "@assets/optimized/plumber_working_resi_a03913c7.webp";
 import { openScheduler } from "@/lib/scheduler";
 
 interface NearbyCity {

@@ -1,5 +1,5 @@
 import ServicePage from "@/components/ServicePage";
-import pumpImage from "@assets/stock_images/sewage_pump_sump_pum_ab93819a.jpg";
+import pumpImage from "@assets/optimized/sewage_pump_sump_pum_ab93819a.webp";
 
 export default function SewagePumpServices() {
   return (

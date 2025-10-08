@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import libertyHillHero from "@assets/stock_images/professional_plumber_07b42e36.jpg";
+import libertyHillHero from "@assets/optimized/professional_plumber_07b42e36.webp";
 
 export default function LibertyHillServiceArea() {
   const nearbyCities = [

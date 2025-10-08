@@ -1,5 +1,5 @@
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import kingslandHero from "@assets/stock_images/plumber_working_on_p_780517d7.jpg";
+import kingslandHero from "@assets/optimized/plumber_working_on_p_780517d7.webp";
 
 export default function KingslandServiceArea() {
   const nearbyCities = [

@@ -1,5 +1,5 @@
 import TestimonialCard from '../TestimonialCard';
-import testimonialImage from "@assets/generated_images/Customer_testimonial_portrait_f033b456.png";
+import testimonialImage from "@assets/optimized/Customer_testimonial_portrait_f033b456.webp";
 
 export default function TestimonialCardExample() {
   return (
