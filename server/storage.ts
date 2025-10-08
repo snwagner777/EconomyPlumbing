@@ -1820,11 +1820,26 @@ Call (512) 368-9159 or schedule service online.`,
   }
 
   async createServiceArea(area: InsertServiceArea): Promise<ServiceArea> {
+    const id = randomUUID();
     const newArea: ServiceArea = {
-      id: area.id || randomUUID(),
-      ...area
-    } as ServiceArea;
-    this.serviceAreas.set(newArea.id, newArea);
+      id,
+      slug: area.slug,
+      metaDescription: area.metaDescription,
+      cityName: area.cityName,
+      region: area.region,
+      introContent: area.introContent,
+      neighborhoods: area.neighborhoods ?? null,
+      landmarks: area.landmarks ?? null,
+      localPainPoints: area.localPainPoints ?? null,
+      seasonalIssues: area.seasonalIssues ?? null,
+      uniqueFaqs: area.uniqueFaqs ?? null,
+      testimonials: area.testimonials ?? null,
+      population: area.population ?? null,
+      zipCodes: area.zipCodes ?? null,
+      latitude: area.latitude ?? null,
+      longitude: area.longitude ?? null
+    };
+    this.serviceAreas.set(id, newArea);
     return newArea;
   }
 
