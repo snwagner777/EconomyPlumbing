@@ -110,6 +110,10 @@ export default function BlogPost() {
               <img
                 src={post.featuredImage}
                 alt={post.title}
+                width="896"
+                height="384"
+                loading="eager"
+                decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
                 data-testid="img-featured"
               />

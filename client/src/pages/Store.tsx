@@ -68,6 +68,10 @@ export default function Store() {
                           <img 
                             src={membership.image} 
                             alt={membership.name}
+                            width="128"
+                            height="128"
+                            loading="lazy"
+                            decoding="async"
                             className="w-32 h-32 object-contain"
                           />
                         </div>
@@ -147,6 +151,10 @@ export default function Store() {
                           <img 
                             src={product.image} 
                             alt={product.name}
+                            width="320"
+                            height="160"
+                            loading="lazy"
+                            decoding="async"
                             className="w-full h-40 object-contain"
                           />
                         </div>

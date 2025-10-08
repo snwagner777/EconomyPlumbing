@@ -117,6 +117,10 @@ export default function MembershipBenefits() {
                     <img 
                       src={tier.image} 
                       alt={tier.name}
+                      width="128"
+                      height="128"
+                      loading="lazy"
+                      decoding="async"
                       className="w-32 h-32 object-contain"
                     />
                   </div>
