@@ -128,15 +128,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Google Reviews endpoint with auto-refresh and filtering
+  // Google Reviews endpoint with auto-refresh, category and rating filtering
   app.get("/api/reviews", async (req, res) => {
     try {
-      const keywords = req.query.keywords ? (req.query.keywords as string).split(',') : [];
+      const category = req.query.category as string | undefined;
       const minRating = req.query.minRating ? parseInt(req.query.minRating as string) : 4;
       const refresh = req.query.refresh === 'true';
 
       let reviews = await storage.getGoogleReviews();
 
+      // Auto-refresh if no reviews exist or manual refresh requested
       if (refresh || reviews.length === 0) {
         const freshReviews = await fetchGoogleReviews();
         if (freshReviews.length > 0) {
@@ -146,26 +147,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      let filteredReviews = reviews.map(r => ({
+      // Filter by category if specified
+      let filteredReviews = reviews;
+      if (category) {
+        filteredReviews = reviews.filter(r => 
+          r.categories && r.categories.includes(category)
+        );
+      }
+      
+      // Filter by minimum rating
+      filteredReviews = filteredReviews.filter(r => r.rating >= minRating);
+      
+      const result = filteredReviews.map(r => ({
+        id: r.id,
         authorName: r.authorName,
         authorUrl: r.authorUrl ?? null,
         profilePhotoUrl: r.profilePhotoUrl ?? null,
         rating: r.rating,
         text: r.text,
         relativeTime: r.relativeTime,
-        timestamp: r.timestamp
-      }));
-      
-      if (keywords.length > 0) {
-        filteredReviews = filterReviewsByKeywords(filteredReviews, keywords);
-      }
-      
-      filteredReviews = getHighRatedReviews(filteredReviews, minRating);
-      
-      const result = filteredReviews.map((r, i) => ({
-        id: reviews.find(rev => rev.timestamp === r.timestamp)?.id || `review-${i}`,
-        ...r,
-        fetchedAt: reviews.find(rev => rev.timestamp === r.timestamp)?.fetchedAt || new Date()
+        timestamp: r.timestamp,
+        categories: r.categories || [],
+        fetchedAt: r.fetchedAt
       }));
 
       res.json(result);

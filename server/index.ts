@@ -2,6 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
+import { fetchGoogleReviews } from "./lib/googleReviews";
+import { storage } from "./storage";
 
 const app = express();
 app.use(express.json());
@@ -40,8 +42,39 @@ app.use((req, res, next) => {
   next();
 });
 
+// Background task to periodically refresh Google reviews (every 24 hours)
+async function refreshReviewsPeriodically() {
+  const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+  
+  const refreshReviews = async () => {
+    try {
+      log("Background: Refreshing Google reviews...");
+      const freshReviews = await fetchGoogleReviews();
+      
+      if (freshReviews.length > 0) {
+        await storage.clearGoogleReviews();
+        await storage.saveGoogleReviews(freshReviews);
+        log(`Background: Successfully refreshed ${freshReviews.length} reviews`);
+      } else {
+        log("Background: No reviews fetched from Google");
+      }
+    } catch (error) {
+      log(`Background: Error refreshing reviews - ${error}`);
+    }
+  };
+
+  // Run immediately on startup
+  await refreshReviews();
+  
+  // Then run every 24 hours
+  setInterval(refreshReviews, REFRESH_INTERVAL);
+}
+
 (async () => {
   const server = await registerRoutes(app);
+  
+  // Start periodic review refresh
+  await refreshReviewsPeriodically();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
