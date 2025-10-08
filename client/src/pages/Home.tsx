@@ -246,10 +246,6 @@ export default function Home() {
         title="Economy Plumbing Services | Austin & Marble Falls Plumbers | Water Heater Experts"
         description="Austin & Marble Falls plumber. Water heater repair, drain cleaning, leak repair, emergency plumbing. Licensed experts. Same-day service. (512) 368-9159."
         canonical="https://plumbersthatcare.com/"
-        ogImage="https://plumbersthatcare.com/attached_assets/logo.jpg"
-        ogImageAlt="Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX"
-        ogImageWidth="1024"
-        ogImageHeight="1024"
         schema={[localBusinessSchema, faqSchema]}
       />
 

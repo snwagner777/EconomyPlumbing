@@ -18,7 +18,7 @@ export function SEOHead({
   description,
   canonical,
   ogType = "website",
-  ogImage = "https://plumbersthatcare.com/attached_assets/og-image.jpg",
+  ogImage,
   ogImageAlt = "Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX",
   ogImageWidth = "1024",
   ogImageHeight = "1024",
@@ -27,6 +27,12 @@ export function SEOHead({
 }: SEOProps) {
   const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://plumbersthatcare.com");
   const siteName = "Economy Plumbing Services";
+  
+  const baseUrl = typeof window !== 'undefined' 
+    ? `${window.location.protocol}//${window.location.host}`
+    : "https://plumbersthatcare.com";
+  
+  const fullOgImage = ogImage || `${baseUrl}/attached_assets/logo.jpg`;
 
   return (
     <Helmet>
@@ -41,7 +47,7 @@ export function SEOHead({
       <meta property="og:url" content={url} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
-      <meta property="og:image" content={ogImage} />
+      <meta property="og:image" content={fullOgImage} />
       <meta property="og:image:alt" content={ogImageAlt} />
       <meta property="og:image:width" content={ogImageWidth} />
       <meta property="og:image:height" content={ogImageHeight} />
@@ -53,7 +59,7 @@ export function SEOHead({
       <meta property="twitter:url" content={url} />
       <meta property="twitter:title" content={title} />
       <meta property="twitter:description" content={description} />
-      <meta property="twitter:image" content={ogImage} />
+      <meta property="twitter:image" content={fullOgImage} />
       <meta property="twitter:image:alt" content={ogImageAlt} />
 
       {/* Schema.org JSON-LD */}
