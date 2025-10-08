@@ -59,3 +59,10 @@ Preferred communication style: Simple, everyday language.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.
+- **ServiceTitan Integration (In Progress):** 
+  - **Membership Sync:** Automatic sync of online membership purchases to ServiceTitan CRM.
+  - **Customer Management:** Search for existing customers or create new ones (residential/commercial).
+  - **Workflow:** Stripe payment → ServiceTitan customer creation → Membership assignment → Invoice marked paid.
+  - **Data Model:** Structured address fields (street, city, state, zip), customer type differentiation, sync status tracking.
+  - **Product Mapping:** Products table includes ServiceTitan membership type ID for proper sync configuration.
+  - **Status:** Framework complete, requires ServiceTitan API credentials and invoice ID mapping finalization.

@@ -39,6 +39,10 @@ export const products = pgTable("products", {
   stripePriceId: text("stripe_price_id"),
   features: text("features").array(),
   active: boolean("active").notNull().default(true),
+  
+  // ServiceTitan integration fields (for memberships)
+  serviceTitanMembershipTypeId: text("service_titan_membership_type_id"), // Maps product to ST membership type
+  serviceTitanEnabled: boolean("service_titan_enabled").notNull().default(false), // Enable ST sync for this product
 }, (table) => ({
   categoryIdx: index("products_category_idx").on(table.category),
   activeIdx: index("products_active_idx").on(table.active),
@@ -129,6 +133,56 @@ export const googleOAuthTokens = pgTable("google_oauth_tokens", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const serviceTitanMemberships = pgTable("service_titan_memberships", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerType: text("customer_type").notNull(), // 'residential' or 'commercial'
+  
+  // Residential customer fields
+  customerName: text("customer_name"),
+  
+  // Commercial customer fields
+  companyName: text("company_name"),
+  contactPersonName: text("contact_person_name"),
+  
+  // Structured address fields (required by ServiceTitan API)
+  street: text("street").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zip: text("zip").notNull(),
+  
+  // Contact info
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  
+  // ServiceTitan configuration
+  serviceTitanMembershipTypeId: text("service_titan_membership_type_id").notNull(), // ST membership type from product
+  
+  // ServiceTitan IDs (populated after sync)
+  serviceTitanCustomerId: text("service_titan_customer_id"), // ST customer ID
+  serviceTitanMembershipId: text("service_titan_membership_id"), // ST membership ID
+  serviceTitanInvoiceId: text("service_titan_invoice_id"), // ST invoice ID
+  
+  // Product and payment info
+  productId: varchar("product_id").notNull(), // Links to products table
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  stripeCustomerId: text("stripe_customer_id"),
+  amount: integer("amount").notNull(), // Amount in cents
+  
+  // Sync status
+  syncStatus: text("sync_status").notNull().default('pending'), // 'pending', 'syncing', 'synced', 'failed'
+  syncError: text("sync_error"),
+  lastSyncAttempt: timestamp("last_sync_attempt"),
+  syncedAt: timestamp("synced_at"),
+  
+  // Timestamps
+  purchasedAt: timestamp("purchased_at").notNull().defaultNow(),
+}, (table) => ({
+  customerTypeIdx: index("st_memberships_customer_type_idx").on(table.customerType),
+  syncStatusIdx: index("st_memberships_sync_status_idx").on(table.syncStatus),
+  serviceTitanCustomerIdIdx: index("st_memberships_st_customer_id_idx").on(table.serviceTitanCustomerId),
+  productIdIdx: index("st_memberships_product_id_idx").on(table.productId),
+}));
+
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
   id: true,
 });
@@ -141,6 +195,13 @@ export const insertGoogleReviewSchema = createInsertSchema(googleReviews).omit({
 export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens).omit({
   id: true,
   updatedAt: true,
+});
+
+export const insertServiceTitanMembershipSchema = createInsertSchema(serviceTitanMemberships).omit({
+  id: true,
+  purchasedAt: true,
+  lastSyncAttempt: true,
+  syncedAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -157,3 +218,5 @@ export type GoogleReview = typeof googleReviews.$inferSelect;
 export type InsertGoogleReview = z.infer<typeof insertGoogleReviewSchema>;
 export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
 export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;
+export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect;
+export type InsertServiceTitanMembership = z.infer<typeof insertServiceTitanMembershipSchema>;

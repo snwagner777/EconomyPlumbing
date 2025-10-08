@@ -13,13 +13,16 @@ import {
   type InsertGoogleReview,
   type GoogleOAuthToken,
   type InsertGoogleOAuthToken,
+  type ServiceTitanMembership,
+  type InsertServiceTitanMembership,
   users,
   blogPosts,
   products,
   contactSubmissions,
   serviceAreas,
   googleReviews,
-  googleOAuthTokens
+  googleOAuthTokens,
+  serviceTitanMemberships
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -59,6 +62,12 @@ export interface IStorage {
   getGoogleOAuthToken(service?: string): Promise<GoogleOAuthToken | undefined>;
   saveGoogleOAuthToken(token: InsertGoogleOAuthToken): Promise<GoogleOAuthToken>;
   updateGoogleOAuthToken(id: string, token: Partial<InsertGoogleOAuthToken>): Promise<GoogleOAuthToken>;
+  
+  // ServiceTitan memberships
+  createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership>;
+  updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership>;
+  getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined>;
+  getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -68,6 +77,7 @@ export class MemStorage implements IStorage {
   private contactSubmissions: Map<string, ContactSubmission>;
   private serviceAreas: Map<string, ServiceArea>;
   private googleReviews: Map<string, GoogleReview>;
+  private serviceTitanMemberships: Map<string, ServiceTitanMembership>;
 
   constructor() {
     this.users = new Map();
@@ -76,6 +86,7 @@ export class MemStorage implements IStorage {
     this.contactSubmissions = new Map();
     this.serviceAreas = new Map();
     this.googleReviews = new Map();
+    this.serviceTitanMemberships = new Map();
     
     // Seed with some blog posts
     this.seedBlogPosts();
@@ -1914,6 +1925,39 @@ Call (512) 368-9159 or schedule service online.`,
     // MemStorage stub - not used in production
     throw new Error('OAuth not supported in MemStorage');
   }
+
+  async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
+    const id = randomUUID();
+    const newMembership: ServiceTitanMembership = {
+      id,
+      ...membership,
+      purchasedAt: new Date(),
+      lastSyncAttempt: null,
+      syncedAt: null,
+    };
+    this.serviceTitanMemberships.set(id, newMembership);
+    return newMembership;
+  }
+
+  async updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership> {
+    const existing = this.serviceTitanMemberships.get(id);
+    if (!existing) {
+      throw new Error('ServiceTitan membership not found');
+    }
+    const updated = { ...existing, ...updates };
+    this.serviceTitanMemberships.set(id, updated);
+    return updated;
+  }
+
+  async getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined> {
+    return this.serviceTitanMemberships.get(id);
+  }
+
+  async getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]> {
+    return Array.from(this.serviceTitanMemberships.values()).filter(
+      m => m.syncStatus === 'pending' || m.syncStatus === 'failed'
+    );
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2060,6 +2104,39 @@ export class DatabaseStorage implements IStorage {
       .where(eq(googleOAuthTokens.id, id))
       .returning();
     return updatedToken;
+  }
+
+  async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
+    const [created] = await db
+      .insert(serviceTitanMemberships)
+      .values(membership)
+      .returning();
+    return created;
+  }
+
+  async updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership> {
+    const [updated] = await db
+      .update(serviceTitanMemberships)
+      .set(updates)
+      .where(eq(serviceTitanMemberships.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined> {
+    const [membership] = await db
+      .select()
+      .from(serviceTitanMemberships)
+      .where(eq(serviceTitanMemberships.id, id))
+      .limit(1);
+    return membership || undefined;
+  }
+
+  async getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]> {
+    return await db
+      .select()
+      .from(serviceTitanMemberships)
+      .where(sql`${serviceTitanMemberships.syncStatus} IN ('pending', 'failed')`);
   }
 }
 
