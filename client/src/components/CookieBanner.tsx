@@ -63,6 +63,7 @@ export default function CookieBanner() {
               onClick={handleDecline}
               className="h-8 w-8"
               data-testid="button-close-banner"
+              aria-label="Close cookie banner"
             >
               <X className="h-4 w-4" />
             </Button>
