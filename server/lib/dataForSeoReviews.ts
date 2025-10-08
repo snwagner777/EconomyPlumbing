@@ -49,7 +49,8 @@ export async function fetchDataForSeoReviews(placeId: string): Promise<InsertGoo
   try {
     const credentials = Buffer.from(`${login}:${password}`).toString('base64');
     
-    const response = await fetch('https://api.dataforseo.com/v3/business_data/google/reviews/task_post', {
+    // Use the LIVE endpoint for immediate synchronous results
+    const response = await fetch('https://api.dataforseo.com/v3/business_data/google/reviews/live', {
       method: 'POST',
       headers: {
         'Authorization': `Basic ${credentials}`,
@@ -57,6 +58,7 @@ export async function fetchDataForSeoReviews(placeId: string): Promise<InsertGoo
       },
       body: JSON.stringify([{
         place_id: placeId,
+        location_code: 2840, // United States
         language_code: 'en',
         depth: 500, // Fetch up to 500 reviews
         sort_by: 'newest' // Get newest first
@@ -77,7 +79,7 @@ export async function fetchDataForSeoReviews(placeId: string): Promise<InsertGoo
 
     const task = data.tasks[0];
     if (task.status_code !== 20000) {
-      console.error(`DataForSEO task error: ${task.status_message}`);
+      console.error(`DataForSEO error: ${task.status_message} (code: ${task.status_code})`);
       return [];
     }
 

@@ -103,39 +103,78 @@ async function seedServiceAreas() {
   }
 }
 
-// Background task to periodically refresh Google reviews (every 24 hours)
+// Background task to periodically refresh reviews from all sources (every 24 hours)
 async function refreshReviewsPeriodically() {
   const REFRESH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
   
   const refreshReviews = async () => {
     try {
-      log("Background: Refreshing Google reviews...");
+      log("Background: Refreshing reviews from all sources...");
       
-      // Try Google My Business API first (if OAuth configured)
-      const { fetchAllGoogleMyBusinessReviews } = await import("./lib/googleMyBusinessReviews");
-      const gmbReviews = await fetchAllGoogleMyBusinessReviews();
+      const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
+      const { fetchFacebookReviews } = await import("./lib/facebookReviews");
+      const allReviews: any[] = [];
       
-      if (gmbReviews.length > 0) {
+      const placeId = process.env.GOOGLE_PLACE_ID;
+      const facebookPageId = process.env.FACEBOOK_PAGE_ID;
+      const facebookAccessToken = process.env.FACEBOOK_ACCESS_TOKEN;
+
+      // 1. Fetch ALL Google reviews from DataForSEO (550+ reviews)
+      if (placeId) {
+        log("Background: Fetching Google reviews from DataForSEO...");
+        const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+        log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+        allReviews.push(...dataForSeoReviews);
+      }
+
+      // 2. Fetch Facebook reviews
+      if (facebookPageId && facebookAccessToken) {
+        log("Background: Fetching Facebook reviews...");
+        const fbReviews = await fetchFacebookReviews(facebookPageId, facebookAccessToken);
+        log(`Background: Facebook returned ${fbReviews.length} reviews`);
+        allReviews.push(...fbReviews);
+      }
+
+      // 3. Fetch new Google reviews from Places API (max 5, newest)
+      log("Background: Fetching newest Google reviews from Places API...");
+      const placesReviews = await fetchGoogleReviews();
+      log(`Background: Places API returned ${placesReviews.length} reviews`);
+      allReviews.push(...placesReviews);
+
+      // Deduplicate reviews
+      const uniqueReviews = deduplicateReviews(allReviews);
+      log(`Background: After deduplication: ${uniqueReviews.length} unique reviews`);
+
+      if (uniqueReviews.length > 0) {
         await storage.clearGoogleReviews();
-        await storage.saveGoogleReviews(gmbReviews);
-        log(`Background: Successfully refreshed ${gmbReviews.length} reviews from Google My Business`);
+        await storage.saveGoogleReviews(uniqueReviews);
+        log(`Background: Successfully saved ${uniqueReviews.length} reviews to database`);
       } else {
-        // Fallback to Places API (limited to 5 reviews)
-        log("Background: No GMB reviews, falling back to Places API...");
-        const placesReviews = await fetchGoogleReviews();
-        
-        if (placesReviews.length > 0) {
-          await storage.clearGoogleReviews();
-          await storage.saveGoogleReviews(placesReviews);
-          log(`Background: Successfully refreshed ${placesReviews.length} reviews from Places API`);
-        } else {
-          log("Background: No reviews fetched from Google");
-        }
+        log("Background: No reviews fetched from any source");
       }
     } catch (error) {
       log(`Background: Error refreshing reviews - ${error}`);
     }
   };
+
+  // Helper function to deduplicate reviews
+  function deduplicateReviews(reviews: any[]): any[] {
+    const seen = new Set<string>();
+    const unique: any[] = [];
+
+    for (const review of reviews) {
+      const key = review.reviewId 
+        ? `id:${review.reviewId}`
+        : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(review);
+      }
+    }
+
+    return unique;
+  }
 
   // Run immediately on startup (non-blocking)
   refreshReviews().catch(err => log(`Background: Initial refresh failed - ${err}`));
