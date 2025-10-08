@@ -35,31 +35,36 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### October 2025 - Google Reviews Integration
+### October 2025 - Google Reviews Integration (COMPLETED)
 - **Automated Review System:**
   - Google Places API integration fetches and caches reviews automatically
   - Backend endpoint (`/api/reviews`) with smart caching and filtering
-  - Reviews auto-update on first load or manual refresh
-  - Keyword filtering for contextual review display per page
-  - Minimum rating filter (default: 4+ stars only)
+  - Reviews auto-update on first load or when `?refresh=true` param is passed
+  - Optional keyword filtering for contextual review display (comma-separated)
+  - Minimum rating filter (default: 4+ stars, configurable via `minRating` param)
+  - Query params: `keywords`, `minRating`, `refresh`
   
 - **ReviewsSection Component:**
-  - Responsive grid layout with author photos, ratings, review text
-  - Direct links to Google profiles for attribution
+  - Responsive grid layout with author photos, 5-star ratings, review text
+  - Direct links to Google profiles for proper attribution
   - Loading skeletons for smooth UX
-  - Customizable title, max reviews count, keyword filters
+  - Customizable via props: `title`, `keywords`, `minRating`, `maxReviews`
+  - TanStack Query integration with 30-minute stale time
   
-- **Strategic Placement:**
-  - Homepage: General reviews (3 shown)
-  - Services page: Service-related reviews filtered by keywords
-  - Austin service area: Location-specific reviews ("austin", "professional")
-  - All pages link to full Google reviews
+- **Strategic Placement (3 pages):**
+  - **Homepage** (`/`): "What Our Customers Say" - displays up to 3 general reviews
+  - **Services** (`/services`): "Trusted by Central Texas Homeowners" - up to 3 reviews
+  - **Austin** (`/plumber-austin`): "Austin Customer Reviews" - up to 3 location reviews
+  - All pages include "See All Reviews on Google" link to business profile
   
 - **Technical Implementation:**
-  - Google Reviews stored in memory storage (MemStorage)
-  - Reviews persist until manual refresh
-  - Full schema support (GoogleReview type)
-  - Environment variables: `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID`
+  - **Backend:** `server/lib/googleReviews.ts` handles Google Places API calls
+  - **Storage:** Reviews cached in MemStorage until manual refresh
+  - **Schema:** Full GoogleReview type in `shared/schema.ts` (id, authorName, authorUrl, profilePhotoUrl, rating, text, relativeTime, timestamp, fetchedAt)
+  - **API Endpoint:** `/api/reviews` with query string support
+  - **Environment Variables:** `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID` (stored in Replit Secrets)
+  - **Current Status:** Live with 2 reviews (Nick Allen & Jen Wall, both 5-star ratings)
+  - **Google API Limitation:** Returns maximum 5 most recent reviews
 
 ### October 2025 - Domain Migration & OpenGraph Setup
 - **Critical SEO Fix:** Migrated all canonical URLs, schema markup, and OpenGraph tags from economyplumbingservices.com to plumbersthatcare.com (48+ pages)
