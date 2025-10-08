@@ -1,4 +1,5 @@
 import type { InsertGoogleReview } from "@shared/schema";
+import { categorizeReview } from "./reviewCategorization";
 
 interface GooglePlacesReview {
   author_name: string;
@@ -45,15 +46,20 @@ export async function fetchGoogleReviews(): Promise<InsertGoogleReview[]> {
       return [];
     }
 
-    return data.result.reviews.map((review): InsertGoogleReview => ({
-      authorName: review.author_name,
-      authorUrl: review.author_url || null,
-      profilePhotoUrl: review.profile_photo_url || null,
-      rating: review.rating,
-      text: review.text,
-      relativeTime: review.relative_time_description,
-      timestamp: review.time,
-    }));
+    return data.result.reviews.map((review): InsertGoogleReview => {
+      const categories = categorizeReview(review.text);
+      
+      return {
+        authorName: review.author_name,
+        authorUrl: review.author_url || null,
+        profilePhotoUrl: review.profile_photo_url || null,
+        rating: review.rating,
+        text: review.text,
+        relativeTime: review.relative_time_description,
+        timestamp: review.time,
+        categories,
+      };
+    });
   } catch (error) {
     console.error("Error fetching Google reviews:", error);
     return [];

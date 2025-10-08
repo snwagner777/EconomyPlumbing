@@ -98,6 +98,7 @@ export const googleReviews = pgTable("google_reviews", {
   relativeTime: text("relative_time").notNull(),
   timestamp: integer("timestamp").notNull(),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+  categories: text("categories").array().notNull().default(sql`ARRAY[]::text[]`),
 });
 
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
