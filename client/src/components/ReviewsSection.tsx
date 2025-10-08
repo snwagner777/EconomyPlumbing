@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Star, Quote, ArrowRight } from "lucide-react";
+import { Star, Quote, ArrowRight, ExternalLink } from "lucide-react";
+import { SiGoogle, SiFacebook, SiYelp } from "react-icons/si";
 import type { GoogleReview } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,42 @@ interface ReviewsSectionProps {
   minRating?: number;
   title?: string;
   maxReviews?: number;
+}
+
+// Helper to get platform icon and colors
+function getPlatformInfo(source: string) {
+  switch (source) {
+    case 'dataforseo':
+    case 'google_places':
+    case 'gmb_api':
+      return {
+        icon: SiGoogle,
+        name: 'Google',
+        color: 'text-blue-600',
+        bgColor: 'bg-blue-50 dark:bg-blue-950/30'
+      };
+    case 'facebook':
+      return {
+        icon: SiFacebook,
+        name: 'Facebook',
+        color: 'text-blue-700',
+        bgColor: 'bg-blue-50 dark:bg-blue-950/30'
+      };
+    case 'yelp':
+      return {
+        icon: SiYelp,
+        name: 'Yelp',
+        color: 'text-red-600',
+        bgColor: 'bg-red-50 dark:bg-red-950/30'
+      };
+    default:
+      return {
+        icon: Star,
+        name: 'Review',
+        color: 'text-primary',
+        bgColor: 'bg-primary/10'
+      };
+  }
 }
 
 export default function ReviewsSection({ 
@@ -191,71 +228,88 @@ export default function ReviewsSection({
 
         {/* Reviews Grid */}
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
-          {displayReviews.map((review) => (
-            <Card 
-              key={review.id} 
-              className="relative p-8 hover-elevate transition-all duration-300 border-border/50"
-              data-testid={`review-${review.id}`}
-            >
-              {/* Quote Icon */}
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                <Quote className="w-6 h-6 text-primary" />
-              </div>
-
-              {/* Stars */}
-              <div className="flex items-center gap-1 mb-4">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${
-                      i < review.rating
-                        ? "fill-primary text-primary"
-                        : "fill-muted-foreground/20 text-muted-foreground/20"
-                    }`}
-                    data-testid={`star-${review.id}-${i}`}
-                  />
-                ))}
-              </div>
-              
-              {/* Review Text */}
-              <p className="text-foreground leading-relaxed mb-6 line-clamp-6">
-                "{review.text}"
-              </p>
-              
-              {/* Author Info */}
-              <div className="flex items-center gap-4 pt-4 border-t border-border/50">
-                <Avatar className="h-12 w-12">
-                  {review.profilePhotoUrl && (
-                    <AvatarImage 
-                      src={review.profilePhotoUrl} 
-                      alt={review.authorName}
-                      loading="lazy"
-                    />
-                  )}
-                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                    {review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{review.authorName}</h3>
-                  <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
+          {displayReviews.map((review) => {
+            const platform = getPlatformInfo(review.source);
+            const PlatformIcon = platform.icon;
+            
+            return (
+              <Card 
+                key={review.id} 
+                className="relative p-8 hover-elevate transition-all duration-300 border-border/50 group"
+                data-testid={`review-${review.id}`}
+              >
+                {/* Quote Icon */}
+                <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Quote className="w-6 h-6 text-primary" />
                 </div>
-              </div>
 
-              {/* Google Link */}
-              {review.authorUrl && (
-                <a 
-                  href={review.authorUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="absolute bottom-4 right-4 text-xs text-primary/60 hover:text-primary transition-colors"
-                  data-testid={`review-link-${review.id}`}
-                >
-                  Google Review
-                </a>
-              )}
-            </Card>
-          ))}
+                {/* Platform Badge */}
+                <div className="absolute -top-3 -right-3">
+                  <Badge 
+                    variant="secondary" 
+                    className={`${platform.bgColor} ${platform.color} border-0 gap-1.5 px-3 py-1`}
+                  >
+                    <PlatformIcon className="w-3.5 h-3.5" />
+                    {platform.name}
+                  </Badge>
+                </div>
+
+                {/* Stars */}
+                <div className="flex items-center gap-1 mb-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`w-5 h-5 ${
+                        i < review.rating
+                          ? "fill-primary text-primary"
+                          : "fill-muted-foreground/20 text-muted-foreground/20"
+                      }`}
+                      data-testid={`star-${review.id}-${i}`}
+                    />
+                  ))}
+                </div>
+                
+                {/* Review Text */}
+                <p className="text-foreground leading-relaxed mb-6 line-clamp-6">
+                  "{review.text}"
+                </p>
+                
+                {/* Author Info */}
+                <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                  <Avatar className="h-12 w-12 ring-2 ring-primary/10">
+                    {review.profilePhotoUrl && (
+                      <AvatarImage 
+                        src={review.profilePhotoUrl} 
+                        alt={review.authorName}
+                        loading="lazy"
+                      />
+                    )}
+                    <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                      {review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-foreground">{review.authorName}</h3>
+                    <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
+                  </div>
+                </div>
+
+                {/* Platform Link - More Prominent */}
+                {review.authorUrl && (
+                  <a 
+                    href={review.authorUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`mt-4 flex items-center gap-2 text-sm ${platform.color} hover:underline transition-colors opacity-0 group-hover:opacity-100`}
+                    data-testid={`review-link-${review.id}`}
+                  >
+                    View on {platform.name}
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                )}
+              </Card>
+            );
+          })}
         </div>
 
         {/* CTA */}

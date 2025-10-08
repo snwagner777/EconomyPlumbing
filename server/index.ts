@@ -109,33 +109,24 @@ async function refreshReviewsPeriodically() {
   
   const refreshReviews = async () => {
     try {
-      log("Background: Refreshing reviews from all sources...");
+      log("Background: Refreshing reviews from Google Places API...");
       
-      const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
-      const { fetchFacebookReviews } = await import("./lib/facebookReviews");
       const allReviews: any[] = [];
+
+      // NOTE: DataForSEO was used ONE-TIME to fetch all historical reviews (550+)
+      // Now we rely on Google Places API for ongoing updates (max 5 newest reviews per refresh)
+      // If you need to re-run DataForSEO, temporarily uncomment the code below:
       
-      const placeId = process.env.GOOGLE_PLACE_ID;
-      const facebookPageId = process.env.FACEBOOK_PAGE_ID;
-      const facebookAccessToken = process.env.FACEBOOK_ACCESS_TOKEN;
+      // const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
+      // const placeId = process.env.GOOGLE_PLACE_ID;
+      // if (placeId) {
+      //   log("Background: Fetching Google reviews from DataForSEO...");
+      //   const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+      //   log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+      //   allReviews.push(...dataForSeoReviews);
+      // }
 
-      // 1. Fetch ALL Google reviews from DataForSEO (550+ reviews)
-      if (placeId) {
-        log("Background: Fetching Google reviews from DataForSEO...");
-        const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
-        log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
-        allReviews.push(...dataForSeoReviews);
-      }
-
-      // 2. Fetch Facebook reviews
-      if (facebookPageId && facebookAccessToken) {
-        log("Background: Fetching Facebook reviews...");
-        const fbReviews = await fetchFacebookReviews(facebookPageId, facebookAccessToken);
-        log(`Background: Facebook returned ${fbReviews.length} reviews`);
-        allReviews.push(...fbReviews);
-      }
-
-      // 3. Fetch new Google reviews from Places API (max 5, newest)
+      // Fetch new Google reviews from Places API (max 5, newest)
       log("Background: Fetching newest Google reviews from Places API...");
       const placesReviews = await fetchGoogleReviews();
       log(`Background: Places API returned ${placesReviews.length} reviews`);
@@ -158,12 +149,17 @@ async function refreshReviewsPeriodically() {
     }
   };
 
-  // Helper function to deduplicate reviews
+  // Helper function to deduplicate reviews and filter for quality
   function deduplicateReviews(reviews: any[]): any[] {
     const seen = new Set<string>();
     const unique: any[] = [];
 
     for (const review of reviews) {
+      // Filter: Only 4+ star reviews, no Anonymous authors
+      if (review.rating < 4 || review.authorName.toLowerCase().includes('anonymous')) {
+        continue;
+      }
+
       const key = review.reviewId 
         ? `id:${review.reviewId}`
         : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
