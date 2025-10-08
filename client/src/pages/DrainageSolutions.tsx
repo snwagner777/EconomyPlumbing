@@ -4,78 +4,78 @@ import drainageImage from "@assets/optimized/outdoor_drainage_sys_77a8cb62.webp"
 export default function DrainageSolutions() {
   return (
     <ServicePage
-      title="Drainage Solutions | French Drains, Yard Drainage & Sump Pumps TX"
-      metaDescription="Austin & Marble Falls drainage solutions: French drains, yard systems, sump pumps. Fix standing water, foundation issues. Free consultation. (512) 368-9159."
+      title="Drainage Pipe Services | Drain Line Repair & Replacement TX"
+      metaDescription="Austin & Marble Falls drainage pipe repair and replacement. Fix slow drains, broken pipes, sewer lines. Expert plumbing drainage solutions. (512) 368-9159."
       canonical="https://plumbersthatcare.com/drainage-solutions"
       heroImage={drainageImage}
-      heroImageAlt="Professional drainage solutions and French drain installation in Central Texas"
-      heroTitle="Drainage Solutions"
-      heroSubtitle="French Drains, Yard Drainage & Foundation Protection"
-      overviewTitle="Expert Drainage Solutions"
-      overviewDescription="Standing water and poor drainage can damage your foundation, create mosquito breeding grounds, and ruin your landscaping. Our drainage experts design and install custom solutions to keep your property dry and protected."
+      heroImageAlt="Professional drainage pipe repair and replacement services in Central Texas"
+      heroTitle="Drainage Pipe Services"
+      heroSubtitle="Expert Drain Line Repair, Replacement & Installation"
+      overviewTitle="Professional Drainage Pipe Solutions"
+      overviewDescription="Damaged or clogged drainage pipes can cause backups, slow drains, and water damage throughout your home or business. Our drainage experts diagnose and repair all types of plumbing drain lines, from kitchen sinks to main sewer lines."
       benefits={[
-        "Custom drainage design",
-        "French drain installation",
-        "Yard grading solutions",
-        "Sump pump systems",
-        "Foundation protection",
-        "Erosion control",
-        "Free drainage assessment",
-        "Landscape-friendly solutions"
+        "Complete drain line inspection",
+        "Broken pipe replacement",
+        "Cast iron pipe replacement",
+        "PVC drain installation",
+        "Sewer line repair",
+        "Underground pipe location",
+        "Trenchless pipe repair options",
+        "Free drainage assessment"
       ]}
-      featuresTitle="Our Drainage Services"
+      featuresTitle="Our Drainage Pipe Services"
       features={[
         {
-          title: "French Drain Systems",
-          description: "Professional installation of French drains to redirect water away from foundations, basements, and problem areas. We use proper gravel, perforated pipe, and fabric to ensure long-lasting performance."
+          title: "Drain Line Repair & Replacement",
+          description: "Expert repair and replacement of all types of drain lines including kitchen drains, bathroom drains, laundry lines, and floor drains. We handle cracked pipes, broken connections, and failing drain systems with modern materials and proven techniques."
         },
         {
-          title: "Yard Drainage Solutions",
-          description: "Custom drainage systems for yards with standing water, including surface drains, channel drains, and grading solutions. We'll design a system that works with your landscape and solves your specific drainage issues."
+          title: "Cast Iron Pipe Replacement",
+          description: "Specialized in replacing old cast iron drain pipes that have corroded, rusted, or failed. We upgrade your system to modern PVC or ABS piping that won't rust and provides superior flow and longevity."
         },
         {
-          title: "Sump Pump Installation",
-          description: "Complete sump pump systems including basin installation, pump setup, and discharge line routing. Battery backup options available for continued protection during power outages."
+          title: "Main Sewer Line Services",
+          description: "Complete main sewer line inspection, repair, and replacement. We use video camera inspection to diagnose issues and can perform traditional excavation or trenchless pipe bursting depending on your needs and budget."
         },
         {
-          title: "Foundation Drainage",
-          description: "Protect your foundation with proper drainage systems that channel water away from your home. We install perimeter drains, downspout extensions, and grading improvements to prevent foundation damage."
+          title: "Underground Drain Pipes",
+          description: "Locate and repair underground drainage pipes using advanced detection equipment. We handle collapsed pipes, root intrusion, and broken underground lines that cause recurring clogs or slow drainage throughout your property."
         }
       ]}
       faqs={[
         {
-          question: "How do I know if I need a drainage solution?",
-          answer: "Signs include standing water after rain, soggy areas in your yard, water in your basement or crawl space, foundation cracks, or erosion around your property. We offer free drainage assessments to evaluate your situation."
+          question: "How do I know if my drain pipes need replacement?",
+          answer: "Signs include recurring clogs, slow draining throughout the house, foul odors, water backing up in multiple fixtures, visible corrosion on exposed pipes, or age (cast iron pipes over 50 years old often need replacement). We can inspect your system and provide an honest assessment."
         },
         {
-          question: "What is a French drain?",
-          answer: "A French drain is a gravel-filled trench containing a perforated pipe that redirects water away from problem areas. It's one of the most effective drainage solutions for yards, foundations, and basements."
+          question: "What types of drain pipes do you work with?",
+          answer: "We repair and replace all types including cast iron, galvanized steel, PVC, ABS, copper, and clay pipes. We can also upgrade older pipe materials to modern PVC or ABS systems that resist corrosion and provide better flow."
         },
         {
-          question: "How much does a French drain cost?",
-          answer: "Costs vary based on length, depth, and site conditions. Simple French drains may start around $1,500-2,500 for 50-100 feet, while complex systems can run higher. We provide free estimates with detailed pricing."
+          question: "How much does drain pipe replacement cost?",
+          answer: "Costs vary based on pipe location, length, material, and accessibility. Simple accessible replacements may start around $500-1,500, while main sewer line replacements can range from $3,000-10,000+ depending on length and method. We provide detailed free estimates."
         },
         {
-          question: "Can you fix drainage without tearing up my landscaping?",
-          answer: "We always work to minimize landscape disruption and can often route drains along property lines, under walkways, or in existing mulch beds. We'll restore any disturbed areas and can coordinate with landscapers if needed."
+          question: "Do you offer trenchless pipe replacement?",
+          answer: "Yes, we offer trenchless pipe bursting and pipe lining options for certain situations. These methods can replace or repair pipes with minimal excavation, preserving your landscaping and reducing restoration costs. We'll evaluate if your system is a good candidate."
         },
         {
-          question: "How long do drainage systems last?",
-          answer: "Properly installed drainage systems can last 20-30+ years. We use quality materials including schedule 40 PVC, heavy-duty fabric, and clean drainage rock to ensure long-term performance."
+          question: "How long does drain pipe replacement take?",
+          answer: "Simple drain line replacements typically take 4-8 hours. Main sewer line replacements can take 1-3 days depending on length, depth, and site conditions. We work efficiently and communicate timeline expectations upfront."
         },
         {
-          question: "Do you offer drainage system maintenance?",
-          answer: "Yes, we provide drainage system inspections and cleaning to keep your system flowing properly. This includes clearing debris, checking outlets, and ensuring proper function of all components."
+          question: "Can you repair just a section of pipe?",
+          answer: "Yes, if the damage is localized and the rest of the system is in good condition, we can replace just the affected section. However, if the system is old or showing widespread deterioration, we may recommend replacing larger sections to avoid repeated repairs."
         }
       ]}
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
-        { title: "Sump Pump Services", path: "/sewage-pump-services" },
+        { title: "Sewer Line Services", path: "/sewer-line-services" },
         { title: "Water Leak Repair", path: "/water-leak-repair" },
         { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
       reviewsCategory="drain"
-      reviewsTitle="Drainage Solutions Customer Reviews"
+      reviewsTitle="Drainage Pipe Service Customer Reviews"
     />
   );
 }

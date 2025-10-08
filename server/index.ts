@@ -138,46 +138,40 @@ async function refreshReviewsPeriodically() {
       log(`Background: Places API returned ${placesReviews.length} reviews`);
       allReviews.push(...placesReviews);
 
-      // Deduplicate reviews
-      const uniqueReviews = deduplicateReviews(allReviews);
-      log(`Background: After deduplication: ${uniqueReviews.length} unique reviews`);
+      if (allReviews.length === 0) {
+        log("Background: No new reviews fetched");
+        return;
+      }
 
-      // Use atomic transaction-based replace to prevent data loss
-      await storage.replaceGoogleReviews(uniqueReviews);
-      
-      if (uniqueReviews.length > 0) {
-        log(`Background: Successfully saved ${uniqueReviews.length} reviews to database`);
+      // Get existing reviews to check for duplicates
+      const existingReviews = await storage.getGoogleReviews();
+      const existingKeys = new Set(
+        existingReviews.map(r => 
+          r.reviewId ? `id:${r.reviewId}` : `${r.authorName}:${r.text.slice(0, 100)}:${r.timestamp}`
+        )
+      );
+
+      // Filter out reviews that already exist
+      const newReviews = allReviews.filter(review => {
+        if (review.rating < 4) return false; // Only 4+ stars
+        
+        const key = review.reviewId 
+          ? `id:${review.reviewId}`
+          : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
+        
+        return !existingKeys.has(key);
+      });
+
+      if (newReviews.length > 0) {
+        await storage.saveGoogleReviews(newReviews);
+        log(`Background: Added ${newReviews.length} new unique reviews (total: ${existingReviews.length + newReviews.length})`);
       } else {
-        log("Background: No reviews fetched - existing reviews preserved");
+        log(`Background: No new reviews to add (${existingReviews.length} existing reviews preserved)`);
       }
     } catch (error) {
       log(`Background: Error refreshing reviews - ${error}`);
     }
   };
-
-  // Helper function to deduplicate reviews and filter for quality
-  function deduplicateReviews(reviews: any[]): any[] {
-    const seen = new Set<string>();
-    const unique: any[] = [];
-
-    for (const review of reviews) {
-      // Filter: Only 4+ star reviews (allowing Anonymous since DataForSEO uses that for privacy)
-      if (review.rating < 4) {
-        continue;
-      }
-
-      const key = review.reviewId 
-        ? `id:${review.reviewId}`
-        : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
-
-      if (!seen.has(key)) {
-        seen.add(key);
-        unique.push(review);
-      }
-    }
-
-    return unique;
-  }
 
   // Run immediately on startup (non-blocking)
   refreshReviews().catch(err => log(`Background: Initial refresh failed - ${err}`));
