@@ -500,6 +500,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`[Stripe Webhook] ServiceTitan sync queued for membership: ${membership.id}`);
         }
 
+        // Send sales notification email
+        try {
+          const { sendSalesNotificationEmail } = await import('./email');
+          await sendSalesNotificationEmail({
+            productName: product.name,
+            productPrice: product.price,
+            customerType: pendingPurchase.customerType as 'residential' | 'commercial',
+            customerName: pendingPurchase.customerName || undefined,
+            companyName: pendingPurchase.companyName || undefined,
+            contactPersonName: pendingPurchase.contactPersonName || undefined,
+            email: pendingPurchase.email,
+            phone: pendingPurchase.phone,
+            street: pendingPurchase.street,
+            city: pendingPurchase.city,
+            state: pendingPurchase.state,
+            zip: pendingPurchase.zip,
+            stripePaymentIntentId: paymentIntent.id,
+          });
+          console.log(`[Stripe Webhook] Sales notification email sent for payment: ${paymentIntent.id}`);
+        } catch (emailError: any) {
+          // Don't fail the webhook if email fails
+          console.error('[Stripe Webhook] Failed to send sales notification email:', emailError.message);
+        }
+
         // Clean up pending purchase
         await storage.deletePendingPurchase(pendingPurchase.id);
         console.log(`[Stripe Webhook] Deleted pending purchase: ${pendingPurchase.id}`);

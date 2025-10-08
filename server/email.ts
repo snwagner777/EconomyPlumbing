@@ -130,3 +130,88 @@ export async function sendContactFormEmail(data: {
     throw error;
   }
 }
+
+export async function sendSalesNotificationEmail(data: {
+  productName: string;
+  productPrice: number;
+  customerType: 'residential' | 'commercial';
+  customerName?: string;
+  companyName?: string;
+  contactPersonName?: string;
+  email: string;
+  phone: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  stripePaymentIntentId: string;
+}) {
+  console.log('[Email] Starting sendSalesNotificationEmail for product:', data.productName);
+  
+  try {
+    console.log('[Email] Getting Resend client...');
+    const { client, fromEmail } = await getUncachableResendClient();
+    const contactEmail = process.env.CONTACT_EMAIL;
+
+    console.log('[Email] From email:', fromEmail || 'NOT SET');
+    console.log('[Email] To email (CONTACT_EMAIL):', contactEmail || 'NOT SET');
+
+    if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured');
+      throw new Error('CONTACT_EMAIL not configured');
+    }
+
+    const customerDisplayName = data.customerType === 'residential' 
+      ? data.customerName 
+      : `${data.companyName} (Contact: ${data.contactPersonName})`;
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0ea5e9;">🎉 New Sale!</h2>
+        
+        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+          <h3 style="margin-top: 0; color: #0369a1;">Product Purchased</h3>
+          <p style="font-size: 18px; margin: 10px 0;"><strong>${data.productName}</strong></p>
+          <p style="font-size: 20px; color: #0ea5e9; margin: 10px 0;"><strong>$${(data.productPrice / 100).toFixed(2)}</strong></p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Customer Information</h3>
+          <p><strong>Type:</strong> ${data.customerType === 'residential' ? 'Residential' : 'Commercial'}</p>
+          <p><strong>Name:</strong> ${customerDisplayName}</p>
+          <p><strong>Email:</strong> ${data.email}</p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+          <p><strong>Address:</strong> ${data.street}, ${data.city}, ${data.state} ${data.zip}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Payment Details</h3>
+          <p><strong>Payment Intent ID:</strong> ${data.stripePaymentIntentId}</p>
+          <p><strong>Status:</strong> <span style="color: #059669; font-weight: bold;">✓ Paid</span></p>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="color: #6b7280; font-size: 14px;">
+          This is an automated notification from the Economy Plumbing Services online store.
+        </p>
+      </div>
+    `;
+
+    console.log('[Email] Attempting to send sales notification email...');
+    console.log('[Email] Subject:', `New Sale: ${data.productName} - $${(data.productPrice / 100).toFixed(2)}`);
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: contactEmail,
+      subject: `New Sale: ${data.productName} - $${(data.productPrice / 100).toFixed(2)}`,
+      html: emailHtml,
+    });
+
+    console.log('[Email] ✓ Sales notification sent successfully! Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('[Email Error] ✗ Failed to send sales notification:', error);
+    console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+}
