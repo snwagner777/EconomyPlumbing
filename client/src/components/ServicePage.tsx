@@ -11,6 +11,7 @@ import { Phone, CheckCircle, ArrowRight } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
+import ReviewsSection from "@/components/ReviewsSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
@@ -45,6 +46,8 @@ interface ServicePageProps {
   features: ServiceFeature[];
   faqs: FAQ[];
   relatedServices: RelatedService[];
+  reviewsCategory?: string;
+  reviewsTitle?: string;
 }
 
 export default function ServicePage({
@@ -62,6 +65,8 @@ export default function ServicePage({
   features,
   faqs,
   relatedServices,
+  reviewsCategory,
+  reviewsTitle,
 }: ServicePageProps) {
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
@@ -226,6 +231,15 @@ export default function ServicePage({
           </Button>
         </div>
       </section>
+
+      {reviewsCategory && (
+        <ReviewsSection 
+          category={reviewsCategory}
+          title={reviewsTitle || "Customer Reviews"}
+          maxReviews={3}
+          minRating={4}
+        />
+      )}
 
       <ContactFormSection 
         title="Request Your Free Estimate"
