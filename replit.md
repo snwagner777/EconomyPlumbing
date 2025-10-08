@@ -26,13 +26,13 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews.
 - **Google Reviews Integration:** 
-  - **Primary Source:** Google My Business API via OAuth 2.0 (fetches all 550+ reviews with pagination). Requires OAuth setup via admin pages.
-  - **Fallback Source:** Google Places API (max 5 reviews) when OAuth not configured.
-  - **Background Refresh:** Every 24 hours (non-blocking server startup) tries GMB API first, falls back to Places API if needed.
+  - **One-Time Import:** DataForSEO API used once for initial bulk import of 550+ historical reviews (now disabled for cost efficiency).
+  - **Ongoing Updates:** Google Places API fetches newest 5 reviews every 24 hours via background refresh (non-blocking server startup).
+  - **Quality Filtering:** Only displays 4+ star reviews with named authors (excludes "Anonymous" reviews).
   - **Review Processing:** Auto-categorized into 11 service types (e.g., water_heater, drain, toilet) based on keyword analysis.
   - **API Endpoint:** `/api/reviews` with 30-minute browser caching (Cache-Control headers), filtering by category, keywords, and minimum rating.
-  - **OAuth Setup:** Admin pages at `/admin/oauth-init`, `/admin/oauth-success`, `/admin/oauth-config` for business owner authentication and token management.
-  - **Token Management:** Secure storage in PostgreSQL, automatic token refresh, account/location ID persistence.
+  - **Multi-Source Support:** Architecture supports Google, Facebook, and Yelp reviews with platform-specific badges and links.
+  - **Display Features:** Premium cards with platform badges (Google/Facebook/Yelp icons), hover-revealed links to original reviews, star ratings, and author avatars.
 - **Performance Optimizations:**
   - **Compression:** Gzip/brotli compression middleware (level 6) reduces bandwidth by ~70%
   - **API Caching:** Aggressive Cache-Control headers on all GET endpoints (10min-2hr based on content volatility)
@@ -58,4 +58,4 @@ Preferred communication style: Simple, everyday language.
 - **Call Tracking:** Dynamic phone number insertion for analytics, with a default and static Marble Falls number.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
-- **Google APIs:** Google My Business API (primary) and Google Places API (fallback) for reviews, OAuth 2.0 authentication.
+- **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.
