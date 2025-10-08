@@ -5,6 +5,7 @@ import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
 import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
+import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 
 const app = express();
 
@@ -193,6 +194,9 @@ async function refreshReviewsPeriodically() {
   
   // Start periodic review refresh (non-blocking)
   refreshReviewsPeriodically();
+  
+  // Start membership sync background job (non-blocking)
+  startMembershipSyncJob();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
