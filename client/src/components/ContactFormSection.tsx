@@ -265,7 +265,7 @@ export default function ContactFormSection({
 
             <p className="text-sm text-center text-muted-foreground">
               Or call us directly at{" "}
-              <a href={`tel:${phoneNumber.replace(/\D/g, '')}`} className="text-primary hover:underline">
+              <a href={`tel:${phoneNumber.replace(/\D/g, '')}`} className="text-foreground hover:underline">
                 {phoneNumber}
               </a>
               {phoneLabel && <span className="text-muted-foreground"> ({phoneLabel})</span>}

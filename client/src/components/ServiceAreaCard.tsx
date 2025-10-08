@@ -30,7 +30,7 @@ export default function ServiceAreaCard({ title, address, phone, cities }: Servi
       </div>
       <a 
         href={`tel:${phone.replace(/\D/g, '')}`}
-        className="flex items-center gap-2 text-primary font-poppins font-bold text-xl hover-elevate px-2 py-1 rounded-md w-fit"
+        className="flex items-center gap-2 text-foreground font-poppins font-bold text-xl hover-elevate px-2 py-1 rounded-md w-fit"
         data-testid={`phone-${title.toLowerCase().replace(/\s+/g, '-')}`}
       >
         <Phone className="w-5 h-5" />

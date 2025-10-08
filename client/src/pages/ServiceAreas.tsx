@@ -153,6 +153,7 @@ export default function ServiceAreas() {
               <Button 
                 onClick={openScheduler}
                 size="lg"
+                className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
                 Schedule Service

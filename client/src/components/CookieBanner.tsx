@@ -53,6 +53,7 @@ export default function CookieBanner() {
             <Button
               size="sm"
               onClick={handleAccept}
+              className="bg-primary text-primary-foreground"
               data-testid="button-accept-cookies"
             >
               Accept
