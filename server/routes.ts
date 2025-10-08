@@ -380,6 +380,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Save customer info before payment
+  app.post("/api/pending-purchase", async (req, res) => {
+    try {
+      const { paymentIntentId, productId, customerType, customerName, companyName, 
+              contactPersonName, street, city, state, zip, phone, email } = req.body;
+
+      if (!paymentIntentId || !productId || !customerType || !street || !city || 
+          !state || !zip || !phone || !email) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      if (customerType === 'residential' && !customerName) {
+        return res.status(400).json({ message: "Customer name is required for residential" });
+      }
+
+      if (customerType === 'commercial' && (!companyName || !contactPersonName)) {
+        return res.status(400).json({ message: "Company name and contact person are required for commercial" });
+      }
+
+      const pendingPurchase = await storage.createPendingPurchase({
+        paymentIntentId,
+        productId,
+        customerType,
+        customerName: customerName || null,
+        companyName: companyName || null,
+        contactPersonName: contactPersonName || null,
+        street,
+        city,
+        state,
+        zip,
+        phone,
+        email,
+      });
+
+      res.json({ success: true, id: pendingPurchase.id });
+    } catch (error: any) {
+      console.error('Error saving pending purchase:', error);
+      res.status(500).json({ message: "Failed to save customer info: " + error.message });
+    }
+  });
+
   // Stripe payment intent endpoint
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
@@ -416,7 +457,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ 
         clientSecret: paymentIntent.client_secret,
-        amount: paymentIntent.amount 
+        amount: paymentIntent.amount,
+        paymentIntentId: paymentIntent.id // Return payment intent ID
       });
     } catch (error: any) {
       res.status(500).json({ message: "Payment initialization failed: " + error.message });

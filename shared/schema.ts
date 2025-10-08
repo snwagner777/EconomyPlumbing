@@ -133,6 +133,25 @@ export const googleOAuthTokens = pgTable("google_oauth_tokens", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const pendingPurchases = pgTable("pending_purchases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  paymentIntentId: text("payment_intent_id").notNull().unique(),
+  productId: varchar("product_id").notNull(),
+  customerType: text("customer_type").notNull(),
+  customerName: text("customer_name"),
+  companyName: text("company_name"),
+  contactPersonName: text("contact_person_name"),
+  street: text("street").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zip: text("zip").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  paymentIntentIdIdx: index("pending_purchases_payment_intent_id_idx").on(table.paymentIntentId),
+}));
+
 export const serviceTitanMemberships = pgTable("service_titan_memberships", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerType: text("customer_type").notNull(), // 'residential' or 'commercial'
@@ -197,6 +216,11 @@ export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens
   updatedAt: true,
 });
 
+export const insertPendingPurchaseSchema = createInsertSchema(pendingPurchases).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertServiceTitanMembershipSchema = createInsertSchema(serviceTitanMemberships).omit({
   id: true,
   purchasedAt: true,
@@ -218,5 +242,7 @@ export type GoogleReview = typeof googleReviews.$inferSelect;
 export type InsertGoogleReview = z.infer<typeof insertGoogleReviewSchema>;
 export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
 export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;
+export type PendingPurchase = typeof pendingPurchases.$inferSelect;
+export type InsertPendingPurchase = z.infer<typeof insertPendingPurchaseSchema>;
 export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect;
 export type InsertServiceTitanMembership = z.infer<typeof insertServiceTitanMembershipSchema>;

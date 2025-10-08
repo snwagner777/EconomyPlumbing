@@ -13,6 +13,8 @@ import {
   type InsertGoogleReview,
   type GoogleOAuthToken,
   type InsertGoogleOAuthToken,
+  type PendingPurchase,
+  type InsertPendingPurchase,
   type ServiceTitanMembership,
   type InsertServiceTitanMembership,
   users,
@@ -22,6 +24,7 @@ import {
   serviceAreas,
   googleReviews,
   googleOAuthTokens,
+  pendingPurchases,
   serviceTitanMemberships
 } from "@shared/schema";
 import { randomUUID } from "crypto";
@@ -68,6 +71,11 @@ export interface IStorage {
   updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership>;
   getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined>;
   getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]>;
+  
+  // Pending purchases
+  createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase>;
+  getPendingPurchaseByPaymentIntent(paymentIntentId: string): Promise<PendingPurchase | undefined>;
+  deletePendingPurchase(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -1958,6 +1966,26 @@ Call (512) 368-9159 or schedule service online.`,
       m => m.syncStatus === 'pending' || m.syncStatus === 'failed'
     );
   }
+
+  async createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase> {
+    const id = randomUUID();
+    const newPurchase: PendingPurchase = {
+      id,
+      ...purchase,
+      createdAt: new Date(),
+    };
+    // MemStorage stub - not used in production
+    return newPurchase;
+  }
+
+  async getPendingPurchaseByPaymentIntent(paymentIntentId: string): Promise<PendingPurchase | undefined> {
+    // MemStorage stub - not used in production
+    return undefined;
+  }
+
+  async deletePendingPurchase(id: string): Promise<void> {
+    // MemStorage stub - not used in production
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2137,6 +2165,29 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(serviceTitanMemberships)
       .where(sql`${serviceTitanMemberships.syncStatus} IN ('pending', 'failed')`);
+  }
+
+  async createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase> {
+    const [created] = await db
+      .insert(pendingPurchases)
+      .values(purchase)
+      .returning();
+    return created;
+  }
+
+  async getPendingPurchaseByPaymentIntent(paymentIntentId: string): Promise<PendingPurchase | undefined> {
+    const [purchase] = await db
+      .select()
+      .from(pendingPurchases)
+      .where(eq(pendingPurchases.paymentIntentId, paymentIntentId))
+      .limit(1);
+    return purchase || undefined;
+  }
+
+  async deletePendingPurchase(id: string): Promise<void> {
+    await db
+      .delete(pendingPurchases)
+      .where(eq(pendingPurchases.id, id));
   }
 }
 
