@@ -35,35 +35,48 @@ Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
 
-### October 2025 - Google Reviews Integration (COMPLETED)
+### October 2025 - Google Reviews Integration with Auto-Categorization (COMPLETED)
 - **Automated Review System:**
   - Google Places API integration fetches and caches reviews automatically
-  - Backend endpoint (`/api/reviews`) with smart caching and filtering
-  - Reviews auto-update on first load or when `?refresh=true` param is passed
-  - Optional keyword filtering for contextual review display (comma-separated)
+  - **Periodic Background Refresh:** Reviews auto-fetch every 24 hours (runs on server startup)
+  - **Intelligent Auto-Categorization:** Reviews automatically tagged by service type based on keyword analysis
+  - Backend endpoint (`/api/reviews`) with smart caching, filtering, and category support
+  - Reviews can be manually refreshed with `?refresh=true` param
   - Minimum rating filter (default: 4+ stars, configurable via `minRating` param)
-  - Query params: `keywords`, `minRating`, `refresh`
+  - Query params: `category`, `keywords`, `minRating`, `refresh`
+  
+- **Auto-Categorization System:**
+  - **11 Service Categories:** water_heater, drain, toilet, leak, faucet, gas, backflow, sewer, emergency, commercial, general
+  - **Keyword Matching:** Analyzes review text for service-specific keywords (e.g., "tankless water heater" → water_heater)
+  - **Multi-Category Support:** Reviews can belong to multiple categories if they mention multiple services
+  - **Implementation:** `server/lib/reviewCategorization.ts` with comprehensive keyword lists per category
+  - **Process:** Categorization runs automatically during Google API fetch and refresh
   
 - **ReviewsSection Component:**
   - Responsive grid layout with author photos, 5-star ratings, review text
   - Direct links to Google profiles for proper attribution
   - Loading skeletons for smooth UX
-  - Customizable via props: `title`, `keywords`, `minRating`, `maxReviews`
+  - Customizable via props: `title`, `category`, `keywords`, `minRating`, `maxReviews`
   - TanStack Query integration with 30-minute stale time
+  - **Category Filtering:** Pass `category="water_heater"` to show only water heater reviews
   
-- **Strategic Placement (3 pages):**
+- **Strategic Placement:**
   - **Homepage** (`/`): "What Our Customers Say" - displays up to 3 general reviews
   - **Services** (`/services`): "Trusted by Central Texas Homeowners" - up to 3 reviews
   - **Austin** (`/plumber-austin`): "Austin Customer Reviews" - up to 3 location reviews
+  - **Water Heater** (`/water-heater-services`): "Water Heater Customer Reviews" - water heater category only
+  - **Toilet & Faucet** (`/toilet-faucet`): "Toilet & Faucet Customer Reviews" - toilet/faucet categories
   - All pages include "See All Reviews on Google" link to business profile
   
 - **Technical Implementation:**
-  - **Backend:** `server/lib/googleReviews.ts` handles Google Places API calls
-  - **Storage:** Reviews cached in MemStorage until manual refresh
-  - **Schema:** Full GoogleReview type in `shared/schema.ts` (id, authorName, authorUrl, profilePhotoUrl, rating, text, relativeTime, timestamp, fetchedAt)
-  - **API Endpoint:** `/api/reviews` with query string support
+  - **Backend:** `server/lib/googleReviews.ts` handles Google Places API calls with auto-categorization
+  - **Categorization:** `server/lib/reviewCategorization.ts` keyword analysis engine
+  - **Background Refresh:** `server/index.ts` runs refresh job on startup and every 24 hours
+  - **Storage:** Reviews cached in MemStorage with categories persisted
+  - **Schema:** Full GoogleReview type in `shared/schema.ts` (id, authorName, authorUrl, profilePhotoUrl, rating, text, relativeTime, timestamp, categories, fetchedAt)
+  - **API Endpoint:** `/api/reviews?category=toilet` filters by service category
   - **Environment Variables:** `GOOGLE_PLACES_API_KEY`, `GOOGLE_PLACE_ID` (stored in Replit Secrets)
-  - **Current Status:** Live with 2 reviews (Nick Allen & Jen Wall, both 5-star ratings)
+  - **Current Status:** Live with 2 auto-categorized reviews (Nick Allen: toilet, Jen Wall: water_heater)
   - **Google API Limitation:** Returns maximum 5 most recent reviews
 
 ### October 2025 - Domain Migration & OpenGraph Setup
