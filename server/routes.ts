@@ -171,6 +171,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         fetchedAt: r.fetchedAt
       }));
 
+      // Add HTTP caching headers (30 min cache to match TanStack Query staleTime)
+      // Skip cache for manual refresh requests
+      if (!refresh) {
+        res.set('Cache-Control', 'public, max-age=1800, must-revalidate');
+      }
+
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch reviews: " + error.message });

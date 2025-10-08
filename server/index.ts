@@ -63,8 +63,8 @@ async function refreshReviewsPeriodically() {
     }
   };
 
-  // Run immediately on startup
-  await refreshReviews();
+  // Run immediately on startup (non-blocking)
+  refreshReviews().catch(err => log(`Background: Initial refresh failed - ${err}`));
   
   // Then run every 24 hours
   setInterval(refreshReviews, REFRESH_INTERVAL);
@@ -73,8 +73,8 @@ async function refreshReviewsPeriodically() {
 (async () => {
   const server = await registerRoutes(app);
   
-  // Start periodic review refresh
-  await refreshReviewsPeriodically();
+  // Start periodic review refresh (non-blocking)
+  refreshReviewsPeriodically();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
