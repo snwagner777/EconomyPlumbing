@@ -8,7 +8,9 @@ import {
   type ContactSubmission,
   type InsertContactSubmission,
   type ServiceArea,
-  type InsertServiceArea
+  type InsertServiceArea,
+  type GoogleReview,
+  type InsertGoogleReview
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -34,6 +36,11 @@ export interface IStorage {
   // Service areas
   getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined>;
   getAllServiceAreas(): Promise<ServiceArea[]>;
+  
+  // Google reviews
+  getGoogleReviews(): Promise<GoogleReview[]>;
+  saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
+  clearGoogleReviews(): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -42,6 +49,7 @@ export class MemStorage implements IStorage {
   private products: Map<string, Product>;
   private contactSubmissions: Map<string, ContactSubmission>;
   private serviceAreas: Map<string, ServiceArea>;
+  private googleReviews: Map<string, GoogleReview>;
 
   constructor() {
     this.users = new Map();
@@ -49,6 +57,7 @@ export class MemStorage implements IStorage {
     this.products = new Map();
     this.contactSubmissions = new Map();
     this.serviceAreas = new Map();
+    this.googleReviews = new Map();
     
     // Seed with some blog posts
     this.seedBlogPosts();
@@ -1778,6 +1787,7 @@ Call (512) 368-9159 or schedule service online.`,
       location: insertSubmission.location ?? null,
       urgency: insertSubmission.urgency ?? null,
       message: insertSubmission.message ?? null,
+      pageContext: insertSubmission.pageContext ?? null,
       submittedAt: new Date()
     };
     this.contactSubmissions.set(id, submission);
@@ -1790,6 +1800,32 @@ Call (512) 368-9159 or schedule service online.`,
 
   async getAllServiceAreas(): Promise<ServiceArea[]> {
     return Array.from(this.serviceAreas.values());
+  }
+
+  async getGoogleReviews(): Promise<GoogleReview[]> {
+    return Array.from(this.googleReviews.values());
+  }
+
+  async saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void> {
+    for (const review of reviews) {
+      const id = randomUUID();
+      const googleReview: GoogleReview = {
+        id,
+        authorName: review.authorName,
+        authorUrl: review.authorUrl ?? null,
+        profilePhotoUrl: review.profilePhotoUrl ?? null,
+        rating: review.rating,
+        text: review.text,
+        relativeTime: review.relativeTime,
+        timestamp: review.timestamp,
+        fetchedAt: new Date()
+      };
+      this.googleReviews.set(id, googleReview);
+    }
+  }
+
+  async clearGoogleReviews(): Promise<void> {
+    this.googleReviews.clear();
   }
 }
 

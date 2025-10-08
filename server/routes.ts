@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertContactSubmissionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
+import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import path from "path";
 import fs from "fs";
 
@@ -124,6 +125,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(area);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch service area" });
+    }
+  });
+
+  // Google Reviews endpoint with auto-refresh and filtering
+  app.get("/api/reviews", async (req, res) => {
+    try {
+      const keywords = req.query.keywords ? (req.query.keywords as string).split(',') : [];
+      const minRating = req.query.minRating ? parseInt(req.query.minRating as string) : 4;
+      const refresh = req.query.refresh === 'true';
+
+      let reviews = await storage.getGoogleReviews();
+
+      if (refresh || reviews.length === 0) {
+        const freshReviews = await fetchGoogleReviews();
+        if (freshReviews.length > 0) {
+          await storage.clearGoogleReviews();
+          await storage.saveGoogleReviews(freshReviews);
+          reviews = await storage.getGoogleReviews();
+        }
+      }
+
+      let filteredReviews = reviews.map(r => ({
+        authorName: r.authorName,
+        authorUrl: r.authorUrl,
+        profilePhotoUrl: r.profilePhotoUrl,
+        rating: r.rating,
+        text: r.text,
+        relativeTime: r.relativeTime,
+        timestamp: r.timestamp
+      }));
+      
+      if (keywords.length > 0) {
+        filteredReviews = filterReviewsByKeywords(filteredReviews, keywords);
+      }
+      
+      filteredReviews = getHighRatedReviews(filteredReviews, minRating);
+      
+      const result = filteredReviews.map((r, i) => ({
+        id: reviews.find(rev => rev.timestamp === r.timestamp)?.id || `review-${i}`,
+        ...r,
+        fetchedAt: reviews.find(rev => rev.timestamp === r.timestamp)?.fetchedAt || new Date()
+      }));
+
+      res.json(result);
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch reviews: " + error.message });
     }
   });
 

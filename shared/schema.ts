@@ -88,8 +88,25 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   submittedAt: true,
 });
 
+export const googleReviews = pgTable("google_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  authorName: text("author_name").notNull(),
+  authorUrl: text("author_url"),
+  profilePhotoUrl: text("profile_photo_url"),
+  rating: integer("rating").notNull(),
+  text: text("text").notNull(),
+  relativeTime: text("relative_time").notNull(),
+  timestamp: integer("timestamp").notNull(),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+});
+
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
   id: true,
+});
+
+export const insertGoogleReviewSchema = createInsertSchema(googleReviews).omit({
+  id: true,
+  fetchedAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -102,3 +119,5 @@ export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
 export type ServiceArea = typeof serviceAreas.$inferSelect;
 export type InsertServiceArea = z.infer<typeof insertServiceAreaSchema>;
+export type GoogleReview = typeof googleReviews.$inferSelect;
+export type InsertGoogleReview = z.infer<typeof insertGoogleReviewSchema>;
