@@ -55,6 +55,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
           <Link
             href={`/blog/${post.slug}`}
             className="inline-flex items-center gap-2 text-primary font-medium hover-elevate px-2 py-1 rounded-md"
+            aria-label={`Read more about ${post.title}`}
             data-testid={`link-read-more-${post.slug}`}
           >
             Read More

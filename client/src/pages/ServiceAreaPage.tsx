@@ -194,7 +194,7 @@ export default function ServiceAreaPage() {
                 <CheckCircle className="w-8 h-8 text-primary mb-3" />
                 <h3 className="text-xl font-bold mb-2">{service.name}</h3>
                 <Button asChild variant="ghost" className="p-0 h-auto justify-start" data-testid={`link-service-${idx}`}>
-                  <Link href={service.path}>
+                  <Link href={service.path} aria-label={`Learn more about ${service.name}`}>
                     Learn More →
                   </Link>
                 </Button>
