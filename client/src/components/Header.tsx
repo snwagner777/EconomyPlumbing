@@ -78,7 +78,7 @@ export default function Header() {
           <nav className="hidden lg:flex items-center gap-8">
             <Link 
               href="/" 
-              className={`text-sm font-medium hover-elevate px-3 py-2 rounded-md ${location === "/" ? "text-primary" : "text-foreground"}`}
+              className={`text-sm font-medium hover-elevate px-3 py-2 rounded-md ${location === "/" ? "bg-accent text-accent-foreground" : "text-foreground"}`}
               data-testid="link-home"
             >
               Home
@@ -257,7 +257,7 @@ export default function Header() {
           <div className="hidden lg:flex items-center gap-4">
             <a 
               href="tel:+15123689159" 
-              className="flex items-center gap-2 text-primary font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
+              className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
               data-testid="link-phone-austin"
             >
               <Phone className="w-5 h-5" />
