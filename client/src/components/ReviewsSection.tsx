@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
 import type { GoogleReview } from "@shared/schema";
+import { useEffect, useRef, useState } from "react";
 
 interface ReviewsSectionProps {
   category?: string;
@@ -15,6 +16,31 @@ export default function ReviewsSection({
   title = "What Our Customers Say",
   maxReviews = 3
 }: ReviewsSectionProps) {
+  const [shouldLoad, setShouldLoad] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setShouldLoad(true);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        rootMargin: "200px",
+      }
+    );
+
+    if (sectionRef.current) {
+      observer.observe(sectionRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   const queryParams = new URLSearchParams();
   if (category) queryParams.set('category', category);
   queryParams.set('minRating', minRating.toString());
@@ -24,11 +50,31 @@ export default function ReviewsSection({
   const { data: reviews, isLoading } = useQuery<GoogleReview[]>({
     queryKey: [`/api/reviews${queryString}`],
     staleTime: 1000 * 60 * 30,
+    enabled: shouldLoad,
   });
+
+  if (!shouldLoad) {
+    return (
+      <section ref={sectionRef} className="py-16 bg-muted/30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="bg-card p-6 rounded-md border border-card-border">
+                <div className="h-20 bg-muted/50 rounded mb-4" />
+                <div className="h-4 bg-muted/50 rounded w-3/4 mb-2" />
+                <div className="h-4 bg-muted/50 rounded w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (isLoading) {
     return (
-      <section className="py-16 bg-muted/30">
+      <section ref={sectionRef} className="py-16 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
           <div className="grid gap-8 md:grid-cols-3">
@@ -52,7 +98,7 @@ export default function ReviewsSection({
   const displayReviews = reviews.slice(0, maxReviews);
 
   return (
-    <section className="py-16 bg-muted/30">
+    <section ref={sectionRef} className="py-16 bg-muted/30">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
         
