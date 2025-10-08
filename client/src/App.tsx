@@ -61,9 +61,6 @@ const FAQ = lazy(() => import("@/pages/FAQ"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
-const OAuthInit = lazy(() => import("@/pages/admin/OAuthInit"));
-const OAuthSuccess = lazy(() => import("@/pages/admin/OAuthSuccess"));
-const OAuthConfig = lazy(() => import("@/pages/admin/OAuthConfig"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -167,11 +164,6 @@ function Router() {
       {/* Other pages */}
       <Route path="/schedule-appointment" component={ScheduleAppointment} />
       <Route path="/about" component={About} />
-      
-      {/* Admin pages */}
-      <Route path="/admin/oauth-init" component={OAuthInit} />
-      <Route path="/admin/oauth-success" component={OAuthSuccess} />
-      <Route path="/admin/oauth-config" component={OAuthConfig} />
       
       <Route component={NotFound} />
         </Switch>
