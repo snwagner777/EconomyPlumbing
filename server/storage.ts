@@ -1818,6 +1818,7 @@ Call (512) 368-9159 or schedule service online.`,
         text: review.text,
         relativeTime: review.relativeTime,
         timestamp: review.timestamp,
+        categories: review.categories || [],
         fetchedAt: new Date()
       };
       this.googleReviews.set(id, googleReview);
