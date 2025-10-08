@@ -248,6 +248,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const paymentIntent = await stripe.paymentIntents.create({
         amount,
         currency: "usd",
+        automatic_payment_methods: {
+          enabled: true, // Enables all available payment methods including Apple Pay, Google Pay, Link, etc.
+        },
         metadata: {
           productId: product.id,
           productName: product.name,

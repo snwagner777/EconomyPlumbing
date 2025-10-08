@@ -59,7 +59,18 @@ function CheckoutForm({ product }: { product: Product }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
+      <PaymentElement 
+        options={{
+          layout: {
+            type: 'tabs',
+            defaultCollapsed: false,
+          },
+          wallets: {
+            applePay: 'auto',
+            googlePay: 'auto',
+          },
+        }}
+      />
       <Button 
         type="submit" 
         className="w-full bg-primary" 
