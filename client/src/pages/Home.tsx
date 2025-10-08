@@ -1,6 +1,5 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import SchedulerModal from "@/components/SchedulerModal";
 import ServiceCard from "@/components/ServiceCard";
 import WhyChooseCard from "@/components/WhyChooseCard";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
@@ -35,16 +34,14 @@ import testimonial2 from "@assets/generated_images/Female_customer_testimonial_f
 import testimonial3 from "@assets/generated_images/Senior_customer_testimonial_027f5302.png";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { openScheduler } from "@/lib/scheduler";
 import {
   localBusinessSchema,
   createFAQSchema,
 } from "@/components/SEO/JsonLd";
 
 export default function Home() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
-
   const faqSchema = createFAQSchema([
     {
       question: "What areas do you serve in Texas?",
@@ -253,9 +250,8 @@ export default function Home() {
       />
 
       <div className="min-h-screen">
-        <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-        <Header onScheduleClick={() => setSchedulerOpen(true)} />
-        <Hero onScheduleClick={() => setSchedulerOpen(true)} />
+        <Header />
+        <Hero />
 
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -314,7 +310,7 @@ export default function Home() {
 
             <div className="text-center mt-12">
               <Button
-                onClick={() => setSchedulerOpen(true)}
+                onClick={openScheduler}
                 size="lg"
                 className="bg-primary"
                 data-testid="button-schedule-services"

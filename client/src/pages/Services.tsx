@@ -1,7 +1,5 @@
-import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
@@ -18,6 +16,7 @@ import {
   ArrowRight
 } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { openScheduler } from "@/lib/scheduler";
 
 const serviceCategories = [
   {
@@ -92,8 +91,6 @@ const serviceCategories = [
 ];
 
 export default function Services() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
-
   return (
     <div className="min-h-screen">
       <SEOHead
@@ -102,8 +99,7 @@ export default function Services() {
         canonical="https://economyplumbingservices.com/services"
       />
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="bg-primary text-primary-foreground py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -115,7 +111,7 @@ export default function Services() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button 
-              onClick={() => setSchedulerOpen(true)}
+              onClick={openScheduler}
               size="lg"
               className="bg-white text-primary hover:bg-white/90"
               data-testid="button-schedule"

@@ -1,7 +1,5 @@
-import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
 import ContactFormSection from "@/components/ContactFormSection";
 import {
   Accordion,
@@ -11,6 +9,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
+import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema } from "@/components/SEO/JsonLd";
 
@@ -144,8 +143,6 @@ const faqCategories = [
 ];
 
 export default function FAQ() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
-
   // Flatten all FAQs for schema
   const allFAQs = faqCategories.flatMap(category => category.faqs);
   const faqSchema = createFAQSchema(allFAQs);
@@ -159,8 +156,7 @@ export default function FAQ() {
         schema={faqSchema}
       />
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="bg-primary text-primary-foreground py-16 lg:py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -205,7 +201,7 @@ export default function FAQ() {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button 
-              onClick={() => setSchedulerOpen(true)}
+              onClick={openScheduler}
               size="lg"
               data-testid="button-schedule"
             >

@@ -3,11 +3,7 @@ import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
 
-interface HeroProps {
-  onScheduleClick?: () => void;
-}
-
-export default function Hero({ onScheduleClick }: HeroProps) {
+export default function Hero() {
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       <div className="absolute inset-0">

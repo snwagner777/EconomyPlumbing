@@ -3,12 +3,10 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { CheckCircle2, Users, Award, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
-import SchedulerModal from "@/components/SchedulerModal";
+import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function About() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
 
   const values = [
     {
@@ -48,7 +46,7 @@ export default function About() {
       />
       
       <div className="min-h-screen flex flex-col">
-        <Header onScheduleClick={() => setSchedulerOpen(true)} />
+        <Header />
         
         <main className="flex-1">
           {/* Hero Section */}
@@ -209,7 +207,7 @@ export default function About() {
                     <Button 
                       size="lg" 
                       className="bg-primary"
-                      onClick={() => setSchedulerOpen(true)}
+                      onClick={openScheduler}
                       data-testid="button-schedule-service"
                     >
                       Schedule Service
@@ -242,7 +240,6 @@ export default function About() {
         </main>
 
         <Footer />
-        <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
       </div>
     </>
   );

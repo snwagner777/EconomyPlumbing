@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, Clock, Users, Award, Home as HomeIcon } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
+import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
 
 const cities = [
@@ -121,7 +121,6 @@ const emergencyAreas = [
 ];
 
 export default function ServiceAreas() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
   const [expandedNeighborhoods, setExpandedNeighborhoods] = useState<{ [key: string]: boolean }>({});
 
   const toggleNeighborhoods = (cityName: string) => {
@@ -139,8 +138,7 @@ export default function ServiceAreas() {
         canonical="https://economyplumbingservices.com/service-area"
       />
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="py-16 lg:py-20 bg-gradient-to-b from-muted/30 to-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -153,7 +151,7 @@ export default function ServiceAreas() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button 
-                onClick={() => setSchedulerOpen(true)}
+                onClick={openScheduler}
                 size="lg"
                 data-testid="button-schedule-hero"
               >
@@ -453,7 +451,7 @@ export default function ServiceAreas() {
           <div className="text-center mt-12">
             <div className="flex flex-wrap justify-center gap-4">
               <Button 
-                onClick={() => setSchedulerOpen(true)}
+                onClick={openScheduler}
                 size="lg"
                 className="bg-white text-primary hover:bg-white/90"
                 data-testid="button-schedule-footer"

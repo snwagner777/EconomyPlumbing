@@ -5,17 +5,13 @@ import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
 
-interface HeaderProps {
-  onScheduleClick?: () => void;
-}
-
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
   }
 }
 
-export default function Header({ onScheduleClick }: HeaderProps) {
+export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [serviceAreasOpen, setServiceAreasOpen] = useState(false);

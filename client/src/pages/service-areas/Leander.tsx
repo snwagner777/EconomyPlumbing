@@ -1,4 +1,4 @@
-import { useState } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { Link } from "wouter";
@@ -8,10 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Phone, MapPin, CheckCircle, Home } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SchedulerModal from "@/components/SchedulerModal";
 import ContactFormSection from "@/components/ContactFormSection";
 import FAQSection from "@/components/FAQSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
+import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import heroImage from "@assets/stock_images/professional_plumber_f5e4b5a9.jpg";
 
@@ -26,7 +26,6 @@ const SERVICES = [
 ];
 
 export default function LeanderServiceArea() {
-  const [schedulerOpen, setSchedulerOpen] = useState(false);
   const slug = "leander";
   
   const { data: serviceArea, isLoading } = useQuery<ServiceArea>({
@@ -71,7 +70,7 @@ export default function LeanderServiceArea() {
   if (isLoading) {
     return (
       <div className="min-h-screen">
-        <Header onScheduleClick={() => setSchedulerOpen(true)} />
+        <Header />
         <div className="flex items-center justify-center py-24">
           <p className="text-lg text-muted-foreground">Loading...</p>
         </div>
@@ -91,8 +90,7 @@ export default function LeanderServiceArea() {
       <JsonLd data={localBusinessSchema} />
       {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}
 
-      <SchedulerModal open={schedulerOpen} onOpenChange={setSchedulerOpen} />
-      <Header onScheduleClick={() => setSchedulerOpen(true)} />
+      <Header />
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
@@ -121,7 +119,7 @@ export default function LeanderServiceArea() {
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={() => setSchedulerOpen(true)}
+                onClick={openScheduler}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -319,7 +317,7 @@ export default function LeanderServiceArea() {
 
           <Button 
             size="lg"
-            onClick={() => setSchedulerOpen(true)}
+            onClick={openScheduler}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >
