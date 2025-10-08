@@ -824,7 +824,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Citrus Ginger scent",
           "4 Septic Treatments + 16 Drain Treatments or 1 Septic Shock"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -842,7 +844,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Preferred customer pricing for 1 year",
           "Preferred customer emergency scheduling"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -860,7 +864,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Preferred customer pricing for 1 year",
           "Preferred customer emergency scheduling"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -878,7 +884,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Preferred customer pricing for 3 years",
           "Preferred customer emergency scheduling"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -896,7 +904,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Preferred customer pricing for 3 years",
           "Preferred customer emergency scheduling"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -914,7 +924,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Yearly plumbing inspection at no charge",
           "No auto-renewal - no obligation"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       },
       {
         id: randomUUID(),
@@ -932,7 +944,9 @@ Call (512) 368-9159 or schedule service online.`,
           "Ideal for property managers",
           "Covers all rental properties in coverage area"
         ],
-        active: true
+        active: true,
+        serviceTitanMembershipTypeId: null,
+        serviceTitanEnabled: false
       }
     ];
 

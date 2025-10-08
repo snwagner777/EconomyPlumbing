@@ -11,7 +11,7 @@ const app = express();
 
 // Enable gzip/brotli compression for all responses
 app.use(compression({
-  filter: (req, res) => {
+  filter: (req: Request, res: Response) => {
     if (req.headers['x-no-compression']) {
       return false;
     }
