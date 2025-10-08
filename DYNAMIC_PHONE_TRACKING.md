@@ -193,19 +193,19 @@ Configure different numbers based on UTM parameters:
 
 **Google Ads Campaign:**
 ```
-https://economyplumbingservices.com/?utm_source=google&utm_medium=cpc&utm_campaign=water-heater
+https://plumbersthatcare.com/?utm_source=google&utm_medium=cpc&utm_campaign=water-heater
 → Shows: (512) 649-2899 (Google Ads tracking number)
 ```
 
 **Facebook Ads Campaign:**
 ```
-https://economyplumbingservices.com/?utm_source=facebook&utm_medium=paid&utm_campaign=summer-special
+https://plumbersthatcare.com/?utm_source=facebook&utm_medium=paid&utm_campaign=summer-special
 → Shows: (512) 649-2888 (Facebook tracking number)
 ```
 
 **Organic Traffic:**
 ```
-https://economyplumbingservices.com/
+https://plumbersthatcare.com/
 → Shows: (512) 368-9159 (Main business number)
 ```
 
@@ -311,13 +311,13 @@ Ensure `tel:` links work properly:
 
 ```bash
 # Google Ads test
-https://economyplumbingservices.com/?utm_source=google&utm_medium=cpc
+https://plumbersthatcare.com/?utm_source=google&utm_medium=cpc
 
 # Facebook Ads test  
-https://economyplumbingservices.com/?utm_source=facebook&utm_medium=paid
+https://plumbersthatcare.com/?utm_source=facebook&utm_medium=paid
 
 # Organic test
-https://economyplumbingservices.com/
+https://plumbersthatcare.com/
 ```
 
 ## CallRail Setup Guide

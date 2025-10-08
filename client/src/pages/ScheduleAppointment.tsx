@@ -11,7 +11,7 @@ export default function ScheduleAppointment() {
       <SEOHead
         title="Schedule Your Appointment | Economy Plumbing Services"
         description="Book plumbing service online. Choose your preferred date & time for same-day service. Austin & Marble Falls. Licensed plumbers 24/7. Schedule now!"
-        canonical="https://economyplumbingservices.com/schedule-appointment"
+        canonical="https://plumbersthatcare.com/schedule-appointment"
       />
 
       <Header />

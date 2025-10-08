@@ -61,7 +61,7 @@ export default function MembershipBenefits() {
       <SEOHead
         title="Membership Benefits | Economy Plumbing Services TX"
         description="VIP plumbing membership: priority service, 15-20% discounts, annual maintenance, 24/7 support. Save on plumbing repairs. Austin & Marble Falls. Join today!"
-        canonical="https://economyplumbingservices.com/membership-benefits"
+        canonical="https://plumbersthatcare.com/membership-benefits"
       />
 
       <Header />

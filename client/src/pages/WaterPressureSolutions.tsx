@@ -6,7 +6,7 @@ export default function WaterPressureSolutions() {
     <ServicePage
       title="Water Pressure Solutions | Fix Low & High Water Pressure TX"
       metaDescription="Austin & Marble Falls water pressure solutions. Fix low/high pressure, install regulators. Diagnose pressure issues. Same-day service. (512) 368-9159."
-      canonical="https://economyplumbingservices.com/water-pressure-solutions"
+      canonical="https://plumbersthatcare.com/water-pressure-solutions"
       heroImage={pressureImage}
       heroImageAlt="Professional water pressure solutions and regulation services in Central Texas"
       heroTitle="Water Pressure Solutions"

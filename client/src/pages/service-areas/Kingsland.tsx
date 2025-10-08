@@ -14,7 +14,7 @@ export default function KingslandServiceArea() {
       city="Kingsland"
       state="TX"
       metaDescription="Trusted plumbing services in Kingsland, TX. Water heater repair, drain cleaning, leak detection, commercial plumbing. Licensed plumbers. Call (830) 460-3565."
-      canonical="https://economyplumbingservices.com/plumber-in-kingsland--tx"
+      canonical="https://plumbersthatcare.com/plumber-in-kingsland--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
       heroImage={kingslandHero}

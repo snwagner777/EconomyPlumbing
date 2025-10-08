@@ -6,7 +6,7 @@ export default function GasServices() {
     <ServicePage
       title="Gas Line Installation & Repair | Licensed Gas Plumbers TX"
       metaDescription="Licensed gas line installation, repair & safety inspections. Austin & Marble Falls. Gas appliances, leak detection. Certified technicians. (512) 368-9159."
-      canonical="https://economyplumbingservices.com/gas-services"
+      canonical="https://plumbersthatcare.com/gas-services"
       heroImage={gasImage}
       heroImageAlt="Licensed gas line installation and repair service in Austin and Marble Falls TX"
       heroTitle="Gas Line Services"

@@ -14,7 +14,7 @@ export default function GraniteShoalsServiceArea() {
       city="Granite Shoals"
       state="TX"
       metaDescription="Reliable plumbing services in Granite Shoals, TX. Expert water heater repair, drain cleaning, and emergency plumbing. Same-day service. Call (830) 460-3565."
-      canonical="https://economyplumbingservices.com/plumber-in-granite-shoals--tx"
+      canonical="https://plumbersthatcare.com/plumber-in-granite-shoals--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
       heroImage={graniteShoalsHero}

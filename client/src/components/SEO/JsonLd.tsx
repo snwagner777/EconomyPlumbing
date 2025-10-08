@@ -15,15 +15,15 @@ export const localBusinessSchema = {
   "@context": "https://schema.org",
   "@type": "Plumber",
   "name": "Economy Plumbing Services",
-  "image": "https://economyplumbingservices.com/logo.jpg",
+  "image": "https://plumbersthatcare.com/logo.jpg",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://economyplumbingservices.com/logo.jpg",
+    "url": "https://plumbersthatcare.com/logo.jpg",
     "width": "512",
     "height": "512"
   },
   "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
-  "url": "https://economyplumbingservices.com",
+  "url": "https://plumbersthatcare.com",
   "telephone": [
     "+15123689159",
     "+18304603565"
@@ -179,7 +179,7 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
       "@type": "Plumber",
       "name": "Economy Plumbing Services",
       "telephone": ["+15123689159", "+18304603565"],
-      "url": "https://economyplumbingservices.com",
+      "url": "https://plumbersthatcare.com",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "701 Tillery St #12",
@@ -210,7 +210,7 @@ export function createProductSchema(product: any) {
     "description": product.description,
     "offers": {
       "@type": "Offer",
-      "url": "https://economyplumbingservices.com/store",
+      "url": "https://plumbersthatcare.com/store",
       "priceCurrency": "USD",
       "price": product.price,
       "availability": "https://schema.org/InStock",
@@ -239,7 +239,7 @@ export function createBlogPostSchema(post: any) {
       "name": "Economy Plumbing Services",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://economyplumbingservices.com/logo.jpg"
+        "url": "https://plumbersthatcare.com/logo.jpg"
       }
     }
   };

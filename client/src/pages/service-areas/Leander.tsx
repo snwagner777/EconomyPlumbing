@@ -64,7 +64,7 @@ export default function LeanderServiceArea() {
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://economyplumbingservices.com/service-areas/${slug}`,
+    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
   };
 
   if (isLoading) {
@@ -84,7 +84,7 @@ export default function LeanderServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Leander plumber serving Crystal Falls, Travisso, Mason Hills. Expert water heater repair, drain cleaning, leak detection. Same-day service. (512) 368-9159."}
-        canonical="https://economyplumbingservices.com/plumber-leander"
+        canonical="https://plumbersthatcare.com/plumber-leander"
       />
 
       <JsonLd data={localBusinessSchema} />

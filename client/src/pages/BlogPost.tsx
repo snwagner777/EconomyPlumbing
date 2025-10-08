@@ -27,8 +27,8 @@ export default function BlogPost() {
   });
 
   const canonicalUrl = matchFallTips 
-    ? "https://economyplumbingservices.com/fall-plumbing-tips"
-    : `https://economyplumbingservices.com/blog/${slug}`;
+    ? "https://plumbersthatcare.com/fall-plumbing-tips"
+    : `https://plumbersthatcare.com/blog/${slug}`;
 
   const relatedPosts = allPosts
     ?.filter(

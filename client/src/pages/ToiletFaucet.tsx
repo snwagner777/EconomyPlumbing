@@ -6,7 +6,7 @@ export default function ToiletFaucet() {
     <ServicePage
       title="Toilet & Faucet Repair & Installation | Economy Plumbing"
       metaDescription="Austin & Marble Falls toilet & faucet repair, installation, replacement. Modern fixtures, water-saving options. Same-day service. Call (512) 368-9159."
-      canonical="https://economyplumbingservices.com/toilet-faucet"
+      canonical="https://plumbersthatcare.com/toilet-faucet"
       heroImage={toiletImage}
       heroImageAlt="Professional toilet and faucet installation and repair in Austin and Marble Falls TX"
       heroTitle="Toilet & Faucet Services"

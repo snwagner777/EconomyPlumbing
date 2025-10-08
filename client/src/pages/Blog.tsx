@@ -25,7 +25,7 @@ export default function Blog() {
       <SEOHead
         title="Plumbing Tips & Advice Blog | Economy Plumbing"
         description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
-        canonical="https://economyplumbingservices.com/blog"
+        canonical="https://plumbersthatcare.com/blog"
       />
 
       <Header />
