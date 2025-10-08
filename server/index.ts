@@ -19,6 +19,11 @@ app.use(compression({
   level: 6 // Balance between compression and speed
 }));
 
+// Stripe webhook must use raw body for signature verification
+// This must come BEFORE express.json() middleware
+app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
+
+// JSON parsing for all other routes
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
