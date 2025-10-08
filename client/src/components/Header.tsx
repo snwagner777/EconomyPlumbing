@@ -165,7 +165,7 @@ export default function Header() {
                       <Link
                         key={service.path}
                         href={service.path}
-                        className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
+                        className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold border-b border-border mb-1' : ''}`}
                         data-testid={`link-service-${service.path.slice(1)}`}
                       >
                         {service.name}
@@ -198,7 +198,7 @@ export default function Header() {
                       <Link
                         key={area.path}
                         href={area.path}
-                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold text-primary border-b border-border mb-1' : ''}`}
+                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold border-b border-border mb-1' : ''}`}
                         data-testid={`link-area-${area.path.slice(1)}`}
                       >
                         {area.name}
@@ -317,7 +317,7 @@ export default function Header() {
                 <Link
                   key={service.path}
                   href={service.path}
-                  className={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold text-primary' : ''}`}
+                  className={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold' : ''}`}
                   data-testid={`mobile-link-${service.path.slice(1)}`}
                 >
                   {service.name}
@@ -331,7 +331,7 @@ export default function Header() {
                 <Link
                   key={area.path}
                   href={area.path}
-                  className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold text-primary' : ''}`}
+                  className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
                   data-testid={`mobile-link-area-${area.path.slice(1)}`}
                 >
                   {area.name}
@@ -354,7 +354,7 @@ export default function Header() {
             <div className="pt-4 space-y-3">
               <a 
                 href="tel:+15123689159" 
-                className="flex items-center gap-2 text-primary font-poppins font-bold text-lg"
+                className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg"
                 data-testid="mobile-phone-austin"
               >
                 <Phone className="w-5 h-5" />
@@ -362,7 +362,7 @@ export default function Header() {
               </a>
               <a 
                 href="tel:+18304603565" 
-                className="flex items-center gap-2 text-primary font-poppins font-bold text-lg"
+                className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg"
                 data-testid="mobile-phone-marble-falls"
               >
                 <Phone className="w-5 h-5" />
