@@ -153,9 +153,9 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
 
     // Paginate through all reviews
     do {
-      const url = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews?pageSize=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+      const url: string = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews?pageSize=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
       
-      const response = await fetch(url, {
+      const response: Response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${accessToken.token}`,
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
         throw new Error(`GMB API error: ${response.status} ${response.statusText}`);
       }
 
-      const data = await response.json();
+      const data: any = await response.json();
       const reviews = data.reviews || [];
       
       const transformedReviews = reviews.map((review: any): InsertGoogleReview => {

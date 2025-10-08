@@ -110,14 +110,27 @@ async function refreshReviewsPeriodically() {
   const refreshReviews = async () => {
     try {
       log("Background: Refreshing Google reviews...");
-      const freshReviews = await fetchGoogleReviews();
       
-      if (freshReviews.length > 0) {
+      // Try Google My Business API first (if OAuth configured)
+      const { fetchAllGoogleMyBusinessReviews } = await import("./lib/googleMyBusinessReviews");
+      const gmbReviews = await fetchAllGoogleMyBusinessReviews();
+      
+      if (gmbReviews.length > 0) {
         await storage.clearGoogleReviews();
-        await storage.saveGoogleReviews(freshReviews);
-        log(`Background: Successfully refreshed ${freshReviews.length} reviews`);
+        await storage.saveGoogleReviews(gmbReviews);
+        log(`Background: Successfully refreshed ${gmbReviews.length} reviews from Google My Business`);
       } else {
-        log("Background: No reviews fetched from Google");
+        // Fallback to Places API (limited to 5 reviews)
+        log("Background: No GMB reviews, falling back to Places API...");
+        const placesReviews = await fetchGoogleReviews();
+        
+        if (placesReviews.length > 0) {
+          await storage.clearGoogleReviews();
+          await storage.saveGoogleReviews(placesReviews);
+          log(`Background: Successfully refreshed ${placesReviews.length} reviews from Places API`);
+        } else {
+          log("Background: No reviews fetched from Google");
+        }
       }
     } catch (error) {
       log(`Background: Error refreshing reviews - ${error}`);

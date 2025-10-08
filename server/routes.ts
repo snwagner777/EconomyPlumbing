@@ -5,6 +5,7 @@ import { insertContactSubmissionSchema } from "@shared/schema";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
+import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import path from "path";
 import fs from "fs";
 
@@ -221,6 +222,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to fetch reviews: " + error.message });
+    }
+  });
+
+  // Google OAuth routes for My Business API
+  app.get("/api/oauth/status", async (req, res) => {
+    try {
+      const token = await storage.getGoogleOAuthToken('google_my_business');
+      res.json({ 
+        isAuthenticated: !!token,
+        hasAccountId: !!token?.accountId,
+        hasLocationId: !!token?.locationId,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to check OAuth status: " + error.message });
+    }
+  });
+
+  app.get("/api/oauth/init", async (req, res) => {
+    try {
+      const auth = GoogleMyBusinessAuth.getInstance();
+      const authUrl = auth.getAuthUrl();
+      res.json({ authUrl });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to initialize OAuth: " + error.message });
+    }
+  });
+
+  app.get("/api/oauth/callback", async (req, res) => {
+    try {
+      const { code } = req.query;
+      
+      if (!code || typeof code !== 'string') {
+        return res.status(400).send('Missing authorization code');
+      }
+
+      const auth = GoogleMyBusinessAuth.getInstance();
+      const tokens = await auth.getTokenFromCode(code);
+
+      if (!tokens.access_token || !tokens.refresh_token || !tokens.expiry_date) {
+        throw new Error('Invalid tokens received');
+      }
+
+      // Check if token already exists
+      const existingToken = await storage.getGoogleOAuthToken('google_my_business');
+      
+      if (existingToken) {
+        // Update existing token
+        await storage.updateGoogleOAuthToken(existingToken.id, {
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiryDate: new Date(tokens.expiry_date),
+        });
+      } else {
+        // Save new token (account/location IDs will be set separately)
+        await storage.saveGoogleOAuthToken({
+          service: 'google_my_business',
+          accessToken: tokens.access_token,
+          refreshToken: tokens.refresh_token,
+          expiryDate: new Date(tokens.expiry_date),
+          accountId: null,
+          locationId: null,
+        });
+      }
+
+      // Redirect to setup completion page
+      res.redirect('/admin/oauth-success');
+    } catch (error: any) {
+      console.error('OAuth callback error:', error);
+      res.status(500).send(`OAuth failed: ${error.message}`);
+    }
+  });
+
+  app.post("/api/oauth/set-ids", async (req, res) => {
+    try {
+      const { accountId, locationId } = req.body;
+      
+      if (!accountId || !locationId) {
+        return res.status(400).json({ message: 'Missing account ID or location ID' });
+      }
+
+      const token = await storage.getGoogleOAuthToken('google_my_business');
+      
+      if (!token) {
+        return res.status(404).json({ message: 'No OAuth token found. Please authenticate first.' });
+      }
+
+      await storage.updateGoogleOAuthToken(token.id, {
+        accountId,
+        locationId,
+      });
+
+      res.json({ message: 'Account and location IDs updated successfully' });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to update IDs: " + error.message });
     }
   });
 
