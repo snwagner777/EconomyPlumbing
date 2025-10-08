@@ -2000,7 +2000,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getGoogleReviews(): Promise<GoogleReview[]> {
-    return await db.select().from(googleReviews);
+    return await db
+      .select()
+      .from(googleReviews)
+      .orderBy(sql`${googleReviews.timestamp} DESC`);
   }
 
   async saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void> {

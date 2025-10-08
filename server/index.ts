@@ -113,18 +113,15 @@ async function refreshReviewsPeriodically() {
       
       const allReviews: any[] = [];
 
-      // NOTE: DataForSEO was used ONE-TIME to fetch all historical reviews (550+)
-      // Now we rely on Google Places API for ongoing updates (max 5 newest reviews per refresh)
-      // If you need to re-run DataForSEO, temporarily uncomment the code below:
-      
-      // const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
-      // const placeId = process.env.GOOGLE_PLACE_ID;
-      // if (placeId) {
-      //   log("Background: Fetching Google reviews from DataForSEO...");
-      //   const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
-      //   log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
-      //   allReviews.push(...dataForSeoReviews);
-      // }
+      // TEMPORARY: Re-enabling DataForSEO for one-time import
+      const { fetchDataForSeoReviews } = await import("./lib/dataForSeoReviews");
+      const placeId = process.env.GOOGLE_PLACE_ID;
+      if (placeId) {
+        log("Background: Fetching Google reviews from DataForSEO...");
+        const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+        log(`Background: DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+        allReviews.push(...dataForSeoReviews);
+      }
 
       // Fetch new Google reviews from Places API (max 5, newest)
       log("Background: Fetching newest Google reviews from Places API...");
@@ -155,8 +152,8 @@ async function refreshReviewsPeriodically() {
     const unique: any[] = [];
 
     for (const review of reviews) {
-      // Filter: Only 4+ star reviews, no Anonymous authors
-      if (review.rating < 4 || review.authorName.toLowerCase().includes('anonymous')) {
+      // Filter: Only 4+ star reviews (allowing Anonymous since DataForSEO uses that for privacy)
+      if (review.rating < 4) {
         continue;
       }
 
