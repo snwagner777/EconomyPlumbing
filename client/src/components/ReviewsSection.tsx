@@ -277,7 +277,7 @@ export default function ReviewsSection({
                 {/* Author Info */}
                 <div className="flex items-center gap-4 pt-4 border-t border-border/50">
                   <Avatar className="h-12 w-12 ring-2 ring-primary/10">
-                    {review.profilePhotoUrl && (
+                    {review.profilePhotoUrl && review.authorName !== 'Anonymous' && (
                       <AvatarImage 
                         src={review.profilePhotoUrl} 
                         alt={review.authorName}
@@ -285,12 +285,20 @@ export default function ReviewsSection({
                       />
                     )}
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                      {review.authorName === 'Anonymous' 
+                        ? 'VC' 
+                        : review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()
+                      }
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{review.authorName}</h3>
-                    <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
+                    <h3 className="font-semibold text-foreground">
+                      {review.authorName === 'Anonymous' ? 'A.C.' : review.authorName}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {review.authorName === 'Anonymous' && 'Google Customer • '}
+                      {review.relativeTime}
+                    </p>
                   </div>
                 </div>
 
