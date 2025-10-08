@@ -367,6 +367,12 @@ export default function Home() {
           </div>
         </section>
 
+        <ReviewsSection 
+          title="What Our Customers Say"
+          maxReviews={3}
+          minRating={4}
+        />
+
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -414,12 +420,6 @@ export default function Home() {
             </div>
           </div>
         </section>
-
-        <ReviewsSection 
-          title="What Our Customers Say"
-          maxReviews={3}
-          minRating={4}
-        />
 
         <ContactForm />
         <Footer />

@@ -1,7 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
+import { Star, Quote, ArrowRight } from "lucide-react";
 import type { GoogleReview } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 interface ReviewsSectionProps {
   category?: string;
@@ -55,16 +58,30 @@ export default function ReviewsSection({
 
   if (!shouldLoad) {
     return (
-      <section ref={sectionRef} className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
+      <section ref={sectionRef} className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 text-primary border-primary/20">
+              Customer Testimonials
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {title}
+            </h2>
+            <div className="flex items-center justify-center gap-1 mb-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="w-6 h-6 fill-primary text-primary" />
+              ))}
+              <span className="ml-2 text-lg font-semibold">5.0 Rating</span>
+            </div>
+          </div>
           <div className="grid gap-8 md:grid-cols-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-card p-6 rounded-md border border-card-border">
-                <div className="h-20 bg-muted/50 rounded mb-4" />
-                <div className="h-4 bg-muted/50 rounded w-3/4 mb-2" />
-                <div className="h-4 bg-muted/50 rounded w-1/2" />
-              </div>
+              <Card key={i} className="p-8 hover-elevate">
+                <div className="h-32 bg-muted/30 rounded mb-4 animate-pulse" />
+                <div className="h-4 bg-muted/30 rounded w-3/4 mb-2 animate-pulse" />
+                <div className="h-4 bg-muted/30 rounded w-1/2 animate-pulse" />
+              </Card>
             ))}
           </div>
         </div>
@@ -74,16 +91,30 @@ export default function ReviewsSection({
 
   if (isLoading) {
     return (
-      <section ref={sectionRef} className="py-16 bg-muted/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
+      <section ref={sectionRef} className="relative py-20 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+          <div className="text-center mb-16">
+            <Badge variant="outline" className="mb-4 text-primary border-primary/20">
+              Customer Testimonials
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              {title}
+            </h2>
+            <div className="flex items-center justify-center gap-1 mb-4">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} className="w-6 h-6 fill-primary text-primary" />
+              ))}
+              <span className="ml-2 text-lg font-semibold">5.0 Rating</span>
+            </div>
+          </div>
           <div className="grid gap-8 md:grid-cols-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-card p-6 rounded-md border border-card-border animate-pulse">
-                <div className="h-20 bg-muted rounded mb-4" />
-                <div className="h-4 bg-muted rounded w-3/4 mb-2" />
-                <div className="h-4 bg-muted rounded w-1/2" />
-              </div>
+              <Card key={i} className="p-8 hover-elevate">
+                <div className="h-32 bg-muted rounded mb-4 animate-pulse" />
+                <div className="h-4 bg-muted rounded w-3/4 mb-2 animate-pulse" />
+                <div className="h-4 bg-muted rounded w-1/2 animate-pulse" />
+              </Card>
             ))}
           </div>
         </div>
@@ -96,73 +127,122 @@ export default function ReviewsSection({
   }
 
   const displayReviews = reviews.slice(0, maxReviews);
+  const avgRating = reviews.length > 0 
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : "5.0";
 
   return (
-    <section ref={sectionRef} className="py-16 bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-center mb-12">{title}</h2>
-        
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+    <section ref={sectionRef} className="relative py-20 overflow-hidden">
+      {/* Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <Badge variant="outline" className="mb-4 text-primary border-primary/20" data-testid="badge-testimonials">
+            Customer Testimonials
+          </Badge>
+          <h2 className="text-4xl font-bold mb-4 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            {title}
+          </h2>
+          <div className="flex items-center justify-center gap-1 mb-4">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star 
+                key={i} 
+                className="w-6 h-6 fill-primary text-primary drop-shadow-sm" 
+                data-testid={`star-header-${i}`}
+              />
+            ))}
+            <span className="ml-2 text-lg font-semibold" data-testid="text-avg-rating">
+              {avgRating} Rating
+            </span>
+          </div>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Trusted by hundreds of homeowners across Central Texas
+          </p>
+        </div>
+
+        {/* Reviews Grid */}
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 mb-12">
           {displayReviews.map((review) => (
-            <div 
+            <Card 
               key={review.id} 
-              className="bg-card p-6 rounded-md border border-card-border hover-elevate"
+              className="relative p-8 hover-elevate transition-all duration-300 border-border/50"
               data-testid={`review-${review.id}`}
             >
-              <div className="flex items-start gap-4 mb-4">
-                {review.profilePhotoUrl && (
-                  <img 
-                    src={review.profilePhotoUrl} 
-                    alt={review.authorName}
-                    className="w-12 h-12 rounded-full"
-                    loading="lazy"
+              {/* Quote Icon */}
+              <div className="absolute -top-4 -left-4 w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                <Quote className="w-6 h-6 text-primary" />
+              </div>
+
+              {/* Stars */}
+              <div className="flex items-center gap-1 mb-4">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${
+                      i < review.rating
+                        ? "fill-primary text-primary"
+                        : "fill-muted-foreground/20 text-muted-foreground/20"
+                    }`}
+                    data-testid={`star-${review.id}-${i}`}
                   />
-                )}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-foreground">{review.authorName}</h3>
-                  <div className="flex items-center gap-1 mt-1">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-4 h-4 ${
-                          i < review.rating
-                            ? "fill-primary text-primary"
-                            : "fill-muted text-muted"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-1">{review.relativeTime}</p>
-                </div>
+                ))}
               </div>
               
-              <p className="text-foreground leading-relaxed">{review.text}</p>
+              {/* Review Text */}
+              <p className="text-foreground leading-relaxed mb-6 line-clamp-6">
+                "{review.text}"
+              </p>
               
+              {/* Author Info */}
+              <div className="flex items-center gap-4 pt-4 border-t border-border/50">
+                <Avatar className="h-12 w-12">
+                  {review.profilePhotoUrl && (
+                    <AvatarImage 
+                      src={review.profilePhotoUrl} 
+                      alt={review.authorName}
+                      loading="lazy"
+                    />
+                  )}
+                  <AvatarFallback className="bg-primary/10 text-primary font-semibold">
+                    {review.authorName.split(' ').map(n => n[0]).join('').toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-foreground">{review.authorName}</h3>
+                  <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
+                </div>
+              </div>
+
+              {/* Google Link */}
               {review.authorUrl && (
                 <a 
                   href={review.authorUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline mt-4 inline-block"
+                  className="absolute bottom-4 right-4 text-xs text-primary/60 hover:text-primary transition-colors"
                   data-testid={`review-link-${review.id}`}
                 >
-                  View on Google
+                  Google Review
                 </a>
               )}
-            </div>
+            </Card>
           ))}
         </div>
 
-        <div className="text-center mt-12">
+        {/* CTA */}
+        <div className="text-center">
           <a
             href="https://www.google.com/maps/search/?api=1&query=Economy+Plumbing+Services+Austin"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-primary font-semibold hover:underline"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary to-primary/90 text-primary-foreground rounded-md font-semibold hover-elevate active-elevate-2 transition-all shadow-lg shadow-primary/20"
             data-testid="link-all-reviews"
           >
-            <Star className="w-5 h-5" />
-            See All Reviews on Google
+            <Star className="w-5 h-5 fill-current" />
+            Read All Google Reviews
+            <ArrowRight className="w-5 h-5" />
           </a>
         </div>
       </div>
