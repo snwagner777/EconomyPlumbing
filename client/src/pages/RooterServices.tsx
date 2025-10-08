@@ -74,6 +74,8 @@ export default function RooterServices() {
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
+      reviewsCategory="drain"
+      reviewsTitle="Rooter Service Customer Reviews"
     />
   );
 }

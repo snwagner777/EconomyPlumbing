@@ -74,6 +74,8 @@ export default function HydroJetting() {
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
+      reviewsCategory="drain"
+      reviewsTitle="Hydro Jetting Customer Reviews"
     />
   );
 }

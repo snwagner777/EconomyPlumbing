@@ -74,6 +74,8 @@ export default function SewagePumpServices() {
         { title: "Leak Repair Services", path: "/leak-repair" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" }
       ]}
+      reviewsCategory="sewer"
+      reviewsTitle="Sump & Sewage Pump Customer Reviews"
     />
   );
 }

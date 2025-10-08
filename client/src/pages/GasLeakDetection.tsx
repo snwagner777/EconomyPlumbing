@@ -74,6 +74,8 @@ export default function GasLeakDetection() {
         { title: "Leak Repair Services", path: "/leak-repair" },
         { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
+      reviewsCategory="gas"
+      reviewsTitle="Gas Leak Detection Customer Reviews"
     />
   );
 }

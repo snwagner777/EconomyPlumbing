@@ -74,6 +74,8 @@ export default function GarbageDisposalRepair() {
         { title: "Leak Repair", path: "/leak-repair" },
         { title: "Toilet & Faucet Services", path: "/toilet-faucet" }
       ]}
+      reviewsCategory="garbage_disposal"
+      reviewsTitle="Garbage Disposal Customer Reviews"
     />
   );
 }

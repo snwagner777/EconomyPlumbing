@@ -74,6 +74,8 @@ export default function WaterPressureSolutions() {
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
+      reviewsCategory="pipe"
+      reviewsTitle="Water Pressure Customer Reviews"
     />
   );
 }

@@ -74,6 +74,8 @@ export default function BackflowTesting() {
         { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
         { title: "Permit Resolution", path: "/permit-resolution-services" }
       ]}
+      reviewsCategory="backflow"
+      reviewsTitle="Backflow Testing Customer Reviews"
     />
   );
 }

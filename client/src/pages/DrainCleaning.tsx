@@ -74,6 +74,8 @@ export default function DrainCleaning() {
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Hydro Jetting", path: "/hydro-jetting-services" }
       ]}
+      reviewsCategory="drain"
+      reviewsTitle="Drain Cleaning Customer Reviews"
     />
   );
 }

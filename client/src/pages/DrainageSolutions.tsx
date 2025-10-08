@@ -74,6 +74,8 @@ export default function DrainageSolutions() {
         { title: "Water Leak Repair", path: "/water-leak-repair" },
         { title: "Leak Repair Services", path: "/leak-repair" }
       ]}
+      reviewsCategory="drain"
+      reviewsTitle="Drainage Solutions Customer Reviews"
     />
   );
 }

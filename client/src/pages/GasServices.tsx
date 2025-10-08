@@ -74,6 +74,8 @@ export default function GasServices() {
         { title: "Leak Repair", path: "/leak-repair" },
         { title: "Gas Leak Detection", path: "/gas-leak-detection" }
       ]}
+      reviewsCategory="gas"
+      reviewsTitle="Gas Line Services Customer Reviews"
     />
   );
 }

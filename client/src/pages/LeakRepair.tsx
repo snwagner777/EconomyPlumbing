@@ -74,6 +74,8 @@ export default function LeakRepair() {
         { title: "Toilet & Faucet Services", path: "/toilet-faucet" },
         { title: "Water Pressure Solutions", path: "/water-pressure-solutions" }
       ]}
+      reviewsCategory="leak"
+      reviewsTitle="Leak Repair Customer Reviews"
     />
   );
 }

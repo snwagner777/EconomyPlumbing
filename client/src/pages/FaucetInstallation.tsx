@@ -74,6 +74,8 @@ export default function FaucetInstallation() {
         { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
         { title: "Garbage Disposal Repair", path: "/garbage-disposal-repair" }
       ]}
+      reviewsCategory="faucet"
+      reviewsTitle="Faucet Installation Customer Reviews"
     />
   );
 }
