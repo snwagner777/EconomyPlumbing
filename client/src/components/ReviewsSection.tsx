@@ -3,22 +3,23 @@ import { Star } from "lucide-react";
 import type { GoogleReview } from "@shared/schema";
 
 interface ReviewsSectionProps {
-  keywords?: string[];
+  category?: string;
   minRating?: number;
   title?: string;
   maxReviews?: number;
 }
 
 export default function ReviewsSection({ 
-  keywords = [], 
+  category, 
   minRating = 4,
   title = "What Our Customers Say",
   maxReviews = 3
 }: ReviewsSectionProps) {
-  const keywordsParam = keywords.length > 0 ? keywords.join(',') : '';
-  const queryString = keywordsParam 
-    ? `?keywords=${encodeURIComponent(keywordsParam)}&minRating=${minRating}`
-    : `?minRating=${minRating}`;
+  const queryParams = new URLSearchParams();
+  if (category) queryParams.set('category', category);
+  queryParams.set('minRating', minRating.toString());
+  
+  const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
     
   const { data: reviews, isLoading } = useQuery<GoogleReview[]>({
     queryKey: [`/api/reviews${queryString}`],
