@@ -10,9 +10,17 @@ import {
   type ServiceArea,
   type InsertServiceArea,
   type GoogleReview,
-  type InsertGoogleReview
+  type InsertGoogleReview,
+  users,
+  blogPosts,
+  products,
+  contactSubmissions,
+  serviceAreas,
+  googleReviews
 } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -1830,4 +1838,94 @@ Call (512) 368-9159 or schedule service online.`,
   }
 }
 
-export const storage = new MemStorage();
+export class DatabaseStorage implements IStorage {
+  async getUser(id: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    return user;
+  }
+
+  async getBlogPosts(): Promise<BlogPost[]> {
+    return await db.select().from(blogPosts);
+  }
+
+  async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
+    const [post] = await db.select().from(blogPosts).where(eq(blogPosts.slug, slug));
+    return post || undefined;
+  }
+
+  async createBlogPost(post: InsertBlogPost): Promise<BlogPost> {
+    const [created] = await db
+      .insert(blogPosts)
+      .values(post)
+      .returning();
+    return created;
+  }
+
+  async getProducts(): Promise<Product[]> {
+    return await db.select().from(products);
+  }
+
+  async getProductBySlug(slug: string): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.slug, slug));
+    return product || undefined;
+  }
+
+  async getProductById(id: string): Promise<Product | undefined> {
+    const [product] = await db.select().from(products).where(eq(products.id, id));
+    return product || undefined;
+  }
+
+  async createProduct(product: InsertProduct): Promise<Product> {
+    const [created] = await db
+      .insert(products)
+      .values(product)
+      .returning();
+    return created;
+  }
+
+  async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
+    const [created] = await db
+      .insert(contactSubmissions)
+      .values(submission)
+      .returning();
+    return created;
+  }
+
+  async getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined> {
+    const [area] = await db.select().from(serviceAreas).where(eq(serviceAreas.slug, slug));
+    return area || undefined;
+  }
+
+  async getAllServiceAreas(): Promise<ServiceArea[]> {
+    return await db.select().from(serviceAreas);
+  }
+
+  async getGoogleReviews(): Promise<GoogleReview[]> {
+    return await db.select().from(googleReviews);
+  }
+
+  async saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void> {
+    if (reviews.length === 0) return;
+    
+    await db.insert(googleReviews).values(reviews);
+  }
+
+  async clearGoogleReviews(): Promise<void> {
+    await db.delete(googleReviews);
+  }
+}
+
+export const storage = new DatabaseStorage();
