@@ -56,6 +56,33 @@ export default function ReviewsSection({
     enabled: shouldLoad,
   });
 
+  // Fallback query: if primary query returns fewer than 3 reviews, get general high-rated reviews
+  const fallbackQueryParams = new URLSearchParams();
+  fallbackQueryParams.set('minRating', minRating.toString());
+  const fallbackQueryString = `?${fallbackQueryParams.toString()}`;
+  
+  const { data: fallbackReviews } = useQuery<GoogleReview[]>({
+    queryKey: [`/api/reviews${fallbackQueryString}`],
+    staleTime: 1000 * 60 * 30,
+    enabled: shouldLoad && reviews !== undefined && reviews.length < 3,
+  });
+
+  // Final fallback: if still fewer than 3, get all reviews sorted by rating
+  const { data: allReviews } = useQuery<GoogleReview[]>({
+    queryKey: ['/api/reviews'],
+    staleTime: 1000 * 60 * 30,
+    enabled: shouldLoad && fallbackReviews !== undefined && fallbackReviews.length < 3,
+  });
+
+  // Determine which review set to use
+  let displayReviewsSource = reviews || [];
+  if (displayReviewsSource.length < 3 && fallbackReviews && fallbackReviews.length >= 3) {
+    displayReviewsSource = fallbackReviews;
+  } else if (displayReviewsSource.length < 3 && allReviews && allReviews.length > displayReviewsSource.length) {
+    // Use all reviews sorted by rating if we have more
+    displayReviewsSource = [...allReviews].sort((a, b) => b.rating - a.rating);
+  }
+
   if (!shouldLoad) {
     return (
       <section ref={sectionRef} className="relative py-20 overflow-hidden">
@@ -122,13 +149,13 @@ export default function ReviewsSection({
     );
   }
 
-  if (!reviews || reviews.length === 0) {
+  if (!displayReviewsSource || displayReviewsSource.length === 0) {
     return null;
   }
 
-  const displayReviews = reviews.slice(0, maxReviews);
-  const avgRating = reviews.length > 0 
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+  const displayReviews = displayReviewsSource.slice(0, maxReviews);
+  const avgRating = displayReviewsSource.length > 0 
+    ? (displayReviewsSource.reduce((sum, r) => sum + r.rating, 0) / displayReviewsSource.length).toFixed(1)
     : "5.0";
 
   return (

@@ -5,6 +5,7 @@ import { CheckCircle2, Users, Award, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { Link } from "wouter";
 
 export default function About() {
 
@@ -32,16 +33,29 @@ export default function About() {
   ];
 
   const serviceAreas = [
-    "Austin", "Cedar Park", "Leander", "Round Rock", "Georgetown", 
-    "Pflugerville", "Liberty Hill", "Buda", "Kyle", "Marble Falls", 
-    "Burnet", "Horseshoe Bay", "Kingsland", "Granite Shoals", "Bertram", "Spicewood"
+    { name: "Austin", slug: "austin" },
+    { name: "Cedar Park", slug: "cedar-park" },
+    { name: "Leander", slug: "leander" },
+    { name: "Round Rock", slug: "round-rock" },
+    { name: "Georgetown", slug: "georgetown" },
+    { name: "Pflugerville", slug: "pflugerville" },
+    { name: "Liberty Hill", slug: "liberty-hill" },
+    { name: "Buda", slug: "buda" },
+    { name: "Kyle", slug: "kyle" },
+    { name: "Marble Falls", slug: "marble-falls" },
+    { name: "Burnet", slug: "burnet" },
+    { name: "Horseshoe Bay", slug: "horseshoe-bay" },
+    { name: "Kingsland", slug: "kingsland" },
+    { name: "Granite Shoals", slug: "granite-shoals" },
+    { name: "Bertram", slug: "bertram" },
+    { name: "Spicewood", slug: "spicewood" }
   ];
 
   return (
     <>
       <SEOHead
-        title="About Economy Plumbing Services | Austin & Marble Falls Plumbers"
-        description="Austin & Marble Falls trusted plumber since 2005. Licensed, experienced plumbers committed to quality service. 24/7 emergency plumbing. Call today!"
+        title="About Economy Plumbing Services | Water Heater Experts | Austin & Marble Falls"
+        description="Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers. 24/7 emergency service. Serving Austin to Marble Falls."
         canonical="https://plumbersthatcare.com/about"
       />
       
@@ -75,7 +89,7 @@ export default function About() {
                       What started as a small team serving Austin has grown into a trusted name across the region, from Cedar Park to Marble Falls. But despite our growth, we've never lost sight of what matters most - treating every customer like family.
                     </p>
                     <p>
-                      Our team of licensed, experienced plumbers brings decades of combined expertise to every job. Whether it's a simple faucet repair or a complete water heater replacement, we approach each project with the same commitment to quality and customer satisfaction.
+                      Our team of licensed, experienced plumbers brings decades of combined expertise to every job. We're particularly known as Central Texas's water heater experts, specializing in tankless water heater installation, water heater repair, and water heater replacement. Whether it's a simple faucet repair or a complete water heater system upgrade, we approach each project with the same commitment to quality and customer satisfaction.
                     </p>
                   </div>
                 </div>
@@ -135,13 +149,14 @@ export default function About() {
               
               <div className="flex flex-wrap justify-center gap-3">
                 {serviceAreas.map((area) => (
-                  <span 
-                    key={area} 
-                    className="px-4 py-2 bg-primary/10 rounded-full text-sm font-medium"
-                    data-testid={`badge-area-${area.toLowerCase().replace(/\s+/g, '-')}`}
+                  <Link 
+                    key={area.slug} 
+                    href={`/service-area/${area.slug}`}
+                    className="px-4 py-2 bg-primary/10 rounded-full text-sm font-medium hover-elevate active-elevate-2 transition-all"
+                    data-testid={`link-area-${area.slug}`}
                   >
-                    {area}
-                  </span>
+                    {area.name}
+                  </Link>
                 ))}
               </div>
             </div>
