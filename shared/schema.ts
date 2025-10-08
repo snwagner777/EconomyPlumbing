@@ -110,9 +110,12 @@ export const googleReviews = pgTable("google_reviews", {
   timestamp: integer("timestamp").notNull(),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
   categories: text("categories").array().notNull().default(sql`ARRAY[]::text[]`),
+  source: text("source").notNull().default('places_api'), // 'places_api', 'dataforseo', 'facebook', 'gmb_api'
+  reviewId: text("review_id"), // External review ID for deduplication
 }, (table) => ({
   ratingIdx: index("google_reviews_rating_idx").on(table.rating),
   timestampIdx: index("google_reviews_timestamp_idx").on(table.timestamp),
+  sourceIdx: index("google_reviews_source_idx").on(table.source),
 }));
 
 export const googleOAuthTokens = pgTable("google_oauth_tokens", {

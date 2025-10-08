@@ -58,6 +58,8 @@ export async function fetchGoogleReviews(): Promise<InsertGoogleReview[]> {
         relativeTime: review.relative_time_description,
         timestamp: review.time,
         categories,
+        source: 'places_api',
+        reviewId: null,
       };
     });
   } catch (error) {

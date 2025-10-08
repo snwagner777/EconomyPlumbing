@@ -1,12 +1,14 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSubmissionSchema } from "@shared/schema";
+import { insertContactSubmissionSchema, type InsertGoogleReview } from "@shared/schema";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
+import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
+import { fetchFacebookReviews } from "./lib/facebookReviews";
 import path from "path";
 import fs from "fs";
 
@@ -171,37 +173,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Google Reviews endpoint with auto-refresh, category and rating filtering
+  // Multi-source Reviews endpoint: DataForSEO (Google historical), Facebook, Places API (Google new)
   app.get("/api/reviews", async (req, res) => {
     try {
       const category = req.query.category as string | undefined;
       const minRating = req.query.minRating ? parseInt(req.query.minRating as string) : 4;
       const refresh = req.query.refresh === 'true';
+      const source = req.query.source as string | undefined; // Optional: filter by source
 
       let reviews = await storage.getGoogleReviews();
 
       // Auto-refresh if no reviews exist or manual refresh requested
       if (refresh || reviews.length === 0) {
-        // Try GMB API first (all reviews with pagination), fallback to Places API (max 5)
-        let freshReviews = await fetchAllGoogleMyBusinessReviews();
-        
-        if (freshReviews.length === 0) {
-          console.log('[Reviews API] GMB returned 0 reviews, falling back to Places API');
-          freshReviews = await fetchGoogleReviews();
+        const allReviews: InsertGoogleReview[] = [];
+        const placeId = process.env.GOOGLE_PLACE_ID;
+        const facebookPageId = process.env.FACEBOOK_PAGE_ID;
+        const facebookAccessToken = process.env.FACEBOOK_ACCESS_TOKEN;
+
+        // 1. Fetch ALL Google reviews from DataForSEO (550+ reviews)
+        if (placeId) {
+          console.log('[Reviews API] Fetching Google reviews from DataForSEO...');
+          const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+          console.log(`[Reviews API] DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+          allReviews.push(...dataForSeoReviews);
         }
-        
-        if (freshReviews.length > 0) {
+
+        // 2. Fetch Facebook reviews
+        if (facebookPageId && facebookAccessToken) {
+          console.log('[Reviews API] Fetching Facebook reviews...');
+          const fbReviews = await fetchFacebookReviews(facebookPageId, facebookAccessToken);
+          console.log(`[Reviews API] Facebook returned ${fbReviews.length} reviews`);
+          allReviews.push(...fbReviews);
+        }
+
+        // 3. Fetch new Google reviews from Places API (max 5, newest)
+        console.log('[Reviews API] Fetching newest Google reviews from Places API...');
+        const placesReviews = await fetchGoogleReviews();
+        console.log(`[Reviews API] Places API returned ${placesReviews.length} reviews`);
+        allReviews.push(...placesReviews);
+
+        // Deduplicate reviews by reviewId and text+author combination
+        const uniqueReviews = deduplicateReviews(allReviews);
+        console.log(`[Reviews API] After deduplication: ${uniqueReviews.length} unique reviews`);
+
+        if (uniqueReviews.length > 0) {
           await storage.clearGoogleReviews();
-          await storage.saveGoogleReviews(freshReviews);
+          await storage.saveGoogleReviews(uniqueReviews);
           reviews = await storage.getGoogleReviews();
-          console.log(`[Reviews API] Successfully refreshed ${reviews.length} reviews`);
+          console.log(`[Reviews API] Successfully saved ${reviews.length} reviews to database`);
         }
       }
 
-      // Filter by category if specified
+      // Filter by source if specified
       let filteredReviews = reviews;
+      if (source) {
+        filteredReviews = reviews.filter(r => r.source === source);
+      }
+
+      // Filter by category if specified
       if (category) {
-        filteredReviews = reviews.filter(r => 
+        filteredReviews = filteredReviews.filter(r => 
           r.categories && r.categories.includes(category)
         );
       }
@@ -219,7 +250,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         relativeTime: r.relativeTime,
         timestamp: r.timestamp,
         categories: r.categories || [],
-        fetchedAt: r.fetchedAt
+        fetchedAt: r.fetchedAt,
+        source: r.source
       }));
 
       // Add HTTP caching headers (30 min cache to match TanStack Query staleTime)
@@ -233,6 +265,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch reviews: " + error.message });
     }
   });
+
+  // Helper function to deduplicate reviews
+  function deduplicateReviews(reviews: InsertGoogleReview[]): InsertGoogleReview[] {
+    const seen = new Set<string>();
+    const unique: InsertGoogleReview[] = [];
+
+    for (const review of reviews) {
+      // Create unique key from reviewId (if available) or text+author combination
+      const key = review.reviewId 
+        ? `id:${review.reviewId}`
+        : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
+
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(review);
+      }
+    }
+
+    return unique;
+  }
 
   // Google OAuth routes for My Business API
   app.get("/api/oauth/status", async (req, res) => {
