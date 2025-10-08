@@ -17,13 +17,14 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Features a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema markup (LocalBusiness, Service, FAQ, Product, BlogPosting). Includes performance optimizations like resource preconnect, image lazy loading, and font optimization.
 - **Client-Side Routes:** Covers Home, About, Contact, 20+ specific Service pages, 16 specific Service Area city pages, Blog, Store, FAQ, Privacy Policy, Refund/Returns, and VIP Membership benefits.
 - **Optimizations:** Implements lazy loading for reviews and non-blocking background refresh for data. Optimized images to WebP format with explicit dimensions and `fetchpriority="high"`. Enhanced meta descriptions and canonical URLs across all pages. Implemented route-level code splitting using `React.lazy` and `Suspense` for non-critical pages.
+- **Reviews Integration:** Premium visual design with gradient backgrounds, testimonial cards, star ratings, and trust badges. Strategically positioned mid-page on homepage (after "Why Choose" section) and service pages (before contact form) for optimal conversion. Lazy-loads using Intersection Observer with 30-minute browser caching for zero initial page load impact.
 
 ### Backend
 - **Framework:** Express.js with TypeScript.
 - **API:** RESTful design with endpoints for `/api/blog`, `/api/blog/:slug`, `/api/products`, `/api/products/:slug`, `/api/contact`, and `/api/reviews`.
 - **Data Layer:** Drizzle ORM for PostgreSQL (currently in-memory with planned migration).
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions.
-- **Google Reviews Integration:** Fetches and caches Google Places API reviews with daily background refresh. Reviews are auto-categorized into 11 service types (e.g., water_heater, drain) based on keyword analysis. Provides an API endpoint (`/api/reviews`) with caching, filtering by category, keywords, and minimum rating.
+- **Google Reviews Integration:** Fetches and caches Google Places API reviews with daily background refresh (non-blocking server startup). Reviews are auto-categorized into 11 service types (e.g., water_heater, drain) based on keyword analysis. Provides an API endpoint (`/api/reviews`) with 30-minute browser caching (Cache-Control headers), filtering by category, keywords, and minimum rating.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
