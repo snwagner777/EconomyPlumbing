@@ -55,7 +55,10 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
       throw new Error('Failed to get access token');
     }
     
-    const url = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews?pageSize=50`;
+    // Remove 'accounts/' and 'locations/' prefixes if they exist (stored with prefixes)
+    const accountId = tokenData.accountId.replace('accounts/', '');
+    const locationId = tokenData.locationId.replace('locations/', '');
+    const url = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`;
     
     const reviewsResponse = await fetch(url, {
       headers: {
@@ -151,9 +154,13 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
       throw new Error('Failed to get access token');
     }
 
+    // Remove 'accounts/' and 'locations/' prefixes if they exist (stored with prefixes)
+    const accountId = tokenData.accountId.replace('accounts/', '');
+    const locationId = tokenData.locationId.replace('locations/', '');
+    
     // Paginate through all reviews
     do {
-      const url: string = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews?pageSize=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
+      const url: string = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50${nextPageToken ? `&pageToken=${nextPageToken}` : ''}`;
       
       const response: Response = await fetch(url, {
         headers: {

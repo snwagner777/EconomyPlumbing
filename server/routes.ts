@@ -6,6 +6,7 @@ import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
+import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
 import path from "path";
 import fs from "fs";
 
@@ -181,11 +182,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Auto-refresh if no reviews exist or manual refresh requested
       if (refresh || reviews.length === 0) {
-        const freshReviews = await fetchGoogleReviews();
+        // Try GMB API first (all reviews with pagination), fallback to Places API (max 5)
+        let freshReviews = await fetchAllGoogleMyBusinessReviews();
+        
+        if (freshReviews.length === 0) {
+          console.log('[Reviews API] GMB returned 0 reviews, falling back to Places API');
+          freshReviews = await fetchGoogleReviews();
+        }
+        
         if (freshReviews.length > 0) {
           await storage.clearGoogleReviews();
           await storage.saveGoogleReviews(freshReviews);
           reviews = await storage.getGoogleReviews();
+          console.log(`[Reviews API] Successfully refreshed ${reviews.length} reviews`);
         }
       }
 
