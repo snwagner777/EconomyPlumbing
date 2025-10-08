@@ -196,14 +196,14 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                 <div className="space-y-2">
                   <a 
                     href="tel:+15123689159" 
-                    className="block text-lg font-poppins font-bold text-primary hover-elevate px-2 py-1 rounded-md w-fit"
+                    className="block text-lg font-poppins font-bold text-foreground hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-austin"
                   >
                     Austin Area: (512) 368-9159
                   </a>
                   <a 
                     href="tel:+18304603565" 
-                    className="block text-lg font-poppins font-bold text-primary hover-elevate px-2 py-1 rounded-md w-fit"
+                    className="block text-lg font-poppins font-bold text-foreground hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-marble-falls"
                   >
                     Marble Falls Area: (830) 460-3565
@@ -227,7 +227,7 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                 </h4>
                 <a 
                   href="mailto:hello@plumbersthatcare.com" 
-                  className="text-primary hover-elevate px-2 py-1 rounded-md inline-block"
+                  className="text-foreground hover-elevate px-2 py-1 rounded-md inline-block"
                   data-testid="contact-email"
                 >
                   hello@plumbersthatcare.com
