@@ -421,6 +421,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Stripe webhook endpoint (must come before JSON parser middleware)
+  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    if (!webhookSecret) {
+      console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured');
+      return res.status(500).send('Webhook secret not configured');
+    }
+
+    if (!sig) {
+      return res.status(400).send('No signature');
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err: any) {
+      console.error(`[Stripe Webhook] Signature verification failed:`, err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle the event
+    if (event.type === 'payment_intent.succeeded') {
+      const paymentIntent = event.data.object as Stripe.PaymentIntent;
+      console.log(`[Stripe Webhook] Payment succeeded: ${paymentIntent.id}`);
+
+      try {
+        // Find pending purchase by payment intent ID
+        const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntent.id);
+
+        if (!pendingPurchase) {
+          console.warn(`[Stripe Webhook] No pending purchase found for payment intent: ${paymentIntent.id}`);
+          return res.json({ received: true, warning: 'No pending purchase found' });
+        }
+
+        // Get product to check if ServiceTitan sync is enabled
+        const product = await storage.getProductById(pendingPurchase.productId);
+
+        if (!product) {
+          console.error(`[Stripe Webhook] Product not found: ${pendingPurchase.productId}`);
+          return res.json({ received: true, error: 'Product not found' });
+        }
+
+        if (product.serviceTitanEnabled && product.serviceTitanMembershipTypeId) {
+          // Create ServiceTitan membership record
+          const membership = await storage.createServiceTitanMembership({
+            customerType: pendingPurchase.customerType,
+            customerName: pendingPurchase.customerName || null,
+            companyName: pendingPurchase.companyName || null,
+            contactPersonName: pendingPurchase.contactPersonName || null,
+            street: pendingPurchase.street,
+            city: pendingPurchase.city,
+            state: pendingPurchase.state,
+            zip: pendingPurchase.zip,
+            phone: pendingPurchase.phone,
+            email: pendingPurchase.email,
+            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
+            serviceTitanCustomerId: null,
+            serviceTitanMembershipId: null,
+            serviceTitanInvoiceId: null,
+            productId: product.id,
+            stripePaymentIntentId: paymentIntent.id,
+            stripeCustomerId: paymentIntent.customer as string | null,
+            amount: paymentIntent.amount,
+            syncStatus: 'pending',
+            syncError: null,
+          });
+
+          console.log(`[Stripe Webhook] Created ServiceTitan membership record: ${membership.id}`);
+
+          // TODO: Trigger ServiceTitan sync (will be implemented in Task 5)
+          // For now, just log that sync would happen
+          console.log(`[Stripe Webhook] ServiceTitan sync queued for membership: ${membership.id}`);
+        }
+
+        // Clean up pending purchase
+        await storage.deletePendingPurchase(pendingPurchase.id);
+        console.log(`[Stripe Webhook] Deleted pending purchase: ${pendingPurchase.id}`);
+
+        res.json({ received: true, processed: true });
+      } catch (error: any) {
+        console.error('[Stripe Webhook] Error processing payment:', error);
+        return res.status(500).json({ received: true, error: error.message });
+      }
+    } else {
+      // Return 200 for other event types to acknowledge receipt
+      res.json({ received: true });
+    }
+  });
+
   // Stripe payment intent endpoint
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
