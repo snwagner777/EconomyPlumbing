@@ -16,12 +16,12 @@ export function SEOHead({
   description,
   canonical,
   ogType = "website",
-  ogImage = "https://economyplumbingservices.com/og-image.jpg",
+  ogImage = "https://plumbersthatcare.com/og-image.jpg",
   ogImageAlt = "Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX",
   twitterCard = "summary_large_image",
   schema
 }: SEOProps) {
-  const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://economyplumbingservices.com");
+  const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://plumbersthatcare.com");
   const siteName = "Economy Plumbing Services";
 
   return (
