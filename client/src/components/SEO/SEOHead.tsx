@@ -7,6 +7,8 @@ export interface SEOProps {
   ogType?: string;
   ogImage?: string;
   ogImageAlt?: string;
+  ogImageWidth?: string;
+  ogImageHeight?: string;
   twitterCard?: string;
   schema?: Record<string, any> | Record<string, any>[];
 }
@@ -16,8 +18,10 @@ export function SEOHead({
   description,
   canonical,
   ogType = "website",
-  ogImage = "https://plumbersthatcare.com/og-image.jpg",
+  ogImage = "https://plumbersthatcare.com/attached_assets/og-image.jpg",
   ogImageAlt = "Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX",
+  ogImageWidth = "1024",
+  ogImageHeight = "1024",
   twitterCard = "summary_large_image",
   schema
 }: SEOProps) {
@@ -39,8 +43,8 @@ export function SEOHead({
       <meta property="og:description" content={description} />
       <meta property="og:image" content={ogImage} />
       <meta property="og:image:alt" content={ogImageAlt} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
+      <meta property="og:image:width" content={ogImageWidth} />
+      <meta property="og:image:height" content={ogImageHeight} />
       <meta property="og:site_name" content={siteName} />
       <meta property="og:locale" content="en_US" />
 

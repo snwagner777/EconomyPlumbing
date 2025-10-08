@@ -16,12 +16,12 @@ export function createLocalBusinessSchema(aggregateRating?: { ratingValue: strin
   "@context": "https://schema.org",
   "@type": "Plumber",
   "name": "Economy Plumbing Services",
-  "image": "https://plumbersthatcare.com/logo.jpg",
+  "image": "https://plumbersthatcare.com/attached_assets/logo.jpg",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://plumbersthatcare.com/logo.jpg",
-    "width": "512",
-    "height": "512"
+    "url": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+    "width": "1024",
+    "height": "1024"
   },
   "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
   "url": "https://plumbersthatcare.com",
@@ -251,7 +251,7 @@ export function createBlogPostSchema(post: any) {
       "name": "Economy Plumbing Services",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://plumbersthatcare.com/logo.jpg"
+        "url": "https://plumbersthatcare.com/attached_assets/logo.jpg"
       }
     }
   };
