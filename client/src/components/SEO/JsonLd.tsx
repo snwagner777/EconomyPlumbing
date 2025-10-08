@@ -11,7 +11,8 @@ export function JsonLd({ data }: JsonLdProps) {
   );
 }
 
-export const localBusinessSchema = {
+export function createLocalBusinessSchema(aggregateRating?: { ratingValue: string; reviewCount: string }) {
+  return {
   "@context": "https://schema.org",
   "@type": "Plumber",
   "name": "Economy Plumbing Services",
@@ -162,14 +163,23 @@ export const localBusinessSchema = {
       "closes": "17:30"
     }
   ],
-  "aggregateRating": {
+  "aggregateRating": aggregateRating ? {
+    "@type": "AggregateRating",
+    "ratingValue": aggregateRating.ratingValue,
+    "reviewCount": aggregateRating.reviewCount,
+    "bestRating": "5",
+    "worstRating": "1"
+  } : {
     "@type": "AggregateRating",
     "ratingValue": "4.8",
     "reviewCount": "89",
     "bestRating": "5",
     "worstRating": "1"
   }
-};
+  };
+}
+
+export const localBusinessSchema = createLocalBusinessSchema();
 
 export function createServiceSchema(serviceName: string, serviceDescription: string, serviceUrl: string) {
   return {
