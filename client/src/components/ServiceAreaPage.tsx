@@ -232,7 +232,7 @@ export default function ServiceAreaPage({
                   <p className="text-sm text-muted-foreground mb-2">Call us today</p>
                   <a 
                     href={`tel:${phoneLink}`}
-                    className="flex items-center gap-2 text-primary font-poppins font-bold text-2xl hover-elevate px-2 py-1 rounded-md w-fit"
+                    className="flex items-center gap-2 text-foreground font-poppins font-bold text-2xl hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="link-phone-contact"
                   >
                     <Phone className="w-6 h-6" />
