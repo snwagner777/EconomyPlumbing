@@ -55,7 +55,7 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
       throw new Error('Failed to get access token');
     }
     
-    const url = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews`;
+    const url = `https://mybusiness.googleapis.com/v4/accounts/${tokenData.accountId}/locations/${tokenData.locationId}/reviews?pageSize=50`;
     
     const reviewsResponse = await fetch(url, {
       headers: {
@@ -71,7 +71,7 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
     const data = await reviewsResponse.json();
     const reviews = data.reviews || [];
     
-    console.log(`[GMB] Successfully fetched ${reviews.length} reviews`);
+    console.log(`[GMB] Successfully fetched ${reviews.length} reviews (first page only)`);
 
     // Transform to our schema
     return reviews.map((review: any): InsertGoogleReview => {
