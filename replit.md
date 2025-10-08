@@ -59,10 +59,25 @@ Preferred communication style: Simple, everyday language.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.
-- **ServiceTitan Integration (In Progress):** 
-  - **Membership Sync:** Automatic sync of online membership purchases to ServiceTitan CRM.
-  - **Customer Management:** Search for existing customers or create new ones (residential/commercial).
-  - **Workflow:** Stripe payment → ServiceTitan customer creation → Membership assignment → Invoice marked paid.
-  - **Data Model:** Structured address fields (street, city, state, zip), customer type differentiation, sync status tracking.
-  - **Product Mapping:** Products table includes ServiceTitan membership type ID for proper sync configuration.
-  - **Status:** Framework complete, requires ServiceTitan API credentials and invoice ID mapping finalization.
+- **ServiceTitan Integration (Complete):** 
+  - **Membership Sync:** Fully automated sync of online membership purchases to ServiceTitan CRM.
+  - **Customer Management:** Searches for existing customers by email/phone; creates new residential or commercial customers if needed.
+  - **Checkout Flow:** 
+    1. Collects customer info (residential: name/address/phone/email; commercial: company/contact/address/phone/email)
+    2. Saves pending purchase linked to Stripe payment intent ID
+    3. User completes Stripe payment
+  - **Webhook Processing:** 
+    1. Verifies Stripe webhook signature (uses raw body middleware)
+    2. Retrieves pending purchase by payment intent ID
+    3. Creates membership record with status='pending'
+    4. Deletes pending purchase
+  - **Background Sync Job:** 
+    1. Runs every 30 seconds (non-blocking server startup)
+    2. Finds pending memberships
+    3. Searches/creates ServiceTitan customer
+    4. Creates invoice with membership pricebook item
+    5. Marks invoice as paid
+    6. Updates membership with ServiceTitan IDs and status='synced'
+  - **Error Handling:** Failed syncs marked with error details for monitoring/retry.
+  - **Data Model:** Complete with pending_purchases and service_titan_memberships tables, structured addresses, sync status tracking.
+  - **Status:** Production-ready. Requires ServiceTitan API credentials (CLIENT_ID, CLIENT_SECRET, TENANT_ID, APP_KEY) and product membership type IDs.
