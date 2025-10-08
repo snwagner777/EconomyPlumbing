@@ -115,6 +115,17 @@ export const googleReviews = pgTable("google_reviews", {
   timestampIdx: index("google_reviews_timestamp_idx").on(table.timestamp),
 }));
 
+export const googleOAuthTokens = pgTable("google_oauth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  service: text("service").notNull().default('google_my_business'), // future-proof for other Google services
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token").notNull(),
+  expiryDate: timestamp("expiry_date").notNull(),
+  accountId: text("account_id"), // Google My Business account ID
+  locationId: text("location_id"), // Google My Business location ID
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
   id: true,
 });
@@ -122,6 +133,11 @@ export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
 export const insertGoogleReviewSchema = createInsertSchema(googleReviews).omit({
   id: true,
   fetchedAt: true,
+});
+
+export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens).omit({
+  id: true,
+  updatedAt: true,
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -136,3 +152,5 @@ export type ServiceArea = typeof serviceAreas.$inferSelect;
 export type InsertServiceArea = z.infer<typeof insertServiceAreaSchema>;
 export type GoogleReview = typeof googleReviews.$inferSelect;
 export type InsertGoogleReview = z.infer<typeof insertGoogleReviewSchema>;
+export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
+export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;

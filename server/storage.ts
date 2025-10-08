@@ -11,12 +11,15 @@ import {
   type InsertServiceArea,
   type GoogleReview,
   type InsertGoogleReview,
+  type GoogleOAuthToken,
+  type InsertGoogleOAuthToken,
   users,
   blogPosts,
   products,
   contactSubmissions,
   serviceAreas,
-  googleReviews
+  googleReviews,
+  googleOAuthTokens
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -50,6 +53,11 @@ export interface IStorage {
   getGoogleReviews(): Promise<GoogleReview[]>;
   saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
   clearGoogleReviews(): Promise<void>;
+  
+  // Google OAuth tokens
+  getGoogleOAuthToken(service?: string): Promise<GoogleOAuthToken | undefined>;
+  saveGoogleOAuthToken(token: InsertGoogleOAuthToken): Promise<GoogleOAuthToken>;
+  updateGoogleOAuthToken(id: string, token: Partial<InsertGoogleOAuthToken>): Promise<GoogleOAuthToken>;
 }
 
 export class MemStorage implements IStorage {
@@ -1846,6 +1854,21 @@ Call (512) 368-9159 or schedule service online.`,
   async clearGoogleReviews(): Promise<void> {
     this.googleReviews.clear();
   }
+
+  async getGoogleOAuthToken(service: string = 'google_my_business'): Promise<GoogleOAuthToken | undefined> {
+    // MemStorage stub - not used in production
+    return undefined;
+  }
+
+  async saveGoogleOAuthToken(token: InsertGoogleOAuthToken): Promise<GoogleOAuthToken> {
+    // MemStorage stub - not used in production
+    throw new Error('OAuth not supported in MemStorage');
+  }
+
+  async updateGoogleOAuthToken(id: string, token: Partial<InsertGoogleOAuthToken>): Promise<GoogleOAuthToken> {
+    // MemStorage stub - not used in production
+    throw new Error('OAuth not supported in MemStorage');
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1943,6 +1966,32 @@ export class DatabaseStorage implements IStorage {
 
   async clearGoogleReviews(): Promise<void> {
     await db.delete(googleReviews);
+  }
+
+  async getGoogleOAuthToken(service: string = 'google_my_business'): Promise<GoogleOAuthToken | undefined> {
+    const [token] = await db
+      .select()
+      .from(googleOAuthTokens)
+      .where(eq(googleOAuthTokens.service, service))
+      .limit(1);
+    return token || undefined;
+  }
+
+  async saveGoogleOAuthToken(token: InsertGoogleOAuthToken): Promise<GoogleOAuthToken> {
+    const [savedToken] = await db
+      .insert(googleOAuthTokens)
+      .values(token)
+      .returning();
+    return savedToken;
+  }
+
+  async updateGoogleOAuthToken(id: string, tokenUpdate: Partial<InsertGoogleOAuthToken>): Promise<GoogleOAuthToken> {
+    const [updatedToken] = await db
+      .update(googleOAuthTokens)
+      .set({ ...tokenUpdate, updatedAt: new Date() })
+      .where(eq(googleOAuthTokens.id, id))
+      .returning();
+    return updatedToken;
   }
 }
 
