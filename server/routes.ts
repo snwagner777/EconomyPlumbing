@@ -128,6 +128,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Aggregate rating stats endpoint for schema markup
+  app.get("/api/reviews/stats", async (req, res) => {
+    try {
+      const reviews = await storage.getGoogleReviews();
+      
+      if (reviews.length === 0) {
+        return res.json({
+          ratingValue: null,
+          reviewCount: 0
+        });
+      }
+
+      const totalRating = reviews.reduce((sum, r) => sum + r.rating, 0);
+      const avgRating = (totalRating / reviews.length).toFixed(1);
+
+      res.json({
+        ratingValue: avgRating,
+        reviewCount: reviews.length
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: "Failed to fetch review stats" });
+    }
+  });
+
   // Google Reviews endpoint with auto-refresh, category and rating filtering
   app.get("/api/reviews", async (req, res) => {
     try {

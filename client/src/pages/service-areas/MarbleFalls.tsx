@@ -15,6 +15,7 @@ export default function MarbleFallsServiceArea() {
     <ServiceAreaPage
       city="Marble Falls"
       state="TX"
+      slug="marble-falls"
       metaDescription="Expert plumbing services in Marble Falls, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing. Licensed plumbers. Call (830) 460-3565."
       canonical="https://plumbersthatcare.com/plumber-in-marble-falls--tx"
       area="marble-falls"

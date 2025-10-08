@@ -13,6 +13,7 @@ import FAQSection from "@/components/FAQSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
+import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import heroImage from "@assets/stock_images/professional_plumber_d3924ca6.jpg";
 
 const SERVICES = [
@@ -49,6 +50,8 @@ export default function CedarParkServiceArea() {
     ? serviceArea.uniqueFaqs.map(faqStr => JSON.parse(faqStr)) 
     : [];
 
+  const coordinates = getCoordinates(slug);
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "Plumber",
@@ -60,6 +63,11 @@ export default function CedarParkServiceArea() {
       "addressCountry": "US"
     },
     "telephone": "+15123689159",
+    "geo": coordinates ? {
+      "@type": "GeoCoordinates",
+      "latitude": coordinates.latitude,
+      "longitude": coordinates.longitude
+    } : undefined,
     "areaServed": {
       "@type": "City",
       "name": cityName,

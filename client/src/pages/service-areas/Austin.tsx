@@ -13,6 +13,7 @@ import ReviewsSection from "@/components/ReviewsSection";
 import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
+import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import heroImage from "@assets/stock_images/professional_plumber_49e7ef9b.jpg";
 
 const SERVICES = [
@@ -51,6 +52,8 @@ export default function AustinServiceArea() {
     ? serviceArea.uniqueFaqs.map(faqStr => JSON.parse(faqStr)) 
     : [];
 
+  const coordinates = getCoordinates(slug);
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "Plumber",
@@ -62,6 +65,11 @@ export default function AustinServiceArea() {
       "addressCountry": "US"
     },
     "telephone": "+15123689159",
+    "geo": coordinates ? {
+      "@type": "GeoCoordinates",
+      "latitude": coordinates.latitude,
+      "longitude": coordinates.longitude
+    } : undefined,
     "areaServed": {
       "@type": "City",
       "name": cityName,

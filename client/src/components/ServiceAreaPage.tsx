@@ -7,6 +7,8 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { JsonLd } from "@/components/SEO/JsonLd";
+import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import defaultHeroImage from "@assets/stock_images/plumber_working_resi_a03913c7.jpg";
 import { openScheduler } from "@/lib/scheduler";
 
@@ -18,6 +20,7 @@ interface NearbyCity {
 interface ServiceAreaPageProps {
   city: string;
   state: string;
+  slug: string;
   metaDescription: string;
   canonical: string;
   area: "austin" | "marble-falls";
@@ -45,6 +48,7 @@ const SERVICES = [
 export default function ServiceAreaPage({
   city,
   state,
+  slug,
   metaDescription,
   canonical,
   area,
@@ -59,6 +63,32 @@ export default function ServiceAreaPage({
   const displayHeroImage = heroImage || defaultHeroImage;
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
+  const coordinates = getCoordinates(slug);
+
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "Plumber",
+    "name": `Economy Plumbing Services - ${city}`,
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": city,
+      "addressRegion": state,
+      "addressCountry": "US"
+    },
+    "telephone": area === "austin" ? "+15123689159" : "+18304603565",
+    "geo": coordinates ? {
+      "@type": "GeoCoordinates",
+      "latitude": coordinates.latitude,
+      "longitude": coordinates.longitude
+    } : undefined,
+    "areaServed": {
+      "@type": "City",
+      "name": city,
+      "containedIn": { "@type": "State", "name": "Texas" }
+    },
+    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
+  };
+
   return (
     <div className="min-h-screen">
       <SEOHead
@@ -66,6 +96,8 @@ export default function ServiceAreaPage({
         description={metaDescription}
         canonical={canonical}
       />
+
+      <JsonLd data={localBusinessSchema} />
 
       <Header />
 

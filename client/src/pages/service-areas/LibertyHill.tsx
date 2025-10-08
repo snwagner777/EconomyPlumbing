@@ -13,6 +13,7 @@ export default function LibertyHillServiceArea() {
     <ServiceAreaPage
       city="Liberty Hill"
       state="TX"
+      slug="liberty-hill"
       metaDescription="Quality plumbing services in Liberty Hill, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 368-9159 for service."
       canonical="https://plumbersthatcare.com/plumber-in-liberty-hill--tx"
       area="austin"
