@@ -22,8 +22,9 @@ const ServiceCard = memo(({ icon: Icon, title, description, features, link, imag
             alt={`Economy Plumbing ${title} - professional plumbing service`}
             width="800"
             height="400"
-            className="w-full h-48 object-cover"
             loading="lazy"
+            decoding="async"
+            className="w-full h-48 object-cover"
           />
         </div>
       )}

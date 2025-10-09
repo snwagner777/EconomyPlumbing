@@ -81,6 +81,7 @@ export default function Header() {
               alt="Economy Plumbing Services logo" 
               width="85"
               height="48"
+              decoding="async"
               className="h-12 w-auto"
               data-testid="logo-image"
             />
