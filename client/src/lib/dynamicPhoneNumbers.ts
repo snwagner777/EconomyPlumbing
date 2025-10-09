@@ -120,8 +120,20 @@ export function getPhoneNumber(): PhoneConfig {
   return PHONE_NUMBERS[source] || PHONE_NUMBERS.default;
 }
 
-// Replace all phone numbers on the page
+// Update window.__PHONE_CONFIG__ for React components
+export function updatePhoneConfig(): void {
+  const source = getTrafficSource();
+  const phoneConfig = PHONE_NUMBERS[source] || PHONE_NUMBERS.default;
+  
+  // Update the global config that React components read
+  (window as any).__PHONE_CONFIG__ = phoneConfig;
+}
+
+// Replace all phone numbers on the page (legacy DOM replacement - kept for compatibility)
 export function replacePhoneNumbers(): void {
+  // First, update the global config so React components get the new number
+  updatePhoneConfig();
+  
   const source = getTrafficSource();
   const phoneConfig = PHONE_NUMBERS[source] || PHONE_NUMBERS.default;
 
