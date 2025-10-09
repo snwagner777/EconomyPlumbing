@@ -143,6 +143,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     return res.redirect(301, '/blog');
   }
   
+  // Redirect /blog/:slug to /:slug (removing /blog/ from blog post URLs)
+  if (path.startsWith('/blog/') && path !== '/blog/') {
+    const slug = path.replace('/blog/', '').replace(/\/$/, ''); // Remove /blog/ prefix and trailing slash
+    const redirectPath = `/${slug}`;
+    log(`301 Redirect: ${path} → ${redirectPath}`);
+    return res.redirect(301, redirectPath);
+  }
+  
   // Handle WordPress date archive patterns (YYYY/MM/DD)
   if (/^\/\d{4}\/\d{2}\/\d{2}\/?/.test(path)) {
     log(`301 Redirect: ${path} → /blog`);
