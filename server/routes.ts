@@ -1292,14 +1292,37 @@ ${rssItems}
           // Categorize photo
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
-          // Download photo and convert to WebP
+          // Download photo and convert to WebP with retry logic
           const fs = await import('fs/promises');
           const path = await import('path');
           const sharp = await import('sharp');
           
-          // Fetch the photo from CompanyCam URL
-          const photoResponse = await fetch(photo.photoUrl);
-          const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
+          // Helper function to retry fetch with exponential backoff
+          const fetchWithRetry = async (url: string, maxRetries = 3): Promise<Buffer> => {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              try {
+                console.log(`[Zapier Webhook] Fetching photo (attempt ${attempt}/${maxRetries})...`);
+                const response = await fetch(url);
+                if (!response.ok) {
+                  throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                return Buffer.from(await response.arrayBuffer());
+              } catch (error: any) {
+                console.error(`[Zapier Webhook] Fetch attempt ${attempt} failed:`, error.message);
+                if (attempt === maxRetries) {
+                  throw new Error(`Failed to download photo after ${maxRetries} attempts: ${error.message}`);
+                }
+                // Exponential backoff: 1s, 2s, 4s
+                const delay = Math.pow(2, attempt - 1) * 1000;
+                console.log(`[Zapier Webhook] Retrying in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+              }
+            }
+            throw new Error('Retry logic failed unexpectedly');
+          };
+          
+          // Fetch the photo from CompanyCam URL with retry
+          const photoBuffer = await fetchWithRetry(photo.photoUrl);
           
           // Convert to WebP with high quality (85 = excellent quality, good compression)
           const webpBuffer = await sharp.default(photoBuffer)
@@ -1318,8 +1341,26 @@ ${rssItems}
           const localFileName = `companycam_${timestamp}_${photoIdHash}.webp`;
           const localFilePath = path.join(categoryFolder, localFileName);
           
-          // Save WebP file to disk
-          await fs.writeFile(localFilePath, webpBuffer);
+          // Save WebP file to disk with retry
+          const saveWithRetry = async (filepath: string, buffer: Buffer, maxRetries = 3): Promise<void> => {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+              try {
+                await fs.writeFile(filepath, buffer);
+                return; // Success!
+              } catch (error: any) {
+                console.error(`[Zapier Webhook] File save attempt ${attempt} failed:`, error.message);
+                if (attempt === maxRetries) {
+                  throw new Error(`Failed to save file after ${maxRetries} attempts: ${error.message}`);
+                }
+                // Short delay before retry
+                const delay = 500 * attempt;
+                console.log(`[Zapier Webhook] Retrying file save in ${delay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, delay));
+              }
+            }
+          };
+          
+          await saveWithRetry(localFilePath, webpBuffer);
           console.log(`[Zapier Webhook] 💾 Saved WebP to server: ${localFilePath}`);
 
           // Generate unique photo ID from URL hash
