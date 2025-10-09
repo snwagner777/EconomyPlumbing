@@ -1596,6 +1596,17 @@ ${rssItems}
         try {
           const scheduleData = formatScheduleForDb(scheduledBlog);
           
+          // Get photo and process image for proper cropping
+          let featuredImage = null;
+          if (scheduledBlog.photoId) {
+            const photo = await storage.getPhotoById(scheduledBlog.photoId);
+            if (photo?.photoUrl) {
+              console.log(`[Blog Generation] Processing image for: ${scheduledBlog.title}`);
+              featuredImage = await processBlogImage(photo.photoUrl, scheduledBlog.title);
+              console.log(`[Blog Generation] Cropped image saved: ${featuredImage}`);
+            }
+          }
+          
           const saved = await storage.createBlogPost({
             title: scheduledBlog.title,
             slug: scheduledBlog.slug,
@@ -1603,8 +1614,7 @@ ${rssItems}
             excerpt: scheduledBlog.excerpt,
             metaDescription: scheduledBlog.metaDescription,
             category: scheduledBlog.category,
-            featuredImage: scheduledBlog.photoId ? 
-              (await storage.getPhotoById(scheduledBlog.photoId))?.photoUrl || null : null,
+            featuredImage,
             author: "Economy Plumbing",
             published: true,
           });

@@ -130,17 +130,14 @@ export async function createSmartCrop(
     const cropWidth = Math.round((cropData.suggestedCrop.width / 100) * metadata.width);
     const cropHeight = Math.round((cropData.suggestedCrop.height / 100) * metadata.height);
 
-    // Generate output filename
+    // Generate output filename (always WebP for best compression)
     const sourceFilename = path.basename(sourceImagePath);
-    const ext = path.extname(sourceFilename);
-    const nameWithoutExt = sourceFilename.replace(ext, "");
-    const outputFilename = `${nameWithoutExt}_cropped_blog${ext}`;
-    const outputPath = path.join(outputDir, outputFilename);
+    const nameWithoutExt = sourceFilename.replace(/\.[^.]+$/, ""); // Remove any extension
+    const timestamp = Date.now();
+    const outputFilename = `${timestamp}_${nameWithoutExt}_cropped_blog.webp`;
+    const tempOutputPath = path.join('/tmp', outputFilename); // Temp location
 
-    // Ensure output directory exists
-    await fs.mkdir(outputDir, { recursive: true });
-
-    // Create the cropped image (1200x675 for 16:9 blog display)
+    // Create the cropped image (1200x675 for 16:9 blog display) as WebP
     await image
       .extract({
         left: cropX,
@@ -152,10 +149,25 @@ export async function createSmartCrop(
         fit: "cover",
         position: "center",
       })
-      .toFile(outputPath);
+      .webp({ quality: 85 }) // Convert to WebP with high quality
+      .toFile(tempOutputPath);
 
-    console.log(`✅ [BlogImageProcessor] Created cropped image: ${outputFilename}`);
-    return `/attached_assets/blog_images/${outputFilename}`;
+    console.log(`✅ [BlogImageProcessor] Created cropped WebP image: ${outputFilename}`);
+    
+    // Upload to object storage
+    const { ObjectStorageService } = await import("../objectStorage");
+    const objectStorage = new ObjectStorageService();
+    const publicSearchPaths = objectStorage.getPublicObjectSearchPaths();
+    const destinationPath = `${publicSearchPaths[0]}/blog_images/${outputFilename}`;
+    
+    await objectStorage.uploadFile(tempOutputPath, destinationPath, 'image/webp');
+    console.log(`☁️  [BlogImageProcessor] Uploaded to object storage: ${destinationPath}`);
+    
+    // Clean up temp file
+    await fs.unlink(tempOutputPath);
+    
+    // Return the public URL path
+    return `/public-objects/blog_images/${outputFilename}`;
   } catch (error) {
     console.error("❌ [BlogImageProcessor] Error creating crop:", error);
     throw error;
