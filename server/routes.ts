@@ -1262,7 +1262,9 @@ ${rssItems}
     return "general";
   }
 
-  // Zapier webhook endpoint for receiving job photos
+  // DISABLED: Zapier webhook endpoint (was used for photo imports, now disabled for security)
+  // To re-enable: uncomment this endpoint and add authentication
+  /*
   app.post("/api/photos/webhook", async (req, res) => {
     const timestamp = new Date().toISOString();
     console.log(`\n========================================`);
@@ -1481,6 +1483,7 @@ ${rssItems}
       });
     }
   });
+  */
 
   // Import photos from Google Drive folder
   app.post("/api/photos/import-google-drive", async (req, res) => {
@@ -2190,6 +2193,104 @@ ${rssItems}
       
     } catch (error: any) {
       console.error("[Admin] Error reprocessing photos:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Find and remove similar/duplicate photos (admin only)
+  app.post("/api/admin/cleanup-similar-photos", requireAdmin, async (req, res) => {
+    try {
+      console.log("[Admin] Starting similar photo detection and cleanup...");
+      
+      const { findSimilarPhotos } = await import("./lib/similarPhotoDetector");
+      const objectStorageService = new ObjectStorageService();
+      
+      // Get ALL photos
+      const photos = await db
+        .select()
+        .from(companyCamPhotos)
+        .execute();
+      
+      if (photos.length < 2) {
+        return res.json({
+          success: true,
+          message: "Not enough photos to compare",
+          groupsFound: 0,
+          photosDeleted: 0
+        });
+      }
+      
+      console.log(`[Admin] Analyzing ${photos.length} photos for similarity...`);
+      
+      // Download photo helper
+      const downloadPhoto = async (photoUrl: string): Promise<Buffer> => {
+        if (photoUrl.startsWith('/public-objects/') || photoUrl.startsWith('/replit-objstore-')) {
+          const photoPath = photoUrl.startsWith('/public-objects/') 
+            ? photoUrl.replace('/public-objects/', '') 
+            : photoUrl;
+          const file = await objectStorageService.searchPublicObject(photoPath);
+          if (!file) throw new Error(`Photo not found: ${photoPath}`);
+          const [buffer] = await file.download();
+          return buffer;
+        } else if (photoUrl.startsWith('/attached_assets/')) {
+          const fs = await import('fs/promises');
+          const localPath = path.join(import.meta.dirname, '..', photoUrl);
+          return await fs.readFile(localPath);
+        } else if (photoUrl.startsWith('http')) {
+          const response = await fetch(photoUrl);
+          if (!response.ok) throw new Error(`Failed to fetch: ${photoUrl}`);
+          return Buffer.from(await response.arrayBuffer());
+        } else {
+          throw new Error(`Unknown photo URL format: ${photoUrl}`);
+        }
+      };
+      
+      // Find similar photos
+      const similarGroups = await findSimilarPhotos(photos, downloadPhoto);
+      
+      if (similarGroups.length === 0) {
+        return res.json({
+          success: true,
+          message: "No similar photos found",
+          groupsFound: 0,
+          photosDeleted: 0
+        });
+      }
+      
+      console.log(`[Admin] Found ${similarGroups.length} groups of similar photos`);
+      
+      // Delete similar photos (keeping the best one from each group)
+      let totalDeleted = 0;
+      
+      for (const group of similarGroups) {
+        console.log(`[Admin] Deleting ${group.photosToDelete.length} similar photos, keeping ${group.bestPhotoId}`);
+        
+        for (const photoId of group.photosToDelete) {
+          await db
+            .delete(companyCamPhotos)
+            .where(eq(companyCamPhotos.id, photoId))
+            .execute();
+          
+          totalDeleted++;
+        }
+      }
+      
+      console.log(`[Admin] Similar photo cleanup complete: ${similarGroups.length} groups found, ${totalDeleted} photos deleted`);
+      
+      res.json({
+        success: true,
+        message: `Found ${similarGroups.length} groups of similar photos and deleted ${totalDeleted} duplicates`,
+        groupsFound: similarGroups.length,
+        photosDeleted: totalDeleted,
+        groups: similarGroups.map(g => ({
+          photoCount: g.photos.length,
+          keptPhotoId: g.bestPhotoId,
+          deletedCount: g.photosToDelete.length
+        }))
+      });
+      
+    } catch (error: any) {
+      console.error("[Admin] Error in similar photo cleanup:", error);
       res.status(500).json({ error: error.message });
     }
   });

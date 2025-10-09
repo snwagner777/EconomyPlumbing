@@ -70,6 +70,28 @@ export default function AdminDashboard() {
     },
   });
 
+  // Cleanup similar photos mutation
+  const cleanupMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/admin/cleanup-similar-photos");
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Cleanup Complete",
+        description: `Found ${data.groupsFound} groups of similar photos and deleted ${data.photosDeleted} duplicates.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Cleanup Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogout = async () => {
     await apiRequest("POST", "/api/admin/logout");
     setLocation("/admin/login");
@@ -78,6 +100,12 @@ export default function AdminDashboard() {
   const handleReprocess = () => {
     if (confirm("Reprocess ALL photos with improved AI analysis? This will update focal points for better image positioning.")) {
       reprocessMutation.mutate();
+    }
+  };
+
+  const handleCleanupSimilar = () => {
+    if (confirm("Find and remove similar/duplicate photos? AI will compare photos and keep only the best quality version from each similar group. This action cannot be undone!")) {
+      cleanupMutation.mutate();
     }
   };
 
@@ -106,6 +134,15 @@ export default function AdminDashboard() {
             >
               <RefreshCw className={`w-4 h-4 mr-2 ${reprocessMutation.isPending ? 'animate-spin' : ''}`} />
               {reprocessMutation.isPending ? 'Reprocessing...' : 'Reprocess All Photos'}
+            </Button>
+            <Button 
+              variant="secondary" 
+              onClick={handleCleanupSimilar}
+              disabled={cleanupMutation.isPending}
+              data-testid="button-cleanup-similar"
+            >
+              <ImageIcon className={`w-4 h-4 mr-2 ${cleanupMutation.isPending ? 'animate-spin' : ''}`} />
+              {cleanupMutation.isPending ? 'Finding Similar...' : 'Remove Similar Photos'}
             </Button>
             <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
               <LogOut className="w-4 h-4 mr-2" />
