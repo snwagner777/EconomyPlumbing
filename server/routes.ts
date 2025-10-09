@@ -831,6 +831,29 @@ ${rssItems}
           // Categorize photo
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
+          // Download photo and save locally to server
+          const fs = await import('fs/promises');
+          const path = await import('path');
+          
+          // Fetch the photo from CompanyCam URL
+          const photoResponse = await fetch(photo.photoUrl);
+          const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
+          
+          // Create category subfolder
+          const categoryFolder = path.join('attached_assets/imported_photos', category);
+          await fs.mkdir(categoryFolder, { recursive: true });
+          
+          // Generate unique filename
+          const timestamp = Date.now();
+          const photoIdHash = Buffer.from(photo.photoUrl).toString('base64').substring(0, 16);
+          const extension = photo.photoUrl.split('.').pop()?.split('?')[0] || 'jpg';
+          const localFileName = `companycam_${timestamp}_${photoIdHash}.${extension}`;
+          const localFilePath = path.join(categoryFolder, localFileName);
+          
+          // Save file to disk
+          await fs.writeFile(localFilePath, photoBuffer);
+          console.log(`[Zapier Webhook] 💾 Saved to server: ${localFilePath}`);
+
           // Generate unique photo ID from URL hash
           const photoId = Buffer.from(photo.photoUrl).toString('base64').substring(0, 32);
           const projectId = photo.jobId || jobId || 'zapier-import';
@@ -838,8 +861,8 @@ ${rssItems}
           const processedPhoto = {
             companyCamPhotoId: photoId,
             companyCamProjectId: projectId,
-            photoUrl: photo.photoUrl,
-            thumbnailUrl: photo.photoUrl,
+            photoUrl: `/${localFilePath}`, // Local server path
+            thumbnailUrl: `/${localFilePath}`, // Same file for now
             category,
             aiDescription: analysis.reasoning,
             tags: analysis.categories,
@@ -924,15 +947,7 @@ ${rssItems}
 
           if (!analysis.shouldKeep) {
             console.log(`[Google Drive Import] ❌ Rejected ${file.name} - ${analysis.reasoning}`);
-            
-            // Delete rejected photo from Google Drive
-            try {
-              const { deleteFile } = await import("./lib/googleDriveClient");
-              await deleteFile(file.id!);
-              console.log(`[Google Drive Import] 🗑️  Deleted rejected photo from Google Drive: ${file.name}`);
-            } catch (deleteError: any) {
-              console.error(`[Google Drive Import] Failed to delete ${file.name} from Google Drive:`, deleteError.message);
-            }
+            console.log(`[Google Drive Import] 🗑️  Skipping save to server (keeping original in Google Drive)`);
             
             rejectedPhotos.push({
               fileName: file.name,
@@ -945,14 +960,32 @@ ${rssItems}
           // Categorize
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
-          // Create photo record
+          // Save photo locally to server
+          const fs = await import('fs/promises');
+          const path = await import('path');
+          
+          // Create category subfolder
+          const categoryFolder = path.join('attached_assets/imported_photos', category);
+          await fs.mkdir(categoryFolder, { recursive: true });
+          
+          // Generate unique filename
+          const timestamp = Date.now();
+          const sanitizedName = file.name?.replace(/[^a-zA-Z0-9._-]/g, '_') || 'unnamed';
+          const localFileName = `${timestamp}_${sanitizedName}`;
+          const localFilePath = path.join(categoryFolder, localFileName);
+          
+          // Save file to disk
+          await fs.writeFile(localFilePath, buffer);
+          console.log(`[Google Drive Import] 💾 Saved to server: ${localFilePath}`);
+
+          // Create photo record with local file path
           const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);
 
           const processedPhoto = {
             companyCamPhotoId: photoId,
             companyCamProjectId: 'google-drive-import',
-            photoUrl: file.webContentLink || file.thumbnailLink || '',
-            thumbnailUrl: file.thumbnailLink || file.webContentLink || '',
+            photoUrl: `/${localFilePath}`, // Local server path
+            thumbnailUrl: `/${localFilePath}`, // Same file for now
             category,
             aiDescription: analysis.reasoning,
             tags: analysis.categories,
