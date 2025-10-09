@@ -170,14 +170,13 @@ export default function BlogPost() {
               />
             )}
 
-            {/* Blog content wrapper with floating review card */}
-            <div className="relative">
-              {/* Desktop: Review card floats right and is positioned down */}
+            <div
+              className="prose prose-lg max-w-none mb-12"
+              data-testid="text-content"
+            >
+              {/* Review card floats right on desktop, full width on mobile */}
               {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                <div 
-                  className="md:float-right md:ml-6 md:w-80 lg:w-96 mb-6 hidden md:block"
-                  style={{ marginTop: '12rem' }}
-                >
+                <div className="not-prose md:float-right md:ml-6 md:w-80 lg:w-96 mb-6">
                   <InlineReviewCard 
                     category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
                     minRating={4}
@@ -185,24 +184,9 @@ export default function BlogPost() {
                 </div>
               )}
               
-              <div
-                className="prose prose-lg max-w-none mb-12"
-                data-testid="text-content"
-              >
-                {/* Mobile: Review card shows before content */}
-                {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                  <div className="not-prose mb-6 md:hidden">
-                    <InlineReviewCard 
-                      category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
-                      minRating={4}
-                    />
-                  </div>
-                )}
-                
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {post.content}
-                </ReactMarkdown>
-              </div>
+              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                {post.content}
+              </ReactMarkdown>
             </div>
 
             {/* Related Articles - Card Format */}
