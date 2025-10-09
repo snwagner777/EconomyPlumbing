@@ -21,7 +21,7 @@ export default function InlineReviewCard({
   const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
   
   const { data: reviews } = useQuery<GoogleReview[]>({
-    queryKey: ['/api/reviews', queryString],
+    queryKey: [`/api/reviews${queryString}`],
   });
 
   const review = reviews?.[0]; // Get just the first review
