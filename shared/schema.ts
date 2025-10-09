@@ -337,15 +337,26 @@ export const importedPhotos = pgTable("imported_photos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   url: text("url").notNull(), // Object Storage URL
   category: text("category").notNull(), // 'drain-cleaning', 'water-heater', etc.
+  
+  // AI Analysis
+  isProductionQuality: boolean("is_production_quality").notNull().default(true), // Whether photo is good enough for customer-facing use
   aiQuality: integer("ai_quality"), // 0-100 quality score
+  qualityReason: text("quality_reason"), // Why it passed/failed quality check
   aiDescription: text("ai_description"),
   aiTags: text("ai_tags").array(),
+  
+  // Focal Point (for image positioning)
+  focalPointX: integer("focal_point_x"), // 0-100 percentage from left
+  focalPointY: integer("focal_point_y"), // 0-100 percentage from top
+  
+  // Metadata
   gdriveFileId: text("gdrive_file_id").unique(), // Google Drive file ID for deduplication
   usedInBlog: boolean("used_in_blog").notNull().default(false),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
 }, (table) => ({
   categoryIdx: index("imported_photos_category_idx").on(table.category),
   usedIdx: index("imported_photos_used_idx").on(table.usedInBlog),
+  qualityIdx: index("imported_photos_quality_idx").on(table.isProductionQuality),
   gdriveIdx: index("imported_photos_gdrive_idx").on(table.gdriveFileId),
 }));
 

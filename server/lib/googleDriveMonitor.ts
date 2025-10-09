@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { storage } from '../storage';
 import { ObjectStorageService } from '../objectStorage';
+import { analyzeProductionPhoto } from './productionPhotoAnalyzer';
 import sharp from 'sharp';
 
 const objectStorageService = new ObjectStorageService();
@@ -107,12 +108,17 @@ export async function monitorGoogleDriveFolder() {
 
         const imageBuffer = Buffer.from(fileResponse.data as ArrayBuffer);
 
-        // Analyze quality with AI (for now, use simple category mapping)
-        // TODO: Integrate full AI analysis when needed
-        const category = 'general-plumbing'; // Default category
-        const aiQuality = 75; // Default quality score
-        const aiDescription = file.name || 'Imported photo';
-        const aiTags: string[] = [];
+        // Analyze production quality with OpenAI Vision
+        console.log(`[Google Drive] Analyzing photo quality: ${file.name}`);
+        const analysis = await analyzeProductionPhoto(imageBuffer);
+        
+        // Skip non-production quality photos
+        if (!analysis.isProductionQuality) {
+          console.log(`[Google Drive] ⚠️  Skipping low-quality photo: ${file.name} - ${analysis.qualityReason}`);
+          continue;
+        }
+        
+        console.log(`[Google Drive] ✓ Production quality (${analysis.qualityScore}/100): ${file.name}`);
 
         // Convert to WebP
         const webpBuffer = await sharp(imageBuffer)
@@ -122,7 +128,7 @@ export async function monitorGoogleDriveFolder() {
         // Generate filename with category
         const timestamp = Date.now();
         const filename = `gdrive-${timestamp}.webp`;
-        const objectPath = `imported_photos/${category}/${filename}`;
+        const objectPath = `imported_photos/${analysis.category}/${filename}`;
 
         // Upload to Object Storage
         const publicUrl = await objectStorageService.uploadBuffer(
@@ -131,13 +137,17 @@ export async function monitorGoogleDriveFolder() {
           'image/webp'
         );
 
-        // Save to database
+        // Save to database with full analysis
         await storage.createImportedPhoto({
           url: publicUrl,
-          category,
-          aiQuality,
-          aiDescription,
-          aiTags,
+          category: analysis.category,
+          isProductionQuality: analysis.isProductionQuality,
+          aiQuality: analysis.qualityScore,
+          qualityReason: analysis.qualityReason,
+          aiDescription: analysis.description,
+          aiTags: analysis.tags,
+          focalPointX: analysis.focalPointX,
+          focalPointY: analysis.focalPointY,
           gdriveFileId: file.id!,
           usedInBlog: false
         });
