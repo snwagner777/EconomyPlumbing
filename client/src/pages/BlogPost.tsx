@@ -46,8 +46,8 @@ export default function BlogPost() {
   });
 
   const canonicalUrl = matchFallTips 
-    ? "https://plumbersthatcare.com/fall-plumbing-tips"
-    : `https://plumbersthatcare.com/blog/${slug}`;
+    ? "https://www.plumbersthatcare.com/fall-plumbing-tips"
+    : `https://www.plumbersthatcare.com/blog/${slug}`;
 
   const allPosts = allPostsData?.posts || [];
 
@@ -108,7 +108,7 @@ export default function BlogPost() {
         canonical={canonicalUrl}
         ogType="article"
         ogImage={post.featuredImage ? 
-          (post.featuredImage.startsWith('http') ? post.featuredImage : `https://plumbersthatcare.com${post.featuredImage}`) : 
+          (post.featuredImage.startsWith('http') ? post.featuredImage : `https://www.plumbersthatcare.com${post.featuredImage}`) : 
           undefined}
         ogImageAlt={`Featured image for: ${post.title}`}
         schema={blogPostSchema ? [blogPostSchema] : undefined}

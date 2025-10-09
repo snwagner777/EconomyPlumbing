@@ -29,12 +29,12 @@ export function SEOHead({
   articlePublishedTime,
   articleAuthor
 }: SEOProps) {
-  const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://plumbersthatcare.com");
+  const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://www.plumbersthatcare.com");
   const siteName = "Economy Plumbing Services";
   
   const baseUrl = typeof window !== 'undefined' 
     ? `${window.location.protocol}//${window.location.host}`
-    : "https://plumbersthatcare.com";
+    : "https://www.plumbersthatcare.com";
   
   const fullOgImage = ogImage || `${baseUrl}/attached_assets/logo.jpg`;
 
@@ -51,7 +51,7 @@ export function SEOHead({
         rel="alternate" 
         type="application/rss+xml" 
         title="Economy Plumbing Services Blog RSS Feed" 
-        href="https://plumbersthatcare.com/rss.xml" 
+        href="https://www.plumbersthatcare.com/rss.xml" 
       />
 
       {/* Open Graph / Facebook */}

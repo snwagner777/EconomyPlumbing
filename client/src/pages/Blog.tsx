@@ -65,14 +65,14 @@ export default function Blog() {
     "@type": "Blog",
     "name": "Economy Plumbing Blog",
     "description": "Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Services in Austin and Marble Falls, Texas",
-    "url": "https://plumbersthatcare.com/blog",
+    "url": "https://www.plumbersthatcare.com/blog",
     "publisher": {
       "@type": "Organization",
       "name": "Economy Plumbing Services",
-      "url": "https://plumbersthatcare.com",
+      "url": "https://www.plumbersthatcare.com",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+        "url": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
         "width": "1024",
         "height": "1024"
       }
@@ -85,7 +85,7 @@ export default function Blog() {
       <SEOHead
         title="Plumbing Tips & Advice Blog | Economy Plumbing"
         description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
-        canonical="https://plumbersthatcare.com/blog"
+        canonical="https://www.plumbersthatcare.com/blog"
         schema={blogSchema}
       />
 

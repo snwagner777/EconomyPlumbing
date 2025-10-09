@@ -16,15 +16,15 @@ export function createLocalBusinessSchema(aggregateRating?: { ratingValue: strin
   "@context": "https://schema.org",
   "@type": "Plumber",
   "name": "Economy Plumbing Services",
-  "image": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+  "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
   "logo": {
     "@type": "ImageObject",
-    "url": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+    "url": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
     "width": "1024",
     "height": "1024"
   },
   "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
-  "url": "https://plumbersthatcare.com",
+  "url": "https://www.plumbersthatcare.com",
   "telephone": [
     "+15123689159",
     "+18304603565"
@@ -191,7 +191,7 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
       "@type": "Plumber",
       "name": "Economy Plumbing Services",
       "telephone": ["+15123689159", "+18304603565"],
-      "url": "https://plumbersthatcare.com",
+      "url": "https://www.plumbersthatcare.com",
       "address": {
         "@type": "PostalAddress",
         "streetAddress": "701 Tillery St #12",
@@ -222,7 +222,7 @@ export function createProductSchema(product: any) {
     "description": product.description,
     "offers": {
       "@type": "Offer",
-      "url": "https://plumbersthatcare.com/store",
+      "url": "https://www.plumbersthatcare.com/store",
       "priceCurrency": "USD",
       "price": product.price,
       "availability": "https://schema.org/InStock",
@@ -235,7 +235,7 @@ export function createProductSchema(product: any) {
 }
 
 export function createBlogPostSchema(post: any) {
-  const baseUrl = "https://plumbersthatcare.com";
+  const baseUrl = "https://www.plumbersthatcare.com";
   const postUrl = `${baseUrl}/blog/${post.slug}`;
   const imageUrl = post.featuredImage ? 
     (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
