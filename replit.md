@@ -21,6 +21,49 @@ Preferred communication style: Simple, everyday language.
 ### 2. SEO Best Practices for All Pages (MANDATORY)
 **⚠️ RULE: Every page and blog post must follow ALL SEO best practices.**
 
+#### Meta Data Optimization - REQUIRED
+ALL pages must have optimized title tags and meta descriptions:
+
+**Title Tags (50-60 characters):**
+- Include primary keyword + location
+- Format: `[Service/Topic] | [Location] | Economy Plumbing`
+- Prioritize water heater content when relevant
+- **Examples:**
+  - ✅ "Water Heater Repair Austin & Marble Falls | Economy Plumbing" (58 chars)
+  - ✅ "Austin Water Heater Installation | Economy Plumbing" (52 chars)
+  - ❌ "Water Heater Services" (22 chars - too short)
+  - ❌ "Professional Water Heater Repair, Installation, and Maintenance Services in Austin and Marble Falls, Texas" (108 chars - too long)
+
+**Meta Descriptions (150-160 characters):**
+- Include location (Austin/Marble Falls) in first 100 characters
+- Emphasize water heaters when applicable
+- Include call-to-action
+- **Examples:**
+  - ✅ "Austin & Marble Falls water heater repair, installation & replacement. 24/7 emergency service. Expert plumbers. Call (512) 368-9159 for same-day service." (157 chars)
+  - ✅ "Economy Plumbing serves Austin and Marble Falls with professional water heater services. Licensed, insured plumbers. Free estimates. Call today!" (148 chars)
+  - ❌ "We fix water heaters" (21 chars - too short, no location)
+  - ❌ "Professional water heater repair and installation services available throughout the greater Austin metropolitan area including Marble Falls and surrounding communities with 24/7 emergency service available" (207 chars - too long)
+
+**Location Keywords Priority:**
+1. Austin (primary market)
+2. Marble Falls (secondary market)
+3. Specific neighborhoods when relevant
+
+**Water Heater Emphasis:**
+- Water heater pages: Prioritize in title and first 50 chars of description
+- Other service pages: Include "water heater" if space permits
+- Blog posts: Emphasize water heaters in 40% of posts (balanced with other services)
+- Service area pages: Mention water heaters in description
+
+**Implementation:**
+```tsx
+<SEOHead
+  title="Water Heater Repair Austin TX | Economy Plumbing Services"  // 58 chars
+  description="Expert water heater repair in Austin & Marble Falls. Same-day service, licensed plumbers, all brands. Call (512) 368-9159 for fast repairs." // 151 chars
+  canonical="https://www.plumbersthatcare.com/water-heater-repair"
+/>
+```
+
 #### Schema Markup (JSON-LD) - REQUIRED
 All pages must include appropriate structured data:
 - **Service Pages:** `Service` schema with provider, areaServed, offers
@@ -64,6 +107,8 @@ All pages must be accessible:
 - **Forms:** Labels, error messages, required field indicators
 
 #### Checklist for New Pages:
+- [ ] **Title tag:** 50-60 chars, includes location (Austin/Marble Falls), water heater emphasis if relevant
+- [ ] **Meta description:** 150-160 chars, location in first 100 chars, water heater emphasis, call-to-action
 - [ ] SEOHead with title, description, canonical, schema
 - [ ] All images: alt, width/height, loading strategy
 - [ ] Breadcrumbs (visual + schema) if applicable
