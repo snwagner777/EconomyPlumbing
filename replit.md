@@ -18,7 +18,7 @@ Preferred communication style: Simple, everyday language.
 - **Client-Side Routes:** Covers Home, About, Contact, 20+ specific Service pages, 16 specific Service Area city pages, Blog, Store, FAQ, Privacy Policy, Refund/Returns, and VIP Membership benefits.
 - **Optimizations:** Implements lazy loading for reviews and non-blocking background refresh for data. Optimized images to WebP format with explicit dimensions and `fetchpriority="high"`. Enhanced meta descriptions and canonical URLs across all pages. Implemented route-level code splitting using `React.lazy` and `Suspense` for non-critical pages. Applied React.memo optimization to frequently rendered card components (ServiceCard, BlogCard, TestimonialCard, WhyChooseCard) to prevent unnecessary re-renders.
 - **Accessibility (WCAG AA Compliant):** All interactive text elements (links, phone numbers, emails, CTAs) use `text-foreground` instead of `text-primary` to meet 4.5:1 contrast ratio requirements. All buttons explicitly declare `bg-primary text-primary-foreground` for proper contrast. Favicon implemented for browser tabs and mobile devices. Cookie banner close button includes `aria-label` for screen readers. Open Graph images configured with dynamic URL construction for proper social sharing.
-- **Reviews Integration:** Premium visual design with gradient backgrounds, testimonial cards, star ratings, and trust badges. Strategically positioned mid-page on homepage (after "Why Choose" section) and service pages (before contact form) for optimal conversion. Lazy-loads using Intersection Observer with 30-minute browser caching for zero initial page load impact.
+- **Reviews Integration:** Premium visual design with gradient backgrounds, testimonial cards, star ratings, and trust badges. Strategically positioned mid-page on homepage (after "Why Choose" section), service pages (before contact form), and blog posts (after content) for optimal conversion. Lazy-loads using Intersection Observer with 30-minute browser caching for zero initial page load impact. Reviews auto-categorized by service type and displayed contextually on relevant pages and blog posts.
 - **Resource Hints:** Preconnect and DNS prefetch for critical third-party domains including Google Fonts, Google Analytics, Stripe JS, Google Maps API, and ServiceTitan scheduler to reduce connection latency.
 
 ### Backend
@@ -57,7 +57,7 @@ Preferred communication style: Simple, everyday language.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails.
 - **Social Media:** Facebook, Instagram, Yelp, Nextdoor.
-- **Call Tracking:** Dynamic phone number insertion for analytics, with a default and static Marble Falls number.
+- **Call Tracking:** Dynamic phone number insertion for analytics with traffic source detection (Google, Facebook, Yelp, Nextdoor). Numbers automatically swap based on referrer/UTM parameters and persist via 90-day cookie. System re-runs on all route changes to ensure phone numbers update across SPA navigation. Static Marble Falls number (830) preserved.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.

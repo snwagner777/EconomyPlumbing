@@ -173,10 +173,19 @@ function Router() {
 }
 
 function App() {
+  const [location] = useLocation();
+
   useEffect(() => {
     // Initialize dynamic phone number tracking
     initDynamicPhoneNumbers();
-    
+  }, []); // Run once on mount
+
+  useEffect(() => {
+    // Re-run phone number replacement on route changes
+    replacePhoneNumbers();
+  }, [location]); // Run whenever route changes
+
+  useEffect(() => {
     // Initialize Google Analytics
     if (!import.meta.env.VITE_GA_MEASUREMENT_ID) {
       console.warn('Missing required Google Analytics key: VITE_GA_MEASUREMENT_ID');

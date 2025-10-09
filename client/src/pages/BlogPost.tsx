@@ -5,12 +5,23 @@ import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
+import ReviewsSection from "@/components/ReviewsSection";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Phone } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createBlogPostSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
+
+// Map blog categories to review categories
+const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
+  "Water Heaters": "water_heater",
+  "Drains": "drain",
+  "Emergency Tips": "general",
+  "Maintenance": "general",
+  "Leak Repair": "leak",
+  "Commercial": "general",
+};
 
 export default function BlogPost() {
   const [matchBlog, paramsBlog] = useRoute("/blog/:slug");
@@ -162,6 +173,15 @@ export default function BlogPost() {
             </div>
           </div>
         </section>
+
+        {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
+          <ReviewsSection 
+            category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
+            title={`What Our ${post.category} Customers Say`}
+            maxReviews={3}
+            minRating={4}
+          />
+        )}
 
         {relatedPosts && relatedPosts.length > 0 && (
           <section className="py-12 lg:py-16 bg-muted/30">
