@@ -205,6 +205,29 @@ ${productUrls}
     }
   });
 
+  app.get("/api/blog/categories", async (req, res) => {
+    try {
+      const allPosts = await storage.getBlogPosts();
+      
+      // Extract unique categories from all published posts
+      const categoriesSet = new Set<string>();
+      allPosts.forEach(post => {
+        if (post.category) {
+          categoriesSet.add(post.category);
+        }
+      });
+      
+      // Convert to sorted array (alphabetically)
+      const categories = Array.from(categoriesSet).sort();
+      
+      // Cache categories for 1 hour
+      res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
+      res.json({ categories });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
   app.get("/api/blog/:slug", async (req, res) => {
     try {
       const post = await storage.getBlogPostBySlug(req.params.slug);

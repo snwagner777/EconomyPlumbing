@@ -36,7 +36,18 @@ export default function Blog() {
     },
   });
 
-  const categories = ["All", "Water Heaters", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
+  // Fetch categories dynamically from the API
+  const { data: categoriesData } = useQuery<{ categories: string[] }>({
+    queryKey: ["/api/blog/categories"],
+    queryFn: async () => {
+      const response = await fetch("/api/blog/categories");
+      if (!response.ok) throw new Error("Failed to fetch categories");
+      return response.json();
+    },
+  });
+
+  // Always show "All" first, then the rest alphabetically
+  const categories = ["All", ...(categoriesData?.categories || [])];
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
