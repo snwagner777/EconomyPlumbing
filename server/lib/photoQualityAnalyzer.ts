@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
+// Using GPT-4o for vision analysis
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export interface PhotoQualityAnalysis {
@@ -52,8 +52,9 @@ Respond with JSON in this exact format:
       ? `Analyze this job photo. Job context: ${jobDescription}\n\nIs this photo good quality and useful for a plumbing company's blog or marketing?`
       : `Analyze this job photo. Is this photo good quality and useful for a plumbing company's blog or marketing?`;
 
+    console.log("🔍 [PhotoQualityAnalyzer] Calling OpenAI Vision API...");
     const response = await openai.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o",
       messages: [
         {
           role: "system",
@@ -80,7 +81,11 @@ Respond with JSON in this exact format:
       max_completion_tokens: 500,
     });
 
+    console.log("✅ [PhotoQualityAnalyzer] OpenAI response received");
+    console.log("📄 [PhotoQualityAnalyzer] Raw response:", response.choices[0].message.content);
+    
     const result = JSON.parse(response.choices[0].message.content || "{}");
+    console.log("📊 [PhotoQualityAnalyzer] Parsed result:", result);
 
     return {
       isGoodQuality: result.isGoodQuality || false,
@@ -90,13 +95,15 @@ Respond with JSON in this exact format:
       categories: Array.isArray(result.categories) ? result.categories : [],
     };
   } catch (error) {
-    console.error("Error analyzing photo quality:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("❌ [PhotoQualityAnalyzer] Error analyzing photo quality:", errorMessage);
+    console.error("❌ [PhotoQualityAnalyzer] Full error:", error);
     // On error, default to keeping the photo (fail safe)
     return {
       isGoodQuality: false,
       shouldKeep: true,
       qualityScore: 5,
-      reasoning: `Analysis failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+      reasoning: `Analysis failed: ${errorMessage}`,
       categories: [],
     };
   }
