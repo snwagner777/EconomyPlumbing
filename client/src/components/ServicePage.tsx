@@ -33,6 +33,16 @@ interface RelatedService {
   path: string;
 }
 
+interface SignItem {
+  title: string;
+  description: string;
+}
+
+interface MaintenanceTip {
+  title: string;
+  description: string;
+}
+
 interface ServicePageProps {
   title: string;
   metaDescription: string;
@@ -51,6 +61,14 @@ interface ServicePageProps {
   reviewsCategory?: string;
   reviewsTitle?: string;
   blogCategory?: string;
+  signsTitle?: string;
+  signs?: SignItem[];
+  maintenanceTitle?: string;
+  maintenanceTips?: MaintenanceTip[];
+  additionalContent?: {
+    title: string;
+    content: string;
+  };
 }
 
 export default function ServicePage({
@@ -71,6 +89,11 @@ export default function ServicePage({
   reviewsCategory,
   reviewsTitle,
   blogCategory,
+  signsTitle,
+  signs,
+  maintenanceTitle,
+  maintenanceTips,
+  additionalContent,
 }: ServicePageProps) {
   const phoneConfig = usePhoneConfig();
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
@@ -176,6 +199,60 @@ export default function ServicePage({
           </div>
         </div>
       </section>
+
+      {signs && signs.length > 0 && (
+        <section className="py-16 lg:py-24 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+              {signsTitle || "Signs You Need Service"}
+            </h2>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {signs.map((sign, index) => (
+                <Card key={index} className="p-6">
+                  <h3 className="text-lg font-semibold mb-2 flex items-start gap-2">
+                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                    {sign.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm">{sign.description}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {additionalContent && (
+        <section className="py-16 lg:py-24">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-8">
+              {additionalContent.title}
+            </h2>
+            <div className="prose prose-lg max-w-none text-muted-foreground">
+              {additionalContent.content.split('\n\n').map((paragraph, index) => (
+                <p key={index} className="mb-4">{paragraph}</p>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {maintenanceTips && maintenanceTips.length > 0 && (
+        <section className="py-16 lg:py-24 bg-muted/30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+              {maintenanceTitle || "Maintenance Tips"}
+            </h2>
+            <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+              {maintenanceTips.map((tip, index) => (
+                <Card key={index} className="p-6">
+                  <h3 className="text-lg font-semibold mb-3">{tip.title}</h3>
+                  <p className="text-muted-foreground">{tip.description}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="py-16 lg:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
