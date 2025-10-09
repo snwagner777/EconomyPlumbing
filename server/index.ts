@@ -145,26 +145,47 @@ async function refreshReviewsPeriodically() {
 
       // Get existing reviews to check for duplicates
       const existingReviews = await storage.getGoogleReviews();
-      const existingKeys = new Set(
-        existingReviews.map(r => 
-          r.reviewId ? `id:${r.reviewId}` : `${r.authorName}:${r.text.slice(0, 100)}:${r.timestamp}`
-        )
-      );
+      
+      // Build a map for text+timestamp matching (most reliable for deduplication)
+      const existingByContent = new Map<string, typeof existingReviews[0]>();
+      for (const review of existingReviews) {
+        const contentKey = `${review.text}:${review.timestamp}`;
+        existingByContent.set(contentKey, review);
+      }
 
-      // Filter out reviews that already exist
-      const newReviews = allReviews.filter(review => {
-        if (review.rating < 4) return false; // Only 4+ stars
+      const newReviews = [];
+      const reviewsToReplace = [];
+
+      for (const review of allReviews) {
+        // Only keep 4+ star reviews
+        if (review.rating < 4) continue;
         
-        const key = review.reviewId 
-          ? `id:${review.reviewId}`
-          : `${review.authorName}:${review.text.slice(0, 100)}:${review.timestamp}`;
+        const contentKey = `${review.text}:${review.timestamp}`;
+        const existing = existingByContent.get(contentKey);
         
-        return !existingKeys.has(key);
-      });
+        if (existing) {
+          // If this is a Places API review replacing a DataForSEO review, upgrade it
+          if (review.source === 'places_api' && existing.source === 'dataforseo') {
+            reviewsToReplace.push({ oldId: existing.id, newReview: review });
+            log(`Background: Upgrading DataForSEO review to Places API (better data): "${review.text.slice(0, 50)}..."`);
+          }
+          // Otherwise skip - already have this exact review
+        } else {
+          // Brand new review
+          newReviews.push(review);
+        }
+      }
+
+      // Delete old DataForSEO reviews being replaced by Places API versions
+      if (reviewsToReplace.length > 0) {
+        await storage.deleteGoogleReviews(reviewsToReplace.map(r => r.oldId));
+        newReviews.push(...reviewsToReplace.map(r => r.newReview));
+        log(`Background: Replaced ${reviewsToReplace.length} DataForSEO reviews with Places API versions`);
+      }
 
       if (newReviews.length > 0) {
         await storage.saveGoogleReviews(newReviews);
-        log(`Background: Added ${newReviews.length} new unique reviews (total: ${existingReviews.length + newReviews.length})`);
+        log(`Background: Added ${newReviews.length} new unique reviews (total: ${existingReviews.length - reviewsToReplace.length + newReviews.length})`);
       } else {
         log(`Background: No new reviews to add (${existingReviews.length} existing reviews preserved)`);
       }

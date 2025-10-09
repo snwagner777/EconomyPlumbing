@@ -58,6 +58,7 @@ export interface IStorage {
   // Google reviews
   getGoogleReviews(): Promise<GoogleReview[]>;
   saveGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
+  deleteGoogleReviews(ids: string[]): Promise<void>;
   clearGoogleReviews(): Promise<void>;
   replaceGoogleReviews(reviews: InsertGoogleReview[]): Promise<void>;
   
@@ -1902,6 +1903,12 @@ Call (512) 368-9159 or schedule service online.`,
     }
   }
 
+  async deleteGoogleReviews(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      this.googleReviews.delete(id);
+    }
+  }
+
   async clearGoogleReviews(): Promise<void> {
     this.googleReviews.clear();
   }
@@ -2096,6 +2103,12 @@ export class DatabaseStorage implements IStorage {
     if (reviews.length === 0) return;
     
     await db.insert(googleReviews).values(reviews);
+  }
+
+  async deleteGoogleReviews(ids: string[]): Promise<void> {
+    if (ids.length === 0) return;
+    
+    await db.delete(googleReviews).where(sql`${googleReviews.id} = ANY(${ids})`);
   }
 
   async clearGoogleReviews(): Promise<void> {
