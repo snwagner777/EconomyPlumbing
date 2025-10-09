@@ -82,11 +82,16 @@ ALL images must include:
 - **Decoding:** `decoding="async"` on all images
 - **Format:** WebP at 85% quality
 
-#### Breadcrumbs - IF APPLICABLE
-Include when page has hierarchy:
-- Visual navigation AND BreadcrumbList schema
-- Examples: Service pages, Service areas, Blog posts
-- **Currently:** Not implemented, add when creating new templates
+#### Breadcrumbs - IMPLEMENTED ✅
+Breadcrumbs are now implemented on all hierarchical pages:
+- **Visual navigation:** Semantic `<nav aria-label="Breadcrumb">` with `<ol>/<li>` structure
+- **BreadcrumbList schema:** Complete JSON-LD with all URLs including current page
+- **Accessibility:** `aria-current="page"` on active item, `aria-hidden="true"` on separators
+- **Implemented on:**
+  - Blog posts: Home → Blog → Post Title
+  - Service pages: Home → Services → Service Name
+  - Service area pages: Home → Service Areas → City Name
+- **Implementation:** See `createBreadcrumbListSchema()` in `JsonLd.tsx`
 
 #### Page Speed - REQUIRED
 Every page must meet:
