@@ -74,7 +74,7 @@ export default function GeorgetownServiceArea() {
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
   };
 
   if (isLoading) {
@@ -94,7 +94,7 @@ export default function GeorgetownServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Georgetown plumber for Sun City, Wolf Ranch, Berry Creek. Expert water heater repair, drain cleaning, emergency plumbing. Licensed plumbers. (512) 368-9159."}
-        canonical="https://plumbersthatcare.com/plumber-georgetown"
+        canonical="https://www.plumbersthatcare.com/plumber-georgetown"
       />
 
       <JsonLd data={localBusinessSchema} />

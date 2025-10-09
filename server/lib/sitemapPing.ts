@@ -1,7 +1,7 @@
 /**
  * Notify Google when sitemap is updated (e.g., new blog post published)
  */
-export async function pingGoogleSitemap(sitemapUrl: string = 'https://plumbersthatcare.com/sitemap.xml'): Promise<boolean> {
+export async function pingGoogleSitemap(sitemapUrl: string = 'https://www.plumbersthatcare.com/sitemap.xml'): Promise<boolean> {
   try {
     const pingUrl = `https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     
@@ -25,7 +25,7 @@ export async function pingGoogleSitemap(sitemapUrl: string = 'https://plumbersth
 /**
  * Notify Bing when sitemap is updated
  */
-export async function pingBingSitemap(sitemapUrl: string = 'https://plumbersthatcare.com/sitemap.xml'): Promise<boolean> {
+export async function pingBingSitemap(sitemapUrl: string = 'https://www.plumbersthatcare.com/sitemap.xml'): Promise<boolean> {
   try {
     const pingUrl = `https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`;
     

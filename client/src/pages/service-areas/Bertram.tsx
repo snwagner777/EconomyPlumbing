@@ -15,7 +15,7 @@ export default function BertramServiceArea() {
       state="TX"
       slug="bertram"
       metaDescription="Professional plumbing services in Bertram, TX. Water heater install, drain cleaning, leak repair, gas services. Licensed & insured. Call (830) 460-3565."
-      canonical="https://plumbersthatcare.com/plumber-in-bertram--tx"
+      canonical="https://www.plumbersthatcare.com/plumber-in-bertram--tx"
       area="marble-falls"
       nearbyCities={nearbyCities}
       heroImage={bertramHero}

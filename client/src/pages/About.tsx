@@ -12,8 +12,8 @@ export default function About() {
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "Economy Plumbing Services",
-    "url": "https://plumbersthatcare.com",
-    "logo": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+    "url": "https://www.plumbersthatcare.com",
+    "logo": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
     "description": "Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers serving Austin to Marble Falls.",
     "foundingDate": "2005",
     "address": {
@@ -80,7 +80,7 @@ export default function About() {
       <SEOHead
         title="About Economy Plumbing Services | Water Heater Experts | Austin & Marble Falls"
         description="Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers. 24/7 emergency service. Serving Austin to Marble Falls."
-        canonical="https://plumbersthatcare.com/about"
+        canonical="https://www.plumbersthatcare.com/about"
         schema={organizationSchema}
       />
       

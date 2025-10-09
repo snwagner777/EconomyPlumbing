@@ -8,11 +8,11 @@ export default function RefundReturns() {
     "@type": "WebPage",
     "name": "Refund & Returns Policy - Economy Plumbing Services",
     "description": "Refund & returns policy: 30-day satisfaction guarantee, VIP membership cancellation, product returns. Economy Plumbing Austin & Marble Falls.",
-    "url": "https://plumbersthatcare.com/refund_returns",
+    "url": "https://www.plumbersthatcare.com/refund_returns",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Economy Plumbing Services",
-      "url": "https://plumbersthatcare.com"
+      "url": "https://www.plumbersthatcare.com"
     }
   };
   
@@ -21,7 +21,7 @@ export default function RefundReturns() {
       <SEOHead
         title="Refund & Returns Policy | Economy Plumbing Services"
         description="Refund & returns policy: 30-day satisfaction guarantee, VIP membership cancellation, product returns. Economy Plumbing Austin & Marble Falls. (512) 368-9159."
-        canonical="https://plumbersthatcare.com/refund_returns"
+        canonical="https://www.plumbersthatcare.com/refund_returns"
         schema={webPageSchema}
       />
 

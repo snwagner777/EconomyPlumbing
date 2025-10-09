@@ -75,7 +75,7 @@ export default function CedarParkServiceArea() {
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
   };
 
   if (isLoading) {
@@ -95,7 +95,7 @@ export default function CedarParkServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Cedar Park plumber for Lakeline, Buttercup Creek, Whitestone. Expert water heater installation, drain cleaning, gas lines. Same-day service. (512) 368-9159."}
-        canonical="https://plumbersthatcare.com/plumber-in-cedar-park--tx"
+        canonical="https://www.plumbersthatcare.com/plumber-in-cedar-park--tx"
       />
 
       <JsonLd data={localBusinessSchema} />

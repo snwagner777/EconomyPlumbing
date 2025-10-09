@@ -17,7 +17,7 @@ export default function Contact() {
     "@type": "ContactPage",
     "name": "Contact Economy Plumbing Services",
     "description": "Contact Economy Plumbing for plumbing services in Austin and Marble Falls, Texas. Schedule online or call for 24/7 emergency service.",
-    "url": "https://plumbersthatcare.com/contact",
+    "url": "https://www.plumbersthatcare.com/contact",
     "mainEntity": {
       "@type": "Plumber",
       "name": "Economy Plumbing Services",
@@ -54,7 +54,7 @@ export default function Contact() {
       <SEOHead
         title="Contact Us | Economy Plumbing Services Austin & Marble Falls TX"
         description="Contact Economy Plumbing Austin (512) 368-9159, Marble Falls (830) 460-3565. Schedule online. 24/7 emergency plumbing available. Visit our offices."
-        canonical="https://plumbersthatcare.com/contact"
+        canonical="https://www.plumbersthatcare.com/contact"
         schema={contactPageSchema}
       />
 

@@ -6,7 +6,7 @@ export default function DrainageSolutions() {
     <ServicePage
       title="Drainage Pipe Services | Drain Line Repair & Replacement TX"
       metaDescription="Austin & Marble Falls drainage pipe repair and replacement. Fix slow drains, broken pipes, sewer lines. Expert plumbing drainage solutions. (512) 368-9159."
-      canonical="https://plumbersthatcare.com/drainage-solutions"
+      canonical="https://www.plumbersthatcare.com/drainage-solutions"
       heroImage={drainageImage}
       heroImageAlt="Professional drainage pipe repair and replacement services in Central Texas"
       heroTitle="Drainage Pipe Services"

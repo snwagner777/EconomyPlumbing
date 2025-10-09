@@ -76,7 +76,7 @@ export default function ServiceAreaPage() {
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://plumbersthatcare.com/service-area/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-area/${slug}`,
   };
 
   if (isLoading) {
@@ -114,7 +114,7 @@ export default function ServiceAreaPage() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea.metaDescription}
-        canonical={`https://plumbersthatcare.com/service-area/${slug}`}
+        canonical={`https://www.plumbersthatcare.com/service-area/${slug}`}
       />
 
       <JsonLd data={localBusinessSchema} />

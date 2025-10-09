@@ -77,7 +77,7 @@ export default function AustinServiceArea() {
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
   };
 
   if (isLoading) {
@@ -97,7 +97,7 @@ export default function AustinServiceArea() {
       <SEOHead
         title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
         description={serviceArea?.metaDescription || "Austin plumber serving Downtown, South Congress, East Austin. Expert water heater repair, drain cleaning, leak detection. Same-day service. (512) 368-9159."}
-        canonical="https://plumbersthatcare.com/plumber-austin"
+        canonical="https://www.plumbersthatcare.com/plumber-austin"
       />
 
       <JsonLd data={localBusinessSchema} />

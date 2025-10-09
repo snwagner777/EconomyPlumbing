@@ -100,7 +100,7 @@ export default function Services() {
       <SEOHead
         title="Plumbing Services | Complete Plumbing Solutions Austin & Marble Falls TX"
         description="Austin & Marble Falls plumbing: water heaters, drain cleaning, leak repair, gas lines, backflow testing. Licensed plumbers 24/7. Call (512) 368-9159."
-        canonical="https://plumbersthatcare.com/services"
+        canonical="https://www.plumbersthatcare.com/services"
       />
 
       <Header />

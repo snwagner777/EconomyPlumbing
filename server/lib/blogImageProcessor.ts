@@ -182,7 +182,7 @@ export async function processBlogImage(
     console.log(`📸 [BlogImageProcessor] Processing blog image: ${sourceImagePath}`);
 
     // Get the image URL for OpenAI analysis
-    const imageUrl = `https://plumbersthatcare.com${sourceImagePath.replace(/^\./, "")}`;
+    const imageUrl = `https://www.plumbersthatcare.com${sourceImagePath.replace(/^\./, "")}`;
     
     // Analyze image for smart cropping
     const analysis = await analyzeImageForCropping(imageUrl, blogTitle);

@@ -15,7 +15,7 @@ export default function KyleServiceArea() {
       state="TX"
       slug="kyle"
       metaDescription="Reliable plumbing services in Kyle, TX. Water heater installation, drain cleaning, leak repair, and commercial plumbing. Licensed plumbers. Call (512) 368-9159."
-      canonical="https://plumbersthatcare.com/plumber-in-kyle--tx"
+      canonical="https://www.plumbersthatcare.com/plumber-in-kyle--tx"
       area="austin"
       nearbyCities={nearbyCities}
       heroImage={kyleHero}

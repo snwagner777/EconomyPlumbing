@@ -85,7 +85,7 @@ export default function ServiceAreaPage({
       "name": city,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://plumbersthatcare.com/service-areas/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
   };
 
   return (

@@ -54,7 +54,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         storage.getBlogPosts(),
         storage.getProducts()
       ]);
-      const baseUrl = "https://plumbersthatcare.com";
+      const baseUrl = "https://www.plumbersthatcare.com";
       const now = new Date().toISOString().split('T')[0];
       
       // Static pages with priorities
@@ -447,7 +447,7 @@ ${productUrls}
   app.get("/rss.xml", async (req, res) => {
     try {
       const posts = await storage.getBlogPosts();
-      const baseUrl = "https://plumbersthatcare.com";
+      const baseUrl = "https://www.plumbersthatcare.com";
       
       const rssItems = posts
         .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())

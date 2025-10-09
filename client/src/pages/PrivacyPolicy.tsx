@@ -8,11 +8,11 @@ export default function PrivacyPolicy() {
     "@type": "WebPage",
     "name": "Privacy Policy - Economy Plumbing Services",
     "description": "Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information.",
-    "url": "https://plumbersthatcare.com/privacy-policy",
+    "url": "https://www.plumbersthatcare.com/privacy-policy",
     "isPartOf": {
       "@type": "WebSite",
       "name": "Economy Plumbing Services",
-      "url": "https://plumbersthatcare.com"
+      "url": "https://www.plumbersthatcare.com"
     }
   };
   
@@ -21,7 +21,7 @@ export default function PrivacyPolicy() {
       <SEOHead
         title="Privacy Policy | Economy Plumbing Services"
         description="Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information. Your privacy is important to us."
-        canonical="https://plumbersthatcare.com/privacy-policy"
+        canonical="https://www.plumbersthatcare.com/privacy-policy"
         schema={webPageSchema}
       />
 
