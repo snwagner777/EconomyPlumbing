@@ -12,7 +12,7 @@ interface BlogCardProps {
 
 const BlogCard = memo(({ post }: BlogCardProps) => {
   return (
-    <Card className="flex flex-col h-full hover-elevate active-elevate-2">
+    <Card className="flex flex-col h-full hover-elevate active-elevate-2 overflow-hidden">
       <div className="overflow-hidden">
         {post.featuredImage ? (
           <Link href={`/blog/${post.slug}`} data-testid={`link-image-${post.slug}`}>
