@@ -12,6 +12,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
+import InlineBlogCard from "@/components/InlineBlogCard";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
@@ -48,6 +49,7 @@ interface ServicePageProps {
   relatedServices: RelatedService[];
   reviewsCategory?: string;
   reviewsTitle?: string;
+  blogCategory?: string;
 }
 
 export default function ServicePage({
@@ -67,6 +69,7 @@ export default function ServicePage({
   relatedServices,
   reviewsCategory,
   reviewsTitle,
+  blogCategory,
 }: ServicePageProps) {
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
@@ -137,6 +140,12 @@ export default function ServicePage({
               {overviewDescription}
             </p>
           </div>
+
+          {blogCategory && (
+            <div className="max-w-5xl mx-auto mb-8">
+              <InlineBlogCard category={blogCategory} />
+            </div>
+          )}
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             {benefits.map((benefit, index) => (
