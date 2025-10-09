@@ -19,6 +19,8 @@ import {
   type InsertServiceTitanMembership,
   type CompanyCamPhoto,
   type InsertCompanyCamPhoto,
+  type BeforeAfterComposite,
+  type InsertBeforeAfterComposite,
   users,
   blogPosts,
   products,
@@ -28,7 +30,8 @@ import {
   googleOAuthTokens,
   pendingPurchases,
   serviceTitanMemberships,
-  companyCamPhotos
+  companyCamPhotos,
+  beforeAfterComposites
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -84,9 +87,15 @@ export interface IStorage {
   // CompanyCam/ServiceTitan photos
   savePhotos(photos: InsertCompanyCamPhoto[]): Promise<CompanyCamPhoto[]>;
   getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]>;
+  getPhotosByJob(jobId: string): Promise<CompanyCamPhoto[]>;
   getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]>;
   getPhotoById(id: string): Promise<CompanyCamPhoto | undefined>;
   markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto>;
+  
+  // Before/After composites
+  saveBeforeAfterComposite(composite: InsertBeforeAfterComposite): Promise<BeforeAfterComposite>;
+  getBeforeAfterComposites(): Promise<BeforeAfterComposite[]>;
+  markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite>;
 }
 
 export class MemStorage implements IStorage {
@@ -2028,6 +2037,11 @@ Call (512) 368-9159 or schedule service online.`,
     return [];
   }
 
+  async getPhotosByJob(jobId: string): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
   async getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]> {
     // MemStorage stub - not used in production
     return [];
@@ -2039,6 +2053,21 @@ Call (512) 368-9159 or schedule service online.`,
   }
 
   async markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  async saveBeforeAfterComposite(composite: InsertBeforeAfterComposite): Promise<BeforeAfterComposite> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  async getBeforeAfterComposites(): Promise<BeforeAfterComposite[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
+  async markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite> {
     // MemStorage stub - not used in production
     throw new Error("Not implemented in MemStorage");
   }
@@ -2281,6 +2310,13 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${companyCamPhotos.category} = ${category} AND ${companyCamPhotos.shouldKeep} = true`);
   }
 
+  async getPhotosByJob(jobId: string): Promise<CompanyCamPhoto[]> {
+    return await db
+      .select()
+      .from(companyCamPhotos)
+      .where(sql`${companyCamPhotos.companyCamProjectId} = ${jobId} AND ${companyCamPhotos.shouldKeep} = true`);
+  }
+
   async getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]> {
     if (category) {
       return await db
@@ -2312,6 +2348,36 @@ export class DatabaseStorage implements IStorage {
         usedInPageUrl: pageUrl || null,
       })
       .where(eq(companyCamPhotos.id, id))
+      .returning();
+    return updated;
+  }
+
+  async saveBeforeAfterComposite(composite: InsertBeforeAfterComposite): Promise<BeforeAfterComposite> {
+    const [saved] = await db
+      .insert(beforeAfterComposites)
+      .values(composite)
+      .returning();
+    return saved;
+  }
+
+  async getBeforeAfterComposites(): Promise<BeforeAfterComposite[]> {
+    return await db
+      .select()
+      .from(beforeAfterComposites)
+      .orderBy(sql`${beforeAfterComposites.createdAt} DESC`);
+  }
+
+  async markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite> {
+    const [updated] = await db
+      .update(beforeAfterComposites)
+      .set({
+        postedToFacebook: facebookPostId !== null,
+        postedToInstagram: instagramPostId !== null,
+        facebookPostId,
+        instagramPostId,
+        postedAt: new Date(),
+      })
+      .where(eq(beforeAfterComposites.id, id))
       .returning();
     return updated;
   }

@@ -61,6 +61,22 @@ Preferred communication style: Simple, everyday language.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.
+- **AI-Powered Photo Quality System:**
+  - **OpenAI Vision Integration:** Uses GPT-4o to analyze job photos for quality (sharpness, lighting, composition, relevance).
+  - **Auto Categorization:** AI categorizes photos into 11 plumbing types (water_heater, drain, leak, toilet, faucet, gas, backflow, commercial, general).
+  - **Quality Filtering:** Only keeps photos scoring 7/10 or higher. Auto-rejects blurry, dark, or irrelevant images.
+  - **ServiceTitan Photo Import:** Automatically fetches photos from completed jobs in last 30 days. Processes with AI before saving.
+  - **Database Tracking:** companyCamPhotos table with quality scores, AI descriptions, tags, and usage tracking.
+- **Before/After Photo Composer:**
+  - **AI Pair Detection:** Uses GPT-4o vision to detect before/after photo pairs from same job (analyzes same location/fixture).
+  - **Polaroid-Style Composites:** Creates professional before/after images with white borders and BEFORE/AFTER labels.
+  - **AI-Generated Captions:** GPT-4o writes engaging social media captions (under 150 chars) with problem description, solution, and call-to-action.
+  - **Storage:** beforeAfterComposites table with source photos, composite URL, caption, and social media tracking.
+- **Social Media Auto-Posting:**
+  - **Facebook/Instagram Integration:** Meta Graph API for posting to both platforms.
+  - **Weekly Scheduler:** Automatically posts best before/after composite every Monday at 10am.
+  - **Manual Override:** API endpoint to manually trigger posts for testing.
+  - **Post Tracking:** Records Facebook/Instagram post IDs and timestamps.
 - **ServiceTitan Integration (Complete):** 
   - **Membership Sync:** Fully automated sync of online membership purchases to ServiceTitan CRM.
   - **Customer Management:** Searches for existing customers by email/phone; creates new residential or commercial customers if needed.

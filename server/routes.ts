@@ -755,6 +755,78 @@ ${rssItems}
     }
   });
 
+  // Create before/after composites from job photos
+  app.post("/api/photos/create-before-after", async (req, res) => {
+    try {
+      const { jobId } = req.body;
+
+      if (!jobId) {
+        return res.status(400).json({ message: "Job ID is required" });
+      }
+
+      // Get photos for this specific job
+      const jobPhotos = await storage.getPhotosByJob(jobId);
+
+      if (jobPhotos.length < 2) {
+        return res.status(400).json({ 
+          message: `Need at least 2 photos from job ${jobId}. Found ${jobPhotos.length} photos.`
+        });
+      }
+
+      const { processBeforeAfterPairs } = await import("./lib/beforeAfterComposer");
+      const composites = await processBeforeAfterPairs(jobPhotos, jobId);
+
+      // Save composites to database
+      const savedComposites = [];
+      for (const composite of composites) {
+        const saved = await storage.saveBeforeAfterComposite(composite);
+        savedComposites.push(saved);
+      }
+
+      res.json({
+        success: true,
+        created: savedComposites.length,
+        composites: savedComposites,
+      });
+    } catch (error: any) {
+      console.error("Error creating before/after composites:", error);
+      res.status(500).json({
+        message: "Failed to create before/after composites",
+        error: error.message
+      });
+    }
+  });
+
+  // Get all before/after composites
+  app.get("/api/before-after-composites", async (req, res) => {
+    try {
+      const composites = await storage.getBeforeAfterComposites();
+      res.json(composites);
+    } catch (error: any) {
+      console.error("Error fetching composites:", error);
+      res.status(500).json({ message: "Failed to fetch composites" });
+    }
+  });
+
+  // Manually post best before/after to social media
+  app.post("/api/social-media/post-best", async (req, res) => {
+    try {
+      const { manuallyPostBest } = await import("./lib/weeklyPostScheduler");
+      await manuallyPostBest();
+
+      res.json({
+        success: true,
+        message: "Posted best before/after composite to social media"
+      });
+    } catch (error: any) {
+      console.error("Error posting to social media:", error);
+      res.status(500).json({
+        message: "Failed to post to social media",
+        error: error.message
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
