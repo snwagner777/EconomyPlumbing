@@ -120,6 +120,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     // Random image/asset URLs
     '/aronpw-bc40m7skyfq-unsplash-6': '/',
     '/aronpw-bc40m7skyfq-unsplash-6/': '/',
+    
+    // Malformed URLs with tracking parameters
+    '/&opi=79508299': '/',
   };
   
   // Check for exact match
