@@ -323,7 +323,7 @@ Call (512) 368-9159 or schedule service online.`,
         author: "Economy Plumbing",
         publishDate: new Date("2025-06-03"),
         category: "Customer Stories",
-        featuredImage: "/attached_assets/generated_images/Customer_testimonial_portrait_f033b456.png",
+        featuredImage: "/attached_assets/stock_images/flooded_kitchen_wate_26c22e36.jpg",
         metaDescription: "Customer success story: How Economy Plumbing Services solved Clara's kitchen drain problem in Austin, TX.",
         published: true
       },
