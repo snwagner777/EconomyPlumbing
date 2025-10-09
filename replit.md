@@ -6,6 +6,79 @@ Economy Plumbing Services is a full-stack web application for a plumbing busines
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Critical SEO & Development Rules
+
+### 1. URL Change Policy (MANDATORY)
+**⚠️ RULE: Any time a page URL is changed, we MUST create a 301 redirect from the old URL to the new URL.**
+
+- Prevents 404 errors for users with bookmarks
+- Preserves SEO rankings and link equity
+- Maintains traffic from external links
+- **How:** Add to `redirects` object in `server/index.ts` (line ~46)
+- **Test:** Check server logs for "301 Redirect: /old → /new"
+- **Monitor:** Use 404 monitoring system to identify missing redirects
+
+### 2. SEO Best Practices for All Pages (MANDATORY)
+**⚠️ RULE: Every page and blog post must follow ALL SEO best practices.**
+
+#### Schema Markup (JSON-LD) - REQUIRED
+All pages must include appropriate structured data:
+- **Service Pages:** `Service` schema with provider, areaServed, offers
+- **Blog Posts:** `BlogPosting` schema with author, datePublished, image
+- **Service Areas:** `LocalBusiness` with address, geo, areaServed
+- **Products:** `Product` schema with offers, price, availability
+- **Implementation:** Use `SEOHead` component with schema prop
+
+#### Image Optimization - REQUIRED
+ALL images must include:
+- **Alt text:** Descriptive, keyword-rich (not stuffed)
+- **Dimensions:** width/height attributes (prevents CLS)
+- **Loading strategy:**
+  - Hero images: `fetchpriority="high"` + `loading="eager"`
+  - Below-fold: `loading="lazy"`
+- **Decoding:** `decoding="async"` on all images
+- **Format:** WebP at 85% quality
+
+#### Breadcrumbs - IF APPLICABLE
+Include when page has hierarchy:
+- Visual navigation AND BreadcrumbList schema
+- Examples: Service pages, Service areas, Blog posts
+- **Currently:** Not implemented, add when creating new templates
+
+#### Page Speed - REQUIRED
+Every page must meet:
+- WebP images with proper dimensions
+- Lazy loading below-fold content
+- Deferred third-party scripts (GA, ServiceTitan)
+- Preload critical fonts (Inter woff2)
+- DNS prefetch for external domains
+- **Target:** 100/100 PageSpeed Insights
+
+#### Accessibility (WCAG AA) - REQUIRED
+All pages must be accessible:
+- **Color contrast:** 4.5:1 text, 3:1 large text
+- **Semantic HTML:** Proper heading hierarchy (single h1, logical h2/h3)
+- **ARIA labels:** All interactive elements accessible
+- **Keyboard nav:** Full keyboard accessibility, visible focus
+- **Images:** Alt text on all (empty alt="" for decorative)
+- **Forms:** Labels, error messages, required field indicators
+
+#### Checklist for New Pages:
+- [ ] SEOHead with title, description, canonical, schema
+- [ ] All images: alt, width/height, loading strategy
+- [ ] Breadcrumbs (visual + schema) if applicable
+- [ ] Page speed optimized (WebP, lazy load, async)
+- [ ] WCAG AA compliant (contrast, semantic, ARIA)
+- [ ] Single h1, proper h2/h3 hierarchy
+- [ ] Test with PageSpeed Insights (target 100/100)
+- [ ] Test with WAVE accessibility tool
+
+#### Reference Examples:
+- Service Pages: `client/src/components/ServicePage.tsx`
+- SEO Component: `client/src/components/SEOHead.tsx`
+- Blog Posts: Auto-generated with proper optimization
+- Service Areas: `client/src/pages/ServiceAreaTemplate.tsx`
+
 ## System Architecture
 
 ### Frontend
