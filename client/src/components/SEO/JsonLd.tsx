@@ -241,19 +241,21 @@ export function createBlogPostSchema(post: any) {
     (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
     `${baseUrl}/attached_assets/logo.jpg`;
   
+  const publishDate = new Date(post.publishDate);
+  
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "description": post.metaDescription || post.excerpt || post.content.substring(0, 160),
+    "description": post.metaDescription || post.excerpt || post.content?.substring(0, 160) || "",
     "image": {
       "@type": "ImageObject",
       "url": imageUrl,
       "width": "1200",
       "height": "630"
     },
-    "datePublished": new Date(post.publishDate).toISOString(),
-    "dateModified": new Date(post.updatedAt || post.publishDate).toISOString(),
+    "datePublished": publishDate.toISOString(),
+    "dateModified": publishDate.toISOString(),
     "author": {
       "@type": "Organization",
       "name": post.author || "Economy Plumbing Services",
