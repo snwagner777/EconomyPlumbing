@@ -318,7 +318,8 @@ ${productUrls}
             let featuredImage = null;
             if (photo.photoUrl) {
               console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
-              featuredImage = await processBlogImage(photo.photoUrl, blogPost.title);
+              const processedImage = await processBlogImage(photo.photoUrl, blogPost.title);
+              featuredImage = processedImage.imagePath;
               console.log(`[Historic Blog Generation] Cropped image saved: ${featuredImage}`);
             }
             
@@ -1821,7 +1822,8 @@ ${rssItems}
             const photo = await storage.getPhotoById(scheduledBlog.photoId);
             if (photo?.photoUrl) {
               console.log(`[Blog Generation] Processing image for: ${scheduledBlog.title}`);
-              featuredImage = await processBlogImage(photo.photoUrl, scheduledBlog.title);
+              const processedImage = await processBlogImage(photo.photoUrl, scheduledBlog.title);
+              featuredImage = processedImage.imagePath;
               console.log(`[Blog Generation] Cropped image saved: ${featuredImage}`);
             }
           }
