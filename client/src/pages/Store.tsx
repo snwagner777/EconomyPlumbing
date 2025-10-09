@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import type { Product } from "@shared/schema";
 import { openScheduler } from "@/lib/scheduler";
+import { createProductSchema } from "@/components/SEO/JsonLd";
 
 export default function Store() {
   
@@ -18,12 +19,18 @@ export default function Store() {
   const memberships = products?.filter(p => p.category === 'membership') || [];
   const physicalProducts = products?.filter(p => p.category === 'product') || [];
 
+  // Create schema for all products
+  const productSchemas = products?.map(product => createProductSchema(product)) || [];
+
   return (
     <>
       <SEOHead
         title="Plumbing Products & Memberships | Economy Plumbing Store"
         description="Shop VIP plumbing memberships & quality products. Save on annual maintenance, get priority service. Austin & Marble Falls. Protect your home today!"
         canonical="https://plumbersthatcare.com/store"
+        ogImage="https://plumbersthatcare.com/attached_assets/logo.jpg"
+        ogImageAlt="Economy Plumbing Services - VIP Memberships and Professional Products"
+        schema={productSchemas.length > 0 ? productSchemas : undefined}
       />
 
       <div className="min-h-screen flex flex-col">

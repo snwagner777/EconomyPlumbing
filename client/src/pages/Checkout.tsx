@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { createProductSchema } from "@/components/SEO/JsonLd";
 
 const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
@@ -412,11 +413,18 @@ export default function Checkout() {
     );
   }
 
+  // Create product schema for this checkout
+  const productSchema = createProductSchema(product);
+
   return (
     <>
       <SEOHead
         title={`Checkout - ${product.name} | Economy Plumbing Store`}
         description={`Purchase ${product.name} - ${product.description}. Secure payment processing. VIP memberships & plumbing products.`}
+        canonical={`https://plumbersthatcare.com/store/checkout/${product.slug}`}
+        ogImage={product.image || "https://plumbersthatcare.com/attached_assets/logo.jpg"}
+        ogImageAlt={`${product.name} - ${product.category === 'membership' ? 'VIP plumbing maintenance membership' : 'professional plumbing product'}`}
+        schema={productSchema}
       />
 
       <div className="min-h-screen flex flex-col">
