@@ -7,7 +7,6 @@ import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
 import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler";
-import { startGoogleDriveImportJob } from "./lib/googleDriveImportJob";
 
 const app = express();
 
@@ -217,9 +216,6 @@ async function refreshReviewsPeriodically() {
   
   // Start weekly social media posting scheduler (non-blocking)
   startWeeklyPostScheduler();
-  
-  // Start Google Drive photo import background job (non-blocking)
-  startGoogleDriveImportJob();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
