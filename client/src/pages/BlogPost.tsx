@@ -170,22 +170,52 @@ export default function BlogPost() {
               />
             )}
 
-            {/* Inline Review Card - floats right on desktop, full width on mobile */}
-            {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-              <InlineReviewCard 
-                category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
-                minRating={4}
-              />
-            )}
+            {/* Split content to insert review card in the middle */}
+            {(() => {
+              // Split content into paragraphs
+              const paragraphs = post.content.split('\n\n');
+              
+              // Find a good split point (after 2-3 paragraphs or ~30% of content)
+              const splitIndex = Math.min(
+                Math.max(2, Math.floor(paragraphs.length * 0.3)),
+                4
+              );
+              
+              const firstPart = paragraphs.slice(0, splitIndex).join('\n\n');
+              const secondPart = paragraphs.slice(splitIndex).join('\n\n');
+              
+              const showReviewCard = post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category];
 
-            <div
-              className="prose prose-lg max-w-none mb-12"
-              data-testid="text-content"
-            >
-              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                {post.content}
-              </ReactMarkdown>
-            </div>
+              return (
+                <>
+                  <div
+                    className="prose prose-lg max-w-none"
+                    data-testid="text-content"
+                  >
+                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                      {firstPart}
+                    </ReactMarkdown>
+                  </div>
+
+                  {/* Inline Review Card - floats right within content on desktop, full width on mobile */}
+                  {showReviewCard && (
+                    <InlineReviewCard 
+                      category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category!]}
+                      minRating={4}
+                    />
+                  )}
+
+                  <div
+                    className="prose prose-lg max-w-none mb-12"
+                    data-testid="text-content-continued"
+                  >
+                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                      {secondPart}
+                    </ReactMarkdown>
+                  </div>
+                </>
+              );
+            })()}
 
             {/* Related Articles - Card Format */}
             {relatedPosts && relatedPosts.length > 0 && (
