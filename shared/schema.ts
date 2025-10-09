@@ -333,13 +333,36 @@ export const notFoundErrors = pgTable("not_found_errors", {
   urlIdx: index("not_found_errors_url_idx").on(table.requestedUrl),
 }));
 
+export const importedPhotos = pgTable("imported_photos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  url: text("url").notNull(), // Object Storage URL
+  category: text("category").notNull(), // 'drain-cleaning', 'water-heater', etc.
+  aiQuality: integer("ai_quality"), // 0-100 quality score
+  aiDescription: text("ai_description"),
+  aiTags: text("ai_tags").array(),
+  gdriveFileId: text("gdrive_file_id").unique(), // Google Drive file ID for deduplication
+  usedInBlog: boolean("used_in_blog").notNull().default(false),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+}, (table) => ({
+  categoryIdx: index("imported_photos_category_idx").on(table.category),
+  usedIdx: index("imported_photos_used_idx").on(table.usedInBlog),
+  gdriveIdx: index("imported_photos_gdrive_idx").on(table.gdriveFileId),
+}));
+
 export const insertSystemSettingSchema = createInsertSchema(systemSettings);
 export const insertNotFoundErrorSchema = createInsertSchema(notFoundErrors).omit({
   id: true,
   timestamp: true,
 });
 
+export const insertImportedPhotoSchema = createInsertSchema(importedPhotos).omit({
+  id: true,
+  fetchedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
+export type ImportedPhoto = typeof importedPhotos.$inferSelect;
+export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
 export type User = typeof users.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;

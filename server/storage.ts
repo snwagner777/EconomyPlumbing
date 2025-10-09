@@ -23,6 +23,8 @@ import {
   type InsertBeforeAfterComposite,
   type NotFoundError,
   type InsertNotFoundError,
+  type ImportedPhoto,
+  type InsertImportedPhoto,
   users,
   blogPosts,
   products,
@@ -34,7 +36,8 @@ import {
   serviceTitanMemberships,
   companyCamPhotos,
   beforeAfterComposites,
-  notFoundErrors
+  notFoundErrors,
+  importedPhotos
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -108,6 +111,10 @@ export interface IStorage {
   // 404 Error tracking
   create404Error(error: InsertNotFoundError): Promise<NotFoundError>;
   get404Errors(limit?: number): Promise<NotFoundError[]>;
+  
+  // Imported Photos (Google Drive)
+  createImportedPhoto(photo: InsertImportedPhoto): Promise<ImportedPhoto>;
+  getAllImportedPhotos(): Promise<ImportedPhoto[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -2175,6 +2182,16 @@ Call (512) 368-9159 or schedule service online.`,
     // MemStorage stub - not used in production
     return [];
   }
+  
+  async createImportedPhoto(photo: InsertImportedPhoto): Promise<ImportedPhoto> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+  
+  async getAllImportedPhotos(): Promise<ImportedPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2554,6 +2571,21 @@ export class DatabaseStorage implements IStorage {
       .from(notFoundErrors)
       .orderBy(sql`${notFoundErrors.timestamp} DESC`)
       .limit(limit);
+  }
+  
+  async createImportedPhoto(photo: InsertImportedPhoto): Promise<ImportedPhoto> {
+    const [created] = await db
+      .insert(importedPhotos)
+      .values(photo)
+      .returning();
+    return created;
+  }
+  
+  async getAllImportedPhotos(): Promise<ImportedPhoto[]> {
+    return await db
+      .select()
+      .from(importedPhotos)
+      .orderBy(sql`${importedPhotos.fetchedAt} DESC`);
   }
 }
 

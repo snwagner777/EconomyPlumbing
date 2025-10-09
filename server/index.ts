@@ -10,6 +10,7 @@ import { storage } from "./storage";
 import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
+import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 
 const app = express();
 
@@ -379,6 +380,9 @@ async function refreshReviewsPeriodically() {
   
   // Start automated blog generation (checks weekly for unused photos)
   startAutoBlogGeneration(storage);
+  
+  // Start Google Drive monitoring (checks every 5 minutes for new photos)
+  startGoogleDriveMonitoring();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
