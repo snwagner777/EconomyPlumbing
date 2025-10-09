@@ -1177,10 +1177,11 @@ ${rssItems}
       const files = await getImagesFromFolder(folderId);
       console.log(`[Google Drive Import] Found ${files.length} images in folder`);
 
-      const processedPhotos = [];
+      const savedPhotos = [];
       const rejectedPhotos = [];
+      const photosByCategory: Record<string, any[]> = {};
 
-      // Process each image
+      // Process each image and save to database incrementally
       for (const file of files) {
         try {
           console.log(`[Google Drive Import] Processing: ${file.name}`);
@@ -1236,7 +1237,7 @@ ${rssItems}
           // Create photo record with local file path
           const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);
 
-          const processedPhoto = {
+          const photoData = {
             companyCamPhotoId: photoId,
             companyCamProjectId: 'google-drive-import',
             photoUrl: `/${localFilePath}`, // Local server path
@@ -1253,8 +1254,18 @@ ${rssItems}
             uploadedAt: new Date(),
           };
 
-          processedPhotos.push(processedPhoto);
+          // Save to database immediately (incremental save)
+          const savedPhoto = await storage.savePhoto(photoData);
+          savedPhotos.push(savedPhoto);
+          
+          // Track by category for before/after detection
+          if (!photosByCategory[category]) {
+            photosByCategory[category] = [];
+          }
+          photosByCategory[category].push(savedPhoto);
+          
           console.log(`[Google Drive Import] ✅ Accepted ${file.name} - Category: ${category}, Score: ${analysis.qualityScore}/10`);
+          console.log(`[Google Drive Import] 💾 Saved to database (ID: ${savedPhoto.id})`);
         } catch (error: any) {
           console.error(`[Google Drive Import] Error processing ${file.name}:`, error);
           rejectedPhotos.push({
@@ -1264,11 +1275,6 @@ ${rssItems}
         }
       }
 
-      // Save to database
-      const savedPhotos = processedPhotos.length > 0
-        ? await storage.savePhotos(processedPhotos)
-        : [];
-
       let composites: any[] = [];
 
       // Automatically create before/after composites if requested
@@ -1276,16 +1282,7 @@ ${rssItems}
         console.log(`[Google Drive Import] Creating before/after composites...`);
         const { processBeforeAfterPairs } = await import("./lib/beforeAfterComposer");
         
-        // Group photos by category for better before/after matching
-        const photosByCategory: Record<string, any[]> = {};
-        for (const photo of savedPhotos) {
-          if (!photosByCategory[photo.category]) {
-            photosByCategory[photo.category] = [];
-          }
-          photosByCategory[photo.category].push(photo);
-        }
-
-        // Process each category
+        // Process each category (already organized in photosByCategory above)
         for (const [category, photos] of Object.entries(photosByCategory)) {
           if (photos.length >= 2) {
             try {
@@ -1301,23 +1298,18 @@ ${rssItems}
         }
       }
 
-      // Organize results by category
-      const photosByCategory: Record<string, any[]> = {};
+      // Calculate category stats (photosByCategory already built incrementally above)
       const categoryStats: Record<string, { count: number; avgScore: number }> = {};
       
-      for (const photo of savedPhotos) {
-        if (!photosByCategory[photo.category]) {
-          photosByCategory[photo.category] = [];
-          categoryStats[photo.category] = { count: 0, avgScore: 0 };
+      for (const [category, photos] of Object.entries(photosByCategory)) {
+        let totalScore = 0;
+        for (const photo of photos) {
+          totalScore += photo.qualityScore || 0;
         }
-        photosByCategory[photo.category].push(photo);
-        categoryStats[photo.category].count++;
-        categoryStats[photo.category].avgScore += photo.qualityScore || 0;
-      }
-
-      // Calculate average scores
-      for (const category in categoryStats) {
-        categoryStats[category].avgScore = categoryStats[category].avgScore / categoryStats[category].count;
+        categoryStats[category] = {
+          count: photos.length,
+          avgScore: photos.length > 0 ? totalScore / photos.length : 0
+        };
       }
 
       console.log(`[Google Drive Import] Complete: ${savedPhotos.length} photos saved, ${composites.length} composites created, ${rejectedPhotos.length} rejected`);

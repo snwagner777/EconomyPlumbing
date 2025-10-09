@@ -100,18 +100,42 @@ WRITING GUIDELINES:
 1. Write in a natural, conversational tone - NOT AI-sounding
 2. Use specific examples and practical advice
 3. Include Austin/Marble Falls local context (hard water, heat, seasonal issues)
-4. 800-1200 words, well-structured with H2 and H3 headings
+4. 800-1200 words minimum - comprehensive, long-form content
 5. Include a clear CTA at the end with phone number (512) 368-9159
-6. Use markdown formatting
+6. Use proper markdown formatting with correct heading hierarchy
 7. Be helpful and informative, not salesy
 8. Focus on homeowner pain points and solutions
 
-STRUCTURE:
-- Start with a relatable problem or question
-- Provide expert insights and solutions
-- Include 3-4 main sections with H2 headings
-- Use bullet points and lists for readability
-- End with actionable next steps and contact info
+CRITICAL SEO & PAGESPEED STRUCTURE:
+- NO H1 tags in content (title is H1) - Start with H2 for main sections
+- Use H2 (##) for main sections (4-6 sections minimum)
+- Use H3 (###) for subsections under H2s
+- Use H4 (####) sparingly for deeper subsections
+- Include descriptive alt text for any images: ![Alt text description](url)
+- Use bullet points (- or *) and numbered lists (1. 2. 3.) for scannability
+- Start with a relatable intro paragraph (no heading)
+- End with "Need Help?" or "Contact Us" H2 section with clear CTA
+
+HEADING HIERARCHY EXAMPLE:
+Introduction paragraph...
+
+## Common Signs Your Water Heater Needs Repair
+Content here...
+
+### Unusual Noises
+Details...
+
+### Rusty Water
+Details...
+
+## When to Call a Professional
+Content here...
+
+## Austin-Specific Considerations
+Local context...
+
+## Need Help with Your Water Heater?
+Call (512) 368-9159 today!
 
 OUTPUT FORMAT (JSON):
 {

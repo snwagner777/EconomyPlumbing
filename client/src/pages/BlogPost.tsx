@@ -157,10 +157,11 @@ export default function BlogPost() {
             {post.featuredImage && (
               <img
                 src={post.featuredImage}
-                alt={`Featured image: ${post.title}`}
-                width="896"
-                height="384"
+                alt={post.title}
+                width="1200"
+                height="630"
                 loading="eager"
+                fetchPriority="high"
                 decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
                 data-testid="img-featured"
