@@ -170,25 +170,23 @@ export default function BlogPost() {
               />
             )}
 
-            {/* Inline Review Card - positioned to float within content, pushed down further */}
-            <div className="relative">
+            {/* Blog content with floating review card */}
+            <div
+              className="prose prose-lg max-w-none mb-12"
+              data-testid="text-content"
+            >
               {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                <div className="md:float-right md:ml-6 md:w-80 lg:w-96 mb-6 mt-32 md:mt-48">
+                <div className="not-prose md:float-right md:ml-6 md:w-80 lg:w-96 mb-6">
                   <InlineReviewCard 
                     category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
                     minRating={4}
                   />
                 </div>
               )}
-
-              <div
-                className="prose prose-lg max-w-none mb-12"
-                data-testid="text-content"
-              >
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                  {post.content}
-                </ReactMarkdown>
-              </div>
+              
+              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                {post.content}
+              </ReactMarkdown>
             </div>
 
             {/* Related Articles - Card Format */}
