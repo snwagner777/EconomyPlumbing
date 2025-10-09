@@ -71,6 +71,7 @@ export default function ServicePage({
   reviewsTitle,
   blogCategory,
 }: ServicePageProps) {
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
 
@@ -122,9 +123,9 @@ export default function ServicePage({
                 asChild
                 data-testid="button-call-hero"
               >
-                <a href="tel:+15123689159" className="flex items-center gap-2">
+                <a href={phoneConfig.tel} className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
-                  Call Now: (512) 368-9159
+                  Call Now: {phoneConfig.display}
                 </a>
               </Button>
             </div>
@@ -211,9 +212,9 @@ export default function ServicePage({
               asChild
               data-testid="button-call-austin-cta"
             >
-              <a href="tel:+15123689159" className="flex items-center gap-2">
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                Austin: (512) 368-9159
+                Austin: {phoneConfig.display}
               </a>
             </Button>
             <Button 

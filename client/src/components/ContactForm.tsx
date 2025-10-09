@@ -14,6 +14,7 @@ interface ContactFormProps {
 }
 
 export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
@@ -195,11 +196,11 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                 </h4>
                 <div className="space-y-2">
                   <a 
-                    href="tel:+15123689159" 
+                    href={phoneConfig.tel} 
                     className="block text-lg font-poppins font-bold text-foreground hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-austin"
                   >
-                    Austin Area: (512) 368-9159
+                    Austin Area: {phoneConfig.display}
                   </a>
                   <a 
                     href="tel:+18304603565" 

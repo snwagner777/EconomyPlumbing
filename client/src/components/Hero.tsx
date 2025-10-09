@@ -4,6 +4,8 @@ import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
 
 export default function Hero() {
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       <div className="absolute inset-0">
@@ -46,9 +48,9 @@ export default function Hero() {
               asChild
               data-testid="button-call-hero"
             >
-              <a href="tel:+15123689159" className="flex items-center gap-2">
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                (512) 368-9159
+                {phoneConfig.display}
               </a>
             </Button>
           </div>

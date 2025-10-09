@@ -30,11 +30,6 @@ interface ServiceAreaPageProps {
   cityHighlight?: string;
 }
 
-const PHONE_NUMBERS = {
-  austin: "(512) 368-9159",
-  "marble-falls": "(830) 460-3565"
-};
-
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },
   { name: "Drain Cleaning", path: "/drain-cleaning" },
@@ -57,13 +52,15 @@ export default function ServiceAreaPage({
   heroSubtitle,
   cityHighlight,
 }: ServiceAreaPageProps) {
-  const phone = PHONE_NUMBERS[area];
-  const phoneLink = phone.replace(/\D/g, '');
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phone = area === "austin" ? phoneConfig.display : "(830) 460-3565";
+  const phoneLink = area === "austin" ? phoneConfig.tel : "tel:+18304603565";
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
   const displayHeroImage = heroImage || defaultHeroImage;
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   const coordinates = getCoordinates(slug);
+  const schemaPhone = area === "austin" ? phoneConfig.tel.replace('tel:', '') : "+18304603565";
 
   const localBusinessSchema = {
     "@context": "https://schema.org",
@@ -75,7 +72,7 @@ export default function ServiceAreaPage({
       "addressRegion": state,
       "addressCountry": "US"
     },
-    "telephone": area === "austin" ? "+15123689159" : "+18304603565",
+    "telephone": schemaPhone,
     "geo": coordinates ? {
       "@type": "GeoCoordinates",
       "latitude": coordinates.latitude,
