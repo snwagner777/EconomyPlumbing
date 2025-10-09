@@ -1960,6 +1960,109 @@ ${rssItems}
     }
   });
 
+  // Admin authentication middleware
+  const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const session = (req as any).session;
+    if (!session || !session.isAdmin) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    next();
+  };
+
+  // Admin login
+  app.post("/api/admin/login", async (req, res) => {
+    const { username, password } = req.body;
+    
+    const adminUsername = process.env.ADMIN_USERNAME;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    
+    if (!adminUsername || !adminPassword) {
+      return res.status(500).json({ error: "Admin credentials not configured" });
+    }
+    
+    if (username === adminUsername && password === adminPassword) {
+      (req as any).session.isAdmin = true;
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ error: "Invalid credentials" });
+    }
+  });
+
+  // Admin logout
+  app.post("/api/admin/logout", (req, res) => {
+    (req as any).session.destroy((err: any) => {
+      if (err) {
+        return res.status(500).json({ error: "Failed to logout" });
+      }
+      res.json({ success: true });
+    });
+  });
+
+  // Check admin auth status
+  app.get("/api/admin/check", (req, res) => {
+    const session = (req as any).session;
+    res.json({ isAdmin: !!session?.isAdmin });
+  });
+
+  // Get all photos (admin only)
+  app.get("/api/admin/photos", requireAdmin, async (req, res) => {
+    try {
+      const { category, quality, status } = req.query;
+      
+      let photos = await storage.getAllPhotos();
+      
+      // Apply filters
+      if (category && category !== 'all') {
+        photos = photos.filter((p: any) => p.category === category);
+      }
+      
+      if (quality && quality !== 'all') {
+        if (quality === 'good') {
+          photos = photos.filter((p: any) => p.isGoodQuality);
+        } else if (quality === 'poor') {
+          photos = photos.filter((p: any) => !p.isGoodQuality);
+        }
+      }
+      
+      if (status && status !== 'all') {
+        if (status === 'used') {
+          photos = photos.filter((p: any) => p.usedInBlogPostId || p.usedInPageUrl);
+        } else if (status === 'unused') {
+          photos = photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl);
+        }
+      }
+      
+      res.json({ photos });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching photos:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get photo stats (admin only)
+  app.get("/api/admin/stats", requireAdmin, async (req, res) => {
+    try {
+      const photos = await storage.getAllPhotos();
+      
+      const stats = {
+        total: photos.length,
+        unused: photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl).length,
+        used: photos.filter((p: any) => p.usedInBlogPostId || p.usedInPageUrl).length,
+        goodQuality: photos.filter((p: any) => p.isGoodQuality).length,
+        poorQuality: photos.filter((p: any) => !p.isGoodQuality).length,
+        byCategory: photos.reduce((acc: any, p: any) => {
+          acc[p.category] = (acc[p.category] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>)
+      };
+      
+      res.json({ stats });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching stats:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

@@ -90,6 +90,7 @@ export interface IStorage {
   
   // CompanyCam/ServiceTitan photos
   savePhotos(photos: InsertCompanyCamPhoto[]): Promise<CompanyCamPhoto[]>;
+  getAllPhotos(): Promise<CompanyCamPhoto[]>;
   getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]>;
   getPhotosByJob(jobId: string): Promise<CompanyCamPhoto[]>;
   getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]>;
@@ -2105,6 +2106,11 @@ Call (512) 368-9159 or schedule service online.`,
     return [];
   }
 
+  async getAllPhotos(): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
   async getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]> {
     // MemStorage stub - not used in production
     return [];
@@ -2413,6 +2419,13 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return saved;
+  }
+
+  async getAllPhotos(): Promise<CompanyCamPhoto[]> {
+    return await db
+      .select()
+      .from(companyCamPhotos)
+      .orderBy(sql`${companyCamPhotos.fetchedAt} DESC`);
   }
 
   async getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]> {

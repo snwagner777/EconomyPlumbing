@@ -63,6 +63,8 @@ const FAQ = lazy(() => import("@/pages/FAQ"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
+const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
+const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -166,6 +168,10 @@ function Router() {
       {/* Other pages */}
       <Route path="/schedule-appointment" component={ScheduleAppointment} />
       <Route path="/about" component={About} />
+      
+      {/* Admin routes */}
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin" component={AdminDashboard} />
       
       {/* Blog posts - must be last to avoid conflicts with other routes */}
       <Route path="/:slug" component={BlogPost} />
