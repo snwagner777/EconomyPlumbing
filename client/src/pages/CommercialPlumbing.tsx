@@ -74,6 +74,7 @@ export default function CommercialPlumbing() {
         { title: "Gas Services", path: "/gas-services" },
         { title: "Water Heater Services", path: "/water-heater-services" }
       ]}
+      blogCategory="Commercial"
     />
   );
 }

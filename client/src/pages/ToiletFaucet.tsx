@@ -76,6 +76,7 @@ export default function ToiletFaucet() {
       ]}
       reviewsCategory="toilet"
       reviewsTitle="Toilet & Faucet Customer Reviews"
+      blogCategory="Maintenance"
     />
   );
 }

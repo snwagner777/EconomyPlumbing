@@ -76,6 +76,7 @@ export default function GasServices() {
       ]}
       reviewsCategory="gas"
       reviewsTitle="Gas Line Services Customer Reviews"
+      blogCategory="Maintenance"
     />
   );
 }

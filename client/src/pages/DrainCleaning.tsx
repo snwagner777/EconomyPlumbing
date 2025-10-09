@@ -76,6 +76,7 @@ export default function DrainCleaning() {
       ]}
       reviewsCategory="drain"
       reviewsTitle="Drain Cleaning Customer Reviews"
+      blogCategory="Drain Cleaning"
     />
   );
 }

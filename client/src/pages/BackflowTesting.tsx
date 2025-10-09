@@ -76,6 +76,7 @@ export default function BackflowTesting() {
       ]}
       reviewsCategory="backflow"
       reviewsTitle="Backflow Testing Customer Reviews"
+      blogCategory="Backflow Testing"
     />
   );
 }

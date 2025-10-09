@@ -76,6 +76,7 @@ export default function LeakRepair() {
       ]}
       reviewsCategory="leak"
       reviewsTitle="Leak Repair Customer Reviews"
+      blogCategory="Emergency Tips"
     />
   );
 }

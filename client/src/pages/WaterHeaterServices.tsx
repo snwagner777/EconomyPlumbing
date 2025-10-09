@@ -76,6 +76,7 @@ export default function WaterHeaterServices() {
       ]}
       reviewsCategory="water_heater"
       reviewsTitle="Water Heater Customer Reviews"
+      blogCategory="Water Heaters"
     />
   );
 }

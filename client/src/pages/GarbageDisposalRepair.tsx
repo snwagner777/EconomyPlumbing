@@ -76,6 +76,7 @@ export default function GarbageDisposalRepair() {
       ]}
       reviewsCategory="garbage_disposal"
       reviewsTitle="Garbage Disposal Customer Reviews"
+      blogCategory="Maintenance"
     />
   );
 }
