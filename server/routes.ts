@@ -11,6 +11,7 @@ import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
 import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
 import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
+import { pingAllSearchEngines } from "./lib/sitemapPing";
 import path from "path";
 import fs from "fs";
 
@@ -157,6 +158,25 @@ ${blogUrls}
       res.json(post);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+
+  // Create new blog post (triggers sitemap ping)
+  app.post("/api/blog", async (req, res) => {
+    try {
+      const newPost = await storage.createBlogPost(req.body);
+      
+      // Notify search engines about sitemap update (runs in background)
+      pingAllSearchEngines().catch(err => {
+        console.error('[Blog] Failed to ping search engines:', err);
+      });
+      
+      console.log(`[Blog] ✅ New blog post created: "${newPost.title}" - Search engines notified`);
+      
+      res.status(201).json(newPost);
+    } catch (error) {
+      console.error('[Blog] Error creating blog post:', error);
+      res.status(500).json({ message: "Failed to create blog post" });
     }
   });
 
