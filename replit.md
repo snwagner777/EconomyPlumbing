@@ -75,8 +75,14 @@ Preferred communication style: Simple, everyday language.
 - **Social Media Auto-Posting:**
   - **Facebook/Instagram Integration:** Meta Graph API for posting to both platforms.
   - **Weekly Scheduler:** Automatically posts best before/after composite every Monday at 10am.
-  - **Manual Override:** API endpoint to manually trigger posts for testing.
+  - **Manual Override:** API endpoint `/api/social-media/post-best` to manually trigger posts for testing.
   - **Post Tracking:** Records Facebook/Instagram post IDs and timestamps.
+  - **API Endpoints:**
+    - `POST /api/photos/import-servicetitan` - Import photos from last 30 days of ServiceTitan jobs (with AI quality filtering)
+    - `POST /api/photos/create-before-after` - Create before/after composites from a specific job ID
+    - `GET /api/before-after-composites` - List all composites
+    - `POST /api/social-media/post-best` - Manually post best composite to Facebook/Instagram
+  - **Security Note:** Admin endpoints (create-before-after, post-best) are currently unauthenticated for internal use. Consider adding authentication for production use to prevent public misuse.
 - **ServiceTitan Integration (Complete):** 
   - **Membership Sync:** Fully automated sync of online membership purchases to ServiceTitan CRM.
   - **Customer Management:** Searches for existing customers by email/phone; creates new residential or commercial customers if needed.
