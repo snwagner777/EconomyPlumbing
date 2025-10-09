@@ -1003,17 +1003,44 @@ ${rssItems}
         }
       }
 
+      // Organize results by category
+      const photosByCategory: Record<string, any[]> = {};
+      const categoryStats: Record<string, { count: number; avgScore: number }> = {};
+      
+      for (const photo of savedPhotos) {
+        if (!photosByCategory[photo.category]) {
+          photosByCategory[photo.category] = [];
+          categoryStats[photo.category] = { count: 0, avgScore: 0 };
+        }
+        photosByCategory[photo.category].push(photo);
+        categoryStats[photo.category].count++;
+        categoryStats[photo.category].avgScore += photo.qualityScore || 0;
+      }
+
+      // Calculate average scores
+      for (const category in categoryStats) {
+        categoryStats[category].avgScore = categoryStats[category].avgScore / categoryStats[category].count;
+      }
+
       console.log(`[Google Drive Import] Complete: ${savedPhotos.length} photos saved, ${composites.length} composites created, ${rejectedPhotos.length} rejected`);
+      console.log(`[Google Drive Import] Categories:`, Object.keys(photosByCategory).join(', '));
 
       res.json({
         success: true,
-        imported: savedPhotos.length,
-        rejected: rejectedPhotos.length,
-        compositesCreated: composites.length,
+        summary: {
+          totalImported: savedPhotos.length,
+          totalRejected: rejectedPhotos.length,
+          compositesCreated: composites.length,
+          categories: Object.keys(photosByCategory).length,
+        },
+        organization: {
+          byCategory: photosByCategory,
+          categoryStats,
+        },
         photos: savedPhotos,
         composites,
         rejectedPhotos,
-        message: `Successfully imported ${savedPhotos.length} quality photos and created ${composites.length} before/after composites. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
+        message: `Successfully imported ${savedPhotos.length} quality photos across ${Object.keys(photosByCategory).length} categories and created ${composites.length} before/after composites. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
       });
     } catch (error: any) {
       console.error("[Google Drive Import] Error:", error);
