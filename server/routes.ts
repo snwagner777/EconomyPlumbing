@@ -1497,9 +1497,9 @@ ${rssItems}
   // Generate blog posts from unused photos
   app.post("/api/blog/generate-from-photos", async (req, res) => {
     try {
-      const { count = 30, scheduleWeeks = 200 } = req.body;
+      const { count = 30, backdatePercentage = 0.2 } = req.body;
       
-      console.log(`[Blog Generation] Starting generation of ${count} blog posts...`);
+      console.log(`[Blog Generation] Starting generation of ${count} blog posts (indefinite weekly schedule)...`);
       
       // Get photos without blog topics
       const photos = await storage.getPhotosWithoutBlogTopic();
@@ -1555,11 +1555,12 @@ ${rssItems}
       
       console.log(`[Blog Generation] Generated ${generatedBlogs.length} blog posts`);
       
-      // Step 3: Schedule blog posts
+      // Step 3: Schedule blog posts (indefinitely - 1 per week)
       const scheduledBlogs = scheduleBlogs(generatedBlogs, {
-        totalPosts: scheduleWeeks,
+        totalPosts: generatedBlogs.length,
         startDate: new Date(),
-        postsPerWeek: 1
+        postsPerWeek: 1,
+        backdatePercentage
       });
       
       // Step 4: Save to database

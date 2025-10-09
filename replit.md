@@ -4,6 +4,15 @@
 Economy Plumbing Services is a full-stack web application designed for a plumbing business operating in Austin and Marble Falls, Texas. The application provides comprehensive information on available services, covered service areas, and engaging blog content. A key feature is its online store, facilitating the sale of maintenance memberships. The project's primary objectives are to enhance local SEO, boost user engagement, and improve conversion rates for the business.
 
 ## Recent Changes
+- **AI Blog Generation System** (Oct 9, 2025):
+  - **Automated Blog Creation:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with natural, conversational tone
+  - **Smart Topic Suggestions:** AI analyzes photo category, description, and quality to suggest relevant blog topics with heavy focus on water heaters (balanced with other services)
+  - **Indefinite Weekly Scheduling:** Blog posts scheduled 1 per week indefinitely (no 200-week limit), with 20% backdated 3-6 months for historical content
+  - **Seasonal Awareness:** Scheduler detects seasonal topics (winter freezing, summer heat, etc.) and adjusts publish dates accordingly
+  - **Database Schema:** Added `imageId`, `isScheduled`, `scheduledFor`, `generatedByAI` to `blog_posts` table; `suggestedBlogTopic`, `blogTopicAnalyzed`, `blogTopicAnalyzedAt` to `companycam_photos` table
+  - **API Endpoints:** `/api/blog/generate-from-photos` for bulk generation, `/api/blog/available-photos` to check available photos
+  - **Implementation Files:** `server/lib/blogTopicAnalyzer.ts` (AI content generation), `server/lib/blogScheduler.ts` (scheduling algorithm), storage methods in `server/storage.ts`
+
 - **Universal WebP Conversion for Photo Imports** (Oct 9, 2025):
   - **CompanyCam Webhook (`/api/photos/webhook`):** All photos received via Zapier webhook now automatically converted to WebP (quality 85) using Sharp before saving. File extensions changed from .jpg/.png to .webp. Logs compression savings percentage.
   - **Google Drive Import (`/api/photos/import-google-drive`):** Historical photo imports from Google Drive folders now converted to WebP (quality 85) before saving. Strips original extensions and replaces with .webp. Logs compression percentage for monitoring.

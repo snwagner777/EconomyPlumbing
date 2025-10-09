@@ -245,20 +245,29 @@ export function createBlogPostSchema(post: any) {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "description": post.metaDescription || post.excerpt || post.content.substring(0, 150),
-    "image": imageUrl,
-    "datePublished": post.publishDate,
-    "dateModified": post.publishDate,
+    "description": post.metaDescription || post.excerpt || post.content.substring(0, 160),
+    "image": {
+      "@type": "ImageObject",
+      "url": imageUrl,
+      "width": "1200",
+      "height": "630"
+    },
+    "datePublished": new Date(post.publishDate).toISOString(),
+    "dateModified": new Date(post.updatedAt || post.publishDate).toISOString(),
     "author": {
       "@type": "Organization",
-      "name": post.author || "Economy Plumbing Services"
+      "name": post.author || "Economy Plumbing Services",
+      "url": baseUrl
     },
     "publisher": {
       "@type": "Organization",
       "name": "Economy Plumbing Services",
+      "url": baseUrl,
       "logo": {
         "@type": "ImageObject",
-        "url": `${baseUrl}/attached_assets/logo.jpg`
+        "url": `${baseUrl}/attached_assets/logo.jpg`,
+        "width": "1024",
+        "height": "1024"
       }
     },
     "mainEntityOfPage": {
@@ -266,7 +275,22 @@ export function createBlogPostSchema(post: any) {
       "@id": postUrl
     },
     "articleBody": post.content,
-    "keywords": post.category
+    "keywords": post.category,
+    "inLanguage": "en-US",
+    "about": {
+      "@type": "Thing",
+      "name": "Plumbing Services",
+      "description": "Professional plumbing services in Austin and Marble Falls, Texas"
+    },
+    "isPartOf": {
+      "@type": "Blog",
+      "@id": `${baseUrl}/blog`,
+      "name": "Economy Plumbing Blog",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Economy Plumbing Services"
+      }
+    }
   };
 }
 
