@@ -16,7 +16,7 @@ Economy Plumbing Services is a full-stack web application designed for a plumbin
     - `/api/blog/generate-historic-by-category` - Generate historic posts (1-3 years ago) by category
     - `/api/blog/available-photos` - Check available photos
   - **Background Jobs:** 
-    - `autoBlogGenerator.ts` - Automated weekly blog generation (checks every 7 days, generates 20 posts per run)
+    - `autoBlogGenerator.ts` - Automated weekly blog generation (checks every 7 days, generates 1 post per week with current date)
     - Concurrency control prevents overlapping runs
     - MIN_PHOTOS_THRESHOLD = 10 (only runs if sufficient photos available)
   - **Implementation Files:** `server/lib/blogTopicAnalyzer.ts` (AI content generation), `server/lib/blogScheduler.ts` (scheduling algorithm), `server/lib/autoBlogGenerator.ts` (automated weekly generation), storage methods in `server/storage.ts`

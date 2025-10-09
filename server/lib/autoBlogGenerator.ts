@@ -10,7 +10,7 @@ import { processBlogImage } from './blogImageProcessor';
 
 const CHECK_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
 const MIN_PHOTOS_THRESHOLD = 10; // Minimum photos needed to trigger generation
-const POSTS_TO_GENERATE = 20; // Generate 20 posts at a time
+const POSTS_TO_GENERATE = 1; // Generate 1 post per week
 
 // Concurrency control - prevent overlapping runs
 let isGenerating = false;
@@ -51,7 +51,7 @@ async function checkAndGenerateBlogs(storage: IStorage) {
       return;
     }
     
-    console.log(`[Auto Blog Generator] Generating ${POSTS_TO_GENERATE} blog posts with today's date...`);
+    console.log(`[Auto Blog Generator] Generating 1 blog post with today's date...`);
     
     // Import required functions
     const { suggestBlogTopic, generateBlogPost } = await import("./blogTopicAnalyzer");
@@ -138,7 +138,7 @@ async function checkAndGenerateBlogs(storage: IStorage) {
       }
     }
     
-    console.log(`[Auto Blog Generator] ✅ Successfully generated ${savedCount} blog posts with today's date`);
+    console.log(`[Auto Blog Generator] ✅ Successfully generated ${savedCount} blog post(s) with today's date`);
     
   } catch (error: any) {
     console.error('[Auto Blog Generator] Error in automated blog generation:', error.message);
