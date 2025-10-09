@@ -38,6 +38,117 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// 301 Redirects for old URLs from Google Search Console
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const path = req.path.toLowerCase();
+  
+  // Define redirect map
+  const redirects: Record<string, string> = {
+    // B2B pages
+    '/b2b': '/commercial-plumbing',
+    '/b2b/': '/commercial-plumbing',
+    
+    // Old shop/store URLs
+    '/shop/products': '/store',
+    '/shop/p/vip-membership': '/store',
+    '/shop/enamel-mug': '/store',
+    '/shop/enamel-mug/': '/store',
+    '/shop/economy-plumbing-services-mug': '/store',
+    '/shop/economy-plumbing-services-mug/': '/store',
+    '/shop/stainless-steel-water-bottle-with-a-straw-lid': '/store',
+    '/shop/stainless-steel-water-bottle-with-a-straw-lid/': '/store',
+    
+    // Old page names
+    '/home-old': '/',
+    '/index': '/',
+    '/products': '/store',
+    '/vip-membership': '/membership-benefits',
+    
+    // Malformed URLs
+    '/water-heater-guide88b9d760': '/water-heater-guide',
+    
+    // Old service URLs
+    '/water-heater-experts-in-austin': '/water-heater-services',
+    '/water-heater-experts-in-austin/': '/water-heater-services',
+    '/hydro-jetting-drainage-solutions': '/hydro-jetting-services',
+    '/hydro-jetting-drainage-solutions/': '/hydro-jetting-services',
+    '/sewer-line-repairs-and-replacements-in-austin-tx': '/services',
+    '/sewer-line-repairs-and-replacements-in-austin-tx/': '/services',
+    '/sewer-lines-repairs-and-replacements-in-austin': '/services',
+    '/sewer-lines-repairs-and-replacements-in-austin/': '/services',
+    '/20-gas-pipe-repair': '/gas-services',
+    '/20-gas-pipe-repair/': '/gas-services',
+    
+    // Old blog posts - redirect to blog home or specific posts if available
+    '/hiring-a-plumber-near-me-tips-for-choosing-the-right-professional': '/blog',
+    '/hiring-a-plumber-near-me-tips-for-choosing-the-right-professional/': '/blog',
+    '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services': '/blog',
+    '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services/': '/blog',
+    '/signs-of-a-slab-leak-in-austin-and-marble-falls': '/blog',
+    '/signs-of-a-slab-leak-in-austin-and-marble-falls/': '/blog',
+    '/the-importance-of-slab-leak-repair-for-your-home-or-business': '/blog',
+    '/the-importance-of-slab-leak-repair-for-your-home-or-business/': '/blog',
+    '/the-importance-of-water-heater-maintenance-for-austin-homeowners': '/blog',
+    '/the-importance-of-water-heater-maintenance-for-austin-homeowners/': '/blog',
+    '/how-often-should-i-test-my-backflow-preventer': '/blog',
+    '/how-often-should-i-test-my-backflow-preventer/': '/blog',
+    '/why-rheem': '/water-heater-services',
+    '/why-rheem/': '/water-heater-services',
+    '/dont-miss-our-limited-time-plumbing-specials-on-groupon-your-trusted-plumber-in-austin-is-offering-amazing-deals': '/blog',
+    '/dont-miss-our-limited-time-plumbing-specials-on-groupon-your-trusted-plumber-in-austin-is-offering-amazing-deals/': '/blog',
+    
+    // WordPress date archives, categories, tags, authors
+    '/2023/08/08': '/blog',
+    '/2023/08/08/': '/blog',
+    '/category/blog': '/blog',
+    '/category/blog/': '/blog',
+    '/category/blog/page/2': '/blog',
+    '/category/blog/page/2/': '/blog',
+    '/category/repairs': '/blog',
+    '/category/repairs/': '/blog',
+    '/category/repairs/feed': '/blog',
+    '/category/repairs/feed/': '/blog',
+    '/category/tips': '/blog',
+    '/category/tips/': '/blog',
+    '/tag/texas': '/blog',
+    '/tag/texas/': '/blog',
+    '/author/admin': '/blog',
+    '/author/admin/': '/blog',
+    '/author/staging3-plumbersthatcare-com': '/blog',
+    '/author/staging3-plumbersthatcare-com/': '/blog',
+    
+    // Random image/asset URLs
+    '/aronpw-bc40m7skyfq-unsplash-6': '/',
+    '/aronpw-bc40m7skyfq-unsplash-6/': '/',
+  };
+  
+  // Check for exact match
+  if (redirects[path]) {
+    log(`301 Redirect: ${path} → ${redirects[path]}`);
+    return res.redirect(301, redirects[path]);
+  }
+  
+  // Handle shop URLs with query parameters (add-to-cart, attributes, etc.)
+  if (path.startsWith('/shop/')) {
+    log(`301 Redirect: ${path} → /store`);
+    return res.redirect(301, '/store');
+  }
+  
+  // Handle WordPress category/tag/author patterns
+  if (path.startsWith('/category/') || path.startsWith('/tag/') || path.startsWith('/author/')) {
+    log(`301 Redirect: ${path} → /blog`);
+    return res.redirect(301, '/blog');
+  }
+  
+  // Handle WordPress date archive patterns (YYYY/MM/DD)
+  if (/^\/\d{4}\/\d{2}\/\d{2}\/?/.test(path)) {
+    log(`301 Redirect: ${path} → /blog`);
+    return res.redirect(301, '/blog');
+  }
+  
+  next();
+});
+
 // Stripe webhook must use raw body for signature verification
 // This must come BEFORE express.json() middleware
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
