@@ -17,6 +17,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
@@ -303,6 +304,7 @@ function CheckoutForm({ product, clientSecret, paymentIntentId }: { product: Pro
 export default function Checkout() {
   const { slug } = useParams();
   const { toast } = useToast();
+  const phoneConfig = usePhoneConfig();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
 
@@ -356,7 +358,7 @@ export default function Checkout() {
                 Our online store is currently being set up. Please contact us directly to purchase memberships.
               </p>
               <Button asChild className="w-full bg-primary" data-testid="button-contact-us">
-                <a href="tel:+15123689159">Call (512) 368-9159</a>
+                <a href={phoneConfig.tel}>Call {phoneConfig.display}</a>
               </Button>
             </Card>
           </main>
@@ -476,8 +478,8 @@ export default function Checkout() {
               <p>Secure payment processing powered by Stripe</p>
               <p className="mt-2">
                 Questions? Call us at{" "}
-                <a href="tel:+15123689159" className="text-primary hover:underline">
-                  (512) 368-9159
+                <a href={phoneConfig.tel} className="text-primary hover:underline">
+                  {phoneConfig.display}
                 </a>
               </p>
             </div>

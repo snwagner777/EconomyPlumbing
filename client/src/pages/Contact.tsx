@@ -6,8 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function Contact() {
+  const austinPhone = usePhoneConfig();
+  const marbleFallsPhone = useMarbleFallsPhone();
+  
   return (
     <div className="min-h-screen">
       <SEOHead
@@ -41,7 +45,7 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Phone</p>
-                        <a href="tel:+15123689159" className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(512) 368-9159</a>
+                        <a href={austinPhone.tel} className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">{austinPhone.display}</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -68,7 +72,7 @@ export default function Contact() {
                       <Phone className="w-5 h-5 text-primary mt-1" />
                       <div>
                         <p className="font-semibold">Phone</p>
-                        <a href="tel:+18304603565" className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">(830) 460-3565</a>
+                        <a href={marbleFallsPhone.tel} className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">{marbleFallsPhone.display}</a>
                       </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -102,7 +106,7 @@ export default function Contact() {
                     variant="outline"
                     data-testid="button-emergency"
                   >
-                    <a href="tel:+15123689159">24/7 Emergency Service</a>
+                    <a href={austinPhone.tel}>24/7 Emergency Service</a>
                   </Button>
                 </div>
               </div>

@@ -12,6 +12,7 @@ import { Phone } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema } from "@/components/SEO/JsonLd";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 const faqCategories = [
   {
@@ -143,6 +144,8 @@ const faqCategories = [
 ];
 
 export default function FAQ() {
+  const phoneConfig = usePhoneConfig();
+  
   // Flatten all FAQs for schema
   const allFAQs = faqCategories.flatMap(category => category.faqs);
   const faqSchema = createFAQSchema(allFAQs);
@@ -213,9 +216,9 @@ export default function FAQ() {
               variant="outline"
               data-testid="button-call"
             >
-              <a href="tel:+15123689159" className="flex items-center gap-2">
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                (512) 368-9159
+                {phoneConfig.display}
               </a>
             </Button>
           </div>

@@ -18,6 +18,7 @@ import {
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
 import ReviewsSection from "@/components/ReviewsSection";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 const serviceCategories = [
   {
@@ -92,6 +93,8 @@ const serviceCategories = [
 ];
 
 export default function Services() {
+  const phoneConfig = usePhoneConfig();
+  
   return (
     <div className="min-h-screen">
       <SEOHead
@@ -126,9 +129,9 @@ export default function Services() {
               className="border-white text-white hover:bg-white/10"
               data-testid="button-call"
             >
-              <a href="tel:+15123689159" className="flex items-center gap-2">
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                (512) 368-9159
+                {phoneConfig.display}
               </a>
             </Button>
           </div>
