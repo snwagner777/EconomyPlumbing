@@ -27,14 +27,14 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews.
 - **Google Reviews Integration:** 
-  - **One-Time Import:** DataForSEO API used for initial bulk import of 370+ historical reviews. Can be re-triggered via `/api/reviews?refresh=true`.
-  - **Ongoing Updates:** Google Places API fetches newest 5 reviews every 24 hours via background refresh (non-blocking server startup). Background sync uses merge strategy to preserve historical reviews.
-  - **Quality Filtering:** Only displays 4+ star reviews. DataForSEO reviews show as "Google Customer" (API doesn't provide author names).
+  - **One-Time Import:** DataForSEO API used for initial bulk import of 360 historical reviews. Can be re-triggered via `/api/reviews?refresh=true`.
+  - **Ongoing Updates:** Google Places API fetches newest 5 reviews every 24 hours via background refresh (non-blocking server startup).
+  - **Smart Deduplication:** Uses text + timestamp matching to detect duplicates. Automatically prefers Places API reviews (with author names, URLs, profile photos) over DataForSEO reviews (anonymous). When duplicates detected, deletes old DataForSEO version and keeps Places API version.
+  - **Quality Filtering:** Only displays 4+ star reviews.
   - **Review Processing:** Auto-categorized into 11 service types (e.g., water_heater, drain, toilet) based on keyword analysis.
   - **API Endpoint:** `/api/reviews` with 30-minute browser caching (Cache-Control headers), filtering by category, keywords, and minimum rating.
-  - **Multi-Source Support:** Architecture supports Google, Facebook, and Yelp reviews with platform-specific badges and links.
+  - **Multi-Source Support:** 495 total reviews (360 Google via DataForSEO, 125 Yelp, 10 Google via Places API). Architecture supports Google, Facebook, and Yelp reviews with platform-specific badges and links.
   - **Display Features:** Premium cards with platform badges (Google/Facebook/Yelp icons), hover-revealed links to original reviews, star ratings, and author avatars.
-  - **Data Persistence:** Background sync preserves DataForSEO historical reviews by using upsert strategy instead of full replacement.
 - **Performance Optimizations:**
   - **Compression:** Gzip/brotli compression middleware (level 6) reduces bandwidth by ~70%
   - **API Caching:** Aggressive Cache-Control headers on all GET endpoints (10min-2hr based on content volatility)
