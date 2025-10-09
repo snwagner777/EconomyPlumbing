@@ -2159,6 +2159,16 @@ ${rssItems}
             .where(eq(companyCamPhotos.id, photo.id))
             .execute();
           
+          // ALSO update any blog posts that reference this photo
+          await db
+            .update(blogPosts)
+            .set({
+              focalPointX: analysis.focalPointX,
+              focalPointY: analysis.focalPointY,
+            })
+            .where(eq(blogPosts.imageId, photo.id))
+            .execute();
+          
           console.log(`[Admin] ✓ Reprocessed ${photo.id} - Q:${analysis.qualityScore}/100, Focal:(${analysis.focalPointX},${analysis.focalPointY})`);
           reprocessed++;
           
