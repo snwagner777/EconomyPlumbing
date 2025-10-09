@@ -4,6 +4,7 @@ import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 declare global {
   interface Window {
@@ -27,7 +28,7 @@ export default function Header() {
   
   const [location] = useLocation();
   
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phoneConfig = usePhoneConfig();
 
   const services = [
     { name: "All Services", path: "/services", featured: true },

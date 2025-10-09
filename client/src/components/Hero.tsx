@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function Hero() {
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phoneConfig = usePhoneConfig();
   
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">

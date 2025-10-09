@@ -16,6 +16,7 @@ import InlineBlogCard from "@/components/InlineBlogCard";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 interface FAQ {
   question: string;
@@ -71,7 +72,7 @@ export default function ServicePage({
   reviewsTitle,
   blogCategory,
 }: ServicePageProps) {
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phoneConfig = usePhoneConfig();
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
 

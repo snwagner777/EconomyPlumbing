@@ -11,6 +11,7 @@ import { JsonLd } from "@/components/SEO/JsonLd";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import defaultHeroImage from "@assets/optimized/plumber_working_resi_a03913c7.webp";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 interface NearbyCity {
   name: string;
@@ -52,15 +53,16 @@ export default function ServiceAreaPage({
   heroSubtitle,
   cityHighlight,
 }: ServiceAreaPageProps) {
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
-  const phone = area === "austin" ? phoneConfig.display : "(830) 460-3565";
-  const phoneLink = area === "austin" ? phoneConfig.tel : "tel:+18304603565";
+  const austinPhoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
+  const phone = area === "austin" ? austinPhoneConfig.display : marbleFallsPhoneConfig.display;
+  const phoneLink = area === "austin" ? austinPhoneConfig.tel : marbleFallsPhoneConfig.tel;
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
   const displayHeroImage = heroImage || defaultHeroImage;
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   const coordinates = getCoordinates(slug);
-  const schemaPhone = area === "austin" ? phoneConfig.tel.replace('tel:', '') : "+18304603565";
+  const schemaPhone = area === "austin" ? austinPhoneConfig.tel.replace('tel:', '') : marbleFallsPhoneConfig.tel.replace('tel:', '');
 
   const localBusinessSchema = {
     "@context": "https://schema.org",

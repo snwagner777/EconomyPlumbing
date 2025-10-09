@@ -8,13 +8,14 @@ import { Phone, Mail, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 interface ContactFormProps {
   pageContext?: string;
 }
 
 export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     name: "",
