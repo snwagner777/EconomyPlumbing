@@ -103,10 +103,16 @@ async function checkAndGenerateBlogs(storage: IStorage) {
       try {
         // Get photo and process image for proper cropping
         let featuredImage = null;
+        let focalPointX = null;
+        let focalPointY = null;
+        
         if (generatedBlog.photoId) {
           const photo = await storage.getPhotoById(generatedBlog.photoId);
           if (photo?.photoUrl) {
-            featuredImage = await processBlogImage(photo.photoUrl, generatedBlog.title);
+            const imageData = await processBlogImage(photo.photoUrl, generatedBlog.title);
+            featuredImage = imageData.imagePath;
+            focalPointX = imageData.focalPointX;
+            focalPointY = imageData.focalPointY;
           }
         }
         
@@ -118,9 +124,10 @@ async function checkAndGenerateBlogs(storage: IStorage) {
           metaDescription: generatedBlog.metaDescription,
           category: generatedBlog.category,
           featuredImage,
+          focalPointX,
+          focalPointY,
           author: "Economy Plumbing",
           published: true,
-          publishDate: currentDate,
           isScheduled: false,
           scheduledFor: null,
           generatedByAI: true,

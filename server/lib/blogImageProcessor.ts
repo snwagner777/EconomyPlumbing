@@ -177,7 +177,7 @@ export async function createSmartCrop(
 export async function processBlogImage(
   sourceImagePath: string,
   blogTitle?: string
-): Promise<string> {
+): Promise<{ imagePath: string; focalPointX: number; focalPointY: number }> {
   try {
     console.log(`📸 [BlogImageProcessor] Processing blog image: ${sourceImagePath}`);
 
@@ -195,10 +195,18 @@ export async function processBlogImage(
     const outputDir = "./attached_assets/blog_images";
     const croppedImagePath = await createSmartCrop(fullSourcePath, outputDir, analysis);
     
-    return croppedImagePath;
+    return {
+      imagePath: croppedImagePath,
+      focalPointX: Math.round(analysis.focalPoint.x),
+      focalPointY: Math.round(analysis.focalPoint.y)
+    };
   } catch (error) {
     console.error("❌ [BlogImageProcessor] Error processing blog image:", error);
-    // Return original image if processing fails
-    return sourceImagePath;
+    // Return original image with centered focal point if processing fails
+    return {
+      imagePath: sourceImagePath,
+      focalPointX: 50,
+      focalPointY: 50
+    };
   }
 }

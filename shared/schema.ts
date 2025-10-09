@@ -20,6 +20,8 @@ export const blogPosts = pgTable("blog_posts", {
   category: text("category").notNull(),
   featuredImage: text("featured_image"),
   imageId: varchar("image_id"), // Links to companyCamPhotos
+  focalPointX: integer("focal_point_x"), // AI-determined focal point X (0-100 percentage from left)
+  focalPointY: integer("focal_point_y"), // AI-determined focal point Y (0-100 percentage from top)
   metaDescription: text("meta_description"),
   published: boolean("published").notNull().default(true),
   isScheduled: boolean("is_scheduled").notNull().default(false), // Auto-scheduled vs manual
