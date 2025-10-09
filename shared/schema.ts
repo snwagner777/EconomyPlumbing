@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index, bigint } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -312,6 +312,14 @@ export const insertBeforeAfterCompositeSchema = createInsertSchema(beforeAfterCo
   createdAt: true,
 });
 
+export const systemSettings = pgTable("system_settings", {
+  key: text("key").primaryKey(),
+  value: text("value"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertSystemSettingSchema = createInsertSchema(systemSettings);
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
@@ -334,3 +342,5 @@ export type CompanyCamPhoto = typeof companyCamPhotos.$inferSelect;
 export type InsertCompanyCamPhoto = z.infer<typeof insertCompanyCamPhotoSchema>;
 export type BeforeAfterComposite = typeof beforeAfterComposites.$inferSelect;
 export type InsertBeforeAfterComposite = z.infer<typeof insertBeforeAfterCompositeSchema>;
+export type SystemSetting = typeof systemSettings.$inferSelect;
+export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
