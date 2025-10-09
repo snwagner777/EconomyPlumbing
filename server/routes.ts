@@ -2091,12 +2091,14 @@ ${rssItems}
       
       for (const photo of photos) {
         try {
-          // Download photo from URL (Object Storage or external)
+          // Download photo from URL (Object Storage, local file, or external)
           let photoBuffer: Buffer;
           
-          if (photo.photoUrl.startsWith('/public-objects/')) {
+          if (photo.photoUrl.startsWith('/public-objects/') || photo.photoUrl.startsWith('/replit-objstore-')) {
             // Object Storage photo (Google Drive)
-            const photoPath = photo.photoUrl.replace('/public-objects/', '');
+            const photoPath = photo.photoUrl.startsWith('/public-objects/') 
+              ? photo.photoUrl.replace('/public-objects/', '') 
+              : photo.photoUrl;
             const file = await objectStorageService.searchPublicObject(photoPath);
             
             if (!file) {
@@ -2106,8 +2108,20 @@ ${rssItems}
             }
             
             [photoBuffer] = await file.download();
-          } else {
-            // External URL photo (CompanyCam)
+          } else if (photo.photoUrl.startsWith('/attached_assets/')) {
+            // Local file (old CompanyCam photos)
+            const fs = await import('fs/promises');
+            const localPath = path.join(import.meta.dirname, '..', photo.photoUrl);
+            
+            try {
+              photoBuffer = await fs.readFile(localPath);
+            } catch (err) {
+              console.error(`[Admin] Failed to read local photo: ${localPath}`);
+              errors++;
+              continue;
+            }
+          } else if (photo.photoUrl.startsWith('http')) {
+            // External URL photo (CompanyCam API)
             const response = await fetch(photo.photoUrl);
             if (!response.ok) {
               console.error(`[Admin] Failed to fetch photo: ${photo.photoUrl}`);
@@ -2115,6 +2129,10 @@ ${rssItems}
               continue;
             }
             photoBuffer = Buffer.from(await response.arrayBuffer());
+          } else {
+            console.error(`[Admin] Unknown photo URL format: ${photo.photoUrl}`);
+            errors++;
+            continue;
           }
           
           // Re-analyze with improved AI
