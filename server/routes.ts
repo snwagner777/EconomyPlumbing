@@ -596,6 +596,38 @@ ${rssItems}
     }
   });
 
+  // Track 404 errors
+  app.post("/api/track-404", async (req, res) => {
+    try {
+      const { requestedUrl, referrer } = req.body;
+      const userAgent = req.get('user-agent');
+      const ipAddress = req.ip || req.socket.remoteAddress;
+
+      // Save to database
+      await storage.create404Error({
+        requestedUrl,
+        referrer,
+        userAgent,
+        ipAddress,
+        emailSent: false,
+      });
+
+      // Send email alert immediately
+      const { send404AlertEmail } = await import('./lib/resendClient');
+      try {
+        await send404AlertEmail(requestedUrl, referrer, userAgent, ipAddress);
+        console.log(`[404 Monitor] Email sent for 404: ${requestedUrl}`);
+      } catch (emailError) {
+        console.error('[404 Monitor] Failed to send email:', emailError);
+      }
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[404 Monitor] Error tracking 404:', error);
+      res.status(500).json({ message: "Failed to track 404" });
+    }
+  });
+
   // Service area routes
   app.get("/api/service-areas", async (req, res) => {
     try {
