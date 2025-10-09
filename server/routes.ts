@@ -1220,17 +1220,30 @@ ${rssItems}
   function categorizePhotoFromAnalysis(aiDescription: string, tags: string[]): string {
     const combined = `${aiDescription} ${tags.join(" ")}`.toLowerCase();
 
-    if (combined.includes("water heater") || combined.includes("tank") || combined.includes("heater")) {
+    // Check toilet FIRST before checking "tank" (toilet tanks contain "tank")
+    if (
+      combined.includes("toilet") ||
+      combined.includes("commode") ||
+      combined.includes("toilet tank")
+    ) {
+      return "toilet";
+    }
+    
+    // Water heater - be more specific, avoid matching "toilet tank"
+    if (
+      combined.includes("water heater") ||
+      combined.includes("tankless") ||
+      combined.includes("hot water tank") ||
+      combined.includes("heater")
+    ) {
       return "water_heater";
     }
+    
     if (combined.includes("drain") || combined.includes("clog")) {
       return "drain";
     }
     if (combined.includes("leak") || combined.includes("drip")) {
       return "leak";
-    }
-    if (combined.includes("toilet")) {
-      return "toilet";
     }
     if (combined.includes("faucet") || combined.includes("sink")) {
       return "faucet";
