@@ -253,6 +253,9 @@ ${productUrls}
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
           
+          // Determine image MIME type based on file extension
+          const imageType = post.featuredImage?.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+          
           // Create content with image embedded for better RSS reader display
           const contentWithImage = post.featuredImage 
             ? `<img src="${imageUrl}" alt="${escapedTitle}" style="max-width: 100%; height: auto; margin-bottom: 1em;" /><br/>${post.content}`
@@ -267,8 +270,8 @@ ${productUrls}
       <content:encoded><![CDATA[${contentWithImage}]]></content:encoded>
       <category>${post.category}</category>
       <author>${post.author}</author>
-      ${post.featuredImage ? `<enclosure url="${imageUrl}" type="image/jpeg" length="0" />` : ''}
-      ${post.featuredImage ? `<media:content url="${imageUrl}" type="image/jpeg" medium="image"><media:title><![CDATA[${post.title}]]></media:title></media:content>` : ''}
+      ${post.featuredImage ? `<enclosure url="${imageUrl}" type="${imageType}" length="0" />` : ''}
+      ${post.featuredImage ? `<media:content url="${imageUrl}" type="${imageType}" medium="image"><media:title><![CDATA[${post.title}]]></media:title></media:content>` : ''}
     </item>`;
         }).join('\n');
 
