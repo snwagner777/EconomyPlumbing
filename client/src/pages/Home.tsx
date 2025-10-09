@@ -40,9 +40,10 @@ import {
   localBusinessSchema,
   createFAQSchema,
 } from "@/components/SEO/JsonLd";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function Home() {
-  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
+  const phoneConfig = usePhoneConfig();
   const faqSchema = createFAQSchema([
     {
       question: "What areas do you serve in Texas?",
