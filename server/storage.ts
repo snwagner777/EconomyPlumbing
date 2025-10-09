@@ -95,6 +95,7 @@ export interface IStorage {
   // Before/After composites
   saveBeforeAfterComposite(composite: InsertBeforeAfterComposite): Promise<BeforeAfterComposite>;
   getBeforeAfterComposites(): Promise<BeforeAfterComposite[]>;
+  getUnusedComposites(): Promise<BeforeAfterComposite[]>;
   markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite>;
 }
 
@@ -2067,6 +2068,11 @@ Call (512) 368-9159 or schedule service online.`,
     return [];
   }
 
+  async getUnusedComposites(): Promise<BeforeAfterComposite[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
   async markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite> {
     // MemStorage stub - not used in production
     throw new Error("Not implemented in MemStorage");
@@ -2364,6 +2370,14 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(beforeAfterComposites)
+      .orderBy(sql`${beforeAfterComposites.createdAt} DESC`);
+  }
+
+  async getUnusedComposites(): Promise<BeforeAfterComposite[]> {
+    return await db
+      .select()
+      .from(beforeAfterComposites)
+      .where(sql`${beforeAfterComposites.postedToFacebook} = false AND ${beforeAfterComposites.postedToInstagram} = false`)
       .orderBy(sql`${beforeAfterComposites.createdAt} DESC`);
   }
 

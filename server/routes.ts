@@ -887,6 +887,143 @@ ${rssItems}
     }
   });
 
+  // Import photos from Google Drive folder
+  app.post("/api/photos/import-google-drive", async (req, res) => {
+    try {
+      const { folderId, createBeforeAfter = true } = req.body;
+
+      if (!folderId) {
+        return res.status(400).json({ 
+          message: "Google Drive folder ID is required" 
+        });
+      }
+
+      console.log(`[Google Drive Import] Starting import from folder: ${folderId}`);
+
+      const { getImagesFromFolder, downloadFileAsBuffer } = await import("./lib/googleDriveClient");
+      const { analyzePhotoQuality } = await import("./lib/photoQualityAnalyzer");
+
+      // Get all images from the folder
+      const files = await getImagesFromFolder(folderId);
+      console.log(`[Google Drive Import] Found ${files.length} images in folder`);
+
+      const processedPhotos = [];
+      const rejectedPhotos = [];
+
+      // Process each image
+      for (const file of files) {
+        try {
+          console.log(`[Google Drive Import] Processing: ${file.name}`);
+
+          // Download file as buffer to get a URL we can analyze
+          const buffer = await downloadFileAsBuffer(file.id!);
+          const base64Image = `data:${file.mimeType};base64,${buffer.toString('base64')}`;
+
+          // Analyze with AI
+          const analysis = await analyzePhotoQuality(base64Image, file.name || '');
+
+          if (!analysis.shouldKeep) {
+            console.log(`[Google Drive Import] ❌ Rejected ${file.name} - ${analysis.reasoning}`);
+            rejectedPhotos.push({
+              fileName: file.name,
+              reason: analysis.reasoning,
+              score: analysis.qualityScore
+            });
+            continue;
+          }
+
+          // Categorize
+          const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
+
+          // Create photo record
+          const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);
+
+          const processedPhoto = {
+            companyCamPhotoId: photoId,
+            companyCamProjectId: 'google-drive-import',
+            photoUrl: file.webContentLink || file.thumbnailLink || '',
+            thumbnailUrl: file.thumbnailLink || file.webContentLink || '',
+            category,
+            aiDescription: analysis.reasoning,
+            tags: analysis.categories,
+            qualityAnalyzed: true,
+            isGoodQuality: analysis.isGoodQuality,
+            shouldKeep: analysis.shouldKeep,
+            qualityScore: analysis.qualityScore,
+            qualityReasoning: analysis.reasoning,
+            analyzedAt: new Date(),
+            uploadedAt: new Date(),
+          };
+
+          processedPhotos.push(processedPhoto);
+          console.log(`[Google Drive Import] ✅ Accepted ${file.name} - Category: ${category}, Score: ${analysis.qualityScore}/10`);
+        } catch (error: any) {
+          console.error(`[Google Drive Import] Error processing ${file.name}:`, error);
+          rejectedPhotos.push({
+            fileName: file.name,
+            error: error.message
+          });
+        }
+      }
+
+      // Save to database
+      const savedPhotos = processedPhotos.length > 0
+        ? await storage.savePhotos(processedPhotos)
+        : [];
+
+      let composites: any[] = [];
+
+      // Automatically create before/after composites if requested
+      if (createBeforeAfter && savedPhotos.length >= 2) {
+        console.log(`[Google Drive Import] Creating before/after composites...`);
+        const { processBeforeAfterPairs } = await import("./lib/beforeAfterComposer");
+        
+        // Group photos by category for better before/after matching
+        const photosByCategory: Record<string, any[]> = {};
+        for (const photo of savedPhotos) {
+          if (!photosByCategory[photo.category]) {
+            photosByCategory[photo.category] = [];
+          }
+          photosByCategory[photo.category].push(photo);
+        }
+
+        // Process each category
+        for (const [category, photos] of Object.entries(photosByCategory)) {
+          if (photos.length >= 2) {
+            try {
+              const categoryComposites = await processBeforeAfterPairs(photos, `google-drive-${category}`);
+              for (const composite of categoryComposites) {
+                const saved = await storage.saveBeforeAfterComposite(composite);
+                composites.push(saved);
+              }
+            } catch (error: any) {
+              console.error(`[Google Drive Import] Error creating composites for ${category}:`, error);
+            }
+          }
+        }
+      }
+
+      console.log(`[Google Drive Import] Complete: ${savedPhotos.length} photos saved, ${composites.length} composites created, ${rejectedPhotos.length} rejected`);
+
+      res.json({
+        success: true,
+        imported: savedPhotos.length,
+        rejected: rejectedPhotos.length,
+        compositesCreated: composites.length,
+        photos: savedPhotos,
+        composites,
+        rejectedPhotos,
+        message: `Successfully imported ${savedPhotos.length} quality photos and created ${composites.length} before/after composites. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
+      });
+    } catch (error: any) {
+      console.error("[Google Drive Import] Error:", error);
+      res.status(500).json({
+        message: "Google Drive import failed",
+        error: error.message
+      });
+    }
+  });
+
   // Create before/after composites from job photos
   app.post("/api/photos/create-before-after", async (req, res) => {
     try {
@@ -937,6 +1074,77 @@ ${rssItems}
     } catch (error: any) {
       console.error("Error fetching composites:", error);
       res.status(500).json({ message: "Failed to fetch composites" });
+    }
+  });
+
+  // Get best unused composite for Zapier Facebook posting
+  app.get("/api/social-media/best-composite", async (req, res) => {
+    try {
+      const composites = await storage.getUnusedComposites();
+
+      if (composites.length === 0) {
+        return res.status(404).json({
+          message: "No unused composites available for posting"
+        });
+      }
+
+      // Get the best one (highest quality score)
+      const bestComposite = composites.reduce((best: any, current: any) => {
+        const currentScore = (current.beforePhotoScore || 0) + (current.afterPhotoScore || 0);
+        const bestScore = (best.beforePhotoScore || 0) + (best.afterPhotoScore || 0);
+        return currentScore > bestScore ? current : best;
+      }, composites[0]);
+
+      // Return data formatted for Zapier
+      res.json({
+        success: true,
+        composite: {
+          id: bestComposite.id,
+          imageUrl: bestComposite.compositeUrl,
+          caption: bestComposite.caption || `Check out this amazing transformation! 🔧✨\n\nCall us at (512) 575-3157 or visit https://www.plumbersthatcare.com/?utm=facebook`,
+          category: bestComposite.category,
+          beforePhotoUrl: bestComposite.beforePhotoUrl,
+          afterPhotoUrl: bestComposite.afterPhotoUrl,
+          jobDescription: bestComposite.jobDescription,
+          totalScore: (bestComposite.beforePhotoScore || 0) + (bestComposite.afterPhotoScore || 0)
+        }
+      });
+    } catch (error: any) {
+      console.error("Error fetching best composite:", error);
+      res.status(500).json({
+        message: "Failed to fetch best composite",
+        error: error.message
+      });
+    }
+  });
+
+  // Mark composite as used (called by Zapier after posting)
+  app.post("/api/social-media/mark-posted", async (req, res) => {
+    try {
+      const { compositeId, facebookPostId, instagramPostId } = req.body;
+
+      if (!compositeId) {
+        return res.status(400).json({ 
+          message: "Composite ID is required" 
+        });
+      }
+
+      await storage.markCompositeAsPosted(
+        compositeId, 
+        facebookPostId || null, 
+        instagramPostId || null
+      );
+
+      res.json({
+        success: true,
+        message: "Composite marked as posted to social media"
+      });
+    } catch (error: any) {
+      console.error("Error marking composite as posted:", error);
+      res.status(500).json({
+        message: "Failed to mark composite as posted",
+        error: error.message
+      });
     }
   });
 
