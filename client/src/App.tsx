@@ -157,14 +157,15 @@ function Router() {
       <Route path="/category/products" component={Store} />
       <Route path="/signin">{() => <Redirect to="/store" />}</Route>
       
-      {/* Blog */}
-      <Route path="/blog/:slug" component={BlogPost} />
-      <Route path="/fall-plumbing-tips" component={BlogPost} />
+      {/* Blog listing page */}
       <Route path="/blog" component={Blog} />
       
       {/* Other pages */}
       <Route path="/schedule-appointment" component={ScheduleAppointment} />
       <Route path="/about" component={About} />
+      
+      {/* Blog posts - must be last to avoid conflicts with other routes */}
+      <Route path="/:slug" component={BlogPost} />
       
       <Route component={NotFound} />
         </Switch>
