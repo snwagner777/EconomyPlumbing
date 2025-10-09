@@ -18,6 +18,13 @@ export default function Header() {
   const [serviceAreasOpen, setServiceAreasOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
+  
+  // Mobile menu collapsible sections
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [mobileAreasOpen, setMobileAreasOpen] = useState(false);
+  const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
+  const [mobileStoreOpen, setMobileStoreOpen] = useState(false);
+  
   const [location] = useLocation();
   
   const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
@@ -289,71 +296,128 @@ export default function Header() {
 
       {mobileMenuOpen && (
         <div className="lg:hidden border-t bg-card">
-          <div className="px-4 py-4 space-y-3 max-h-[80vh] overflow-y-auto">
-            <Link href="/" className="block py-2 text-sm font-medium" data-testid="mobile-link-home">
+          <div className="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
+            <Link 
+              href="/" 
+              className="block py-3 text-sm font-medium border-b border-border" 
+              data-testid="mobile-link-home"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Home
             </Link>
 
-            <Link href="/contact" className="block py-2 text-sm font-medium" data-testid="mobile-link-contact">
+            <Link 
+              href="/contact" 
+              className="block py-3 text-sm font-medium border-b border-border" 
+              data-testid="mobile-link-contact"
+              onClick={() => setMobileMenuOpen(false)}
+            >
               Contact Us
             </Link>
             
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">About Us</p>
-              <Link href="/about" className="block py-2 pl-4 text-sm" data-testid="mobile-link-about">
+            <div className="border-b border-border">
+              <button
+                onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
+                className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                data-testid="mobile-button-about"
+              >
                 About Us
-              </Link>
-              <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog">
-                Blog
-              </Link>
-              <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq">
-                FAQ
-              </Link>
-              <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership">
-                Membership Benefits
-              </Link>
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileAboutOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileAboutOpen && (
+                <div className="pb-2 space-y-1">
+                  <Link href="/about" className="block py-2 pl-4 text-sm" data-testid="mobile-link-about" onClick={() => setMobileMenuOpen(false)}>
+                    About Us
+                  </Link>
+                  <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog" onClick={() => setMobileMenuOpen(false)}>
+                    Blog
+                  </Link>
+                  <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq" onClick={() => setMobileMenuOpen(false)}>
+                    FAQ
+                  </Link>
+                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
+                    Membership Benefits
+                  </Link>
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Services</p>
-              {services.map((service) => (
-                <Link
-                  key={service.path}
-                  href={service.path}
-                  className={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold' : ''}`}
-                  data-testid={`mobile-link-${service.path.slice(1)}`}
-                >
-                  {service.name}
-                </Link>
-              ))}
+            <div className="border-b border-border">
+              <button
+                onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                data-testid="mobile-button-services"
+              >
+                Services
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileServicesOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileServicesOpen && (
+                <div className="pb-2 space-y-1">
+                  {services.map((service) => (
+                    <Link
+                      key={service.path}
+                      href={service.path}
+                      className={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold' : ''}`}
+                      data-testid={`mobile-link-${service.path.slice(1)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {service.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Service Area</p>
-              {serviceAreas.map((area) => (
-                <Link
-                  key={area.path}
-                  href={area.path}
-                  className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
-                  data-testid={`mobile-link-area-${area.path.slice(1)}`}
-                >
-                  {area.name}
-                </Link>
-              ))}
+            <div className="border-b border-border">
+              <button
+                onClick={() => setMobileAreasOpen(!mobileAreasOpen)}
+                className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                data-testid="mobile-button-areas"
+              >
+                Service Areas
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileAreasOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileAreasOpen && (
+                <div className="pb-2 space-y-1">
+                  {serviceAreas.map((area) => (
+                    <Link
+                      key={area.path}
+                      href={area.path}
+                      className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
+                      data-testid={`mobile-link-area-${area.path.slice(1)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {area.name}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
             
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-muted-foreground">Store</p>
-              <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store">
-                Products & Memberships
-              </Link>
-              <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy">
-                Privacy Policy
-              </Link>
-              <Link href="/refund_returns" className="block py-2 pl-4 text-sm" data-testid="mobile-link-refunds">
-                Refund & Returns
-              </Link>
+            <div className="border-b border-border">
+              <button
+                onClick={() => setMobileStoreOpen(!mobileStoreOpen)}
+                className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                data-testid="mobile-button-store"
+              >
+                Store & Policies
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileStoreOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileStoreOpen && (
+                <div className="pb-2 space-y-1">
+                  <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
+                    Products & Memberships
+                  </Link>
+                  <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy" onClick={() => setMobileMenuOpen(false)}>
+                    Privacy Policy
+                  </Link>
+                  <Link href="/refund_returns" className="block py-2 pl-4 text-sm" data-testid="mobile-link-refunds" onClick={() => setMobileMenuOpen(false)}>
+                    Refund & Returns
+                  </Link>
+                </div>
+              )}
             </div>
+
             <div className="pt-4 space-y-3">
               <a 
                 href={phoneConfig.tel} 
@@ -371,7 +435,7 @@ export default function Header() {
                 <Phone className="w-5 h-5" />
                 (830) 460-3565 <span className="text-sm font-normal">Marble Falls</span>
               </a>
-              <Button onClick={openScheduler} className="w-full bg-primary" data-testid="mobile-button-schedule">
+              <Button onClick={() => { openScheduler(); setMobileMenuOpen(false); }} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service
               </Button>
             </div>
