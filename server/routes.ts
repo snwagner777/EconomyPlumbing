@@ -706,7 +706,7 @@ ${rssItems}
       const category = req.query.category as string | undefined;
       const unused = req.query.unused === 'true';
 
-      let photos;
+      let photos: any[];
       if (unused) {
         photos = await storage.getUnusedPhotos(category);
       } else if (category) {
@@ -721,6 +721,36 @@ ${rssItems}
       res.status(500).json({ 
         message: "Failed to fetch photos", 
         error: error.message 
+      });
+    }
+  });
+
+  // Trigger automatic import of photos from ServiceTitan jobs (last 30 days)
+  app.post("/api/photos/import-servicetitan", async (req, res) => {
+    try {
+      const { daysAgo = 30 } = req.body;
+
+      const { createServiceTitanProjectPhotosAPI } = await import("./lib/serviceTitanProjectPhotos");
+      const api = createServiceTitanProjectPhotosAPI();
+
+      if (!api) {
+        return res.status(400).json({
+          message: "ServiceTitan credentials not configured. Please check SERVICETITAN_CLIENT_ID, SERVICETITAN_CLIENT_SECRET, SERVICETITAN_TENANT_ID, and SERVICETITAN_APP_KEY environment variables."
+        });
+      }
+
+      const totalImported = await api.importRecentJobPhotos(daysAgo);
+
+      res.json({
+        success: true,
+        imported: totalImported,
+        message: `Successfully imported ${totalImported} quality photos from ServiceTitan jobs in the last ${daysAgo} days`
+      });
+    } catch (error: any) {
+      console.error("Error importing ServiceTitan photos:", error);
+      res.status(500).json({
+        message: "Failed to import photos from ServiceTitan",
+        error: error.message
       });
     }
   });
