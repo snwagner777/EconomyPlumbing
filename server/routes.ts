@@ -1315,8 +1315,6 @@ ${rssItems}
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
           // Download photo and convert to WebP with retry logic
-          const fs = await import('fs/promises');
-          const path = await import('path');
           const sharp = await import('sharp');
           
           // Helper function to retry fetch with exponential backoff
@@ -1353,47 +1351,65 @@ ${rssItems}
           
           console.log(`[Zapier Webhook] 🔄 Converted to WebP (${Math.round((1 - webpBuffer.length / photoBuffer.length) * 100)}% smaller)`);
           
-          // Create category subfolder
-          const categoryFolder = path.join('attached_assets/imported_photos', category);
-          await fs.mkdir(categoryFolder, { recursive: true });
-          
           // Generate unique filename with .webp extension
           const timestamp = Date.now();
           const photoIdHash = Buffer.from(photo.photoUrl).toString('base64').substring(0, 16);
-          const localFileName = `companycam_${timestamp}_${photoIdHash}.webp`;
-          const localFilePath = path.join(categoryFolder, localFileName);
+          const fileName = `companycam_${timestamp}_${photoIdHash}.webp`;
           
-          // Save WebP file to disk with retry
-          const saveWithRetry = async (filepath: string, buffer: Buffer, maxRetries = 3): Promise<void> => {
+          // Upload to Object Storage (persists in published deployments)
+          const { ObjectStorageService } = await import('./objectStorage');
+          const objectStorage = new ObjectStorageService();
+          
+          // Get public object path from env with robust error handling
+          let publicPath: string;
+          try {
+            const publicSearchPaths = objectStorage.getPublicObjectSearchPaths();
+            if (!publicSearchPaths || publicSearchPaths.length === 0) {
+              throw new Error('PUBLIC_OBJECT_SEARCH_PATHS is empty or not configured');
+            }
+            publicPath = publicSearchPaths[0];
+          } catch (error: any) {
+            throw new Error(`Object Storage not configured: ${error.message}. Please set PUBLIC_OBJECT_SEARCH_PATHS environment variable.`);
+          }
+          
+          // Upload to: /bucket-name/public/imported_photos/{category}/{filename}.webp
+          const objectStoragePath = `${publicPath}/imported_photos/${category}/${fileName}`;
+          
+          // Upload with retry logic (similar to previous disk write retries)
+          const uploadWithRetry = async (buffer: Buffer, path: string, maxRetries = 3): Promise<void> => {
             for (let attempt = 1; attempt <= maxRetries; attempt++) {
               try {
-                await fs.writeFile(filepath, buffer);
+                await objectStorage.uploadBuffer(buffer, path, 'image/webp');
                 return; // Success!
               } catch (error: any) {
-                console.error(`[Zapier Webhook] File save attempt ${attempt} failed:`, error.message);
+                console.error(`[Zapier Webhook] Upload attempt ${attempt} failed:`, error.message);
                 if (attempt === maxRetries) {
-                  throw new Error(`Failed to save file after ${maxRetries} attempts: ${error.message}`);
+                  throw new Error(`Failed to upload to Object Storage after ${maxRetries} attempts: ${error.message}`);
                 }
-                // Short delay before retry
-                const delay = 500 * attempt;
-                console.log(`[Zapier Webhook] Retrying file save in ${delay}ms...`);
+                // Exponential backoff: 1s, 2s, 4s
+                const delay = Math.pow(2, attempt - 1) * 1000;
+                console.log(`[Zapier Webhook] Retrying upload in ${delay}ms...`);
                 await new Promise(resolve => setTimeout(resolve, delay));
               }
             }
           };
           
-          await saveWithRetry(localFilePath, webpBuffer);
-          console.log(`[Zapier Webhook] 💾 Saved WebP to server: ${localFilePath}`);
+          await uploadWithRetry(webpBuffer, objectStoragePath);
+          console.log(`[Zapier Webhook] ☁️ Uploaded to Object Storage: ${objectStoragePath}`);
 
           // Generate unique photo ID from URL hash
           const photoId = Buffer.from(photo.photoUrl).toString('base64').substring(0, 32);
           const projectId = photo.jobId || jobId || 'zapier-import';
 
+          // Generate web-facing URL for frontend access
+          // Server route /public-objects/* will search object storage
+          const publicUrl = `/public-objects/imported_photos/${category}/${fileName}`;
+
           const processedPhoto = {
             companyCamPhotoId: photoId,
             companyCamProjectId: projectId,
-            photoUrl: `/${localFilePath}`, // Local server path
-            thumbnailUrl: `/${localFilePath}`, // Same file for now
+            photoUrl: publicUrl, // Web-facing URL (accessible by frontend)
+            thumbnailUrl: publicUrl, // Same file for now
             category,
             aiDescription: analysis.reasoning,
             tags: analysis.categories,

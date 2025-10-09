@@ -129,6 +129,27 @@ export class ObjectStorageService {
     return destinationPath;
   }
 
+  // Upload a buffer directly to object storage (no temporary file needed)
+  async uploadBuffer(
+    buffer: Buffer,
+    destinationPath: string,
+    contentType?: string
+  ): Promise<string> {
+    const { bucketName, objectName } = parseObjectPath(destinationPath);
+    const bucket = objectStorageClient.bucket(bucketName);
+    const file = bucket.file(objectName);
+
+    await file.save(buffer, {
+      metadata: {
+        contentType: contentType || "application/octet-stream",
+        cacheControl: "public, max-age=31536000, immutable", // 1 year cache for images
+      },
+    });
+
+    // Return the public path for accessing the file
+    return destinationPath;
+  }
+
   // Delete a file from object storage
   async deleteFile(filePath: string): Promise<void> {
     const { bucketName, objectName } = parseObjectPath(filePath);
