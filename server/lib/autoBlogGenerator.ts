@@ -16,17 +16,14 @@ const POSTS_TO_GENERATE = 1; // Generate 1 post per week
 let isGenerating = false;
 
 export async function startAutoBlogGeneration(storage: IStorage) {
-  console.log('[Auto Blog Generator] Automated blog generation is DISABLED');
-  console.log('[Auto Blog Generator] Photos will be saved for manual blog generation later');
+  console.log('[Auto Blog Generator] Starting automated blog generation system...');
+  console.log(`[Auto Blog Generator] Will check weekly for unused photos (every ${CHECK_INTERVAL / (24 * 60 * 60 * 1000)} days)`);
   
-  // DISABLED: Don't auto-generate blogs on startup or weekly
-  // Photos should be saved and used manually when needed
-  
-  // To enable auto-generation, uncomment below:
-  // await checkAndGenerateBlogs(storage);
-  // setInterval(async () => {
-  //   await checkAndGenerateBlogs(storage);
-  // }, CHECK_INTERVAL);
+  // DON'T run immediately on startup - let photos accumulate
+  // Run weekly only (await to prevent overlapping runs)
+  setInterval(async () => {
+    await checkAndGenerateBlogs(storage);
+  }, CHECK_INTERVAL);
 }
 
 async function checkAndGenerateBlogs(storage: IStorage) {
