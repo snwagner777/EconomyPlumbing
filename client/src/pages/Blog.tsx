@@ -36,7 +36,7 @@ export default function Blog() {
     },
   });
 
-  const categories = ["All", "Water Heaters", "Drain Cleaning", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
+  const categories = ["All", "Water Heaters", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
