@@ -46,6 +46,7 @@ export interface IStorage {
   getBlogPosts(): Promise<BlogPost[]>;
   getBlogPostBySlug(slug: string): Promise<BlogPost | undefined>;
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
+  updateBlogPost(id: string, updates: Partial<InsertBlogPost>): Promise<BlogPost>;
   
   // Products
   getProducts(): Promise<Product[]>;
@@ -1817,6 +1818,17 @@ Call (512) 368-9159 or schedule service online.`,
     return post;
   }
 
+  async updateBlogPost(id: string, updates: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const post = this.blogPosts.get(id);
+    if (!post) {
+      throw new Error(`Blog post with id ${id} not found`);
+    }
+    
+    const updatedPost = { ...post, ...updates };
+    this.blogPosts.set(id, updatedPost);
+    return updatedPost;
+  }
+
   async getProducts(): Promise<Product[]> {
     return Array.from(this.products.values()).filter(p => p.active);
   }
@@ -2113,6 +2125,20 @@ export class DatabaseStorage implements IStorage {
       .values(post)
       .returning();
     return created;
+  }
+
+  async updateBlogPost(id: string, updates: Partial<InsertBlogPost>): Promise<BlogPost> {
+    const [updated] = await db
+      .update(blogPosts)
+      .set(updates)
+      .where(eq(blogPosts.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error(`Blog post with id ${id} not found`);
+    }
+    
+    return updated;
   }
 
   async getProducts(): Promise<Product[]> {
