@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Star, Quote, ArrowRight, ExternalLink } from "lucide-react";
+import { Star, Quote, ArrowRight } from "lucide-react";
 import { SiGoogle, SiFacebook, SiYelp } from "react-icons/si";
 import type { GoogleReview } from "@shared/schema";
 import { useEffect, useRef, useState } from "react";
@@ -298,20 +298,6 @@ export default function ReviewsSection({
                     <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
                   </div>
                 </div>
-
-                {/* Platform Link - More Prominent */}
-                {review.authorUrl && (
-                  <a 
-                    href={review.authorUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`mt-4 flex items-center gap-2 text-sm ${platform.color} hover:underline transition-colors opacity-0 group-hover:opacity-100`}
-                    data-testid={`review-link-${review.id}`}
-                  >
-                    View on {platform.name}
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                )}
               </Card>
             );
           })}
