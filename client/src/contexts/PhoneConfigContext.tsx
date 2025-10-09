@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'wouter';
-import { updatePhoneConfig } from '@/lib/dynamicPhoneNumbers';
+import { getPhoneNumber } from '@/lib/dynamicPhoneNumbers';
 
 interface PhoneConfig {
   display: string;
@@ -22,20 +22,21 @@ const PhoneConfigContext = createContext<PhoneConfig>(DEFAULT_PHONE);
 
 export function PhoneConfigProvider({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-  const [phoneConfig, setPhoneConfig] = useState<PhoneConfig>(
-    () => window.__PHONE_CONFIG__ || DEFAULT_PHONE
-  );
+  const [phoneConfig, setPhoneConfig] = useState<PhoneConfig>(() => {
+    // Initialize from window.__PHONE_CONFIG__ set by inline script in index.html
+    if (window.__PHONE_CONFIG__) {
+      return window.__PHONE_CONFIG__;
+    }
+    return DEFAULT_PHONE;
+  });
 
   useEffect(() => {
-    // Update phone config when route changes
-    updatePhoneConfig();
+    // Directly get the phone number based on current URL/cookies
+    const newConfig = getPhoneNumber();
     
-    // Small delay to ensure window.__PHONE_CONFIG__ is updated
-    const timer = setTimeout(() => {
-      setPhoneConfig(window.__PHONE_CONFIG__ || DEFAULT_PHONE);
-    }, 150);
-
-    return () => clearTimeout(timer);
+    // Update both the window global (for legacy code) and React state
+    window.__PHONE_CONFIG__ = newConfig;
+    setPhoneConfig(newConfig);
   }, [location]);
 
   return (
