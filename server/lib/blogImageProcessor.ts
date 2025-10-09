@@ -27,37 +27,55 @@ export async function analyzeImageForCropping(
   title?: string
 ): Promise<ImageCropAnalysis> {
   try {
-    const systemPrompt = `You are an expert image analyst for a plumbing company blog. Analyze images to determine the best crop for web display.
+    const systemPrompt = `You are an expert image analyst for a plumbing company blog. Your job is to identify the ENTIRE area containing important plumbing work and ensure NOTHING gets cut off.
 
-For blog posts, we need landscape images (16:9 or similar ratio) that:
-1. Show the main subject/focal point clearly
-2. Are suitable for a blog header (wide format)
-3. Don't crop out important plumbing work or details
+CRITICAL REQUIREMENTS:
+1. Identify ALL plumbing work, fixtures, or equipment in the image - the COMPLETE area from top to bottom
+2. The focal point should be the CENTER of all important plumbing elements
+3. The crop MUST include the ENTIRE extent of plumbing work - if there's a water heater, include it ALL (top to bottom)
+4. NEVER cut off any part of plumbing fixtures, pipes, tools, or work being shown
+5. It's better to show MORE context than to accidentally crop out important details
+6. For 16:9 landscape crops, ensure the width is sufficient to capture the full horizontal extent of the work
 
-Analyze the image and provide:
-- Image orientation (portrait/landscape/square)
-- Focal point location (x, y as percentages 0-100)
-- Suggested crop area for 16:9 landscape format (x, y, width, height as percentages)
+FOCAL POINT RULES:
+- The focal point (x, y) should be the CENTER of the most important plumbing element
+- This is where viewer's eyes should be drawn when the image is displayed
+- For blog cards and headers, this point will be used with CSS object-position to center the visible area
+
+CROP RULES:
+- The crop dimensions should encompass the FULL extent of all important plumbing work
+- Width and height percentages should be generous to avoid cutting anything off
+- When in doubt, include MORE of the image rather than less
+- Ensure the crop maintains 16:9 ratio while showing all important content
 
 Respond with JSON in this exact format:
 {
   "orientation": "portrait" | "landscape" | "square",
   "focalPoint": {
-    "x": number (0-100),
-    "y": number (0-100)
+    "x": number (0-100, center of main plumbing element),
+    "y": number (0-100, center of main plumbing element)
   },
   "suggestedCrop": {
-    "x": number (0-100),
-    "y": number (0-100),
-    "width": number (0-100),
-    "height": number (0-100)
+    "x": number (0-100, left edge of crop),
+    "y": number (0-100, top edge of crop),
+    "width": number (0-100, width of crop),
+    "height": number (0-100, height of crop - will be adjusted to 16:9)
   },
-  "reasoning": "brief explanation of focal point and crop decision"
+  "reasoning": "Explain what plumbing work you identified and how you ensured nothing got cut off"
 }`;
 
     const userPrompt = title
-      ? `Analyze this image for a blog post titled "${title}". Determine the focal point and suggest a 16:9 landscape crop that best showcases the content.`
-      : `Analyze this image. Determine the focal point and suggest a 16:9 landscape crop that best showcases the content.`;
+      ? `Analyze this plumbing image for a blog post titled "${title}". 
+      
+      INSTRUCTIONS:
+      1. Identify ALL plumbing work, fixtures, equipment visible in the image
+      2. Find the CENTER point of the main plumbing element (this will be the focal point for CSS positioning)
+      3. Suggest a crop that captures the ENTIRE extent of the plumbing work - nothing should be cut off
+      4. Ensure the crop is wide enough to show all important horizontal details
+      5. The crop should work well at 16:9 ratio when resized for blog display
+      
+      Remember: It's better to include too much than to cut off important plumbing work!`
+      : `Analyze this plumbing image and identify all plumbing work visible. Find the center of the main element and suggest a crop that captures everything important without cutting anything off.`;
 
     console.log("🖼️  [BlogImageProcessor] Analyzing image for cropping...");
     const response = await openai.chat.completions.create({
