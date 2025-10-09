@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { format } from "date-fns";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { createBlogPostSchema } from "@/components/SEO/JsonLd";
+import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
@@ -96,6 +96,11 @@ export default function BlogPost() {
   }
 
   const blogPostSchema = post ? createBlogPostSchema(post) : undefined;
+  const breadcrumbSchema = post ? createBreadcrumbListSchema([
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Blog", url: "https://www.plumbersthatcare.com/blog" },
+    { name: post.title, url: canonicalUrl }
+  ]) : undefined;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -108,7 +113,7 @@ export default function BlogPost() {
           (post.featuredImage.startsWith('http') ? post.featuredImage : `https://www.plumbersthatcare.com${post.featuredImage}`) : 
           undefined}
         ogImageAlt={`Featured image for: ${post.title}`}
-        schema={blogPostSchema ? [blogPostSchema] : undefined}
+        schema={blogPostSchema && breadcrumbSchema ? [blogPostSchema, breadcrumbSchema] : undefined}
         articlePublishedTime={new Date(post.publishDate).toISOString()}
         articleAuthor={post.author}
       />
@@ -119,17 +124,23 @@ export default function BlogPost() {
         <article className="py-12 lg:py-16">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             {/* Breadcrumbs */}
-            <nav className="mb-6 text-sm text-muted-foreground flex items-center gap-2" data-testid="nav-breadcrumbs">
-              <Link href="/" className="hover:text-foreground flex items-center gap-1" data-testid="link-breadcrumb-home">
-                <Home className="w-4 h-4" />
-                Home
-              </Link>
-              <span>/</span>
-              <Link href="/blog" className="hover:text-foreground" data-testid="link-breadcrumb-blog">
-                Blog
-              </Link>
-              <span>/</span>
-              <span className="text-foreground" data-testid="text-breadcrumb-current">{post.title}</span>
+            <nav aria-label="Breadcrumb" className="mb-6 text-sm text-muted-foreground" data-testid="nav-breadcrumbs">
+              <ol className="flex items-center gap-2">
+                <li>
+                  <Link href="/" className="hover:text-foreground flex items-center gap-1" data-testid="link-breadcrumb-home">
+                    <Home className="w-4 h-4" />
+                    Home
+                  </Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li>
+                  <Link href="/blog" className="hover:text-foreground" data-testid="link-breadcrumb-blog">
+                    Blog
+                  </Link>
+                </li>
+                <li aria-hidden="true">/</li>
+                <li aria-current="page" className="text-foreground" data-testid="text-breadcrumb-current">{post.title}</li>
+              </ol>
             </nav>
 
             <div className="mb-6">

@@ -7,14 +7,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Phone, CheckCircle, ArrowRight } from "lucide-react";
+import { Phone, CheckCircle, ArrowRight, Home } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { createFAQSchema, createServiceSchema } from "@/components/SEO/JsonLd";
+import { createFAQSchema, createServiceSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
@@ -97,7 +97,14 @@ export default function ServicePage({
 }: ServicePageProps) {
   const phoneConfig = usePhoneConfig();
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
-  const schemas = faqs.length > 0 ? [serviceSchema, createFAQSchema(faqs)] : [serviceSchema];
+  const breadcrumbSchema = createBreadcrumbListSchema([
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Services", url: "https://www.plumbersthatcare.com/services" },
+    { name: heroTitle, url: canonical }
+  ]);
+  const schemas = faqs.length > 0 
+    ? [serviceSchema, createFAQSchema(faqs), breadcrumbSchema] 
+    : [serviceSchema, breadcrumbSchema];
 
   return (
     <div className="min-h-screen">
@@ -109,6 +116,30 @@ export default function ServicePage({
       />
 
       <Header />
+
+      {/* Breadcrumbs */}
+      <div className="bg-muted/30 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground" data-testid="nav-breadcrumbs">
+            <ol className="flex items-center gap-2">
+              <li>
+                <Link href="/" className="hover:text-foreground flex items-center gap-1" data-testid="link-breadcrumb-home">
+                  <Home className="w-4 h-4" />
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href="/services" className="hover:text-foreground" data-testid="link-breadcrumb-services">
+                  Services
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="text-foreground" data-testid="text-breadcrumb-current">{heroTitle}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">

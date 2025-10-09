@@ -11,7 +11,7 @@ import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import FAQSection from "@/components/FAQSection";
 import ReviewsSection from "@/components/ReviewsSection";
-import { JsonLd, createFAQSchema } from "@/components/SEO/JsonLd";
+import { JsonLd, createFAQSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
@@ -109,6 +109,12 @@ export default function ServiceAreaPage() {
     );
   }
 
+  const breadcrumbSchema = createBreadcrumbListSchema([
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-area" },
+    { name: cityName, url: `https://www.plumbersthatcare.com/service-area/${slug}` }
+  ]);
+
   return (
     <div className="min-h-screen">
       <SEOHead
@@ -119,8 +125,33 @@ export default function ServiceAreaPage() {
 
       <JsonLd data={localBusinessSchema} />
       {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}
+      <JsonLd data={breadcrumbSchema} />
 
       <Header />
+
+      {/* Breadcrumbs */}
+      <div className="bg-muted/30 border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground" data-testid="nav-breadcrumbs">
+            <ol className="flex items-center gap-2">
+              <li>
+                <Link href="/" className="hover:text-foreground flex items-center gap-1" data-testid="link-breadcrumb-home">
+                  <Home className="w-4 h-4" />
+                  Home
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li>
+                <Link href="/service-area" className="hover:text-foreground" data-testid="link-breadcrumb-service-areas">
+                  Service Areas
+                </Link>
+              </li>
+              <li aria-hidden="true">/</li>
+              <li aria-current="page" className="text-foreground" data-testid="text-breadcrumb-current">{cityName}</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
