@@ -12,6 +12,7 @@ import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
 import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
 import { notifySearchEnginesNewPage } from "./lib/sitemapPing";
+import { processBlogImage } from "./lib/blogImageProcessor";
 import path from "path";
 import fs from "fs";
 
@@ -187,6 +188,29 @@ ${productUrls}
     } catch (error) {
       console.error('[Blog] Error creating blog post:', error);
       res.status(500).json({ message: "Failed to create blog post" });
+    }
+  });
+
+  // Process blog image to create smart crop
+  app.post("/api/blog/process-image", async (req, res) => {
+    try {
+      const { imagePath, blogTitle } = req.body;
+      
+      if (!imagePath) {
+        return res.status(400).json({ message: "imagePath is required" });
+      }
+
+      console.log(`📸 [API] Processing blog image: ${imagePath}`);
+      const croppedImagePath = await processBlogImage(imagePath, blogTitle);
+      
+      res.json({ 
+        original: imagePath,
+        cropped: croppedImagePath,
+        message: "Image processed successfully" 
+      });
+    } catch (error) {
+      console.error('[API] Error processing blog image:', error);
+      res.status(500).json({ message: "Failed to process image" });
     }
   });
 
