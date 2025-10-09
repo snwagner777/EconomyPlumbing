@@ -2,7 +2,9 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSubmissionSchema, type InsertGoogleReview } from "@shared/schema";
+import { insertContactSubmissionSchema, type InsertGoogleReview, companyCamPhotos } from "@shared/schema";
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
@@ -1186,6 +1188,17 @@ ${rssItems}
         try {
           console.log(`[Google Drive Import] Processing: ${file.name}`);
 
+          // Check if photo already exists in database (skip duplicates)
+          const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);
+          const existingPhoto = await db.select().from(companyCamPhotos)
+            .where(eq(companyCamPhotos.companyCamPhotoId, photoId))
+            .limit(1);
+          
+          if (existingPhoto.length > 0) {
+            console.log(`[Google Drive Import] ⏭️  Skipping ${file.name} (already in database)`);
+            continue;
+          }
+
           // Download file as buffer to get a URL we can analyze
           const buffer = await downloadFileAsBuffer(file.id!);
           const base64Image = `data:${file.mimeType};base64,${buffer.toString('base64')}`;
@@ -1234,9 +1247,7 @@ ${rssItems}
           await fs.writeFile(localFilePath, webpBuffer);
           console.log(`[Google Drive Import] 💾 Saved WebP to server: ${localFilePath}`);
 
-          // Create photo record with local file path
-          const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);
-
+          // Create photo record with local file path (photoId already declared above)
           const photoData = {
             companyCamPhotoId: photoId,
             companyCamProjectId: 'google-drive-import',
@@ -1255,7 +1266,8 @@ ${rssItems}
           };
 
           // Save to database immediately (incremental save)
-          const savedPhoto = await storage.savePhoto(photoData);
+          const savedPhotoArray = await storage.savePhotos([photoData]);
+          const savedPhoto = savedPhotoArray[0];
           savedPhotos.push(savedPhoto);
           
           // Track by category for before/after detection
