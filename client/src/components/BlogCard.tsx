@@ -18,7 +18,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
           <Link href={`/blog/${post.slug}`} data-testid={`link-image-${post.slug}`}>
             <img
               src={post.featuredImage}
-              alt={post.title}
+              alt={`Featured image for: ${post.title}`}
               width="800"
               height="533"
               className="w-full h-56 object-cover cursor-pointer transition-transform hover:scale-105"

@@ -62,7 +62,7 @@ export default function InlineBlogCard({ category }: InlineBlogCardProps) {
           <div className="mb-4 -mx-6 -mt-6">
             <img
               src={randomPost.featuredImage}
-              alt={randomPost.title}
+              alt={`Featured image for: ${randomPost.title}`}
               className="w-full h-40 object-cover rounded-t-lg"
               loading="lazy"
             />

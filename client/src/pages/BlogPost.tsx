@@ -156,7 +156,7 @@ export default function BlogPost() {
             {post.featuredImage && (
               <img
                 src={post.featuredImage}
-                alt={post.title}
+                alt={`Featured image: ${post.title}`}
                 width="896"
                 height="384"
                 loading="eager"

@@ -111,7 +111,7 @@ export default function InlineReviewCard({
         {review.profilePhotoUrl ? (
           <img
             src={review.profilePhotoUrl}
-            alt={review.authorName}
+            alt={`${review.authorName}'s profile photo`}
             className="w-10 h-10 rounded-full object-cover"
           />
         ) : (

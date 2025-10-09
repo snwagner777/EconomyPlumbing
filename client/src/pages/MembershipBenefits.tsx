@@ -116,7 +116,7 @@ export default function MembershipBenefits() {
                   <div className="mb-4 flex justify-center">
                     <img 
                       src={tier.image} 
-                      alt={tier.name}
+                      alt={`${tier.name} VIP membership tier`}
                       width="128"
                       height="128"
                       loading="lazy"

@@ -69,7 +69,7 @@ export default function Store() {
                           <div className="bg-gradient-to-b from-primary/5 to-transparent p-8 flex items-center justify-center border-b">
                             <img 
                               src={membership.image} 
-                              alt={membership.name}
+                              alt={`${membership.name} - VIP plumbing maintenance membership`}
                               width="128"
                               height="128"
                               loading="lazy"
@@ -148,7 +148,7 @@ export default function Store() {
                           <div className="bg-gradient-to-b from-muted/50 to-transparent p-8 flex items-center justify-center border-b">
                             <img 
                               src={product.image} 
-                              alt={product.name}
+                              alt={`${product.name} - professional plumbing product`}
                               width="320"
                               height="160"
                               loading="lazy"
