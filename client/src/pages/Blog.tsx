@@ -5,21 +5,38 @@ import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { Rss } from "lucide-react";
+import { Rss, ChevronLeft, ChevronRight } from "lucide-react";
 import type { BlogPost } from "@shared/schema";
+
+interface BlogResponse {
+  posts: BlogPost[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
 
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const { data: posts, isLoading } = useQuery<BlogPost[]>({
-    queryKey: ["/api/blog"],
+  const { data, isLoading } = useQuery<BlogResponse>({
+    queryKey: ["/api/blog", { page: currentPage, category: selectedCategory }],
   });
 
   const categories = ["All", "Water Heaters", "Drain Cleaning", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
 
-  const filteredPosts = posts?.filter(
-    (post) => selectedCategory === "All" || post.category === selectedCategory
-  );
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    setCurrentPage(1); // Reset to first page when category changes
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -60,7 +77,7 @@ export default function Blog() {
                 <Button
                   key={category}
                   variant={selectedCategory === category ? "default" : "outline"}
-                  onClick={() => setSelectedCategory(category)}
+                  onClick={() => handleCategoryChange(category)}
                   data-testid={`button-filter-${category.toLowerCase().replace(/\s+/g, "-")}`}
                 >
                   {category}
@@ -77,12 +94,55 @@ export default function Blog() {
                   />
                 ))}
               </div>
-            ) : filteredPosts && filteredPosts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {filteredPosts.map((post) => (
-                  <BlogCard key={post.id} post={post} />
-                ))}
-              </div>
+            ) : data?.posts && data.posts.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                  {data.posts.map((post) => (
+                    <BlogCard key={post.id} post={post} />
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {data.pagination.totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-12" data-testid="pagination-controls">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      aria-label="Previous page"
+                      data-testid="button-prev-page"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+
+                    <div className="flex items-center gap-2">
+                      {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? "default" : "outline"}
+                          onClick={() => handlePageChange(page)}
+                          className="min-w-10"
+                          data-testid={`button-page-${page}`}
+                        >
+                          {page}
+                        </Button>
+                      ))}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === data.pagination.totalPages}
+                      aria-label="Next page"
+                      data-testid="button-next-page"
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center py-12">
                 <p className="text-lg text-muted-foreground">

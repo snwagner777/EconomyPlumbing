@@ -170,10 +170,34 @@ ${productUrls}
 
   app.get("/api/blog", async (req, res) => {
     try {
-      const posts = await storage.getBlogPosts();
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 12;
+      const category = req.query.category as string;
+
+      const allPosts = await storage.getBlogPosts();
+      
+      // Filter by category if provided
+      const filteredPosts = category && category !== "All" 
+        ? allPosts.filter(post => post.category === category)
+        : allPosts;
+
+      // Calculate pagination
+      const total = filteredPosts.length;
+      const totalPages = Math.ceil(total / limit);
+      const offset = (page - 1) * limit;
+      const paginatedPosts = filteredPosts.slice(offset, offset + limit);
+
       // Cache blog list for 10 minutes (public, revalidate)
       res.set('Cache-Control', 'public, max-age=600, must-revalidate');
-      res.json(posts);
+      res.json({
+        posts: paginatedPosts,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages
+        }
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog posts" });
     }
