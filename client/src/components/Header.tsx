@@ -8,6 +8,7 @@ import { openScheduler } from "@/lib/scheduler";
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
+    __PHONE_CONFIG__: { display: string; tel: string };
   }
 }
 
@@ -18,6 +19,8 @@ export default function Header() {
   const [aboutOpen, setAboutOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
   const [location] = useLocation();
+  
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
 
   const services = [
     { name: "All Services", path: "/services", featured: true },
@@ -256,12 +259,12 @@ export default function Header() {
 
           <div className="hidden lg:flex items-center gap-4">
             <a 
-              href="tel:+15123689159" 
+              href={phoneConfig.tel} 
               className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
               data-testid="link-phone-austin"
             >
               <Phone className="w-5 h-5" />
-              (512) 368-9159
+              {phoneConfig.display}
             </a>
             <Button 
               onClick={openScheduler}
@@ -353,12 +356,12 @@ export default function Header() {
             </div>
             <div className="pt-4 space-y-3">
               <a 
-                href="tel:+15123689159" 
+                href={phoneConfig.tel} 
                 className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg"
                 data-testid="mobile-phone-austin"
               >
                 <Phone className="w-5 h-5" />
-                (512) 368-9159 <span className="text-sm font-normal">Austin</span>
+                {phoneConfig.display} <span className="text-sm font-normal">Austin</span>
               </a>
               <a 
                 href="tel:+18304603565" 

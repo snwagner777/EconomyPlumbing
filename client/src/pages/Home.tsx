@@ -42,6 +42,7 @@ import {
 } from "@/components/SEO/JsonLd";
 
 export default function Home() {
+  const phoneConfig = window.__PHONE_CONFIG__ || { display: '(512) 368-9159', tel: 'tel:+15123689159' };
   const faqSchema = createFAQSchema([
     {
       question: "What areas do you serve in Texas?",
@@ -352,7 +353,7 @@ export default function Home() {
                   className="bg-primary"
                   data-testid="button-call-austin-cta"
                 >
-                  <a href="tel:+15123689159">Call Austin: (512) 368-9159</a>
+                  <a href={phoneConfig.tel}>Call Austin: {phoneConfig.display}</a>
                 </Button>
                 <Button
                   asChild
@@ -390,7 +391,7 @@ export default function Home() {
               <ServiceAreaCard
                 title="Austin Metro Area"
                 address="701 Tillery St #12, Austin, TX 78702"
-                phone="(512) 368-9159"
+                phone={phoneConfig.display}
                 cities={[
                   "Austin",
                   "Cedar Park",
