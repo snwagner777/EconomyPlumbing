@@ -59,3 +59,15 @@ export async function pingAllSearchEngines(sitemapUrl?: string): Promise<void> {
   
   console.log('[Sitemap] Search engine notifications complete');
 }
+
+/**
+ * Notify search engines about new page (runs in background, non-blocking)
+ * Use this whenever creating new pages: blogs, products, service areas, etc.
+ */
+export function notifySearchEnginesNewPage(pageType: string): void {
+  pingAllSearchEngines().catch(err => {
+    console.error(`[Sitemap] Failed to ping search engines for new ${pageType}:`, err);
+  });
+  
+  console.log(`[Sitemap] ✅ New ${pageType} created - Search engines will be notified`);
+}

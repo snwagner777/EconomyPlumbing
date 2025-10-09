@@ -11,7 +11,7 @@ import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
 import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
 import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
-import { pingAllSearchEngines } from "./lib/sitemapPing";
+import { notifySearchEnginesNewPage } from "./lib/sitemapPing";
 import path from "path";
 import fs from "fs";
 
@@ -30,7 +30,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Dynamic sitemap.xml
   app.get("/sitemap.xml", async (req, res) => {
     try {
-      const posts = await storage.getBlogPosts();
+      const [posts, products] = await Promise.all([
+        storage.getBlogPosts(),
+        storage.getProducts()
+      ]);
       const baseUrl = "https://plumbersthatcare.com";
       const now = new Date().toISOString().split('T')[0];
       
@@ -121,10 +124,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   </url>`;
         }).join('\n');
       
+      // Generate product URLs (store checkout pages)
+      const productUrls = products
+        .filter(p => p.active)
+        .map(product => `  <url>
+    <loc>${baseUrl}/store/checkout/${product.slug}</loc>
+    <lastmod>${now}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>`).join('\n');
+      
       const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${staticUrls}
 ${blogUrls}
+${productUrls}
 </urlset>`;
 
       res.set('Content-Type', 'application/xml');
@@ -166,12 +180,8 @@ ${blogUrls}
     try {
       const newPost = await storage.createBlogPost(req.body);
       
-      // Notify search engines about sitemap update (runs in background)
-      pingAllSearchEngines().catch(err => {
-        console.error('[Blog] Failed to ping search engines:', err);
-      });
-      
-      console.log(`[Blog] ✅ New blog post created: "${newPost.title}" - Search engines notified`);
+      // Notify search engines about new page
+      notifySearchEnginesNewPage('blog post');
       
       res.status(201).json(newPost);
     } catch (error) {
@@ -251,6 +261,36 @@ ${rssItems}
       res.json(product);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch product" });
+    }
+  });
+
+  // Create new product (triggers sitemap ping)
+  app.post("/api/products", async (req, res) => {
+    try {
+      const newProduct = await storage.createProduct(req.body);
+      
+      // Notify search engines about new product page
+      notifySearchEnginesNewPage('product');
+      
+      res.status(201).json(newProduct);
+    } catch (error) {
+      console.error('[Products] Error creating product:', error);
+      res.status(500).json({ message: "Failed to create product" });
+    }
+  });
+
+  // Create new service area (triggers sitemap ping)
+  app.post("/api/service-areas", async (req, res) => {
+    try {
+      const newArea = await storage.createServiceArea(req.body);
+      
+      // Notify search engines about new service area page
+      notifySearchEnginesNewPage('service area');
+      
+      res.status(201).json(newArea);
+    } catch (error) {
+      console.error('[Service Areas] Error creating service area:', error);
+      res.status(500).json({ message: "Failed to create service area" });
     }
   });
 
