@@ -90,8 +90,10 @@ export interface IStorage {
   getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]>;
   getPhotosByJob(jobId: string): Promise<CompanyCamPhoto[]>;
   getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]>;
+  getPhotosWithoutBlogTopic(): Promise<CompanyCamPhoto[]>;
   getPhotoById(id: string): Promise<CompanyCamPhoto | undefined>;
   markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto>;
+  updatePhotoWithBlogTopic(id: string, topic: string): Promise<CompanyCamPhoto>;
   
   // Before/After composites
   saveBeforeAfterComposite(composite: InsertBeforeAfterComposite): Promise<BeforeAfterComposite>;
@@ -194,7 +196,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Drain Cleaning",
         featuredImage: "/attached_assets/stock_images/professional_plumber_f5e4b5a9.jpg",
         metaDescription: "Professional drain restoration in 3 steps. Expert drain cleaning services in Austin and Marble Falls from Economy Plumbing.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -283,7 +289,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Backflow Testing",
         featuredImage: "/attached_assets/stock_images/professional_plumber_13d3a463.jpg",
         metaDescription: "Learn why professional backflow testing is essential for water safety. Expert backflow services in Austin and Marble Falls.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -346,7 +356,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Customer Stories",
         featuredImage: "/attached_assets/stock_images/flooded_kitchen_wate_26c22e36.jpg",
         metaDescription: "Customer success story: How Economy Plumbing Services solved Clara's kitchen drain problem in Austin, TX.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -389,7 +403,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Seasonal Tips",
         featuredImage: "/attached_assets/stock_images/autumn_fall_home_mai_feea54cb.jpg",
         metaDescription: "Essential fall plumbing tips for Central Texas homeowners. Prepare your plumbing system for cooler weather.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -487,7 +505,11 @@ Call (512) 368-9159 or schedule inspection online.`,
         category: "Maintenance",
         featuredImage: "/attached_assets/stock_images/washing_machine_hose_16bcd8a5.jpg",
         metaDescription: "Prevent water damage from washing machine hose failures. Expert advice on upgrading to stainless steel hoses.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -601,7 +623,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Maintenance",
         featuredImage: "/attached_assets/stock_images/plumbing_maintenance_91eba3a0.jpg",
         metaDescription: "Essential plumbing maintenance guide for Austin homeowners. Prevent costly repairs with regular inspections and maintenance.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -717,7 +743,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Drain Cleaning",
         featuredImage: "/attached_assets/stock_images/commercial_restauran_f944a7d9.jpg",
         metaDescription: "Professional hydro jetting services for commercial drainage solutions. Powerful, eco-friendly drain cleaning in Austin.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       },
       {
         id: randomUUID(),
@@ -821,7 +851,11 @@ Call (512) 368-9159 or schedule service online.`,
         category: "Promotions",
         featuredImage: "/attached_assets/stock_images/professional_plumber_d3924ca6.jpg",
         metaDescription: "Limited time plumbing specials on Groupon. Save on drain cleaning, water heater service, and more from Economy Plumbing.",
-        published: true
+        published: true,
+        imageId: null,
+        isScheduled: false,
+        scheduledFor: null,
+        generatedByAI: false
       }
     ];
 
@@ -1811,8 +1845,12 @@ Call (512) 368-9159 or schedule service online.`,
       publishDate: new Date(),
       category: insertPost.category,
       featuredImage: insertPost.featuredImage ?? null,
+      imageId: null,
       metaDescription: insertPost.metaDescription ?? null,
-      published: insertPost.published ?? true
+      published: insertPost.published ?? true,
+      isScheduled: false,
+      scheduledFor: null,
+      generatedByAI: false
     };
     this.blogPosts.set(id, post);
     return post;
@@ -1854,7 +1892,9 @@ Call (512) 368-9159 or schedule service online.`,
       stripeProductId: insertProduct.stripeProductId ?? null,
       stripePriceId: insertProduct.stripePriceId ?? null,
       features: insertProduct.features ?? null,
-      active: insertProduct.active ?? true
+      active: insertProduct.active ?? true,
+      serviceTitanMembershipTypeId: insertProduct.serviceTitanMembershipTypeId ?? null,
+      serviceTitanEnabled: insertProduct.serviceTitanEnabled ?? false
     };
     this.products.set(id, product);
     return product;
@@ -1964,8 +2004,8 @@ Call (512) 368-9159 or schedule service online.`,
         relativeTime: review.relativeTime,
         timestamp: review.timestamp,
         fetchedAt: new Date(),
-        categories: review.categories,
-        source: review.source,
+        categories: review.categories ?? [],
+        source: review.source ?? 'places_api',
         reviewId: review.reviewId ?? null,
       };
       this.googleReviews.set(id, googleReview);
@@ -1990,8 +2030,18 @@ Call (512) 368-9159 or schedule service online.`,
   async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
     const id = randomUUID();
     const newMembership: ServiceTitanMembership = {
-      id,
       ...membership,
+      id,
+      customerName: membership.customerName ?? null,
+      companyName: membership.companyName ?? null,
+      contactPersonName: membership.contactPersonName ?? null,
+      serviceTitanCustomerId: membership.serviceTitanCustomerId ?? null,
+      serviceTitanMembershipId: membership.serviceTitanMembershipId ?? null,
+      serviceTitanInvoiceId: membership.serviceTitanInvoiceId ?? null,
+      stripePaymentIntentId: membership.stripePaymentIntentId ?? null,
+      stripeCustomerId: membership.stripeCustomerId ?? null,
+      syncStatus: membership.syncStatus ?? 'pending',
+      syncError: membership.syncError ?? null,
       purchasedAt: new Date(),
       lastSyncAttempt: null,
       syncedAt: null,
@@ -2023,8 +2073,11 @@ Call (512) 368-9159 or schedule service online.`,
   async createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase> {
     const id = randomUUID();
     const newPurchase: PendingPurchase = {
-      id,
       ...purchase,
+      id,
+      customerName: purchase.customerName ?? null,
+      companyName: purchase.companyName ?? null,
+      contactPersonName: purchase.contactPersonName ?? null,
       createdAt: new Date(),
     };
     // MemStorage stub - not used in production
@@ -2066,6 +2119,16 @@ Call (512) 368-9159 or schedule service online.`,
   }
 
   async markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  async getPhotosWithoutBlogTopic(): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
+  async updatePhotoWithBlogTopic(id: string, topic: string): Promise<CompanyCamPhoto> {
     // MemStorage stub - not used in production
     throw new Error("Not implemented in MemStorage");
   }
@@ -2378,6 +2441,31 @@ export class DatabaseStorage implements IStorage {
       .set({
         usedInBlogPostId: blogPostId || null,
         usedInPageUrl: pageUrl || null,
+      })
+      .where(eq(companyCamPhotos.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getPhotosWithoutBlogTopic(): Promise<CompanyCamPhoto[]> {
+    return await db
+      .select()
+      .from(companyCamPhotos)
+      .where(
+        sql`${companyCamPhotos.shouldKeep} = true 
+        AND (${companyCamPhotos.usedInBlogPostId} IS NULL OR ${companyCamPhotos.usedInBlogPostId} = '') 
+        AND (${companyCamPhotos.blogTopicAnalyzed} = false OR ${companyCamPhotos.blogTopicAnalyzed} IS NULL)`
+      )
+      .orderBy(companyCamPhotos.qualityScore);
+  }
+
+  async updatePhotoWithBlogTopic(id: string, topic: string): Promise<CompanyCamPhoto> {
+    const [updated] = await db
+      .update(companyCamPhotos)
+      .set({
+        suggestedBlogTopic: topic,
+        blogTopicAnalyzed: true,
+        blogTopicAnalyzedAt: new Date(),
       })
       .where(eq(companyCamPhotos.id, id))
       .returning();
