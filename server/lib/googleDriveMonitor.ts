@@ -53,6 +53,46 @@ async function getGoogleDriveClient() {
   return google.drive({ version: 'v3', auth: oauth2Client });
 }
 
+// Recursively get all folders within a folder
+async function getAllFolderIds(drive: any, parentFolderId: string): Promise<string[]> {
+  const folderIds = [parentFolderId]; // Include the parent folder itself
+  
+  const response = await drive.files.list({
+    q: `'${parentFolderId}' in parents and trashed=false and mimeType='application/vnd.google-apps.folder'`,
+    fields: 'files(id, name)',
+    pageSize: 100
+  });
+
+  const subfolders = response.data.files || [];
+  
+  // Recursively get folders from each subfolder
+  for (const folder of subfolders) {
+    const subfolderIds = await getAllFolderIds(drive, folder.id!);
+    folderIds.push(...subfolderIds);
+  }
+  
+  return folderIds;
+}
+
+// Get all image files from multiple folders
+async function getAllImageFiles(drive: any, folderIds: string[]) {
+  const allFiles: any[] = [];
+  
+  for (const folderId of folderIds) {
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and trashed=false and (mimeType contains 'image/')`,
+      fields: 'files(id, name, mimeType, createdTime, webContentLink)',
+      orderBy: 'createdTime desc',
+      pageSize: 100
+    });
+    
+    const files = response.data.files || [];
+    allFiles.push(...files);
+  }
+  
+  return allFiles;
+}
+
 export async function monitorGoogleDriveFolder() {
   try {
     const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID;
@@ -62,20 +102,17 @@ export async function monitorGoogleDriveFolder() {
       return;
     }
 
-    console.log(`[Google Drive] Checking folder ${folderId} for new photos...`);
+    console.log(`[Google Drive] Checking folder ${folderId} and all subfolders for new photos...`);
     
     const drive = await getGoogleDriveClient();
     
-    // List image files in the folder (only images, not processed yet)
-    const response = await drive.files.list({
-      q: `'${folderId}' in parents and trashed=false and (mimeType contains 'image/')`,
-      fields: 'files(id, name, mimeType, createdTime, webContentLink)',
-      orderBy: 'createdTime desc',
-      pageSize: 100
-    });
-
-    const files = response.data.files || [];
-    console.log(`[Google Drive] Found ${files.length} image files in folder`);
+    // Get all folder IDs (parent + all subfolders recursively)
+    const folderIds = await getAllFolderIds(drive, folderId);
+    console.log(`[Google Drive] Found ${folderIds.length} total folders (including subfolders)`);
+    
+    // Get all image files from all folders
+    const files = await getAllImageFiles(drive, folderIds);
+    console.log(`[Google Drive] Found ${files.length} image files across all folders`);
 
     if (files.length === 0) {
       return;
@@ -128,7 +165,15 @@ export async function monitorGoogleDriveFolder() {
         // Generate filename with category
         const timestamp = Date.now();
         const filename = `gdrive-${timestamp}.webp`;
-        const objectPath = `imported_photos/${analysis.category}/${filename}`;
+        
+        // Get the bucket ID from environment (set up by Object Storage)
+        const bucketId = process.env.PUBLIC_OBJECT_SEARCH_PATHS?.split(',')[0]?.split('/')[1];
+        if (!bucketId) {
+          console.error('[Google Drive] Object Storage bucket not configured');
+          continue;
+        }
+        
+        const objectPath = `/${bucketId}/public/imported_photos/${analysis.category}/${filename}`;
 
         // Upload to Object Storage
         const publicUrl = await objectStorageService.uploadBuffer(
