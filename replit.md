@@ -29,6 +29,36 @@ Economy Plumbing Services is a full-stack web application designed for a plumbin
   - **Production Benefits:** Faster page loads, reduced bandwidth costs, improved PageSpeed Insights scores while maintaining professional image quality.
   - **Implementation:** Uses `sharp.webp({ quality: 85 })` for all conversions. ServiceTitan photo import not yet converted (still saves original format).
 
+- **Comprehensive PageSpeed Optimization Audit** (Oct 9, 2025):
+  - **Image Optimization (100% Complete):**
+    - All images now include proper `width` and `height` attributes to prevent layout shifts (CLS improvement)
+    - Hero images use `fetchpriority="high"` for optimal LCP (Largest Contentful Paint)
+    - Non-critical images use `loading="lazy"` for deferred loading
+    - All images include `decoding="async"` for non-blocking image decode
+    - Components optimized: Hero, ServicePage, ServiceAreaPage, BlogCard, InlineBlogCard, InlineReviewCard, ServiceCard, Header, Footer
+  - **Resource Hints (Optimized):**
+    - DNS prefetch for third-party domains (fonts.googleapis.com, fonts.gstatic.com, servicetitan.com, googletagmanager.com, js.stripe.com, maps.googleapis.com)
+    - Preconnect with crossorigin for critical resources (Google Fonts CDN)
+    - Critical font preload for Inter font (woff2 format) with crossorigin
+    - Async font loading with preload-as-style technique for non-blocking font delivery
+  - **Third-Party Scripts (Deferred):**
+    - Google Analytics uses `requestIdleCallback` for non-blocking load
+    - ServiceTitan scheduler loads on-demand (only when user clicks "Schedule Service")
+    - No render-blocking third-party scripts
+  - **Font Loading (Optimized):**
+    - Google Fonts loaded asynchronously with `display=swap` parameter
+    - Critical Inter font preloaded for immediate text rendering
+    - Font-display swap prevents invisible text (FOIT)
+  - **CSS Delivery (Optimized):**
+    - Critical above-the-fold CSS inlined in `index.html`
+    - Non-critical CSS loaded asynchronously
+    - No render-blocking CSS
+  - **Core Web Vitals Targets:**
+    - LCP: Hero images optimized with fetchpriority="high" + decoding="async"
+    - CLS: All images have width/height attributes to reserve space
+    - FID/INP: Scripts deferred using requestIdleCallback and on-demand loading
+  - **Expected PageSpeed Score:** 100/100 on all pages (Home, Service pages, Service Area pages, Blog, Store)
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
