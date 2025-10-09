@@ -1165,13 +1165,37 @@ ${rssItems}
 
       console.log(`[Zapier Webhook] Complete: ${savedPhotos.length} saved, ${rejectedPhotos.length} rejected`);
 
+      // Automatically detect before/after pairs if we have multiple photos from the same job
+      let composites: any[] = [];
+      if (savedPhotos.length >= 2 && jobId) {
+        try {
+          console.log(`[Zapier Webhook] Checking for before/after pairs from job ${jobId}...`);
+          const { processBeforeAfterPairs } = await import("./lib/beforeAfterComposer");
+          const newComposites = await processBeforeAfterPairs(savedPhotos, jobId);
+          
+          for (const composite of newComposites) {
+            const saved = await storage.saveBeforeAfterComposite(composite);
+            composites.push(saved);
+          }
+          
+          if (composites.length > 0) {
+            console.log(`[Zapier Webhook] ✅ Created ${composites.length} before/after composite(s)`);
+          }
+        } catch (error: any) {
+          console.error(`[Zapier Webhook] Error creating before/after composites:`, error);
+          // Don't fail the whole request if composite creation fails
+        }
+      }
+
       res.json({
         success: true,
         imported: savedPhotos.length,
         rejected: rejectedPhotos.length,
+        compositesCreated: composites.length,
         photos: savedPhotos,
+        composites,
         rejectedPhotos: rejectedPhotos,
-        message: `Successfully imported ${savedPhotos.length} quality photos. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
+        message: `Successfully imported ${savedPhotos.length} quality photos${composites.length > 0 ? ` and created ${composites.length} before/after composite(s)` : ''}. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
       });
     } catch (error: any) {
       console.error("[Zapier Webhook] Error:", error);

@@ -14,6 +14,29 @@ interface BeforeAfterPair {
 }
 
 /**
+ * Convert local file path to base64 data URI for OpenAI
+ */
+async function filePathToBase64(filePath: string): Promise<string> {
+  // If it's already a public URL or base64, return as-is
+  if (filePath.startsWith('http://') || filePath.startsWith('https://') || filePath.startsWith('data:')) {
+    return filePath;
+  }
+
+  // Remove leading slash if present
+  const cleanPath = filePath.startsWith('/') ? filePath.substring(1) : filePath;
+  
+  // Read file from local filesystem
+  const buffer = await fs.readFile(cleanPath);
+  
+  // Determine MIME type from file extension
+  const ext = path.extname(cleanPath).toLowerCase();
+  const mimeType = ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg';
+  
+  // Convert to base64 data URI
+  return `data:${mimeType};base64,${buffer.toString('base64')}`;
+}
+
+/**
  * Use OpenAI to detect which photos are before/after pairs from the same job
  */
 export async function detectBeforeAfterPairs(photos: CompanyCamPhoto[]): Promise<BeforeAfterPair[]> {
@@ -33,6 +56,10 @@ export async function detectBeforeAfterPairs(photos: CompanyCamPhoto[]): Promise
       if (photo1.category !== photo2.category) continue;
 
       try {
+        // Convert local file paths to base64 for OpenAI
+        const photo1Url = await filePathToBase64(photo1.photoUrl);
+        const photo2Url = await filePathToBase64(photo2.photoUrl);
+
         const response = await openai.chat.completions.create({
           model: "gpt-4o",
           messages: [
@@ -60,11 +87,11 @@ Respond with JSON:
                 },
                 {
                   type: "image_url",
-                  image_url: { url: photo1.photoUrl, detail: "low" }
+                  image_url: { url: photo1Url, detail: "low" }
                 },
                 {
                   type: "image_url",
-                  image_url: { url: photo2.photoUrl, detail: "low" }
+                  image_url: { url: photo2Url, detail: "low" }
                 }
               ]
             }
