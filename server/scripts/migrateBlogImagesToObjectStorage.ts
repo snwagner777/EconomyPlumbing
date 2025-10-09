@@ -41,22 +41,25 @@ async function migrateBlogImagesToObjectStorage() {
 
   for (const post of posts) {
     try {
-      if (!post.imageUrl) {
+      if (!post.featuredImage) {
         console.log(`⏭️  Skipping ${post.slug} - no image`);
         results.skipped.push(post.slug);
         continue;
       }
 
       // Check if already migrated (starts with /public-objects/)
-      if (post.imageUrl.startsWith('/public-objects/')) {
+      if (post.featuredImage.startsWith('/public-objects/')) {
         console.log(`⏭️  Skipping ${post.slug} - already migrated`);
         results.skipped.push(post.slug);
-        usedImagePaths.add(post.imageUrl);
+        usedImagePaths.add(post.featuredImage);
         continue;
       }
 
-      // Get the local file path
-      const localPath = path.join(process.cwd(), 'attached_assets', post.imageUrl.replace('/assets/', ''));
+      // Get the local file path (remove leading slash if present)
+      const relativePath = post.featuredImage.startsWith('/') 
+        ? post.featuredImage.substring(1) 
+        : post.featuredImage;
+      const localPath = path.join(process.cwd(), relativePath);
       
       if (!fs.existsSync(localPath)) {
         console.log(`⚠️  Warning: Image not found at ${localPath} for post ${post.slug}`);
@@ -97,7 +100,7 @@ async function migrateBlogImagesToObjectStorage() {
       usedImagePaths.add(publicUrl);
 
       // Update blog post with new URL
-      await storage.updateBlogPost(post.id, { imageUrl: publicUrl });
+      await storage.updateBlogPost(post.id, { featuredImage: publicUrl });
       console.log(`   ✓ Updated database with new URL`);
 
       // Delete temporary WebP file
@@ -141,14 +144,14 @@ async function migrateBlogImagesToObjectStorage() {
   
   const allPosts = await storage.getBlogPosts();
   for (const post of allPosts) {
-    if (post.imageUrl) {
-      const posts = imageCounts.get(post.imageUrl) || [];
+    if (post.featuredImage) {
+      const posts = imageCounts.get(post.featuredImage) || [];
       posts.push(post.slug);
-      imageCounts.set(post.imageUrl, posts);
+      imageCounts.set(post.featuredImage, posts);
     }
   }
 
-  for (const [imageUrl, posts] of imageCounts.entries()) {
+  for (const [imageUrl, posts] of Array.from(imageCounts.entries())) {
     if (posts.length > 1) {
       duplicateImages.add(imageUrl);
       console.log(`⚠️  WARNING: Image ${imageUrl} is used by ${posts.length} posts: ${posts.join(', ')}`);
