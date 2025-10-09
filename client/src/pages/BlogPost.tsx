@@ -13,6 +13,7 @@ import { format } from "date-fns";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createBlogPostSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 // Map blog categories to review categories
 const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
@@ -33,6 +34,7 @@ export default function BlogPost() {
   const [matchBlog, paramsBlog] = useRoute("/blog/:slug");
   const [matchFallTips] = useRoute("/fall-plumbing-tips");
   const slug = matchFallTips ? "fall-plumbing-tips" : (paramsBlog?.slug || "");
+  const phoneConfig = usePhoneConfig();
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
@@ -195,29 +197,27 @@ export default function BlogPost() {
 
             {/* Post Navigation */}
             {(prevPost || nextPost) && (
-              <div className="flex justify-between items-center border-t pt-8 mt-12" data-testid="nav-pagination">
-                <div className="flex-1">
+              <div className="border-t pt-8 mt-12" data-testid="nav-pagination">
+                <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
                   {prevPost && (
-                    <Link href={`/blog/${prevPost.slug}`}>
-                      <Button variant="ghost" className="gap-2" data-testid="button-prev-post">
-                        <ChevronLeft className="w-4 h-4" />
-                        <div className="text-left">
+                    <Link href={`/blog/${prevPost.slug}`} className="flex-1">
+                      <Button variant="ghost" className="gap-2 w-full sm:w-auto justify-start" data-testid="button-prev-post">
+                        <ChevronLeft className="w-4 h-4 flex-shrink-0" />
+                        <div className="text-left min-w-0">
                           <div className="text-xs text-muted-foreground">Previous</div>
-                          <div className="font-medium">{prevPost.title}</div>
+                          <div className="font-medium truncate">{prevPost.title}</div>
                         </div>
                       </Button>
                     </Link>
                   )}
-                </div>
-                <div className="flex-1 flex justify-end">
                   {nextPost && (
-                    <Link href={`/blog/${nextPost.slug}`}>
-                      <Button variant="ghost" className="gap-2" data-testid="button-next-post">
-                        <div className="text-right">
+                    <Link href={`/blog/${nextPost.slug}`} className="flex-1">
+                      <Button variant="ghost" className="gap-2 w-full sm:w-auto justify-start sm:justify-end" data-testid="button-next-post">
+                        <div className="text-left sm:text-right min-w-0 order-2 sm:order-1">
                           <div className="text-xs text-muted-foreground">Next</div>
-                          <div className="font-medium">{nextPost.title}</div>
+                          <div className="font-medium truncate">{nextPost.title}</div>
                         </div>
-                        <ChevronRight className="w-4 h-4" />
+                        <ChevronRight className="w-4 h-4 flex-shrink-0 order-1 sm:order-2" />
                       </Button>
                     </Link>
                   )}
@@ -237,11 +237,11 @@ export default function BlogPost() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <a
-                  href="tel:+15123689159"
+                  href={phoneConfig.tel}
                   className="text-2xl font-bold hover:underline"
                   data-testid="link-phone-austin"
                 >
-                  (512) 368-9159
+                  {phoneConfig.display}
                 </a>
                 <span className="text-white/80">Austin</span>
               </div>
