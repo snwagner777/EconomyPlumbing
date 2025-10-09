@@ -5,7 +5,7 @@ import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
-import ReviewsSection from "@/components/ReviewsSection";
+import InlineReviewCard from "@/components/InlineReviewCard";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, Phone } from "lucide-react";
 import { format } from "date-fns";
@@ -130,6 +130,14 @@ export default function BlogPost() {
               />
             )}
 
+            {/* Inline Review Card - floats right on desktop, full width on mobile */}
+            {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
+              <InlineReviewCard 
+                category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
+                minRating={4}
+              />
+            )}
+
             <div
               className="prose prose-lg max-w-none mb-12"
               data-testid="text-content"
@@ -173,15 +181,6 @@ export default function BlogPost() {
             </div>
           </div>
         </section>
-
-        {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-          <ReviewsSection 
-            category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
-            title={`What Our ${post.category} Customers Say`}
-            maxReviews={3}
-            minRating={4}
-          />
-        )}
 
         {relatedPosts && relatedPosts.length > 0 && (
           <section className="py-12 lg:py-16 bg-muted/30">
