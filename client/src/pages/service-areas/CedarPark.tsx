@@ -15,6 +15,7 @@ import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import heroImage from "@assets/optimized/professional_plumber_d3924ca6.webp";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },
@@ -28,6 +29,7 @@ const SERVICES = [
 
 export default function CedarParkServiceArea() {
   const slug = "cedar-park";
+  const phoneConfig = usePhoneConfig();
   
   const { data: serviceArea, isLoading } = useQuery<ServiceArea>({
     queryKey: [`/api/service-areas/${slug}`],
@@ -42,8 +44,8 @@ export default function CedarParkServiceArea() {
     { name: "Pflugerville", path: "/plumber-pflugerville" },
   ];
 
-  const phone = "(512) 368-9159";
-  const phoneLink = "5123689159";
+  const phone = phoneConfig.display;
+  const phoneLink = phoneConfig.tel;
   const cityName = serviceArea?.cityName || "Cedar Park";
 
   const faqs = serviceArea?.uniqueFaqs 

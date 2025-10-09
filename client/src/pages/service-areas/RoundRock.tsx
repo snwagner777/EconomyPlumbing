@@ -15,6 +15,7 @@ import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import heroImage from "@assets/optimized/plumber_working_on_p_6dc2075d.webp";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },
@@ -28,6 +29,7 @@ const SERVICES = [
 
 export default function RoundRockServiceArea() {
   const slug = "round-rock";
+  const phoneConfig = usePhoneConfig();
   
   const { data: serviceArea, isLoading } = useQuery<ServiceArea>({
     queryKey: [`/api/service-areas/${slug}`],
@@ -41,8 +43,8 @@ export default function RoundRockServiceArea() {
     { name: "Leander", path: "/plumber-leander" },
   ];
 
-  const phone = "(512) 368-9159";
-  const phoneLink = "5123689159";
+  const phone = phoneConfig.display;
+  const phoneLink = phoneConfig.tel;
   const cityName = serviceArea?.cityName || "Round Rock";
 
   const faqs = serviceArea?.uniqueFaqs 
