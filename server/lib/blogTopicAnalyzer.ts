@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { CompanyCamPhoto } from "@shared/schema";
+import { mapCategoryToDisplay } from "./categoryMapper";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -172,7 +173,12 @@ Write the complete blog post:`;
 
   const blogPost = JSON.parse(content);
   
-  console.log(`[Blog Generator] Generated post: ${blogPost.title}`);
+  // Convert machine category to display category
+  if (blogPost.category) {
+    blogPost.category = mapCategoryToDisplay(blogPost.category);
+  }
+  
+  console.log(`[Blog Generator] Generated post: ${blogPost.title} (Category: ${blogPost.category})`);
   
   return blogPost;
 }
