@@ -1047,28 +1047,35 @@ ${rssItems}
           // Categorize photo
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
-          // Download photo and save locally to server
+          // Download photo and convert to WebP
           const fs = await import('fs/promises');
           const path = await import('path');
+          const sharp = await import('sharp');
           
           // Fetch the photo from CompanyCam URL
           const photoResponse = await fetch(photo.photoUrl);
           const photoBuffer = Buffer.from(await photoResponse.arrayBuffer());
           
+          // Convert to WebP with high quality (85 = excellent quality, good compression)
+          const webpBuffer = await sharp.default(photoBuffer)
+            .webp({ quality: 85 })
+            .toBuffer();
+          
+          console.log(`[Zapier Webhook] 🔄 Converted to WebP (${Math.round((1 - webpBuffer.length / photoBuffer.length) * 100)}% smaller)`);
+          
           // Create category subfolder
           const categoryFolder = path.join('attached_assets/imported_photos', category);
           await fs.mkdir(categoryFolder, { recursive: true });
           
-          // Generate unique filename
+          // Generate unique filename with .webp extension
           const timestamp = Date.now();
           const photoIdHash = Buffer.from(photo.photoUrl).toString('base64').substring(0, 16);
-          const extension = photo.photoUrl.split('.').pop()?.split('?')[0] || 'jpg';
-          const localFileName = `companycam_${timestamp}_${photoIdHash}.${extension}`;
+          const localFileName = `companycam_${timestamp}_${photoIdHash}.webp`;
           const localFilePath = path.join(categoryFolder, localFileName);
           
-          // Save file to disk
-          await fs.writeFile(localFilePath, photoBuffer);
-          console.log(`[Zapier Webhook] 💾 Saved to server: ${localFilePath}`);
+          // Save WebP file to disk
+          await fs.writeFile(localFilePath, webpBuffer);
+          console.log(`[Zapier Webhook] 💾 Saved WebP to server: ${localFilePath}`);
 
           // Generate unique photo ID from URL hash
           const photoId = Buffer.from(photo.photoUrl).toString('base64').substring(0, 32);
@@ -1176,23 +1183,31 @@ ${rssItems}
           // Categorize
           const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
 
-          // Save photo locally to server
+          // Convert to WebP and save locally to server
           const fs = await import('fs/promises');
           const path = await import('path');
+          const sharp = await import('sharp');
+          
+          // Convert to WebP with high quality (85 = excellent quality, good compression)
+          const webpBuffer = await sharp.default(buffer)
+            .webp({ quality: 85 })
+            .toBuffer();
+          
+          console.log(`[Google Drive Import] 🔄 Converted to WebP (${Math.round((1 - webpBuffer.length / buffer.length) * 100)}% smaller)`);
           
           // Create category subfolder
           const categoryFolder = path.join('attached_assets/imported_photos', category);
           await fs.mkdir(categoryFolder, { recursive: true });
           
-          // Generate unique filename
+          // Generate unique filename with .webp extension
           const timestamp = Date.now();
-          const sanitizedName = file.name?.replace(/[^a-zA-Z0-9._-]/g, '_') || 'unnamed';
-          const localFileName = `${timestamp}_${sanitizedName}`;
+          const sanitizedName = file.name?.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.(jpg|jpeg|png)$/i, '') || 'unnamed';
+          const localFileName = `${timestamp}_${sanitizedName}.webp`;
           const localFilePath = path.join(categoryFolder, localFileName);
           
-          // Save file to disk
-          await fs.writeFile(localFilePath, buffer);
-          console.log(`[Google Drive Import] 💾 Saved to server: ${localFilePath}`);
+          // Save WebP file to disk
+          await fs.writeFile(localFilePath, webpBuffer);
+          console.log(`[Google Drive Import] 💾 Saved WebP to server: ${localFilePath}`);
 
           // Create photo record with local file path
           const photoId = file.id || Buffer.from(file.name || '').toString('base64').substring(0, 32);

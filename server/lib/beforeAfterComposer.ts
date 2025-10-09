@@ -277,10 +277,10 @@ export async function createBeforeAfterComposite(
       left: 30
     }
   ])
-  .jpeg({ quality: 90 })
+  .webp({ quality: 85 })
   .toFile(outputPath);
 
-  console.log(`[Compositor] ✅ Composite created: ${outputPath}`);
+  console.log(`[Compositor] ✅ Composite created as WebP: ${outputPath}`);
 
   return outputPath;
 }
@@ -309,8 +309,8 @@ export async function processBeforeAfterPairs(
 
   for (const pair of pairs) {
     try {
-      // Generate filename
-      const filename = `before_after_${jobId}_${Date.now()}.jpg`;
+      // Generate filename with .webp extension
+      const filename = `before_after_${jobId}_${Date.now()}.webp`;
       const outputPath = path.join(compositesDir, filename);
       const compositeUrl = `/attached_assets/composites/${filename}`;
 
