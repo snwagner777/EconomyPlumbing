@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import { Button } from "@/components/ui/button";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { Rss } from "lucide-react";
 import type { BlogPost } from "@shared/schema";
 
 export default function Blog() {
@@ -36,9 +37,19 @@ export default function Blog() {
             <h1 className="text-4xl lg:text-5xl font-bold mb-4">
               Plumbing Tips & Advice Blog
             </h1>
-            <p className="text-xl text-white/90">
+            <p className="text-xl text-white/90 mb-6">
               Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin
             </p>
+            <a 
+              href="/rss.xml" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-white/90 hover:text-white transition-colors"
+              data-testid="link-rss-feed"
+            >
+              <Rss className="w-5 h-5" />
+              <span className="text-sm font-medium">Subscribe to RSS Feed</span>
+            </a>
           </div>
         </section>
 
