@@ -23,7 +23,17 @@ export default function Blog() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading } = useQuery<BlogResponse>({
-    queryKey: ["/api/blog", { page: currentPage, category: selectedCategory }],
+    queryKey: ["/api/blog", currentPage, selectedCategory],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: "12",
+        ...(selectedCategory !== "All" && { category: selectedCategory })
+      });
+      const response = await fetch(`/api/blog?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch blog posts");
+      return response.json();
+    },
   });
 
   const categories = ["All", "Water Heaters", "Drain Cleaning", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
