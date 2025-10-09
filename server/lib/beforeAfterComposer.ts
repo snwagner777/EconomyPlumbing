@@ -107,26 +107,38 @@ async function generateCaption(pair: BeforeAfterPair): Promise<string> {
       messages: [
         {
           role: "system",
-          content: `You are a social media manager for a plumbing company (Economy Plumbing Services in Austin/Marble Falls, TX). Write engaging, professional captions for before/after photos. Include:
-- What the problem was
-- What was done to fix it
-- A call-to-action
-- Relevant hashtags
+          content: `You are a social media manager for Economy Plumbing Services, a trusted plumbing company serving Austin and Marble Falls, TX. Write engaging Facebook/Instagram posts for before/after photos that:
 
-Keep it under 150 characters for Instagram. Be conversational and helpful.`
+1. Explain what the problem was and what we did to fix it (2-3 sentences)
+2. Promote our professional plumbing services 
+3. Include a call-to-action
+4. End with contact info and relevant hashtags
+
+REQUIRED: Always end the post with:
+"📞 Call us: 512.575.3157
+🌐 Visit: https://www.plumbersthatcare.com/?utm=facebook"
+
+Be conversational, helpful, and professional. Total length should be 250-350 characters.`
         },
         {
           role: "user",
-          content: `Before: ${pair.beforePhoto.aiDescription}\nAfter: ${pair.afterPhoto.aiDescription}\n\nWrite a caption for this before/after photo.`
+          content: `Before: ${pair.beforePhoto.aiDescription}\nAfter: ${pair.afterPhoto.aiDescription}\n\nWrite a Facebook/Instagram post for this before/after photo.`
         }
       ],
-      max_completion_tokens: 150,
+      max_completion_tokens: 250,
     });
 
-    return response.choices[0].message.content || "Before and after! Quality plumbing work by Economy Plumbing. 📞 Call us today!";
+    const aiCaption = response.choices[0].message.content || "";
+    
+    // Ensure contact info is always included
+    if (!aiCaption.includes("512.575.3157")) {
+      return `${aiCaption}\n\n📞 Call us: 512.575.3157\n🌐 Visit: https://www.plumbersthatcare.com/?utm=facebook`;
+    }
+    
+    return aiCaption;
   } catch (error) {
     console.error(`[Before/After] Error generating caption:`, error);
-    return "Before and after! Quality plumbing work by Economy Plumbing. 📞 Call us today!";
+    return `Before and after! Our expert plumbers solved another problem. Quality plumbing services in Austin & Marble Falls.\n\n📞 Call us: 512.575.3157\n🌐 Visit: https://www.plumbersthatcare.com/?utm=facebook`;
   }
 }
 

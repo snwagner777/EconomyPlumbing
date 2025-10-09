@@ -8,9 +8,9 @@ interface PhoneConfig {
 
 const PHONE_NUMBERS: Record<string, PhoneConfig> = {
   default: {
-    display: '(512) 649-2811',
-    raw: '5126492811',
-    tel: 'tel:+15126492811'
+    display: '(512) 368-9159',
+    raw: '5123689159',
+    tel: 'tel:+15123689159'
   },
   google: {
     display: '(512) 368-9159',

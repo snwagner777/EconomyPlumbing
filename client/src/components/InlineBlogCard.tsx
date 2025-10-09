@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Calendar, ArrowRight } from "lucide-react";
+import { Calendar, ArrowRight } from "lucide-react";
 import { Link } from "wouter";
 import type { BlogPost } from "@shared/schema";
 
@@ -35,72 +36,71 @@ export default function InlineBlogCard({ category }: InlineBlogCardProps) {
     });
   };
 
-  return (
-    <Card 
-      className="relative p-6 mb-6 md:float-right md:ml-6 md:w-80 lg:w-96 hover-elevate transition-all duration-300 border-border/50 bg-gradient-to-br from-accent/5 to-primary/5"
-      data-testid={`inline-blog-${randomPost.id}`}
-    >
-      {/* Book Icon */}
-      <div className="absolute -top-3 -left-3 w-10 h-10 bg-accent/10 rounded-full flex items-center justify-center">
-        <BookOpen className="w-5 h-5 text-accent" />
-      </div>
+  // Extract 80 characters from the blog content (strip markdown)
+  const getExcerpt = (content: string, maxLength: number = 80): string => {
+    const stripped = content
+      .replace(/#{1,6}\s/g, '') // Remove markdown headers
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
+      .replace(/`(.*?)`/g, '$1') // Remove code
+      .replace(/\n/g, ' ') // Replace newlines with spaces
+      .trim();
+    return stripped.length > maxLength 
+      ? stripped.substring(0, maxLength) + '...' 
+      : stripped;
+  };
 
-      {/* Category Badge */}
-      <div className="absolute -top-2 -right-2">
-        <Badge 
-          variant="secondary" 
-          className="bg-accent/10 text-accent border-0 px-3 py-1"
-        >
+  return (
+    <Link href={`/blog/${randomPost.slug}`}>
+      <Card 
+        className="p-6 mb-6 md:float-right md:ml-6 md:w-80 lg:w-96 hover-elevate cursor-pointer"
+        data-testid={`inline-blog-${randomPost.id}`}
+      >
+        {/* Featured Image */}
+        {randomPost.featuredImage && (
+          <div className="mb-4 -mx-6 -mt-6">
+            <img
+              src={randomPost.featuredImage}
+              alt={randomPost.title}
+              className="w-full h-40 object-cover rounded-t-lg"
+              loading="lazy"
+            />
+          </div>
+        )}
+
+        {/* Category Badge */}
+        <Badge variant="secondary" className="mb-3">
           {randomPost.category}
         </Badge>
-      </div>
 
-      {/* Featured Image */}
-      {randomPost.featuredImage && (
-        <div className="mt-2 mb-4 -mx-6 -mt-6">
-          <img
-            src={randomPost.featuredImage}
-            alt={randomPost.title}
-            className="w-full h-40 object-cover rounded-t-lg"
-            loading="lazy"
-          />
-        </div>
-      )}
+        {/* Title */}
+        <h3 className="font-semibold text-foreground mb-2 line-clamp-2">
+          {randomPost.title}
+        </h3>
 
-      {/* Title */}
-      <h3 className="font-semibold text-foreground mb-2 line-clamp-2 mt-2">
-        {randomPost.title}
-      </h3>
-
-      {/* Excerpt */}
-      {randomPost.excerpt && (
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-3">
-          {randomPost.excerpt}
+        {/* Excerpt from content */}
+        <p className="text-sm text-muted-foreground mb-3">
+          {getExcerpt(randomPost.content, 80)}
         </p>
-      )}
 
-      {/* Date */}
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
-        <Calendar className="w-3.5 h-3.5" />
-        <span>{formatDate(randomPost.publishDate.toString())}</span>
-      </div>
+        {/* Date */}
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+          <Calendar className="w-3.5 h-3.5" />
+          <span>{formatDate(randomPost.publishDate.toString())}</span>
+        </div>
 
-      {/* Read More Link */}
-      <Link 
-        href={`/blog/${randomPost.slug}`}
-        className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-        data-testid={`link-blog-${randomPost.slug}`}
-      >
-        Read Article
-        <ArrowRight className="w-4 h-4" />
-      </Link>
-
-      {/* Related Content Badge */}
-      <div className="mt-4 pt-4 border-t border-border/50">
-        <Badge variant="outline" className="text-xs">
-          📚 Related Reading
-        </Badge>
-      </div>
-    </Card>
+        {/* Read More Button */}
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="w-full gap-2"
+          data-testid={`button-blog-${randomPost.slug}`}
+        >
+          Read Article
+          <ArrowRight className="w-4 h-4" />
+        </Button>
+      </Card>
+    </Link>
   );
 }
