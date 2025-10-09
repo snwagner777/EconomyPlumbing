@@ -22,6 +22,22 @@ app.use(compression({
   level: 6 // Balance between compression and speed
 }));
 
+// Redirect .replit.app domain to custom domain
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const host = req.get('host') || '';
+  
+  // Check if request is from .replit.app domain
+  if (host.includes('.replit.app')) {
+    const customDomain = 'https://www.plumbersthatcare.com';
+    const redirectUrl = `${customDomain}${req.originalUrl}`;
+    
+    log(`Redirecting .replit.app request to custom domain: ${redirectUrl}`);
+    return res.redirect(301, redirectUrl);
+  }
+  
+  next();
+});
+
 // Stripe webhook must use raw body for signature verification
 // This must come BEFORE express.json() middleware
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));

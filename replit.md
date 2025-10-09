@@ -59,6 +59,11 @@ Economy Plumbing Services is a full-stack web application designed for a plumbin
     - FID/INP: Scripts deferred using requestIdleCallback and on-demand loading
   - **Expected PageSpeed Score:** 100/100 on all pages (Home, Service pages, Service Area pages, Blog, Store)
 
+- **Domain Redirect Middleware** (Oct 9, 2025):
+  - **Automatic .replit.app Redirect:** All traffic to `.replit.app` domain automatically redirected to `www.plumbersthatcare.com` using 301 permanent redirect for SEO
+  - **Implementation:** Middleware in `server/index.ts` checks host header and redirects before any route processing
+  - **Benefits:** Ensures brand consistency, improves SEO by consolidating to single canonical domain, prevents duplicate content issues
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
