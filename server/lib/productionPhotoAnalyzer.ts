@@ -47,10 +47,26 @@ export async function analyzeProductionPhoto(imageBuffer: Buffer): Promise<Produ
 ANALYZE THIS PHOTO FOR PRODUCTION QUALITY:
 
 1. PRODUCTION QUALITY CHECK (is this suitable to show customers?):
-   - ✅ GOOD: Any plumbing work photo including installations, repairs, before/after, work in progress, under-sink work, water heaters, fixtures - even if lighting isn't perfect or area is slightly cluttered
-   - ❌ BAD: ONLY reject if it's a close-up of a rating plate/serial number, an extreme close-up showing just a part number/label, or so blurry you can't tell what it is at all
    
-   BE LENIENT - Accept most real plumbing work photos. Only reject obvious technical detail shots.
+   CRITICAL: Ask yourself "What is this photo ABOUT?"
+   
+   ✅ ACCEPT if the photo is ABOUT:
+   - Plumbing work (installations, repairs, diagnostics, before/after, work in progress)
+   - Equipment in context (water heaters, fixtures, pipes, valves, etc.)
+   - Job site conditions, under-sink work, crawl spaces
+   - Even if rating plates/labels/serial numbers are VISIBLE in the photo - that's fine!
+   - Even if lighting isn't perfect or area is cluttered
+   
+   ❌ REJECT ONLY if the photo's PRIMARY SUBJECT is:
+   - A close-up specifically OF a rating plate/serial number/part label (fills most of frame, sharply focused, minimal surrounding context)
+   - Extreme technical detail shot with no broader work context visible
+   - So blurry/dark you genuinely cannot tell what it shows
+   
+   KEY DISTINCTION:
+   - Water heater installation photo where rating plate is visible → ✅ ACCEPT (photo is about the installation)
+   - Close-up photo OF the rating plate itself → ❌ REJECT (photo is about the technical detail)
+   
+   BE VERY LENIENT - Accept 95%+ of real plumbing work photos. Only reject if the PRIMARY PURPOSE is documenting technical specs.
 
 2. FOCAL POINT DETECTION:
    - Identify the main subject (the most important/interesting part)
