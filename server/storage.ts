@@ -17,6 +17,8 @@ import {
   type InsertPendingPurchase,
   type ServiceTitanMembership,
   type InsertServiceTitanMembership,
+  type CompanyCamPhoto,
+  type InsertCompanyCamPhoto,
   users,
   blogPosts,
   products,
@@ -25,7 +27,8 @@ import {
   googleReviews,
   googleOAuthTokens,
   pendingPurchases,
-  serviceTitanMemberships
+  serviceTitanMemberships,
+  companyCamPhotos
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -77,6 +80,13 @@ export interface IStorage {
   createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase>;
   getPendingPurchaseByPaymentIntent(paymentIntentId: string): Promise<PendingPurchase | undefined>;
   deletePendingPurchase(id: string): Promise<void>;
+  
+  // CompanyCam/ServiceTitan photos
+  savePhotos(photos: InsertCompanyCamPhoto[]): Promise<CompanyCamPhoto[]>;
+  getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]>;
+  getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]>;
+  getPhotoById(id: string): Promise<CompanyCamPhoto | undefined>;
+  markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto>;
 }
 
 export class MemStorage implements IStorage {
@@ -2007,6 +2017,31 @@ Call (512) 368-9159 or schedule service online.`,
   async deletePendingPurchase(id: string): Promise<void> {
     // MemStorage stub - not used in production
   }
+
+  async savePhotos(photos: InsertCompanyCamPhoto[]): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
+  async getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
+  async getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
+
+  async getPhotoById(id: string): Promise<CompanyCamPhoto | undefined> {
+    // MemStorage stub - not used in production
+    return undefined;
+  }
+
+  async markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2215,6 +2250,70 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(pendingPurchases)
       .where(eq(pendingPurchases.id, id));
+  }
+
+  async savePhotos(photos: InsertCompanyCamPhoto[]): Promise<CompanyCamPhoto[]> {
+    if (photos.length === 0) return [];
+    
+    const saved = await db
+      .insert(companyCamPhotos)
+      .values(photos)
+      .onConflictDoUpdate({
+        target: companyCamPhotos.companyCamPhotoId,
+        set: {
+          qualityAnalyzed: sql`EXCLUDED.quality_analyzed`,
+          isGoodQuality: sql`EXCLUDED.is_good_quality`,
+          shouldKeep: sql`EXCLUDED.should_keep`,
+          qualityScore: sql`EXCLUDED.quality_score`,
+          qualityReasoning: sql`EXCLUDED.quality_reasoning`,
+          analyzedAt: sql`EXCLUDED.analyzed_at`,
+        },
+      })
+      .returning();
+    
+    return saved;
+  }
+
+  async getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]> {
+    return await db
+      .select()
+      .from(companyCamPhotos)
+      .where(sql`${companyCamPhotos.category} = ${category} AND ${companyCamPhotos.shouldKeep} = true`);
+  }
+
+  async getUnusedPhotos(category?: string): Promise<CompanyCamPhoto[]> {
+    if (category) {
+      return await db
+        .select()
+        .from(companyCamPhotos)
+        .where(sql`${companyCamPhotos.category} = ${category} AND ${companyCamPhotos.usedInBlogPostId} IS NULL AND ${companyCamPhotos.usedInPageUrl} IS NULL AND ${companyCamPhotos.shouldKeep} = true`);
+    }
+    
+    return await db
+      .select()
+      .from(companyCamPhotos)
+      .where(sql`${companyCamPhotos.usedInBlogPostId} IS NULL AND ${companyCamPhotos.usedInPageUrl} IS NULL AND ${companyCamPhotos.shouldKeep} = true`);
+  }
+
+  async getPhotoById(id: string): Promise<CompanyCamPhoto | undefined> {
+    const [photo] = await db
+      .select()
+      .from(companyCamPhotos)
+      .where(eq(companyCamPhotos.id, id))
+      .limit(1);
+    return photo || undefined;
+  }
+
+  async markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto> {
+    const [updated] = await db
+      .update(companyCamPhotos)
+      .set({
+        usedInBlogPostId: blogPostId || null,
+        usedInPageUrl: pageUrl || null,
+      })
+      .where(eq(companyCamPhotos.id, id))
+      .returning();
+    return updated;
   }
 }
 

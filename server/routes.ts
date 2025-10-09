@@ -640,6 +640,91 @@ ${rssItems}
     }
   });
 
+  // Photo quality testing endpoint
+  app.post("/api/photos/analyze", async (req, res) => {
+    try {
+      const { photoUrl, description } = req.body;
+      
+      if (!photoUrl) {
+        return res.status(400).json({ message: "Photo URL is required" });
+      }
+
+      const { analyzePhotoQuality } = await import("./lib/photoQualityAnalyzer");
+      const analysis = await analyzePhotoQuality(photoUrl, description);
+
+      res.json({
+        success: true,
+        analysis,
+      });
+    } catch (error: any) {
+      console.error("Error analyzing photo:", error);
+      res.status(500).json({ 
+        message: "Photo analysis failed", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Fetch and filter photos from ServiceTitan
+  app.post("/api/photos/import", async (req, res) => {
+    try {
+      const { projectId, token, jobDescription } = req.body;
+      
+      if (!projectId || !token) {
+        return res.status(400).json({ 
+          message: "Project ID and access token are required" 
+        });
+      }
+
+      const { fetchAndFilterServiceTitanPhotos } = await import("./lib/serviceTitanPhotos");
+      const filteredPhotos = await fetchAndFilterServiceTitanPhotos(
+        projectId,
+        token,
+        jobDescription
+      );
+
+      // Save to database
+      const savedPhotos = await storage.savePhotos(filteredPhotos);
+
+      res.json({
+        success: true,
+        imported: savedPhotos.length,
+        photos: savedPhotos,
+      });
+    } catch (error: any) {
+      console.error("Error importing photos:", error);
+      res.status(500).json({ 
+        message: "Photo import failed", 
+        error: error.message 
+      });
+    }
+  });
+
+  // Get photos by category
+  app.get("/api/photos", async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const unused = req.query.unused === 'true';
+
+      let photos;
+      if (unused) {
+        photos = await storage.getUnusedPhotos(category);
+      } else if (category) {
+        photos = await storage.getPhotosByCategory(category);
+      } else {
+        photos = [];
+      }
+
+      res.json(photos);
+    } catch (error: any) {
+      console.error("Error fetching photos:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch photos", 
+        error: error.message 
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
