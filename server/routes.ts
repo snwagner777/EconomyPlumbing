@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertContactSubmissionSchema, type InsertGoogleReview, companyCamPhotos, blogPosts } from "@shared/schema";
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
 import { sendContactFormEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
@@ -18,6 +18,8 @@ import { processBlogImage } from "./lib/blogImageProcessor";
 import path from "path";
 import fs from "fs";
 import { ObjectStorageService } from "./objectStorage";
+import { analyzeProductionPhoto } from "./lib/productionPhotoAnalyzer";
+import { importedPhotos } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reference: javascript_object_storage integration - public file serving endpoint
@@ -2059,6 +2061,91 @@ ${rssItems}
       res.json({ stats });
     } catch (error: any) {
       console.error("[Admin] Error fetching stats:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Reprocess ALL imported photos with improved AI analysis (admin only)
+  app.post("/api/admin/reprocess-photos", requireAdmin, async (req, res) => {
+    try {
+      console.log("[Admin] Starting photo reprocessing with improved AI analysis...");
+      
+      // Get ALL imported photos (Google Drive, CompanyCam, etc.)
+      const photos = await db
+        .select()
+        .from(importedPhotos)
+        .execute();
+      
+      if (photos.length === 0) {
+        return res.json({ 
+          success: true, 
+          message: "No photos to reprocess",
+          reprocessed: 0
+        });
+      }
+      
+      console.log(`[Admin] Found ${photos.length} photos to reprocess`);
+      
+      const objectStorageService = new ObjectStorageService();
+      let reprocessed = 0;
+      let errors = 0;
+      
+      for (const photo of photos) {
+        try {
+          // Download photo from Object Storage
+          const photoPath = photo.url.replace('/public-objects/', '');
+          const file = await objectStorageService.searchPublicObject(photoPath);
+          
+          if (!file) {
+            console.error(`[Admin] Photo not found in Object Storage: ${photoPath}`);
+            errors++;
+            continue;
+          }
+          
+          // Download as buffer using Google Cloud Storage's download() method
+          const [photoBuffer] = await file.download();
+          
+          // Re-analyze with improved AI
+          console.log(`[Admin] Re-analyzing photo ${photo.id}...`);
+          const analysis = await analyzeProductionPhoto(photoBuffer);
+          
+          // Update database with new analysis
+          await db
+            .update(importedPhotos)
+            .set({
+              category: analysis.category,
+              isProductionQuality: analysis.isProductionQuality,
+              aiQuality: analysis.qualityScore,
+              qualityReason: analysis.qualityReason,
+              aiDescription: analysis.description,
+              aiTags: analysis.tags,
+              focalPointX: analysis.focalPointX,
+              focalPointY: analysis.focalPointY,
+            })
+            .where(eq(importedPhotos.id, photo.id))
+            .execute();
+          
+          console.log(`[Admin] ✓ Reprocessed photo ${photo.id} - Quality: ${analysis.qualityScore}/100, Focal: (${analysis.focalPointX}, ${analysis.focalPointY})`);
+          reprocessed++;
+          
+        } catch (error: any) {
+          console.error(`[Admin] Error reprocessing photo ${photo.id}:`, error);
+          errors++;
+        }
+      }
+      
+      console.log(`[Admin] Reprocessing complete: ${reprocessed} photos updated, ${errors} errors`);
+      
+      res.json({
+        success: true,
+        message: `Reprocessed ${reprocessed} photos with improved AI analysis`,
+        reprocessed,
+        errors,
+        total: photos.length
+      });
+      
+    } catch (error: any) {
+      console.error("[Admin] Error reprocessing photos:", error);
       res.status(500).json({ error: error.message });
     }
   });

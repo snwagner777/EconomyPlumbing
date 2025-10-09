@@ -238,10 +238,11 @@ export const insertServiceTitanMembershipSchema = createInsertSchema(serviceTita
 
 export const companyCamPhotos = pgTable("companycam_photos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  companyCamPhotoId: text("companycam_photo_id").notNull().unique(),
-  companyCamProjectId: text("companycam_project_id").notNull(),
+  companyCamPhotoId: text("companycam_photo_id").unique(), // Nullable for non-CompanyCam sources
+  companyCamProjectId: text("companycam_project_id"), // Nullable for non-CompanyCam sources
   photoUrl: text("photo_url").notNull(),
   thumbnailUrl: text("thumbnail_url"),
+  source: text("source").notNull().default('companycam'), // 'companycam', 'gdrive', 'servicetitan'
   
   // AI-generated categorization
   category: text("category").notNull(), // 'water_heater', 'drain', 'leak', 'toilet', 'faucet', 'gas', 'backflow', 'commercial', 'general'
@@ -255,6 +256,11 @@ export const companyCamPhotos = pgTable("companycam_photos", {
   qualityScore: integer("quality_score"), // 1-10
   qualityReasoning: text("quality_reasoning"),
   analyzedAt: timestamp("analyzed_at"),
+  
+  // Focal Point (for image positioning in blogs/pages)
+  focalPointX: integer("focal_point_x"), // 0-100 percentage from left
+  focalPointY: integer("focal_point_y"), // 0-100 percentage from top
+  focalPointReason: text("focal_point_reason"), // Why this focal point was chosen
   
   // Blog topic suggestion (for auto-generation)
   suggestedBlogTopic: text("suggested_blog_topic"), // AI-suggested blog post topic
