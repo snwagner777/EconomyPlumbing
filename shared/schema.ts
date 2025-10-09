@@ -318,7 +318,24 @@ export const systemSettings = pgTable("system_settings", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const notFoundErrors = pgTable("not_found_errors", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requestedUrl: text("requested_url").notNull(),
+  referrer: text("referrer"),
+  userAgent: text("user_agent"),
+  ipAddress: text("ip_address"),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  emailSent: boolean("email_sent").notNull().default(false),
+}, (table) => ({
+  timestampIdx: index("not_found_errors_timestamp_idx").on(table.timestamp),
+  urlIdx: index("not_found_errors_url_idx").on(table.requestedUrl),
+}));
+
 export const insertSystemSettingSchema = createInsertSchema(systemSettings);
+export const insertNotFoundErrorSchema = createInsertSchema(notFoundErrors).omit({
+  id: true,
+  timestamp: true,
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -344,3 +361,5 @@ export type BeforeAfterComposite = typeof beforeAfterComposites.$inferSelect;
 export type InsertBeforeAfterComposite = z.infer<typeof insertBeforeAfterCompositeSchema>;
 export type SystemSetting = typeof systemSettings.$inferSelect;
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
+export type NotFoundError = typeof notFoundErrors.$inferSelect;
+export type InsertNotFoundError = z.infer<typeof insertNotFoundErrorSchema>;
