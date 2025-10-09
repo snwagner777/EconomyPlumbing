@@ -266,6 +266,40 @@ export const insertCompanyCamPhotoSchema = createInsertSchema(companyCamPhotos).
   fetchedAt: true,
 });
 
+export const beforeAfterComposites = pgTable("before_after_composites", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Source photos
+  beforePhotoId: varchar("before_photo_id").notNull(),
+  afterPhotoId: varchar("after_photo_id").notNull(),
+  
+  // Composite image
+  compositeUrl: text("composite_url").notNull(),
+  
+  // AI-generated content
+  caption: text("caption"), // AI-generated caption for social media
+  category: text("category").notNull(), // Inherited from photos
+  
+  // Metadata
+  jobId: text("job_id"), // ServiceTitan job ID
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  
+  // Social media tracking
+  postedToFacebook: boolean("posted_to_facebook").notNull().default(false),
+  postedToInstagram: boolean("posted_to_instagram").notNull().default(false),
+  facebookPostId: text("facebook_post_id"),
+  instagramPostId: text("instagram_post_id"),
+  postedAt: timestamp("posted_at"),
+}, (table) => ({
+  categoryIdx: index("before_after_composites_category_idx").on(table.category),
+  postedIdx: index("before_after_composites_posted_idx").on(table.postedToFacebook, table.postedToInstagram),
+}));
+
+export const insertBeforeAfterCompositeSchema = createInsertSchema(beforeAfterComposites).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
@@ -286,3 +320,5 @@ export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect
 export type InsertServiceTitanMembership = z.infer<typeof insertServiceTitanMembershipSchema>;
 export type CompanyCamPhoto = typeof companyCamPhotos.$inferSelect;
 export type InsertCompanyCamPhoto = z.infer<typeof insertCompanyCamPhotoSchema>;
+export type BeforeAfterComposite = typeof beforeAfterComposites.$inferSelect;
+export type InsertBeforeAfterComposite = z.infer<typeof insertBeforeAfterCompositeSchema>;
