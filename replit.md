@@ -57,7 +57,15 @@ Preferred communication style: Simple, everyday language.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails.
 - **Social Media:** Facebook, Instagram, Yelp, Nextdoor.
-- **Call Tracking:** Dynamic phone number insertion for analytics with traffic source detection (Google, Facebook, Yelp, Nextdoor). Numbers automatically swap based on referrer/UTM parameters and persist via 90-day cookie. System re-runs on all route changes to ensure phone numbers update across SPA navigation. Static Marble Falls number (830) preserved.
+- **Call Tracking:** Dynamic phone number insertion for analytics with traffic source detection (Google, Facebook, Yelp, Nextdoor). Numbers automatically swap based on referrer/UTM parameters and persist via 90-day cookie.
+  - **Implementation:** PhoneConfigContext provider listens to route changes and updates all components using usePhoneConfig() hook
+  - **Phone Numbers:** 
+    - Default/Austin: (512) 368-9159
+    - Facebook/Instagram: (512) 575-3157
+    - Yelp: (512) 893-7316
+    - Nextdoor: (512) 846-9146
+    - Marble Falls (static): (830) 460-3565
+  - **Testing:** Add `?utm_source=facebook` or `?utm_source=yelp` to any URL and navigate between pages to see numbers update in real-time
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for ongoing review updates. DataForSEO API for one-time historical review import.

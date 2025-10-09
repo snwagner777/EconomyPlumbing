@@ -8,6 +8,7 @@ import { initDynamicPhoneNumbers, replacePhoneNumbers } from "@/lib/dynamicPhone
 import { initGA } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import CookieBanner from "@/components/CookieBanner";
+import { PhoneConfigProvider } from "@/contexts/PhoneConfigContext";
 
 // Critical pages - eagerly loaded for best UX
 import Home from "@/pages/Home";
@@ -197,9 +198,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <CookieBanner />
-        <Toaster />
-        <Router />
+        <PhoneConfigProvider>
+          <CookieBanner />
+          <Toaster />
+          <Router />
+        </PhoneConfigProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
