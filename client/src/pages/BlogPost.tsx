@@ -174,6 +174,11 @@ export default function BlogPost() {
                 fetchpriority="high"
                 decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
+                style={{
+                  objectPosition: post.focalPointX && post.focalPointY 
+                    ? `${post.focalPointX}% ${post.focalPointY}%`
+                    : 'center center'
+                }}
                 data-testid="img-featured"
               />
             )}

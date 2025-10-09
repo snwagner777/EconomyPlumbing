@@ -24,6 +24,11 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
               loading="lazy"
               decoding="async"
               className="w-full h-56 object-cover cursor-pointer transition-transform hover:scale-105"
+              style={{
+                objectPosition: post.focalPointX && post.focalPointY 
+                  ? `${post.focalPointX}% ${post.focalPointY}%`
+                  : 'center center'
+              }}
             />
           </Link>
         ) : (
