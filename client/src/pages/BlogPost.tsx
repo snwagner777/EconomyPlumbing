@@ -170,13 +170,14 @@ export default function BlogPost() {
               />
             )}
 
-            {/* Blog content with floating review card */}
-            <div
-              className="prose prose-lg max-w-none mb-12"
-              data-testid="text-content"
-            >
+            {/* Blog content wrapper with floating review card */}
+            <div className="relative">
+              {/* Review card floats and is positioned down using CSS */}
               {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                <div className="not-prose md:float-right md:ml-6 md:w-80 lg:w-96 mb-6">
+                <div 
+                  className="hidden md:block md:float-right md:ml-6 md:w-80 lg:w-96 mb-6"
+                  style={{ marginTop: '12rem' }}
+                >
                   <InlineReviewCard 
                     category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
                     minRating={4}
@@ -184,9 +185,24 @@ export default function BlogPost() {
                 </div>
               )}
               
-              <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                {post.content}
-              </ReactMarkdown>
+              <div
+                className="prose prose-lg max-w-none mb-12"
+                data-testid="text-content"
+              >
+                {/* Mobile review card - shows before content on mobile */}
+                {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
+                  <div className="md:hidden not-prose mb-6">
+                    <InlineReviewCard 
+                      category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
+                      minRating={4}
+                    />
+                  </div>
+                )}
+                
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  {post.content}
+                </ReactMarkdown>
+              </div>
             </div>
 
             {/* Related Articles - Card Format */}
