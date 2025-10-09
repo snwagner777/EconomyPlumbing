@@ -51,18 +51,30 @@ export async function getUncachableGoogleDriveClient() {
 }
 
 /**
- * Get all image files from a Google Drive folder
+ * Get all image files from a Google Drive folder (with pagination)
  */
 export async function getImagesFromFolder(folderId: string) {
   const drive = await getUncachableGoogleDriveClient();
   
-  const response = await drive.files.list({
-    q: `'${folderId}' in parents and (mimeType contains 'image/')`,
-    fields: 'files(id, name, mimeType, webContentLink, thumbnailLink)',
-    pageSize: 100,
-  });
+  let allFiles: any[] = [];
+  let pageToken: string | undefined = undefined;
 
-  return response.data.files || [];
+  do {
+    const response = await drive.files.list({
+      q: `'${folderId}' in parents and (mimeType contains 'image/')`,
+      fields: 'nextPageToken, files(id, name, mimeType, webContentLink, thumbnailLink)',
+      pageSize: 100,
+      pageToken: pageToken,
+    });
+
+    if (response.data.files) {
+      allFiles = allFiles.concat(response.data.files);
+    }
+
+    pageToken = response.data.nextPageToken || undefined;
+  } while (pageToken);
+
+  return allFiles;
 }
 
 /**
@@ -99,4 +111,12 @@ export async function downloadFileAsBuffer(fileId: string): Promise<Buffer> {
   );
 
   return Buffer.from(response.data as ArrayBuffer);
+}
+
+/**
+ * Delete a file from Google Drive
+ */
+export async function deleteFile(fileId: string): Promise<void> {
+  const drive = await getUncachableGoogleDriveClient();
+  await drive.files.delete({ fileId });
 }

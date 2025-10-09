@@ -924,6 +924,16 @@ ${rssItems}
 
           if (!analysis.shouldKeep) {
             console.log(`[Google Drive Import] ❌ Rejected ${file.name} - ${analysis.reasoning}`);
+            
+            // Delete rejected photo from Google Drive
+            try {
+              const { deleteFile } = await import("./lib/googleDriveClient");
+              await deleteFile(file.id!);
+              console.log(`[Google Drive Import] 🗑️  Deleted rejected photo from Google Drive: ${file.name}`);
+            } catch (deleteError: any) {
+              console.error(`[Google Drive Import] Failed to delete ${file.name} from Google Drive:`, deleteError.message);
+            }
+            
             rejectedPhotos.push({
               fileName: file.name,
               reason: analysis.reasoning,
