@@ -73,7 +73,10 @@ Preferred communication style: Simple, everyday language.
   - **OpenAI Vision Integration:** Uses GPT-4o to analyze job photos for quality (sharpness, lighting, composition, relevance).
   - **Auto Categorization:** AI categorizes photos into 11 plumbing types (water_heater, drain, leak, toilet, faucet, gas, backflow, commercial, general).
   - **Quality Filtering:** Only keeps photos scoring 7/10 or higher. Auto-rejects blurry, dark, or irrelevant images.
-  - **ServiceTitan Photo Import:** Automatically fetches photos from completed jobs in last 30 days. Processes with AI before saving.
+  - **Multi-Source Photo Import:**
+    - **CompanyCam via Zapier (Ongoing):** Webhook receives photos from CompanyCam jobs, analyzes with AI, saves quality photos automatically.
+    - **Google Drive Bulk Import (One-Time):** Import historical photos from Google Drive folder, AI analyzes and categorizes each image.
+    - **ServiceTitan Integration:** Can fetch photos from completed jobs in last 30 days.
   - **Database Tracking:** companyCamPhotos table with quality scores, AI descriptions, tags, and usage tracking.
 - **Before/After Photo Composer:**
   - **AI Pair Detection:** Uses GPT-4o vision to detect before/after photo pairs from same job (analyzes same location/fixture).
