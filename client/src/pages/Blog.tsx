@@ -84,7 +84,7 @@ export default function Blog() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="Plumbing Tips & Advice Blog | Economy Plumbing"
-        description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
+        description="Austin & Marble Falls plumbing tips: water heater maintenance, drain care, leak prevention & home maintenance guides. Expert advice from Economy Plumbing."
         canonical="https://www.plumbersthatcare.com/blog"
         schema={blogSchema}
       />

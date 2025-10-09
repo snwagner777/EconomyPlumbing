@@ -92,7 +92,7 @@ export default function GeorgetownServiceArea() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
+        title={`${cityName} Plumber | Water Heater & Drain Services`}
         description={serviceArea?.metaDescription || "Georgetown plumber for Sun City, Wolf Ranch, Berry Creek. Expert water heater repair, drain cleaning, emergency plumbing. Licensed plumbers. (512) 368-9159."}
         canonical="https://www.plumbersthatcare.com/plumber-georgetown"
       />

@@ -91,7 +91,7 @@ export default function ServiceAreaPage({
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${city} Plumber | Water Heater Repair & Plumbing Services`}
+        title={`${city} Plumber | Water Heater & Drain Services`}
         description={metaDescription}
         canonical={canonical}
       />

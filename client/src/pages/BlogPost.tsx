@@ -100,7 +100,7 @@ export default function BlogPost() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title={`${post.title} | Economy Plumbing Blog`}
+        title={`${post.title} | Economy Plumbing`}
         description={post.metaDescription || ""}
         canonical={canonicalUrl}
         ogType="article"

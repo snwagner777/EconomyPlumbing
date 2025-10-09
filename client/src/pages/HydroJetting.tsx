@@ -4,8 +4,8 @@ import hydroJetImage from "@assets/optimized/Drain_cleaning_professional_service
 export default function HydroJetting() {
   return (
     <ServicePage
-      title="Hydro Jetting Services | High-Pressure Drain Cleaning TX"
-      metaDescription="Austin & Marble Falls hydro jetting: clear stubborn clogs, grease, tree roots. Video inspection. Commercial & residential drain cleaning. (512) 368-9159."
+      title="Hydro Jetting Austin & Marble Falls | Economy Plumbing"
+      metaDescription="Austin & Marble Falls hydro jetting, water heater & drain cleaning. Clear stubborn clogs, grease, tree roots. Video inspection. Call (512) 368-9159 today."
       canonical="https://www.plumbersthatcare.com/hydro-jetting-services"
       heroImage={hydroJetImage}
       heroImageAlt="Professional hydro jetting and high-pressure drain cleaning in Central Texas"

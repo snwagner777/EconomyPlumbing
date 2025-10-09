@@ -4,8 +4,8 @@ import rooterImage from "@assets/optimized/Drain_cleaning_professional_service_e
 export default function RooterServices() {
   return (
     <ServicePage
-      title="Rooter Service | Sewer & Drain Rooter Cleaning TX"
-      metaDescription="Austin & Marble Falls rooter service. Clear tough clogs in drains & sewer lines. Remove tree roots, grease, blockages. 24/7 emergency. (512) 368-9159."
+      title="Rooter Service Austin & Marble Falls | Economy Plumbing"
+      metaDescription="Austin & Marble Falls rooter, water heater & sewer services. Clear tough clogs in drains & sewer lines. Remove tree roots, grease. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/rooter-services"
       heroImage={rooterImage}
       heroImageAlt="Professional rooter service and drain cleaning in Central Texas"

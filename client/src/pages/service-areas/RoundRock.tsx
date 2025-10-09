@@ -92,7 +92,7 @@ export default function RoundRockServiceArea() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
+        title={`${cityName} Plumber | Water Heater & Drain Services`}
         description={serviceArea?.metaDescription || "Round Rock plumber for Teravista, Forest Creek, Walsh Ranch. Expert water heater repair, drain cleaning, leak detection. Emergency plumbing. (512) 368-9159."}
         canonical="https://www.plumbersthatcare.com/round-rock-plumber"
       />

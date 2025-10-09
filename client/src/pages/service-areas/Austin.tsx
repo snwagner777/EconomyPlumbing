@@ -95,7 +95,7 @@ export default function AustinServiceArea() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
+        title={`${cityName} Plumber | Water Heater & Drain Services`}
         description={serviceArea?.metaDescription || "Austin plumber serving Downtown, South Congress, East Austin. Expert water heater repair, drain cleaning, leak detection. Same-day service. (512) 368-9159."}
         canonical="https://www.plumbersthatcare.com/plumber-austin"
       />

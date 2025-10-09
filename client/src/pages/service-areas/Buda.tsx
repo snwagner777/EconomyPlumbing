@@ -14,7 +14,7 @@ export default function BudaServiceArea() {
       city="Buda"
       state="TX"
       slug="buda"
-      metaDescription="Professional plumbing services in Buda, TX. Expert water heater repair, drain cleaning, and emergency plumbing. Same-day service available. Call (512) 368-9159."
+      metaDescription="Buda, TX plumber near Austin. Expert water heater repair, drain cleaning & emergency plumbing services. Same-day service available. Call (512) 368-9159 now."
       canonical="https://www.plumbersthatcare.com/plumber-in-buda--tx"
       area="austin"
       nearbyCities={nearbyCities}

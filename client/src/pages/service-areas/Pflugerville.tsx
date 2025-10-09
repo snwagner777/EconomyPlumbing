@@ -91,7 +91,7 @@ export default function PflugervilleServiceArea() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${cityName} Plumber | Water Heater Repair & Plumbing Services`}
+        title={`${cityName} Plumber | Water Heater & Drain Services`}
         description={serviceArea?.metaDescription || "Pflugerville plumber for Falcon Pointe, Blackhawk, Springbrook. Expert water heater repair, drain cleaning, gas lines. Licensed plumbers. (512) 368-9159."}
         canonical="https://www.plumbersthatcare.com/plumber-pflugerville"
       />

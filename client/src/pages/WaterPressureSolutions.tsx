@@ -4,8 +4,8 @@ import pressureImage from "@assets/optimized/water_pressure_gauge_ba1aafde.webp"
 export default function WaterPressureSolutions() {
   return (
     <ServicePage
-      title="Water Pressure Solutions | Fix Low & High Water Pressure TX"
-      metaDescription="Austin & Marble Falls water pressure solutions. Fix low/high pressure, install regulators. Diagnose pressure issues. Same-day service. (512) 368-9159."
+      title="Water Pressure Solutions Austin TX | Economy Plumbing"
+      metaDescription="Austin & Marble Falls water pressure, water heater & plumbing solutions. Fix low/high pressure, install regulators. Same-day service. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/water-pressure-solutions"
       heroImage={pressureImage}
       heroImageAlt="Professional water pressure solutions and regulation services in Central Texas"
