@@ -5,13 +5,21 @@ Economy Plumbing Services is a full-stack web application designed for a plumbin
 
 ## Recent Changes
 - **AI Blog Generation System** (Oct 9, 2025):
-  - **Automated Blog Creation:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with natural, conversational tone
+  - **Automated Weekly Blog Creation:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with natural, conversational tone
   - **Smart Topic Suggestions:** AI analyzes photo category, description, and quality to suggest relevant blog topics with heavy focus on water heaters (balanced with other services)
-  - **Indefinite Weekly Scheduling:** Blog posts scheduled 1 per week indefinitely (no 200-week limit), with 20% backdated 3-6 months for historical content
+  - **Automated Scheduling:** System checks weekly for unused photos and automatically generates 20 posts at a time (5 months of content)
+  - **Future-Dated Scheduling:** Posts scheduled 1 per week indefinitely (20% backdated 3-6 months, 80% future-dated)
   - **Seasonal Awareness:** Scheduler detects seasonal topics (winter freezing, summer heat, etc.) and adjusts publish dates accordingly
   - **Database Schema:** Added `imageId`, `isScheduled`, `scheduledFor`, `generatedByAI` to `blog_posts` table; `suggestedBlogTopic`, `blogTopicAnalyzed`, `blogTopicAnalyzedAt` to `companycam_photos` table
-  - **API Endpoints:** `/api/blog/generate-from-photos` for bulk generation, `/api/blog/available-photos` to check available photos
-  - **Implementation Files:** `server/lib/blogTopicAnalyzer.ts` (AI content generation), `server/lib/blogScheduler.ts` (scheduling algorithm), storage methods in `server/storage.ts`
+  - **API Endpoints:** 
+    - `/api/blog/generate-from-photos` - Manual bulk generation with scheduling
+    - `/api/blog/generate-historic-by-category` - Generate historic posts (1-3 years ago) by category
+    - `/api/blog/available-photos` - Check available photos
+  - **Background Jobs:** 
+    - `autoBlogGenerator.ts` - Automated weekly blog generation (checks every 7 days, generates 20 posts per run)
+    - Concurrency control prevents overlapping runs
+    - MIN_PHOTOS_THRESHOLD = 10 (only runs if sufficient photos available)
+  - **Implementation Files:** `server/lib/blogTopicAnalyzer.ts` (AI content generation), `server/lib/blogScheduler.ts` (scheduling algorithm), `server/lib/autoBlogGenerator.ts` (automated weekly generation), storage methods in `server/storage.ts`
 
 - **Universal WebP Conversion for Photo Imports** (Oct 9, 2025):
   - **CompanyCam Webhook (`/api/photos/webhook`):** All photos received via Zapier webhook now automatically converted to WebP (quality 85) using Sharp before saving. File extensions changed from .jpg/.png to .webp. Logs compression savings percentage.

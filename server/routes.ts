@@ -307,10 +307,11 @@ ${productUrls}
             // Step 2: Generate blog post (same params: gpt-4o, temp 0.9)
             const blogPost = await generateBlogPost(photo, topicSuggestion);
             
-            // Step 3: Create historic date (last 2-3 years, random)
+            // Step 3: Create historic date (1-3 years ago, random)
             const now = new Date();
-            const yearsAgo = Math.random() * 3; // 0-3 years ago
-            const daysAgo = Math.floor(yearsAgo * 365);
+            const minDaysAgo = 365; // 1 year ago minimum
+            const maxDaysAgo = 1095; // 3 years ago maximum
+            const daysAgo = Math.floor(Math.random() * (maxDaysAgo - minDaysAgo) + minDaysAgo);
             const publishDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
             
             // Step 4: Process image with smart crop (16:9 @ 1200x675)
