@@ -4,6 +4,17 @@
 Economy Plumbing Services is a full-stack web application for a plumbing business in Austin and Marble Falls, Texas. It provides information on services, service areas, blog content, and an online store for maintenance memberships. The project aims to improve local SEO, user engagement, and conversion rates.
 
 ## Recent Changes
+- **Complete OpenGraph and Schema.org Audit** (Oct 9, 2025):
+  - Enhanced all pages with proper OpenGraph images and descriptive alt text
+  - Added Product schema to Store and Checkout pages for rich snippets
+  - BlogPosting schema with article metadata on all blog posts
+  - Security verified: JSON.stringify and React Helmet handle escaping properly
+- **RSS Feed Image Enhancement**:
+  - Blog post images now included in multiple formats for maximum RSS reader compatibility
+  - `<enclosure>` tags for standard RSS 2.0 support
+  - Inline `<img>` tags in content:encoded for visual display
+  - Media RSS namespace (`<media:content>`) for modern feed readers
+  - HTML-escaped titles prevent XSS and broken rendering
 - **Dynamic sitemap with auto-updates** (68 URLs total):
   - Includes static pages, all blog posts, all products (/store/checkout/:slug)
   - Auto-updates when new content is added
@@ -25,7 +36,7 @@ Preferred communication style: Simple, everyday language.
 - **UI:** Radix UI primitives, Shadcn UI components ("new-york" style), Tailwind CSS with custom design tokens, and Class Variance Authority (CVA).
 - **Design System:** Uses a primary blue (#1E88E5) and secondary teal (#3BA7A6) color scheme, charcoal text, and silver accents. Typography uses Inter and Poppins. Supports light/dark modes and aims for a professional, trustworthy aesthetic.
 - **SEO & Performance:** Features a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema markup (LocalBusiness, Service, FAQ, Product, BlogPosting). Includes performance optimizations like resource preconnect, image lazy loading, and font optimization.
-- **Client-Side Routes:** Covers Home, About, Contact, 20+ specific Service pages, 16 specific Service Area city pages, Blog (with RSS feed at /rss.xml), Store, FAQ, Privacy Policy, Refund/Returns, and VIP Membership benefits.
+- **Client-Side Routes:** Covers Home, About, Contact, 20+ specific Service pages, 16 specific Service Area city pages, Blog (with enhanced RSS feed at /rss.xml including images), Store, FAQ, Privacy Policy, Refund/Returns, and VIP Membership benefits.
 - **Optimizations:** Implements lazy loading for reviews and non-blocking background refresh for data. Optimized images to WebP format with explicit dimensions and `fetchpriority="high"`. Enhanced meta descriptions and canonical URLs across all pages. Implemented route-level code splitting using `React.lazy` and `Suspense` for non-critical pages. Applied React.memo optimization to frequently rendered card components (ServiceCard, BlogCard, TestimonialCard, WhyChooseCard) to prevent unnecessary re-renders.
 - **Accessibility (WCAG AA Compliant):** All interactive text elements (links, phone numbers, emails, CTAs) use `text-foreground` instead of `text-primary` to meet 4.5:1 contrast ratio requirements. All buttons explicitly declare `bg-primary text-primary-foreground` for proper contrast. Favicon implemented for browser tabs and mobile devices. Cookie banner close button includes `aria-label` for screen readers. Open Graph images configured with dynamic URL construction for proper social sharing.
 - **Reviews Integration:** Premium visual design with gradient backgrounds, testimonial cards, star ratings, and trust badges. Strategically positioned mid-page on homepage (after "Why Choose" section), service pages (before contact form), and blog posts (inline, floating right on desktop) for optimal conversion. Blog posts feature a single inline review card that floats to the right on desktop (320-384px wide) and displays full-width on mobile, positioned at the start of content. Service pages show 3 reviews in grid layout. Lazy-loads using Intersection Observer with 30-minute browser caching for zero initial page load impact. Reviews auto-categorized by service type and displayed contextually on relevant pages and blog posts.

@@ -204,21 +204,35 @@ ${productUrls}
             (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
             `${baseUrl}/attached_assets/logo.jpg`;
           
+          // HTML-escape the title for safe use in attributes
+          const escapedTitle = post.title
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+          
+          // Create content with image embedded for better RSS reader display
+          const contentWithImage = post.featuredImage 
+            ? `<img src="${imageUrl}" alt="${escapedTitle}" style="max-width: 100%; height: auto; margin-bottom: 1em;" /><br/>${post.content}`
+            : post.content;
+          
           return `    <item>
       <title><![CDATA[${post.title}]]></title>
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${new Date(post.publishDate).toUTCString()}</pubDate>
       <description><![CDATA[${post.metaDescription || post.excerpt || ''}]]></description>
-      <content:encoded><![CDATA[${post.content}]]></content:encoded>
+      <content:encoded><![CDATA[${contentWithImage}]]></content:encoded>
       <category>${post.category}</category>
       <author>${post.author}</author>
-      ${post.featuredImage ? `<enclosure url="${imageUrl}" type="image/jpeg" />` : ''}
+      ${post.featuredImage ? `<enclosure url="${imageUrl}" type="image/jpeg" length="0" />` : ''}
+      ${post.featuredImage ? `<media:content url="${imageUrl}" type="image/jpeg" medium="image"><media:title><![CDATA[${post.title}]]></media:title></media:content>` : ''}
     </item>`;
         }).join('\n');
 
       const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/">
   <channel>
     <title>Economy Plumbing Services Blog</title>
     <link>${baseUrl}/blog</link>
