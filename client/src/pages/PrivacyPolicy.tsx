@@ -3,12 +3,26 @@ import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function PrivacyPolicy() {
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Privacy Policy - Economy Plumbing Services",
+    "description": "Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information.",
+    "url": "https://plumbersthatcare.com/privacy-policy",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Economy Plumbing Services",
+      "url": "https://plumbersthatcare.com"
+    }
+  };
+  
   return (
     <div className="min-h-screen">
       <SEOHead
         title="Privacy Policy | Economy Plumbing Services"
         description="Economy Plumbing Services privacy policy. Learn how we collect, use, and protect your personal information. Your privacy is important to us."
         canonical="https://plumbersthatcare.com/privacy-policy"
+        schema={webPageSchema}
       />
 
       <Header />

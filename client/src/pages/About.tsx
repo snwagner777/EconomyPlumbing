@@ -8,6 +8,30 @@ import { SEOHead } from "@/components/SEO/SEOHead";
 import { Link } from "wouter";
 
 export default function About() {
+  const organizationSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Economy Plumbing Services",
+    "url": "https://plumbersthatcare.com",
+    "logo": "https://plumbersthatcare.com/attached_assets/logo.jpg",
+    "description": "Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers serving Austin to Marble Falls.",
+    "foundingDate": "2005",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "701 Tillery St #12",
+      "addressLocality": "Austin",
+      "addressRegion": "TX",
+      "postalCode": "78702",
+      "addressCountry": "US"
+    },
+    "telephone": ["+15123689159", "+18304603565"],
+    "areaServed": [
+      { "@type": "City", "name": "Austin", "containedIn": { "@type": "State", "name": "Texas" } },
+      { "@type": "City", "name": "Marble Falls", "containedIn": { "@type": "State", "name": "Texas" } }
+    ],
+    "knowsAbout": ["Plumbing", "Water Heater Installation", "Water Heater Repair", "Drain Cleaning", "Emergency Plumbing"],
+    "slogan": "Serving Central Texas with excellence, integrity, and expert plumbing solutions since 2005"
+  };
 
   const values = [
     {
@@ -57,6 +81,7 @@ export default function About() {
         title="About Economy Plumbing Services | Water Heater Experts | Austin & Marble Falls"
         description="Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers. 24/7 emergency service. Serving Austin to Marble Falls."
         canonical="https://plumbersthatcare.com/about"
+        schema={organizationSchema}
       />
       
       <div className="min-h-screen flex flex-col">

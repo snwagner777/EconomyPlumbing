@@ -3,12 +3,26 @@ import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function RefundReturns() {
+  const webPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "name": "Refund & Returns Policy - Economy Plumbing Services",
+    "description": "Refund & returns policy: 30-day satisfaction guarantee, VIP membership cancellation, product returns. Economy Plumbing Austin & Marble Falls.",
+    "url": "https://plumbersthatcare.com/refund_returns",
+    "isPartOf": {
+      "@type": "WebSite",
+      "name": "Economy Plumbing Services",
+      "url": "https://plumbersthatcare.com"
+    }
+  };
+  
   return (
     <div className="min-h-screen">
       <SEOHead
         title="Refund & Returns Policy | Economy Plumbing Services"
         description="Refund & returns policy: 30-day satisfaction guarantee, VIP membership cancellation, product returns. Economy Plumbing Austin & Marble Falls. (512) 368-9159."
         canonical="https://plumbersthatcare.com/refund_returns"
+        schema={webPageSchema}
       />
 
       <Header />
