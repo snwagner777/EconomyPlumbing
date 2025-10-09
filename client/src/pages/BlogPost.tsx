@@ -31,9 +31,8 @@ const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
 };
 
 export default function BlogPost() {
-  const [matchBlog, paramsBlog] = useRoute("/blog/:slug");
-  const [matchFallTips] = useRoute("/fall-plumbing-tips");
-  const slug = matchFallTips ? "fall-plumbing-tips" : (paramsBlog?.slug || "");
+  const [match, params] = useRoute("/:slug");
+  const slug = params?.slug || "";
   const phoneConfig = usePhoneConfig();
 
   const { data: post, isLoading } = useQuery<BlogPost>({
@@ -45,9 +44,7 @@ export default function BlogPost() {
     queryKey: ["/api/blog"],
   });
 
-  const canonicalUrl = matchFallTips 
-    ? "https://www.plumbersthatcare.com/fall-plumbing-tips"
-    : `https://www.plumbersthatcare.com/blog/${slug}`;
+  const canonicalUrl = `https://www.plumbersthatcare.com/${slug}`;
 
   const allPosts = allPostsData?.posts || [];
 
@@ -222,7 +219,7 @@ export default function BlogPost() {
               <div className="border-t pt-8 mt-12" data-testid="nav-pagination">
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-4">
                   {prevPost && (
-                    <Link href={`/blog/${prevPost.slug}`} className="flex-1">
+                    <Link href={`/${prevPost.slug}`} className="flex-1">
                       <Button variant="ghost" className="gap-2 w-full sm:w-auto justify-start" data-testid="button-prev-post">
                         <ChevronLeft className="w-4 h-4 flex-shrink-0" />
                         <div className="text-left min-w-0">
@@ -233,7 +230,7 @@ export default function BlogPost() {
                     </Link>
                   )}
                   {nextPost && (
-                    <Link href={`/blog/${nextPost.slug}`} className="flex-1">
+                    <Link href={`/${nextPost.slug}`} className="flex-1">
                       <Button variant="ghost" className="gap-2 w-full sm:w-auto justify-start sm:justify-end" data-testid="button-next-post">
                         <div className="text-left sm:text-right min-w-0 order-2 sm:order-1">
                           <div className="text-xs text-muted-foreground">Next</div>

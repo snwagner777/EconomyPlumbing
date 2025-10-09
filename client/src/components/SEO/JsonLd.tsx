@@ -236,7 +236,7 @@ export function createProductSchema(product: any) {
 
 export function createBlogPostSchema(post: any) {
   const baseUrl = "https://www.plumbersthatcare.com";
-  const postUrl = `${baseUrl}/blog/${post.slug}`;
+  const postUrl = `${baseUrl}/${post.slug}`;
   const imageUrl = post.featuredImage ? 
     (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
     `${baseUrl}/attached_assets/logo.jpg`;
