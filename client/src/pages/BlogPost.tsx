@@ -172,10 +172,10 @@ export default function BlogPost() {
 
             {/* Blog content wrapper with floating review card */}
             <div className="relative">
-              {/* Review card floats and is positioned down using CSS */}
+              {/* Desktop: Review card floats right and is positioned down */}
               {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
                 <div 
-                  className="hidden md:block md:float-right md:ml-6 md:w-80 lg:w-96 mb-6"
+                  className="md:float-right md:ml-6 md:w-80 lg:w-96 mb-6 hidden md:block"
                   style={{ marginTop: '12rem' }}
                 >
                   <InlineReviewCard 
@@ -189,9 +189,9 @@ export default function BlogPost() {
                 className="prose prose-lg max-w-none mb-12"
                 data-testid="text-content"
               >
-                {/* Mobile review card - shows before content on mobile */}
+                {/* Mobile: Review card shows before content */}
                 {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                  <div className="md:hidden not-prose mb-6">
+                  <div className="not-prose mb-6 md:hidden">
                     <InlineReviewCard 
                       category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
                       minRating={4}
