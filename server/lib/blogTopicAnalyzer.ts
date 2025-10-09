@@ -88,6 +88,19 @@ export async function generateBlogPost(
   metaDescription: string;
   category: string;
 }> {
+  // 30% chance to include current events context
+  const includeCurrentEvents = Math.random() < 0.3;
+  const currentDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  
+  const currentEventsContext = includeCurrentEvents 
+    ? `\n\nTIMELY CONTEXT: If relevant, briefly reference current events, seasonal considerations, or timely issues happening around ${currentDate}. Examples:
+- Weather events (winter freezing, summer heat, recent storms)
+- Local Austin/Texas news or regulations  
+- Seasonal plumbing concerns (holiday guests, spring cleaning, etc.)
+- Recent industry updates or technology
+Keep it natural and only include if genuinely relevant - don't force it.`
+    : '';
+
   const prompt = `You are a professional plumbing content writer for Economy Plumbing Services.
 
 Write a blog post about: ${topicSuggestion.title}
@@ -95,7 +108,7 @@ Write a blog post about: ${topicSuggestion.title}
 CONTEXT:
 - Photo Category: ${photo.category}
 - Photo Description: ${photo.aiDescription}
-- SEO Keywords: ${topicSuggestion.seoKeywords.join(', ')}
+- SEO Keywords: ${topicSuggestion.seoKeywords.join(', ')}${currentEventsContext}
 
 WRITING GUIDELINES:
 1. Write in a natural, conversational tone - NOT AI-sounding
