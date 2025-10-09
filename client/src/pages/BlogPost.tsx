@@ -160,7 +160,7 @@ export default function BlogPost() {
                 width="1200"
                 height="630"
                 loading="eager"
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
                 data-testid="img-featured"

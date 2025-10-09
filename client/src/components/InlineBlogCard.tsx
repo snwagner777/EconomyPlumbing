@@ -11,9 +11,11 @@ interface InlineBlogCardProps {
 }
 
 export default function InlineBlogCard({ category }: InlineBlogCardProps) {
-  const { data: posts } = useQuery<BlogPost[]>({
+  const { data } = useQuery<{ posts: BlogPost[] }>({
     queryKey: ['/api/blog'],
   });
+
+  const posts = data?.posts;
 
   // Filter posts by category and get a random one
   const filteredPosts = posts?.filter(post => 
