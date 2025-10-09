@@ -41,7 +41,7 @@ export default function BlogPost() {
     enabled: !!slug,
   });
 
-  const { data: allPosts } = useQuery<BlogPost[]>({
+  const { data: allPostsData } = useQuery<{ posts: BlogPost[] }>({
     queryKey: ["/api/blog"],
   });
 
@@ -49,8 +49,10 @@ export default function BlogPost() {
     ? "https://plumbersthatcare.com/fall-plumbing-tips"
     : `https://plumbersthatcare.com/blog/${slug}`;
 
+  const allPosts = allPostsData?.posts || [];
+
   const relatedPosts = allPosts
-    ?.filter(
+    .filter(
       (p) =>
         p.category === post?.category &&
         p.slug !== post?.slug
@@ -58,12 +60,12 @@ export default function BlogPost() {
     .slice(0, 3);
 
   // Find prev/next posts by publish date
-  const sortedPosts = allPosts?.sort((a, b) => 
+  const sortedPosts = [...allPosts].sort((a, b) => 
     new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
   );
-  const currentIndex = sortedPosts?.findIndex(p => p.id === post?.id) ?? -1;
-  const prevPost = currentIndex > 0 ? sortedPosts?.[currentIndex - 1] : null;
-  const nextPost = currentIndex < (sortedPosts?.length ?? 0) - 1 ? sortedPosts?.[currentIndex + 1] : null;
+  const currentIndex = sortedPosts.findIndex(p => p.id === post?.id) ?? -1;
+  const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
+  const nextPost = currentIndex < (sortedPosts.length ?? 0) - 1 ? sortedPosts[currentIndex + 1] : null;
 
   if (isLoading) {
     return (
