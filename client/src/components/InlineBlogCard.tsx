@@ -52,7 +52,7 @@ export default function InlineBlogCard({ category }: InlineBlogCardProps) {
   };
 
   return (
-    <Link href={`/blog/${randomPost.slug}`}>
+    <Link href={`/${randomPost.slug}`}>
       <Card 
         className="p-6 mb-6 md:float-right md:ml-6 md:w-80 lg:w-96 hover-elevate cursor-pointer"
         data-testid={`inline-blog-${randomPost.id}`}

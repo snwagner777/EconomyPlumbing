@@ -15,7 +15,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
     <Card className="flex flex-col h-full hover-elevate active-elevate-2 overflow-hidden">
       <div className="overflow-hidden">
         {post.featuredImage ? (
-          <Link href={`/blog/${post.slug}`} data-testid={`link-image-${post.slug}`}>
+          <Link href={`/${post.slug}`} data-testid={`link-image-${post.slug}`}>
             <img
               src={post.featuredImage}
               alt={`Featured image for: ${post.title}`}
@@ -44,7 +44,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
             </span>
           </div>
         </div>
-        <Link href={`/blog/${post.slug}`}>
+        <Link href={`/${post.slug}`}>
           <h3 className="text-xl font-bold mb-3 hover:text-primary transition-colors" data-testid={`text-title-${post.slug}`}>
             {post.title}
           </h3>
@@ -60,7 +60,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
             <span data-testid={`text-author-${post.slug}`}>{post.author}</span>
           </div>
           <Link
-            href={`/blog/${post.slug}`}
+            href={`/${post.slug}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
             aria-label={`Read more about ${post.title}`}
             data-testid={`link-read-more-${post.slug}`}
