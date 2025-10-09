@@ -3,6 +3,16 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application for a plumbing business in Austin and Marble Falls, Texas. It provides information on services, service areas, blog content, and an online store for maintenance memberships. The project aims to improve local SEO, user engagement, and conversion rates.
 
+## Recent Changes
+- **Dynamic sitemap with auto-updates** (68 URLs total):
+  - Includes static pages, all blog posts, all products (/store/checkout/:slug)
+  - Auto-updates when new content is added
+  - Cached 1 hour for performance
+- **Automatic search engine notifications**: 
+  - Reusable `notifySearchEnginesNewPage()` utility pings Google + Bing
+  - Auto-triggers when creating: blogs (POST /api/blog), products (POST /api/products), service areas (POST /api/service-areas)
+  - Non-blocking background execution
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
