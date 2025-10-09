@@ -19,6 +19,7 @@ import ToiletFaucet from "@/pages/ToiletFaucet";
 import GasServices from "@/pages/GasServices";
 import CommercialPlumbing from "@/pages/CommercialPlumbing";
 import BackflowTesting from "@/pages/BackflowTesting";
+import EmergencyPlumbing from "@/pages/EmergencyPlumbing";
 import NotFound from "@/pages/not-found";
 
 // Lazy load less critical pages for better performance
@@ -102,6 +103,8 @@ function Router() {
       <Route path="/gas-services" component={GasServices} />
       <Route path="/backflow" component={BackflowTesting} />
       <Route path="/commercial-plumbing" component={CommercialPlumbing} />
+      <Route path="/emergency" component={EmergencyPlumbing} />
+      <Route path="/emergency-plumbing" component={EmergencyPlumbing} />
       
       {/* Additional service pages */}
       <Route path="/backflow-testing" component={BackflowTesting} />

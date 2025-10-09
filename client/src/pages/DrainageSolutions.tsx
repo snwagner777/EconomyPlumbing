@@ -70,9 +70,9 @@ export default function DrainageSolutions() {
       ]}
       relatedServices={[
         { title: "Drain Cleaning", path: "/drain-cleaning" },
-        { title: "Sewer Line Services", path: "/sewer-line-services" },
+        { title: "Rooter Services", path: "/rooter-services" },
         { title: "Water Leak Repair", path: "/water-leak-repair" },
-        { title: "Leak Repair Services", path: "/leak-repair" }
+        { title: "Hydro Jetting", path: "/hydro-jetting-services" }
       ]}
       reviewsCategory="drain"
       reviewsTitle="Drainage Pipe Service Customer Reviews"
