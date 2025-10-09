@@ -228,6 +228,35 @@ export const insertServiceTitanMembershipSchema = createInsertSchema(serviceTita
   syncedAt: true,
 });
 
+export const companyCamPhotos = pgTable("companycam_photos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyCamPhotoId: text("companycam_photo_id").notNull().unique(),
+  companyCamProjectId: text("companycam_project_id").notNull(),
+  photoUrl: text("photo_url").notNull(),
+  thumbnailUrl: text("thumbnail_url"),
+  
+  // AI-generated categorization
+  category: text("category").notNull(), // 'water_heater', 'drain', 'leak', 'toilet', 'faucet', 'gas', 'backflow', 'commercial', 'general'
+  aiDescription: text("ai_description"), // What the AI sees in the photo
+  tags: text("tags").array(), // Additional tags from AI analysis
+  
+  // Metadata
+  uploadedAt: timestamp("uploaded_at"),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+  
+  // Usage tracking
+  usedInBlogPostId: varchar("used_in_blog_post_id"),
+  usedInPageUrl: text("used_in_page_url"),
+}, (table) => ({
+  categoryIdx: index("companycam_photos_category_idx").on(table.category),
+  projectIdIdx: index("companycam_photos_project_id_idx").on(table.companyCamProjectId),
+}));
+
+export const insertCompanyCamPhotoSchema = createInsertSchema(companyCamPhotos).omit({
+  id: true,
+  fetchedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type BlogPost = typeof blogPosts.$inferSelect;
@@ -246,3 +275,5 @@ export type PendingPurchase = typeof pendingPurchases.$inferSelect;
 export type InsertPendingPurchase = z.infer<typeof insertPendingPurchaseSchema>;
 export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect;
 export type InsertServiceTitanMembership = z.infer<typeof insertServiceTitanMembershipSchema>;
+export type CompanyCamPhoto = typeof companyCamPhotos.$inferSelect;
+export type InsertCompanyCamPhoto = z.infer<typeof insertCompanyCamPhotoSchema>;
