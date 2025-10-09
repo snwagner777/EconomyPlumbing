@@ -14,7 +14,7 @@ export default function Blog() {
     queryKey: ["/api/blog"],
   });
 
-  const categories = ["All", "Water Heaters", "Drains", "Emergency Tips", "Maintenance", "Leak Repair", "Commercial"];
+  const categories = ["All", "Water Heaters", "Drain Cleaning", "Drains", "Emergency Tips", "Maintenance", "Backflow Testing", "Customer Stories", "Seasonal Tips", "Promotions", "Commercial"];
 
   const filteredPosts = posts?.filter(
     (post) => selectedCategory === "All" || post.category === selectedCategory
@@ -26,6 +26,12 @@ export default function Blog() {
         title="Plumbing Tips & Advice Blog | Economy Plumbing"
         description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
         canonical="https://plumbersthatcare.com/blog"
+      />
+      <link 
+        rel="alternate" 
+        type="application/rss+xml" 
+        title="Economy Plumbing Services Blog RSS Feed" 
+        href="https://plumbersthatcare.com/rss.xml" 
       />
 
       <Header />

@@ -16,11 +16,16 @@ import type { BlogPost } from "@shared/schema";
 // Map blog categories to review categories
 const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
   "Water Heaters": "water_heater",
+  "Drain Cleaning": "drain",
   "Drains": "drain",
   "Emergency Tips": "general",
   "Maintenance": "general",
   "Leak Repair": "leak",
   "Commercial": "general",
+  "Backflow Testing": "general",
+  "Customer Stories": "general",
+  "Seasonal Tips": "general",
+  "Promotions": "general",
 };
 
 export default function BlogPost() {
@@ -88,7 +93,13 @@ export default function BlogPost() {
         title={`${post.title} | Economy Plumbing Blog`}
         description={post.metaDescription || ""}
         canonical={canonicalUrl}
+        ogType="article"
+        ogImage={post.featuredImage ? 
+          (post.featuredImage.startsWith('http') ? post.featuredImage : `https://plumbersthatcare.com${post.featuredImage}`) : 
+          undefined}
         schema={blogPostSchema ? [blogPostSchema] : undefined}
+        articlePublishedTime={post.publishDate}
+        articleAuthor={post.author}
       />
 
       <Header />

@@ -235,25 +235,38 @@ export function createProductSchema(product: any) {
 }
 
 export function createBlogPostSchema(post: any) {
+  const baseUrl = "https://plumbersthatcare.com";
+  const postUrl = `${baseUrl}/blog/${post.slug}`;
+  const imageUrl = post.featuredImage ? 
+    (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
+    `${baseUrl}/attached_assets/logo.jpg`;
+  
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
-    "description": post.excerpt,
-    "image": post.image,
-    "datePublished": post.publishedAt,
+    "description": post.metaDescription || post.excerpt || post.content.substring(0, 150),
+    "image": imageUrl,
+    "datePublished": post.publishDate,
+    "dateModified": post.publishDate,
     "author": {
       "@type": "Organization",
-      "name": "Economy Plumbing Services"
+      "name": post.author || "Economy Plumbing Services"
     },
     "publisher": {
       "@type": "Organization",
       "name": "Economy Plumbing Services",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://plumbersthatcare.com/attached_assets/logo.jpg"
+        "url": `${baseUrl}/attached_assets/logo.jpg`
       }
-    }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": postUrl
+    },
+    "articleBody": post.content,
+    "keywords": post.category
   };
 }
 

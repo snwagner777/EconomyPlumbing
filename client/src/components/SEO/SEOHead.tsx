@@ -11,6 +11,8 @@ export interface SEOProps {
   ogImageHeight?: string;
   twitterCard?: string;
   schema?: Record<string, any> | Record<string, any>[];
+  articlePublishedTime?: string;
+  articleAuthor?: string;
 }
 
 export function SEOHead({
@@ -23,7 +25,9 @@ export function SEOHead({
   ogImageWidth = "1024",
   ogImageHeight = "1024",
   twitterCard = "summary_large_image",
-  schema
+  schema,
+  articlePublishedTime,
+  articleAuthor
 }: SEOProps) {
   const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://plumbersthatcare.com");
   const siteName = "Economy Plumbing Services";
@@ -61,6 +65,14 @@ export function SEOHead({
       <meta property="twitter:description" content={description} />
       <meta property="twitter:image" content={fullOgImage} />
       <meta property="twitter:image:alt" content={ogImageAlt} />
+
+      {/* Article-specific meta tags */}
+      {ogType === "article" && articlePublishedTime && (
+        <meta property="article:published_time" content={articlePublishedTime} />
+      )}
+      {ogType === "article" && articleAuthor && (
+        <meta property="article:author" content={articleAuthor} />
+      )}
 
       {/* Schema.org JSON-LD */}
       {schema && (
