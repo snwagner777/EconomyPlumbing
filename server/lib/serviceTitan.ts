@@ -167,20 +167,43 @@ class ServiceTitanAPI {
       country: 'USA',
     };
 
+    // Create contacts array for customer
+    const customerContacts = [
+      { type: 'Phone', value: data.phone, isPrimary: true },
+      { type: 'Email', value: data.email, isPrimary: true }
+    ];
+
+    // Create location contacts array
+    const locationContacts = [
+      { type: 'Phone', value: data.phone, isPrimary: true },
+      { type: 'Email', value: data.email, isPrimary: true }
+    ];
+
+    // Build the request payload according to ServiceTitan API v2 format
     const customerData = data.type === 'residential' 
       ? {
-          name: data.name,
-          type: 'Residential',
-          address: address,
-          phoneNumber: data.phone,
-          email: data.email,
+          request: {
+            type: 'Residential',
+            name: data.name,
+            contacts: customerContacts,
+            locations: [{
+              name: 'Primary Residence',
+              address: address,
+              contacts: locationContacts
+            }]
+          }
         }
       : {
-          name: data.companyName,
-          type: 'Commercial',
-          address: address,
-          phoneNumber: data.phone,
-          email: data.email,
+          request: {
+            type: 'Commercial',
+            companyName: data.companyName,
+            contacts: customerContacts,
+            locations: [{
+              name: data.companyName || 'Primary Location',
+              address: address,
+              contacts: locationContacts
+            }]
+          }
         };
 
     try {

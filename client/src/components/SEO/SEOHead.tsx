@@ -45,6 +45,14 @@ export function SEOHead({
       <meta name="title" content={title} />
       <meta name="description" content={description} />
       {canonical && <link rel="canonical" href={canonical} />}
+      
+      {/* RSS Feed */}
+      <link 
+        rel="alternate" 
+        type="application/rss+xml" 
+        title="Economy Plumbing Services Blog RSS Feed" 
+        href="https://plumbersthatcare.com/rss.xml" 
+      />
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />

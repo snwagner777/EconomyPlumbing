@@ -27,12 +27,6 @@ export default function Blog() {
         description="Expert plumbing tips, water heater advice, and home maintenance guides from Economy Plumbing Austin."
         canonical="https://plumbersthatcare.com/blog"
       />
-      <link 
-        rel="alternate" 
-        type="application/rss+xml" 
-        title="Economy Plumbing Services Blog RSS Feed" 
-        href="https://plumbersthatcare.com/rss.xml" 
-      />
 
       <Header />
 
