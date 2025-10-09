@@ -19,7 +19,6 @@ import path from "path";
 import fs from "fs";
 import { ObjectStorageService } from "./objectStorage";
 import { analyzeProductionPhoto } from "./lib/productionPhotoAnalyzer";
-import { importedPhotos } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reference: javascript_object_storage integration - public file serving endpoint
@@ -2065,15 +2064,15 @@ ${rssItems}
     }
   });
 
-  // Reprocess ALL imported photos with improved AI analysis (admin only)
+  // Reprocess ALL photos with improved AI analysis (admin only)
   app.post("/api/admin/reprocess-photos", requireAdmin, async (req, res) => {
     try {
       console.log("[Admin] Starting photo reprocessing with improved AI analysis...");
       
-      // Get ALL imported photos (Google Drive, CompanyCam, etc.)
+      // Get ALL photos (CompanyCam, Google Drive, etc.)
       const photos = await db
         .select()
-        .from(importedPhotos)
+        .from(companyCamPhotos)
         .execute();
       
       if (photos.length === 0) {
@@ -2092,40 +2091,57 @@ ${rssItems}
       
       for (const photo of photos) {
         try {
-          // Download photo from Object Storage
-          const photoPath = photo.url.replace('/public-objects/', '');
-          const file = await objectStorageService.searchPublicObject(photoPath);
+          // Download photo from URL (Object Storage or external)
+          let photoBuffer: Buffer;
           
-          if (!file) {
-            console.error(`[Admin] Photo not found in Object Storage: ${photoPath}`);
-            errors++;
-            continue;
+          if (photo.photoUrl.startsWith('/public-objects/')) {
+            // Object Storage photo (Google Drive)
+            const photoPath = photo.photoUrl.replace('/public-objects/', '');
+            const file = await objectStorageService.searchPublicObject(photoPath);
+            
+            if (!file) {
+              console.error(`[Admin] Photo not found in Object Storage: ${photoPath}`);
+              errors++;
+              continue;
+            }
+            
+            [photoBuffer] = await file.download();
+          } else {
+            // External URL photo (CompanyCam)
+            const response = await fetch(photo.photoUrl);
+            if (!response.ok) {
+              console.error(`[Admin] Failed to fetch photo: ${photo.photoUrl}`);
+              errors++;
+              continue;
+            }
+            photoBuffer = Buffer.from(await response.arrayBuffer());
           }
           
-          // Download as buffer using Google Cloud Storage's download() method
-          const [photoBuffer] = await file.download();
-          
           // Re-analyze with improved AI
-          console.log(`[Admin] Re-analyzing photo ${photo.id}...`);
+          console.log(`[Admin] Re-analyzing photo ${photo.id} (${photo.source})...`);
           const analysis = await analyzeProductionPhoto(photoBuffer);
           
           // Update database with new analysis
           await db
-            .update(importedPhotos)
+            .update(companyCamPhotos)
             .set({
               category: analysis.category,
-              isProductionQuality: analysis.isProductionQuality,
-              aiQuality: analysis.qualityScore,
-              qualityReason: analysis.qualityReason,
+              isGoodQuality: analysis.isProductionQuality,
+              shouldKeep: analysis.isProductionQuality,
+              qualityScore: Math.round(analysis.qualityScore / 10), // Convert 0-100 to 1-10
+              qualityReasoning: analysis.qualityReason,
               aiDescription: analysis.description,
-              aiTags: analysis.tags,
+              tags: analysis.tags,
               focalPointX: analysis.focalPointX,
               focalPointY: analysis.focalPointY,
+              focalPointReason: analysis.focalPointReason,
+              qualityAnalyzed: true,
+              analyzedAt: new Date(),
             })
-            .where(eq(importedPhotos.id, photo.id))
+            .where(eq(companyCamPhotos.id, photo.id))
             .execute();
           
-          console.log(`[Admin] ✓ Reprocessed photo ${photo.id} - Quality: ${analysis.qualityScore}/100, Focal: (${analysis.focalPointX}, ${analysis.focalPointY})`);
+          console.log(`[Admin] ✓ Reprocessed ${photo.id} - Q:${analysis.qualityScore}/100, Focal:(${analysis.focalPointX},${analysis.focalPointY})`);
           reprocessed++;
           
         } catch (error: any) {

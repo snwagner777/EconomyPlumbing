@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { apiRequest } from "@/lib/queryClient";
-import { LogOut, ImageIcon } from "lucide-react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { LogOut, ImageIcon, RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const [, setLocation] = useLocation();
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [qualityFilter, setQualityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const { toast } = useToast();
 
   // Check auth status
   const { data: authData } = useQuery({
@@ -46,9 +48,37 @@ export default function AdminDashboard() {
     queryKey: ['/api/admin/stats'],
   });
 
+  // Reprocess photos mutation
+  const reprocessMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", "/api/admin/reprocess-photos");
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Reprocessing Complete",
+        description: `${data.reprocessed} photos reprocessed with improved AI focal points. ${data.errors > 0 ? `${data.errors} errors occurred.` : ''}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Reprocessing Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogout = async () => {
     await apiRequest("POST", "/api/admin/logout");
     setLocation("/admin/login");
+  };
+  
+  const handleReprocess = () => {
+    if (confirm("Reprocess ALL photos with improved AI analysis? This will update focal points for better image positioning.")) {
+      reprocessMutation.mutate();
+    }
   };
 
   if (!authData?.isAdmin) {
@@ -65,12 +95,23 @@ export default function AdminDashboard() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">Photo Admin Portal</h1>
-            <p className="text-muted-foreground">Manage imported CompanyCam photos</p>
+            <p className="text-muted-foreground">Manage all photos (CompanyCam & Google Drive)</p>
           </div>
-          <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
-            <LogOut className="w-4 h-4 mr-2" />
-            Logout
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="default" 
+              onClick={handleReprocess}
+              disabled={reprocessMutation.isPending}
+              data-testid="button-reprocess"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${reprocessMutation.isPending ? 'animate-spin' : ''}`} />
+              {reprocessMutation.isPending ? 'Reprocessing...' : 'Reprocess All Photos'}
+            </Button>
+            <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
