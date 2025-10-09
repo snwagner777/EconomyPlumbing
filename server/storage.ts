@@ -21,6 +21,8 @@ import {
   type InsertCompanyCamPhoto,
   type BeforeAfterComposite,
   type InsertBeforeAfterComposite,
+  type NotFoundError,
+  type InsertNotFoundError,
   users,
   blogPosts,
   products,
@@ -31,7 +33,8 @@ import {
   pendingPurchases,
   serviceTitanMemberships,
   companyCamPhotos,
-  beforeAfterComposites
+  beforeAfterComposites,
+  notFoundErrors
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -100,6 +103,10 @@ export interface IStorage {
   getBeforeAfterComposites(): Promise<BeforeAfterComposite[]>;
   getUnusedComposites(): Promise<BeforeAfterComposite[]>;
   markCompositeAsPosted(id: string, facebookPostId: string | null, instagramPostId: string | null): Promise<BeforeAfterComposite>;
+  
+  // 404 Error tracking
+  create404Error(error: InsertNotFoundError): Promise<NotFoundError>;
+  get404Errors(limit?: number): Promise<NotFoundError[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -2152,6 +2159,16 @@ Call (512) 368-9159 or schedule service online.`,
     // MemStorage stub - not used in production
     throw new Error("Not implemented in MemStorage");
   }
+
+  async create404Error(error: InsertNotFoundError): Promise<NotFoundError> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+
+  async get404Errors(limit: number = 100): Promise<NotFoundError[]> {
+    // MemStorage stub - not used in production
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2508,6 +2525,22 @@ export class DatabaseStorage implements IStorage {
       .where(eq(beforeAfterComposites.id, id))
       .returning();
     return updated;
+  }
+
+  async create404Error(error: InsertNotFoundError): Promise<NotFoundError> {
+    const [created] = await db
+      .insert(notFoundErrors)
+      .values(error)
+      .returning();
+    return created;
+  }
+
+  async get404Errors(limit: number = 100): Promise<NotFoundError[]> {
+    return await db
+      .select()
+      .from(notFoundErrors)
+      .orderBy(sql`${notFoundErrors.timestamp} DESC`)
+      .limit(limit);
   }
 }
 
