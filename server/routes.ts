@@ -9,6 +9,7 @@ import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
 import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
+import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
 import path from "path";
 import fs from "fs";
@@ -207,7 +208,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           allReviews.push(...fbReviews);
         }
 
-        // 3. Fetch new Google reviews from Places API (max 5, newest)
+        // 3. Fetch Yelp reviews from DataForSEO
+        const yelpAlias = 'economy-plumbing-services-austin-3'; // Yelp business alias
+        console.log('[Reviews API] Fetching Yelp reviews from DataForSEO...');
+        const yelpReviews = await fetchDataForSeoYelpReviews(yelpAlias);
+        console.log(`[Reviews API] DataForSEO returned ${yelpReviews.length} Yelp reviews`);
+        allReviews.push(...yelpReviews);
+
+        // 4. Fetch new Google reviews from Places API (max 5, newest)
         console.log('[Reviews API] Fetching newest Google reviews from Places API...');
         const placesReviews = await fetchGoogleReviews();
         console.log(`[Reviews API] Places API returned ${placesReviews.length} reviews`);
