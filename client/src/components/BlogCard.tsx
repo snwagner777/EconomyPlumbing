@@ -21,7 +21,7 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
               alt={`Featured image for: ${post.title}`}
               width="800"
               height="533"
-              className="w-full h-56 object-cover cursor-pointer transition-transform hover:scale-105"
+              className="w-full h-56 object-contain bg-muted cursor-pointer transition-transform hover:scale-105"
               loading="lazy"
             />
           </Link>
