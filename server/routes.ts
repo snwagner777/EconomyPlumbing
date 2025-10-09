@@ -26,14 +26,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Serve sitemap.xml
-  app.get("/sitemap.xml", (req, res) => {
-    const sitemapPath = path.resolve(import.meta.dirname, "..", "public", "sitemap.xml");
-    if (fs.existsSync(sitemapPath)) {
-      res.type("application/xml");
-      res.sendFile(sitemapPath);
-    } else {
-      res.status(404).send("Not found");
+  // Dynamic sitemap.xml
+  app.get("/sitemap.xml", async (req, res) => {
+    try {
+      const posts = await storage.getBlogPosts();
+      const baseUrl = "https://plumbersthatcare.com";
+      const now = new Date().toISOString().split('T')[0];
+      
+      // Static pages with priorities
+      const staticPages = [
+        { url: '', lastmod: now, changefreq: 'weekly', priority: '1.0' },
+        
+        // Main Service Pages
+        { url: 'water-heater-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'drain-cleaning', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'leak-repair', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'toilet-faucet', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'gas-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'backflow', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'commercial-plumbing', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        
+        // Additional Service Pages
+        { url: 'backflow-testing', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'drainage-solutions', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'drain-cleaning-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'faucet-installation', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'garbage-disposal-repair', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'gas-leak-detection', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'gas-line-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'hydro-jetting-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'permit-resolution-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'rooter-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'sewage-pump-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'toilet-repair-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'water-heater-guide', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'water-leak-repair', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'water-pressure-solutions', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        
+        // Service Area Pages
+        { url: 'service-area', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-austin', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-in-cedar-park--tx', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-leander', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'round-rock-plumber', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-georgetown', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-pflugerville', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-liberty-hill', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-buda', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-kyle', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-marble-falls', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-burnet', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-horseshoe-bay', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-kingsland', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-granite-shoals', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-bertram', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'plumber-spicewood', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        
+        // Main Pages
+        { url: 'about', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'contact', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'faq', lastmod: now, changefreq: 'monthly', priority: '0.7' },
+        { url: 'privacy-policy', lastmod: now, changefreq: 'yearly', priority: '0.3' },
+        { url: 'refund_returns', lastmod: now, changefreq: 'yearly', priority: '0.3' },
+        { url: 'membership-benefits', lastmod: now, changefreq: 'monthly', priority: '0.7' },
+        
+        // Store Pages
+        { url: 'store', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        { url: 'shop', lastmod: now, changefreq: 'monthly', priority: '0.8' },
+        
+        // Blog index
+        { url: 'blog', lastmod: now, changefreq: 'weekly', priority: '0.8' },
+      ];
+      
+      // Generate static page URLs
+      const staticUrls = staticPages.map(page => `  <url>
+    <loc>${baseUrl}/${page.url}</loc>
+    <lastmod>${page.lastmod}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`).join('\n');
+      
+      // Generate blog post URLs (sorted by newest first)
+      const blogUrls = posts
+        .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
+        .map(post => {
+          const postDate = new Date(post.publishDate).toISOString().split('T')[0];
+          return `  <url>
+    <loc>${baseUrl}/blog/${post.slug}</loc>
+    <lastmod>${postDate}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+        }).join('\n');
+      
+      const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${staticUrls}
+${blogUrls}
+</urlset>`;
+
+      res.set('Content-Type', 'application/xml');
+      res.set('Cache-Control', 'public, max-age=3600, must-revalidate');
+      res.send(sitemap);
+    } catch (error) {
+      console.error('Sitemap generation error:', error);
+      res.status(500).send('Failed to generate sitemap');
     }
   });
 
