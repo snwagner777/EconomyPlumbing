@@ -1,15 +1,16 @@
 /**
  * Automated Blog Generation System
  * 
- * Runs weekly to check for unused photos and automatically generates
- * blog posts scheduled 1 per week indefinitely into the future
+ * Runs once per week to check for unused photos and generates
+ * blog posts with the current date (date when generated)
  */
 
 import type { IStorage } from '../storage';
+import { processBlogImage } from './blogImageProcessor';
 
 const CHECK_INTERVAL = 7 * 24 * 60 * 60 * 1000; // 1 week in milliseconds
 const MIN_PHOTOS_THRESHOLD = 10; // Minimum photos needed to trigger generation
-const POSTS_TO_GENERATE = 20; // Generate 20 posts at a time (20 weeks of content)
+const POSTS_TO_GENERATE = 20; // Generate 20 posts at a time
 
 // Concurrency control - prevent overlapping runs
 let isGenerating = false;
@@ -50,12 +51,10 @@ async function checkAndGenerateBlogs(storage: IStorage) {
       return;
     }
     
-    console.log(`[Auto Blog Generator] Generating ${POSTS_TO_GENERATE} blog posts scheduled 1 per week...`);
+    console.log(`[Auto Blog Generator] Generating ${POSTS_TO_GENERATE} blog posts with today's date...`);
     
     // Import required functions
     const { suggestBlogTopic, generateBlogPost } = await import("./blogTopicAnalyzer");
-    const { scheduleBlogs, formatScheduleForDb } = await import("./blogScheduler");
-    const { processBlogImage } = await import("./blogImageProcessor");
     
     // Select photos to use
     const photosToUse = unusedPhotos.slice(0, Math.min(POSTS_TO_GENERATE, unusedPhotos.length));
@@ -96,59 +95,50 @@ async function checkAndGenerateBlogs(storage: IStorage) {
     
     console.log(`[Auto Blog Generator] Generated ${generatedBlogs.length} blog posts`);
     
-    // Step 3: Schedule blog posts (1 per week, indefinitely)
-    // 20% backdated (3-6 months ago), 80% scheduled for future (1 per week)
-    const scheduledBlogs = scheduleBlogs(generatedBlogs, {
-      totalPosts: generatedBlogs.length,
-      startDate: new Date(),
-      postsPerWeek: 1,
-      backdatePercentage: 0.2 // 20% backdated, 80% future (1 per week)
-    });
-    
-    // Step 4: Save to database
+    // Step 3: Save to database with current date
     let savedCount = 0;
-    for (const scheduledBlog of scheduledBlogs) {
+    const currentDate = new Date();
+    
+    for (const generatedBlog of generatedBlogs) {
       try {
-        const scheduleData = formatScheduleForDb(scheduledBlog);
-        
         // Get photo and process image for proper cropping
         let featuredImage = null;
-        if (scheduledBlog.photoId) {
-          const photo = await storage.getPhotoById(scheduledBlog.photoId);
+        if (generatedBlog.photoId) {
+          const photo = await storage.getPhotoById(generatedBlog.photoId);
           if (photo?.photoUrl) {
-            featuredImage = await processBlogImage(photo.photoUrl, scheduledBlog.title);
+            featuredImage = await processBlogImage(photo.photoUrl, generatedBlog.title);
           }
         }
         
         const saved = await storage.createBlogPost({
-          title: scheduledBlog.title,
-          slug: scheduledBlog.slug,
-          content: scheduledBlog.content,
-          excerpt: scheduledBlog.excerpt,
-          metaDescription: scheduledBlog.metaDescription,
-          category: scheduledBlog.category,
+          title: generatedBlog.title,
+          slug: generatedBlog.slug,
+          content: generatedBlog.content,
+          excerpt: generatedBlog.excerpt,
+          metaDescription: generatedBlog.metaDescription,
+          category: generatedBlog.category,
           featuredImage,
           author: "Economy Plumbing",
           published: true,
-        });
-        
-        // Update blog post with schedule data
-        await storage.updateBlogPost(saved.id, {
-          ...scheduleData as any,
+          publishDate: currentDate,
+          isScheduled: false,
+          scheduledFor: null,
+          generatedByAI: true,
+          imageId: generatedBlog.photoId || null
         });
         
         // Mark photo as used
-        if (scheduledBlog.photoId) {
-          await storage.markPhotoAsUsed(scheduledBlog.photoId, saved.id);
+        if (generatedBlog.photoId) {
+          await storage.markPhotoAsUsed(generatedBlog.photoId, saved.id);
         }
         
         savedCount++;
       } catch (error: any) {
-        console.error(`[Auto Blog Generator] Error saving blog "${scheduledBlog.title}":`, error.message);
+        console.error(`[Auto Blog Generator] Error saving blog "${generatedBlog.title}":`, error.message);
       }
     }
     
-    console.log(`[Auto Blog Generator] ✅ Successfully generated and scheduled ${savedCount} blog posts (1 per week for next ${savedCount} weeks)`);
+    console.log(`[Auto Blog Generator] ✅ Successfully generated ${savedCount} blog posts with today's date`);
     
   } catch (error: any) {
     console.error('[Auto Blog Generator] Error in automated blog generation:', error.message);
