@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSubmissionSchema, type InsertGoogleReview, companyCamPhotos } from "@shared/schema";
+import { insertContactSubmissionSchema, type InsertGoogleReview, companyCamPhotos, blogPosts } from "@shared/schema";
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
@@ -225,6 +225,168 @@ ${productUrls}
       res.json({ categories });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch categories" });
+    }
+  });
+
+  // Get photos available for blog generation (MUST be before :slug wildcard)
+  app.get("/api/blog/available-photos", async (req, res) => {
+    try {
+      const photos = await storage.getPhotosWithoutBlogTopic();
+      
+      res.json({
+        success: true,
+        count: photos.length,
+        photos: photos.map(p => ({
+          id: p.id,
+          category: p.category,
+          qualityScore: p.qualityScore,
+          aiDescription: p.aiDescription,
+          photoUrl: p.photoUrl
+        }))
+      });
+    } catch (error: any) {
+      console.error("Error fetching available photos:", error);
+      res.status(500).json({ message: "Failed to fetch available photos" });
+    }
+  });
+
+  // Generate historic blog posts by category (MUST be before :slug wildcard)
+  app.post("/api/blog/generate-historic-by-category", async (req, res) => {
+    try {
+      const { category, postsPerCategory = 9 } = req.body;
+      
+      console.log(`[Historic Blog Generation] Starting generation of ${postsPerCategory} posts per category...`);
+      
+      // Get all blog categories from database
+      const categoryResult = await db.select({ category: blogPosts.category })
+        .from(blogPosts)
+        .groupBy(blogPosts.category);
+      
+      const categories = categoryResult.map(r => r.category);
+      console.log(`[Historic Blog Generation] Found ${categories.length} categories:`, categories);
+      
+      // Filter to specific category if provided
+      const targetCategories = category ? [category] : categories;
+      
+      const { suggestBlogTopic, generateBlogPost } = await import("./lib/blogTopicAnalyzer");
+      const { processBlogImage } = await import("./lib/blogImageProcessor");
+      
+      const allGeneratedBlogs = [];
+      
+      for (const targetCategory of targetCategories) {
+        console.log(`[Historic Blog Generation] Processing category: ${targetCategory}`);
+        
+        // Get available photos for this category
+        const photos = await storage.getPhotosWithoutBlogTopic();
+        const categoryPhotos = photos.filter(p => {
+          const photoCategory = p.category?.toLowerCase() || '';
+          const targetCat = targetCategory.toLowerCase();
+          
+          // Match by category name
+          return photoCategory.includes(targetCat.replace(/\s+/g, '_')) || 
+                 targetCat.includes(photoCategory.replace(/\s+/g, '_'));
+        });
+        
+        console.log(`[Historic Blog Generation] Found ${categoryPhotos.length} unused photos for ${targetCategory}`);
+        
+        if (categoryPhotos.length === 0) {
+          console.warn(`[Historic Blog Generation] No photos available for ${targetCategory}, skipping...`);
+          continue;
+        }
+        
+        // Use up to postsPerCategory photos
+        const photosToUse = categoryPhotos.slice(0, Math.min(postsPerCategory, categoryPhotos.length));
+        
+        // Generate blog posts
+        for (const photo of photosToUse) {
+          try {
+            // Step 1: Suggest blog topic (same params as before: gpt-4o, temp 0.8)
+            const topicSuggestion = await suggestBlogTopic(photo);
+            await storage.updatePhotoWithBlogTopic(photo.id, topicSuggestion.title);
+            
+            // Step 2: Generate blog post (same params: gpt-4o, temp 0.9)
+            const blogPost = await generateBlogPost(photo, topicSuggestion);
+            
+            // Step 3: Create historic date (last 2-3 years, random)
+            const now = new Date();
+            const yearsAgo = Math.random() * 3; // 0-3 years ago
+            const daysAgo = Math.floor(yearsAgo * 365);
+            const publishDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+            
+            // Step 4: Process image with smart crop (16:9 @ 1200x675)
+            let featuredImage = null;
+            if (photo.photoUrl) {
+              console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
+              featuredImage = await processBlogImage(photo.photoUrl, blogPost.title);
+              console.log(`[Historic Blog Generation] Cropped image saved: ${featuredImage}`);
+            }
+            
+            // Step 5: Save to database
+            const saved = await storage.createBlogPost({
+              title: blogPost.title,
+              slug: blogPost.slug,
+              content: blogPost.content,
+              excerpt: blogPost.excerpt,
+              metaDescription: blogPost.metaDescription,
+              category: blogPost.category,
+              featuredImage,
+              author: "Economy Plumbing",
+              published: true,
+            });
+            
+            // Update with historic date and metadata
+            await storage.updateBlogPost(saved.id, {
+              publishDate,
+              imageId: photo.id,
+              generatedByAI: true,
+            } as any);
+            
+            // Mark photo as used
+            await storage.markPhotoAsUsed(photo.id, saved.id);
+            
+            allGeneratedBlogs.push({
+              ...saved,
+              publishDate,
+              category: targetCategory
+            });
+            
+            console.log(`[Historic Blog Generation] ✅ Created: "${blogPost.title}" (${targetCategory}, ${publishDate.toISOString().split('T')[0]})`);
+          } catch (error: any) {
+            console.error(`[Historic Blog Generation] Error generating blog for photo ${photo.id}:`, error);
+          }
+        }
+      }
+      
+      console.log(`[Historic Blog Generation] Successfully generated ${allGeneratedBlogs.length} historic blog posts`);
+      
+      // Group by category for response
+      const blogsByCategory: Record<string, any[]> = {};
+      for (const blog of allGeneratedBlogs) {
+        if (!blogsByCategory[blog.category]) {
+          blogsByCategory[blog.category] = [];
+        }
+        blogsByCategory[blog.category].push({
+          id: blog.id,
+          title: blog.title,
+          slug: blog.slug,
+          publishDate: blog.publishDate,
+          excerpt: blog.excerpt
+        });
+      }
+      
+      res.json({
+        success: true,
+        generated: allGeneratedBlogs.length,
+        categories: Object.keys(blogsByCategory).length,
+        blogsByCategory,
+        message: `Successfully generated ${allGeneratedBlogs.length} historic blog posts across ${Object.keys(blogsByCategory).length} categories`
+      });
+    } catch (error: any) {
+      console.error("[Historic Blog Generation] Error:", error);
+      res.status(500).json({
+        message: "Historic blog generation failed",
+        error: error.message
+      });
     }
   });
 
@@ -1681,28 +1843,6 @@ ${rssItems}
         message: "Blog generation failed",
         error: error.message
       });
-    }
-  });
-  
-  // Get photos available for blog generation
-  app.get("/api/blog/available-photos", async (req, res) => {
-    try {
-      const photos = await storage.getPhotosWithoutBlogTopic();
-      
-      res.json({
-        success: true,
-        count: photos.length,
-        photos: photos.map(p => ({
-          id: p.id,
-          category: p.category,
-          qualityScore: p.qualityScore,
-          aiDescription: p.aiDescription,
-          photoUrl: p.photoUrl
-        }))
-      });
-    } catch (error: any) {
-      console.error("Error fetching available photos:", error);
-      res.status(500).json({ message: "Failed to fetch available photos" });
     }
   });
 
