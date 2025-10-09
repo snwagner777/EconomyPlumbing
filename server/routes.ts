@@ -755,6 +755,138 @@ ${rssItems}
     }
   });
 
+  // Helper function to categorize photos based on AI analysis
+  function categorizePhotoFromAnalysis(aiDescription: string, tags: string[]): string {
+    const combined = `${aiDescription} ${tags.join(" ")}`.toLowerCase();
+
+    if (combined.includes("water heater") || combined.includes("tank") || combined.includes("heater")) {
+      return "water_heater";
+    }
+    if (combined.includes("drain") || combined.includes("clog")) {
+      return "drain";
+    }
+    if (combined.includes("leak") || combined.includes("drip")) {
+      return "leak";
+    }
+    if (combined.includes("toilet")) {
+      return "toilet";
+    }
+    if (combined.includes("faucet") || combined.includes("sink")) {
+      return "faucet";
+    }
+    if (combined.includes("gas") || combined.includes("line")) {
+      return "gas";
+    }
+    if (combined.includes("backflow") || combined.includes("prevention")) {
+      return "backflow";
+    }
+    if (combined.includes("commercial") || combined.includes("business")) {
+      return "commercial";
+    }
+    
+    return "general";
+  }
+
+  // Zapier webhook endpoint for receiving job photos
+  app.post("/api/photos/webhook", async (req, res) => {
+    try {
+      const { photos, jobId, jobDescription, customerName } = req.body;
+
+      // Support both single photo and batch of photos
+      const photoArray = Array.isArray(photos) ? photos : [{ photoUrl: req.body.photoUrl, jobId, jobDescription, customerName }];
+
+      if (!photoArray.length || !photoArray[0].photoUrl) {
+        return res.status(400).json({
+          message: "Photo URL is required. Send either 'photoUrl' or 'photos' array with photoUrl in each object."
+        });
+      }
+
+      console.log(`[Zapier Webhook] Received ${photoArray.length} photo(s) for processing`);
+
+      const { analyzePhotoQuality } = await import("./lib/photoQualityAnalyzer");
+      const processedPhotos = [];
+      const rejectedPhotos = [];
+
+      // Process each photo through AI quality analysis
+      for (const photo of photoArray) {
+        if (!photo.photoUrl) {
+          rejectedPhotos.push({ error: "Missing photoUrl", photo });
+          continue;
+        }
+
+        try {
+          console.log(`[Zapier Webhook] Analyzing photo: ${photo.photoUrl}`);
+          const analysis = await analyzePhotoQuality(photo.photoUrl, photo.jobDescription || jobDescription);
+
+          if (!analysis.shouldKeep) {
+            console.log(`[Zapier Webhook] ❌ Rejected - ${analysis.reasoning}`);
+            rejectedPhotos.push({ 
+              photoUrl: photo.photoUrl, 
+              reason: analysis.reasoning,
+              score: analysis.qualityScore
+            });
+            continue;
+          }
+
+          // Categorize photo
+          const category = categorizePhotoFromAnalysis(analysis.reasoning, analysis.categories);
+
+          // Generate unique photo ID from URL hash
+          const photoId = Buffer.from(photo.photoUrl).toString('base64').substring(0, 32);
+          const projectId = photo.jobId || jobId || 'zapier-import';
+
+          const processedPhoto = {
+            companyCamPhotoId: photoId,
+            companyCamProjectId: projectId,
+            photoUrl: photo.photoUrl,
+            thumbnailUrl: photo.photoUrl,
+            category,
+            aiDescription: analysis.reasoning,
+            tags: analysis.categories,
+            qualityAnalyzed: true,
+            isGoodQuality: analysis.isGoodQuality,
+            shouldKeep: analysis.shouldKeep,
+            qualityScore: analysis.qualityScore,
+            qualityReasoning: analysis.reasoning,
+            analyzedAt: new Date(),
+            uploadedAt: new Date(),
+          };
+
+          processedPhotos.push(processedPhoto);
+          console.log(`[Zapier Webhook] ✅ Accepted - Category: ${category}, Score: ${analysis.qualityScore}/10`);
+        } catch (error: any) {
+          console.error(`[Zapier Webhook] Error processing photo ${photo.photoUrl}:`, error);
+          rejectedPhotos.push({ 
+            photoUrl: photo.photoUrl, 
+            error: error.message 
+          });
+        }
+      }
+
+      // Save accepted photos to database
+      const savedPhotos = processedPhotos.length > 0 
+        ? await storage.savePhotos(processedPhotos)
+        : [];
+
+      console.log(`[Zapier Webhook] Complete: ${savedPhotos.length} saved, ${rejectedPhotos.length} rejected`);
+
+      res.json({
+        success: true,
+        imported: savedPhotos.length,
+        rejected: rejectedPhotos.length,
+        photos: savedPhotos,
+        rejectedPhotos: rejectedPhotos,
+        message: `Successfully imported ${savedPhotos.length} quality photos. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
+      });
+    } catch (error: any) {
+      console.error("[Zapier Webhook] Error:", error);
+      res.status(500).json({
+        message: "Photo webhook processing failed",
+        error: error.message
+      });
+    }
+  });
+
   // Create before/after composites from job photos
   app.post("/api/photos/create-before-after", async (req, res) => {
     try {
