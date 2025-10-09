@@ -1263,6 +1263,14 @@ ${rssItems}
 
   // Zapier webhook endpoint for receiving job photos
   app.post("/api/photos/webhook", async (req, res) => {
+    const timestamp = new Date().toISOString();
+    console.log(`\n========================================`);
+    console.log(`[Zapier Webhook] ${timestamp}`);
+    console.log(`[Zapier Webhook] Incoming request from: ${req.ip}`);
+    console.log(`[Zapier Webhook] Headers:`, JSON.stringify(req.headers, null, 2));
+    console.log(`[Zapier Webhook] Body:`, JSON.stringify(req.body, null, 2));
+    console.log(`========================================\n`);
+    
     try {
       const { photos, jobId, jobDescription, customerName } = req.body;
 
@@ -1270,12 +1278,13 @@ ${rssItems}
       const photoArray = Array.isArray(photos) ? photos : [{ photoUrl: req.body.photoUrl, jobId, jobDescription, customerName }];
 
       if (!photoArray.length || !photoArray[0].photoUrl) {
+        console.log(`[Zapier Webhook] ❌ ERROR: Missing photoUrl`);
         return res.status(400).json({
           message: "Photo URL is required. Send either 'photoUrl' or 'photos' array with photoUrl in each object."
         });
       }
 
-      console.log(`[Zapier Webhook] Received ${photoArray.length} photo(s) for processing`);
+      console.log(`[Zapier Webhook] ✅ Received ${photoArray.length} photo(s) for processing`);
 
       const { analyzePhotoQuality } = await import("./lib/photoQualityAnalyzer");
       const processedPhotos = [];
