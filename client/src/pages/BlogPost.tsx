@@ -170,10 +170,10 @@ export default function BlogPost() {
               />
             )}
 
-            {/* Inline Review Card - positioned to float within content */}
+            {/* Inline Review Card - positioned to float within content, pushed down */}
             <div className="relative">
               {post.category && BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category] && (
-                <div className="md:float-right md:ml-6 md:w-80 lg:w-96 mb-6">
+                <div className="md:float-right md:ml-6 md:w-80 lg:w-96 mb-6 mt-24 md:mt-32">
                   <InlineReviewCard 
                     category={BLOG_CATEGORY_TO_REVIEW_CATEGORY[post.category]}
                     minRating={4}
