@@ -240,6 +240,14 @@ export const companyCamPhotos = pgTable("companycam_photos", {
   aiDescription: text("ai_description"), // What the AI sees in the photo
   tags: text("tags").array(), // Additional tags from AI analysis
   
+  // AI quality analysis (OpenAI Vision)
+  qualityAnalyzed: boolean("quality_analyzed").notNull().default(false),
+  isGoodQuality: boolean("is_good_quality"),
+  shouldKeep: boolean("should_keep"),
+  qualityScore: integer("quality_score"), // 1-10
+  qualityReasoning: text("quality_reasoning"),
+  analyzedAt: timestamp("analyzed_at"),
+  
   // Metadata
   uploadedAt: timestamp("uploaded_at"),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
@@ -250,6 +258,7 @@ export const companyCamPhotos = pgTable("companycam_photos", {
 }, (table) => ({
   categoryIdx: index("companycam_photos_category_idx").on(table.category),
   projectIdIdx: index("companycam_photos_project_id_idx").on(table.companyCamProjectId),
+  qualityIdx: index("companycam_photos_quality_idx").on(table.shouldKeep),
 }));
 
 export const insertCompanyCamPhotoSchema = createInsertSchema(companyCamPhotos).omit({
