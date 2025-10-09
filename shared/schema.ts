@@ -19,12 +19,18 @@ export const blogPosts = pgTable("blog_posts", {
   publishDate: timestamp("publish_date").notNull().defaultNow(),
   category: text("category").notNull(),
   featuredImage: text("featured_image"),
+  imageId: varchar("image_id"), // Links to companyCamPhotos
   metaDescription: text("meta_description"),
   published: boolean("published").notNull().default(true),
+  isScheduled: boolean("is_scheduled").notNull().default(false), // Auto-scheduled vs manual
+  scheduledFor: timestamp("scheduled_for"), // Future publish date for scheduled posts
+  generatedByAI: boolean("generated_by_ai").notNull().default(false), // Track AI-generated posts
 }, (table) => ({
   publishDateIdx: index("blog_posts_publish_date_idx").on(table.publishDate),
   categoryIdx: index("blog_posts_category_idx").on(table.category),
   publishedIdx: index("blog_posts_published_idx").on(table.published),
+  imageIdIdx: index("blog_posts_image_id_idx").on(table.imageId),
+  scheduledIdx: index("blog_posts_scheduled_idx").on(table.isScheduled, table.scheduledFor),
 }));
 
 export const products = pgTable("products", {
@@ -248,6 +254,11 @@ export const companyCamPhotos = pgTable("companycam_photos", {
   qualityReasoning: text("quality_reasoning"),
   analyzedAt: timestamp("analyzed_at"),
   
+  // Blog topic suggestion (for auto-generation)
+  suggestedBlogTopic: text("suggested_blog_topic"), // AI-suggested blog post topic
+  blogTopicAnalyzed: boolean("blog_topic_analyzed").notNull().default(false),
+  blogTopicAnalyzedAt: timestamp("blog_topic_analyzed_at"),
+  
   // Metadata
   uploadedAt: timestamp("uploaded_at"),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
@@ -259,6 +270,7 @@ export const companyCamPhotos = pgTable("companycam_photos", {
   categoryIdx: index("companycam_photos_category_idx").on(table.category),
   projectIdIdx: index("companycam_photos_project_id_idx").on(table.companyCamProjectId),
   qualityIdx: index("companycam_photos_quality_idx").on(table.shouldKeep),
+  blogTopicIdx: index("companycam_photos_blog_topic_idx").on(table.blogTopicAnalyzed, table.usedInBlogPostId),
 }));
 
 export const insertCompanyCamPhotoSchema = createInsertSchema(companyCamPhotos).omit({
