@@ -80,6 +80,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // SEO Landing Pages
         { url: 'plumber-near-me', lastmod: now, changefreq: 'weekly', priority: '0.9' },
+        { url: 'commercial-services', lastmod: now, changefreq: 'weekly', priority: '0.9' },
         
         // Main Service Pages
         { url: 'water-heater-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
