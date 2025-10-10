@@ -3,6 +3,13 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business in Austin and Marble Falls, Texas. It provides service information, covered areas, and blog content, alongside an online store for maintenance memberships. The project focuses on improving local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance.
 
+## Recent Changes (October 2025)
+- **Commercial Customer Showcase:** Added CommercialCustomersShowcase component to 7 service pages (Commercial Plumbing, Backflow Testing, Gas Services, Drain Cleaning, Hydro Jetting, Water Heater Services, Permit Resolution) with grayscale filter design and responsive grid layout positioning before FAQs.
+- **Meta Description SEO Optimization:** All 20+ pages now include phone numbers in meta descriptions within optimal 120-160 character range (14 pages at 150-160 chars for maximum SEO impact).
+- **Page Title Branding Standardization:** Updated 5 service page titles to use consistent "Economy Plumbing" branding (Water Heater Services, Water Heater Guide, Commercial Plumbing, Faucet Installation, Gas Leak Detection) while preserving water heater keywords for SEO.
+- **Stripe Payment Fix:** Corrected price rounding issue in Checkout.tsx (changed .toFixed(0) to .toFixed(2) on lines 300 and 474) to display accurate cents in Stripe checkout.
+- **Admin Security:** All commercial customer admin routes protected with requireAdmin middleware.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -21,7 +28,7 @@ Preferred communication style: Simple, everyday language.
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
-- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews.
+- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **Google Reviews Integration:** Bulk import via DataForSEO API; ongoing updates via Google Places API with deduplication, quality filtering, and auto-categorization.
 - **Performance Optimizations:** Gzip/brotli compression, aggressive API caching with Cache-Control headers, 1-year immutable cache for static assets, and strategic database indexing.
 - **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with smart topic suggestions, automated weekly creation, future-dated scheduling, and seasonal awareness.
