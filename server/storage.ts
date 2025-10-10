@@ -31,6 +31,8 @@ import {
   type InsertTrackingNumber,
   type CommercialCustomer,
   type InsertCommercialCustomer,
+  type PageMetadata,
+  type InsertPageMetadata,
   users,
   blogPosts,
   products,
@@ -46,7 +48,8 @@ import {
   notFoundErrors,
   importedPhotos,
   trackingNumbers,
-  commercialCustomers
+  commercialCustomers,
+  pageMetadata
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -148,6 +151,12 @@ export interface IStorage {
   createCommercialCustomer(customer: InsertCommercialCustomer): Promise<CommercialCustomer>;
   updateCommercialCustomer(id: string, updates: Partial<InsertCommercialCustomer>): Promise<CommercialCustomer>;
   deleteCommercialCustomer(id: string): Promise<void>;
+  
+  // Page Metadata
+  getAllPageMetadata(): Promise<PageMetadata[]>;
+  getPageMetadataByPath(path: string): Promise<PageMetadata | undefined>;
+  upsertPageMetadata(metadata: InsertPageMetadata): Promise<PageMetadata>;
+  deletePageMetadata(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -2804,6 +2813,45 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(commercialCustomers)
       .where(eq(commercialCustomers.id, id));
+  }
+
+  // Page Metadata
+  async getAllPageMetadata(): Promise<PageMetadata[]> {
+    const results = await db
+      .select()
+      .from(pageMetadata)
+      .orderBy(pageMetadata.path);
+    return results;
+  }
+
+  async getPageMetadataByPath(path: string): Promise<PageMetadata | undefined> {
+    const [result] = await db
+      .select()
+      .from(pageMetadata)
+      .where(eq(pageMetadata.path, path))
+      .limit(1);
+    return result;
+  }
+
+  async upsertPageMetadata(metadata: InsertPageMetadata): Promise<PageMetadata> {
+    const [result] = await db
+      .insert(pageMetadata)
+      .values(metadata)
+      .onConflictDoUpdate({
+        target: pageMetadata.path,
+        set: {
+          ...metadata,
+          updatedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async deletePageMetadata(id: string): Promise<void> {
+    await db
+      .delete(pageMetadata)
+      .where(eq(pageMetadata.id, id));
   }
 }
 

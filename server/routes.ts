@@ -2960,6 +2960,63 @@ ${rssItems}
     }
   });
 
+  // Page Metadata Admin Routes
+  
+  // Get all page metadata (admin only)
+  app.get("/api/admin/page-metadata", requireAdmin, async (req, res) => {
+    try {
+      const metadata = await storage.getAllPageMetadata();
+      res.json({ metadata });
+    } catch (error: any) {
+      console.error("[Page Metadata] Error fetching all metadata:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get page metadata by path (public - for SEOHead component)
+  app.get("/api/page-metadata/:path(*)", async (req, res) => {
+    try {
+      const path = `/${req.params.path}`; // Add leading slash
+      const metadata = await storage.getPageMetadataByPath(path);
+      
+      if (!metadata) {
+        return res.status(404).json({ error: "Metadata not found" });
+      }
+      
+      res.set('Cache-Control', 'public, max-age=3600, must-revalidate'); // Cache for 1 hour
+      res.json({ metadata });
+    } catch (error: any) {
+      console.error("[Page Metadata] Error fetching metadata:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create or update page metadata (admin only)
+  app.put("/api/admin/page-metadata", requireAdmin, async (req, res) => {
+    try {
+      const { insertPageMetadataSchema } = await import("@shared/schema");
+      const data = insertPageMetadataSchema.parse(req.body);
+      
+      const metadata = await storage.upsertPageMetadata(data);
+      res.json({ metadata });
+    } catch (error: any) {
+      console.error("[Page Metadata] Error upserting metadata:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete page metadata (admin only)
+  app.delete("/api/admin/page-metadata/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deletePageMetadata(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[Page Metadata] Error deleting metadata:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get approved customer success stories (public)
   app.get("/api/customer-success-stories", async (req, res) => {
     try {
