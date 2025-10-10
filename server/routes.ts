@@ -176,7 +176,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         .map(post => {
           const postDate = new Date(post.publishDate).toISOString().split('T')[0];
           return `  <url>
-    <loc>${baseUrl}/blog/${post.slug}</loc>
+    <loc>${baseUrl}/${post.slug}</loc>
     <lastmod>${postDate}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -577,7 +577,7 @@ ${productUrls}
       const rssItems = posts
         .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
         .map(post => {
-          const postUrl = `${baseUrl}/blog/${post.slug}`;
+          const postUrl = `${baseUrl}/${post.slug}`;
           
           // For RSS, convert WebP images to JPEG for better compatibility
           let imageUrl = post.featuredImage ? 
