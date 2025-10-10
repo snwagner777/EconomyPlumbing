@@ -431,3 +431,5 @@ export type SystemSetting = typeof systemSettings.$inferSelect;
 export type InsertSystemSetting = z.infer<typeof insertSystemSettingSchema>;
 export type NotFoundError = typeof notFoundErrors.$inferSelect;
 export type InsertNotFoundError = z.infer<typeof insertNotFoundErrorSchema>;
+export type TrackingNumber = typeof trackingNumbers.$inferSelect;
+export type InsertTrackingNumber = z.infer<typeof insertTrackingNumberSchema>;

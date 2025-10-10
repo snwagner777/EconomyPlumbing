@@ -25,6 +25,8 @@ import {
   type InsertNotFoundError,
   type ImportedPhoto,
   type InsertImportedPhoto,
+  type TrackingNumber,
+  type InsertTrackingNumber,
   users,
   blogPosts,
   products,
@@ -37,7 +39,8 @@ import {
   companyCamPhotos,
   beforeAfterComposites,
   notFoundErrors,
-  importedPhotos
+  importedPhotos,
+  trackingNumbers
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -115,6 +118,15 @@ export interface IStorage {
   // Imported Photos (Google Drive)
   createImportedPhoto(photo: InsertImportedPhoto): Promise<ImportedPhoto>;
   getAllImportedPhotos(): Promise<ImportedPhoto[]>;
+  
+  // Tracking Numbers (Dynamic Phone Numbers)
+  getAllTrackingNumbers(): Promise<TrackingNumber[]>;
+  getActiveTrackingNumbers(): Promise<TrackingNumber[]>;
+  getTrackingNumberByKey(channelKey: string): Promise<TrackingNumber | undefined>;
+  getDefaultTrackingNumber(): Promise<TrackingNumber | undefined>;
+  createTrackingNumber(number: InsertTrackingNumber): Promise<TrackingNumber>;
+  updateTrackingNumber(id: string, updates: Partial<InsertTrackingNumber>): Promise<TrackingNumber>;
+  deleteTrackingNumber(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -2586,6 +2598,63 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(importedPhotos)
       .orderBy(sql`${importedPhotos.fetchedAt} DESC`);
+  }
+
+  // Tracking Numbers methods
+  async getAllTrackingNumbers(): Promise<TrackingNumber[]> {
+    return await db
+      .select()
+      .from(trackingNumbers)
+      .orderBy(sql`${trackingNumbers.sortOrder} ASC, ${trackingNumbers.channelName} ASC`);
+  }
+
+  async getActiveTrackingNumbers(): Promise<TrackingNumber[]> {
+    return await db
+      .select()
+      .from(trackingNumbers)
+      .where(eq(trackingNumbers.isActive, true))
+      .orderBy(sql`${trackingNumbers.sortOrder} ASC, ${trackingNumbers.channelName} ASC`);
+  }
+
+  async getTrackingNumberByKey(channelKey: string): Promise<TrackingNumber | undefined> {
+    const [result] = await db
+      .select()
+      .from(trackingNumbers)
+      .where(eq(trackingNumbers.channelKey, channelKey))
+      .limit(1);
+    return result;
+  }
+
+  async getDefaultTrackingNumber(): Promise<TrackingNumber | undefined> {
+    const [result] = await db
+      .select()
+      .from(trackingNumbers)
+      .where(eq(trackingNumbers.isDefault, true))
+      .limit(1);
+    return result;
+  }
+
+  async createTrackingNumber(number: InsertTrackingNumber): Promise<TrackingNumber> {
+    const [created] = await db
+      .insert(trackingNumbers)
+      .values(number)
+      .returning();
+    return created;
+  }
+
+  async updateTrackingNumber(id: string, updates: Partial<InsertTrackingNumber>): Promise<TrackingNumber> {
+    const [updated] = await db
+      .update(trackingNumbers)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(trackingNumbers.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteTrackingNumber(id: string): Promise<void> {
+    await db
+      .delete(trackingNumbers)
+      .where(eq(trackingNumbers.id, id));
   }
 }
 
