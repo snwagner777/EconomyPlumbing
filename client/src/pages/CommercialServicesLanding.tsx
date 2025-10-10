@@ -507,15 +507,6 @@ export default function CommercialServicesLanding() {
 
                 <AccordionItem value="item-4">
                   <AccordionTrigger className="text-left">
-                    Do you provide maintenance contracts for multiple locations?
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    Yes, we specialize in multi-location service agreements. You'll get a dedicated account manager, centralized billing, consistent service quality across all sites, and volume discounts. We currently service businesses with 1-15 locations throughout Central Texas.
-                  </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem value="item-5">
-                  <AccordionTrigger className="text-left">
                     Can you work during off-hours to avoid disrupting business?
                   </AccordionTrigger>
                   <AccordionContent>
@@ -523,7 +514,7 @@ export default function CommercialServicesLanding() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-6">
+                <AccordionItem value="item-5">
                   <AccordionTrigger className="text-left">
                     How do you handle billing for commercial accounts?
                   </AccordionTrigger>
