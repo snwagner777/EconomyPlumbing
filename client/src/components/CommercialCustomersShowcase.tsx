@@ -59,7 +59,7 @@ export default function CommercialCustomersShowcase() {
                   <img
                     src={customer.logoUrl}
                     alt={`${customer.name} logo`}
-                    className="h-16 w-auto object-contain mx-auto filter grayscale opacity-60 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-300"
+                    className="h-16 w-auto object-contain mx-auto opacity-90 group-hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                     data-testid={`img-logo-${customer.id}`}
                   />
@@ -72,7 +72,7 @@ export default function CommercialCustomersShowcase() {
                   <img
                     src={customer.logoUrl}
                     alt={`${customer.name} logo`}
-                    className="h-16 w-auto object-contain mx-auto filter grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
+                    className="h-16 w-auto object-contain mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                     data-testid={`img-logo-${customer.id}`}
                   />
