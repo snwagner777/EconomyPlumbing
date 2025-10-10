@@ -8,10 +8,10 @@ export default function CommercialCustomersShowcase() {
 
   if (isLoading) {
     return (
-      <div className="py-12 bg-muted/30">
+      <div className="py-12 bg-black">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <p className="text-sm text-muted-foreground">Loading our trusted partners...</p>
+            <p className="text-sm text-white/60">Loading our trusted partners...</p>
           </div>
         </div>
       </div>
@@ -28,70 +28,77 @@ export default function CommercialCustomersShowcase() {
     return null;
   }
 
+  // Duplicate the customers array for seamless infinite scroll
+  const duplicatedCustomers = [...activeCustomers, ...activeCustomers];
+
   return (
-    <div className="py-12 bg-muted/30">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3">
+    <div className="py-16 bg-black overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <div className="text-center">
+          <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-white">
             Trusted by Austin & Marble Falls Businesses
           </h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-white/70 max-w-2xl mx-auto">
             Join these local businesses who trust Economy Plumbing Services for their commercial plumbing needs
           </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 items-center justify-items-center">
-          {activeCustomers.map((customer) => (
+      {/* Scrolling Logos Container */}
+      <div className="relative">
+        {/* Gradient Overlays - Responsive widths for mobile */}
+        <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 md:w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none"></div>
+        <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-20 md:w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none"></div>
+        
+        {/* Scrolling Track */}
+        <div className="flex animate-scroll pause-animation">
+          {duplicatedCustomers.map((customer, index) => (
             <div
-              key={customer.id}
-              className="group relative"
-              data-testid={`customer-logo-${customer.id}`}
+              key={`${customer.id}-${index}`}
+              className="flex-shrink-0 px-8 flex items-center justify-center"
+              data-testid={`customer-logo-${customer.id}-${index}`}
             >
               {customer.websiteUrl ? (
                 <a
                   href={customer.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block p-4 rounded-lg hover-elevate active-elevate-2 transition-all"
+                  className="block group transition-transform hover:scale-110 duration-300"
                   aria-label={`Visit ${customer.name} website`}
-                  data-testid={`link-customer-${customer.id}`}
+                  data-testid={`link-customer-${customer.id}-${index}`}
                 >
-                  <img
-                    src={customer.logoUrl}
-                    alt={`${customer.name} logo`}
-                    className="h-16 w-auto object-contain mx-auto opacity-90 group-hover:opacity-100 transition-opacity duration-300"
-                    loading="lazy"
-                    data-testid={`img-logo-${customer.id}`}
-                  />
-                  <p className="text-xs text-center mt-2 text-muted-foreground group-hover:text-foreground transition-colors">
-                    {customer.name}
-                  </p>
+                  <div className="bg-white rounded-lg p-6 w-40 h-32 flex items-center justify-center">
+                    <img
+                      src={customer.logoUrl}
+                      alt={`${customer.name} logo`}
+                      className="max-h-20 max-w-full w-auto object-contain"
+                      loading="lazy"
+                      data-testid={`img-logo-${customer.id}-${index}`}
+                    />
+                  </div>
                 </a>
               ) : (
-                <div className="block p-4 rounded-lg">
-                  <img
-                    src={customer.logoUrl}
-                    alt={`${customer.name} logo`}
-                    className="h-16 w-auto object-contain mx-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
-                    loading="lazy"
-                    data-testid={`img-logo-${customer.id}`}
-                  />
-                  <p className="text-xs text-center mt-2 text-muted-foreground">
-                    {customer.name}
-                  </p>
+                <div className="block group transition-transform hover:scale-110 duration-300">
+                  <div className="bg-white rounded-lg p-6 w-40 h-32 flex items-center justify-center">
+                    <img
+                      src={customer.logoUrl}
+                      alt={`${customer.name} logo`}
+                      className="max-h-20 max-w-full w-auto object-contain"
+                      loading="lazy"
+                      data-testid={`img-logo-${customer.id}-${index}`}
+                    />
+                  </div>
                 </div>
               )}
             </div>
           ))}
         </div>
+      </div>
 
-        {activeCustomers.some(c => c.customerSince) && (
-          <div className="text-center mt-8">
-            <p className="text-sm text-muted-foreground">
-              Serving Austin and Marble Falls businesses since 2012
-            </p>
-          </div>
-        )}
+      <div className="text-center mt-12">
+        <p className="text-sm text-white/60">
+          Serving Austin and Marble Falls businesses since 2012
+        </p>
       </div>
     </div>
   );
