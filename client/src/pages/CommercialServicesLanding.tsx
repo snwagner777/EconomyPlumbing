@@ -489,7 +489,7 @@ export default function CommercialServicesLanding() {
                     What's included in the 25% off new customer offer?
                   </AccordionTrigger>
                   <AccordionContent>
-                    New business customers receive 25% off their first service call, including labor and parts. This applies to repairs, installations, or our initial facility assessment. Offer valid for commercial properties only. Cannot be combined with other discounts.
+                    New business customers receive 25% off their first service call, including labor and parts (maximum savings of $200). This applies to repairs, installations, or our initial facility assessment. Offer valid for commercial properties only. Cannot be combined with other discounts.
                   </AccordionContent>
                 </AccordionItem>
 
