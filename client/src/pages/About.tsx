@@ -79,7 +79,7 @@ export default function About() {
     <>
       <SEOHead
         title="About Economy Plumbing Services | Water Heater Experts | Austin & Marble Falls"
-        description="Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers. 24/7 emergency service. Serving Austin to Marble Falls."
+        description="Central Texas water heater experts since 2005. Tankless & traditional installation, repair, replacement. Licensed plumbers. Austin-Marble Falls. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/about"
         schema={organizationSchema}
       />
