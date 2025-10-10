@@ -104,7 +104,7 @@ export default function AdminDashboard() {
   };
 
   const handleCleanupSimilar = () => {
-    if (confirm("Run cleanup NOW? (Note: Cleanup runs automatically every 24 hours. This manual trigger is only needed if you want immediate results.) AI will compare photos and keep only the best quality version from each similar group. This action cannot be undone!")) {
+    if (confirm("Run cleanup on EXISTING photos? (Note: New photos are automatically checked for duplicates during import. This manual cleanup is for finding duplicates among already-saved photos.) AI will compare photos and keep only the best quality version from each similar group. This action cannot be undone!")) {
       cleanupMutation.mutate();
     }
   };
@@ -143,9 +143,9 @@ export default function AdminDashboard() {
                 data-testid="button-cleanup-similar"
               >
                 <ImageIcon className={`w-4 h-4 mr-2 ${cleanupMutation.isPending ? 'animate-spin' : ''}`} />
-                {cleanupMutation.isPending ? 'Finding Similar...' : 'Remove Similar Photos (Manual)'}
+                {cleanupMutation.isPending ? 'Finding Similar...' : 'Cleanup Existing Photos'}
               </Button>
-              <span className="text-xs text-muted-foreground">Runs automatically daily</span>
+              <span className="text-xs text-muted-foreground">New imports auto-checked</span>
             </div>
             <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
               <LogOut className="w-4 h-4 mr-2" />

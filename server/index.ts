@@ -382,11 +382,8 @@ async function refreshReviewsPeriodically() {
   startAutoBlogGeneration(storage);
   
   // Start Google Drive monitoring (checks every 5 minutes for new photos)
+  // Note: Duplicate detection now happens during import, before photos are saved
   startGoogleDriveMonitoring();
-  
-  // Start automated photo cleanup (runs daily to remove similar/duplicate photos)
-  const { startAutomatedPhotoCleanup } = await import('./lib/automatedPhotoCleanup');
-  startAutomatedPhotoCleanup();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

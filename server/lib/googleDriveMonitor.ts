@@ -2,6 +2,7 @@ import { google } from 'googleapis';
 import { storage } from '../storage';
 import { ObjectStorageService } from '../objectStorage';
 import { analyzeProductionPhoto } from './productionPhotoAnalyzer';
+import { comparePhotos } from './similarPhotoDetector';
 import sharp from 'sharp';
 
 const objectStorageService = new ObjectStorageService();
@@ -126,15 +127,21 @@ export async function monitorGoogleDriveFolder() {
         .filter(id => id != null)
     );
 
-    let newPhotosCount = 0;
+    // STEP 1: Download and analyze all new photos (but don't save yet)
+    const candidatePhotos: Array<{
+      file: any;
+      imageBuffer: Buffer;
+      analysis: any;
+      webpBuffer: Buffer;
+    }> = [];
+
+    console.log(`[Google Drive] Step 1: Downloading and analyzing ${files.filter(f => !processedGDriveIds.has(f.id!)).length} new photos...`);
 
     for (const file of files) {
       // Skip if already processed
       if (processedGDriveIds.has(file.id!)) {
         continue;
       }
-
-      console.log(`[Google Drive] Processing new photo: ${file.name}`);
 
       try {
         // Download the file
@@ -146,7 +153,6 @@ export async function monitorGoogleDriveFolder() {
         const imageBuffer = Buffer.from(fileResponse.data as ArrayBuffer);
 
         // Analyze production quality with OpenAI Vision
-        console.log(`[Google Drive] Analyzing photo quality: ${file.name}`);
         const analysis = await analyzeProductionPhoto(imageBuffer);
         
         // Skip non-production quality photos
@@ -162,17 +168,126 @@ export async function monitorGoogleDriveFolder() {
           .webp({ quality: 85 })
           .toBuffer();
 
+        candidatePhotos.push({
+          file,
+          imageBuffer,
+          analysis,
+          webpBuffer
+        });
+
+      } catch (error) {
+        console.error(`[Google Drive] Error processing ${file.name}:`, error);
+      }
+    }
+
+    if (candidatePhotos.length === 0) {
+      console.log('[Google Drive] No new photos to process');
+      return;
+    }
+
+    // STEP 2: Check for similar photos (among new photos and against existing)
+    console.log(`[Google Drive] Step 2: Checking ${candidatePhotos.length} new photos for duplicates...`);
+    
+    const photosToSkip = new Set<number>(); // Indices of photos to skip
+
+    // Check each new photo against existing photos
+    for (let i = 0; i < candidatePhotos.length; i++) {
+      const candidate = candidatePhotos[i];
+      
+      // Check against existing photos in database
+      const existingPhotos = await storage.getAllImportedPhotos();
+      
+      for (const existing of existingPhotos) {
+        try {
+          // Download existing photo for comparison
+          let existingBuffer: Buffer;
+          if (existing.url.startsWith('/public-objects/')) {
+            const file = await objectStorageService.searchPublicObject(existing.url.replace('/public-objects/', ''));
+            if (file) {
+              const [buffer] = await file.download();
+              existingBuffer = buffer;
+            } else {
+              continue;
+            }
+          } else {
+            continue; // Skip if can't download
+          }
+
+          // Compare photos using AI
+          const comparison = await comparePhotos(
+            candidate.webpBuffer,
+            existingBuffer,
+            candidate.analysis.description || '',
+            existing.aiDescription || ''
+          );
+
+          if (comparison.similarityScore >= 70) {
+            console.log(`[Google Drive] 🔍 Duplicate detected: ${candidate.file.name} is ${comparison.similarityScore}% similar to existing photo`);
+            console.log(`[Google Drive] ⏩ Skipping duplicate (keeping existing photo with quality ${existing.aiQuality})`);
+            photosToSkip.add(i);
+            break; // Skip this candidate
+          }
+        } catch (error) {
+          console.error(`[Google Drive] Error comparing photos:`, error);
+        }
+      }
+    }
+
+    // Check among new photos themselves
+    for (let i = 0; i < candidatePhotos.length; i++) {
+      if (photosToSkip.has(i)) continue;
+      
+      for (let j = i + 1; j < candidatePhotos.length; j++) {
+        if (photosToSkip.has(j)) continue;
+
+        const photo1 = candidatePhotos[i];
+        const photo2 = candidatePhotos[j];
+
+        try {
+          const comparison = await comparePhotos(
+            photo1.webpBuffer,
+            photo2.webpBuffer,
+            photo1.analysis.description || '',
+            photo2.analysis.description || ''
+          );
+
+          if (comparison.similarityScore >= 70) {
+            console.log(`[Google Drive] 🔍 Duplicate detected: ${photo1.file.name} and ${photo2.file.name} are ${comparison.similarityScore}% similar`);
+            
+            // Keep the higher quality photo
+            const keepFirst = photo1.analysis.qualityScore >= photo2.analysis.qualityScore;
+            const skipIndex = keepFirst ? j : i;
+            const keepName = keepFirst ? photo1.file.name : photo2.file.name;
+            
+            console.log(`[Google Drive] ⏩ Skipping ${candidatePhotos[skipIndex].file.name}, keeping ${keepName} (higher quality)`);
+            photosToSkip.add(skipIndex);
+          }
+        } catch (error) {
+          console.error(`[Google Drive] Error comparing new photos:`, error);
+        }
+      }
+    }
+
+    // STEP 3: Save only non-duplicate photos
+    let newPhotosCount = 0;
+    const bucketId = process.env.PUBLIC_OBJECT_SEARCH_PATHS?.split(',')[0]?.split('/')[1];
+    
+    if (!bucketId) {
+      console.error('[Google Drive] Object Storage bucket not configured');
+      return;
+    }
+
+    console.log(`[Google Drive] Step 3: Saving ${candidatePhotos.length - photosToSkip.size} unique photos...`);
+
+    for (let i = 0; i < candidatePhotos.length; i++) {
+      if (photosToSkip.has(i)) continue;
+
+      const { file, webpBuffer, analysis } = candidatePhotos[i];
+
+      try {
         // Generate filename with category
         const timestamp = Date.now();
-        const filename = `gdrive-${timestamp}.webp`;
-        
-        // Get the bucket ID from environment (set up by Object Storage)
-        const bucketId = process.env.PUBLIC_OBJECT_SEARCH_PATHS?.split(',')[0]?.split('/')[1];
-        if (!bucketId) {
-          console.error('[Google Drive] Object Storage bucket not configured');
-          continue;
-        }
-        
+        const filename = `gdrive-${timestamp}-${i}.webp`;
         const objectPath = `/${bucketId}/public/imported_photos/${analysis.category}/${filename}`;
 
         // Upload to Object Storage
@@ -201,14 +316,14 @@ export async function monitorGoogleDriveFolder() {
         newPhotosCount++;
 
       } catch (error) {
-        console.error(`[Google Drive] Error processing ${file.name}:`, error);
+        console.error(`[Google Drive] Error saving ${file.name}:`, error);
       }
     }
 
     if (newPhotosCount > 0) {
-      console.log(`[Google Drive] Successfully processed ${newPhotosCount} new photos`);
+      console.log(`[Google Drive] ✅ Successfully imported ${newPhotosCount} unique photos (skipped ${photosToSkip.size} duplicates)`);
     } else {
-      console.log('[Google Drive] No new photos to process');
+      console.log('[Google Drive] No new unique photos to process');
     }
 
   } catch (error) {
