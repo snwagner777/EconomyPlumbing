@@ -68,7 +68,8 @@ const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
 const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
-const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
+const AdminDashboard = lazy(() => import("@/pages/NewAdminDashboard"));
+const PhotoAdmin = lazy(() => import("@/pages/AdminDashboard"));
 const TrackingNumbersAdmin = lazy(() => import("@/pages/TrackingNumbersAdmin"));
 const SuccessStoriesAdmin = lazy(() => import("@/pages/SuccessStoriesAdmin"));
 const CommercialCustomersAdmin = lazy(() => import("@/pages/CommercialCustomersAdmin"));
@@ -185,6 +186,7 @@ function Router() {
       
       {/* Admin routes */}
       <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/photos" component={PhotoAdmin} />
       <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />
