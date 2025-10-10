@@ -1,12 +1,44 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean, index, bigint } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index, bigint, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Legacy admin users (username/password)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+});
+
+// OAuth users table (for Replit Auth)
+export const oauthUsers = pgTable("oauth_users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").unique(),
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Session storage table (for Replit Auth)
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// Admin whitelist (approved emails for OAuth login)
+export const adminWhitelist = pgTable("admin_whitelist", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  addedAt: timestamp("added_at").defaultNow(),
+  addedBy: varchar("added_by"), // Who whitelisted this email
+  notes: text("notes"), // Optional notes about this admin
 });
 
 export const blogPosts = pgTable("blog_posts", {
@@ -507,3 +539,7 @@ export type CommercialCustomer = typeof commercialCustomers.$inferSelect;
 export type InsertCommercialCustomer = z.infer<typeof insertCommercialCustomerSchema>;
 export type PageMetadata = typeof pageMetadata.$inferSelect;
 export type InsertPageMetadata = z.infer<typeof insertPageMetadataSchema>;
+export type OAuthUser = typeof oauthUsers.$inferSelect;
+export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
+export type AdminWhitelist = typeof adminWhitelist.$inferSelect;
+export type InsertAdminWhitelist = typeof adminWhitelist.$inferInsert;

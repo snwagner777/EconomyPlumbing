@@ -33,6 +33,10 @@ import {
   type InsertCommercialCustomer,
   type PageMetadata,
   type InsertPageMetadata,
+  type OAuthUser,
+  type UpsertOAuthUser,
+  type AdminWhitelist,
+  type InsertAdminWhitelist,
   users,
   blogPosts,
   products,
@@ -49,7 +53,9 @@ import {
   importedPhotos,
   trackingNumbers,
   commercialCustomers,
-  pageMetadata
+  pageMetadata,
+  oauthUsers,
+  adminWhitelist
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -157,6 +163,16 @@ export interface IStorage {
   getPageMetadataByPath(path: string): Promise<PageMetadata | undefined>;
   upsertPageMetadata(metadata: InsertPageMetadata): Promise<PageMetadata>;
   deletePageMetadata(id: string): Promise<void>;
+  
+  // OAuth Users
+  getOAuthUser(id: string): Promise<OAuthUser | undefined>;
+  upsertOAuthUser(user: UpsertOAuthUser): Promise<OAuthUser>;
+  
+  // Admin Whitelist
+  isEmailWhitelisted(email: string): Promise<boolean>;
+  addToWhitelist(data: InsertAdminWhitelist): Promise<AdminWhitelist>;
+  removeFromWhitelist(email: string): Promise<void>;
+  getAllWhitelistedEmails(): Promise<AdminWhitelist[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -2852,6 +2868,62 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(pageMetadata)
       .where(eq(pageMetadata.id, id));
+  }
+
+  // OAuth Users
+  async getOAuthUser(id: string): Promise<OAuthUser | undefined> {
+    const [user] = await db
+      .select()
+      .from(oauthUsers)
+      .where(eq(oauthUsers.id, id));
+    return user;
+  }
+
+  async upsertOAuthUser(userData: UpsertOAuthUser): Promise<OAuthUser> {
+    const [user] = await db
+      .insert(oauthUsers)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: oauthUsers.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  }
+
+  // Admin Whitelist
+  async isEmailWhitelisted(email: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(adminWhitelist)
+      .where(eq(adminWhitelist.email, email))
+      .limit(1);
+    return !!result;
+  }
+
+  async addToWhitelist(data: InsertAdminWhitelist): Promise<AdminWhitelist> {
+    const [result] = await db
+      .insert(adminWhitelist)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async removeFromWhitelist(email: string): Promise<void> {
+    await db
+      .delete(adminWhitelist)
+      .where(eq(adminWhitelist.email, email));
+  }
+
+  async getAllWhitelistedEmails(): Promise<AdminWhitelist[]> {
+    const results = await db
+      .select()
+      .from(adminWhitelist)
+      .orderBy(adminWhitelist.addedAt);
+    return results;
   }
 }
 

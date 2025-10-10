@@ -1,7 +1,5 @@
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
-import session from "express-session";
-import connectPgSimple from "connect-pg-simple";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import path from "path";
@@ -12,27 +10,9 @@ import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
+import { setupOAuth } from "./replitAuth";
 
 const app = express();
-
-// Session configuration for admin authentication
-const PgSession = connectPgSimple(session);
-app.use(session({
-  store: new PgSession({
-    conObject: {
-      connectionString: process.env.DATABASE_URL,
-    },
-    createTableIfMissing: true,
-  }),
-  secret: process.env.SESSION_SECRET || 'economy-plumbing-admin-secret-key-change-in-production',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-  }
-}));
 
 // Enable gzip/brotli compression for all responses
 app.use(compression({
@@ -365,6 +345,9 @@ async function refreshReviewsPeriodically() {
 }
 
 (async () => {
+  // Setup OAuth authentication (Replit Auth for Google/Apple/GitHub login)
+  await setupOAuth(app);
+  
   const server = await registerRoutes(app);
   
   // Seed service areas if needed (non-blocking)
