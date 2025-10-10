@@ -104,7 +104,7 @@ export default function AdminDashboard() {
   };
 
   const handleCleanupSimilar = () => {
-    if (confirm("Find and remove similar/duplicate photos? AI will compare photos and keep only the best quality version from each similar group. This action cannot be undone!")) {
+    if (confirm("Run cleanup NOW? (Note: Cleanup runs automatically every 24 hours. This manual trigger is only needed if you want immediate results.) AI will compare photos and keep only the best quality version from each similar group. This action cannot be undone!")) {
       cleanupMutation.mutate();
     }
   };
@@ -135,15 +135,18 @@ export default function AdminDashboard() {
               <RefreshCw className={`w-4 h-4 mr-2 ${reprocessMutation.isPending ? 'animate-spin' : ''}`} />
               {reprocessMutation.isPending ? 'Reprocessing...' : 'Reprocess All Photos'}
             </Button>
-            <Button 
-              variant="secondary" 
-              onClick={handleCleanupSimilar}
-              disabled={cleanupMutation.isPending}
-              data-testid="button-cleanup-similar"
-            >
-              <ImageIcon className={`w-4 h-4 mr-2 ${cleanupMutation.isPending ? 'animate-spin' : ''}`} />
-              {cleanupMutation.isPending ? 'Finding Similar...' : 'Remove Similar Photos'}
-            </Button>
+            <div className="flex flex-col items-end gap-1">
+              <Button 
+                variant="secondary" 
+                onClick={handleCleanupSimilar}
+                disabled={cleanupMutation.isPending}
+                data-testid="button-cleanup-similar"
+              >
+                <ImageIcon className={`w-4 h-4 mr-2 ${cleanupMutation.isPending ? 'animate-spin' : ''}`} />
+                {cleanupMutation.isPending ? 'Finding Similar...' : 'Remove Similar Photos (Manual)'}
+              </Button>
+              <span className="text-xs text-muted-foreground">Runs automatically daily</span>
+            </div>
             <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
               <LogOut className="w-4 h-4 mr-2" />
               Logout
