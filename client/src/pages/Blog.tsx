@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -21,6 +21,11 @@ interface BlogResponse {
 export default function Blog() {
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Scroll to top on initial page load
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const { data, isLoading } = useQuery<BlogResponse>({
     queryKey: ["/api/blog", currentPage, selectedCategory],

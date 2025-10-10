@@ -192,7 +192,7 @@ export default function SuccessStories() {
               <p className="text-muted-foreground text-lg" data-testid="text-no-results">
                 {searchQuery || selectedCategory !== "all" 
                   ? "No success stories match your filters. Try adjusting your search or category."
-                  : "No success stories yet. Check back soon for amazing transformations!"}
+                  : "Images coming soon! We're currently preparing amazing before & after transformations from our recent projects. Check back soon!"}
               </p>
             </div>
           )}

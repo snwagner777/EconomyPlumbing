@@ -130,6 +130,13 @@ export default function Header() {
                       About Us
                     </Link>
                     <Link
+                      href="/success-stories"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-success-stories"
+                    >
+                      Success Stories
+                    </Link>
+                    <Link
                       href="/blog"
                       className="block px-4 py-2 text-sm hover-elevate"
                       data-testid="link-blog"
@@ -330,6 +337,9 @@ export default function Header() {
                 <div className="pb-2 space-y-1">
                   <Link href="/about" className="block py-2 pl-4 text-sm" data-testid="mobile-link-about" onClick={() => setMobileMenuOpen(false)}>
                     About Us
+                  </Link>
+                  <Link href="/success-stories" className="block py-2 pl-4 text-sm" data-testid="mobile-link-success-stories" onClick={() => setMobileMenuOpen(false)}>
+                    Success Stories
                   </Link>
                   <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog" onClick={() => setMobileMenuOpen(false)}>
                     Blog
