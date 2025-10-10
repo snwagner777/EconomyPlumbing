@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 
 export default function CommercialServicesLanding() {
   const phoneConfig = usePhoneConfig();
@@ -219,6 +220,9 @@ export default function CommercialServicesLanding() {
             </div>
           </div>
         </section>
+
+        {/* Commercial Customers Showcase - Trust Signal */}
+        <CommercialCustomersShowcase />
 
         {/* Commercial Services */}
         <section className="py-16">

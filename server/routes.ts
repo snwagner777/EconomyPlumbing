@@ -2668,6 +2668,17 @@ ${rssItems}
     }
   });
 
+  // Get active commercial customers for trust signal display
+  app.get("/api/commercial-customers", async (req, res) => {
+    try {
+      const customers = await storage.getActiveCommercialCustomers();
+      res.json(customers);
+    } catch (error: any) {
+      console.error("[Commercial Customers] Error fetching customers:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get all tracking numbers including inactive (admin only)
   app.get("/api/admin/tracking-numbers", requireAdmin, async (req, res) => {
     try {

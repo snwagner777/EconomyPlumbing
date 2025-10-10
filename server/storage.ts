@@ -29,6 +29,8 @@ import {
   type InsertImportedPhoto,
   type TrackingNumber,
   type InsertTrackingNumber,
+  type CommercialCustomer,
+  type InsertCommercialCustomer,
   users,
   blogPosts,
   products,
@@ -43,7 +45,8 @@ import {
   beforeAfterComposites,
   notFoundErrors,
   importedPhotos,
-  trackingNumbers
+  trackingNumbers,
+  commercialCustomers
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -137,6 +140,11 @@ export interface IStorage {
   createTrackingNumber(number: InsertTrackingNumber): Promise<TrackingNumber>;
   updateTrackingNumber(id: string, updates: Partial<InsertTrackingNumber>): Promise<TrackingNumber>;
   deleteTrackingNumber(id: string): Promise<void>;
+  
+  // Commercial Customers
+  getActiveCommercialCustomers(): Promise<CommercialCustomer[]>;
+  getAllCommercialCustomers(): Promise<CommercialCustomer[]>;
+  createCommercialCustomer(customer: InsertCommercialCustomer): Promise<CommercialCustomer>;
 }
 
 export class MemStorage implements IStorage {
@@ -2743,6 +2751,32 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(trackingNumbers)
       .where(eq(trackingNumbers.id, id));
+  }
+
+  // Commercial Customers
+  async getActiveCommercialCustomers(): Promise<CommercialCustomer[]> {
+    const results = await db
+      .select()
+      .from(commercialCustomers)
+      .where(eq(commercialCustomers.active, true))
+      .orderBy(commercialCustomers.displayOrder);
+    return results;
+  }
+
+  async getAllCommercialCustomers(): Promise<CommercialCustomer[]> {
+    const results = await db
+      .select()
+      .from(commercialCustomers)
+      .orderBy(commercialCustomers.displayOrder);
+    return results;
+  }
+
+  async createCommercialCustomer(customer: InsertCommercialCustomer): Promise<CommercialCustomer> {
+    const [created] = await db
+      .insert(commercialCustomers)
+      .values(customer)
+      .returning();
+    return created;
   }
 }
 
