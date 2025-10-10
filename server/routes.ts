@@ -2711,6 +2711,18 @@ ${rssItems}
     }
   });
 
+  // Get approved customer success stories (public)
+  app.get("/api/customer-success-stories", async (req, res) => {
+    try {
+      const stories = await storage.getApprovedSuccessStories();
+      res.set('Cache-Control', 'public, max-age=300, must-revalidate'); // Cache for 5 minutes
+      res.json({ stories });
+    } catch (error: any) {
+      console.error("[Success Stories] Error fetching approved stories:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get all success stories (admin only)
   app.get("/api/admin/success-stories", requireAdmin, async (req, res) => {
     try {

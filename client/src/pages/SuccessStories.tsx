@@ -19,16 +19,23 @@ import Footer from "@/components/Footer";
 import SuccessStoryForm from "@/components/SuccessStoryForm";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
-import type { BeforeAfterComposite } from "@shared/schema";
+import type { BeforeAfterComposite, CustomerSuccessStory } from "@shared/schema";
 
 export default function SuccessStories() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const phoneConfig = usePhoneConfig();
 
-  const { data: composites, isLoading } = useQuery<BeforeAfterComposite[]>({
+  const { data: composites, isLoading: compositesLoading } = useQuery<BeforeAfterComposite[]>({
     queryKey: ["/api/before-after-composites"],
   });
+
+  const { data: customerStoriesData, isLoading: storiesLoading } = useQuery<{ stories: CustomerSuccessStory[] }>({
+    queryKey: ["/api/customer-success-stories"],
+  });
+
+  const customerStories = customerStoriesData?.stories || [];
+  const isLoading = compositesLoading || storiesLoading;
 
   // Filter composites
   const filteredComposites = composites?.filter((composite) => {
@@ -39,8 +46,20 @@ export default function SuccessStories() {
     return matchesCategory && matchesSearch;
   });
 
-  // Get unique categories
-  const categories = Array.from(new Set(composites?.map(c => c.category) || []));
+  // Filter customer stories
+  const filteredCustomerStories = customerStories?.filter((story) => {
+    const matchesCategory = selectedCategory === "all" || story.serviceCategory === selectedCategory;
+    const matchesSearch = !searchQuery || 
+      story.story.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      story.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      story.serviceCategory.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  // Get unique categories from both sources
+  const compositeCategories = composites?.map(c => c.category) || [];
+  const storyCategories = customerStories?.map(s => s.serviceCategory) || [];
+  const categories = Array.from(new Set([...compositeCategories, ...storyCategories]));
 
   return (
     <>
@@ -134,9 +153,10 @@ export default function SuccessStories() {
                 </Card>
               ))}
             </div>
-          ) : filteredComposites && filteredComposites.length > 0 ? (
+          ) : (filteredComposites && filteredComposites.length > 0) || (filteredCustomerStories && filteredCustomerStories.length > 0) ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredComposites.map((composite) => (
+              {/* Professional Before/After Composites */}
+              {filteredComposites?.map((composite) => (
                 <Card 
                   key={composite.id} 
                   className="overflow-hidden hover-elevate transition-all"
@@ -164,6 +184,54 @@ export default function SuccessStories() {
                       loading="lazy"
                       data-testid={`img-composite-${composite.id}`}
                     />
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Customer Success Stories with Review Schema */}
+              {filteredCustomerStories?.map((story) => (
+                <Card 
+                  key={story.id} 
+                  className="overflow-hidden hover-elevate transition-all"
+                  data-testid={`card-story-${story.id}`}
+                  itemScope 
+                  itemType="https://schema.org/Review"
+                >
+                  {/* Hidden schema data */}
+                  <meta itemProp="author" content={story.customerName} />
+                  <meta itemProp="datePublished" content={new Date(story.submittedAt).toISOString()} />
+                  <meta itemProp="reviewBody" content={story.story} />
+                  <div itemProp="itemReviewed" itemScope itemType="https://schema.org/LocalBusiness">
+                    <meta itemProp="name" content="Economy Plumbing Services" />
+                  </div>
+                  
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="default" data-testid={`badge-category-${story.id}`}>
+                        {story.serviceCategory}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground" data-testid={`text-date-${story.id}`}>
+                        {new Date(story.submittedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <CardTitle className="text-lg" data-testid={`text-customer-${story.id}`}>
+                      {story.customerName} - {story.location}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {story.collagePhotoUrl && (
+                      <img
+                        src={story.collagePhotoUrl}
+                        alt={`Before and after: ${story.story}`}
+                        className="w-full aspect-square object-cover rounded-md"
+                        loading="lazy"
+                        data-testid={`img-collage-${story.id}`}
+                      />
+                    )}
+                    <p className="text-sm text-muted-foreground line-clamp-3" itemProp="reviewBody" data-testid={`text-story-${story.id}`}>
+                      "{story.story}"
+                    </p>
                   </CardContent>
                 </Card>
               ))}
