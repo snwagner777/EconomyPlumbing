@@ -148,6 +148,20 @@ export default function CommercialServicesLanding() {
           </div>
         </section>
 
+        {/* Welcome Message */}
+        <section className="py-12 border-b">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                Thanks for Scanning Our Card!
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                We're excited to introduce ourselves and show you how we can help protect your business from plumbing emergencies. Economy Plumbing has been serving Austin and Marble Falls commercial properties since 2012, and we'd love the opportunity to earn your business with reliable, professional service you can count on.
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* Business Pain Points */}
         <section className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
