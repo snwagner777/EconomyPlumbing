@@ -159,18 +159,67 @@ export default function Blog() {
                       <ChevronLeft className="h-4 w-4" />
                     </Button>
 
-                    <div className="flex items-center gap-2">
-                      {Array.from({ length: data.pagination.totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          onClick={() => handlePageChange(page)}
-                          className="min-w-10"
-                          data-testid={`button-page-${page}`}
-                        >
-                          {page}
-                        </Button>
-                      ))}
+                    {/* Mobile: Simple page indicator */}
+                    <div className="md:hidden flex items-center justify-center px-4">
+                      <span className="text-sm font-medium" data-testid="text-page-indicator">
+                        Page {currentPage} of {data.pagination.totalPages}
+                      </span>
+                    </div>
+
+                    {/* Desktop: Smart pagination with ellipsis */}
+                    <div className="hidden md:flex items-center gap-2">
+                      {(() => {
+                        const totalPages = data.pagination.totalPages;
+                        const current = currentPage;
+                        const pages: (number | string)[] = [];
+
+                        if (totalPages <= 7) {
+                          // Show all pages if 7 or fewer
+                          for (let i = 1; i <= totalPages; i++) {
+                            pages.push(i);
+                          }
+                        } else {
+                          // Always show first page
+                          pages.push(1);
+
+                          if (current > 3) {
+                            pages.push('...');
+                          }
+
+                          // Show pages around current
+                          const start = Math.max(2, current - 1);
+                          const end = Math.min(totalPages - 1, current + 1);
+                          
+                          for (let i = start; i <= end; i++) {
+                            pages.push(i);
+                          }
+
+                          if (current < totalPages - 2) {
+                            pages.push('...');
+                          }
+
+                          // Always show last page
+                          pages.push(totalPages);
+                        }
+
+                        return pages.map((page, index) =>
+                          typeof page === 'number' ? (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              onClick={() => handlePageChange(page)}
+                              className="min-w-10"
+                              data-testid={`button-page-${page}`}
+                            >
+                              {page}
+                            </Button>
+                          ) : (
+                            <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">
+                              {page}
+                            </span>
+                          )
+                        );
+                      })()}
                     </div>
 
                     <Button
