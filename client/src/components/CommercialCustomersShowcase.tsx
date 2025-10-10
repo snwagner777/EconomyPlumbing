@@ -88,7 +88,7 @@ export default function CommercialCustomersShowcase() {
         {activeCustomers.some(c => c.customerSince) && (
           <div className="text-center mt-8">
             <p className="text-sm text-muted-foreground">
-              Serving Austin and Marble Falls businesses since 1955
+              Serving Austin and Marble Falls businesses since 2012
             </p>
           </div>
         )}
