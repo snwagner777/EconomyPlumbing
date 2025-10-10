@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { Download, Filter, Search, ExternalLink } from "lucide-react";
+import { Filter, Search, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -35,23 +35,6 @@ export default function SuccessStories() {
 
   // Get unique categories
   const categories = Array.from(new Set(composites?.map(c => c.category) || []));
-
-  const handleDownload = async (compositeId: string, caption: string) => {
-    try {
-      const response = await fetch(`/api/before-after-composites/${compositeId}/download`);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${caption?.slice(0, 50) || 'before-after'}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (error) {
-      console.error('Download failed:', error);
-    }
-  };
 
   return (
     <>
@@ -135,9 +118,6 @@ export default function SuccessStories() {
                   <CardContent>
                     <Skeleton className="aspect-square w-full" />
                   </CardContent>
-                  <CardFooter>
-                    <Skeleton className="h-10 w-full" />
-                  </CardFooter>
                 </Card>
               ))}
             </div>
@@ -163,7 +143,7 @@ export default function SuccessStories() {
                     </CardTitle>
                   </CardHeader>
                   
-                  <CardContent className="p-0">
+                  <CardContent className="p-0 pb-4">
                     <img
                       src={composite.compositeUrl}
                       alt={composite.caption || "Before and after comparison"}
@@ -172,18 +152,6 @@ export default function SuccessStories() {
                       data-testid={`img-composite-${composite.id}`}
                     />
                   </CardContent>
-                  
-                  <CardFooter className="pt-4">
-                    <Button
-                      onClick={() => handleDownload(composite.id, composite.caption || '')}
-                      className="w-full"
-                      variant="outline"
-                      data-testid={`button-download-${composite.id}`}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download (JPG)
-                    </Button>
-                  </CardFooter>
                 </Card>
               ))}
             </div>
