@@ -4,7 +4,7 @@ import faucetImage from "@assets/optimized/Toilet_and_faucet_installation_18dec3
 export default function FaucetInstallation() {
   return (
     <ServicePage
-      title="Faucet Installation Austin & Marble Falls | Economy"
+      title="Faucet Installation Austin & Marble Falls | Economy Plumbing"
       metaDescription="Austin & Marble Falls faucet, water heater & plumbing services. Kitchen, bathroom, shower valves. Fix leaks, upgrade fixtures. Call (512) 368-9159 today."
       canonical="https://www.plumbersthatcare.com/faucet-installation"
       heroImage={faucetImage}
