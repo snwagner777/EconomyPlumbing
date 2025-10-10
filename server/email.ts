@@ -215,3 +215,89 @@ export async function sendSalesNotificationEmail(data: {
     throw error;
   }
 }
+
+export async function sendSuccessStoryNotificationEmail(data: {
+  customerName: string;
+  email?: string;
+  phone?: string;
+  story: string;
+  serviceCategory: string;
+  location: string;
+  beforePhotoUrl: string;
+  afterPhotoUrl: string;
+  storyId: string;
+}) {
+  console.log('[Email] Starting sendSuccessStoryNotificationEmail for:', data.customerName);
+  
+  try {
+    console.log('[Email] Getting Resend client...');
+    const { client, fromEmail } = await getUncachableResendClient();
+    const contactEmail = process.env.CONTACT_EMAIL;
+
+    console.log('[Email] From email:', fromEmail || 'NOT SET');
+    console.log('[Email] To email (CONTACT_EMAIL):', contactEmail || 'NOT SET');
+
+    if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured');
+      throw new Error('CONTACT_EMAIL not configured');
+    }
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0ea5e9;">New Customer Success Story Submission</h2>
+        
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Customer Information</h3>
+          <p><strong>Name:</strong> ${data.customerName}</p>
+          ${data.email ? `<p><strong>Email:</strong> ${data.email}</p>` : ''}
+          ${data.phone ? `<p><strong>Phone:</strong> ${data.phone}</p>` : ''}
+          <p><strong>Location:</strong> ${data.location}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Service Details</h3>
+          <p><strong>Service Category:</strong> ${data.serviceCategory}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Customer Story</h3>
+          <p style="white-space: pre-wrap;">${data.story}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Photos</h3>
+          <p><strong>Before Photo:</strong> <a href="${data.beforePhotoUrl}">${data.beforePhotoUrl}</a></p>
+          <p><strong>After Photo:</strong> <a href="${data.afterPhotoUrl}">${data.afterPhotoUrl}</a></p>
+        </div>
+
+        <div style="background-color: #dbeafe; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0;"><strong>⚠️ Action Required:</strong> Please review and approve this success story in the admin panel.</p>
+          <p style="margin: 10px 0 0 0;"><a href="${process.env.REPL_URL || 'https://www.plumbersthatcare.com'}/admin" style="color: #0ea5e9; text-decoration: none;">Go to Admin Panel →</a></p>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="color: #6b7280; font-size: 14px;">
+          This submission was received through the Success Stories page.
+          Story ID: ${data.storyId}
+        </p>
+      </div>
+    `;
+
+    console.log('[Email] Attempting to send success story notification...');
+    console.log('[Email] Subject:', `New Success Story: ${data.customerName} - ${data.serviceCategory}`);
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: contactEmail,
+      subject: `New Success Story: ${data.customerName} - ${data.serviceCategory}`,
+      html: emailHtml,
+    });
+
+    console.log('[Email] ✓ Success story notification sent successfully! Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('[Email Error] ✗ Failed to send success story notification:', error);
+    console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+}

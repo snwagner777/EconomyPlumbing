@@ -72,6 +72,9 @@ export interface IStorage {
   // Customer success stories
   createCustomerSuccessStory(story: InsertCustomerSuccessStory): Promise<CustomerSuccessStory>;
   getApprovedSuccessStories(): Promise<CustomerSuccessStory[]>;
+  getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
+  approveSuccessStory(id: string): Promise<CustomerSuccessStory>;
+  deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
   getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined>;
@@ -1977,6 +1980,24 @@ Call (512) 368-9159 or schedule service online.`,
     return Array.from(this.customerSuccessStories.values()).filter(story => story.approved);
   }
 
+  async getAllSuccessStories(): Promise<CustomerSuccessStory[]> {
+    return Array.from(this.customerSuccessStories.values());
+  }
+
+  async approveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+    const story = this.customerSuccessStories.get(id);
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    story.approved = true;
+    this.customerSuccessStories.set(id, story);
+    return story;
+  }
+
+  async deleteSuccessStory(id: string): Promise<void> {
+    this.customerSuccessStories.delete(id);
+  }
+
   async getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined> {
     return Array.from(this.serviceAreas.values()).find(area => area.slug === slug);
   }
@@ -2328,6 +2349,28 @@ export class DatabaseStorage implements IStorage {
 
   async getApprovedSuccessStories(): Promise<CustomerSuccessStory[]> {
     return await db.select().from(customerSuccessStories).where(eq(customerSuccessStories.approved, true));
+  }
+
+  async getAllSuccessStories(): Promise<CustomerSuccessStory[]> {
+    return await db.select().from(customerSuccessStories);
+  }
+
+  async approveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+    const [story] = await db
+      .update(customerSuccessStories)
+      .set({ approved: true })
+      .where(eq(customerSuccessStories.id, id))
+      .returning();
+    
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    
+    return story;
+  }
+
+  async deleteSuccessStory(id: string): Promise<void> {
+    await db.delete(customerSuccessStories).where(eq(customerSuccessStories.id, id));
   }
 
   async getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined> {

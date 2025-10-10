@@ -2,11 +2,11 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSubmissionSchema, type InsertGoogleReview, companyCamPhotos, blogPosts } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
-import { sendContactFormEmail } from "./email";
+import { sendContactFormEmail, sendSuccessStoryNotificationEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
@@ -723,6 +723,114 @@ ${rssItems}
       });
     } catch (error: any) {
       res.status(400).json({ message: "Error submitting form: " + error.message });
+    }
+  });
+
+  // Customer Success Story submission with spam protection and photo upload
+  app.post("/api/success-stories", async (req, res) => {
+    try {
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      
+      // Spam protection 1: Honeypot field check
+      if (req.body.website || req.body.url || req.body.company_website) {
+        console.log('[Spam] Honeypot triggered for success story from IP:', clientIp);
+        return res.status(400).json({ message: "Invalid form submission" });
+      }
+      
+      // Spam protection 2: Rate limiting (1 minute window)
+      const lastSubmission = submissionRateLimit.get(clientIp);
+      if (lastSubmission && (now - lastSubmission < 60000)) {
+        console.log('[Spam] Rate limit exceeded for IP:', clientIp);
+        return res.status(429).json({ 
+          message: "Too many submissions. Please wait a moment before trying again." 
+        });
+      }
+      
+      // Spam protection 3: Timestamp validation
+      if (req.body.formStartTime) {
+        const formStartTime = parseInt(req.body.formStartTime);
+        const fillTime = now - formStartTime;
+        if (fillTime < 3000) {
+          console.log('[Spam] Success story form filled too quickly for IP:', clientIp, 'Fill time:', fillTime);
+          return res.status(400).json({ message: "Invalid form submission" });
+        }
+      }
+      
+      // Remove spam protection fields and extract photo data
+      const { website, url, company_website, formStartTime, beforePhoto, afterPhoto, ...storyData } = req.body;
+      
+      // Validate that photos are provided
+      if (!beforePhoto || !afterPhoto) {
+        return res.status(400).json({ message: "Both before and after photos are required" });
+      }
+      
+      // Initialize Object Storage Service
+      const objectStorageService = new ObjectStorageService();
+      
+      // Upload photos to object storage (.private directory since they need approval)
+      const publicSearchPath = process.env.PUBLIC_OBJECT_SEARCH_PATHS?.split(',')[0];
+      if (!publicSearchPath) {
+        throw new Error('Object storage not configured');
+      }
+      
+      // Extract bucket ID from path like /replit-objstore-xxx/public
+      const bucketId = publicSearchPath.split('/').filter(p => p.startsWith('replit-objstore-'))[0];
+      if (!bucketId) {
+        throw new Error('Could not determine bucket ID');
+      }
+      
+      const timestamp = Date.now();
+      
+      // Decode base64 photos and upload
+      const beforeBuffer = Buffer.from(beforePhoto.split(',')[1] || beforePhoto, 'base64');
+      const afterBuffer = Buffer.from(afterPhoto.split(',')[1] || afterPhoto, 'base64');
+      
+      const beforePhotoPath = `/${bucketId}/.private/success_stories/before_${timestamp}.jpg`;
+      const afterPhotoPath = `/${bucketId}/.private/success_stories/after_${timestamp}.jpg`;
+      
+      const beforeUrl = await objectStorageService.uploadBuffer(beforeBuffer, beforePhotoPath, 'image/jpeg');
+      const afterUrl = await objectStorageService.uploadBuffer(afterBuffer, afterPhotoPath, 'image/jpeg');
+      
+      // Create success story with photo URLs
+      const storyWithPhotos = {
+        ...storyData,
+        beforePhotoUrl: beforeUrl,
+        afterPhotoUrl: afterUrl
+      };
+      
+      const validatedData = insertCustomerSuccessStorySchema.parse(storyWithPhotos);
+      const story = await storage.createCustomerSuccessStory(validatedData);
+      
+      // Update rate limit tracking
+      submissionRateLimit.set(clientIp, now);
+      
+      // Send email notification to admin
+      try {
+        await sendSuccessStoryNotificationEmail({
+          customerName: validatedData.customerName,
+          email: validatedData.email || undefined,
+          phone: validatedData.phone || undefined,
+          story: validatedData.story,
+          serviceCategory: validatedData.serviceCategory,
+          location: validatedData.location,
+          beforePhotoUrl: beforeUrl,
+          afterPhotoUrl: afterUrl,
+          storyId: story.id
+        });
+      } catch (emailError) {
+        console.error('Email sending failed:', emailError);
+        // Continue even if email fails - submission is still saved
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Thank you for sharing your story! We'll review it and publish it soon.",
+        storyId: story.id 
+      });
+    } catch (error: any) {
+      console.error('Success story submission error:', error);
+      res.status(400).json({ message: "Error submitting story: " + error.message });
     }
   });
 
@@ -2598,6 +2706,41 @@ ${rssItems}
       });
     } catch (error: any) {
       console.error("[Tracking Numbers] Error seeding tracking numbers:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all success stories (admin only)
+  app.get("/api/admin/success-stories", requireAdmin, async (req, res) => {
+    try {
+      const stories = await storage.getAllSuccessStories();
+      res.json({ stories });
+    } catch (error: any) {
+      console.error("[Success Stories] Error fetching stories:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Approve success story (admin only)
+  app.put("/api/admin/success-stories/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const story = await storage.approveSuccessStory(id);
+      res.json({ story });
+    } catch (error: any) {
+      console.error("[Success Stories] Error approving story:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete/reject success story (admin only)
+  app.delete("/api/admin/success-stories/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteSuccessStory(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[Success Stories] Error deleting story:", error);
       res.status(500).json({ error: error.message });
     }
   });
