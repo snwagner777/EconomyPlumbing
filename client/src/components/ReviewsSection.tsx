@@ -198,7 +198,7 @@ export default function ReviewsSection({
     : "5.0";
 
   return (
-    <section ref={sectionRef} className="relative py-20 overflow-hidden">
+    <>
       {/* Review Schema Markup */}
       <Helmet>
         {displayReviews.map((review) => (
@@ -208,8 +208,9 @@ export default function ReviewsSection({
         ))}
       </Helmet>
       
-      {/* Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
+      <section ref={sectionRef} className="relative py-20 overflow-hidden">
+        {/* Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         {/* Header */}
@@ -330,5 +331,6 @@ export default function ReviewsSection({
         </div>
       </div>
     </section>
+    </>
   );
 }
