@@ -141,6 +141,7 @@ export class MemStorage implements IStorage {
   private blogPosts: Map<string, BlogPost>;
   private products: Map<string, Product>;
   private contactSubmissions: Map<string, ContactSubmission>;
+  private customerSuccessStories: Map<string, CustomerSuccessStory>;
   private serviceAreas: Map<string, ServiceArea>;
   private googleReviews: Map<string, GoogleReview>;
   private serviceTitanMemberships: Map<string, ServiceTitanMembership>;
@@ -150,6 +151,7 @@ export class MemStorage implements IStorage {
     this.blogPosts = new Map();
     this.products = new Map();
     this.contactSubmissions = new Map();
+    this.customerSuccessStories = new Map();
     this.serviceAreas = new Map();
     this.googleReviews = new Map();
     this.serviceTitanMemberships = new Map();
@@ -1952,6 +1954,29 @@ Call (512) 368-9159 or schedule service online.`,
     return submission;
   }
 
+  async createCustomerSuccessStory(insertStory: InsertCustomerSuccessStory): Promise<CustomerSuccessStory> {
+    const id = randomUUID();
+    const story: CustomerSuccessStory = {
+      id,
+      customerName: insertStory.customerName,
+      email: insertStory.email ?? null,
+      phone: insertStory.phone ?? null,
+      story: insertStory.story,
+      beforePhotoUrl: insertStory.beforePhotoUrl,
+      afterPhotoUrl: insertStory.afterPhotoUrl,
+      serviceCategory: insertStory.serviceCategory,
+      location: insertStory.location,
+      approved: false,
+      submittedAt: new Date()
+    };
+    this.customerSuccessStories.set(id, story);
+    return story;
+  }
+
+  async getApprovedSuccessStories(): Promise<CustomerSuccessStory[]> {
+    return Array.from(this.customerSuccessStories.values()).filter(story => story.approved);
+  }
+
   async getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined> {
     return Array.from(this.serviceAreas.values()).find(area => area.slug === slug);
   }
@@ -2291,6 +2316,18 @@ export class DatabaseStorage implements IStorage {
       .values(submission)
       .returning();
     return created;
+  }
+
+  async createCustomerSuccessStory(story: InsertCustomerSuccessStory): Promise<CustomerSuccessStory> {
+    const [created] = await db
+      .insert(customerSuccessStories)
+      .values(story)
+      .returning();
+    return created;
+  }
+
+  async getApprovedSuccessStories(): Promise<CustomerSuccessStory[]> {
+    return await db.select().from(customerSuccessStories).where(eq(customerSuccessStories.approved, true));
   }
 
   async getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined> {
