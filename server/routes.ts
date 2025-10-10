@@ -37,6 +37,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve object storage files with full replit-objstore paths
+  app.get("/replit-objstore-:bucketId/public/:filePath(*)", async (req, res) => {
+    const filePath = req.params.filePath;
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      objectStorageService.downloadObject(file, res);
+    } catch (error) {
+      console.error("Error serving object storage file:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Serve robots.txt
   app.get("/robots.txt", (req, res) => {
     const robotsPath = path.resolve(import.meta.dirname, "..", "public", "robots.txt");
