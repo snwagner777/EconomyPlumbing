@@ -53,7 +53,7 @@ export default function StoreSuccess() {
       <>
         <SEOHead
           title="Processing Order... | Economy Plumbing Store"
-          description="Your order is being processed. Thank you for your purchase!"
+          description="Your order is being processed. Thank you for your purchase from Economy Plumbing Services! For questions call (512) 368-9159."
         />
         <div className="min-h-screen flex flex-col">
           <Header />

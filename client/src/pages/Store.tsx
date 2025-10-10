@@ -27,7 +27,7 @@ export default function Store() {
     <>
       <SEOHead
         title="Plumbing Products & Memberships | Economy Plumbing Store"
-        description="Shop VIP plumbing memberships & quality products. Save on annual maintenance, get priority service. Austin & Marble Falls. Protect your home today!"
+        description="Shop VIP plumbing memberships & quality products. Save on annual maintenance, get priority service. Austin & Marble Falls. Call (512) 368-9159 today!"
         canonical="https://www.plumbersthatcare.com/store"
         ogImage="https://www.plumbersthatcare.com/attached_assets/logo.jpg"
         ogImageAlt="Economy Plumbing Services - VIP Memberships and Professional Products"

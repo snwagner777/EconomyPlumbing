@@ -358,7 +358,7 @@ export default function Checkout() {
       <>
         <SEOHead
           title="Checkout | Economy Plumbing Store"
-          description="Complete your plumbing membership or product purchase. Secure checkout with Stripe payment processing. Shop Economy Plumbing Services."
+          description="Complete your plumbing membership or product purchase. Secure checkout with Stripe payment. Austin & Marble Falls plumbing store. Call (512) 368-9159."
         />
         <div className="min-h-screen flex flex-col">
           <Header />
