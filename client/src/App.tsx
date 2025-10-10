@@ -69,6 +69,7 @@ const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const TrackingNumbersAdmin = lazy(() => import("@/pages/TrackingNumbersAdmin"));
+const SuccessStoriesAdmin = lazy(() => import("@/pages/SuccessStoriesAdmin"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -180,6 +181,7 @@ function Router() {
       
       {/* Admin routes */}
       <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin" component={AdminDashboard} />
       

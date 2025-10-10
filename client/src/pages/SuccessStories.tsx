@@ -16,6 +16,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import SuccessStoryForm from "@/components/SuccessStoryForm";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import type { BeforeAfterComposite } from "@shared/schema";
@@ -189,6 +190,25 @@ export default function SuccessStories() {
             </p>
           </div>
           <div className="nj-stories" data-testid="nicejob-reviews-widget"></div>
+        </div>
+
+        {/* Submit Your Success Story */}
+        <div className="bg-muted py-16 px-4">
+          <div className="container mx-auto max-w-2xl">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl md:text-3xl text-center">
+                  Share Your Success Story
+                </CardTitle>
+                <p className="text-center text-muted-foreground mt-2">
+                  Had a great experience with Economy Plumbing? Share your before and after photos and tell us about it!
+                </p>
+              </CardHeader>
+              <CardContent>
+                <SuccessStoryForm />
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         {/* CTA Section */}
