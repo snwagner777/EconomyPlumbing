@@ -169,7 +169,7 @@ export default function CommercialServicesLanding() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      A closed kitchen or bathroom costs thousands per hour. We respond in 90 minutes or less with same-day repairs to get you back in business.
+                      A closed kitchen or bathroom costs thousands per hour. We provide fast emergency response with same-day repairs to get you back in business.
                     </p>
                   </CardContent>
                 </Card>
@@ -251,7 +251,7 @@ export default function CommercialServicesLanding() {
                           • Sewer line backups<br/>
                           • Water heater failures<br/>
                           • Toilet & fixture emergencies<br/>
-                          • 90-minute response guarantee
+                          • Fast emergency response
                         </p>
                       </div>
                     </div>
@@ -483,7 +483,7 @@ export default function CommercialServicesLanding() {
                     Do you offer same-day emergency service for businesses?
                   </AccordionTrigger>
                   <AccordionContent>
-                    Yes, we provide 24/7 emergency service with a 90-minute response guarantee for commercial clients. We understand that plumbing downtime costs you money, so we prioritize business emergencies. Call {phoneConfig.display} anytime, day or night.
+                    Yes, we provide 24/7 emergency service for commercial clients. We understand that plumbing downtime costs you money, so we prioritize business emergencies. Call {phoneConfig.display} anytime, day or night.
                   </AccordionContent>
                 </AccordionItem>
 
