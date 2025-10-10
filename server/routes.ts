@@ -1295,6 +1295,91 @@ ${rssItems}
     }
   });
 
+  // Get purchase success details
+  app.get("/api/purchase-success/:paymentIntentId", async (req, res) => {
+    try {
+      const { paymentIntentId } = req.params;
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      
+      if (!stripeSecretKey) {
+        return res.status(503).json({ 
+          message: "Payment processing is not configured." 
+        });
+      }
+
+      const stripe = new Stripe(stripeSecretKey);
+      
+      // Retrieve payment intent from Stripe
+      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+      
+      if (paymentIntent.status !== 'succeeded') {
+        return res.status(400).json({ message: "Payment not completed" });
+      }
+
+      // Try to get pending purchase first (may not exist if webhook processed already)
+      let pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntentId);
+      
+      // If no pending purchase, try to get from ServiceTitan memberships
+      let customerInfo = null;
+      let productId = null;
+      
+      if (pendingPurchase) {
+        customerInfo = {
+          customerType: pendingPurchase.customerType,
+          customerName: pendingPurchase.customerName,
+          companyName: pendingPurchase.companyName,
+          contactPersonName: pendingPurchase.contactPersonName,
+          email: pendingPurchase.email,
+          phone: pendingPurchase.phone,
+          street: pendingPurchase.street,
+          city: pendingPurchase.city,
+          state: pendingPurchase.state,
+          zip: pendingPurchase.zip,
+        };
+        productId = pendingPurchase.productId;
+      } else {
+        // Try to get from ServiceTitan memberships (webhook already processed)
+        const memberships = await storage.getServiceTitanMemberships();
+        const membership = memberships.find(m => m.stripePaymentIntentId === paymentIntentId);
+        
+        if (membership) {
+          customerInfo = {
+            customerType: membership.customerType,
+            customerName: membership.customerName,
+            companyName: membership.companyName,
+            contactPersonName: membership.contactPersonName,
+            email: membership.email,
+            phone: membership.phone,
+            street: membership.street,
+            city: membership.city,
+            state: membership.state,
+            zip: membership.zip,
+          };
+          // Get product ID from metadata
+          productId = paymentIntent.metadata?.productId;
+        }
+      }
+
+      if (!customerInfo || !productId) {
+        return res.status(404).json({ message: "Purchase details not found" });
+      }
+
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      res.json({
+        product,
+        customerInfo,
+        transactionId: paymentIntentId,
+      });
+    } catch (error: any) {
+      console.error("[Purchase Success] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Stripe payment intent endpoint
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
