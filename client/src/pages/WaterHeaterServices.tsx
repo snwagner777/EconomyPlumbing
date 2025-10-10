@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
 
 export default function WaterHeaterServices() {
@@ -13,6 +14,7 @@ export default function WaterHeaterServices() {
       heroSubtitle="Expert Installation, Repair & Replacement in Austin & Marble Falls"
       overviewTitle="Professional Water Heater Solutions"
       overviewDescription="Whether you need a new water heater installation, emergency repair, or routine maintenance, Economy Plumbing Services has you covered. We service all major brands and specialize in both traditional tank and tankless water heaters. Our experienced technicians provide honest assessments, quality workmanship, and reliable service throughout the Austin and Marble Falls areas."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Same-day service available",
         "All major brands serviced",

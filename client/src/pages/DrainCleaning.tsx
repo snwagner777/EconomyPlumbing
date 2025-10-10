@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
 export default function DrainCleaning() {
@@ -13,6 +14,7 @@ export default function DrainCleaning() {
       heroSubtitle="Professional Drain & Sewer Line Solutions in Central Texas"
       overviewTitle="Expert Drain Cleaning Solutions"
       overviewDescription="From simple clogs to complex sewer line issues, our professional drain cleaning services keep your plumbing flowing smoothly. We use advanced equipment including video inspection and hydro jetting for thorough, lasting results."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Video camera inspection",
         "Hydro jetting technology",

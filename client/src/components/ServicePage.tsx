@@ -69,6 +69,7 @@ interface ServicePageProps {
     title: string;
     content: string;
   };
+  customSection?: React.ReactNode;
 }
 
 export default function ServicePage({
@@ -94,6 +95,7 @@ export default function ServicePage({
   maintenanceTitle,
   maintenanceTips,
   additionalContent,
+  customSection,
 }: ServicePageProps) {
   const phoneConfig = usePhoneConfig();
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
@@ -284,6 +286,8 @@ export default function ServicePage({
           </div>
         </section>
       )}
+
+      {customSection && customSection}
 
       <section className="py-16 lg:py-24">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">

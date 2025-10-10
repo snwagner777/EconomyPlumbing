@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import permitImage from "@assets/optimized/Plumber_installing_water_heater_3f7d8a09.webp";
 
 export default function PermitResolution() {
@@ -13,6 +14,7 @@ export default function PermitResolution() {
       heroSubtitle="Fix Unpermitted Work & Code Violations"
       overviewTitle="Expert Permit Resolution"
       overviewDescription="Dealing with unpermitted plumbing work, code violations, or failed inspections? Our experienced team specializes in resolving permit issues, working with city inspectors, and bringing non-compliant plumbing up to code."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Work with inspectors",
         "Code compliance expertise",

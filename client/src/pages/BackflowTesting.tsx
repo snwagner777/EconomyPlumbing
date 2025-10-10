@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import backflowImage from "@assets/optimized/backflow_preventer_p_c5a67665.webp";
 
 export default function BackflowTesting() {
@@ -13,6 +14,7 @@ export default function BackflowTesting() {
       heroSubtitle="Certified Backflow Testing, Installation & Annual Inspections"
       overviewTitle="Professional Backflow Testing Services"
       overviewDescription="Our certified backflow testers provide comprehensive testing, inspection, and certification services to keep your water supply safe and compliant with local regulations. We handle everything from annual testing to new device installation."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Certified backflow testers",
         "Annual testing & certification",

@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import hydroJetImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
 export default function HydroJetting() {
@@ -13,6 +14,7 @@ export default function HydroJetting() {
       heroSubtitle="High-Pressure Drain & Sewer Line Cleaning"
       overviewTitle="Professional Hydro Jetting"
       overviewDescription="When traditional snaking isn't enough, hydro jetting provides the most thorough drain and sewer line cleaning available. Using high-pressure water streams up to 4,000 PSI, we completely clear clogs and buildup, restoring your pipes to like-new condition."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Clears toughest clogs",
         "Removes grease & buildup",

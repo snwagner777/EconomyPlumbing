@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
 
 export default function CommercialPlumbing() {
@@ -13,6 +14,7 @@ export default function CommercialPlumbing() {
       heroSubtitle="Professional Plumbing Solutions for Central Texas Businesses"
       overviewTitle="Comprehensive Commercial Plumbing"
       overviewDescription="Keep your business running smoothly with reliable commercial plumbing services. From routine maintenance to emergency repairs, we provide fast, professional service that minimizes downtime and keeps your operations flowing."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "24/7 emergency service",
         "Scheduled maintenance plans",

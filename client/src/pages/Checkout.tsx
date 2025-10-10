@@ -297,7 +297,7 @@ function CheckoutForm({ product, clientSecret, paymentIntentId }: { product: Pro
         disabled={!stripe || isProcessing}
         data-testid="button-complete-purchase"
       >
-        {isProcessing ? "Processing..." : `Pay $${(product.price / 100).toFixed(0)}`}
+        {isProcessing ? "Processing..." : `Pay $${(product.price / 100).toFixed(2)}`}
       </Button>
     </form>
   );
@@ -471,7 +471,7 @@ export default function Checkout() {
                   <div className="pt-4 border-t">
                     <div className="flex justify-between items-center">
                       <span className="font-semibold">Total:</span>
-                      <span className="text-2xl font-bold text-primary">${(product.price / 100).toFixed(0)}</span>
+                      <span className="text-2xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

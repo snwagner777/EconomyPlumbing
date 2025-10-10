@@ -1,4 +1,5 @@
 import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 import gasImage from "@assets/optimized/gas_line_installatio_9713d531.webp";
 
 export default function GasServices() {
@@ -13,6 +14,7 @@ export default function GasServices() {
       heroSubtitle="Licensed Gas Line Installation, Repair & Safety Inspections"
       overviewTitle="Professional Gas Line Services"
       overviewDescription="Safety is our top priority when working with gas lines. Our licensed and certified gas technicians provide expert installation, repair, and inspection services for all your gas line needs, from new appliance hookups to emergency leak repairs."
+      customSection={<CommercialCustomersShowcase />}
       benefits={[
         "Licensed gas technicians",
         "Safety inspections",
