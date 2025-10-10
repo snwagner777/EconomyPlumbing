@@ -210,8 +210,33 @@ export const serviceTitanMemberships = pgTable("service_titan_memberships", {
   productIdIdx: index("st_memberships_product_id_idx").on(table.productId),
 }));
 
+export const trackingNumbers = pgTable("tracking_numbers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  channelKey: text("channel_key").notNull().unique(), // e.g., 'google', 'facebook', 'yelp'
+  channelName: text("channel_name").notNull(), // Display name, e.g., 'Google Ads'
+  displayNumber: text("display_number").notNull(), // (512) 368-9159
+  rawNumber: text("raw_number").notNull(), // 5123689159
+  telLink: text("tel_link").notNull(), // tel:+15123689159
+  detectionRules: text("detection_rules").notNull(), // JSON string of detection rules
+  isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false), // One channel should be default
+  sortOrder: integer("sort_order").notNull().default(0), // For ordering in admin panel
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  channelKeyIdx: index("tracking_numbers_channel_key_idx").on(table.channelKey),
+  isActiveIdx: index("tracking_numbers_is_active_idx").on(table.isActive),
+  isDefaultIdx: index("tracking_numbers_is_default_idx").on(table.isDefault),
+}));
+
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({
   id: true,
+});
+
+export const insertTrackingNumberSchema = createInsertSchema(trackingNumbers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
 export const insertGoogleReviewSchema = createInsertSchema(googleReviews).omit({
