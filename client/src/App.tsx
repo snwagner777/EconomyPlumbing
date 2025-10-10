@@ -69,8 +69,7 @@ const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
 const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const OAuthAdminLogin = lazy(() => import("@/pages/OAuthAdminLogin"));
-const AdminDashboard = lazy(() => import("@/pages/NewAdminDashboard"));
-const PhotoAdmin = lazy(() => import("@/pages/AdminDashboard"));
+const UnifiedAdminDashboard = lazy(() => import("@/pages/UnifiedAdminDashboard"));
 const TrackingNumbersAdmin = lazy(() => import("@/pages/TrackingNumbersAdmin"));
 const SuccessStoriesAdmin = lazy(() => import("@/pages/SuccessStoriesAdmin"));
 const CommercialCustomersAdmin = lazy(() => import("@/pages/CommercialCustomersAdmin"));
@@ -188,12 +187,11 @@ function Router() {
       {/* Admin routes */}
       <Route path="/admin/oauth-login" component={OAuthAdminLogin} />
       <Route path="/admin/login" component={AdminLogin} />
-      <Route path="/admin/photos" component={PhotoAdmin} />
       <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />
       <Route path="/admin/page-metadata" component={PageMetadataAdmin} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin" component={UnifiedAdminDashboard} />
       
       {/* Blog posts - must be last to avoid conflicts with other routes */}
       <Route path="/:slug" component={BlogPost} />
