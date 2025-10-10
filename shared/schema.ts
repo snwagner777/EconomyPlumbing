@@ -79,6 +79,7 @@ export const customerSuccessStories = pgTable("customer_success_stories", {
   story: text("story").notNull(),
   beforePhotoUrl: text("before_photo_url").notNull(),
   afterPhotoUrl: text("after_photo_url").notNull(),
+  collagePhotoUrl: text("collage_photo_url"), // AI-generated before/after composite image
   serviceCategory: text("service_category").notNull(), // water-heater, drain-cleaning, etc.
   location: text("location").notNull(),
   approved: boolean("approved").notNull().default(false), // Moderation flag

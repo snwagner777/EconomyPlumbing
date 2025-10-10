@@ -2725,7 +2725,41 @@ ${rssItems}
   app.put("/api/admin/success-stories/:id/approve", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const story = await storage.approveSuccessStory(id);
+      
+      // Get the story first to access the before/after photos
+      const stories = await storage.getAllSuccessStories();
+      const storyToApprove = stories.find(s => s.id === id);
+      
+      if (!storyToApprove) {
+        return res.status(404).json({ error: "Success story not found" });
+      }
+      
+      // Generate before/after collage
+      console.log(`[Success Stories] Generating collage for story ${id}...`);
+      const path = await import("path");
+      const fs = await import("fs/promises");
+      const { createBeforeAfterComposite } = await import("./lib/beforeAfterComposer");
+      
+      // Create output directory
+      const compositesDir = path.resolve(import.meta.dirname, '../attached_assets/success_stories_composites');
+      await fs.mkdir(compositesDir, { recursive: true });
+      
+      // Generate filename and path
+      const filename = `success_story_${id}_${Date.now()}.webp`;
+      const outputPath = path.join(compositesDir, filename);
+      const collageUrl = `/attached_assets/success_stories_composites/${filename}`;
+      
+      // Create the collage
+      await createBeforeAfterComposite(
+        storyToApprove.beforePhotoUrl,
+        storyToApprove.afterPhotoUrl,
+        outputPath
+      );
+      
+      console.log(`[Success Stories] ✅ Collage created: ${collageUrl}`);
+      
+      // Approve with the collage URL
+      const story = await storage.approveSuccessStory(id, collageUrl);
       res.json({ story });
     } catch (error: any) {
       console.error("[Success Stories] Error approving story:", error);

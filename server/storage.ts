@@ -73,7 +73,7 @@ export interface IStorage {
   createCustomerSuccessStory(story: InsertCustomerSuccessStory): Promise<CustomerSuccessStory>;
   getApprovedSuccessStories(): Promise<CustomerSuccessStory[]>;
   getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
-  approveSuccessStory(id: string): Promise<CustomerSuccessStory>;
+  approveSuccessStory(id: string, collagePhotoUrl: string): Promise<CustomerSuccessStory>;
   deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
@@ -1984,12 +1984,13 @@ Call (512) 368-9159 or schedule service online.`,
     return Array.from(this.customerSuccessStories.values());
   }
 
-  async approveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+  async approveSuccessStory(id: string, collagePhotoUrl: string): Promise<CustomerSuccessStory> {
     const story = this.customerSuccessStories.get(id);
     if (!story) {
       throw new Error(`Success story with id ${id} not found`);
     }
     story.approved = true;
+    story.collagePhotoUrl = collagePhotoUrl;
     this.customerSuccessStories.set(id, story);
     return story;
   }
@@ -2355,10 +2356,10 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(customerSuccessStories);
   }
 
-  async approveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+  async approveSuccessStory(id: string, collagePhotoUrl: string): Promise<CustomerSuccessStory> {
     const [story] = await db
       .update(customerSuccessStories)
-      .set({ approved: true })
+      .set({ approved: true, collagePhotoUrl })
       .where(eq(customerSuccessStories.id, id))
       .returning();
     
