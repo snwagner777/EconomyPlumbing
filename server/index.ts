@@ -383,6 +383,10 @@ async function refreshReviewsPeriodically() {
   
   // Start Google Drive monitoring (checks every 5 minutes for new photos)
   startGoogleDriveMonitoring();
+  
+  // Start automated photo cleanup (runs daily to remove similar/duplicate photos)
+  const { startAutomatedPhotoCleanup } = await import('./lib/automatedPhotoCleanup');
+  startAutomatedPhotoCleanup();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
