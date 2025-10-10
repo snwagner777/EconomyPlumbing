@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { LogOut, ImageIcon, RefreshCw } from "lucide-react";
+import { LogOut, ImageIcon, RefreshCw, Users, FileText, Phone, Building2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
@@ -153,6 +153,66 @@ export default function AdminDashboard() {
             </Button>
           </div>
         </div>
+
+        {/* Admin Navigation */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin Tools</CardTitle>
+            <CardDescription>Quick access to all admin features</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation("/admin/success-stories")}
+                data-testid="link-success-stories-admin"
+              >
+                <FileText className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-semibold">Success Stories</div>
+                  <div className="text-xs text-muted-foreground">Review & approve customer stories</div>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation("/admin/tracking-numbers")}
+                data-testid="link-tracking-numbers-admin"
+              >
+                <Phone className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-semibold">Tracking Numbers</div>
+                  <div className="text-xs text-muted-foreground">Manage phone number tracking</div>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation("/admin/commercial-customers")}
+                data-testid="link-commercial-customers-admin"
+              >
+                <Building2 className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-semibold">Commercial Customers</div>
+                  <div className="text-xs text-muted-foreground">Manage customer logos & info</div>
+                </div>
+              </Button>
+              <Button 
+                variant="outline" 
+                className="justify-start h-auto py-4"
+                onClick={() => setLocation("/admin")}
+                data-testid="link-photo-admin"
+              >
+                <ImageIcon className="w-5 h-5 mr-3" />
+                <div className="text-left">
+                  <div className="font-semibold">Photo Admin</div>
+                  <div className="text-xs text-muted-foreground">Current page - manage photos</div>
+                </div>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

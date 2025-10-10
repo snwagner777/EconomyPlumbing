@@ -144,7 +144,10 @@ export interface IStorage {
   // Commercial Customers
   getActiveCommercialCustomers(): Promise<CommercialCustomer[]>;
   getAllCommercialCustomers(): Promise<CommercialCustomer[]>;
+  getCommercialCustomerById(id: string): Promise<CommercialCustomer | undefined>;
   createCommercialCustomer(customer: InsertCommercialCustomer): Promise<CommercialCustomer>;
+  updateCommercialCustomer(id: string, updates: Partial<InsertCommercialCustomer>): Promise<CommercialCustomer>;
+  deleteCommercialCustomer(id: string): Promise<void>;
 }
 
 export class MemStorage implements IStorage {
@@ -2771,12 +2774,36 @@ export class DatabaseStorage implements IStorage {
     return results;
   }
 
+  async getCommercialCustomerById(id: string): Promise<CommercialCustomer | undefined> {
+    const [result] = await db
+      .select()
+      .from(commercialCustomers)
+      .where(eq(commercialCustomers.id, id))
+      .limit(1);
+    return result;
+  }
+
   async createCommercialCustomer(customer: InsertCommercialCustomer): Promise<CommercialCustomer> {
     const [created] = await db
       .insert(commercialCustomers)
       .values(customer)
       .returning();
     return created;
+  }
+
+  async updateCommercialCustomer(id: string, updates: Partial<InsertCommercialCustomer>): Promise<CommercialCustomer> {
+    const [updated] = await db
+      .update(commercialCustomers)
+      .set(updates)
+      .where(eq(commercialCustomers.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteCommercialCustomer(id: string): Promise<void> {
+    await db
+      .delete(commercialCustomers)
+      .where(eq(commercialCustomers.id, id));
   }
 }
 

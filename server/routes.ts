@@ -6,10 +6,27 @@ import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type I
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
+import multer from "multer";
 import { sendContactFormEmail, sendSuccessStoryNotificationEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
+
+// Configure multer for file uploads (store in memory for processing)
+const uploadMiddleware = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only allow images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'));
+    }
+  },
+});
 import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
 import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
@@ -2832,6 +2849,113 @@ ${rssItems}
       });
     } catch (error: any) {
       console.error("[Tracking Numbers] Error seeding tracking numbers:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Commercial Customers Admin Routes
+  
+  // Get all commercial customers (admin only)
+  app.get("/api/admin/commercial-customers", requireAdmin, async (req, res) => {
+    try {
+      const customers = await storage.getAllCommercialCustomers();
+      res.json({ customers });
+    } catch (error: any) {
+      console.error("[Commercial Customers] Error fetching all customers:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create commercial customer (admin only)
+  app.post("/api/admin/commercial-customers", requireAdmin, async (req, res) => {
+    try {
+      const { insertCommercialCustomerSchema } = await import("@shared/schema");
+      const data = insertCommercialCustomerSchema.parse(req.body);
+      
+      const customer = await storage.createCommercialCustomer(data);
+      res.json({ customer });
+    } catch (error: any) {
+      console.error("[Commercial Customers] Error creating customer:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update commercial customer (admin only)
+  app.put("/api/admin/commercial-customers/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { insertCommercialCustomerSchema } = await import("@shared/schema");
+      const updates = insertCommercialCustomerSchema.partial().parse(req.body);
+      
+      const customer = await storage.updateCommercialCustomer(id, updates);
+      res.json({ customer });
+    } catch (error: any) {
+      console.error("[Commercial Customers] Error updating customer:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Delete commercial customer (admin only)
+  app.delete("/api/admin/commercial-customers/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCommercialCustomer(id);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[Commercial Customers] Error deleting customer:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Upload logo to object storage (admin only)
+  app.post("/api/admin/upload-logo", requireAdmin, uploadMiddleware.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+      const { Storage } = await import('@google-cloud/storage');
+      const storage = new Storage();
+      const bucketName = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
+
+      if (!bucketName) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+
+      const bucket = storage.bucket(bucketName);
+      const fileName = `public/logos/${Date.now()}-${req.file.originalname}`;
+      const file = bucket.file(fileName);
+
+      await file.save(req.file.buffer, {
+        metadata: {
+          contentType: req.file.mimetype,
+        },
+      });
+
+      const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
+      res.json({ logoUrl: publicUrl });
+    } catch (error: any) {
+      console.error("[Logo Upload] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Process logo with OpenAI (background removal, optimization) (admin only)
+  app.post("/api/admin/process-logo", requireAdmin, async (req, res) => {
+    try {
+      const { logoUrl, customerName } = req.body;
+
+      if (!logoUrl) {
+        return res.status(400).json({ error: "Logo URL is required" });
+      }
+
+      // For now, return the original URL
+      // TODO: Implement OpenAI Vision API for background removal and optimization
+      // This would analyze the image, remove background, optimize size, etc.
+      
+      res.json({ processedLogoUrl: logoUrl });
+    } catch (error: any) {
+      console.error("[Logo Processing] Error:", error);
       res.status(500).json({ error: error.message });
     }
   });
