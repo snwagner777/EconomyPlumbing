@@ -1488,7 +1488,7 @@ ${rssItems}
   // Import photos from Google Drive folder
   app.post("/api/photos/import-google-drive", async (req, res) => {
     try {
-      const { folderId, createBeforeAfter = true } = req.body;
+      const { folderId } = req.body;
 
       if (!folderId) {
         return res.status(400).json({ 
@@ -1613,29 +1613,6 @@ ${rssItems}
         }
       }
 
-      let composites: any[] = [];
-
-      // Automatically create before/after composites if requested
-      if (createBeforeAfter && savedPhotos.length >= 2) {
-        console.log(`[Google Drive Import] Creating before/after composites...`);
-        const { processBeforeAfterPairs } = await import("./lib/beforeAfterComposer");
-        
-        // Process each category (already organized in photosByCategory above)
-        for (const [category, photos] of Object.entries(photosByCategory)) {
-          if (photos.length >= 2) {
-            try {
-              const categoryComposites = await processBeforeAfterPairs(photos, `google-drive-${category}`);
-              for (const composite of categoryComposites) {
-                const saved = await storage.saveBeforeAfterComposite(composite);
-                composites.push(saved);
-              }
-            } catch (error: any) {
-              console.error(`[Google Drive Import] Error creating composites for ${category}:`, error);
-            }
-          }
-        }
-      }
-
       // Calculate category stats (photosByCategory already built incrementally above)
       const categoryStats: Record<string, { count: number; avgScore: number }> = {};
       
@@ -1650,7 +1627,7 @@ ${rssItems}
         };
       }
 
-      console.log(`[Google Drive Import] Complete: ${savedPhotos.length} photos saved, ${composites.length} composites created, ${rejectedPhotos.length} rejected`);
+      console.log(`[Google Drive Import] Complete: ${savedPhotos.length} photos saved, ${rejectedPhotos.length} rejected`);
       console.log(`[Google Drive Import] Categories:`, Object.keys(photosByCategory).join(', '));
 
       res.json({
@@ -1658,7 +1635,6 @@ ${rssItems}
         summary: {
           totalImported: savedPhotos.length,
           totalRejected: rejectedPhotos.length,
-          compositesCreated: composites.length,
           categories: Object.keys(photosByCategory).length,
         },
         organization: {
@@ -1666,9 +1642,8 @@ ${rssItems}
           categoryStats,
         },
         photos: savedPhotos,
-        composites,
         rejectedPhotos,
-        message: `Successfully imported ${savedPhotos.length} quality photos across ${Object.keys(photosByCategory).length} categories and created ${composites.length} before/after composites. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
+        message: `Successfully imported ${savedPhotos.length} quality photos across ${Object.keys(photosByCategory).length} categories. Rejected ${rejectedPhotos.length} low-quality/irrelevant photos.`
       });
     } catch (error: any) {
       console.error("[Google Drive Import] Error:", error);
