@@ -544,6 +544,30 @@ ${productUrls}
     }
   });
 
+  // Public API: Get page metadata by path
+  app.get("/api/page-metadata", async (req, res) => {
+    try {
+      const path = req.query.path as string;
+      
+      if (!path) {
+        return res.status(400).json({ message: "Path parameter is required" });
+      }
+
+      const metadata = await storage.getPageMetadataByPath(path);
+      
+      if (!metadata) {
+        return res.status(404).json({ message: "No custom metadata found for this page" });
+      }
+
+      // Cache for 5 minutes
+      res.set('Cache-Control', 'public, max-age=300, must-revalidate');
+      res.json(metadata);
+    } catch (error) {
+      console.error('[API] Error fetching page metadata:', error);
+      res.status(500).json({ message: "Failed to fetch page metadata" });
+    }
+  });
+
   // RSS Feed
   app.get("/rss.xml", async (req, res) => {
     try {

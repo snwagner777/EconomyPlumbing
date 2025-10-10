@@ -1,4 +1,6 @@
 import { Helmet } from "react-helmet";
+import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 export interface SEOProps {
   title: string;
@@ -29,6 +31,28 @@ export function SEOHead({
   articlePublishedTime,
   articleAuthor
 }: SEOProps) {
+  const [location] = useLocation();
+  
+  // Query database for custom metadata for this path
+  const { data: dbMetadata } = useQuery({
+    queryKey: ['/api/page-metadata', location],
+    queryFn: async () => {
+      try {
+        const response = await fetch(`/api/page-metadata?path=${encodeURIComponent(location)}`);
+        if (!response.ok) return null;
+        return await response.json();
+      } catch {
+        return null;
+      }
+    },
+    // Cache for 5 minutes to avoid excessive DB queries
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Use database metadata if available, otherwise use provided defaults
+  const finalTitle = dbMetadata?.title || title;
+  const finalDescription = dbMetadata?.description || description;
+  
   const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://www.plumbersthatcare.com");
   const siteName = "Economy Plumbing Services";
   
@@ -42,9 +66,9 @@ export function SEOHead({
   return (
     <Helmet>
       {/* Primary Meta Tags */}
-      <title>{title}</title>
-      <meta name="title" content={title} />
-      <meta name="description" content={description} />
+      <title>{finalTitle}</title>
+      <meta name="title" content={finalTitle} />
+      <meta name="description" content={finalDescription} />
       {canonical && <link rel="canonical" href={canonical} />}
       
       {/* RSS Feed */}
@@ -58,8 +82,8 @@ export function SEOHead({
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
       <meta property="og:url" content={url} />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
+      <meta property="og:title" content={finalTitle} />
+      <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={fullOgImage} />
       <meta property="og:image:alt" content={ogImageAlt} />
       <meta property="og:image:width" content={ogImageWidth} />
@@ -70,8 +94,8 @@ export function SEOHead({
       {/* Twitter */}
       <meta property="twitter:card" content={twitterCard} />
       <meta property="twitter:url" content={url} />
-      <meta property="twitter:title" content={title} />
-      <meta property="twitter:description" content={description} />
+      <meta property="twitter:title" content={finalTitle} />
+      <meta property="twitter:description" content={finalDescription} />
       <meta property="twitter:image" content={fullOgImage} />
       <meta property="twitter:image:alt" content={ogImageAlt} />
 
