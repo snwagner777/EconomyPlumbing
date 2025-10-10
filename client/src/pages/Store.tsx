@@ -9,6 +9,7 @@ import { Check } from "lucide-react";
 import type { Product } from "@shared/schema";
 import { openScheduler } from "@/lib/scheduler";
 import { createProductSchema } from "@/components/SEO/JsonLd";
+import { trackAddToCart } from "@/lib/conversionTracking";
 
 export default function Store() {
   
@@ -70,6 +71,7 @@ export default function Store() {
                       key={membership.id}
                       href={`/store/checkout/${membership.slug}`}
                       data-testid={`card-membership-${membership.slug}`}
+                      onClick={() => trackAddToCart(membership.name, membership.price / 100)}
                     >
                       <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
                         {membership.image && (
@@ -149,6 +151,7 @@ export default function Store() {
                       key={product.id}
                       href={`/store/checkout/${product.slug}`}
                       data-testid={`card-product-${product.slug}`}
+                      onClick={() => trackAddToCart(product.name, product.price / 100)}
                     >
                       <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
                         {product.image && (

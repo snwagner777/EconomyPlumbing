@@ -1,5 +1,5 @@
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { loadStripe } from "@stripe/stripe-js";
@@ -19,6 +19,7 @@ import { apiRequest } from "@/lib/queryClient";
 import type { Product } from "@shared/schema";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { createProductSchema } from "@/components/SEO/JsonLd";
+import { trackBeginCheckout } from "@/lib/conversionTracking";
 
 const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 const stripePromise = stripePublicKey ? loadStripe(stripePublicKey) : null;
@@ -308,6 +309,7 @@ export default function Checkout() {
   const phoneConfig = usePhoneConfig();
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [paymentIntentId, setPaymentIntentId] = useState<string | null>(null);
+  const hasTrackedCheckout = useRef(false);
 
   const { data: product, isLoading: productLoading } = useQuery<Product>({
     queryKey: [`/api/products/${slug}`],
@@ -336,6 +338,14 @@ export default function Checkout() {
       });
     },
   });
+
+  // Track Begin Checkout conversion event when product loads (once per session)
+  useEffect(() => {
+    if (product && !hasTrackedCheckout.current) {
+      trackBeginCheckout(product.name, product.price / 100);
+      hasTrackedCheckout.current = true;
+    }
+  }, [product]);
 
   useEffect(() => {
     if (product && !clientSecret && !createPaymentIntent.isPending) {
