@@ -3016,10 +3016,25 @@ ${rssItems}
   });
 
   // Create or update page metadata (admin only)
-  app.put("/api/admin/page-metadata", requireAdmin, async (req, res) => {
+  app.post("/api/admin/page-metadata", requireAdmin, async (req, res) => {
     try {
       const { insertPageMetadataSchema } = await import("@shared/schema");
       const data = insertPageMetadataSchema.parse(req.body);
+      
+      // Validate description length (SEO best practice: 120-160 characters)
+      if (data.description && data.description.length > 0) {
+        if (data.description.length < 120) {
+          return res.status(400).json({ 
+            error: "Meta description must be at least 120 characters for optimal SEO" 
+          });
+        }
+        
+        if (data.description.length > 160) {
+          return res.status(400).json({ 
+            error: "Meta description must not exceed 160 characters to avoid truncation in search results" 
+          });
+        }
+      }
       
       const metadata = await storage.upsertPageMetadata(data);
       res.json({ metadata });

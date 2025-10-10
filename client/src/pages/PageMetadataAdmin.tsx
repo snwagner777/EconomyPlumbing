@@ -143,6 +143,27 @@ export default function PageMetadataAdmin() {
       return;
     }
 
+    // Validate description length (SEO best practice: 120-160 characters)
+    if (formData.description && formData.description.length > 0) {
+      if (formData.description.length < 120) {
+        toast({
+          title: "Validation Error",
+          description: "Meta description must be at least 120 characters for optimal SEO",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (formData.description.length > 160) {
+        toast({
+          title: "Validation Error",
+          description: "Meta description must not exceed 160 characters to avoid truncation in search results",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     upsertMutation.mutate(formData);
   };
 
