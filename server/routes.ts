@@ -78,6 +78,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const staticPages = [
         { url: '', lastmod: now, changefreq: 'weekly', priority: '1.0' },
         
+        // SEO Landing Pages
+        { url: 'plumber-near-me', lastmod: now, changefreq: 'weekly', priority: '0.9' },
+        
         // Main Service Pages
         { url: 'water-heater-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         { url: 'drain-cleaning', lastmod: now, changefreq: 'monthly', priority: '0.9' },
