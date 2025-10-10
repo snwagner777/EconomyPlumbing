@@ -140,8 +140,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { url: 'store', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'shop', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         
-        // Blog index
+        // Blog & Success Stories
         { url: 'blog', lastmod: now, changefreq: 'weekly', priority: '0.8' },
+        { url: 'success-stories', lastmod: now, changefreq: 'weekly', priority: '0.8' },
       ];
       
       // Generate static page URLs
