@@ -11,6 +11,7 @@ import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
+import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 
 const app = express();
 
@@ -384,6 +385,10 @@ async function refreshReviewsPeriodically() {
   // Start Google Drive monitoring (checks every 5 minutes for new photos)
   // Note: Duplicate detection now happens during import, before photos are saved
   startGoogleDriveMonitoring();
+  
+  // Start daily before/after composite creation (runs at 2am daily)
+  // Groups photos from same job uploaded in last 24 hours and creates before/after collages
+  startDailyCompositeJob();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
