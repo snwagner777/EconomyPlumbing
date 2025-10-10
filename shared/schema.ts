@@ -450,6 +450,27 @@ export const insertCommercialCustomerSchema = createInsertSchema(commercialCusto
   addedAt: true,
 });
 
+// Page metadata for SEO management
+export const pageMetadata = pgTable("page_metadata", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  path: text("path").notNull().unique(), // URL path like '/commercial-plumbing' or '/about'
+  title: text("title").notNull(), // SEO title tag
+  description: text("description").notNull(), // Meta description
+  keywords: text("keywords"), // Optional meta keywords
+  canonicalUrl: text("canonical_url"), // Optional custom canonical URL
+  ogImage: text("og_image"), // Optional custom OG image
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  pathIdx: index("page_metadata_path_idx").on(table.path),
+}));
+
+export const insertPageMetadataSchema = createInsertSchema(pageMetadata).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -484,3 +505,5 @@ export type TrackingNumber = typeof trackingNumbers.$inferSelect;
 export type InsertTrackingNumber = z.infer<typeof insertTrackingNumberSchema>;
 export type CommercialCustomer = typeof commercialCustomers.$inferSelect;
 export type InsertCommercialCustomer = z.infer<typeof insertCommercialCustomerSchema>;
+export type PageMetadata = typeof pageMetadata.$inferSelect;
+export type InsertPageMetadata = z.infer<typeof insertPageMetadataSchema>;
