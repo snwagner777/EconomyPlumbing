@@ -1,10 +1,31 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useLocation } from 'wouter';
-import { getPhoneNumber } from '@/lib/dynamicPhoneNumbers';
+import { useQuery } from '@tanstack/react-query';
 
 interface PhoneConfig {
   display: string;
   tel: string;
+}
+
+interface TrackingNumber {
+  id: string;
+  channelKey: string;
+  channelName: string;
+  displayNumber: string;
+  rawNumber: string;
+  telLink: string;
+  detectionRules: string; // JSON string
+  isActive: boolean;
+  isDefault: boolean;
+  sortOrder: number;
+}
+
+interface DetectionRules {
+  isDefault?: boolean;
+  patterns?: string[];
+  urlParams?: string[];
+  utmSources?: string[];
+  referrerIncludes?: string[];
 }
 
 declare global {
@@ -20,6 +41,108 @@ const DEFAULT_PHONE: PhoneConfig = {
 
 const PhoneConfigContext = createContext<PhoneConfig>(DEFAULT_PHONE);
 
+// Cookie helper functions
+const COOKIE_NAME = 'traffic_source';
+const COOKIE_DAYS = 90;
+
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop()?.split(';').shift() || null;
+  }
+  return null;
+}
+
+function setCookie(name: string, value: string, days: number): void {
+  const date = new Date();
+  date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+  const expires = `expires=${date.toUTCString()}`;
+  document.cookie = `${name}=${value};${expires};path=/`;
+}
+
+// Detect traffic source from URL and referrer
+function detectTrafficSource(trackingNumbers: TrackingNumber[]): TrackingNumber | null {
+  const urlParams = new URLSearchParams(window.location.search);
+  const referrer = document.referrer.toLowerCase();
+  const utmSource = urlParams.get('utm_source')?.toLowerCase();
+
+  // Check each tracking number's detection rules
+  for (const number of trackingNumbers) {
+    if (number.isDefault) continue; // Skip default, we'll use it as fallback
+
+    try {
+      const rules: DetectionRules = JSON.parse(number.detectionRules);
+
+      // Check URL parameters
+      if (rules.urlParams) {
+        for (const param of rules.urlParams) {
+          if (urlParams.has(param)) {
+            return number;
+          }
+        }
+      }
+
+      // Check UTM source
+      if (rules.utmSources && utmSource) {
+        if (rules.utmSources.some(source => source.toLowerCase() === utmSource)) {
+          return number;
+        }
+      }
+
+      // Check referrer
+      if (rules.referrerIncludes && referrer) {
+        if (rules.referrerIncludes.some(pattern => referrer.includes(pattern.toLowerCase()))) {
+          return number;
+        }
+      }
+    } catch (error) {
+      console.error(`[PhoneConfig] Error parsing detection rules for ${number.channelKey}:`, error);
+    }
+  }
+
+  return null;
+}
+
+function getPhoneNumberFromTracking(trackingNumbers: TrackingNumber[]): PhoneConfig {
+  // First check if we have a saved traffic source in cookie
+  const savedSource = getCookie(COOKIE_NAME);
+  
+  if (savedSource) {
+    const savedNumber = trackingNumbers.find(n => n.channelKey === savedSource && n.isActive);
+    if (savedNumber) {
+      return {
+        display: savedNumber.displayNumber,
+        tel: savedNumber.telLink
+      };
+    }
+  }
+
+  // Try to detect from current URL/referrer
+  const detected = detectTrafficSource(trackingNumbers);
+  
+  if (detected) {
+    // Save to cookie for 90 days
+    setCookie(COOKIE_NAME, detected.channelKey, COOKIE_DAYS);
+    return {
+      display: detected.displayNumber,
+      tel: detected.telLink
+    };
+  }
+
+  // Fallback to default number
+  const defaultNumber = trackingNumbers.find(n => n.isDefault && n.isActive);
+  if (defaultNumber) {
+    return {
+      display: defaultNumber.displayNumber,
+      tel: defaultNumber.telLink
+    };
+  }
+
+  // Ultimate fallback
+  return DEFAULT_PHONE;
+}
+
 export function PhoneConfigProvider({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [phoneConfig, setPhoneConfig] = useState<PhoneConfig>(() => {
@@ -30,14 +153,25 @@ export function PhoneConfigProvider({ children }: { children: ReactNode }) {
     return DEFAULT_PHONE;
   });
 
+  // Fetch tracking numbers from API
+  const { data: trackingData, isLoading } = useQuery<{ trackingNumbers: TrackingNumber[] }>({
+    queryKey: ['/api/tracking-numbers'],
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+  });
+
   useEffect(() => {
-    // Directly get the phone number based on current URL/cookies
-    const newConfig = getPhoneNumber();
+    // Only update if we have tracking numbers loaded
+    if (!trackingData?.trackingNumbers || isLoading) {
+      return;
+    }
+
+    // Get phone number based on current URL/cookies and tracking numbers
+    const newConfig = getPhoneNumberFromTracking(trackingData.trackingNumbers);
     
     // Update both the window global (for legacy code) and React state
     window.__PHONE_CONFIG__ = newConfig;
     setPhoneConfig(newConfig);
-  }, [location]);
+  }, [location, trackingData, isLoading]);
 
   return (
     <PhoneConfigContext.Provider value={phoneConfig}>
