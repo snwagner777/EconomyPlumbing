@@ -260,7 +260,7 @@ export default function PlumberNearMe() {
     <div className="min-h-screen flex flex-col">
       <SEOHead
         title="Plumber Near Me Austin TX | 24/7 Emergency Plumbing"
-        description="Looking for a plumber near you in Austin or Marble Falls? Economy Plumbing offers 24/7 emergency service, water heater repair, drain cleaning & more. Call now!"
+        description="Looking for a plumber near you in Austin or Marble Falls? 24/7 emergency service, water heater repair, drain cleaning. Same-day service. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/plumber-near-me"
         schema={localBusinessSchema}
       />

@@ -48,6 +48,7 @@ const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const About = lazy(() => import("@/pages/About"));
 const Store = lazy(() => import("@/pages/Store"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
+const StoreSuccess = lazy(() => import("@/pages/StoreSuccess"));
 const ScheduleAppointment = lazy(() => import("@/pages/ScheduleAppointment"));
 const DrainageSolutions = lazy(() => import("@/pages/DrainageSolutions"));
 const FaucetInstallation = lazy(() => import("@/pages/FaucetInstallation"));
@@ -165,6 +166,7 @@ function Router() {
       <Route path="/success-stories" component={SuccessStories} />
       
       {/* Store & Shop */}
+      <Route path="/store/success" component={StoreSuccess} />
       <Route path="/store/checkout/:slug" component={Checkout} />
       <Route path="/store" component={Store} />
       <Route path="/shop" component={Store} />

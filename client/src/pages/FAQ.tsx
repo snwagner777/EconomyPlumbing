@@ -154,7 +154,7 @@ export default function FAQ() {
     <div className="min-h-screen">
       <SEOHead
         title="Frequently Asked Questions | Economy Plumbing Services TX"
-        description="Plumbing FAQs answered: services, pricing, water heaters, drain cleaning, gas lines. Expert advice for Austin & Marble Falls homeowners. Call us today!"
+        description="Plumbing FAQs answered: services, pricing, water heaters, drain cleaning, gas lines. Expert advice for Austin & Marble Falls. Call (512) 368-9159 today."
         canonical="https://www.plumbersthatcare.com/faq"
         schema={faqSchema}
       />

@@ -1317,13 +1317,13 @@ ${rssItems}
       }
 
       // Try to get pending purchase first (may not exist if webhook processed already)
-      let pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntentId);
+      const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntentId);
       
-      // If no pending purchase, try to get from ServiceTitan memberships
       let customerInfo = null;
       let productId = null;
       
       if (pendingPurchase) {
+        // Use pending purchase data
         customerInfo = {
           customerType: pendingPurchase.customerType,
           customerName: pendingPurchase.customerName,
@@ -1338,25 +1338,22 @@ ${rssItems}
         };
         productId = pendingPurchase.productId;
       } else {
-        // Try to get from ServiceTitan memberships (webhook already processed)
-        const memberships = await storage.getServiceTitanMemberships();
-        const membership = memberships.find(m => m.stripePaymentIntentId === paymentIntentId);
+        // Webhook already processed - get info from payment intent metadata
+        productId = paymentIntent.metadata?.productId;
         
-        if (membership) {
+        if (productId && paymentIntent.metadata) {
           customerInfo = {
-            customerType: membership.customerType,
-            customerName: membership.customerName,
-            companyName: membership.companyName,
-            contactPersonName: membership.contactPersonName,
-            email: membership.email,
-            phone: membership.phone,
-            street: membership.street,
-            city: membership.city,
-            state: membership.state,
-            zip: membership.zip,
+            customerType: paymentIntent.metadata.customerType || 'residential',
+            customerName: paymentIntent.metadata.customerName || null,
+            companyName: paymentIntent.metadata.companyName || null,
+            contactPersonName: paymentIntent.metadata.contactPersonName || null,
+            email: paymentIntent.metadata.email || '',
+            phone: paymentIntent.metadata.phone || '',
+            street: paymentIntent.metadata.street || '',
+            city: paymentIntent.metadata.city || '',
+            state: paymentIntent.metadata.state || '',
+            zip: paymentIntent.metadata.zip || '',
           };
-          // Get product ID from metadata
-          productId = paymentIntent.metadata?.productId;
         }
       }
 

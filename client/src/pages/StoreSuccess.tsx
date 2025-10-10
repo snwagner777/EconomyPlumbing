@@ -18,7 +18,11 @@ export default function StoreSuccess() {
   const paymentIntentId = urlParams.get('payment_intent');
 
   // Fetch purchase details from backend
-  const { data: purchaseData, isLoading } = useQuery({
+  const { data: purchaseData, isLoading } = useQuery<{
+    product: { id: string; name: string; price: number; description: string };
+    customerInfo: { email: string };
+    transactionId: string;
+  }>({
     queryKey: ['/api/purchase-success', paymentIntentId],
     enabled: !!paymentIntentId,
   });
@@ -99,7 +103,6 @@ export default function StoreSuccess() {
       <SEOHead
         title="Order Complete | Economy Plumbing Store"
         description="Thank you for your purchase! Your VIP membership has been activated. Check your email for confirmation details."
-        noIndex={true}
       />
 
       <div className="min-h-screen flex flex-col">

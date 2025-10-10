@@ -22,8 +22,8 @@ export function SEOHead({
   ogType = "website",
   ogImage,
   ogImageAlt = "Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX",
-  ogImageWidth = "1024",
-  ogImageHeight = "1024",
+  ogImageWidth = "1200",
+  ogImageHeight = "630",
   twitterCard = "summary_large_image",
   schema,
   articlePublishedTime,
@@ -36,7 +36,8 @@ export function SEOHead({
     ? `${window.location.protocol}//${window.location.host}`
     : "https://www.plumbersthatcare.com";
   
-  const fullOgImage = ogImage || `${baseUrl}/attached_assets/logo.jpg`;
+  // Use optimized 1200x630 OG image for social sharing (better for Facebook, Twitter, iMessage)
+  const fullOgImage = ogImage || `${baseUrl}/attached_assets/og-image-social.jpg`;
 
   return (
     <Helmet>
