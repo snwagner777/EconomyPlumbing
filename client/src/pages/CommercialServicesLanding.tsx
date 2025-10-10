@@ -67,7 +67,7 @@ export default function CommercialServicesLanding() {
   return (
     <>
       <SEOHead
-        title="Commercial Plumbing Austin TX | Economy Plumbing Services"
+        title="Commercial Plumbing Austin TX | Economy Plumbing"
         description="Austin & Marble Falls commercial plumber for restaurants, offices & businesses. 25% off first service for new customers. Same-day emergency. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/commercial-services"
         schema={localBusinessSchema}

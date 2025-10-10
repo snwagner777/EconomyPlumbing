@@ -19,7 +19,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Privacy Policy | Economy Plumbing Services"
+        title="Privacy Policy | Economy Plumbing"
         description="Economy Plumbing Services privacy policy. Learn how we collect, use & protect your personal information. Austin & Marble Falls plumber. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/privacy-policy"
         schema={webPageSchema}
