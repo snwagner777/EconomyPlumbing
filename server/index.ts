@@ -8,7 +8,7 @@ import path from "path";
 import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
 import { startMembershipSyncJob } from "./lib/membershipSyncJob";
-import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler";
+// import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler"; // Disabled - no social media integration yet
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
@@ -376,8 +376,8 @@ async function refreshReviewsPeriodically() {
   // Start membership sync background job (non-blocking)
   startMembershipSyncJob();
   
-  // Start weekly social media posting scheduler (non-blocking)
-  startWeeklyPostScheduler();
+  // Social media posting disabled - no integration yet
+  // startWeeklyPostScheduler();
   
   // Start automated blog generation (checks weekly for unused photos)
   startAutoBlogGeneration(storage);
