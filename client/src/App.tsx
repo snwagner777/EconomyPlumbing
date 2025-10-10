@@ -63,6 +63,7 @@ const FAQ = lazy(() => import("@/pages/FAQ"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
+const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 
@@ -153,6 +154,7 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />
       <Route path="/membership-benefits" component={MembershipBenefits} />
+      <Route path="/success-stories" component={SuccessStories} />
       
       {/* Store & Shop */}
       <Route path="/store/checkout/:slug" component={Checkout} />

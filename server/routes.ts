@@ -1707,6 +1707,114 @@ ${rssItems}
     }
   });
 
+  // Download composite as JPEG (Instagram/Facebook compatible)
+  app.get("/api/before-after-composites/:id/download", async (req, res) => {
+    try {
+      const { id } = req.params;
+      const composites = await storage.getBeforeAfterComposites();
+      const composite = composites.find(c => c.id === id);
+
+      if (!composite) {
+        return res.status(404).json({ message: "Composite not found" });
+      }
+
+      // Fetch the composite image
+      let imageBuffer: Buffer;
+      
+      if (composite.compositeUrl.startsWith('http')) {
+        // External URL
+        const response = await fetch(composite.compositeUrl);
+        imageBuffer = Buffer.from(await response.arrayBuffer());
+      } else {
+        // Local/object storage path
+        const sharp = await import('sharp');
+        const fs = await import('fs/promises');
+        const { ObjectStorageService } = await import('./objectStorage');
+        const objectStorage = new ObjectStorageService();
+        
+        try {
+          // Try object storage first
+          const file = await objectStorage.searchPublicObject(composite.compositeUrl);
+          if (file) {
+            const [buffer] = await file.download();
+            imageBuffer = buffer;
+          } else {
+            // Fall back to local filesystem
+            imageBuffer = await fs.readFile(composite.compositeUrl);
+          }
+        } catch {
+          imageBuffer = await fs.readFile(composite.compositeUrl);
+        }
+      }
+
+      // Convert to JPEG for social media compatibility
+      const sharp = await import('sharp');
+      const jpegBuffer = await sharp.default(imageBuffer)
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+      // Set headers for download
+      const filename = `${composite.caption?.slice(0, 50).replace(/[^a-z0-9]/gi, '-') || 'before-after'}.jpg`;
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(jpegBuffer);
+    } catch (error: any) {
+      console.error("Error downloading composite:", error);
+      res.status(500).json({ message: "Failed to download composite" });
+    }
+  });
+
+  // RSS feed for Success Stories page
+  app.get("/api/success-stories/rss", async (req, res) => {
+    try {
+      const composites = await storage.getBeforeAfterComposites();
+      const baseUrl = 'https://www.plumbersthatcare.com';
+
+      // Build RSS XML
+      const rssItems = composites.slice(0, 20).map(composite => {
+        const pubDate = new Date(composite.createdAt).toUTCString();
+        const imageUrl = composite.compositeUrl.startsWith('http') 
+          ? composite.compositeUrl 
+          : `${baseUrl}${composite.compositeUrl}`;
+        const downloadUrl = `${baseUrl}/api/before-after-composites/${composite.id}/download`;
+        
+        return `
+    <item>
+      <title><![CDATA[${composite.caption || 'Before & After Transformation'}]]></title>
+      <link>${baseUrl}/success-stories</link>
+      <guid isPermaLink="false">${composite.id}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <category>${composite.category}</category>
+      <description><![CDATA[
+        <img src="${imageUrl}" alt="${composite.caption || 'Before and after transformation'}" style="max-width: 100%;" />
+        <p>${composite.caption || 'See this amazing plumbing transformation!'}</p>
+        <p><a href="${downloadUrl}">Download JPEG for Instagram/Facebook</a></p>
+      ]]></description>
+      <enclosure url="${downloadUrl}" type="image/jpeg" />
+    </item>`;
+      }).join('');
+
+      const rssXml = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Economy Plumbing Services - Success Stories</title>
+    <link>${baseUrl}/success-stories</link>
+    <description>Real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more.</description>
+    <language>en-us</language>
+    <atom:link href="${baseUrl}/api/success-stories/rss" rel="self" type="application/rss+xml" />
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+${rssItems}
+  </channel>
+</rss>`;
+
+      res.setHeader('Content-Type', 'application/rss+xml; charset=UTF-8');
+      res.send(rssXml);
+    } catch (error: any) {
+      console.error("Error generating RSS feed:", error);
+      res.status(500).json({ message: "Failed to generate RSS feed" });
+    }
+  });
+
   // Get best unused composite for Zapier Facebook posting
   app.get("/api/social-media/best-composite", async (req, res) => {
     try {
