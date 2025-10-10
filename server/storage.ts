@@ -7,6 +7,8 @@ import {
   type InsertProduct,
   type ContactSubmission,
   type InsertContactSubmission,
+  type CustomerSuccessStory,
+  type InsertCustomerSuccessStory,
   type ServiceArea,
   type InsertServiceArea,
   type GoogleReview,
@@ -31,6 +33,7 @@ import {
   blogPosts,
   products,
   contactSubmissions,
+  customerSuccessStories,
   serviceAreas,
   googleReviews,
   googleOAuthTokens,
@@ -65,6 +68,10 @@ export interface IStorage {
   
   // Contact submissions
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
+  
+  // Customer success stories
+  createCustomerSuccessStory(story: InsertCustomerSuccessStory): Promise<CustomerSuccessStory>;
+  getApprovedSuccessStories(): Promise<CustomerSuccessStory[]>;
   
   // Service areas
   getServiceAreaBySlug(slug: string): Promise<ServiceArea | undefined>;

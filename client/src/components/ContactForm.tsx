@@ -17,6 +17,7 @@ interface ContactFormProps {
 export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
+  const [formStartTime] = useState(Date.now()); // Track when form was loaded
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -25,7 +26,9 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
     location: "",
     urgency: "",
     message: "",
-    pageContext: pageContext
+    pageContext: pageContext,
+    website: "", // Honeypot field - invisible to users
+    formStartTime: formStartTime // Timestamp for spam detection
   });
 
   const contactMutation = useMutation({
@@ -46,7 +49,9 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
         location: "",
         urgency: "",
         message: "",
-        pageContext: pageContext
+        pageContext: pageContext,
+        website: "",
+        formStartTime: Date.now()
       });
     },
     onError: (error: Error) => {
@@ -108,6 +113,20 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   data-testid="input-email"
+                />
+              </div>
+
+              {/* Honeypot field - hidden from humans, visible to bots */}
+              <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }} aria-hidden="true" tabIndex={-1}>
+                <label htmlFor="website">Website (leave blank)</label>
+                <input
+                  type="text"
+                  id="website"
+                  name="website"
+                  value={formData.website}
+                  onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                  autoComplete="off"
+                  tabIndex={-1}
                 />
               </div>
 

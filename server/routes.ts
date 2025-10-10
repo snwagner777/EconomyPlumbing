@@ -654,10 +654,50 @@ ${rssItems}
     }
   });
 
+  // Spam protection: Rate limiting map (IP -> last submission timestamp)
+  const submissionRateLimit = new Map<string, number>();
+  const RATE_LIMIT_WINDOW = 60000; // 1 minute
+
   app.post("/api/contact", async (req, res) => {
     try {
-      const validatedData = insertContactSubmissionSchema.parse(req.body);
+      // Get client IP
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      
+      // Spam protection 1: Honeypot field check
+      // Bots fill this field, humans don't see it
+      if (req.body.website || req.body.url || req.body.company_website) {
+        console.log('[Spam] Honeypot triggered for IP:', clientIp);
+        return res.status(400).json({ message: "Invalid form submission" });
+      }
+      
+      // Spam protection 2: Rate limiting per IP
+      const now = Date.now();
+      const lastSubmission = submissionRateLimit.get(clientIp);
+      if (lastSubmission && (now - lastSubmission) < RATE_LIMIT_WINDOW) {
+        console.log('[Spam] Rate limit exceeded for IP:', clientIp);
+        return res.status(429).json({ 
+          message: "Too many submissions. Please wait a moment before trying again." 
+        });
+      }
+      
+      // Spam protection 3: Timestamp validation (reject if submitted too quickly)
+      // Check if formStartTime was sent (in milliseconds)
+      if (req.body.formStartTime) {
+        const formStartTime = parseInt(req.body.formStartTime);
+        const fillTime = now - formStartTime;
+        if (fillTime < 3000) { // Less than 3 seconds to fill form
+          console.log('[Spam] Form filled too quickly (bot suspected) for IP:', clientIp, 'Fill time:', fillTime);
+          return res.status(400).json({ message: "Invalid form submission" });
+        }
+      }
+      
+      // Remove spam protection fields before validation
+      const { website, url, company_website, formStartTime, ...contactData } = req.body;
+      const validatedData = insertContactSubmissionSchema.parse(contactData);
       const submission = await storage.createContactSubmission(validatedData);
+      
+      // Update rate limit tracking
+      submissionRateLimit.set(clientIp, now);
       
       // Send email notification
       try {

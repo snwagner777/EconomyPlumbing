@@ -48,6 +48,7 @@ export default function ContactFormSection({
 }: ContactFormSectionProps) {
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formStartTime] = useState(Date.now()); // Track when form was loaded
 
   const form = useForm<InsertContactSubmission>({
     resolver: zodResolver(insertContactSubmissionSchema),
@@ -63,9 +64,15 @@ export default function ContactFormSection({
     },
   });
 
+  const [honeypot, setHoneypot] = useState(""); // Honeypot field
+
   const submitContact = useMutation({
     mutationFn: async (data: InsertContactSubmission) => {
-      const res = await apiRequest("POST", "/api/contact", data);
+      const res = await apiRequest("POST", "/api/contact", {
+        ...data,
+        website: honeypot, // Include honeypot
+        formStartTime: formStartTime // Include timestamp
+      });
       return res.json();
     },
     onSuccess: () => {
@@ -122,6 +129,20 @@ export default function ContactFormSection({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {/* Honeypot field - hidden from humans, visible to bots */}
+            <div style={{ position: 'absolute', left: '-9999px', opacity: 0 }} aria-hidden="true">
+              <label htmlFor="website-field">Website (leave blank)</label>
+              <input
+                type="text"
+                id="website-field"
+                name="website"
+                value={honeypot}
+                onChange={(e) => setHoneypot(e.target.value)}
+                autoComplete="off"
+                tabIndex={-1}
+              />
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}

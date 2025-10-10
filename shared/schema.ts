@@ -71,6 +71,24 @@ export const contactSubmissions = pgTable("contact_submissions", {
   submittedAtIdx: index("contact_submissions_submitted_at_idx").on(table.submittedAt),
 }));
 
+export const customerSuccessStories = pgTable("customer_success_stories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerName: text("customer_name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  story: text("story").notNull(),
+  beforePhotoUrl: text("before_photo_url").notNull(),
+  afterPhotoUrl: text("after_photo_url").notNull(),
+  serviceCategory: text("service_category").notNull(), // water-heater, drain-cleaning, etc.
+  location: text("location").notNull(),
+  approved: boolean("approved").notNull().default(false), // Moderation flag
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+}, (table) => ({
+  submittedAtIdx: index("customer_success_stories_submitted_at_idx").on(table.submittedAt),
+  approvedIdx: index("customer_success_stories_approved_idx").on(table.approved),
+  categoryIdx: index("customer_success_stories_category_idx").on(table.serviceCategory),
+}));
+
 export const serviceAreas = pgTable("service_areas", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   cityName: text("city_name").notNull(),
@@ -109,6 +127,12 @@ export const insertProductSchema = createInsertSchema(products).omit({
 export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
   id: true,
   submittedAt: true,
+});
+
+export const insertCustomerSuccessStorySchema = createInsertSchema(customerSuccessStories).omit({
+  id: true,
+  submittedAt: true,
+  approved: true, // Will be set to false by default, requires admin approval
 });
 
 export const googleReviews = pgTable("google_reviews", {
@@ -413,6 +437,8 @@ export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+export type CustomerSuccessStory = typeof customerSuccessStories.$inferSelect;
+export type InsertCustomerSuccessStory = z.infer<typeof insertCustomerSuccessStorySchema>;
 export type ServiceArea = typeof serviceAreas.$inferSelect;
 export type InsertServiceArea = z.infer<typeof insertServiceAreaSchema>;
 export type GoogleReview = typeof googleReviews.$inferSelect;
