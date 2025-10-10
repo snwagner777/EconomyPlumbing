@@ -215,20 +215,32 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
 }
 
 export function createProductSchema(product: any) {
+  // Calculate price validity date (30 days from now for merchant listings)
+  const priceValidUntil = new Date();
+  priceValidUntil.setDate(priceValidUntil.getDate() + 30);
+  
   return {
     "@context": "https://schema.org",
     "@type": "Product",
     "name": product.name,
     "description": product.description,
+    "image": product.image || "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "brand": {
+      "@type": "Brand",
+      "name": "Economy Plumbing Services"
+    },
+    "sku": product.id,
     "offers": {
       "@type": "Offer",
-      "url": "https://www.plumbersthatcare.com/store",
+      "url": `https://www.plumbersthatcare.com/store/checkout/${product.slug}`,
       "priceCurrency": "USD",
-      "price": product.price,
-      "availability": "https://schema.org/InStock",
+      "price": (product.price / 100).toFixed(2),
+      "priceValidUntil": priceValidUntil.toISOString().split('T')[0],
+      "availability": product.active ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
       "seller": {
         "@type": "Organization",
-        "name": "Economy Plumbing Services"
+        "name": "Economy Plumbing Services",
+        "url": "https://www.plumbersthatcare.com"
       }
     }
   };
