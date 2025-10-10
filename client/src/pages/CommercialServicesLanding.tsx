@@ -85,11 +85,11 @@ export default function CommercialServicesLanding() {
               {/* Special Offer Badge */}
               <div className="flex justify-center mb-6">
                 <Badge 
-                  className="bg-accent text-accent-foreground px-6 py-2 text-base font-semibold animate-pulse"
+                  className="bg-accent text-accent-foreground px-6 py-2 text-sm md:text-base font-semibold animate-pulse whitespace-normal text-center max-w-full"
                   data-testid="badge-special-offer"
                 >
-                  <Award className="w-4 h-4 mr-2" />
-                  NEW BUSINESS CUSTOMER SPECIAL: 25% OFF First Service
+                  <Award className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span>NEW BUSINESS CUSTOMER SPECIAL: 25% OFF First Service</span>
                 </Badge>
               </div>
 
