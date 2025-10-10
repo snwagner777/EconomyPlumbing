@@ -63,31 +63,27 @@ export default function CommercialCustomersShowcase() {
                   href={customer.websiteUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block group transition-transform hover:scale-110 duration-300"
+                  className="block group transition-all duration-300 hover:scale-110 hover:brightness-110"
                   aria-label={`Visit ${customer.name} website`}
                   data-testid={`link-customer-${customer.id}-${index}`}
                 >
-                  <div className="bg-white rounded-lg p-6 w-40 h-32 flex items-center justify-center">
-                    <img
-                      src={customer.logoUrl}
-                      alt={`${customer.name} logo`}
-                      className="max-h-20 max-w-full w-auto object-contain"
-                      loading="lazy"
-                      data-testid={`img-logo-${customer.id}-${index}`}
-                    />
-                  </div>
+                  <img
+                    src={customer.logoUrl}
+                    alt={`${customer.name} logo`}
+                    className="h-20 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                    loading="lazy"
+                    data-testid={`img-logo-${customer.id}-${index}`}
+                  />
                 </a>
               ) : (
-                <div className="block group transition-transform hover:scale-110 duration-300">
-                  <div className="bg-white rounded-lg p-6 w-40 h-32 flex items-center justify-center">
-                    <img
-                      src={customer.logoUrl}
-                      alt={`${customer.name} logo`}
-                      className="max-h-20 max-w-full w-auto object-contain"
-                      loading="lazy"
-                      data-testid={`img-logo-${customer.id}-${index}`}
-                    />
-                  </div>
+                <div className="block group transition-all duration-300 hover:scale-110">
+                  <img
+                    src={customer.logoUrl}
+                    alt={`${customer.name} logo`}
+                    className="h-20 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                    loading="lazy"
+                    data-testid={`img-logo-${customer.id}-${index}`}
+                  />
                 </div>
               )}
             </div>
