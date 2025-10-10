@@ -335,3 +335,48 @@ export function createBreadcrumbListSchema(items: { name: string; url?: string }
     }))
   };
 }
+
+export function createReviewSchema(review: {
+  id: number;
+  authorName: string;
+  rating: number;
+  text: string;
+  relativeTime?: string;
+  timestamp?: number;
+}) {
+  const reviewDate = review.timestamp 
+    ? new Date(review.timestamp * 1000).toISOString()
+    : new Date().toISOString();
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    "author": {
+      "@type": "Person",
+      "name": review.authorName === 'Anonymous' ? 'Google Customer' : review.authorName
+    },
+    "reviewRating": {
+      "@type": "Rating",
+      "ratingValue": review.rating.toString(),
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "reviewBody": review.text,
+    "datePublished": reviewDate,
+    "itemReviewed": {
+      "@type": "LocalBusiness",
+      "@id": "https://www.plumbersthatcare.com",
+      "name": "Economy Plumbing Services",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "701 Tillery St #12",
+        "addressLocality": "Austin",
+        "addressRegion": "TX",
+        "postalCode": "78702",
+        "addressCountry": "US"
+      },
+      "telephone": "+15123689159",
+      "url": "https://www.plumbersthatcare.com"
+    }
+  };
+}
