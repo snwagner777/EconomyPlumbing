@@ -293,8 +293,9 @@ export const beforeAfterComposites = pgTable("before_after_composites", {
   beforePhotoId: varchar("before_photo_id").notNull(),
   afterPhotoId: varchar("after_photo_id").notNull(),
   
-  // Composite image
+  // Composite images (WebP for web, JPEG for RSS/social)
   compositeUrl: text("composite_url").notNull(),
+  jpegCompositeUrl: text("jpeg_composite_url"),
   
   // AI-generated content
   caption: text("caption"), // AI-generated caption for social media

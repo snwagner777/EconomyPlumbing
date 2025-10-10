@@ -393,6 +393,67 @@ ${productUrls}
     }
   });
 
+  // Convert blog image to JPEG for RSS feeds (must be before :slug route)
+  app.get("/api/blog/image-jpeg", async (req, res) => {
+    try {
+      const imageUrl = req.query.url as string;
+      
+      if (!imageUrl) {
+        return res.status(400).json({ message: "url parameter is required" });
+      }
+
+      let imageBuffer: Buffer;
+
+      // Handle different image sources
+      if (imageUrl.startsWith('http')) {
+        // External URL
+        const response = await fetch(imageUrl);
+        imageBuffer = Buffer.from(await response.arrayBuffer());
+      } else {
+        // Local/object storage path
+        const sharp = await import('sharp');
+        const fs = await import('fs/promises');
+        const { ObjectStorageService } = await import('./objectStorage');
+        const objectStorage = new ObjectStorageService();
+        
+        // Normalize path for object storage: remove leading slash and 'public-objects/' prefix
+        let normalizedPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+        if (normalizedPath.startsWith('public-objects/')) {
+          normalizedPath = normalizedPath.substring('public-objects/'.length);
+        }
+        
+        try {
+          // Try object storage first
+          const file = await objectStorage.searchPublicObject(normalizedPath);
+          if (file) {
+            const [buffer] = await file.download();
+            imageBuffer = buffer;
+          } else {
+            // Fall back to local filesystem
+            imageBuffer = await fs.readFile(normalizedPath);
+          }
+        } catch {
+          // Last resort: try filesystem
+          imageBuffer = await fs.readFile(normalizedPath);
+        }
+      }
+
+      // Convert to JPEG
+      const sharp = await import('sharp');
+      const jpegBuffer = await sharp.default(imageBuffer)
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+      // Cache for 1 year (images don't change)
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.send(jpegBuffer);
+    } catch (error: any) {
+      console.error("Error converting blog image to JPEG:", error);
+      res.status(500).json({ message: "Failed to convert image" });
+    }
+  });
+
   app.get("/api/blog/:slug", async (req, res) => {
     try {
       const post = await storage.getBlogPostBySlug(req.params.slug);
@@ -455,9 +516,16 @@ ${productUrls}
         .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
         .map(post => {
           const postUrl = `${baseUrl}/blog/${post.slug}`;
-          const imageUrl = post.featuredImage ? 
+          
+          // For RSS, convert WebP images to JPEG for better compatibility
+          let imageUrl = post.featuredImage ? 
             (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
             `${baseUrl}/attached_assets/logo.jpg`;
+          
+          // If image is WebP, use conversion endpoint for RSS
+          if (imageUrl.endsWith('.webp')) {
+            imageUrl = `${baseUrl}/api/blog/image-jpeg?url=${encodeURIComponent(post.featuredImage || '')}`;
+          }
           
           // HTML-escape the title for safe use in attributes
           const escapedTitle = post.title
@@ -467,8 +535,8 @@ ${productUrls}
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#39;');
           
-          // Determine image MIME type based on file extension
-          const imageType = post.featuredImage?.endsWith('.webp') ? 'image/webp' : 'image/jpeg';
+          // Always use JPEG for RSS feed enclosures
+          const imageType = 'image/jpeg';
           
           // Create content with image embedded for better RSS reader display
           const contentWithImage = post.featuredImage 
@@ -1732,18 +1800,24 @@ ${rssItems}
         const { ObjectStorageService } = await import('./objectStorage');
         const objectStorage = new ObjectStorageService();
         
+        // Normalize path for object storage: remove leading slash and 'public-objects/' prefix
+        let normalizedPath = composite.compositeUrl.startsWith('/') ? composite.compositeUrl.substring(1) : composite.compositeUrl;
+        if (normalizedPath.startsWith('public-objects/')) {
+          normalizedPath = normalizedPath.substring('public-objects/'.length);
+        }
+        
         try {
           // Try object storage first
-          const file = await objectStorage.searchPublicObject(composite.compositeUrl);
+          const file = await objectStorage.searchPublicObject(normalizedPath);
           if (file) {
             const [buffer] = await file.download();
             imageBuffer = buffer;
           } else {
             // Fall back to local filesystem
-            imageBuffer = await fs.readFile(composite.compositeUrl);
+            imageBuffer = await fs.readFile(normalizedPath);
           }
         } catch {
-          imageBuffer = await fs.readFile(composite.compositeUrl);
+          imageBuffer = await fs.readFile(normalizedPath);
         }
       }
 
@@ -1773,10 +1847,13 @@ ${rssItems}
       // Build RSS XML
       const rssItems = composites.slice(0, 20).map(composite => {
         const pubDate = new Date(composite.createdAt).toUTCString();
-        const imageUrl = composite.compositeUrl.startsWith('http') 
-          ? composite.compositeUrl 
-          : `${baseUrl}${composite.compositeUrl}`;
-        const downloadUrl = `${baseUrl}/api/before-after-composites/${composite.id}/download`;
+        
+        // Use JPEG version for RSS (better compatibility with social media tools)
+        const jpegUrl = composite.jpegCompositeUrl 
+          ? (composite.jpegCompositeUrl.startsWith('http') 
+              ? composite.jpegCompositeUrl 
+              : `${baseUrl}${composite.jpegCompositeUrl}`)
+          : `${baseUrl}/api/before-after-composites/${composite.id}/download`; // Fallback to conversion endpoint
         
         return `
     <item>
@@ -1786,11 +1863,10 @@ ${rssItems}
       <pubDate>${pubDate}</pubDate>
       <category>${composite.category}</category>
       <description><![CDATA[
-        <img src="${imageUrl}" alt="${composite.caption || 'Before and after transformation'}" style="max-width: 100%;" />
+        <img src="${jpegUrl}" alt="${composite.caption || 'Before and after transformation'}" style="max-width: 100%;" />
         <p>${composite.caption || 'See this amazing plumbing transformation!'}</p>
-        <p><a href="${downloadUrl}">Download JPEG for Instagram/Facebook</a></p>
       ]]></description>
-      <enclosure url="${downloadUrl}" type="image/jpeg" />
+      <enclosure url="${jpegUrl}" type="image/jpeg" />
     </item>`;
       }).join('');
 

@@ -309,6 +309,33 @@ export async function createBeforeAfterComposite(
 
   console.log(`[Compositor] ✅ Composite created as WebP: ${outputPath}`);
 
+  // Also save a JPEG version for RSS feeds and social media
+  const jpegPath = outputPath.replace('.webp', '.jpg');
+  await sharp({
+    create: {
+      width: frameWidth + 100,
+      height: totalHeight + 100,
+      channels: 4,
+      background: { r: 240, g: 240, b: 240, alpha: 1 }
+    }
+  })
+  .composite([
+    {
+      input: await sharp(beforeFrame).rotate(2).toBuffer(),
+      top: 20,
+      left: 50
+    },
+    {
+      input: await sharp(afterFrame).rotate(rotation).toBuffer(),
+      top: frameHeight + gap,
+      left: 30
+    }
+  ])
+  .jpeg({ quality: 90 })
+  .toFile(jpegPath);
+
+  console.log(`[Compositor] ✅ Composite also saved as JPEG: ${jpegPath}`);
+
   return outputPath;
 }
 
@@ -338,10 +365,12 @@ export async function processBeforeAfterPairs(
     try {
       // Generate filename with .webp extension
       const filename = `before_after_${jobId}_${Date.now()}.webp`;
+      const jpegFilename = filename.replace('.webp', '.jpg');
       const outputPath = path.join(compositesDir, filename);
       const compositeUrl = `/attached_assets/composites/${filename}`;
+      const jpegCompositeUrl = `/attached_assets/composites/${jpegFilename}`;
 
-      // Create composite image
+      // Create composite image (saves both WebP and JPEG)
       await createBeforeAfterComposite(
         pair.beforePhoto.photoUrl,
         pair.afterPhoto.photoUrl,
@@ -355,12 +384,13 @@ export async function processBeforeAfterPairs(
         beforePhotoId: pair.beforePhoto.id,
         afterPhotoId: pair.afterPhoto.id,
         compositeUrl,
+        jpegCompositeUrl,
         caption,
         category: pair.beforePhoto.category,
         jobId,
       });
 
-      console.log(`[Before/After] ✅ Created composite with caption: "${caption}"`);
+      console.log(`[Before/After] ✅ Created composite (WebP & JPEG) with caption: "${caption}"`);
     } catch (error) {
       console.error(`[Before/After] Error creating composite:`, error);
     }
