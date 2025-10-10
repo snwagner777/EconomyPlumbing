@@ -525,7 +525,7 @@ export default function CommercialServicesLanding() {
                     How do you handle billing for commercial accounts?
                   </AccordionTrigger>
                   <AccordionContent>
-                    We offer net-30 payment terms for established commercial accounts, detailed invoicing with line-item breakdowns, and can bill multiple properties on a single invoice. We also accept all major payment methods and offer automatic payment options for maintenance contracts.
+                    Payment is required at the time of service. We accept all major credit cards, debit cards, checks, and cash. You'll receive detailed invoicing with line-item breakdowns for your records, and we can provide consolidated invoices for multiple properties. Maintenance contract customers can set up automatic monthly payments for convenience.
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
