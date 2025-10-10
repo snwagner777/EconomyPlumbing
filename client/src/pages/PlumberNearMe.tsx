@@ -74,6 +74,30 @@ export default function PlumberNearMe() {
       {
         "@type": "City",
         "name": "Leander"
+      },
+      {
+        "@type": "City",
+        "name": "Pflugerville"
+      },
+      {
+        "@type": "City",
+        "name": "Liberty Hill"
+      },
+      {
+        "@type": "City",
+        "name": "Buda"
+      },
+      {
+        "@type": "City",
+        "name": "Kyle"
+      },
+      {
+        "@type": "City",
+        "name": "Burnet"
+      },
+      {
+        "@type": "City",
+        "name": "Horseshoe Bay"
       }
     ],
     "hasOfferCatalog": {
@@ -181,7 +205,7 @@ export default function PlumberNearMe() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="bg-white text-primary hover:bg-white/90 border-white text-lg px-8 py-6 h-auto"
+                    className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
                     asChild
                     data-testid="button-call-now"
                   >
@@ -194,7 +218,7 @@ export default function PlumberNearMe() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="bg-transparent text-white hover:bg-white/10 border-white text-lg px-8 py-6 h-auto"
+                    className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
                     onClick={openScheduler}
                     data-testid="button-schedule"
                   >
@@ -414,7 +438,7 @@ export default function PlumberNearMe() {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-white text-primary hover:bg-white/90 border-white text-lg px-8 py-6 h-auto"
+                className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
                 asChild
                 data-testid="button-cta-call"
               >
@@ -427,7 +451,7 @@ export default function PlumberNearMe() {
               <Button
                 size="lg"
                 variant="outline"
-                className="bg-transparent text-white hover:bg-white/10 border-white text-lg px-8 py-6 h-auto"
+                className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
                 onClick={openScheduler}
                 data-testid="button-cta-schedule"
               >
