@@ -50,6 +50,11 @@ export default function SuccessStories() {
           content="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more." 
         />
         <link rel="alternate" type="application/rss+xml" title="Success Stories RSS Feed" href="/api/success-stories/rss" />
+        <script 
+          type="text/javascript" 
+          src="https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f" 
+          defer
+        />
       </Helmet>
 
       <Header />
@@ -171,6 +176,19 @@ export default function SuccessStories() {
               </p>
             </div>
           )}
+        </div>
+
+        {/* NiceJob Reviews Section */}
+        <div className="container mx-auto max-w-6xl px-4 py-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Read reviews from real customers who've experienced our exceptional service firsthand.
+            </p>
+          </div>
+          <div className="nj-stories" data-testid="nicejob-reviews-widget"></div>
         </div>
 
         {/* CTA Section */}
