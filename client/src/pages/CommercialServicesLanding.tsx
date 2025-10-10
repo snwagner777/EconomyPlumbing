@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Link } from "wouter";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -365,28 +366,30 @@ export default function CommercialServicesLanding() {
 
               <div className="mt-12 p-8 bg-primary/5 rounded-lg border-2 border-primary/20">
                 <h3 className="text-2xl font-bold text-center mb-6">
-                  Example: Restaurant Maintenance Plan
+                  Commercial VIP Membership
                 </h3>
                 <div className="grid md:grid-cols-2 gap-8">
                   <div>
                     <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
                       <CheckCircle2 className="w-5 h-5 text-primary" />
-                      Quarterly Service Includes:
+                      VIP Benefits Include:
                     </h4>
                     <ul className="space-y-2 text-muted-foreground">
-                      <li>• Grease trap cleaning & inspection</li>
-                      <li>• Video drain line inspection</li>
-                      <li>• Water heater maintenance check</li>
-                      <li>• Backflow testing & certification</li>
-                      <li>• Emergency service priority</li>
+                      <li>• Priority service for emergencies</li>
+                      <li>• Membership savings on every service item</li>
+                      <li>• Yearly plumbing inspection at no charge</li>
+                      <li>• No auto-renewal - no obligation</li>
                     </ul>
                   </div>
                   <div className="flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-4xl font-bold text-primary mb-2">$450/month</p>
-                      <p className="text-muted-foreground">vs. $3,000+ in emergency repairs</p>
-                      <Button className="mt-4" onClick={openScheduler} data-testid="button-maintenance-plan">
-                        Start Saving Today
+                      <p className="text-4xl font-bold text-primary mb-2">$119</p>
+                      <p className="text-muted-foreground mb-1">One-time annual fee</p>
+                      <p className="text-sm text-muted-foreground mb-4">Save on every service call + free annual inspection</p>
+                      <Button className="mt-4" asChild data-testid="button-vip-membership">
+                        <Link href="/store/checkout/commercial-vip">
+                          Enroll Your Business Today
+                        </Link>
                       </Button>
                     </div>
                   </div>
