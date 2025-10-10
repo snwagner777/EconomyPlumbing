@@ -166,6 +166,7 @@ All pages must be accessible:
 - **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with smart topic suggestions. Features automated weekly blog creation, future-dated scheduling, and seasonal awareness.
 - **404 Error Monitoring:** Automated tracking of 404 errors in the database with immediate email alerts via Resend.
 - **Domain Redirect Middleware:** Automatically redirects all traffic from `.replit.app` to `www.plumbersthatcare.com` using a 301 permanent redirect for SEO.
+- **Dynamic Phone Number Tracking:** Database-driven system with detection rules for automatic phone number insertion based on traffic source (Google Ads, Facebook, Instagram, Yelp, Nextdoor, etc.). Admin panel at `/admin/tracking-numbers` allows managing marketing channel numbers, detection rules, and adding new channels without code changes.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
@@ -182,7 +183,7 @@ All pages must be accessible:
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
 - **Social Media:** Facebook, Instagram, Yelp, Nextdoor.
-- **Call Tracking:** Dynamic phone number insertion based on traffic source.
+- **Call Tracking:** Database-driven dynamic phone number tracking system with admin panel for managing marketing channel phone numbers without code changes.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
 - **Google APIs:** Google Places API for review updates, DataForSEO API for historical review import.
