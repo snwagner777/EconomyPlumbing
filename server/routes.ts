@@ -1171,6 +1171,38 @@ ${rssItems}
         email,
       });
 
+      // Update payment intent metadata with customer info for success page
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      if (stripeSecretKey) {
+        try {
+          const stripe = new Stripe(stripeSecretKey);
+          
+          // Retrieve existing payment intent to preserve existing metadata
+          const existingIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+          
+          // Merge customer metadata with existing metadata (preserve productName, quantity, etc.)
+          await stripe.paymentIntents.update(paymentIntentId, {
+            metadata: {
+              ...existingIntent.metadata, // Preserve existing fields
+              productId,
+              customerType,
+              customerName: customerName || '',
+              companyName: companyName || '',
+              contactPersonName: contactPersonName || '',
+              email,
+              phone,
+              street,
+              city,
+              state,
+              zip,
+            },
+          });
+        } catch (stripeError: any) {
+          console.error('Error updating payment intent metadata:', stripeError);
+          // Don't fail the request if metadata update fails
+        }
+      }
+
       res.json({ success: true, id: pendingPurchase.id });
     } catch (error: any) {
       console.error('Error saving pending purchase:', error);
