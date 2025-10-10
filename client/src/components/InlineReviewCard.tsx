@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Star, Quote } from "lucide-react";
 import { SiGoogle, SiFacebook, SiYelp } from "react-icons/si";
 import type { GoogleReview } from "@shared/schema";
+import { Helmet } from "react-helmet";
+import { createReviewSchema } from "@/components/SEO/JsonLd";
 
 interface InlineReviewCardProps {
   category?: string;
@@ -67,10 +69,18 @@ export default function InlineReviewCard({
   const PlatformIcon = platform.icon;
 
   return (
-    <Card 
-      className="relative p-6 mb-6 md:float-right md:ml-6 md:w-80 lg:w-96 hover-elevate transition-all duration-300 border-border/50 bg-gradient-to-br from-primary/5 to-accent/5"
-      data-testid={`inline-review-${review.id}`}
-    >
+    <>
+      {/* Review Schema Markup */}
+      <Helmet>
+        <script type="application/ld+json">
+          {JSON.stringify(createReviewSchema(review))}
+        </script>
+      </Helmet>
+      
+      <Card 
+        className="relative p-6 mb-6 md:float-right md:ml-6 md:w-80 lg:w-96 hover-elevate transition-all duration-300 border-border/50 bg-gradient-to-br from-primary/5 to-accent/5"
+        data-testid={`inline-review-${review.id}`}
+      >
       {/* Quote Icon */}
       <div className="absolute -top-3 -left-3 w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
         <Quote className="w-5 h-5 text-primary" />
@@ -144,5 +154,6 @@ export default function InlineReviewCard({
         </Badge>
       </div>
     </Card>
+    </>
   );
 }

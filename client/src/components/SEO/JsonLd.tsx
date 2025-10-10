@@ -337,7 +337,7 @@ export function createBreadcrumbListSchema(items: { name: string; url?: string }
 }
 
 export function createReviewSchema(review: {
-  id: number;
+  id: string | number;
   authorName: string;
   rating: number;
   text: string;
