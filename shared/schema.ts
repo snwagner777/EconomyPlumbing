@@ -428,6 +428,28 @@ export const insertImportedPhotoSchema = createInsertSchema(importedPhotos).omit
   fetchedAt: true,
 });
 
+// Commercial customers/clients for trust signal display
+export const commercialCustomers = pgTable("commercial_customers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  logoUrl: text("logo_url").notNull(),
+  websiteUrl: text("website_url"),
+  location: text("location"), // Austin, Marble Falls, Liberty Hill, Leander, etc.
+  industry: text("industry"), // Restaurant, Auto Services, Coworking, etc.
+  customerSince: integer("customer_since"), // Year they became a customer
+  displayOrder: integer("display_order").notNull().default(0), // For manual ordering
+  active: boolean("active").notNull().default(true), // Show/hide without deleting
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+}, (table) => ({
+  activeIdx: index("commercial_customers_active_idx").on(table.active),
+  displayOrderIdx: index("commercial_customers_display_order_idx").on(table.displayOrder),
+}));
+
+export const insertCommercialCustomerSchema = createInsertSchema(commercialCustomers).omit({
+  id: true,
+  addedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -460,3 +482,5 @@ export type NotFoundError = typeof notFoundErrors.$inferSelect;
 export type InsertNotFoundError = z.infer<typeof insertNotFoundErrorSchema>;
 export type TrackingNumber = typeof trackingNumbers.$inferSelect;
 export type InsertTrackingNumber = z.infer<typeof insertTrackingNumberSchema>;
+export type CommercialCustomer = typeof commercialCustomers.$inferSelect;
+export type InsertCommercialCustomer = z.infer<typeof insertCommercialCustomerSchema>;
