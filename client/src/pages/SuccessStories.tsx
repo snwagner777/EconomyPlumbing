@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Helmet } from "react-helmet";
-import { Filter, Search, ExternalLink } from "lucide-react";
+import { Filter, Search, ExternalLink, Phone, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,11 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import type { BeforeAfterComposite } from "@shared/schema";
 
 export default function SuccessStories() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const phoneConfig = usePhoneConfig();
 
   const { data: composites, isLoading } = useQuery<BeforeAfterComposite[]>({
     queryKey: ["/api/before-after-composites"],
@@ -46,6 +51,8 @@ export default function SuccessStories() {
         />
         <link rel="alternate" type="application/rss+xml" title="Success Stories RSS Feed" href="/api/success-stories/rss" />
       </Helmet>
+
+      <Header />
 
       <div className="min-h-screen bg-background">
         {/* Header */}
@@ -165,7 +172,46 @@ export default function SuccessStories() {
             </div>
           )}
         </div>
+
+        {/* CTA Section */}
+        <div className="bg-primary text-white py-16 px-4">
+          <div className="container mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready for Your Own Success Story?
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              Join hundreds of satisfied customers in Austin and Marble Falls who trust Economy Plumbing for quality work and exceptional service.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
+                asChild
+                data-testid="button-cta-call"
+              >
+                <a href={`tel:${phoneConfig.tel}`}>
+                  <Phone className="w-5 h-5 mr-2" />
+                  Call {phoneConfig.display} Now
+                </a>
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
+                onClick={openScheduler}
+                data-testid="button-cta-schedule"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Schedule Service Online
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <Footer />
     </>
   );
 }
