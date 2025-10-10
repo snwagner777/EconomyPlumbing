@@ -139,7 +139,7 @@ export default function ServiceAreas() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Our Service Area | Economy Plumbing Services Central Texas"
+        title="Our Service Area | Economy Plumbing Central Texas"
         description="Central Texas plumber serving Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Same-day service. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/service-area"
       />
@@ -345,7 +345,7 @@ export default function ServiceAreas() {
                 allowFullScreen
                 loading="lazy"
                 referrerPolicy="no-referrer-when-downgrade"
-                title="Economy Plumbing Services Coverage Area - Travis, Williamson & Burnet Counties"
+                title="Economy Plumbing Coverage Area - Travis, Williamson & Burnet Counties"
                 data-testid="map-coverage-area"
               />
             </div>

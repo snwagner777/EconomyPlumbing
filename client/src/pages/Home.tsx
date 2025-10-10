@@ -245,7 +245,7 @@ export default function Home() {
   return (
     <>
       <SEOHead
-        title="Economy Plumbing Services | Austin & Marble Falls Plumbers | Water Heater Experts"
+        title="Economy Plumbing | Austin & Marble Falls Plumbers | Water Heater Experts"
         description="Austin & Marble Falls plumber. Water heater repair, drain cleaning, leak repair, emergency plumbing. Licensed experts. Same-day service. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/"
         schema={[localBusinessSchema, faqSchema]}

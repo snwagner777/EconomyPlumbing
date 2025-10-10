@@ -19,7 +19,7 @@ export default function RefundReturns() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Refund & Returns Policy | Economy Plumbing Services"
+        title="Refund & Returns Policy | Economy Plumbing"
         description="Refund & returns policy: 30-day satisfaction guarantee, VIP membership cancellation, product returns. Economy Plumbing Austin & Marble Falls. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/refund_returns"
         schema={webPageSchema}
