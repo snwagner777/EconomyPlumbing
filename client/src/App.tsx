@@ -21,6 +21,7 @@ import CommercialPlumbing from "@/pages/CommercialPlumbing";
 import BackflowTesting from "@/pages/BackflowTesting";
 import EmergencyPlumbing from "@/pages/EmergencyPlumbing";
 import PlumberNearMe from "@/pages/PlumberNearMe";
+import CommercialServicesLanding from "@/pages/CommercialServicesLanding";
 import NotFound from "@/pages/not-found";
 
 // Lazy load less critical pages for better performance
@@ -102,6 +103,7 @@ function Router() {
       
       {/* SEO Landing Pages */}
       <Route path="/plumber-near-me" component={PlumberNearMe} />
+      <Route path="/commercial-services" component={CommercialServicesLanding} />
       
       {/* Main service pages */}
       <Route path="/water-heater-services" component={WaterHeaterServices} />
