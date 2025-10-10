@@ -1,183 +1,43 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for a plumbing business in Austin and Marble Falls, Texas. It provides service information, covered areas, and blog content. A key feature is an online store for maintenance memberships. The project aims to enhance local SEO, boost user engagement, and improve conversion rates. The system also includes an AI-powered blog generation system and comprehensive SEO features for optimal performance and visibility.
+Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business in Austin and Marble Falls, Texas. It provides service information, covered areas, and blog content, alongside an online store for maintenance memberships. The project focuses on improving local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
-## Critical SEO & Development Rules
-
-### 1. URL Change Policy (MANDATORY)
-**⚠️ RULE: Any time a page URL is changed, we MUST create a 301 redirect from the old URL to the new URL.**
-
-- Prevents 404 errors for users with bookmarks
-- Preserves SEO rankings and link equity
-- Maintains traffic from external links
-- **How:** Add to `redirects` object in `server/index.ts` (line ~46)
-- **Test:** Check server logs for "301 Redirect: /old → /new"
-- **Monitor:** Use 404 monitoring system to identify missing redirects
-
-### 2. SEO Best Practices for All Pages (MANDATORY)
-**⚠️ RULE: Every page and blog post must follow ALL SEO best practices.**
-
-#### Meta Data Optimization - REQUIRED
-ALL pages must have optimized title tags and meta descriptions:
-
-**Title Tags (50-60 characters):**
-- Include primary keyword + location
-- Format: `[Service/Topic] | [Location] | Economy Plumbing`
-- Prioritize water heater content when relevant
-- **Examples:**
-  - ✅ "Water Heater Repair Austin & Marble Falls | Economy Plumbing" (58 chars)
-  - ✅ "Austin Water Heater Installation | Economy Plumbing" (52 chars)
-  - ❌ "Water Heater Services" (22 chars - too short)
-  - ❌ "Professional Water Heater Repair, Installation, and Maintenance Services in Austin and Marble Falls, Texas" (108 chars - too long)
-
-**Meta Descriptions (150-160 characters):**
-- Include location (Austin/Marble Falls) in first 100 characters
-- Emphasize water heaters when applicable
-- Include call-to-action
-- **Examples:**
-  - ✅ "Austin & Marble Falls water heater repair, installation & replacement. 24/7 emergency service. Expert plumbers. Call (512) 368-9159 for same-day service." (157 chars)
-  - ✅ "Economy Plumbing serves Austin and Marble Falls with professional water heater services. Licensed, insured plumbers. Free estimates. Call today!" (148 chars)
-  - ❌ "We fix water heaters" (21 chars - too short, no location)
-  - ❌ "Professional water heater repair and installation services available throughout the greater Austin metropolitan area including Marble Falls and surrounding communities with 24/7 emergency service available" (207 chars - too long)
-
-**Location Keywords Priority:**
-1. Austin (primary market)
-2. Marble Falls (secondary market)
-3. Specific neighborhoods when relevant
-
-**Water Heater Emphasis:**
-- Water heater pages: Prioritize in title and first 50 chars of description
-- Other service pages: Include "water heater" if space permits
-- Blog posts: Emphasize water heaters in 40% of posts (balanced with other services)
-- Service area pages: Mention water heaters in description
-
-**Implementation:**
-```tsx
-<SEOHead
-  title="Water Heater Repair Austin TX | Economy Plumbing Services"  // 58 chars
-  description="Expert water heater repair in Austin & Marble Falls. Same-day service, licensed plumbers, all brands. Call (512) 368-9159 for fast repairs." // 151 chars
-  canonical="https://www.plumbersthatcare.com/water-heater-repair"
-/>
-```
-
-#### Schema Markup (JSON-LD) - REQUIRED
-All pages must include appropriate structured data:
-- **Service Pages:** `Service` schema with provider, areaServed, offers
-- **Blog Posts:** `BlogPosting` schema with author, datePublished, image
-- **Service Areas:** `LocalBusiness` with address, geo, areaServed
-- **Products:** `Product` schema with offers, price, availability
-- **Implementation:** Use `SEOHead` component with schema prop
-
-#### Image Optimization - REQUIRED
-ALL images must include:
-- **Alt text:** Descriptive, keyword-rich (not stuffed)
-- **Dimensions:** width/height attributes (prevents CLS)
-- **Loading strategy:**
-  - Hero images: `fetchpriority="high"` + `loading="eager"`
-  - Below-fold: `loading="lazy"`
-- **Decoding:** `decoding="async"` on all images
-- **Format:** WebP at 85% quality
-
-#### Breadcrumbs - IMPLEMENTED ✅
-Breadcrumbs are now implemented on all hierarchical pages:
-- **Visual navigation:** Semantic `<nav aria-label="Breadcrumb">` with `<ol>/<li>` structure
-- **BreadcrumbList schema:** Complete JSON-LD with all URLs including current page
-- **Accessibility:** `aria-current="page"` on active item, `aria-hidden="true"` on separators
-- **Implemented on:**
-  - Blog posts: Home → Blog → Post Title
-  - Service pages: Home → Services → Service Name
-  - Service area pages: Home → Service Areas → City Name
-- **Implementation:** See `createBreadcrumbListSchema()` in `JsonLd.tsx`
-
-#### Page Speed - REQUIRED
-Every page must meet:
-- WebP images with proper dimensions
-- Lazy loading below-fold content
-- Deferred third-party scripts (GA, ServiceTitan)
-- Preload critical fonts (Inter woff2)
-- DNS prefetch for external domains
-- **Target:** 100/100 PageSpeed Insights
-
-#### Accessibility (WCAG AA) - REQUIRED
-All pages must be accessible:
-- **Color contrast:** 4.5:1 text, 3:1 large text
-- **Semantic HTML:** Proper heading hierarchy (single h1, logical h2/h3)
-- **ARIA labels:** All interactive elements accessible
-- **Keyboard nav:** Full keyboard accessibility, visible focus
-- **Images:** Alt text on all (empty alt="" for decorative)
-- **Forms:** Labels, error messages, required field indicators
-
-#### Checklist for New Pages:
-- [ ] **Title tag:** 50-60 chars, includes location (Austin/Marble Falls), water heater emphasis if relevant
-- [ ] **Meta description:** 150-160 chars, location in first 100 chars, water heater emphasis, call-to-action
-- [ ] SEOHead with title, description, canonical, schema
-- [ ] All images: alt, width/height, loading strategy
-- [ ] Breadcrumbs (visual + schema) if applicable
-- [ ] Page speed optimized (WebP, lazy load, async)
-- [ ] WCAG AA compliant (contrast, semantic, ARIA)
-- [ ] Single h1, proper h2/h3 hierarchy
-- [ ] Test with PageSpeed Insights (target 100/100)
-- [ ] Test with WAVE accessibility tool
-
-#### Reference Examples:
-- Service Pages: `client/src/components/ServicePage.tsx`
-- SEO Component: `client/src/components/SEOHead.tsx`
-- Blog Posts: Auto-generated with proper optimization
-- Service Areas: `client/src/pages/ServiceAreaTemplate.tsx`
-
-#### ✅ Metadata Optimization Status (Completed):
-**Service Pages (18/18):** 100% compliant
-- All titles: 50-60 chars with Austin/Marble Falls location
-- All descriptions: 150-160 chars with water heater emphasis
-- Format: `[Service] Austin & Marble Falls | Economy [Plumbing]`
-
-**Service Area Pages (16/16):** 100% compliant
-- All titles: Via ServiceAreaPage component, all 50+ chars
-- All descriptions: 150-160 chars in database with location/water heater emphasis
-- Database-driven for consistent updates
-
-**Blog Posts (135/135):** 100% compliant
-- All descriptions: Exactly 153 chars (first 150 chars of content + "...")
-- Title suffix: "| Economy Plumbing" (18 chars)
-- Automated approach: `SUBSTRING(content, 1, 150) || '...'` for consistency
-- Future blog posts automatically inherit this pattern
-
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** React 18 with TypeScript, Vite, Wouter for routing, and TanStack Query for server state. UI is built with Radix UI, Shadcn UI, Tailwind CSS, and Class Variance Authority (CVA).
-- **Design System:** Features a primary blue and secondary teal color scheme, charcoal text, and silver accents, with Inter and Poppins typography. Supports light/dark modes, aiming for a professional aesthetic.
-- **SEO & Performance:** Centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema. Includes performance optimizations like resource preconnect, image lazy loading, font optimization, client-side code splitting, and universal WebP image conversion. Dynamic sitemap with auto-updates.
-- **Client-Side Routes:** Covers Home, About, Contact, 20+ Service pages, 16 Service Area pages, Blog (with RSS feed), Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, and conversion-optimized SEO landing pages.
-- **SEO Landing Pages:** High-converting, research-based landing pages designed for organic search and targeted marketing traffic (not linked in navigation, included in sitemap). Built using 2025 CRO best practices including urgency/scarcity mechanics, transparent pricing, FAQ objection handling, customer testimonials with specific results, and satisfaction guarantees.
-  - `/plumber-near-me`: Residential-focused landing page with dynamic slot scarcity (localStorage-based daily reset with CTA-triggered decrements), 4-step process visualization, pricing transparency cards, and comprehensive LocalBusiness schema.
-  - `/commercial-services`: B2B-focused landing page for QR code marketing campaign targeting restaurants, offices, and businesses. Features 25% off new customer offer, ROI/cost savings messaging, commercial testimonials, grease trap/water heater/emergency services, preventive maintenance plans, and multi-location support. Designed for business cards distributed to commercial establishments.
+- **Framework & UI:** React 18 with TypeScript, Vite, Wouter for routing, and TanStack Query for server state. UI is built using Radix UI, Shadcn UI, Tailwind CSS, and Class Variance Authority (CVA).
+- **Design System:** Features a primary blue and secondary teal color scheme, charcoal text, and silver accents, with Inter and Poppins typography. Supports light/dark modes for a professional aesthetic.
+- **SEO & Performance:** Utilizes a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema. Includes performance optimizations like resource preconnect, image lazy loading, font optimization, client-side code splitting, and universal WebP image conversion. A dynamic sitemap auto-updates.
+- **Client-Side Routes:** Covers Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, and conversion-optimized SEO landing pages.
+- **SEO Landing Pages:** High-converting landing pages (`/plumber-near-me`, `/commercial-services`) designed for organic search and targeted marketing, implementing CRO best practices such as urgency mechanics, transparent pricing, FAQs, testimonials, and satisfaction guarantees.
 - **Accessibility:** WCAG AA Compliant with focus on contrast ratios, `aria-label` usage, and dynamic Open Graph image construction.
 - **Reviews Integration:** Premium visual design for testimonials, strategically placed, auto-categorized by service type, lazy-loaded, and cached.
-- **PageSpeed Optimization:** Implements image optimization (width/height attributes, fetchpriority="high", loading="lazy", decoding="async"), resource hints (DNS prefetch, preconnect, font preload), deferred third-party scripts (Google Analytics, ServiceTitan scheduler), and optimized CSS delivery for Core Web Vitals.
+- **PageSpeed Optimization:** Implements image optimization, resource hints, deferred third-party scripts, and optimized CSS delivery to achieve high Core Web Vitals scores.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews.
-- **Google Reviews Integration:** Bulk import via DataForSEO API; ongoing updates via Google Places API with deduplication, quality filtering (4+ star), and auto-categorization into 11 service types. Supports multi-source reviews.
+- **Google Reviews Integration:** Bulk import via DataForSEO API; ongoing updates via Google Places API with deduplication, quality filtering, and auto-categorization.
 - **Performance Optimizations:** Gzip/brotli compression, aggressive API caching with Cache-Control headers, 1-year immutable cache for static assets, and strategic database indexing.
-- **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with smart topic suggestions. Features automated weekly blog creation, future-dated scheduling, and seasonal awareness.
-- **404 Error Monitoring:** Automated tracking of 404 errors in the database with immediate email alerts via Resend.
-- **Domain Redirect Middleware:** Automatically redirects all traffic from `.replit.app` to `www.plumbersthatcare.com` using a 301 permanent redirect for SEO.
-- **Dynamic Phone Number Tracking:** Database-driven system with detection rules for automatic phone number insertion based on traffic source (Google Ads, Facebook, Instagram, Yelp, Nextdoor, etc.). Admin panel at `/admin/tracking-numbers` allows managing marketing channel numbers, detection rules, and adding new channels without code changes.
+- **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze unused photos and generate SEO-optimized blog posts with smart topic suggestions, automated weekly creation, future-dated scheduling, and seasonal awareness.
+- **404 Error Monitoring:** Automated tracking of 404 errors with email alerts via Resend.
+- **Domain Redirect Middleware:** Automatically redirects all traffic from `.replit.app` to `www.plumbersthatcare.com` using a 301 permanent redirect.
+- **Dynamic Phone Number Tracking:** Database-driven system for automatic phone number insertion based on traffic source, with an admin panel for management.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
 - **Form Handling:** React Hook Form with Zod validation.
 
 ### Analytics & Third-Party Script Management
-- Google Analytics 4 integration with deferred loading.
-- ServiceTitan Scheduler loads on-demand.
+- **Multi-Platform Tracking:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity.
+- **Deferred Loading:** All scripts load via `requestIdleCallback` for optimal performance.
+- **Conversion Tracking:** Comprehensive tracking for contact forms, phone clicks, scheduler opens, memberships, and user-generated content.
+- **Privacy Compliant:** Cookie consent integration.
 
 ## External Dependencies
 
@@ -186,13 +46,14 @@ All pages must be accessible:
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
 - **Social Media:** Facebook, Instagram, Yelp, Nextdoor.
-- **Call Tracking:** Database-driven dynamic phone number tracking system with admin panel for managing marketing channel phone numbers without code changes.
+- **Call Tracking:** Database-driven dynamic phone number tracking system.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple` for PostgreSQL session store.
-- **Google APIs:** Google Places API for review updates, DataForSEO API for historical review import.
-- **AI-Powered Photo Quality System:** OpenAI Vision (GPT-4o) for analyzing job photos for quality, categorization, and filtering.
-- **WebP Conversion:** Sharp library for universal WebP conversion of photos from CompanyCam and Google Drive imports.
-- **Multi-Source Photo Import:** CompanyCam via Zapier webhook, Google Drive (bulk import), and ServiceTitan.
-- **Before/After Photo Composer:** AI (GPT-4o vision) for detecting before/after photo pairs and generating Polaroid-style composite images as WebP with AI-generated captions.
-- **Social Media Auto-Posting:** Meta Graph API for automated weekly posting of best before/after composites to Facebook/Instagram.
-- **ServiceTitan Integration:** Automated sync of online membership purchases to ServiceTitan CRM, including customer creation, invoice generation, and payment processing, handled via secure Stripe webhooks and background sync jobs.
+- **Google APIs:** Google Places API for review updates.
+- **DataForSEO API:** For historical review import.
+- **AI-Powered Photo Quality System:** OpenAI Vision (GPT-4o) for analyzing job photos.
+- **WebP Conversion:** Sharp library for universal WebP conversion.
+- **Multi-Source Photo Import:** CompanyCam, Google Drive, and ServiceTitan.
+- **Before/After Photo Composer:** AI (GPT-4o vision) for detecting and composing before/after images with AI-generated captions.
+- **Social Media Auto-Posting:** Meta Graph API for automated weekly posting to Facebook/Instagram.
+- **ServiceTitan Integration:** Automated sync of online membership purchases to ServiceTitan CRM via Stripe webhooks and background sync jobs.
