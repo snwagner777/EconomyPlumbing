@@ -33,7 +33,7 @@ export default function CommercialServicesLanding() {
     "@type": "Plumber",
     "name": "Economy Plumbing Services - Commercial Division",
     "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
-    "description": "Commercial plumbing services for restaurants, offices, and businesses in Austin and Marble Falls. Emergency repairs, grease trap cleaning, water heater service, preventive maintenance.",
+    "description": "Commercial plumbing services for restaurants, offices, and businesses in Austin and Marble Falls. Emergency repairs, grease trap best practices, water heater service, preventive maintenance.",
     "address": {
       "@type": "PostalAddress",
       "addressLocality": "Austin",
@@ -227,7 +227,7 @@ export default function CommercialServicesLanding() {
                       <div>
                         <CardTitle className="mb-2">Restaurant & Commercial Kitchen</CardTitle>
                         <p className="text-muted-foreground">
-                          • Grease trap cleaning & maintenance<br/>
+                          • Grease trap best practices & maintenance<br/>
                           • Drain line hydro jetting<br/>
                           • Water heater repair & replacement<br/>
                           • Emergency backflow prevention<br/>
@@ -330,7 +330,7 @@ export default function CommercialServicesLanding() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Regular grease trap cleaning prevents $5K+ sewer backups. Monthly maintenance costs just $200-400.
+                      Proper drain line maintenance prevents $5K+ sewer backups. Regular preventive service costs just $200-400/month.
                     </p>
                   </CardContent>
                 </Card>
@@ -358,7 +358,7 @@ export default function CommercialServicesLanding() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      Stay compliant with city health codes. Our maintenance includes backflow testing, grease trap service, and inspection prep.
+                      Stay compliant with city health codes. Our maintenance includes backflow testing, grease trap best practices, and inspection prep.
                     </p>
                   </CardContent>
                 </Card>
@@ -421,7 +421,7 @@ export default function CommercialServicesLanding() {
                   </CardHeader>
                   <CardContent>
                     <p className="text-muted-foreground">
-                      "Our grease trap was backing up weekly. Economy set us up on a maintenance plan and we haven't had a single issue in 8 months. Saved us at least $5,000 in emergency calls."
+                      "Our kitchen drains were backing up weekly. Economy helped us implement proper maintenance practices and we haven't had a single issue in 8 months. Saved us at least $5,000 in emergency calls."
                     </p>
                   </CardContent>
                 </Card>
