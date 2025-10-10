@@ -190,29 +190,62 @@ export async function monitorGoogleDriveFolder() {
     
     const photosToSkip = new Set<number>(); // Indices of photos to skip
 
-    // Check each new photo against existing photos
+    // Load all existing photos ONCE (not in loop - performance optimization)
+    const existingPhotos = await storage.getAllImportedPhotos();
+    console.log(`[Google Drive] Loaded ${existingPhotos.length} existing photos for comparison`);
+
+    // Download and cache ALL existing photos ONCE (not repeatedly in loops)
+    const existingPhotoBuffers = new Map<string, Buffer>();
+    
+    console.log(`[Google Drive] Downloading ${existingPhotos.length} existing photos for comparison...`);
+    for (const existing of existingPhotos) {
+      try {
+        let buffer: Buffer | null = null;
+        
+        if (existing.url.startsWith('/public-objects/') || existing.url.startsWith('/replit-objstore-')) {
+          // Handle object storage relative URLs
+          const photoPath = existing.url.startsWith('/public-objects/') 
+            ? existing.url.replace('/public-objects/', '') 
+            : existing.url;
+          const file = await objectStorageService.searchPublicObject(photoPath);
+          if (file) {
+            const [downloadedBuffer] = await file.download();
+            buffer = downloadedBuffer;
+          }
+        } else if (existing.url.startsWith('http://') || existing.url.startsWith('https://')) {
+          // Handle absolute URLs
+          try {
+            const response = await fetch(existing.url);
+            if (response.ok) {
+              buffer = Buffer.from(await response.arrayBuffer());
+            }
+          } catch (fetchError) {
+            console.log(`[Google Drive] Could not fetch ${existing.url}: ${fetchError}`);
+          }
+        }
+        
+        if (buffer) {
+          existingPhotoBuffers.set(existing.id, buffer);
+        }
+      } catch (error) {
+        console.log(`[Google Drive] Warning: Could not download existing photo ${existing.url}: ${error}`);
+      }
+    }
+    
+    console.log(`[Google Drive] Successfully cached ${existingPhotoBuffers.size}/${existingPhotos.length} existing photos`);
+
+    // Check each new photo against existing photos (using cached buffers)
     for (let i = 0; i < candidatePhotos.length; i++) {
       const candidate = candidatePhotos[i];
       
-      // Check against existing photos in database
-      const existingPhotos = await storage.getAllImportedPhotos();
-      
       for (const existing of existingPhotos) {
-        try {
-          // Download existing photo for comparison
-          let existingBuffer: Buffer;
-          if (existing.url.startsWith('/public-objects/')) {
-            const file = await objectStorageService.searchPublicObject(existing.url.replace('/public-objects/', ''));
-            if (file) {
-              const [buffer] = await file.download();
-              existingBuffer = buffer;
-            } else {
-              continue;
-            }
-          } else {
-            continue; // Skip if can't download
-          }
+        const existingBuffer = existingPhotoBuffers.get(existing.id);
+        
+        if (!existingBuffer) {
+          continue; // Skip if couldn't download/cache
+        }
 
+        try {
           // Compare photos using AI
           const comparison = await comparePhotos(
             candidate.webpBuffer,
