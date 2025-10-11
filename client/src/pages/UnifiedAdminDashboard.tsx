@@ -1037,7 +1037,8 @@ function CommercialCustomersSection() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload logo');
+        const errorData = await uploadResponse.json().catch(() => ({ error: 'Failed to upload logo' }));
+        throw new Error(errorData.error || 'Failed to upload logo');
       }
 
       const { logoUrl } = await uploadResponse.json();
@@ -1047,7 +1048,8 @@ function CommercialCustomersSection() {
         customerName: formData.name || "Logo",
       });
 
-      const { processedLogoUrl } = await processResponse.json();
+      const processData = await processResponse.json();
+      const { processedLogoUrl } = processData;
 
       setFormData(prev => ({ ...prev, logoUrl: processedLogoUrl }));
       setLogoPreview(processedLogoUrl);
@@ -1057,6 +1059,7 @@ function CommercialCustomersSection() {
         description: "Logo uploaded and processed successfully.",
       });
     } catch (error: any) {
+      console.error('Logo upload error:', error);
       toast({
         title: "Upload Failed",
         description: error.message || "Failed to upload logo",
