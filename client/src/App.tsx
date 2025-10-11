@@ -67,7 +67,6 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
 const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
-const AdminLogin = lazy(() => import("@/pages/AdminLogin"));
 const OAuthAdminLogin = lazy(() => import("@/pages/OAuthAdminLogin"));
 const UnifiedAdminDashboard = lazy(() => import("@/pages/UnifiedAdminDashboard"));
 const TrackingNumbersAdmin = lazy(() => import("@/pages/TrackingNumbersAdmin"));
@@ -184,9 +183,9 @@ function Router() {
       <Route path="/schedule-appointment" component={ScheduleAppointment} />
       <Route path="/about" component={About} />
       
-      {/* Admin routes */}
+      {/* Admin routes - OAuth only */}
       <Route path="/admin/oauth-login" component={OAuthAdminLogin} />
-      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/login">{() => <Redirect to="/admin/oauth-login" />}</Route>
       <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />

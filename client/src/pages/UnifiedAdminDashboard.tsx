@@ -83,9 +83,9 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
     },
   ];
 
-  const handleLogout = async () => {
-    await apiRequest("POST", "/api/admin/logout");
-    setLocation("/admin/login");
+  const handleLogout = () => {
+    // OAuth logout - redirects to Replit logout then back to homepage
+    window.location.href = "/api/oauth/logout";
   };
 
   return (
@@ -531,7 +531,7 @@ export default function UnifiedAdminDashboard() {
 
   useEffect(() => {
     if (authData && !authData.isAdmin) {
-      setLocation("/admin/login");
+      setLocation("/admin/oauth-login");
     }
   }, [authData, setLocation]);
 

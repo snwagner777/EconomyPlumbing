@@ -39,11 +39,15 @@ import { openScheduler } from "@/lib/scheduler";
 import {
   localBusinessSchema,
   createFAQSchema,
+  createMarbleFallsLocationSchema,
+  createOrganizationSchema,
 } from "@/components/SEO/JsonLd";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function Home() {
   const phoneConfig = usePhoneConfig();
+  const marbleFallsSchema = createMarbleFallsLocationSchema();
+  const organizationSchema = createOrganizationSchema();
   const faqSchema = createFAQSchema([
     {
       question: "What areas do you serve in Texas?",
@@ -248,7 +252,7 @@ export default function Home() {
         title="Economy Plumbing | Austin & Marble Falls Plumbers | Water Heater Experts"
         description="Austin & Marble Falls plumber. Water heater repair, drain cleaning, leak repair, emergency plumbing. Licensed experts. Same-day service. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/"
-        schema={[localBusinessSchema, faqSchema]}
+        schema={[localBusinessSchema, marbleFallsSchema, organizationSchema, faqSchema]}
       />
 
       <div className="min-h-screen">
