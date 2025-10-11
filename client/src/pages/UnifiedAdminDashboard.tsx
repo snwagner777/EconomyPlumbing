@@ -2294,8 +2294,8 @@ function ManualSuccessStoryDialog({ photos, onClose }: { photos: any[], onClose:
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          photo1Url: photos[0].url,
-          photo2Url: photos[1].url
+          photo1Url: photos[0].photoUrl,
+          photo2Url: photos[1].photoUrl
         })
       });
       
@@ -2374,7 +2374,7 @@ function ManualSuccessStoryDialog({ photos, onClose }: { photos: any[], onClose:
             <div>
               <p className="text-sm font-medium mb-2">Before Photo</p>
               <img 
-                src={photos[0].url} 
+                src={photos[0].photoUrl} 
                 alt="Before" 
                 className="w-full h-48 object-cover rounded-lg"
                 data-testid="img-before-photo"
@@ -2383,7 +2383,7 @@ function ManualSuccessStoryDialog({ photos, onClose }: { photos: any[], onClose:
             <div>
               <p className="text-sm font-medium mb-2">After Photo</p>
               <img 
-                src={photos[1].url} 
+                src={photos[1].photoUrl} 
                 alt="After" 
                 className="w-full h-48 object-cover rounded-lg"
                 data-testid="img-after-photo"
@@ -2476,7 +2476,7 @@ function ManualBlogPostDialog({ photo, onClose }: { photo: any, onClose: () => v
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          photoUrl: photo.url,
+          photoUrl: photo.photoUrl,
           aiDescription: photo.aiDescription
         })
       });
@@ -2554,7 +2554,7 @@ function ManualBlogPostDialog({ photo, onClose }: { photo: any, onClose: () => v
           <div>
             <p className="text-sm font-medium mb-2">Selected Photo</p>
             <img 
-              src={photo.url} 
+              src={photo.photoUrl} 
               alt="Blog photo" 
               className="w-full h-64 object-cover rounded-lg"
               data-testid="img-blog-photo"
