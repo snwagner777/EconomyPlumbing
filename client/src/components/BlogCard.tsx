@@ -8,9 +8,10 @@ import type { BlogPost } from "@shared/schema";
 
 interface BlogCardProps {
   post: BlogPost;
+  priority?: boolean; // For first 3 images - loads with high priority
 }
 
-const BlogCard = memo(({ post }: BlogCardProps) => {
+const BlogCard = memo(({ post, priority = false }: BlogCardProps) => {
   return (
     <Card className="flex flex-col h-full hover-elevate active-elevate-2 overflow-hidden">
       <div className="overflow-hidden">
@@ -21,7 +22,8 @@ const BlogCard = memo(({ post }: BlogCardProps) => {
               alt={`Featured image for: ${post.title}`}
               width="800"
               height="533"
-              loading="lazy"
+              loading={priority ? "eager" : "lazy"}
+              fetchPriority={priority ? "high" : "auto"}
               decoding="async"
               className="w-full h-56 object-cover cursor-pointer transition-transform hover:scale-105"
               style={{

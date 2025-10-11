@@ -145,8 +145,8 @@ export default function Blog() {
             ) : data?.posts && data.posts.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                  {data.posts.map((post) => (
-                    <BlogCard key={post.id} post={post} />
+                  {data.posts.map((post, index) => (
+                    <BlogCard key={post.id} post={post} priority={index < 3} />
                   ))}
                 </div>
 
