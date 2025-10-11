@@ -165,7 +165,7 @@ export async function processLogoToWhiteMonochrome(
       console.log(`[Logo Processor] Converting ${currentFormat.toUpperCase()} to PNG for processing...`);
       
       normalizedBuffer = await sharp(logoBuffer)
-        .resize(800, 800, { // Reasonable size for logos
+        .resize(1200, 1200, { // Higher quality for logos
           fit: 'inside',
           withoutEnlargement: true
         })
@@ -231,11 +231,7 @@ export async function processLogoToWhiteMonochrome(
     })
       .joinChannel(finalAlphaBuffer, { raw: { width, height, channels: 1 } })  // Add alpha as 4th channel with proper format
       .png() // Convert to PNG first to establish proper format
-      .resize(400, 200, {
-        fit: 'contain',
-        background: { r: 0, g: 0, b: 0, alpha: 0 }
-      })
-      .webp({ quality: 90, lossless: false }) // Then convert to WebP for smaller file sizes
+      .webp({ quality: 95, lossless: false }) // Convert to WebP for smaller file sizes with higher quality
       .toBuffer();
 
     // Upload the processed logo
