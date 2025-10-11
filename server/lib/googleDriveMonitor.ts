@@ -75,20 +75,33 @@ async function getAllFolderIds(drive: any, parentFolderId: string): Promise<stri
   return folderIds;
 }
 
-// Get all image files from multiple folders
+// Get all image files from multiple folders with pagination
 async function getAllImageFiles(drive: any, folderIds: string[]) {
   const allFiles: any[] = [];
   
   for (const folderId of folderIds) {
-    const response = await drive.files.list({
-      q: `'${folderId}' in parents and trashed=false and (mimeType contains 'image/')`,
-      fields: 'files(id, name, mimeType, createdTime, webContentLink)',
-      orderBy: 'createdTime desc',
-      pageSize: 100
-    });
+    let pageToken: string | undefined = undefined;
+    let pageCount = 0;
     
-    const files = response.data.files || [];
-    allFiles.push(...files);
+    do {
+      const response: any = await drive.files.list({
+        q: `'${folderId}' in parents and trashed=false and (mimeType contains 'image/')`,
+        fields: 'nextPageToken, files(id, name, mimeType, createdTime, webContentLink)',
+        orderBy: 'createdTime desc',
+        pageSize: 100,
+        pageToken: pageToken
+      });
+      
+      const files = response.data.files || [];
+      allFiles.push(...files);
+      
+      pageToken = response.data.nextPageToken || undefined;
+      pageCount++;
+      
+      if (pageToken) {
+        console.log(`[Google Drive] Fetching page ${pageCount + 1} for folder ${folderId}...`);
+      }
+    } while (pageToken);
   }
   
   return allFiles;
