@@ -106,88 +106,36 @@ export async function processLogoToWhiteMonochrome(
       throw new Error('Failed to download logo from object storage');
     }
 
-    // Check if file is SVG by looking at file content
-    const bufferStart = logoBuffer.toString('utf8', 0, Math.min(200, logoBuffer.length));
-    const isSvg = bufferStart.includes('<svg') || bufferStart.includes('<?xml');
-    
-    if (isSvg) {
-      console.log(`[Logo Processor] Detected SVG file, converting colors to white...`);
-      
-      // For SVG files, convert all fill/stroke colors to white
-      let svgContent = logoBuffer.toString('utf8');
-      
-      // Replace fill colors with white (handles fill="#color", fill='color', fill:color)
-      svgContent = svgContent
-        .replace(/fill\s*=\s*["']([^"']+)["']/gi, (match, color) => {
-          // Preserve 'none' for transparent fills
-          if (color.toLowerCase() === 'none') return match;
-          return 'fill="#FFFFFF"';
-        })
-        .replace(/fill\s*:\s*([^;"\s}]+)/gi, (match, color) => {
-          if (color.toLowerCase() === 'none') return match;
-          return 'fill: #FFFFFF';
-        });
-      
-      // Also handle stroke colors
-      svgContent = svgContent
-        .replace(/stroke\s*=\s*["']([^"']+)["']/gi, (match, color) => {
-          if (color.toLowerCase() === 'none') return match;
-          return 'stroke="#FFFFFF"';
-        })
-        .replace(/stroke\s*:\s*([^;"\s}]+)/gi, (match, color) => {
-          if (color.toLowerCase() === 'none') return match;
-          return 'stroke: #FFFFFF';
-        });
-      
-      // Upload the processed SVG
-      const searchPaths = objectStorageService.getPublicObjectSearchPaths();
-      
-      if (!searchPaths || searchPaths.length === 0) {
-        // If no object storage, return original URL (it should already be white)
-        console.log(`[Logo Processor] ⚠️ No object storage configured, using original SVG`);
-        return logoUrl;
-      }
-
-      const basePath = searchPaths[0];
-      const fileName = `logos/processed-${Date.now()}-${customerName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.svg`;
-      const destinationPath = `${basePath}/${fileName}`;
-
-      const uploadedPath = await objectStorageService.uploadBuffer(
-        Buffer.from(svgContent, 'utf8'),
-        destinationPath,
-        'image/svg+xml'
-      );
-
-      console.log(`[Logo Processor] ✅ Successfully processed SVG logo: ${uploadedPath}`);
-      return uploadedPath;
-    }
-
-    // Get image metadata and auto-convert if needed
-    let metadata;
+    // First, convert ALL formats (including SVG) to PNG for consistent processing
+    // This ensures we have a single pipeline regardless of input format
     let normalizedBuffer = logoBuffer;
+    let metadata;
     
     try {
       metadata = await sharp(logoBuffer).metadata();
       
-      // Auto-convert non-PNG formats to PNG for consistent processing
-      // Sharp supports: JPEG, PNG, WebP, GIF, AVIF, TIFF
-      const needsConversion = metadata.format && !['png'].includes(metadata.format.toLowerCase());
+      // Convert EVERYTHING to PNG for consistent processing pipeline
+      // This includes: SVG, JPEG, WebP, GIF, AVIF, TIFF, BMP, etc.
+      const currentFormat = metadata.format?.toLowerCase() || 'unknown';
       
-      if (needsConversion) {
-        console.log(`[Logo Processor] Auto-converting ${metadata.format} to PNG...`);
-        normalizedBuffer = await sharp(logoBuffer)
-          .png()
-          .toBuffer();
-        
-        // Update metadata for the converted image
-        metadata = await sharp(normalizedBuffer).metadata();
-        console.log(`[Logo Processor] ✅ Converted to PNG successfully`);
-      }
+      console.log(`[Logo Processor] Converting ${currentFormat.toUpperCase()} to PNG for processing...`);
+      
+      normalizedBuffer = await sharp(logoBuffer)
+        .resize(800, 800, { // Reasonable size for logos
+          fit: 'inside',
+          withoutEnlargement: true
+        })
+        .png()
+        .toBuffer();
+      
+      // Update metadata for the converted image
+      metadata = await sharp(normalizedBuffer).metadata();
+      console.log(`[Logo Processor] ✅ Converted to PNG successfully (${metadata.width}x${metadata.height})`);
     } catch (sharpError: any) {
       console.error(`[Logo Processor] Sharp error:`, sharpError);
       throw new Error(
-        'Unable to process this image file. Please ensure it\'s a valid raster image format ' +
-        '(PNG, JPEG, WebP, GIF, BMP, TIFF) and not corrupted.'
+        'Unable to process this image file. Please ensure it\'s a valid image format ' +
+        '(PNG, JPEG, WebP, SVG, GIF, BMP, TIFF, etc.) and not corrupted.'
       );
     }
     
@@ -242,7 +190,7 @@ export async function processLogoToWhiteMonochrome(
         fit: 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 }
       })
-      .png({ compressionLevel: 9 })
+      .webp({ quality: 90, lossless: false }) // WebP for smaller file sizes
       .toBuffer();
 
     // Upload the processed logo
@@ -253,13 +201,13 @@ export async function processLogoToWhiteMonochrome(
     }
 
     const basePath = searchPaths[0];
-    const fileName = `logos/processed-${Date.now()}-${customerName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.png`;
+    const fileName = `logos/processed-${Date.now()}-${customerName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.webp`;
     const destinationPath = `${basePath}/${fileName}`;
 
     const uploadedPath = await objectStorageService.uploadBuffer(
       processedBuffer,
       destinationPath,
-      'image/png'
+      'image/webp'
     );
 
     if (!uploadedPath) {
