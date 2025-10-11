@@ -357,28 +357,4 @@
     inset: -1px;
   }
 
-  /* Scrolling animation for commercial customer logos */
-  @keyframes scroll {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-
-  .animate-scroll {
-    animation: scroll 15s linear infinite; /* Faster on mobile */
-  }
-
-  /* Slower scroll on larger screens */
-  @media (min-width: 768px) {
-    .animate-scroll {
-      animation: scroll 30s linear infinite;
-    }
-  }
-
-  .pause-animation:hover {
-    animation-play-state: paused;
-  }
 }
