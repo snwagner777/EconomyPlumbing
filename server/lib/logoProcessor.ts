@@ -222,7 +222,8 @@ export async function processLogoToWhiteMonochrome(
     }).raw().toBuffer();
     
     // Step 3: Join white RGB with final alpha to create white RGBA image
-    const processedBuffer = await sharp(whiteRgbBuffer, {
+    // First create the RGBA PNG
+    const pngBuffer = await sharp(whiteRgbBuffer, {
       raw: {
         width: width,
         height: height,
@@ -231,7 +232,11 @@ export async function processLogoToWhiteMonochrome(
     })
       .joinChannel(finalAlphaBuffer, { raw: { width, height, channels: 1 } })  // Add alpha as 4th channel with proper format
       .png() // Convert to PNG first to establish proper format
-      .webp({ quality: 95, lossless: false }) // Convert to WebP for smaller file sizes with higher quality
+      .toBuffer();
+    
+    // Then convert PNG to WebP for smaller file size
+    const processedBuffer = await sharp(pngBuffer)
+      .webp({ quality: 95, lossless: false })
       .toBuffer();
 
     // Upload the processed logo
