@@ -148,44 +148,54 @@ export async function createSmartCrop(
     const cropWidth = Math.round((cropData.suggestedCrop.width / 100) * metadata.width);
     const cropHeight = Math.round((cropData.suggestedCrop.height / 100) * metadata.height);
 
-    // Generate output filename (always WebP for best compression)
+    // Generate base filename (always WebP for best compression)
     const sourceFilename = path.basename(sourceImagePath);
     const nameWithoutExt = sourceFilename.replace(/\.[^.]+$/, ""); // Remove any extension
     const timestamp = Date.now();
-    const outputFilename = `${timestamp}_${nameWithoutExt}_cropped_blog.webp`;
-    const tempOutputPath = path.join('/tmp', outputFilename); // Temp location
+    const baseFilename = `${timestamp}_${nameWithoutExt}_cropped_blog`;
 
-    // Create the cropped image (1200x675 for 16:9 blog display) as WebP
-    await image
-      .extract({
-        left: cropX,
-        top: cropY,
-        width: cropWidth,
-        height: cropHeight,
-      })
-      .resize(1200, 675, {
-        fit: "cover",
-        position: "center",
-      })
-      .webp({ quality: 85 }) // Convert to WebP with high quality
-      .toFile(tempOutputPath);
+    // Create the cropped base image
+    const croppedImage = sharp(sourceImagePath).extract({
+      left: cropX,
+      top: cropY,
+      width: cropWidth,
+      height: cropHeight,
+    });
 
-    console.log(`✅ [BlogImageProcessor] Created cropped WebP image: ${outputFilename}`);
-    
-    // Upload to object storage
+    // Generate multiple sizes for responsive images (400w, 800w, 1200w)
+    const sizes = [
+      { width: 400, height: 225, suffix: '_400w' },
+      { width: 800, height: 450, suffix: '_800w' },
+      { width: 1200, height: 675, suffix: '_1200w' }
+    ];
+
     const { ObjectStorageService } = await import("../objectStorage");
     const objectStorage = new ObjectStorageService();
     const publicSearchPaths = objectStorage.getPublicObjectSearchPaths();
-    const destinationPath = `${publicSearchPaths[0]}/blog_images/${outputFilename}`;
+
+    // Generate and upload all sizes
+    for (const size of sizes) {
+      const outputFilename = `${baseFilename}${size.suffix}.webp`;
+      const tempOutputPath = path.join('/tmp', outputFilename);
+      
+      await croppedImage
+        .clone()
+        .resize(size.width, size.height, {
+          fit: "cover",
+          position: "center",
+        })
+        .webp({ quality: 85 })
+        .toFile(tempOutputPath);
+
+      const destinationPath = `${publicSearchPaths[0]}/blog_images/${outputFilename}`;
+      await objectStorage.uploadFile(tempOutputPath, destinationPath, 'image/webp');
+      await fs.unlink(tempOutputPath);
+      
+      console.log(`✅ [BlogImageProcessor] Created and uploaded ${size.width}w image`);
+    }
     
-    await objectStorage.uploadFile(tempOutputPath, destinationPath, 'image/webp');
-    console.log(`☁️  [BlogImageProcessor] Uploaded to object storage: ${destinationPath}`);
-    
-    // Clean up temp file
-    await fs.unlink(tempOutputPath);
-    
-    // Return the public URL path
-    return `/public-objects/blog_images/${outputFilename}`;
+    // Return the public URL path for the largest image (1200w)
+    return `/public-objects/blog_images/${baseFilename}_1200w.webp`;
   } catch (error) {
     console.error("❌ [BlogImageProcessor] Error creating crop:", error);
     throw error;
