@@ -155,9 +155,26 @@ export async function monitorGoogleDriveFolder() {
         // Analyze production quality with OpenAI Vision
         const analysis = await analyzeProductionPhoto(imageBuffer);
         
-        // Skip non-production quality photos
+        // Save rejected photos to database so we don't reprocess them
         if (!analysis.isProductionQuality) {
-          console.log(`[Google Drive] ⚠️  Skipping low-quality photo: ${file.name} - ${analysis.qualityReason}`);
+          console.log(`[Google Drive] ⚠️  Rejecting low-quality photo: ${file.name} - ${analysis.qualityReason}`);
+          
+          // Still save to database to mark as processed (prevents reprocessing)
+          await storage.createImportedPhoto({
+            url: '', // No URL since we're not storing it
+            category: 'general-plumbing',
+            isProductionQuality: false,
+            aiQuality: analysis.qualityScore || 0,
+            qualityReason: analysis.qualityReason || 'Low quality',
+            aiDescription: analysis.description || '',
+            aiTags: analysis.tags || [],
+            focalPointX: null,
+            focalPointY: null,
+            gdriveFileId: file.id!, // Important: mark as processed
+            usedInBlog: false,
+          });
+          
+          console.log(`[Google Drive] ✓ Marked ${file.name} as rejected in database`);
           continue;
         }
         
