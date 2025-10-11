@@ -1,11 +1,94 @@
 import sharp from 'sharp';
+import OpenAI from 'openai';
 import { ObjectStorageService } from '../objectStorage';
 
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const objectStorageService = new ObjectStorageService();
 
 /**
+ * Use OpenAI Vision to analyze the logo and create a smart mask
+ */
+async function createLogoMaskWithAI(logoBuffer: Buffer, width: number, height: number): Promise<Buffer> {
+  console.log('[Logo Processor] Using OpenAI Vision to analyze logo...');
+  
+  // Convert logo to base64 for OpenAI
+  const base64Image = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+  
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        role: "system",
+        content: `You are an expert at analyzing logos. Determine the dominant colors and describe which areas are the logo/brand mark vs background. Provide RGB threshold values to separate logo from background.`
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: `Analyze this logo and provide:
+1. Primary logo/text colors (RGB values)
+2. Background color (RGB values)
+3. Is the background light or dark?
+4. Recommended threshold strategy (color-based or luminance-based)
+
+Respond in JSON:
+{
+  "logoColors": [{"r": 0-255, "g": 0-255, "b": 0-255}],
+  "backgroundColor": {"r": 0-255, "g": 0-255, "b": 0-255},
+  "backgroundType": "light" or "dark",
+  "strategy": "keep_dark" or "keep_light" or "color_threshold"
+}`
+          },
+          {
+            type: "image_url",
+            image_url: { url: base64Image, detail: "high" }
+          }
+        ]
+      }
+    ],
+    response_format: { type: "json_object" },
+  });
+
+  const analysis = JSON.parse(response.choices[0].message.content || "{}");
+  console.log('[Logo Processor] AI Analysis:', analysis);
+  
+  // Defensive fallback if AI doesn't provide background color
+  const bgColor = analysis.backgroundColor || { r: 255, g: 255, b: 255 }; // Default to white
+  
+  // Create mask based on AI analysis
+  const { data: rawPixels } = await sharp(logoBuffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  
+  const maskBuffer = Buffer.alloc(width * height);
+  
+  // Process each pixel to create mask
+  for (let i = 0; i < rawPixels.length; i += 4) {
+    const r = rawPixels[i];
+    const g = rawPixels[i + 1];
+    const b = rawPixels[i + 2];
+    const pixelIndex = i / 4;
+    
+    // Calculate color distance from background
+    const distance = Math.sqrt(
+      Math.pow(r - bgColor.r, 2) +
+      Math.pow(g - bgColor.g, 2) +
+      Math.pow(b - bgColor.b, 2)
+    );
+    
+    // If pixel is similar to background (distance < 50), make transparent
+    // Otherwise, keep opaque
+    maskBuffer[pixelIndex] = distance < 50 ? 0 : 255;
+  }
+  
+  return maskBuffer;
+}
+
+/**
  * Process a logo to create a white monochrome version
- * - Removes background
+ * - Removes background using OpenAI Vision analysis
  * - Converts to white silhouette on transparent background
  * - Optimizes for web display
  */
@@ -29,7 +112,7 @@ export async function processLogoToWhiteMonochrome(
     const height = metadata.height || 200;
     
     // Process the image to create white monochrome version
-    // Strategy: Extract alpha channel, create white RGB, join them back together
+    // Strategy: Check for transparency first, if none use AI to create mask
     
     // Step 1: Ensure alpha channel and extract it
     const { data: alphaBuffer, info: alphaInfo } = await sharp(logoBuffer)
@@ -42,11 +125,15 @@ export async function processLogoToWhiteMonochrome(
     // If all alpha values are 255 (fully opaque), the logo has no transparency
     const hasTransparency = alphaBuffer.some(value => value < 255);
     
+    let finalAlphaBuffer: Buffer;
+    
     if (!hasTransparency) {
-      throw new Error(
-        'Logo must have a transparent background. Please upload a PNG file with transparency, ' +
-        'or use an image editor to remove the background first.'
-      );
+      console.log('[Logo Processor] No transparency found, using AI to create mask...');
+      // Use AI to analyze and create a mask
+      finalAlphaBuffer = await createLogoMaskWithAI(logoBuffer, width, height);
+    } else {
+      console.log('[Logo Processor] Transparency found, using existing alpha channel');
+      finalAlphaBuffer = Buffer.from(alphaBuffer);
     }
     
     // Step 2: Create a solid white RGB image (3 channels)
@@ -59,7 +146,7 @@ export async function processLogoToWhiteMonochrome(
       }
     }).raw().toBuffer();
     
-    // Step 3: Join white RGB with extracted alpha to create white RGBA image
+    // Step 3: Join white RGB with final alpha to create white RGBA image
     const processedBuffer = await sharp(whiteRgbBuffer, {
       raw: {
         width: width,
@@ -67,7 +154,7 @@ export async function processLogoToWhiteMonochrome(
         channels: 3
       }
     })
-      .joinChannel(Buffer.from(alphaBuffer))  // Add alpha as 4th channel
+      .joinChannel(finalAlphaBuffer)  // Add alpha as 4th channel
       .resize(400, 200, {
         fit: 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 }

@@ -171,27 +171,18 @@ Be conversational, helpful, and professional. Total length should be 250-350 cha
 
 /**
  * Download image from URL or object storage path
+ * Handles both public and private object storage paths
  */
 async function downloadImage(url: string): Promise<Buffer> {
   console.log(`[Compositor] Downloading image: ${url}`);
   
-  // Handle object storage paths (e.g., /replit-objstore-xxx/.private/...)
+  // Handle object storage paths (e.g., /replit-objstore-xxx/.private/... or /replit-objstore-xxx/public/...)
   if (url.startsWith('/replit-objstore-')) {
     console.log(`[Compositor] Detected object storage path`);
     const { ObjectStorageService } = await import('../objectStorage');
     const objectStorageService = new ObjectStorageService();
     
-    // Extract path after bucket ID
-    const pathMatch = url.match(/\/replit-objstore-[^/]+\/(.+)/);
-    if (!pathMatch) {
-      console.error(`[Compositor] Invalid object storage path format: ${url}`);
-      throw new Error(`Invalid object storage path: ${url}`);
-    }
-    
-    const objectPath = pathMatch[1];
-    console.log(`[Compositor] Extracted object path: ${objectPath}`);
-    console.log(`[Compositor] Calling downloadBuffer with full URL: ${url}`);
-    
+    // For private paths, use direct bucket access (bypasses HTTP auth)
     const buffer = await objectStorageService.downloadBuffer(url);
     
     if (!buffer) {
