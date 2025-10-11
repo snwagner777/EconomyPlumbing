@@ -2682,16 +2682,55 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPhotoById(id: string): Promise<CompanyCamPhoto | undefined> {
-    const [photo] = await db
+    // First try CompanyCam photos
+    const [companyCamPhoto] = await db
       .select()
       .from(companyCamPhotos)
       .where(eq(companyCamPhotos.id, id))
       .limit(1);
-    return photo || undefined;
+    
+    if (companyCamPhoto) {
+      return companyCamPhoto;
+    }
+    
+    // If not found, try imported photos (Google Drive)
+    const [importedPhoto] = await db
+      .select()
+      .from(importedPhotos)
+      .where(eq(importedPhotos.id, id))
+      .limit(1);
+    
+    if (importedPhoto) {
+      // Convert to CompanyCam format for compatibility
+      return {
+        id: importedPhoto.id,
+        companyCamPhotoId: null,
+        companyCamProjectId: null,
+        photoUrl: importedPhoto.url,
+        url: importedPhoto.url,
+        thumbnailUrl: null,
+        category: importedPhoto.category,
+        dateTaken: importedPhoto.uploadDate || new Date(),
+        uploadDate: importedPhoto.uploadDate || new Date(),
+        createdAt: importedPhoto.createdAt,
+        tags: [],
+        aiDescription: importedPhoto.aiDescription || null,
+        aiQualityScore: importedPhoto.aiQualityScore || 0,
+        isGoodQuality: importedPhoto.aiQualityScore ? importedPhoto.aiQualityScore >= 70 : false,
+        shouldKeep: true,
+        usedInBlogPostId: importedPhoto.usedInBlogPostId,
+        usedInPageUrl: importedPhoto.usedInPageUrl,
+        blogTopic: null,
+        source: 'google-drive'
+      } as CompanyCamPhoto;
+    }
+    
+    return undefined;
   }
 
   async markPhotoAsUsed(id: string, blogPostId?: string, pageUrl?: string): Promise<CompanyCamPhoto> {
-    const [updated] = await db
+    // First try to update CompanyCam photos
+    const [companyCamUpdated] = await db
       .update(companyCamPhotos)
       .set({
         usedInBlogPostId: blogPostId || null,
@@ -2699,7 +2738,48 @@ export class DatabaseStorage implements IStorage {
       })
       .where(eq(companyCamPhotos.id, id))
       .returning();
-    return updated;
+    
+    if (companyCamUpdated) {
+      return companyCamUpdated;
+    }
+    
+    // If not found in CompanyCam, try imported photos (Google Drive)
+    const [importedUpdated] = await db
+      .update(importedPhotos)
+      .set({
+        usedInBlogPostId: blogPostId || null,
+        usedInPageUrl: pageUrl || null,
+      })
+      .where(eq(importedPhotos.id, id))
+      .returning();
+    
+    if (importedUpdated) {
+      // Convert to CompanyCam format for compatibility
+      return {
+        id: importedUpdated.id,
+        companyCamPhotoId: null,
+        companyCamProjectId: null,
+        photoUrl: importedUpdated.url,
+        url: importedUpdated.url,
+        thumbnailUrl: null,
+        category: importedUpdated.category,
+        dateTaken: importedUpdated.uploadDate || new Date(),
+        uploadDate: importedUpdated.uploadDate || new Date(),
+        createdAt: importedUpdated.createdAt,
+        tags: [],
+        aiDescription: importedUpdated.aiDescription || null,
+        aiQualityScore: importedUpdated.aiQualityScore || 0,
+        isGoodQuality: importedUpdated.aiQualityScore ? importedUpdated.aiQualityScore >= 70 : false,
+        shouldKeep: true,
+        usedInBlogPostId: importedUpdated.usedInBlogPostId,
+        usedInPageUrl: importedUpdated.usedInPageUrl,
+        blogTopic: null,
+        source: 'google-drive'
+      } as CompanyCamPhoto;
+    }
+    
+    // If photo not found in either table, throw error
+    throw new Error(`Photo with id ${id} not found`);
   }
 
   async getPhotosWithoutBlogTopic(): Promise<CompanyCamPhoto[]> {
