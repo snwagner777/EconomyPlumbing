@@ -70,6 +70,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve legacy attached_assets files
+  app.get("/attached_assets/:filePath(*)", (req, res) => {
+    const filePath = req.params.filePath;
+    const fullPath = path.resolve(import.meta.dirname, "..", "attached_assets", filePath);
+    
+    if (fs.existsSync(fullPath)) {
+      res.sendFile(fullPath);
+    } else {
+      res.status(404).json({ error: "File not found" });
+    }
+  });
+
   // Serve robots.txt
   app.get("/robots.txt", (req, res) => {
     const robotsPath = path.resolve(import.meta.dirname, "..", "public", "robots.txt");
