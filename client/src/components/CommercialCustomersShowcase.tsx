@@ -70,7 +70,7 @@ export default function CommercialCustomersShowcase() {
                   <img
                     src={customer.logoUrl}
                     alt={`${customer.name} logo`}
-                    className="h-20 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                    className="h-20 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                     data-testid={`img-logo-${customer.id}-${index}`}
                   />
@@ -80,7 +80,7 @@ export default function CommercialCustomersShowcase() {
                   <img
                     src={customer.logoUrl}
                     alt={`${customer.name} logo`}
-                    className="h-20 w-auto object-contain brightness-0 invert opacity-80 group-hover:opacity-100 transition-opacity duration-300"
+                    className="h-20 w-auto object-contain opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                     loading="lazy"
                     data-testid={`img-logo-${customer.id}-${index}`}
                   />
