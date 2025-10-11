@@ -106,26 +106,35 @@ export async function processLogoToWhiteMonochrome(
       throw new Error('Failed to download logo from object storage');
     }
 
-    // Get image metadata and validate format
+    // Get image metadata and auto-convert if needed
     let metadata;
+    let normalizedBuffer = logoBuffer;
+    
     try {
       metadata = await sharp(logoBuffer).metadata();
+      
+      // Auto-convert non-PNG formats to PNG for consistent processing
+      // Sharp supports: JPEG, PNG, WebP, GIF, AVIF, TIFF, SVG
+      const needsConversion = metadata.format && !['png'].includes(metadata.format.toLowerCase());
+      
+      if (needsConversion) {
+        console.log(`[Logo Processor] Auto-converting ${metadata.format} to PNG...`);
+        normalizedBuffer = await sharp(logoBuffer)
+          .png()
+          .toBuffer();
+        
+        // Update metadata for the converted image
+        metadata = await sharp(normalizedBuffer).metadata();
+        console.log(`[Logo Processor] ✅ Converted to PNG successfully`);
+      }
     } catch (sharpError: any) {
       console.error(`[Logo Processor] Sharp error:`, sharpError);
       throw new Error(
-        'Unsupported image format. Please upload a PNG, JPEG, or WebP file. ' +
-        'SVG files are not supported - please convert to PNG first.'
+        'Unable to process this image file. Please ensure it\'s a valid image format ' +
+        '(PNG, JPEG, WebP, GIF, BMP, TIFF, etc.) and not corrupted.'
       );
     }
     
-    // Validate image format
-    const supportedFormats = ['png', 'jpeg', 'jpg', 'webp'];
-    if (!metadata.format || !supportedFormats.includes(metadata.format.toLowerCase())) {
-      throw new Error(
-        `Unsupported format: ${metadata.format || 'unknown'}. ` +
-        'Please upload a PNG, JPEG, or WebP file.'
-      );
-    }
     const width = metadata.width || 400;
     const height = metadata.height || 200;
     
@@ -133,7 +142,7 @@ export async function processLogoToWhiteMonochrome(
     // Strategy: Check for transparency first, if none use AI to create mask
     
     // Step 1: Ensure alpha channel and extract it
-    const { data: alphaBuffer, info: alphaInfo } = await sharp(logoBuffer)
+    const { data: alphaBuffer, info: alphaInfo } = await sharp(normalizedBuffer)
       .ensureAlpha()
       .extractChannel(3)  // Extract alpha channel only
       .raw()
@@ -148,7 +157,7 @@ export async function processLogoToWhiteMonochrome(
     if (!hasTransparency) {
       console.log('[Logo Processor] No transparency found, using AI to create mask...');
       // Use AI to analyze and create a mask
-      finalAlphaBuffer = await createLogoMaskWithAI(logoBuffer, width, height);
+      finalAlphaBuffer = await createLogoMaskWithAI(normalizedBuffer, width, height);
     } else {
       console.log('[Logo Processor] Transparency found, using existing alpha channel');
       finalAlphaBuffer = Buffer.from(alphaBuffer);
