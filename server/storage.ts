@@ -2602,10 +2602,55 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllPhotos(): Promise<CompanyCamPhoto[]> {
-    return await db
+    // Get CompanyCam photos
+    const companyCamResults = await db
       .select()
       .from(companyCamPhotos)
       .orderBy(sql`${companyCamPhotos.fetchedAt} DESC`);
+    
+    // Get imported photos (Google Drive) and normalize to CompanyCam format
+    const importedResults = await db
+      .select()
+      .from(importedPhotos)
+      .orderBy(sql`${importedPhotos.fetchedAt} DESC`);
+    
+    // Convert imported photos to CompanyCam format for unified display
+    const normalizedImported = importedResults.map(photo => ({
+      id: photo.id,
+      companyCamPhotoId: null,
+      companyCamProjectId: null,
+      photoUrl: photo.url,
+      thumbnailUrl: null,
+      category: photo.category,
+      tags: photo.aiTags || [],
+      aiDescription: photo.aiDescription,
+      qualityAnalyzed: true,
+      isGoodQuality: photo.isProductionQuality,
+      shouldKeep: photo.isProductionQuality,
+      qualityScore: photo.aiQuality || 0,
+      qualityReasoning: photo.qualityReason || null,
+      analyzedAt: photo.fetchedAt,
+      usedInBlogPostId: null,
+      usedInPageUrl: null,
+      blogTopicAnalyzed: false,
+      blogTopicAnalyzedAt: null,
+      suggestedBlogTopic: null,
+      fetchedAt: photo.fetchedAt,
+      // Add source identifier for UI
+      photoSource: 'google-drive' as any,
+    }));
+    
+    // Mark CompanyCam photos with source
+    const markedCompanyCam = companyCamResults.map(photo => ({
+      ...photo,
+      photoSource: 'companycam' as any,
+    }));
+    
+    // Combine and sort by date
+    const allPhotos = [...markedCompanyCam, ...normalizedImported];
+    allPhotos.sort((a, b) => b.fetchedAt.getTime() - a.fetchedAt.getTime());
+    
+    return allPhotos as CompanyCamPhoto[];
   }
 
   async getPhotosByCategory(category: string): Promise<CompanyCamPhoto[]> {
