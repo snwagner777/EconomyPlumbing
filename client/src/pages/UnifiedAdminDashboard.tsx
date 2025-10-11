@@ -1520,23 +1520,34 @@ function TrackingNumbersSection() {
     sortOrder: 0,
   });
 
-  // Auto-generate phone fields when phone number changes
+  // Auto-generate phone fields when phone number changes with live formatting
   const handlePhoneNumberChange = (value: string) => {
     // Remove all non-digit characters
-    const digitsOnly = value.replace(/\D/g, '');
+    const digitsOnly = value.replace(/\D/g, '').slice(0, 10); // Max 10 digits
     
-    // Format display number (512) 123-4567
-    let displayNumber = value;
-    if (digitsOnly.length === 10) {
-      displayNumber = `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6)}`;
+    // Live format as you type: (512) 123-4567
+    let formattedInput = digitsOnly;
+    if (digitsOnly.length >= 1) {
+      formattedInput = `(${digitsOnly.slice(0, 3)}`;
+      if (digitsOnly.length >= 4) {
+        formattedInput += `) ${digitsOnly.slice(3, 6)}`;
+        if (digitsOnly.length >= 7) {
+          formattedInput += `-${digitsOnly.slice(6, 10)}`;
+        }
+      }
     }
+    
+    // Generate display number (always formatted if 10 digits)
+    const displayNumber = digitsOnly.length === 10 
+      ? `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6)}`
+      : '';
     
     // Generate tel link
     const telLink = digitsOnly.length === 10 ? `tel:+1${digitsOnly}` : '';
     
     setFormData({
       ...formData,
-      phoneNumber: value,
+      phoneNumber: formattedInput,
       displayNumber,
       rawNumber: digitsOnly,
       telLink,
