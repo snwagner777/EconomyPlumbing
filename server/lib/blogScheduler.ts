@@ -2,9 +2,9 @@
  * Blog Post Scheduling System
  * 
  * Schedules blog posts strategically:
- * - Backdate posts randomly between 3-6 months ago
- * - Schedule future posts 1 per week, indefinitely
- * - Consider seasonal timing for relevant topics
+ * - All posts are backdated randomly between 3-6 months ago
+ * - No future-dated posts are created
+ * - Considers seasonal timing for relevant topics
  */
 
 interface ScheduleConfig {
@@ -171,7 +171,7 @@ export function generateFutureSchedule(
 
 /**
  * Main scheduling function with seasonal awareness
- * Schedules posts indefinitely - 1 per week ongoing
+ * All posts are backdated to prevent future publishing
  */
 export function scheduleBlogs(
   blogTopics: { title: string; [key: string]: any }[],
@@ -182,15 +182,15 @@ export function scheduleBlogs(
     backdateMonthsMin = 3,
     backdateMonthsMax = 6,
     postsPerWeek = 1,
-    backdatePercentage = 0.2 // 20% backdated by default
+    backdatePercentage = 1.0 // 100% backdated - no future posts
   } = config;
   
-  // Determine how many posts to backdate vs schedule for future
-  const backdatedCount = Math.floor(blogTopics.length * backdatePercentage);
-  const futureCount = blogTopics.length - backdatedCount;
+  // All posts should be backdated - no future posts
+  const backdatedCount = blogTopics.length;
+  const futureCount = 0;
   
   const backdatedSchedule = generateBackdatedSchedule(backdatedCount, startDate);
-  const futureSchedule = generateFutureSchedule(futureCount, startDate, postsPerWeek);
+  const futureSchedule: ScheduledPost[] = [];
   
   const allSchedules = [...backdatedSchedule, ...futureSchedule];
   
@@ -217,7 +217,7 @@ export function scheduleBlogs(
     };
   });
   
-  console.log(`[Blog Scheduler] Scheduled ${backdatedCount} backdated posts and ${futureCount} future posts (ongoing weekly schedule)`);
+  console.log(`[Blog Scheduler] Scheduled ${backdatedCount} backdated posts (all posts backdated to past 3-6 months)`);
   
   return scheduledBlogs;
 }
