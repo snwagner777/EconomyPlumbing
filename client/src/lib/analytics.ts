@@ -145,7 +145,7 @@ export const initGTM = () => {
   const gtmId = import.meta.env.VITE_GTM_ID;
 
   if (!gtmId) {
-    console.warn('Missing Google Tag Manager ID: VITE_GTM_ID');
+    // GTM is optional, silently skip if not configured
     return;
   }
 
