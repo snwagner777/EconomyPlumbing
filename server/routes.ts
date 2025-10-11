@@ -3242,6 +3242,40 @@ ${rssItems}
     }
   });
 
+  // Update success story (admin only) - Edit customer name, story, location
+  app.put("/api/admin/success-stories/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { customerName, story, location } = req.body;
+
+      // Validate inputs
+      if (!customerName?.trim()) {
+        return res.status(400).json({ error: "Customer name is required" });
+      }
+      if (!story?.trim()) {
+        return res.status(400).json({ error: "Story is required" });
+      }
+      if (!location?.trim()) {
+        return res.status(400).json({ error: "Location is required" });
+      }
+
+      console.log(`[Success Stories] Updating story ${id}...`);
+
+      const updatedStory = await storage.updateSuccessStory(id, {
+        customerName: customerName.trim(),
+        story: story.trim(),
+        location: location.trim(),
+      });
+
+      console.log(`[Success Stories] ✅ Story updated successfully`);
+
+      res.json({ story: updatedStory });
+    } catch (error: any) {
+      console.error("[Success Stories] Error updating story:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Generate AI caption for success story (admin only)
   app.post("/api/admin/generate-story-caption", requireAdmin, async (req, res) => {
     try {

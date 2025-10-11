@@ -581,6 +581,13 @@ function PhotoManagement() {
 
 function SuccessStoriesSection() {
   const { toast } = useToast();
+  const [editingStory, setEditingStory] = useState<any | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editFormData, setEditFormData] = useState({
+    customerName: "",
+    story: "",
+    location: "",
+  });
 
   const { data: storiesData, isLoading } = useQuery<{ stories: any[] }>({
     queryKey: ['/api/admin/success-stories'],
@@ -646,6 +653,28 @@ function SuccessStoriesSection() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: Partial<typeof editFormData> }) => {
+      return await apiRequest("PUT", `/api/admin/success-stories/${id}`, updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success Story Updated",
+        description: "The success story has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/success-stories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/success-stories'] });
+      handleCloseEditDialog();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleApprove = (id: string) => {
     if (confirm("Approve this success story and publish it to the website?")) {
       approveMutation.mutate(id);
@@ -662,6 +691,62 @@ function SuccessStoriesSection() {
     if (confirm("Delete this success story? This action cannot be undone.")) {
       deleteMutation.mutate(id);
     }
+  };
+
+  const handleEdit = (story: any) => {
+    setEditingStory(story);
+    setEditFormData({
+      customerName: story.customerName || "",
+      story: story.story || "",
+      location: story.location || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setIsEditDialogOpen(false);
+    setEditingStory(null);
+    setEditFormData({
+      customerName: "",
+      story: "",
+      location: "",
+    });
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingStory) return;
+
+    if (!editFormData.customerName.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Customer name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editFormData.story.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Story is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!editFormData.location.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Location is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateMutation.mutate({
+      id: editingStory.id,
+      updates: editFormData,
+    });
   };
 
   const stories = storiesData?.stories || [];
@@ -770,6 +855,14 @@ function SuccessStoriesSection() {
                     Approve & Publish
                   </Button>
                   <Button
+                    variant="outline"
+                    onClick={() => handleEdit(story)}
+                    data-testid={`button-edit-${story.id}`}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
                     variant="destructive"
                     onClick={() => handleDelete(story.id)}
                     disabled={deleteMutation.isPending}
@@ -821,6 +914,14 @@ function SuccessStoriesSection() {
                 <div className="flex gap-2 pt-2">
                   <Button
                     variant="outline"
+                    onClick={() => handleEdit(story)}
+                    data-testid={`button-edit-approved-${story.id}`}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => handleUnapprove(story.id)}
                     disabled={unapproveMutation.isPending}
                     data-testid={`button-unapprove-${story.id}`}
@@ -857,6 +958,71 @@ function SuccessStoriesSection() {
           </CardContent>
         </Card>
       ) : null}
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Success Story</DialogTitle>
+            <DialogDescription>
+              Update the customer name, description, or location for this success story.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="edit-customerName">Customer Name</Label>
+              <Input
+                id="edit-customerName"
+                value={editFormData.customerName}
+                onChange={(e) => setEditFormData({ ...editFormData, customerName: e.target.value })}
+                placeholder="Enter customer name"
+                data-testid="input-edit-customerName"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-location">Location</Label>
+              <Input
+                id="edit-location"
+                value={editFormData.location}
+                onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                placeholder="Enter location (e.g., Austin, TX)"
+                data-testid="input-edit-location"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="edit-story">Story Description</Label>
+              <Textarea
+                id="edit-story"
+                value={editFormData.story}
+                onChange={(e) => setEditFormData({ ...editFormData, story: e.target.value })}
+                placeholder="Enter the customer's story"
+                rows={6}
+                data-testid="input-edit-story"
+                className="resize-none"
+              />
+            </div>
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={handleCloseEditDialog}>
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleSaveEdit} 
+                disabled={updateMutation.isPending}
+                data-testid="button-save-edit"
+              >
+                {updateMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

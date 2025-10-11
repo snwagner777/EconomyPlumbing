@@ -87,6 +87,7 @@ export interface IStorage {
   getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
   approveSuccessStory(id: string, collagePhotoUrl: string): Promise<CustomerSuccessStory>;
   unapproveSuccessStory(id: string): Promise<CustomerSuccessStory>;
+  updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location'>>): Promise<CustomerSuccessStory>;
   deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
@@ -2423,6 +2424,20 @@ export class DatabaseStorage implements IStorage {
     const [story] = await db
       .update(customerSuccessStories)
       .set({ approved: false, collagePhotoUrl: null })
+      .where(eq(customerSuccessStories.id, id))
+      .returning();
+    
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    
+    return story;
+  }
+
+  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location'>>): Promise<CustomerSuccessStory> {
+    const [story] = await db
+      .update(customerSuccessStories)
+      .set(updates)
       .where(eq(customerSuccessStories.id, id))
       .returning();
     
