@@ -1174,9 +1174,11 @@ function PageMetadataSection() {
     description: "",
   });
 
-  const { data: customMetadata, isLoading } = useQuery<PageMetadata[]>({
+  const { data: metadataResponse, isLoading } = useQuery<{ metadata: PageMetadata[] }>({
     queryKey: ['/api/admin/page-metadata'],
   });
+  
+  const customMetadata = metadataResponse?.metadata || [];
 
   const upsertMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
