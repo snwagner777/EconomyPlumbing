@@ -1553,83 +1553,102 @@ function PageMetadataSection() {
       <div className="mb-6">
         <h2 className="text-xl font-semibold">Manage SEO Metadata</h2>
         <p className="text-muted-foreground mt-1">
-          Control page titles and meta descriptions for all pages. Pages with custom metadata are highlighted.
+          Control page titles and meta descriptions for all {ALL_PAGES.length} pages. Pages with custom metadata show their overrides.
         </p>
       </div>
 
-      {/* Metadata List */}
-      <div className="space-y-4">
-        {allPagesWithMetadata.map((page) => (
-          <Card key={page.path} data-testid={`card-metadata-${page.path}`} className={page.hasCustom ? "border-primary/50" : ""}>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    {page.title}
-                    <Badge variant="outline" className="text-xs font-normal">
-                      {page.path}
-                    </Badge>
-                    {page.hasCustom && (
-                      <Badge variant="default" className="text-xs">
-                        Custom
-                      </Badge>
-                    )}
-                  </CardTitle>
-                  {page.customMetadata ? (
-                    <CardDescription className="mt-2">
-                      <div className="space-y-1">
-                        <p className="font-medium text-foreground">{page.customMetadata.title}</p>
-                        <p className="text-sm">
-                          {page.customMetadata.description}
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {page.customMetadata.description?.length || 0} chars
-                          </Badge>
-                        </p>
+      {/* Metadata Table */}
+      <Card>
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="border-b bg-muted/30">
+                <tr>
+                  <th className="text-left p-3 font-medium text-sm">Page</th>
+                  <th className="text-left p-3 font-medium text-sm">Custom Title</th>
+                  <th className="text-left p-3 font-medium text-sm">Custom Description</th>
+                  <th className="text-center p-3 font-medium text-sm">Status</th>
+                  <th className="text-right p-3 font-medium text-sm">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allPagesWithMetadata.map((page) => (
+                  <tr key={page.path} className="border-b last:border-b-0 hover-elevate">
+                    <td className="p-3">
+                      <div>
+                        <div className="font-medium">{page.title}</div>
+                        <div className="text-xs text-muted-foreground font-mono">
+                          {page.path}
+                        </div>
                       </div>
-                    </CardDescription>
-                  ) : (
-                    <CardDescription className="mt-2 text-muted-foreground italic">
-                      Using default metadata
-                    </CardDescription>
-                  )}
-                </div>
-                <div className="flex gap-2">
-                  {page.hasCustom ? (
-                    <>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(page.customMetadata!)}
-                        data-testid={`button-edit-${page.path}`}
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(page.customMetadata!.id)}
-                        data-testid={`button-delete-${page.path}`}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleAddNew(page.path)}
-                      data-testid={`button-add-${page.path}`}
-                    >
-                      <Plus className="w-4 h-4 mr-1" />
-                      Add Custom
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
-        ))}
-      </div>
+                    </td>
+                    <td className="p-3">
+                      {page.customMetadata?.title ? (
+                        <div className="text-sm">{page.customMetadata.title}</div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Default</span>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      {page.customMetadata?.description ? (
+                        <div className="max-w-md">
+                          <div className="text-sm line-clamp-2">{page.customMetadata.description}</div>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            {page.customMetadata.description.length} chars
+                          </Badge>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Default</span>
+                      )}
+                    </td>
+                    <td className="p-3 text-center">
+                      {page.hasCustom ? (
+                        <Badge variant="default" className="text-xs">Custom</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">Default</Badge>
+                      )}
+                    </td>
+                    <td className="p-3">
+                      <div className="flex items-center justify-end gap-1">
+                        {page.hasCustom ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleEdit(page.customMetadata!)}
+                              data-testid={`button-edit-${page.path}`}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(page.customMetadata!.id)}
+                              data-testid={`button-delete-${page.path}`}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleAddNew(page.path)}
+                            data-testid={`button-add-${page.path}`}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -2336,6 +2355,43 @@ function TrackingNumbersSection() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* Traffic Capture Preview */}
+              <div className="grid gap-2 pt-2 border-t">
+                <Label className="text-sm font-medium">📊 Traffic Capture Preview</Label>
+                <div className="bg-blue-50 dark:bg-blue-950/20 p-4 rounded-md border border-blue-200 dark:border-blue-800 text-sm space-y-2">
+                  <p className="font-medium text-blue-900 dark:text-blue-100">This number will display for visitors from:</p>
+                  {urlParams.length > 0 && (
+                    <div className="flex gap-2 items-start">
+                      <span className="text-blue-700 dark:text-blue-300 font-medium min-w-[80px]">URL Params:</span>
+                      <span className="text-blue-900 dark:text-blue-100">
+                        {urlParams.map(param => `?${param}=...`).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                  {utmSources.length > 0 && (
+                    <div className="flex gap-2 items-start">
+                      <span className="text-blue-700 dark:text-blue-300 font-medium min-w-[80px]">UTM Source:</span>
+                      <span className="text-blue-900 dark:text-blue-100">
+                        {utmSources.map(source => `utm_source=${source}`).join(' OR ')}
+                      </span>
+                    </div>
+                  )}
+                  {referrerIncludes.length > 0 && (
+                    <div className="flex gap-2 items-start">
+                      <span className="text-blue-700 dark:text-blue-300 font-medium min-w-[80px]">Referrer:</span>
+                      <span className="text-blue-900 dark:text-blue-100">
+                        Coming from {referrerIncludes.map(ref => `*${ref}*`).join(' OR ')}
+                      </span>
+                    </div>
+                  )}
+                  {urlParams.length === 0 && utmSources.length === 0 && referrerIncludes.length === 0 && (
+                    <p className="text-blue-700 dark:text-blue-300 italic">
+                      No detection rules set. This number won't match any traffic automatically.
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Auto-Generated JSON Preview */}
