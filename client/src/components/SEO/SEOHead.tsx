@@ -61,7 +61,8 @@ export function SEOHead({
     : "https://www.plumbersthatcare.com";
   
   // Use optimized 1200x630 OG image for social sharing (better for Facebook, Twitter, iMessage)
-  const fullOgImage = ogImage || `${baseUrl}/attached_assets/og-image-social.jpg`;
+  // Add cache-busting parameter to force social platforms to refresh the image
+  const fullOgImage = ogImage || `${baseUrl}/attached_assets/og-image-social.jpg?v=2`;
 
   return (
     <Helmet>
