@@ -2482,6 +2482,23 @@ ${rssItems}
     });
   });
 
+  // Clear admin session (for debugging/reset purposes)
+  app.get("/api/admin/clear-session", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error("[Admin] Logout error:", err);
+      }
+      (req as any).session.destroy((destroyErr: any) => {
+        if (destroyErr) {
+          console.error("[Admin] Session destroy error:", destroyErr);
+          return res.status(500).json({ error: "Failed to clear session" });
+        }
+        res.clearCookie('connect.sid');
+        res.json({ success: true, message: "Session cleared successfully. Please close this tab and try logging in again." });
+      });
+    });
+  });
+
   // Get all photos (admin only)
   app.get("/api/admin/photos", requireAdmin, async (req, res) => {
     try {
