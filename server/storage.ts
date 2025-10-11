@@ -86,6 +86,7 @@ export interface IStorage {
   getApprovedSuccessStories(): Promise<CustomerSuccessStory[]>;
   getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
   approveSuccessStory(id: string, collagePhotoUrl: string): Promise<CustomerSuccessStory>;
+  unapproveSuccessStory(id: string): Promise<CustomerSuccessStory>;
   deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
@@ -2003,6 +2004,7 @@ Call (512) 368-9159 or schedule service online.`,
       story: insertStory.story,
       beforePhotoUrl: insertStory.beforePhotoUrl,
       afterPhotoUrl: insertStory.afterPhotoUrl,
+      collagePhotoUrl: null,
       serviceCategory: insertStory.serviceCategory,
       location: insertStory.location,
       approved: false,
@@ -2027,6 +2029,17 @@ Call (512) 368-9159 or schedule service online.`,
     }
     story.approved = true;
     story.collagePhotoUrl = collagePhotoUrl;
+    this.customerSuccessStories.set(id, story);
+    return story;
+  }
+
+  async unapproveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+    const story = this.customerSuccessStories.get(id);
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    story.approved = false;
+    story.collagePhotoUrl = null;
     this.customerSuccessStories.set(id, story);
     return story;
   }
@@ -2396,6 +2409,20 @@ export class DatabaseStorage implements IStorage {
     const [story] = await db
       .update(customerSuccessStories)
       .set({ approved: true, collagePhotoUrl })
+      .where(eq(customerSuccessStories.id, id))
+      .returning();
+    
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    
+    return story;
+  }
+
+  async unapproveSuccessStory(id: string): Promise<CustomerSuccessStory> {
+    const [story] = await db
+      .update(customerSuccessStories)
+      .set({ approved: false, collagePhotoUrl: null })
       .where(eq(customerSuccessStories.id, id))
       .returning();
     

@@ -3206,6 +3206,25 @@ ${rssItems}
     }
   });
 
+  // Unapprove success story (admin only) - move back to pending queue
+  app.put("/api/admin/success-stories/:id/unapprove", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      console.log(`[Success Stories] Unapproving story ${id}...`);
+      
+      // Unapprove the story (set approved=false and clear collage)
+      const story = await storage.unapproveSuccessStory(id);
+      
+      console.log(`[Success Stories] ✅ Story unapproved and moved to pending queue`);
+      
+      res.json({ story });
+    } catch (error: any) {
+      console.error("[Success Stories] Error unapproving story:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Delete/reject success story (admin only)
   app.delete("/api/admin/success-stories/:id", requireAdmin, async (req, res) => {
     try {

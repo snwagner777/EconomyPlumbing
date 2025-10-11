@@ -485,6 +485,26 @@ function SuccessStoriesSection() {
     },
   });
 
+  const unapproveMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("PUT", `/api/admin/success-stories/${id}/unapprove`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success Story Unapproved",
+        description: "The success story has been moved back to pending review.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/success-stories'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Unapprove Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       return await apiRequest("DELETE", `/api/admin/success-stories/${id}`);
@@ -508,6 +528,12 @@ function SuccessStoriesSection() {
   const handleApprove = (id: string) => {
     if (confirm("Approve this success story and publish it to the website?")) {
       approveMutation.mutate(id);
+    }
+  };
+
+  const handleUnapprove = (id: string) => {
+    if (confirm("Move this success story back to pending review? It will be removed from the public website.")) {
+      unapproveMutation.mutate(id);
     }
   };
 
@@ -643,7 +669,7 @@ function SuccessStoriesSection() {
         <div className="space-y-4">
           <h2 className="text-2xl font-bold">Approved Stories ({approvedStories.length})</h2>
           {approvedStories.map((story: any) => (
-            <Card key={story.id} className="opacity-75" data-testid={`story-approved-${story.id}`}>
+            <Card key={story.id} data-testid={`story-approved-${story.id}`}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -653,6 +679,45 @@ function SuccessStoriesSection() {
                   <Badge variant="default">Published</Badge>
                 </div>
               </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3">{story.story}</p>
+                </div>
+                {story.collagePhotoUrl && (
+                  <div>
+                    <a 
+                      href={story.collagePhotoUrl} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-sm text-primary hover:underline"
+                      data-testid={`link-collage-${story.id}`}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                      View Before/After Collage
+                    </a>
+                  </div>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => handleUnapprove(story.id)}
+                    disabled={unapproveMutation.isPending}
+                    data-testid={`button-unapprove-${story.id}`}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Unapprove
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDelete(story.id)}
+                    disabled={deleteMutation.isPending}
+                    data-testid={`button-delete-approved-${story.id}`}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
+              </CardContent>
             </Card>
           ))}
         </div>
