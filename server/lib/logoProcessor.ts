@@ -111,10 +111,55 @@ export async function processLogoToWhiteMonochrome(
     const isSvg = bufferStart.includes('<svg') || bufferStart.includes('<?xml');
     
     if (isSvg) {
-      throw new Error(
-        '⚠️ SVG files cannot be processed with AI. Please convert your logo to PNG, JPEG, or WebP format first. ' +
-        'You can use an online converter like CloudConvert, or export from your design software as PNG.'
+      console.log(`[Logo Processor] Detected SVG file, converting colors to white...`);
+      
+      // For SVG files, convert all fill/stroke colors to white
+      let svgContent = logoBuffer.toString('utf8');
+      
+      // Replace fill colors with white (handles fill="#color", fill='color', fill:color)
+      svgContent = svgContent
+        .replace(/fill\s*=\s*["']([^"']+)["']/gi, (match, color) => {
+          // Preserve 'none' for transparent fills
+          if (color.toLowerCase() === 'none') return match;
+          return 'fill="#FFFFFF"';
+        })
+        .replace(/fill\s*:\s*([^;"\s}]+)/gi, (match, color) => {
+          if (color.toLowerCase() === 'none') return match;
+          return 'fill: #FFFFFF';
+        });
+      
+      // Also handle stroke colors
+      svgContent = svgContent
+        .replace(/stroke\s*=\s*["']([^"']+)["']/gi, (match, color) => {
+          if (color.toLowerCase() === 'none') return match;
+          return 'stroke="#FFFFFF"';
+        })
+        .replace(/stroke\s*:\s*([^;"\s}]+)/gi, (match, color) => {
+          if (color.toLowerCase() === 'none') return match;
+          return 'stroke: #FFFFFF';
+        });
+      
+      // Upload the processed SVG
+      const searchPaths = objectStorageService.getPublicObjectSearchPaths();
+      
+      if (!searchPaths || searchPaths.length === 0) {
+        // If no object storage, return original URL (it should already be white)
+        console.log(`[Logo Processor] ⚠️ No object storage configured, using original SVG`);
+        return logoUrl;
+      }
+
+      const basePath = searchPaths[0];
+      const fileName = `logos/processed-${Date.now()}-${customerName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.svg`;
+      const destinationPath = `${basePath}/${fileName}`;
+
+      const uploadedPath = await objectStorageService.uploadBuffer(
+        Buffer.from(svgContent, 'utf8'),
+        destinationPath,
+        'image/svg+xml'
       );
+
+      console.log(`[Logo Processor] ✅ Successfully processed SVG logo: ${uploadedPath}`);
+      return uploadedPath;
     }
 
     // Get image metadata and auto-convert if needed
