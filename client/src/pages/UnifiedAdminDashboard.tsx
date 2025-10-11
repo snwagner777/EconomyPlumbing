@@ -1174,11 +1174,22 @@ function PageMetadataSection() {
     description: "",
   });
 
-  const { data: metadataResponse, isLoading } = useQuery<{ metadata: PageMetadata[] }>({
+  const { data: metadataResponse, isLoading, error } = useQuery<{ metadata: PageMetadata[] }>({
     queryKey: ['/api/admin/page-metadata'],
+    retry: false, // Don't retry on error
   });
   
   const customMetadata = metadataResponse?.metadata || [];
+
+  // Show error state if query fails
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <p className="text-destructive">Error loading page metadata</p>
+        <p className="text-sm text-muted-foreground">{(error as any)?.message || 'Unknown error'}</p>
+      </div>
+    );
+  }
 
   const upsertMutation = useMutation({
     mutationFn: async (data: typeof formData) => {
