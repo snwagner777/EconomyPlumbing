@@ -40,6 +40,7 @@ import {
   RefreshCw,
   Trash2,
   Eye,
+  EyeOff,
   Plus,
   Edit,
   CheckCircle,
@@ -2004,98 +2005,110 @@ function TrackingNumbersSection() {
         </Button>
       </div>
 
-      {/* Tracking Numbers List */}
-      <div className="grid gap-4">
-        {isLoading ? (
-          <Card>
-            <CardContent className="py-6">
+      {/* Tracking Numbers Table */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="py-8">
               <p className="text-center text-muted-foreground">Loading tracking numbers...</p>
-            </CardContent>
-          </Card>
-        ) : (
-          trackingNumbers.map((number) => (
-            <Card key={number.id}>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <Phone className="w-5 h-5 text-primary" />
-                    <div>
-                      <CardTitle className="text-lg">{number.channelName}</CardTitle>
-                      <CardDescription className="mt-1">
-                        Channel Key: {number.channelKey}
-                      </CardDescription>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {number.isDefault && (
-                      <Badge variant="default">Default</Badge>
-                    )}
-                    {number.isActive ? (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
-                    ) : (
-                      <Badge variant="outline" className="bg-gray-100 text-gray-600">Inactive</Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Display Number</Label>
-                    <p className="mt-1 text-lg font-semibold">{number.displayNumber}</p>
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium text-muted-foreground">Tel Link</Label>
-                    <p className="mt-1 font-mono text-sm">{number.telLink}</p>
-                  </div>
-                  <div className="sm:col-span-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Detection Rules</Label>
-                    <pre className="mt-1 text-xs bg-muted p-2 rounded-md overflow-x-auto">
-                      {(() => {
-                        try {
-                          return JSON.stringify(JSON.parse(number.detectionRules), null, 2);
-                        } catch (e) {
-                          return `Invalid JSON: ${number.detectionRules}`;
-                        }
-                      })()}
-                    </pre>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => handleEdit(number)}
-                    data-testid={`button-edit-${number.channelKey}`}
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant={number.isActive ? "outline" : "default"}
-                    onClick={() => handleToggleActive(number)}
-                    data-testid={`button-toggle-${number.channelKey}`}
-                  >
-                    {number.isActive ? "Deactivate" : "Activate"}
-                  </Button>
-                  {!number.isDefault && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(number.id)}
-                      data-testid={`button-delete-${number.channelKey}`}
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete
-                    </Button>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+            </div>
+          ) : trackingNumbers.length === 0 ? (
+            <div className="py-8">
+              <p className="text-center text-muted-foreground">No tracking numbers yet. Click "Add Tracking Number" to get started.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="border-b bg-muted/30">
+                  <tr>
+                    <th className="text-left p-3 font-medium text-sm">Channel</th>
+                    <th className="text-left p-3 font-medium text-sm">Phone Number</th>
+                    <th className="text-left p-3 font-medium text-sm">Detection Rules</th>
+                    <th className="text-center p-3 font-medium text-sm">Status</th>
+                    <th className="text-right p-3 font-medium text-sm">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trackingNumbers.map((number) => (
+                    <tr key={number.id} className="border-b last:border-b-0 hover-elevate">
+                      <td className="p-3">
+                        <div>
+                          <div className="font-medium">{number.channelName}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {number.channelKey}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-mono text-sm">{number.displayNumber}</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-xs text-muted-foreground max-w-xs">
+                          {(() => {
+                            try {
+                              const rules = JSON.parse(number.detectionRules);
+                              const parts = [];
+                              if (rules.urlParams?.length) parts.push(`URL: ${rules.urlParams.join(', ')}`);
+                              if (rules.utmSources?.length) parts.push(`UTM: ${rules.utmSources.join(', ')}`);
+                              if (rules.referrerIncludes?.length) parts.push(`Ref: ${rules.referrerIncludes.join(', ')}`);
+                              return parts.length ? parts.join(' | ') : 'No rules';
+                            } catch (e) {
+                              return 'Invalid';
+                            }
+                          })()}
+                        </div>
+                      </td>
+                      <td className="p-3 text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          {number.isDefault && (
+                            <Badge variant="default" className="text-xs">Default</Badge>
+                          )}
+                          {number.isActive ? (
+                            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Active</Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs bg-gray-100 text-gray-600">Inactive</Badge>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleEdit(number)}
+                            data-testid={`button-edit-${number.channelKey}`}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleToggleActive(number)}
+                            data-testid={`button-toggle-${number.channelKey}`}
+                          >
+                            {number.isActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </Button>
+                          {!number.isDefault && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleDelete(number.id)}
+                              data-testid={`button-delete-${number.channelKey}`}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
