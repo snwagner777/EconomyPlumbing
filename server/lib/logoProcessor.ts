@@ -106,8 +106,26 @@ export async function processLogoToWhiteMonochrome(
       throw new Error('Failed to download logo from object storage');
     }
 
-    // Get image metadata
-    const metadata = await sharp(logoBuffer).metadata();
+    // Get image metadata and validate format
+    let metadata;
+    try {
+      metadata = await sharp(logoBuffer).metadata();
+    } catch (sharpError: any) {
+      console.error(`[Logo Processor] Sharp error:`, sharpError);
+      throw new Error(
+        'Unsupported image format. Please upload a PNG, JPEG, or WebP file. ' +
+        'SVG files are not supported - please convert to PNG first.'
+      );
+    }
+    
+    // Validate image format
+    const supportedFormats = ['png', 'jpeg', 'jpg', 'webp'];
+    if (!metadata.format || !supportedFormats.includes(metadata.format.toLowerCase())) {
+      throw new Error(
+        `Unsupported format: ${metadata.format || 'unknown'}. ` +
+        'Please upload a PNG, JPEG, or WebP file.'
+      );
+    }
     const width = metadata.width || 400;
     const height = metadata.height || 200;
     

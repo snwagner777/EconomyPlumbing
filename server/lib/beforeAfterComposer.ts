@@ -241,7 +241,6 @@ export async function createBeforeAfterComposite(
   // Create SVG overlays for labels
   const createLabelSvg = (text: string) => `
     <svg width="${frameWidth}" height="${frameHeight}">
-      <rect width="${frameWidth}" height="${frameHeight}" fill="white"/>
       <text 
         x="${frameWidth / 2}" 
         y="${photoHeight + frameMargin + 50}" 
