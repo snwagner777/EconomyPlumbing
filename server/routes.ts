@@ -36,6 +36,7 @@ import path from "path";
 import fs from "fs";
 import { ObjectStorageService } from "./objectStorage";
 import { analyzeProductionPhoto } from "./lib/productionPhotoAnalyzer";
+import OpenAI from "openai";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reference: javascript_object_storage integration - public file serving endpoint
@@ -3285,7 +3286,7 @@ Focus on the problem solved, the quality of work, and customer satisfaction. Use
       const content = response.choices[0]?.message?.content || "";
       
       // Parse the response to extract title and description
-      const lines = content.split('\n').filter(line => line.trim());
+      const lines = content.split('\n').filter((line: string) => line.trim());
       const title = lines[0]?.replace(/^(Title:|1\.|#)\s*/i, '').trim() || "Professional Plumbing Service";
       const description = lines.slice(1).join(' ').replace(/^(Description:|2\.)\s*/i, '').trim() || content;
 
@@ -3319,11 +3320,12 @@ Focus on the problem solved, the quality of work, and customer satisfaction. Use
 
       // Create the success story (unapproved by default)
       const story = await storage.createCustomerSuccessStory({
-        title,
-        description,
-        beforePhotoUrl: photo1.url,
-        afterPhotoUrl: photo2.url,
-        approved: false,
+        customerName: "Customer", // Default name for admin-created stories
+        story: description,
+        beforePhotoUrl: photo1.photoUrl,
+        afterPhotoUrl: photo2.photoUrl,
+        serviceCategory: photo1.category || "general",
+        location: "Austin/Marble Falls, TX",
       });
 
       // Mark photos as used
@@ -3434,10 +3436,10 @@ Write in a professional yet friendly tone.`;
         content,
         slug,
         excerpt: content.substring(0, 150).replace(/#+\s*/g, '').trim() + '...',
-        featuredImage: photo.url,
+        featuredImage: photo.photoUrl,
         author: 'Economy Plumbing Services',
+        category: photo.category || 'General',
         published: true,
-        publishedAt: publishDate,
       });
 
       // Mark photo as used
