@@ -167,9 +167,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // This must come BEFORE express.json() middleware
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
 
-// JSON parsing for all other routes
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+// JSON parsing for all other routes with increased limit for photo uploads
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: false, limit: '100mb' }));
 
 // Serve static files from attached_assets directory with aggressive caching
 app.use('/attached_assets', express.static(path.resolve(import.meta.dirname, '..', 'attached_assets'), {

@@ -836,15 +836,28 @@ ${rssItems}
       
       const timestamp = Date.now();
       
-      // Decode base64 photos and upload
-      const beforeBuffer = Buffer.from(beforePhoto.split(',')[1] || beforePhoto, 'base64');
-      const afterBuffer = Buffer.from(afterPhoto.split(',')[1] || afterPhoto, 'base64');
+      // Import image optimizer
+      const { optimizeImage } = await import('./lib/imageOptimizer');
       
-      const beforePhotoPath = `/${bucketId}/.private/success_stories/before_${timestamp}.jpg`;
-      const afterPhotoPath = `/${bucketId}/.private/success_stories/after_${timestamp}.jpg`;
+      // Optimize and convert photos to WebP (handles HEIC conversion automatically)
+      const beforeBuffer = await optimizeImage(beforePhoto, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 85,
+        format: 'webp'
+      });
+      const afterBuffer = await optimizeImage(afterPhoto, {
+        maxWidth: 1920,
+        maxHeight: 1920,
+        quality: 85,
+        format: 'webp'
+      });
       
-      const beforeUrl = await objectStorageService.uploadBuffer(beforeBuffer, beforePhotoPath, 'image/jpeg');
-      const afterUrl = await objectStorageService.uploadBuffer(afterBuffer, afterPhotoPath, 'image/jpeg');
+      const beforePhotoPath = `/${bucketId}/.private/success_stories/before_${timestamp}.webp`;
+      const afterPhotoPath = `/${bucketId}/.private/success_stories/after_${timestamp}.webp`;
+      
+      const beforeUrl = await objectStorageService.uploadBuffer(beforeBuffer, beforePhotoPath, 'image/webp');
+      const afterUrl = await objectStorageService.uploadBuffer(afterBuffer, afterPhotoPath, 'image/webp');
       
       // Create success story with photo URLs
       const storyWithPhotos = {
