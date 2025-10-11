@@ -449,8 +449,8 @@ function PhotoManagement() {
                 <div key={photo.id} className="group relative">
                   <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
                     <img
-                      src={photo.url}
-                      alt={photo.description || 'Photo'}
+                      src={photo.photoUrl}
+                      alt={photo.aiDescription || 'Photo'}
                       className="object-cover w-full h-full"
                       loading="lazy"
                     />
@@ -458,7 +458,7 @@ function PhotoManagement() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => window.open(photo.url, '_blank')}
+                        onClick={() => window.open(photo.photoUrl, '_blank')}
                         data-testid={`view-photo-${photo.id}`}
                       >
                         <Eye className="h-4 w-4" />
@@ -467,17 +467,17 @@ function PhotoManagement() {
                   </div>
                   <div className="mt-2 space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={photo.aiQuality === 'good' ? 'default' : photo.aiQuality === 'medium' ? 'secondary' : 'outline'}>
-                        {photo.aiQuality}
+                      <Badge variant={photo.isGoodQuality ? 'default' : 'outline'}>
+                        {photo.isGoodQuality ? 'Good' : 'Poor'}
                       </Badge>
-                      {photo.isUsed && (
+                      {(photo.usedInBlogPostId || photo.usedInPageUrl) && (
                         <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
                           Used
                         </Badge>
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground line-clamp-2">
-                      {photo.description || 'No description'}
+                      {photo.aiDescription || 'No description'}
                     </p>
                   </div>
                 </div>
