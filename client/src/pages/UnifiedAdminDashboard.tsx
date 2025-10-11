@@ -1758,6 +1758,38 @@ function TrackingNumbersSection() {
     sortOrder: 0,
   });
 
+  // Detection rule fields (parsed from JSON)
+  const [urlParams, setUrlParams] = useState<string[]>([]);
+  const [utmSources, setUtmSources] = useState<string[]>([]);
+  const [referrerIncludes, setReferrerIncludes] = useState<string[]>([]);
+  const [newUrlParam, setNewUrlParam] = useState("");
+  const [newUtmSource, setNewUtmSource] = useState("");
+  const [newReferrer, setNewReferrer] = useState("");
+
+  // Auto-generate JSON from detection rule fields
+  const generateDetectionRulesJSON = () => {
+    const rules: any = {};
+    if (urlParams.length > 0) rules.urlParams = urlParams;
+    if (utmSources.length > 0) rules.utmSources = utmSources;
+    if (referrerIncludes.length > 0) rules.referrerIncludes = referrerIncludes;
+    return JSON.stringify(rules, null, 2);
+  };
+
+  // Parse detection rules JSON into individual fields
+  const parseDetectionRules = (json: string) => {
+    try {
+      const rules = JSON.parse(json);
+      setUrlParams(rules.urlParams || []);
+      setUtmSources(rules.utmSources || []);
+      setReferrerIncludes(rules.referrerIncludes || []);
+    } catch (e) {
+      // Invalid JSON, initialize with empty arrays
+      setUrlParams([]);
+      setUtmSources([]);
+      setReferrerIncludes([]);
+    }
+  };
+
   // Auto-generate phone fields when phone number changes with live formatting
   const handlePhoneNumberChange = (value: string) => {
     // Remove all non-digit characters
@@ -1864,6 +1896,13 @@ function TrackingNumbersSection() {
   const handleAddNew = () => {
     setIsAddingNew(true);
     setEditingNumber(null);
+    // Initialize with empty arrays
+    setUrlParams([]);
+    setUtmSources([]);
+    setReferrerIncludes([]);
+    setNewUrlParam("");
+    setNewUtmSource("");
+    setNewReferrer("");
     setFormData({
       channelKey: "",
       channelName: "",
@@ -1882,6 +1921,11 @@ function TrackingNumbersSection() {
   const handleEdit = (number: TrackingNumber) => {
     setIsAddingNew(false);
     setEditingNumber(number);
+    // Parse detection rules into individual fields
+    parseDetectionRules(number.detectionRules);
+    setNewUrlParam("");
+    setNewUtmSource("");
+    setNewReferrer("");
     setFormData({
       channelKey: number.channelKey,
       channelName: number.channelName,
@@ -1926,24 +1970,19 @@ function TrackingNumbersSection() {
       return;
     }
 
-    // Validate JSON detection rules
-    try {
-      JSON.parse(formData.detectionRules);
-    } catch (e) {
-      toast({
-        title: "Invalid JSON",
-        description: "Detection rules must be valid JSON format.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Auto-generate detection rules JSON from individual fields
+    const generatedJSON = generateDetectionRulesJSON();
+    const dataToSave = {
+      ...formData,
+      detectionRules: generatedJSON,
+    };
 
     if (isAddingNew) {
-      createMutation.mutate(formData);
+      createMutation.mutate(dataToSave);
     } else if (editingNumber) {
       updateMutation.mutate({
         id: editingNumber.id,
-        updates: formData,
+        updates: dataToSave,
       });
     }
   };
@@ -2115,19 +2154,184 @@ function TrackingNumbersSection() {
                 </div>
               </div>
             )}
-            <div className="grid gap-2">
-              <Label htmlFor="detectionRules">Detection Rules (JSON)</Label>
-              <Textarea
-                id="detectionRules"
-                value={formData.detectionRules}
-                onChange={(e) => setFormData({ ...formData, detectionRules: e.target.value })}
-                rows={6}
-                className="font-mono text-sm"
-                data-testid="input-detectionRules"
-              />
-              <p className="text-xs text-muted-foreground">
-                Format: {"{"}"urlParams":["gclid"],"utmSources":["google"],"referrerIncludes":["google.com"]{"}"}
-              </p>
+            {/* Detection Rules - Individual Fields */}
+            <div className="grid gap-4 p-4 border rounded-lg bg-muted/30">
+              <div>
+                <Label className="text-base font-semibold">Detection Rules</Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Configure when this phone number should be displayed
+                </p>
+              </div>
+
+              {/* URL Parameters */}
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">URL Parameters</Label>
+                <p className="text-xs text-muted-foreground">
+                  Show this number when these URL parameters are present (e.g., gclid, fbclid)
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newUrlParam}
+                    onChange={(e) => setNewUrlParam(e.target.value)}
+                    placeholder="gclid"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newUrlParam.trim() && !urlParams.includes(newUrlParam.trim())) {
+                          setUrlParams([...urlParams, newUrlParam.trim()]);
+                          setNewUrlParam("");
+                        }
+                      }
+                    }}
+                    data-testid="input-new-url-param"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newUrlParam.trim() && !urlParams.includes(newUrlParam.trim())) {
+                        setUrlParams([...urlParams, newUrlParam.trim()]);
+                        setNewUrlParam("");
+                      }
+                    }}
+                    data-testid="button-add-url-param"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {urlParams.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {urlParams.map((param, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {param}
+                        <button
+                          type="button"
+                          onClick={() => setUrlParams(urlParams.filter((_, i) => i !== index))}
+                          className="ml-1 hover:text-destructive"
+                          data-testid={`button-remove-url-param-${index}`}
+                        >
+                          <XCircle className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* UTM Sources */}
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">UTM Sources</Label>
+                <p className="text-xs text-muted-foreground">
+                  Show this number when utm_source matches these values (e.g., google, facebook)
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newUtmSource}
+                    onChange={(e) => setNewUtmSource(e.target.value)}
+                    placeholder="google"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newUtmSource.trim() && !utmSources.includes(newUtmSource.trim())) {
+                          setUtmSources([...utmSources, newUtmSource.trim()]);
+                          setNewUtmSource("");
+                        }
+                      }
+                    }}
+                    data-testid="input-new-utm-source"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newUtmSource.trim() && !utmSources.includes(newUtmSource.trim())) {
+                        setUtmSources([...utmSources, newUtmSource.trim()]);
+                        setNewUtmSource("");
+                      }
+                    }}
+                    data-testid="button-add-utm-source"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {utmSources.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {utmSources.map((source, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {source}
+                        <button
+                          type="button"
+                          onClick={() => setUtmSources(utmSources.filter((_, i) => i !== index))}
+                          className="ml-1 hover:text-destructive"
+                          data-testid={`button-remove-utm-source-${index}`}
+                        >
+                          <XCircle className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Referrer Includes */}
+              <div className="grid gap-2">
+                <Label className="text-sm font-medium">Referrer Contains</Label>
+                <p className="text-xs text-muted-foreground">
+                  Show this number when the referrer URL contains these strings (e.g., google.com, facebook.com)
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newReferrer}
+                    onChange={(e) => setNewReferrer(e.target.value)}
+                    placeholder="google.com"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (newReferrer.trim() && !referrerIncludes.includes(newReferrer.trim())) {
+                          setReferrerIncludes([...referrerIncludes, newReferrer.trim()]);
+                          setNewReferrer("");
+                        }
+                      }
+                    }}
+                    data-testid="input-new-referrer"
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      if (newReferrer.trim() && !referrerIncludes.includes(newReferrer.trim())) {
+                        setReferrerIncludes([...referrerIncludes, newReferrer.trim()]);
+                        setNewReferrer("");
+                      }
+                    }}
+                    data-testid="button-add-referrer"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+                {referrerIncludes.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {referrerIncludes.map((referrer, index) => (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
+                        {referrer}
+                        <button
+                          type="button"
+                          onClick={() => setReferrerIncludes(referrerIncludes.filter((_, i) => i !== index))}
+                          className="ml-1 hover:text-destructive"
+                          data-testid={`button-remove-referrer-${index}`}
+                        >
+                          <XCircle className="h-3 w-3" />
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Auto-Generated JSON Preview */}
+              <div className="grid gap-2 pt-2 border-t">
+                <Label className="text-sm font-medium">Auto-Generated JSON</Label>
+                <pre className="text-xs bg-background p-3 rounded-md overflow-x-auto border">
+                  {generateDetectionRulesJSON()}
+                </pre>
+              </div>
             </div>
             <div className="flex items-center space-x-2">
               <Switch
