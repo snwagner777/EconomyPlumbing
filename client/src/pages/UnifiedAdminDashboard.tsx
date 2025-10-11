@@ -1008,7 +1008,7 @@ function CommercialCustomersSection() {
     });
   };
 
-  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setLogoFile(file);
@@ -1017,6 +1017,52 @@ function CommercialCustomersSection() {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+      
+      // Automatically upload and process the logo
+      await handleProcessLogoAuto(file);
+    }
+  };
+
+  const handleProcessLogoAuto = async (file: File) => {
+    setIsProcessingLogo(true);
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const uploadResponse = await fetch('/api/admin/upload-logo', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload logo');
+      }
+
+      const { logoUrl } = await uploadResponse.json();
+
+      const processResponse = await apiRequest("POST", "/api/admin/process-logo", {
+        logoUrl,
+        customerName: formData.name || "Logo",
+      });
+
+      const { processedLogoUrl } = await processResponse.json();
+
+      setFormData(prev => ({ ...prev, logoUrl: processedLogoUrl }));
+      setLogoPreview(processedLogoUrl);
+
+      toast({
+        title: "Logo Uploaded",
+        description: "Logo uploaded and processed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload logo",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingLogo(false);
     }
   };
 
@@ -1221,26 +1267,17 @@ function CommercialCustomersSection() {
                     type="file"
                     accept="image/*"
                     onChange={handleLogoFileChange}
+                    disabled={isProcessingLogo}
                     data-testid="input-logo-file"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleProcessLogo}
-                    disabled={!logoFile || isProcessingLogo}
-                    data-testid="button-process-logo"
-                  >
-                    {isProcessingLogo ? (
-                      <>Processing...</>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        Process with AI
-                      </>
-                    )}
-                  </Button>
+                  {isProcessingLogo && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <span>Processing logo...</span>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
-                    Upload a logo and click "Process with AI" to automatically remove background and optimize
+                    Upload any image format (PNG, JPEG, SVG, etc.). Logo will be automatically processed and optimized.
                   </p>
                 </div>
               </div>

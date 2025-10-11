@@ -6,27 +6,67 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 const objectStorageService = new ObjectStorageService();
 
 /**
+ * Simple luminance-based mask creation (fallback when OpenAI is unavailable)
+ */
+async function createLogoMaskSimple(logoBuffer: Buffer, width: number, height: number): Promise<Buffer> {
+  console.log('[Logo Processor] Using simple luminance-based mask (OpenAI unavailable)...');
+  
+  const { data: rawPixels } = await sharp(logoBuffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true });
+  
+  const maskBuffer = Buffer.alloc(width * height);
+  
+  // Simple luminance-based thresholding
+  // Assumes lighter pixels are background, darker pixels are logo
+  for (let i = 0; i < rawPixels.length; i += 4) {
+    const r = rawPixels[i];
+    const g = rawPixels[i + 1];
+    const b = rawPixels[i + 2];
+    const pixelIndex = i / 4;
+    
+    // Calculate luminance (perceived brightness)
+    const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    
+    // If pixel is very light (>240), assume it's background
+    // Otherwise, keep it as part of the logo
+    maskBuffer[pixelIndex] = luminance > 240 ? 0 : 255;
+  }
+  
+  return maskBuffer;
+}
+
+/**
  * Use OpenAI Vision to analyze the logo and create a smart mask
+ * Falls back to simple luminance-based mask if OpenAI is unavailable
  */
 async function createLogoMaskWithAI(logoBuffer: Buffer, width: number, height: number): Promise<Buffer> {
-  console.log('[Logo Processor] Using OpenAI Vision to analyze logo...');
-  
-  // Convert logo to base64 for OpenAI
-  const base64Image = `data:image/png;base64,${logoBuffer.toString('base64')}`;
-  
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        role: "system",
-        content: `You are an expert at analyzing logos. Determine the dominant colors and describe which areas are the logo/brand mark vs background. Provide RGB threshold values to separate logo from background.`
-      },
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: `Analyze this logo and provide:
+  // Check if OpenAI API key is available
+  if (!process.env.OPENAI_API_KEY) {
+    console.log('[Logo Processor] ⚠️ OPENAI_API_KEY not found, using simple mask...');
+    return createLogoMaskSimple(logoBuffer, width, height);
+  }
+
+  try {
+    console.log('[Logo Processor] Using OpenAI Vision to analyze logo...');
+    
+    // Convert logo to base64 for OpenAI
+    const base64Image = `data:image/png;base64,${logoBuffer.toString('base64')}`;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert at analyzing logos. Determine the dominant colors and describe which areas are the logo/brand mark vs background. Provide RGB threshold values to separate logo from background.`
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `Analyze this logo and provide:
 1. Primary logo/text colors (RGB values)
 2. Background color (RGB values)
 3. Is the background light or dark?
@@ -39,51 +79,55 @@ Respond in JSON:
   "backgroundType": "light" or "dark",
   "strategy": "keep_dark" or "keep_light" or "color_threshold"
 }`
-          },
-          {
-            type: "image_url",
-            image_url: { url: base64Image, detail: "high" }
-          }
-        ]
-      }
-    ],
-    response_format: { type: "json_object" },
-  });
+            },
+            {
+              type: "image_url",
+              image_url: { url: base64Image, detail: "high" }
+            }
+          ]
+        }
+      ],
+      response_format: { type: "json_object" },
+    });
 
-  const analysis = JSON.parse(response.choices[0].message.content || "{}");
-  console.log('[Logo Processor] AI Analysis:', analysis);
-  
-  // Defensive fallback if AI doesn't provide background color
-  const bgColor = analysis.backgroundColor || { r: 255, g: 255, b: 255 }; // Default to white
-  
-  // Create mask based on AI analysis
-  const { data: rawPixels } = await sharp(logoBuffer)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true });
-  
-  const maskBuffer = Buffer.alloc(width * height);
-  
-  // Process each pixel to create mask
-  for (let i = 0; i < rawPixels.length; i += 4) {
-    const r = rawPixels[i];
-    const g = rawPixels[i + 1];
-    const b = rawPixels[i + 2];
-    const pixelIndex = i / 4;
+    const analysis = JSON.parse(response.choices[0].message.content || "{}");
+    console.log('[Logo Processor] AI Analysis:', analysis);
     
-    // Calculate color distance from background
-    const distance = Math.sqrt(
-      Math.pow(r - bgColor.r, 2) +
-      Math.pow(g - bgColor.g, 2) +
-      Math.pow(b - bgColor.b, 2)
-    );
+    // Defensive fallback if AI doesn't provide background color
+    const bgColor = analysis.backgroundColor || { r: 255, g: 255, b: 255 }; // Default to white
     
-    // If pixel is similar to background (distance < 50), make transparent
-    // Otherwise, keep opaque
-    maskBuffer[pixelIndex] = distance < 50 ? 0 : 255;
+    // Create mask based on AI analysis
+    const { data: rawPixels } = await sharp(logoBuffer)
+      .ensureAlpha()
+      .raw()
+      .toBuffer({ resolveWithObject: true });
+    
+    const maskBuffer = Buffer.alloc(width * height);
+    
+    // Process each pixel to create mask
+    for (let i = 0; i < rawPixels.length; i += 4) {
+      const r = rawPixels[i];
+      const g = rawPixels[i + 1];
+      const b = rawPixels[i + 2];
+      const pixelIndex = i / 4;
+      
+      // Calculate color distance from background
+      const distance = Math.sqrt(
+        Math.pow(r - bgColor.r, 2) +
+        Math.pow(g - bgColor.g, 2) +
+        Math.pow(b - bgColor.b, 2)
+      );
+      
+      // If pixel is similar to background (distance < 50), make transparent
+      // Otherwise, keep opaque
+      maskBuffer[pixelIndex] = distance < 50 ? 0 : 255;
+    }
+    
+    return maskBuffer;
+  } catch (error) {
+    console.error('[Logo Processor] OpenAI Vision failed, falling back to simple mask:', error);
+    return createLogoMaskSimple(logoBuffer, width, height);
   }
-  
-  return maskBuffer;
 }
 
 /**
