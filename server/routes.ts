@@ -3241,6 +3241,217 @@ ${rssItems}
     }
   });
 
+  // Generate AI caption for success story (admin only)
+  app.post("/api/admin/generate-story-caption", requireAdmin, async (req, res) => {
+    try {
+      const { photo1Url, photo2Url } = req.body;
+      
+      if (!photo1Url || !photo2Url) {
+        return res.status(400).json({ error: "Both photo URLs are required" });
+      }
+
+      console.log(`[Manual Success Story] Generating caption for photos...`);
+
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Analyze these two plumbing job photos (before and after). Create a compelling success story with:
+1. A short, impactful title (5-8 words)
+2. A brief description (2-3 sentences) explaining the transformation
+
+Focus on the problem solved, the quality of work, and customer satisfaction. Use professional plumbing terminology.`,
+              },
+              {
+                type: "image_url",
+                image_url: { url: photo1Url },
+              },
+              {
+                type: "image_url",
+                image_url: { url: photo2Url },
+              },
+            ],
+          },
+        ],
+        max_tokens: 300,
+      });
+
+      const content = response.choices[0]?.message?.content || "";
+      
+      // Parse the response to extract title and description
+      const lines = content.split('\n').filter(line => line.trim());
+      const title = lines[0]?.replace(/^(Title:|1\.|#)\s*/i, '').trim() || "Professional Plumbing Service";
+      const description = lines.slice(1).join(' ').replace(/^(Description:|2\.)\s*/i, '').trim() || content;
+
+      console.log(`[Manual Success Story] ✅ Caption generated`);
+
+      res.json({ title, description });
+    } catch (error: any) {
+      console.error("[Manual Success Story] Error generating caption:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create manual success story (admin only)
+  app.post("/api/admin/success-stories/manual", requireAdmin, async (req, res) => {
+    try {
+      const { photo1Id, photo2Id, title, description } = req.body;
+      
+      if (!photo1Id || !photo2Id || !title || !description) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      console.log(`[Manual Success Story] Creating success story...`);
+
+      // Get the photo URLs
+      const photo1 = await storage.getPhotoById(photo1Id);
+      const photo2 = await storage.getPhotoById(photo2Id);
+
+      if (!photo1 || !photo2) {
+        return res.status(400).json({ error: "One or both photos not found" });
+      }
+
+      // Create the success story (unapproved by default)
+      const story = await storage.createSuccessStory({
+        title,
+        description,
+        beforePhotoUrl: photo1.url,
+        afterPhotoUrl: photo2.url,
+        approved: false,
+      });
+
+      // Mark photos as used
+      await storage.markPhotoAsUsed(photo1Id, story.id, 'success_story');
+      await storage.markPhotoAsUsed(photo2Id, story.id, 'success_story');
+
+      console.log(`[Manual Success Story] ✅ Success story created: ${story.id}`);
+
+      res.json({ story });
+    } catch (error: any) {
+      console.error("[Manual Success Story] Error creating story:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Generate AI blog post from photo (admin only)
+  app.post("/api/admin/generate-blog-post", requireAdmin, async (req, res) => {
+    try {
+      const { photoUrl, aiDescription } = req.body;
+      
+      if (!photoUrl) {
+        return res.status(400).json({ error: "Photo URL is required" });
+      }
+
+      console.log(`[Manual Blog Post] Generating blog post from photo...`);
+
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const prompt = `Create an SEO-optimized plumbing blog post based on this photo${aiDescription ? ` (AI description: ${aiDescription})` : ''}.
+
+Include:
+1. An engaging title with plumbing keywords (60-70 characters)
+2. A comprehensive article (400-600 words) in markdown format
+
+The blog post should:
+- Focus on plumbing services in Austin/Marble Falls, Texas
+- Include practical tips and expert advice
+- Use natural keyword integration
+- Be helpful and informative for homeowners
+- Include a call-to-action at the end
+
+Write in a professional yet friendly tone.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "text", text: prompt },
+              { type: "image_url", image_url: { url: photoUrl } },
+            ],
+          },
+        ],
+        max_tokens: 1500,
+      });
+
+      const content = response.choices[0]?.message?.content || "";
+      
+      // Parse title and content
+      const lines = content.split('\n');
+      const titleLine = lines.find(line => line.trim().startsWith('#') || line.length > 20 && line.length < 100);
+      const title = titleLine?.replace(/^#\s*/, '').trim() || "Expert Plumbing Services in Austin";
+      
+      // Get content after title
+      const titleIndex = lines.indexOf(titleLine || '');
+      const blogContent = lines.slice(titleIndex + 1).join('\n').trim();
+
+      console.log(`[Manual Blog Post] ✅ Blog post generated`);
+
+      res.json({ title, content: blogContent });
+    } catch (error: any) {
+      console.error("[Manual Blog Post] Error generating blog post:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Create manual blog post (admin only)
+  app.post("/api/admin/blog-posts/manual", requireAdmin, async (req, res) => {
+    try {
+      const { photoId, title, content } = req.body;
+      
+      if (!photoId || !title || !content) {
+        return res.status(400).json({ error: "All fields are required" });
+      }
+
+      console.log(`[Manual Blog Post] Creating blog post...`);
+
+      // Get the photo
+      const photo = await storage.getPhotoById(photoId);
+
+      if (!photo) {
+        return res.status(400).json({ error: "Photo not found" });
+      }
+
+      // Generate slug from title
+      const slug = title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
+
+      // Create blog post (backdated by 1-3 months for SEO)
+      const monthsAgo = Math.floor(Math.random() * 3) + 1;
+      const publishDate = new Date();
+      publishDate.setMonth(publishDate.getMonth() - monthsAgo);
+
+      const post = await storage.createBlogPost({
+        title,
+        content,
+        slug,
+        excerpt: content.substring(0, 150).replace(/#+\s*/g, '').trim() + '...',
+        featuredImage: photo.url,
+        author: 'Economy Plumbing Services',
+        published: true,
+        publishedAt: publishDate,
+      });
+
+      // Mark photo as used
+      await storage.markPhotoAsUsed(photoId, post.id.toString(), 'blog_post');
+
+      console.log(`[Manual Blog Post] ✅ Blog post created: ${post.id}`);
+
+      res.json({ post });
+    } catch (error: any) {
+      console.error("[Manual Blog Post] Error creating blog post:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
