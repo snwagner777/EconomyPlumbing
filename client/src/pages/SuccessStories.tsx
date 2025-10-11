@@ -224,7 +224,7 @@ export default function SuccessStories() {
                       <img
                         src={story.collagePhotoUrl}
                         alt={`Before and after: ${story.story}`}
-                        className="w-full aspect-square object-cover rounded-md"
+                        className="w-full h-auto rounded-md"
                         loading="lazy"
                         data-testid={`img-collage-${story.id}`}
                       />
