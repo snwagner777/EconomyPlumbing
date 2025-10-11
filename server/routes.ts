@@ -2999,7 +2999,7 @@ ${rssItems}
     }
   });
 
-  // Process logo with OpenAI (background removal, optimization) (admin only)
+  // Process logo to white monochrome version (admin only)
   app.post("/api/admin/process-logo", requireAdmin, async (req, res) => {
     try {
       const { logoUrl, customerName } = req.body;
@@ -3008,11 +3008,15 @@ ${rssItems}
         return res.status(400).json({ error: "Logo URL is required" });
       }
 
-      // For now, return the original URL
-      // TODO: Implement OpenAI Vision API for background removal and optimization
-      // This would analyze the image, remove background, optimize size, etc.
+      if (!customerName) {
+        return res.status(400).json({ error: "Customer name is required" });
+      }
+
+      // Process logo to white monochrome version
+      const { processLogoToWhiteMonochrome } = await import("./lib/logoProcessor");
+      const processedLogoUrl = await processLogoToWhiteMonochrome(logoUrl, customerName);
       
-      res.json({ processedLogoUrl: logoUrl });
+      res.json({ processedLogoUrl });
     } catch (error: any) {
       console.error("[Logo Processing] Error:", error);
       res.status(500).json({ error: error.message });
