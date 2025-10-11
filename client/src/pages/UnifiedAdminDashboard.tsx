@@ -1508,6 +1508,7 @@ function TrackingNumbersSection() {
   const [formData, setFormData] = useState({
     channelKey: "",
     channelName: "",
+    phoneNumber: "", // Single input field
     displayNumber: "",
     rawNumber: "",
     telLink: "",
@@ -1516,6 +1517,29 @@ function TrackingNumbersSection() {
     isDefault: false,
     sortOrder: 0,
   });
+
+  // Auto-generate phone fields when phone number changes
+  const handlePhoneNumberChange = (value: string) => {
+    // Remove all non-digit characters
+    const digitsOnly = value.replace(/\D/g, '');
+    
+    // Format display number (512) 123-4567
+    let displayNumber = value;
+    if (digitsOnly.length === 10) {
+      displayNumber = `(${digitsOnly.slice(0, 3)}) ${digitsOnly.slice(3, 6)}-${digitsOnly.slice(6)}`;
+    }
+    
+    // Generate tel link
+    const telLink = digitsOnly.length === 10 ? `tel:+1${digitsOnly}` : '';
+    
+    setFormData({
+      ...formData,
+      phoneNumber: value,
+      displayNumber,
+      rawNumber: digitsOnly,
+      telLink,
+    });
+  };
 
   const { data: trackingData, isLoading } = useQuery<{ trackingNumbers: TrackingNumber[] }>({
     queryKey: ['/api/admin/tracking-numbers'],
@@ -1592,6 +1616,7 @@ function TrackingNumbersSection() {
     setFormData({
       channelKey: "",
       channelName: "",
+      phoneNumber: "",
       displayNumber: "",
       rawNumber: "",
       telLink: "",
@@ -1609,6 +1634,7 @@ function TrackingNumbersSection() {
     setFormData({
       channelKey: number.channelKey,
       channelName: number.channelName,
+      phoneNumber: number.displayNumber, // Use display number as initial value
       displayNumber: number.displayNumber,
       rawNumber: number.rawNumber,
       telLink: number.telLink,
@@ -1643,7 +1669,19 @@ function TrackingNumbersSection() {
     if (!formData.channelKey || !formData.channelName || !formData.displayNumber) {
       toast({
         title: "Missing Information",
-        description: "Channel key, name, and display number are required.",
+        description: "Channel key, name, and phone number are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate JSON detection rules
+    try {
+      JSON.parse(formData.detectionRules);
+    } catch (e) {
+      toast({
+        title: "Invalid JSON",
+        description: "Detection rules must be valid JSON format.",
         variant: "destructive",
       });
       return;
@@ -1723,7 +1761,13 @@ function TrackingNumbersSection() {
                   <div className="sm:col-span-2">
                     <Label className="text-sm font-medium text-muted-foreground">Detection Rules</Label>
                     <pre className="mt-1 text-xs bg-muted p-2 rounded-md overflow-x-auto">
-                      {JSON.stringify(JSON.parse(number.detectionRules), null, 2)}
+                      {(() => {
+                        try {
+                          return JSON.stringify(JSON.parse(number.detectionRules), null, 2);
+                        } catch (e) {
+                          return `Invalid JSON: ${number.detectionRules}`;
+                        }
+                      })()}
                     </pre>
                   </div>
                 </div>
@@ -1795,35 +1839,31 @@ function TrackingNumbersSection() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="displayNumber">Display Number *</Label>
+              <Label htmlFor="phoneNumber">Phone Number *</Label>
               <Input
-                id="displayNumber"
-                value={formData.displayNumber}
-                onChange={(e) => setFormData({ ...formData, displayNumber: e.target.value })}
-                placeholder="(512) 123-4567"
-                data-testid="input-displayNumber"
+                id="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={(e) => handlePhoneNumberChange(e.target.value)}
+                placeholder="5121234567 or (512) 123-4567"
+                data-testid="input-phoneNumber"
               />
+              <p className="text-xs text-muted-foreground">
+                Auto-generates: Display format, Raw number, and Tel link
+              </p>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="rawNumber">Raw Number</Label>
-              <Input
-                id="rawNumber"
-                value={formData.rawNumber}
-                onChange={(e) => setFormData({ ...formData, rawNumber: e.target.value })}
-                placeholder="5121234567"
-                data-testid="input-rawNumber"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="telLink">Tel Link</Label>
-              <Input
-                id="telLink"
-                value={formData.telLink}
-                onChange={(e) => setFormData({ ...formData, telLink: e.target.value })}
-                placeholder="tel:+15121234567"
-                data-testid="input-telLink"
-              />
-            </div>
+            {formData.displayNumber && (
+              <div className="grid gap-2 p-3 bg-muted/30 rounded-md">
+                <div className="text-sm">
+                  <span className="font-medium">Display:</span> {formData.displayNumber}
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Raw:</span> {formData.rawNumber}
+                </div>
+                <div className="text-sm">
+                  <span className="font-medium">Tel Link:</span> {formData.telLink}
+                </div>
+              </div>
+            )}
             <div className="grid gap-2">
               <Label htmlFor="detectionRules">Detection Rules (JSON)</Label>
               <Textarea
