@@ -106,6 +106,17 @@ export async function processLogoToWhiteMonochrome(
       throw new Error('Failed to download logo from object storage');
     }
 
+    // Check if file is SVG by looking at file content
+    const bufferStart = logoBuffer.toString('utf8', 0, Math.min(200, logoBuffer.length));
+    const isSvg = bufferStart.includes('<svg') || bufferStart.includes('<?xml');
+    
+    if (isSvg) {
+      throw new Error(
+        '⚠️ SVG files cannot be processed with AI. Please convert your logo to PNG, JPEG, or WebP format first. ' +
+        'You can use an online converter like CloudConvert, or export from your design software as PNG.'
+      );
+    }
+
     // Get image metadata and auto-convert if needed
     let metadata;
     let normalizedBuffer = logoBuffer;
@@ -114,7 +125,7 @@ export async function processLogoToWhiteMonochrome(
       metadata = await sharp(logoBuffer).metadata();
       
       // Auto-convert non-PNG formats to PNG for consistent processing
-      // Sharp supports: JPEG, PNG, WebP, GIF, AVIF, TIFF, SVG
+      // Sharp supports: JPEG, PNG, WebP, GIF, AVIF, TIFF
       const needsConversion = metadata.format && !['png'].includes(metadata.format.toLowerCase());
       
       if (needsConversion) {
@@ -130,8 +141,8 @@ export async function processLogoToWhiteMonochrome(
     } catch (sharpError: any) {
       console.error(`[Logo Processor] Sharp error:`, sharpError);
       throw new Error(
-        'Unable to process this image file. Please ensure it\'s a valid image format ' +
-        '(PNG, JPEG, WebP, GIF, BMP, TIFF, etc.) and not corrupted.'
+        'Unable to process this image file. Please ensure it\'s a valid raster image format ' +
+        '(PNG, JPEG, WebP, GIF, BMP, TIFF) and not corrupted.'
       );
     }
     

@@ -1004,12 +1004,14 @@ function CommercialCustomersSection() {
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   {customer.logoUrl && (
-                    <img
-                      src={customer.logoUrl}
-                      alt={`${customer.name} logo`}
-                      className="h-12 w-auto object-contain"
-                      data-testid={`logo-preview-${customer.id}`}
-                    />
+                    <div className="bg-slate-900 dark:bg-slate-800 rounded-md p-2 flex items-center justify-center min-w-[60px]">
+                      <img
+                        src={customer.logoUrl}
+                        alt={`${customer.name} logo`}
+                        className="h-12 w-auto object-contain"
+                        data-testid={`logo-preview-${customer.id}`}
+                      />
+                    </div>
                   )}
                   <div>
                     <CardTitle className="text-lg">{customer.name}</CardTitle>
@@ -1086,7 +1088,7 @@ function CommercialCustomersSection() {
               <Label>Logo *</Label>
               <div className="flex gap-4 items-start">
                 {logoPreview && (
-                  <div className="border rounded-lg p-4 bg-muted/30">
+                  <div className="border rounded-lg p-4 bg-slate-900 dark:bg-slate-800 flex items-center justify-center min-w-[120px]">
                     <img
                       src={logoPreview}
                       alt="Logo preview"
