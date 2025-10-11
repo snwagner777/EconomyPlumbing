@@ -3318,7 +3318,7 @@ Focus on the problem solved, the quality of work, and customer satisfaction. Use
       }
 
       // Create the success story (unapproved by default)
-      const story = await storage.createSuccessStory({
+      const story = await storage.createCustomerSuccessStory({
         title,
         description,
         beforePhotoUrl: photo1.url,
