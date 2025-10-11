@@ -24,7 +24,7 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
   LayoutDashboard,
   ImageIcon, 
@@ -45,7 +45,8 @@ import {
   CheckCircle,
   XCircle,
   Upload,
-  Sparkles
+  Sparkles,
+  Loader2
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -2272,5 +2273,362 @@ export default function UnifiedAdminDashboard() {
         </div>
       </div>
     </SidebarProvider>
+  );
+}
+
+// Manual Success Story Dialog Component
+function ManualSuccessStoryDialog({ photos, onClose }: { photos: any[], onClose: () => void }) {
+  const { toast } = useToast();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const generateCaption = async () => {
+    setIsGeneratingCaption(true);
+    try {
+      const response = await fetch('/api/admin/generate-story-caption', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photo1Url: photos[0].url,
+          photo2Url: photos[1].url
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to generate caption');
+      
+      const data = await response.json();
+      setTitle(data.title);
+      setDescription(data.description);
+      
+      toast({
+        title: "Caption Generated",
+        description: "AI has generated a caption for your success story.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingCaption(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!title || !description) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a title and description",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/success-stories/manual", {
+        photo1Id: photos[0].id,
+        photo2Id: photos[1].id,
+        title,
+        description,
+      });
+      
+      toast({
+        title: "Success Story Created",
+        description: "The success story has been created and is pending review.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/success-stories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Creation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-create-success-story">
+        <DialogHeader>
+          <DialogTitle>Create Success Story</DialogTitle>
+          <DialogDescription>
+            Create a before/after success story from 2 selected photos
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Photo Preview */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm font-medium mb-2">Before Photo</p>
+              <img 
+                src={photos[0].url} 
+                alt="Before" 
+                className="w-full h-48 object-cover rounded-lg"
+                data-testid="img-before-photo"
+              />
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-2">After Photo</p>
+              <img 
+                src={photos[1].url} 
+                alt="After" 
+                className="w-full h-48 object-cover rounded-lg"
+                data-testid="img-after-photo"
+              />
+            </div>
+          </div>
+
+          {/* Generate Caption Button */}
+          <Button
+            onClick={generateCaption}
+            disabled={isGeneratingCaption}
+            className="w-full"
+            data-testid="button-generate-caption"
+          >
+            {isGeneratingCaption ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Caption with AI...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Caption with AI
+              </>
+            )}
+          </Button>
+
+          {/* Title Input */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="story-title">
+              Title
+            </label>
+            <Input
+              id="story-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Complete Water Heater Replacement"
+              data-testid="input-story-title"
+            />
+          </div>
+
+          {/* Description Textarea */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="story-description">
+              Description
+            </label>
+            <Textarea
+              id="story-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe the before/after transformation..."
+              rows={4}
+              data-testid="textarea-story-description"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} data-testid="button-cancel">
+            Cancel
+          </Button>
+          <Button onClick={handleCreate} disabled={isCreating} data-testid="button-create-story">
+            {isCreating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Success Story'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// Manual Blog Post Dialog Component
+function ManualBlogPostDialog({ photo, onClose }: { photo: any, onClose: () => void }) {
+  const { toast } = useToast();
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const generateBlogPost = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('/api/admin/generate-blog-post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          photoUrl: photo.url,
+          aiDescription: photo.aiDescription
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to generate blog post');
+      
+      const data = await response.json();
+      setTitle(data.title);
+      setContent(data.content);
+      
+      toast({
+        title: "Blog Post Generated",
+        description: "AI has generated a blog post from your photo.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Generation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!title || !content) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a title and content",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const response = await apiRequest("POST", "/api/admin/blog-posts/manual", {
+        photoId: photo.id,
+        title,
+        content,
+      });
+      
+      toast({
+        title: "Blog Post Created",
+        description: "The blog post has been created successfully.",
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/blog-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      onClose();
+    } catch (error: any) {
+      toast({
+        title: "Creation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="dialog-create-blog-post">
+        <DialogHeader>
+          <DialogTitle>Create Blog Post</DialogTitle>
+          <DialogDescription>
+            Create a blog post from selected photo
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Photo Preview */}
+          <div>
+            <p className="text-sm font-medium mb-2">Selected Photo</p>
+            <img 
+              src={photo.url} 
+              alt="Blog photo" 
+              className="w-full h-64 object-cover rounded-lg"
+              data-testid="img-blog-photo"
+            />
+            {photo.aiDescription && (
+              <p className="text-sm text-muted-foreground mt-2">
+                AI Description: {photo.aiDescription}
+              </p>
+            )}
+          </div>
+
+          {/* Generate Blog Post Button */}
+          <Button
+            onClick={generateBlogPost}
+            disabled={isGenerating}
+            className="w-full"
+            data-testid="button-generate-blog-post"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating Blog Post with AI...
+              </>
+            ) : (
+              <>
+                <Sparkles className="mr-2 h-4 w-4" />
+                Generate Blog Post with AI
+              </>
+            )}
+          </Button>
+
+          {/* Title Input */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="blog-title">
+              Title
+            </label>
+            <Input
+              id="blog-title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g., Expert Water Heater Repair in Austin"
+              data-testid="input-blog-title"
+            />
+          </div>
+
+          {/* Content Textarea */}
+          <div>
+            <label className="text-sm font-medium" htmlFor="blog-content">
+              Content
+            </label>
+            <Textarea
+              id="blog-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder="Write your blog post content (supports markdown)..."
+              rows={12}
+              data-testid="textarea-blog-content"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose} data-testid="button-cancel">
+            Cancel
+          </Button>
+          <Button onClick={handleCreate} disabled={isCreating} data-testid="button-create-blog-post">
+            {isCreating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Creating...
+              </>
+            ) : (
+              'Create Blog Post'
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
