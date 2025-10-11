@@ -2297,14 +2297,14 @@ function TrackingNumbersSection() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{isAddingNew ? "Add Tracking Number" : "Edit Tracking Number"}</DialogTitle>
             <DialogDescription>
               {isAddingNew ? "Create a new tracking number" : "Update tracking number details and detection rules"}
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-4 py-4 overflow-y-auto pr-2">
             <div className="grid gap-2">
               <Label htmlFor="channelKey">Channel Key *</Label>
               <Input

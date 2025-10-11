@@ -2045,6 +2045,16 @@ Call (512) 368-9159 or schedule service online.`,
     return story;
   }
 
+  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location'>>): Promise<CustomerSuccessStory> {
+    const story = this.customerSuccessStories.get(id);
+    if (!story) {
+      throw new Error(`Success story with id ${id} not found`);
+    }
+    const updatedStory = { ...story, ...updates };
+    this.customerSuccessStories.set(id, updatedStory);
+    return updatedStory;
+  }
+
   async deleteSuccessStory(id: string): Promise<void> {
     this.customerSuccessStories.delete(id);
   }
