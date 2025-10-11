@@ -2447,48 +2447,39 @@ ${rssItems}
     }
   });
 
-  // Admin authentication middleware
-  const requireAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
+  // Admin authentication middleware - OAuth + whitelist required
+  const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
     const session = (req as any).session;
+    const user = req.user as any;
+    
+    // Check session admin flag
     if (!session || !session.isAdmin) {
-      return res.status(401).json({ error: "Unauthorized" });
+      return res.status(401).json({ error: "Unauthorized - OAuth login required" });
     }
+    
+    // Verify OAuth authentication
+    if (!req.isAuthenticated() || !user?.claims?.email) {
+      return res.status(401).json({ error: "Unauthorized - OAuth authentication required" });
+    }
+    
+    // Verify email is still whitelisted (in case it was removed)
+    const isWhitelisted = await storage.isEmailWhitelisted(user.claims.email);
+    if (!isWhitelisted) {
+      // Clear session if no longer whitelisted
+      session.isAdmin = false;
+      return res.status(403).json({ error: "Access denied - not whitelisted" });
+    }
+    
     next();
   };
-
-  // Admin login
-  app.post("/api/admin/login", async (req, res) => {
-    const { username, password } = req.body;
-    
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    
-    if (!adminUsername || !adminPassword) {
-      return res.status(500).json({ error: "Admin credentials not configured" });
-    }
-    
-    if (username === adminUsername && password === adminPassword) {
-      (req as any).session.isAdmin = true;
-      res.json({ success: true });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
-    }
-  });
-
-  // Admin logout
-  app.post("/api/admin/logout", (req, res) => {
-    (req as any).session.destroy((err: any) => {
-      if (err) {
-        return res.status(500).json({ error: "Failed to logout" });
-      }
-      res.json({ success: true });
-    });
-  });
 
   // Check admin auth status
   app.get("/api/admin/check", (req, res) => {
     const session = (req as any).session;
-    res.json({ isAdmin: !!session?.isAdmin });
+    const user = req.user as any;
+    res.json({ 
+      isAdmin: !!session?.isAdmin && !!user?.claims?.email
+    });
   });
 
   // Get all photos (admin only)

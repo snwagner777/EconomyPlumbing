@@ -5,6 +5,7 @@ import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
+import rateLimit from "express-rate-limit";
 import { storage } from "./storage";
 
 if (!process.env.REPLIT_DOMAINS) {
@@ -30,14 +31,21 @@ export function getSession() {
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
+  // Require SESSION_SECRET for security
+  if (!process.env.SESSION_SECRET) {
+    throw new Error("SESSION_SECRET environment variable is required for secure sessions");
+  }
+  
   return session({
-    secret: process.env.SESSION_SECRET || 'economy-plumbing-admin-secret-key-change-in-production',
+    secret: process.env.SESSION_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true, // Prevent JavaScript access
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      sameSite: 'lax', // CSRF protection (lax for OAuth redirects)
       maxAge: sessionTtl,
     },
   });
@@ -97,7 +105,16 @@ export async function setupOAuth(app: Express) {
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
-  app.get("/api/oauth/login", (req, res, next) => {
+  // Rate limiter for OAuth login - 5 attempts per 15 minutes per IP
+  const oauthLoginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // 5 attempts
+    message: { error: "Too many login attempts, please try again later" },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  app.get("/api/oauth/login", oauthLoginLimiter, (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
@@ -115,17 +132,28 @@ export async function setupOAuth(app: Express) {
       if (email) {
         const isWhitelisted = await storage.isEmailWhitelisted(email);
         if (isWhitelisted) {
-          // Set admin flag in session for unified dashboard access
-          (req as any).session.isAdmin = true;
+          // Regenerate session to prevent session fixation attacks
+          (req as any).session.regenerate((regenerateErr: any) => {
+            if (regenerateErr) {
+              return res.redirect("/admin/login");
+            }
+            
+            // Set admin flag in new session
+            (req as any).session.isAdmin = true;
+            
+            req.logIn(user, (loginErr) => {
+              if (loginErr) {
+                return res.redirect("/admin/login");
+              }
+              return res.redirect("/admin");
+            });
+          });
+          return;
         }
       }
 
-      req.logIn(user, (loginErr) => {
-        if (loginErr) {
-          return res.redirect("/admin/login");
-        }
-        return res.redirect("/admin");
-      });
+      // Not whitelisted - redirect to login
+      return res.redirect("/admin/login");
     })(req, res, next);
   });
 
