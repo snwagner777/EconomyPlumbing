@@ -124,36 +124,47 @@ export async function setupOAuth(app: Express) {
   app.get("/api/oauth/callback", (req, res, next) => {
     passport.authenticate(`replitauth:${req.hostname}`, async (err: any, user: any) => {
       if (err || !user) {
-        return res.redirect("/admin/login");
+        console.error("[OAuth] Authentication failed:", err);
+        return res.redirect("/admin/oauth-login");
       }
 
       // Check if the user's email is whitelisted
       const email = user.claims?.email;
-      if (email) {
-        const isWhitelisted = await storage.isEmailWhitelisted(email);
-        if (isWhitelisted) {
-          // Regenerate session to prevent session fixation attacks
-          (req as any).session.regenerate((regenerateErr: any) => {
-            if (regenerateErr) {
-              return res.redirect("/admin/login");
-            }
-            
-            // Set admin flag in new session
-            (req as any).session.isAdmin = true;
-            
-            req.logIn(user, (loginErr) => {
-              if (loginErr) {
-                return res.redirect("/admin/login");
-              }
-              return res.redirect("/admin");
-            });
-          });
-          return;
-        }
+      console.log("[OAuth] Callback for email:", email);
+      
+      if (!email) {
+        console.error("[OAuth] No email in claims");
+        return res.redirect("/admin/oauth-login");
+      }
+      
+      const isWhitelisted = await storage.isEmailWhitelisted(email);
+      console.log("[OAuth] Email whitelisted:", isWhitelisted);
+      
+      if (!isWhitelisted) {
+        console.error("[OAuth] Email not whitelisted:", email);
+        return res.redirect("/admin/oauth-login");
       }
 
-      // Not whitelisted - redirect to login
-      return res.redirect("/admin/login");
+      // Login the user first
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error("[OAuth] Login error:", loginErr);
+          return res.redirect("/admin/oauth-login");
+        }
+        
+        // Set admin flag in session
+        (req as any).session.isAdmin = true;
+        
+        // Save session before redirect
+        (req as any).session.save((saveErr: any) => {
+          if (saveErr) {
+            console.error("[OAuth] Session save error:", saveErr);
+            return res.redirect("/admin/oauth-login");
+          }
+          console.log("[OAuth] Login successful, redirecting to /admin");
+          return res.redirect("/admin");
+        });
+      });
     })(req, res, next);
   });
 
