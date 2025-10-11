@@ -318,6 +318,9 @@ function PhotoManagement() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [qualityFilter, setQualityFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+  const [showSuccessStoryDialog, setShowSuccessStoryDialog] = useState(false);
+  const [showBlogPostDialog, setShowBlogPostDialog] = useState(false);
   const { toast } = useToast();
 
   // Fetch photos with filters
@@ -336,6 +339,44 @@ function PhotoManagement() {
   });
 
   const photos = photosData?.photos || [];
+
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotos(prev => 
+      prev.includes(photoId) 
+        ? prev.filter(id => id !== photoId)
+        : [...prev, photoId]
+    );
+  };
+
+  const clearSelection = () => setSelectedPhotos([]);
+
+  const handleCreateSuccessStory = () => {
+    if (selectedPhotos.length !== 2) {
+      toast({
+        title: "Selection Error",
+        description: "Please select exactly 2 photos for a success story",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowSuccessStoryDialog(true);
+  };
+
+  const handleCreateBlogPost = () => {
+    if (selectedPhotos.length !== 1) {
+      toast({
+        title: "Selection Error",
+        description: "Please select exactly 1 photo for a blog post",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowBlogPostDialog(true);
+  };
+
+  const getSelectedPhotoObjects = () => {
+    return photos.filter((p: any) => selectedPhotos.includes(p.id));
+  };
 
   return (
     <div className="space-y-6">
@@ -393,11 +434,45 @@ function PhotoManagement() {
         </CardContent>
       </Card>
 
+      {/* Selection Actions */}
+      {selectedPhotos.length > 0 && (
+        <Card className="border-primary">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="text-sm font-medium">{selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected</p>
+                <Button variant="outline" size="sm" onClick={clearSelection} data-testid="button-clear-selection">
+                  Clear Selection
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleCreateBlogPost}
+                  disabled={selectedPhotos.length !== 1}
+                  data-testid="button-create-blog-post"
+                >
+                  <FileEdit className="h-4 w-4 mr-2" />
+                  Create Blog Post {selectedPhotos.length !== 1 && `(Select 1)`}
+                </Button>
+                <Button
+                  onClick={handleCreateSuccessStory}
+                  disabled={selectedPhotos.length !== 2}
+                  data-testid="button-create-success-story"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Create Success Story {selectedPhotos.length !== 2 && `(Select 2)`}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Photos Grid */}
       <Card>
         <CardHeader>
           <CardTitle>Photos ({photos.length})</CardTitle>
-          <CardDescription>AI-analyzed job site photos from all sources</CardDescription>
+          <CardDescription>Select photos to create content manually</CardDescription>
         </CardHeader>
         <CardContent>
           {photosLoading ? (
@@ -415,18 +490,40 @@ function PhotoManagement() {
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {photos.map((photo: any) => (
                 <div key={photo.id} className="group relative">
-                  <div className="aspect-square relative rounded-lg overflow-hidden bg-muted">
+                  <div 
+                    className={`aspect-square relative rounded-lg overflow-hidden bg-muted cursor-pointer ${
+                      selectedPhotos.includes(photo.id) ? 'ring-4 ring-primary' : ''
+                    }`}
+                    onClick={() => togglePhotoSelection(photo.id)}
+                  >
                     <img
                       src={photo.photoUrl}
                       alt={photo.aiDescription || 'Photo'}
                       className="object-cover w-full h-full"
                       loading="lazy"
                     />
+                    {/* Selection Checkbox */}
+                    <div className="absolute top-2 left-2 z-10">
+                      <div
+                        className={`h-6 w-6 rounded-md border-2 flex items-center justify-center ${
+                          selectedPhotos.includes(photo.id) 
+                            ? 'bg-primary border-primary' 
+                            : 'bg-white/80 border-white'
+                        }`}
+                      >
+                        {selectedPhotos.includes(photo.id) && (
+                          <CheckCircle className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    </div>
                     <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => window.open(photo.photoUrl, '_blank')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(photo.photoUrl, '_blank');
+                        }}
                         data-testid={`view-photo-${photo.id}`}
                       >
                         <Eye className="h-4 w-4" />
@@ -454,6 +551,28 @@ function PhotoManagement() {
           )}
         </CardContent>
       </Card>
+
+      {/* Success Story Creation Dialog */}
+      {showSuccessStoryDialog && (
+        <ManualSuccessStoryDialog
+          photos={getSelectedPhotoObjects()}
+          onClose={() => {
+            setShowSuccessStoryDialog(false);
+            clearSelection();
+          }}
+        />
+      )}
+
+      {/* Blog Post Creation Dialog */}
+      {showBlogPostDialog && (
+        <ManualBlogPostDialog
+          photo={getSelectedPhotoObjects()[0]}
+          onClose={() => {
+            setShowBlogPostDialog(false);
+            clearSelection();
+          }}
+        />
+      )}
     </div>
   );
 }
