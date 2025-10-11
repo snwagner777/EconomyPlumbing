@@ -105,9 +105,27 @@ export async function setupOAuth(app: Express) {
   });
 
   app.get("/api/oauth/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
-      successReturnToOrRedirect: "/admin",
-      failureRedirect: "/admin/login",
+    passport.authenticate(`replitauth:${req.hostname}`, async (err: any, user: any) => {
+      if (err || !user) {
+        return res.redirect("/admin/login");
+      }
+
+      // Check if the user's email is whitelisted
+      const email = user.claims?.email;
+      if (email) {
+        const isWhitelisted = await storage.isEmailWhitelisted(email);
+        if (isWhitelisted) {
+          // Set admin flag in session for unified dashboard access
+          (req as any).session.isAdmin = true;
+        }
+      }
+
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          return res.redirect("/admin/login");
+        }
+        return res.redirect("/admin");
+      });
     })(req, res, next);
   });
 
