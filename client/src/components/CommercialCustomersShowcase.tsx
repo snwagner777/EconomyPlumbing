@@ -28,8 +28,14 @@ export default function CommercialCustomersShowcase() {
     return null;
   }
 
-  // Duplicate the customers array for seamless infinite scroll
-  const duplicatedCustomers = [...activeCustomers, ...activeCustomers];
+  // Duplicate the customers array multiple times for seamless infinite scroll
+  // More duplicates needed for mobile to prevent visible reset
+  const duplicatedCustomers = [
+    ...activeCustomers,
+    ...activeCustomers,
+    ...activeCustomers,
+    ...activeCustomers
+  ];
 
   return (
     <div className="py-16 bg-black overflow-hidden">
