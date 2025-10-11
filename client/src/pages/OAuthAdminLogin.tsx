@@ -34,7 +34,7 @@ export default function OAuthAdminLogin() {
           </Button>
           
           <div className="text-center text-sm text-muted-foreground">
-            <p>Supports Google, Apple, GitHub, and more</p>
+            <p>Supports Google, Apple, and more</p>
             <p className="mt-2 text-xs">
               Only whitelisted emails have access
             </p>
