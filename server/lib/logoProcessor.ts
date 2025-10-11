@@ -229,12 +229,13 @@ export async function processLogoToWhiteMonochrome(
         channels: 3
       }
     })
-      .joinChannel(finalAlphaBuffer)  // Add alpha as 4th channel
+      .joinChannel(finalAlphaBuffer, { raw: { width, height, channels: 1 } })  // Add alpha as 4th channel with proper format
+      .png() // Convert to PNG first to establish proper format
       .resize(400, 200, {
         fit: 'contain',
         background: { r: 0, g: 0, b: 0, alpha: 0 }
       })
-      .webp({ quality: 90, lossless: false }) // WebP for smaller file sizes
+      .webp({ quality: 90, lossless: false }) // Then convert to WebP for smaller file sizes
       .toBuffer();
 
     // Upload the processed logo
