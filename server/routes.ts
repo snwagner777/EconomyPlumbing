@@ -3154,35 +3154,54 @@ ${rssItems}
         return res.status(404).json({ error: "Success story not found" });
       }
       
-      // Generate before/after collage
       console.log(`[Success Stories] Generating collage for story ${id}...`);
+      console.log(`[Success Stories] Before photo: ${storyToApprove.beforePhotoUrl}`);
+      console.log(`[Success Stories] After photo: ${storyToApprove.afterPhotoUrl}`);
+      
+      // Instead of creating in attached_assets, save to object storage public directory
+      const { ObjectStorageService } = await import("./objectStorage");
+      const { createBeforeAfterComposite } = await import("./lib/beforeAfterComposer");
       const path = await import("path");
       const fs = await import("fs/promises");
-      const { createBeforeAfterComposite } = await import("./lib/beforeAfterComposer");
+      const os = await import("os");
       
-      // Create output directory
-      const compositesDir = path.resolve(import.meta.dirname, '../attached_assets/success_stories_composites');
-      await fs.mkdir(compositesDir, { recursive: true });
+      const objectStorageService = new ObjectStorageService();
+      const publicSearchPaths = objectStorageService.getPublicObjectSearchPaths();
+      const publicPath = publicSearchPaths[0]; // e.g., "/replit-objstore-xxx/public"
       
-      // Generate filename and path
+      // Create collage in temp directory first
+      const tmpDir = os.tmpdir();
       const filename = `success_story_${id}_${Date.now()}.webp`;
-      const outputPath = path.join(compositesDir, filename);
-      const collageUrl = `/attached_assets/success_stories_composites/${filename}`;
+      const tmpOutputPath = path.join(tmpDir, filename);
+      
+      console.log(`[Success Stories] Creating composite in temp: ${tmpOutputPath}`);
       
       // Create the collage
       await createBeforeAfterComposite(
         storyToApprove.beforePhotoUrl,
         storyToApprove.afterPhotoUrl,
-        outputPath
+        tmpOutputPath
       );
       
-      console.log(`[Success Stories] ✅ Collage created: ${collageUrl}`);
+      console.log(`[Success Stories] Composite created, uploading to object storage...`);
+      
+      // Upload to object storage public directory
+      const objectStoragePath = `${publicPath}/success_stories/${filename}`;
+      await objectStorageService.uploadFile(tmpOutputPath, objectStoragePath, 'image/webp');
+      
+      // Clean up temp file
+      await fs.unlink(tmpOutputPath).catch(() => {});
+      
+      // Construct public URL
+      const collageUrl = objectStoragePath;
+      console.log(`[Success Stories] ✅ Collage uploaded: ${collageUrl}`);
       
       // Approve with the collage URL
       const story = await storage.approveSuccessStory(id, collageUrl);
       res.json({ story });
     } catch (error: any) {
       console.error("[Success Stories] Error approving story:", error);
+      console.error("[Success Stories] Error stack:", error.stack);
       res.status(500).json({ error: error.message });
     }
   });

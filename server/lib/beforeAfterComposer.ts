@@ -173,33 +173,46 @@ Be conversational, helpful, and professional. Total length should be 250-350 cha
  * Download image from URL or object storage path
  */
 async function downloadImage(url: string): Promise<Buffer> {
+  console.log(`[Compositor] Downloading image: ${url}`);
+  
   // Handle object storage paths (e.g., /replit-objstore-xxx/.private/...)
   if (url.startsWith('/replit-objstore-')) {
+    console.log(`[Compositor] Detected object storage path`);
     const { ObjectStorageService } = await import('../objectStorage');
     const objectStorageService = new ObjectStorageService();
     
     // Extract path after bucket ID
     const pathMatch = url.match(/\/replit-objstore-[^/]+\/(.+)/);
     if (!pathMatch) {
+      console.error(`[Compositor] Invalid object storage path format: ${url}`);
       throw new Error(`Invalid object storage path: ${url}`);
     }
     
     const objectPath = pathMatch[1];
+    console.log(`[Compositor] Extracted object path: ${objectPath}`);
+    console.log(`[Compositor] Calling downloadBuffer with full URL: ${url}`);
+    
     const buffer = await objectStorageService.downloadBuffer(url);
     
     if (!buffer) {
+      console.error(`[Compositor] downloadBuffer returned null for: ${url}`);
       throw new Error(`Failed to download from object storage: ${url}`);
     }
     
+    console.log(`[Compositor] Successfully downloaded ${buffer.length} bytes from object storage`);
     return buffer;
   }
   
   // Handle HTTP(S) URLs
+  console.log(`[Compositor] Downloading from HTTP(S): ${url}`);
   const response = await fetch(url);
   if (!response.ok) {
+    console.error(`[Compositor] HTTP download failed with status ${response.status}: ${response.statusText}`);
     throw new Error(`Failed to download image: ${response.statusText}`);
   }
-  return Buffer.from(await response.arrayBuffer());
+  const buffer = Buffer.from(await response.arrayBuffer());
+  console.log(`[Compositor] Successfully downloaded ${buffer.length} bytes from HTTP`);
+  return buffer;
 }
 
 /**
