@@ -247,6 +247,31 @@ export default function SuccessStories() {
           )}
         </div>
 
+        {/* CTA to Submit Story */}
+        <div className="container mx-auto max-w-6xl px-4 py-8">
+          <div className="text-center">
+            <Button
+              size="lg"
+              variant="default"
+              asChild
+              data-testid="button-share-your-story"
+            >
+              <a 
+                href="#share-your-story"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('share-your-story')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+              >
+                Share Your Success Story
+              </a>
+            </Button>
+          </div>
+        </div>
+
         {/* NiceJob Reviews Section */}
         <div className="container mx-auto max-w-6xl px-4 py-16">
           <div className="text-center mb-8">
@@ -261,7 +286,7 @@ export default function SuccessStories() {
         </div>
 
         {/* Submit Your Success Story */}
-        <div className="bg-muted py-16 px-4">
+        <div id="share-your-story" className="bg-muted py-16 px-4">
           <div className="container mx-auto max-w-2xl">
             <Card>
               <CardHeader>
