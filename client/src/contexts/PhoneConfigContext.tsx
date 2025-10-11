@@ -105,7 +105,19 @@ function detectTrafficSource(trackingNumbers: TrackingNumber[]): TrackingNumber 
 }
 
 function getPhoneNumberFromTracking(trackingNumbers: TrackingNumber[]): PhoneConfig {
-  // First check if we have a saved traffic source in cookie
+  // PRIORITY 1: Try to detect from current URL/referrer (this should override cookie)
+  const detected = detectTrafficSource(trackingNumbers);
+  
+  if (detected) {
+    // Save to cookie for 90 days
+    setCookie(COOKIE_NAME, detected.channelKey, COOKIE_DAYS);
+    return {
+      display: detected.displayNumber,
+      tel: detected.telLink
+    };
+  }
+
+  // PRIORITY 2: Check if we have a saved traffic source in cookie (fallback)
   const savedSource = getCookie(COOKIE_NAME);
   
   if (savedSource) {
@@ -118,19 +130,7 @@ function getPhoneNumberFromTracking(trackingNumbers: TrackingNumber[]): PhoneCon
     }
   }
 
-  // Try to detect from current URL/referrer
-  const detected = detectTrafficSource(trackingNumbers);
-  
-  if (detected) {
-    // Save to cookie for 90 days
-    setCookie(COOKIE_NAME, detected.channelKey, COOKIE_DAYS);
-    return {
-      display: detected.displayNumber,
-      tel: detected.telLink
-    };
-  }
-
-  // Fallback to default number
+  // PRIORITY 3: Fallback to default number
   const defaultNumber = trackingNumbers.find(n => n.isDefault && n.isActive);
   if (defaultNumber) {
     return {
