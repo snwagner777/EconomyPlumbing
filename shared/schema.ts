@@ -430,6 +430,7 @@ export const importedPhotos = pgTable("imported_photos", {
   // AI Analysis
   isProductionQuality: boolean("is_production_quality").notNull().default(true), // Whether photo is good enough for customer-facing use
   aiQuality: integer("ai_quality"), // 0-100 quality score
+  aiQualityScore: integer("ai_quality_score"), // Alias for compatibility
   qualityReason: text("quality_reason"), // Why it passed/failed quality check
   aiDescription: text("ai_description"),
   aiTags: text("ai_tags").array(),
@@ -441,6 +442,10 @@ export const importedPhotos = pgTable("imported_photos", {
   // Metadata
   gdriveFileId: text("gdrive_file_id").unique(), // Google Drive file ID for deduplication
   usedInBlog: boolean("used_in_blog").notNull().default(false),
+  usedInBlogPostId: text("used_in_blog_post_id"), // Track which blog post uses this photo
+  usedInPageUrl: text("used_in_page_url"), // Track which page uses this photo
+  uploadDate: timestamp("upload_date"), // When photo was uploaded
+  createdAt: timestamp("created_at").notNull().defaultNow(), // When record was created
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
 }, (table) => ({
   categoryIdx: index("imported_photos_category_idx").on(table.category),
