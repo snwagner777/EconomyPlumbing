@@ -868,8 +868,10 @@ function CommercialCustomersSection() {
         customerName: formData.name || "Logo",
       });
 
-      setFormData(prev => ({ ...prev, logoUrl: processResponse.processedLogoUrl }));
-      setLogoPreview(processResponse.processedLogoUrl);
+      const { processedLogoUrl } = await processResponse.json();
+
+      setFormData(prev => ({ ...prev, logoUrl: processedLogoUrl }));
+      setLogoPreview(processedLogoUrl);
 
       toast({
         title: "Logo Processed Successfully",

@@ -2958,26 +2958,28 @@ ${rssItems}
         return res.status(400).json({ error: "No file uploaded" });
       }
 
-      const { Storage } = await import('@google-cloud/storage');
-      const storage = new Storage();
-      const bucketName = process.env.REPLIT_OBJECT_STORAGE_BUCKET_ID;
-
-      if (!bucketName) {
+      const objectStorageService = new ObjectStorageService();
+      
+      // Get the public search paths to determine the bucket
+      const searchPaths = objectStorageService.getPublicObjectSearchPaths();
+      if (searchPaths.length === 0) {
         return res.status(500).json({ error: "Object storage not configured" });
       }
 
-      const bucket = storage.bucket(bucketName);
-      const fileName = `public/logos/${Date.now()}-${req.file.originalname}`;
-      const file = bucket.file(fileName);
+      // Use the first public search path as the base
+      const basePath = searchPaths[0];
+      const fileName = `logos/${Date.now()}-${req.file.originalname}`;
+      const destinationPath = `${basePath}/${fileName}`;
 
-      await file.save(req.file.buffer, {
-        metadata: {
-          contentType: req.file.mimetype,
-        },
-      });
+      // Upload the buffer directly
+      const uploadedPath = await objectStorageService.uploadBuffer(
+        req.file.buffer,
+        destinationPath,
+        req.file.mimetype
+      );
 
-      const publicUrl = `https://storage.googleapis.com/${bucketName}/${fileName}`;
-      res.json({ logoUrl: publicUrl });
+      // Return the path that can be served by our endpoints
+      res.json({ logoUrl: uploadedPath });
     } catch (error: any) {
       console.error("[Logo Upload] Error:", error);
       res.status(500).json({ error: error.message });
