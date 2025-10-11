@@ -3103,6 +3103,33 @@ ${rssItems}
     }
   });
 
+  // Serve private object storage files (admin only)
+  app.get("/replit-objstore-:bucketId/.private/:filePath(*)", requireAdmin, async (req, res) => {
+    const { bucketId, filePath } = req.params;
+    const fullPath = `/replit-objstore-${bucketId}/.private/${filePath}`;
+    
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const buffer = await objectStorageService.downloadBuffer(fullPath);
+      if (!buffer) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      
+      // Determine content type from file extension
+      const ext = filePath.split('.').pop()?.toLowerCase();
+      const contentType = ext === 'webp' ? 'image/webp' 
+        : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg'
+        : ext === 'png' ? 'image/png'
+        : 'application/octet-stream';
+      
+      res.set('Content-Type', contentType);
+      res.send(buffer);
+    } catch (error) {
+      console.error("Error serving private object storage file:", error);
+      return res.status(500).json({ error: "Internal server error" });
+    }
+  });
+
   // Get all success stories (admin only)
   app.get("/api/admin/success-stories", requireAdmin, async (req, res) => {
     try {

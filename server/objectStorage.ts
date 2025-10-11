@@ -150,6 +150,28 @@ export class ObjectStorageService {
     return destinationPath;
   }
 
+  // Download a file from object storage as a buffer
+  async downloadBuffer(filePath: string): Promise<Buffer | null> {
+    try {
+      const { bucketName, objectName } = parseObjectPath(filePath);
+      const bucket = objectStorageClient.bucket(bucketName);
+      const file = bucket.file(objectName);
+
+      // Check if file exists
+      const [exists] = await file.exists();
+      if (!exists) {
+        return null;
+      }
+
+      // Download file as buffer
+      const [buffer] = await file.download();
+      return buffer;
+    } catch (error) {
+      console.error(`Error downloading buffer from ${filePath}:`, error);
+      return null;
+    }
+  }
+
   // Delete a file from object storage
   async deleteFile(filePath: string): Promise<void> {
     const { bucketName, objectName } = parseObjectPath(filePath);

@@ -170,9 +170,31 @@ Be conversational, helpful, and professional. Total length should be 250-350 cha
 }
 
 /**
- * Download image from URL
+ * Download image from URL or object storage path
  */
 async function downloadImage(url: string): Promise<Buffer> {
+  // Handle object storage paths (e.g., /replit-objstore-xxx/.private/...)
+  if (url.startsWith('/replit-objstore-')) {
+    const { ObjectStorageService } = await import('../objectStorage');
+    const objectStorageService = new ObjectStorageService();
+    
+    // Extract path after bucket ID
+    const pathMatch = url.match(/\/replit-objstore-[^/]+\/(.+)/);
+    if (!pathMatch) {
+      throw new Error(`Invalid object storage path: ${url}`);
+    }
+    
+    const objectPath = pathMatch[1];
+    const buffer = await objectStorageService.downloadBuffer(url);
+    
+    if (!buffer) {
+      throw new Error(`Failed to download from object storage: ${url}`);
+    }
+    
+    return buffer;
+  }
+  
+  // Handle HTTP(S) URLs
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`Failed to download image: ${response.statusText}`);
