@@ -17,7 +17,9 @@ Preferred communication style: Simple, everyday language.
 - **RSS Feeds:** Blog RSS feed (`/rss.xml`) and Success Stories RSS feed (`/api/success-stories/rss.xml`) use pre-generated JPEG images for maximum RSS reader and social media automation compatibility (Zapier, etc.). New content automatically generates both WebP (website) and JPEG (RSS/social) versions at creation time. Legacy content uses fallback conversion endpoints.
 - **Admin Panels:** 
   - Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
-  - Maintenance panel includes JPEG backfill tools to generate JPEG versions for existing WebP images, ensuring full RSS/social media compatibility for all content.
+  - Maintenance panel includes:
+    - JPEG backfill tools to generate JPEG versions for existing WebP images, ensuring full RSS/social media compatibility for all content
+    - Success story collage reprocessing tool to regenerate all existing collages with AI focal point detection for improved photo positioning
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
@@ -43,7 +45,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
-- **AI Services:** OpenAI (GPT-4o Vision) for blog generation and photo analysis. Before/after composite creation is available but currently disabled per user preference.
+- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, and success story focal point detection. Success story collages use AI-powered focal point detection to intelligently position before/after photos in Polaroid-style frames, ensuring the main subject is properly centered. Before/after composite creation is available but currently disabled per user preference.
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations for multi-source photo import. Automatic cleanup deletes unused photos after 60 days. Google Drive photos are automatically deleted from Drive after successful download/import.
 - **Google Services:** Google Places API for review updates, Google Maps.
 - **SEO Data:** DataForSEO API for historical review import.
