@@ -53,7 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/schema";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'maintenance';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -146,12 +146,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Phone,
       section: 'tracking-numbers' as AdminSection,
       description: "Phone number tracking"
-    },
-    {
-      title: "Maintenance",
-      icon: Settings,
-      section: 'maintenance' as AdminSection,
-      description: "System maintenance tasks"
     },
   ];
 
@@ -2626,184 +2620,6 @@ function TrackingNumbersSection() {
   );
 }
 
-function MaintenanceSection() {
-  const { toast } = useToast();
-  const [blogBackfillStatus, setBlogBackfillStatus] = useState<{
-    running: boolean;
-    results: { total: number; successful: number; failed: number; errors: string[] } | null;
-  }>({ running: false, results: null });
-  
-  const [storyBackfillStatus, setStoryBackfillStatus] = useState<{
-    running: boolean;
-    results: { total: number; successful: number; failed: number; errors: string[] } | null;
-  }>({ running: false, results: null });
-
-  const handleBackfillBlogJpegs = async () => {
-    setBlogBackfillStatus({ running: true, results: null });
-    try {
-      const response = await apiRequest('/api/admin/backfill-blog-jpegs', {
-        method: 'POST',
-      });
-      setBlogBackfillStatus({ running: false, results: response });
-      toast({
-        title: "Blog JPEG Backfill Complete",
-        description: `Successfully processed ${response.successful} of ${response.total} blog posts`,
-      });
-    } catch (error: any) {
-      setBlogBackfillStatus({ running: false, results: null });
-      toast({
-        title: "Error",
-        description: error.message || "Failed to backfill blog JPEGs",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleBackfillSuccessStoryJpegs = async () => {
-    setStoryBackfillStatus({ running: true, results: null });
-    try {
-      const response = await apiRequest('/api/admin/backfill-success-story-jpegs', {
-        method: 'POST',
-      });
-      setStoryBackfillStatus({ running: false, results: response });
-      toast({
-        title: "Success Story JPEG Backfill Complete",
-        description: `Successfully processed ${response.successful} of ${response.total} success stories`,
-      });
-    } catch (error: any) {
-      setStoryBackfillStatus({ running: false, results: null });
-      toast({
-        title: "Error",
-        description: error.message || "Failed to backfill success story JPEGs",
-        variant: "destructive",
-      });
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>JPEG Image Backfill</CardTitle>
-          <CardDescription>
-            Generate JPEG versions of existing WebP images for RSS feeds and social media compatibility
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Blog Posts Backfill */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Blog Post Images</h3>
-                <p className="text-sm text-muted-foreground">
-                  Create JPEG versions of blog featured images for RSS feeds
-                </p>
-              </div>
-              <Button
-                onClick={handleBackfillBlogJpegs}
-                disabled={blogBackfillStatus.running}
-                data-testid="button-backfill-blog-jpegs"
-              >
-                {blogBackfillStatus.running ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Backfill Blog JPEGs
-                  </>
-                )}
-              </Button>
-            </div>
-            {blogBackfillStatus.results && (
-              <div className="rounded-md border p-4">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">Total</div>
-                    <div className="text-2xl font-bold">{blogBackfillStatus.results.total}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Successful</div>
-                    <div className="text-2xl font-bold text-green-600">{blogBackfillStatus.results.successful}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Failed</div>
-                    <div className="text-2xl font-bold text-red-600">{blogBackfillStatus.results.failed}</div>
-                  </div>
-                </div>
-                {blogBackfillStatus.results.errors.length > 0 && (
-                  <div className="mt-4 space-y-1">
-                    <div className="text-sm font-semibold text-destructive">Errors:</div>
-                    {blogBackfillStatus.results.errors.map((error, idx) => (
-                      <div key={idx} className="text-sm text-muted-foreground">{error}</div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Success Stories Backfill */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-semibold">Success Story Collages</h3>
-                <p className="text-sm text-muted-foreground">
-                  Create JPEG versions of success story collages for RSS feeds
-                </p>
-              </div>
-              <Button
-                onClick={handleBackfillSuccessStoryJpegs}
-                disabled={storyBackfillStatus.running}
-                data-testid="button-backfill-story-jpegs"
-              >
-                {storyBackfillStatus.running ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Backfill Story JPEGs
-                  </>
-                )}
-              </Button>
-            </div>
-            {storyBackfillStatus.results && (
-              <div className="rounded-md border p-4">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">Total</div>
-                    <div className="text-2xl font-bold">{storyBackfillStatus.results.total}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Successful</div>
-                    <div className="text-2xl font-bold text-green-600">{storyBackfillStatus.results.successful}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Failed</div>
-                    <div className="text-2xl font-bold text-red-600">{storyBackfillStatus.results.failed}</div>
-                  </div>
-                </div>
-                {storyBackfillStatus.results.errors.length > 0 && (
-                  <div className="mt-4 space-y-1">
-                    <div className="text-sm font-semibold text-destructive">Errors:</div>
-                    {storyBackfillStatus.results.errors.map((error, idx) => (
-                      <div key={idx} className="text-sm text-muted-foreground">{error}</div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
 export default function UnifiedAdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
@@ -2864,8 +2680,6 @@ export default function UnifiedAdminDashboard() {
         return <PageMetadataSection />;
       case 'tracking-numbers':
         return <TrackingNumbersSection />;
-      case 'maintenance':
-        return <MaintenanceSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -2879,7 +2693,6 @@ export default function UnifiedAdminDashboard() {
       'commercial-customers': 'Commercial Customers',
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
-      'maintenance': 'Maintenance',
     };
     return titles[activeSection];
   };
