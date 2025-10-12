@@ -101,6 +101,7 @@ async function checkAndGenerateBlogs(storage: IStorage) {
       try {
         // Get photo and process image for proper cropping
         let featuredImage = null;
+        let jpegFeaturedImage = null;
         let focalPointX = null;
         let focalPointY = null;
         
@@ -109,6 +110,7 @@ async function checkAndGenerateBlogs(storage: IStorage) {
           if (photo?.photoUrl) {
             const imageData = await processBlogImage(photo.photoUrl, generatedBlog.title);
             featuredImage = imageData.imagePath;
+            jpegFeaturedImage = imageData.jpegImagePath;
             focalPointX = imageData.focalPointX;
             focalPointY = imageData.focalPointY;
           }
@@ -122,6 +124,7 @@ async function checkAndGenerateBlogs(storage: IStorage) {
           metaDescription: generatedBlog.metaDescription,
           category: generatedBlog.category,
           featuredImage,
+          jpegFeaturedImage,
           focalPointX,
           focalPointY,
           author: "Economy Plumbing",

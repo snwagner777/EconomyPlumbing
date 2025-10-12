@@ -130,7 +130,7 @@ export async function createSmartCrop(
   sourceImagePath: string,
   outputDir: string,
   cropData: ImageCropAnalysis
-): Promise<string> {
+): Promise<{ webp: string; jpeg: string }> {
   try {
     console.log("✂️  [BlogImageProcessor] Creating smart crop...");
     
@@ -173,10 +173,11 @@ export async function createSmartCrop(
     const objectStorage = new ObjectStorageService();
     const publicSearchPaths = objectStorage.getPublicObjectSearchPaths();
 
-    // Generate and upload all sizes
+    // Generate and upload all sizes (both WebP and JPEG)
     for (const size of sizes) {
-      const outputFilename = `${baseFilename}${size.suffix}.webp`;
-      const tempOutputPath = path.join('/tmp', outputFilename);
+      // Generate WebP version
+      const webpFilename = `${baseFilename}${size.suffix}.webp`;
+      const webpTempPath = path.join('/tmp', webpFilename);
       
       await croppedImage
         .clone()
@@ -185,17 +186,37 @@ export async function createSmartCrop(
           position: "center",
         })
         .webp({ quality: 85 })
-        .toFile(tempOutputPath);
+        .toFile(webpTempPath);
 
-      const destinationPath = `${publicSearchPaths[0]}/blog_images/${outputFilename}`;
-      await objectStorage.uploadFile(tempOutputPath, destinationPath, 'image/webp');
-      await fs.unlink(tempOutputPath);
+      const webpDestPath = `${publicSearchPaths[0]}/blog_images/${webpFilename}`;
+      await objectStorage.uploadFile(webpTempPath, webpDestPath, 'image/webp');
+      await fs.unlink(webpTempPath);
       
-      console.log(`✅ [BlogImageProcessor] Created and uploaded ${size.width}w image`);
+      // Generate JPEG version for RSS/social media
+      const jpegFilename = `${baseFilename}${size.suffix}.jpg`;
+      const jpegTempPath = path.join('/tmp', jpegFilename);
+      
+      await croppedImage
+        .clone()
+        .resize(size.width, size.height, {
+          fit: "cover",
+          position: "center",
+        })
+        .jpeg({ quality: 90 })
+        .toFile(jpegTempPath);
+
+      const jpegDestPath = `${publicSearchPaths[0]}/blog_images/${jpegFilename}`;
+      await objectStorage.uploadFile(jpegTempPath, jpegDestPath, 'image/jpeg');
+      await fs.unlink(jpegTempPath);
+      
+      console.log(`✅ [BlogImageProcessor] Created and uploaded ${size.width}w images (WebP & JPEG)`);
     }
     
-    // Return the public URL path for the largest image (1200w)
-    return `/public-objects/blog_images/${baseFilename}_1200w.webp`;
+    // Return both WebP and JPEG public URL paths for the largest image (1200w)
+    return {
+      webp: `/public-objects/blog_images/${baseFilename}_1200w.webp`,
+      jpeg: `/public-objects/blog_images/${baseFilename}_1200w.jpg`
+    };
   } catch (error) {
     console.error("❌ [BlogImageProcessor] Error creating crop:", error);
     throw error;
@@ -205,7 +226,7 @@ export async function createSmartCrop(
 export async function processBlogImage(
   sourceImagePath: string,
   blogTitle?: string
-): Promise<{ imagePath: string; focalPointX: number; focalPointY: number }> {
+): Promise<{ imagePath: string; jpegImagePath: string; focalPointX: number; focalPointY: number }> {
   try {
     console.log(`📸 [BlogImageProcessor] Processing blog image: ${sourceImagePath}`);
 
@@ -221,10 +242,11 @@ export async function processBlogImage(
       : sourceImagePath;
     
     const outputDir = "./attached_assets/blog_images";
-    const croppedImagePath = await createSmartCrop(fullSourcePath, outputDir, analysis);
+    const croppedImages = await createSmartCrop(fullSourcePath, outputDir, analysis);
     
     return {
-      imagePath: croppedImagePath,
+      imagePath: croppedImages.webp,
+      jpegImagePath: croppedImages.jpeg,
       focalPointX: Math.round(analysis.focalPoint.x),
       focalPointY: Math.round(analysis.focalPoint.y)
     };
@@ -233,6 +255,7 @@ export async function processBlogImage(
     // Return original image with centered focal point if processing fails
     return {
       imagePath: sourceImagePath,
+      jpegImagePath: sourceImagePath.replace(/\.(webp|png)$/i, '.jpg'), // Fallback JPEG path
       focalPointX: 50,
       focalPointY: 50
     };

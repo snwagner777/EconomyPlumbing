@@ -50,7 +50,8 @@ export const blogPosts = pgTable("blog_posts", {
   author: text("author").notNull().default("Economy Plumbing"),
   publishDate: timestamp("publish_date").notNull().defaultNow(),
   category: text("category").notNull(),
-  featuredImage: text("featured_image"),
+  featuredImage: text("featured_image"), // WebP version for website
+  jpegFeaturedImage: text("jpeg_featured_image"), // JPEG version for RSS/social media
   imageId: varchar("image_id"), // Links to companyCamPhotos
   focalPointX: integer("focal_point_x"), // AI-determined focal point X (0-100 percentage from left)
   focalPointY: integer("focal_point_y"), // AI-determined focal point Y (0-100 percentage from top)
@@ -111,7 +112,8 @@ export const customerSuccessStories = pgTable("customer_success_stories", {
   story: text("story").notNull(),
   beforePhotoUrl: text("before_photo_url").notNull(),
   afterPhotoUrl: text("after_photo_url").notNull(),
-  collagePhotoUrl: text("collage_photo_url"), // AI-generated before/after composite image
+  collagePhotoUrl: text("collage_photo_url"), // AI-generated before/after composite image (WebP)
+  jpegCollagePhotoUrl: text("jpeg_collage_photo_url"), // JPEG version for RSS/social media
   serviceCategory: text("service_category").notNull(), // water-heater, drain-cleaning, etc.
   location: text("location").notNull(),
   approved: boolean("approved").notNull().default(false), // Moderation flag

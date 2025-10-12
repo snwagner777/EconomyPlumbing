@@ -371,11 +371,13 @@ ${productUrls}
             
             // Step 4: Process image with smart crop (16:9 @ 1200x675)
             let featuredImage = null;
+            let jpegFeaturedImage = null;
             if (photo.photoUrl) {
               console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
               const processedImage = await processBlogImage(photo.photoUrl, blogPost.title);
               featuredImage = processedImage.imagePath;
-              console.log(`[Historic Blog Generation] Cropped image saved: ${featuredImage}`);
+              jpegFeaturedImage = processedImage.jpegImagePath;
+              console.log(`[Historic Blog Generation] Cropped images saved - WebP: ${featuredImage}, JPEG: ${jpegFeaturedImage}`);
             }
             
             // Step 5: Save to database
@@ -387,6 +389,7 @@ ${productUrls}
               metaDescription: blogPost.metaDescription,
               category: blogPost.category,
               featuredImage,
+              jpegFeaturedImage,
               author: "Economy Plumbing",
               published: true,
             });
@@ -622,11 +625,14 @@ ${productUrls}
       }
 
       console.log(`📸 [API] Processing blog image: ${imagePath}`);
-      const croppedImagePath = await processBlogImage(imagePath, blogTitle);
+      const processedImages = await processBlogImage(imagePath, blogTitle);
       
       res.json({ 
         original: imagePath,
-        cropped: croppedImagePath,
+        cropped: processedImages.imagePath,
+        jpegCropped: processedImages.jpegImagePath,
+        focalPointX: processedImages.focalPointX,
+        focalPointY: processedImages.focalPointY,
         message: "Image processed successfully" 
       });
     } catch (error) {
@@ -670,15 +676,19 @@ ${productUrls}
         .map(post => {
           const postUrl = `${baseUrl}/${post.slug}`;
           
-          // For RSS, convert WebP images to JPEG for better compatibility
-          let imageUrl = post.featuredImage ? 
-            (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
-            `${baseUrl}/attached_assets/logo.jpg`;
+          // Use pre-generated JPEG version for RSS feed
+          let imageUrl = `${baseUrl}/attached_assets/logo.jpg`; // Default fallback
           
-          // If image is WebP, use conversion endpoint for RSS (with .jpg extension for RSS reader compatibility)
-          if (imageUrl.endsWith('.webp')) {
-            const encodedPath = Buffer.from(post.featuredImage || '').toString('base64');
-            imageUrl = `${baseUrl}/api/blog/images/${encodedPath}.jpg`;
+          if (post.jpegFeaturedImage) {
+            // Use the pre-generated JPEG version (created at blog post creation)
+            imageUrl = post.jpegFeaturedImage.startsWith('http') 
+              ? post.jpegFeaturedImage 
+              : `${baseUrl}${post.jpegFeaturedImage}`;
+          } else if (post.featuredImage) {
+            // Fallback: use featuredImage if no JPEG version exists (for old posts)
+            imageUrl = post.featuredImage.startsWith('http') 
+              ? post.featuredImage 
+              : `${baseUrl}${post.featuredImage}`;
           }
           
           // HTML-escape the title for safe use in attributes
@@ -2277,18 +2287,19 @@ ${rssItems}
       const rssItems = stories.slice(0, 20).map(story => {
         const pubDate = new Date(story.submittedAt).toUTCString();
         
-        // Convert WebP collage image to JPEG with .jpg extension for RSS readers
+        // Use pre-generated JPEG version for RSS feed
         let imageUrl = `${baseUrl}/attached_assets/logo.jpg`; // Default fallback
-        if (story.collagePhotoUrl) {
-          if (story.collagePhotoUrl.endsWith('.webp')) {
-            const encodedPath = Buffer.from(story.collagePhotoUrl).toString('base64');
-            imageUrl = `${baseUrl}/api/success-stories/images/${encodedPath}.jpg`;
-          } else {
-            // Already JPEG or PNG
-            imageUrl = story.collagePhotoUrl.startsWith('http') 
-              ? story.collagePhotoUrl 
-              : `${baseUrl}${story.collagePhotoUrl}`;
-          }
+        
+        if (story.jpegCollagePhotoUrl) {
+          // Use the pre-generated JPEG version (created at approval)
+          imageUrl = story.jpegCollagePhotoUrl.startsWith('http') 
+            ? story.jpegCollagePhotoUrl 
+            : `${baseUrl}${story.jpegCollagePhotoUrl}`;
+        } else if (story.collagePhotoUrl) {
+          // Fallback: use collagePhotoUrl if no JPEG version exists (for old stories)
+          imageUrl = story.collagePhotoUrl.startsWith('http') 
+            ? story.collagePhotoUrl 
+            : `${baseUrl}${story.collagePhotoUrl}`;
         }
         
         return `
@@ -3263,33 +3274,40 @@ ${rssItems}
       
       // Create collage in temp directory first
       const tmpDir = os.tmpdir();
-      const filename = `success_story_${id}_${Date.now()}.webp`;
-      const tmpOutputPath = path.join(tmpDir, filename);
+      const webpFilename = `success_story_${id}_${Date.now()}.webp`;
+      const jpegFilename = webpFilename.replace('.webp', '.jpg');
+      const tmpWebpPath = path.join(tmpDir, webpFilename);
+      const tmpJpegPath = path.join(tmpDir, jpegFilename);
       
-      console.log(`[Success Stories] Creating composite in temp: ${tmpOutputPath}`);
+      console.log(`[Success Stories] Creating composite in temp: ${tmpWebpPath}`);
       
-      // Create the collage
+      // Create the collage (creates both WebP and JPEG versions)
       await createBeforeAfterComposite(
         storyToApprove.beforePhotoUrl,
         storyToApprove.afterPhotoUrl,
-        tmpOutputPath
+        tmpWebpPath
       );
       
-      console.log(`[Success Stories] Composite created, uploading to object storage...`);
+      console.log(`[Success Stories] Composites created, uploading to object storage...`);
       
-      // Upload to object storage public directory
-      const objectStoragePath = `${publicPath}/success_stories/${filename}`;
-      await objectStorageService.uploadFile(tmpOutputPath, objectStoragePath, 'image/webp');
+      // Upload both WebP and JPEG to object storage public directory
+      const webpObjectPath = `${publicPath}/success_stories/${webpFilename}`;
+      const jpegObjectPath = `${publicPath}/success_stories/${jpegFilename}`;
       
-      // Clean up temp file
-      await fs.unlink(tmpOutputPath).catch(() => {});
+      await objectStorageService.uploadFile(tmpWebpPath, webpObjectPath, 'image/webp');
+      await objectStorageService.uploadFile(tmpJpegPath, jpegObjectPath, 'image/jpeg');
       
-      // Construct public URL
-      const collageUrl = objectStoragePath;
-      console.log(`[Success Stories] ✅ Collage uploaded: ${collageUrl}`);
+      // Clean up temp files
+      await fs.unlink(tmpWebpPath).catch(() => {});
+      await fs.unlink(tmpJpegPath).catch(() => {});
       
-      // Approve with the collage URL
-      const story = await storage.approveSuccessStory(id, collageUrl);
+      // Construct public URLs
+      const collageUrl = webpObjectPath;
+      const jpegCollageUrl = jpegObjectPath;
+      console.log(`[Success Stories] ✅ Collages uploaded - WebP: ${collageUrl}, JPEG: ${jpegCollageUrl}`);
+      
+      // Approve with both collage URLs
+      const story = await storage.approveSuccessStory(id, collageUrl, jpegCollageUrl);
       res.json({ story });
     } catch (error: any) {
       console.error("[Success Stories] Error approving story:", error);
