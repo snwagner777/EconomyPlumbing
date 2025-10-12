@@ -69,7 +69,7 @@ export default function SuccessStories() {
           name="description" 
           content="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more." 
         />
-        <link rel="alternate" type="application/rss+xml" title="Success Stories RSS Feed" href="/api/success-stories/rss" />
+        <link rel="alternate" type="application/rss+xml" title="Success Stories RSS Feed" href="/api/success-stories/rss.xml" />
         <script 
           type="text/javascript" 
           src="https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f" 
@@ -128,7 +128,7 @@ export default function SuccessStories() {
 
               {/* RSS Feed Link */}
               <Button variant="outline" asChild data-testid="button-rss-feed">
-                <a href="/api/success-stories/rss" target="_blank" rel="noopener noreferrer">
+                <a href="/api/success-stories/rss.xml" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-4 w-4 mr-2" />
                   RSS Feed
                 </a>

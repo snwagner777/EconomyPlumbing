@@ -2268,7 +2268,7 @@ ${rssItems}
   });
 
   // RSS feed for Success Stories page
-  app.get("/api/success-stories/rss", async (req, res) => {
+  app.get("/api/success-stories/rss.xml", async (req, res) => {
     try {
       const stories = await storage.getApprovedSuccessStories();
       const baseUrl = 'https://www.plumbersthatcare.com';
@@ -2314,7 +2314,7 @@ ${rssItems}
     <link>${baseUrl}/success-stories</link>
     <description>Real customer testimonials and before/after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more.</description>
     <language>en-us</language>
-    <atom:link href="${baseUrl}/api/success-stories/rss" rel="self" type="application/rss+xml" />
+    <atom:link href="${baseUrl}/api/success-stories/rss.xml" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
 ${rssItems}
   </channel>
