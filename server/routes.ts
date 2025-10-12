@@ -3593,6 +3593,130 @@ Write in a professional yet friendly tone.`;
     }
   });
 
+  // Admin: Backfill JPEG images for existing blog posts
+  app.post("/api/admin/backfill-blog-jpegs", requireAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const sharp = (await import("sharp")).default;
+      
+      // Get all blog posts without JPEG versions but with WebP featured images
+      const posts = await storage.getAllBlogPosts();
+      const postsToBackfill = posts.filter(p => p.featuredImage && !p.jpegFeaturedImage);
+      
+      console.log(`[JPEG Backfill] Found ${postsToBackfill.length} blog posts to backfill`);
+      
+      const results = {
+        total: postsToBackfill.length,
+        successful: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+      
+      for (const post of postsToBackfill) {
+        try {
+          console.log(`[JPEG Backfill] Processing blog post: ${post.title}`);
+          
+          // Download the WebP image
+          const webpBuffer = await objectStorageService.downloadBuffer(post.featuredImage);
+          if (!webpBuffer) {
+            throw new Error(`Failed to download WebP image: ${post.featuredImage}`);
+          }
+          
+          // Convert to JPEG
+          const jpegBuffer = await sharp(webpBuffer)
+            .jpeg({ quality: 90 })
+            .toBuffer();
+          
+          // Upload JPEG version - replace .webp with .jpg in the path
+          const jpegPath = post.featuredImage.replace(/\.webp$/i, '.jpg');
+          await objectStorageService.uploadBuffer(jpegBuffer, jpegPath, 'image/jpeg');
+          
+          // Update database
+          await storage.updateBlogPost(post.id.toString(), {
+            jpegFeaturedImage: jpegPath
+          });
+          
+          console.log(`[JPEG Backfill] ✅ Successfully backfilled JPEG for: ${post.title}`);
+          results.successful++;
+          
+        } catch (error: any) {
+          console.error(`[JPEG Backfill] ❌ Failed to backfill ${post.title}:`, error);
+          results.failed++;
+          results.errors.push(`${post.title}: ${error.message}`);
+        }
+      }
+      
+      console.log(`[JPEG Backfill] Complete: ${results.successful} successful, ${results.failed} failed`);
+      res.json(results);
+      
+    } catch (error: any) {
+      console.error("[JPEG Backfill] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Backfill JPEG images for existing success stories
+  app.post("/api/admin/backfill-success-story-jpegs", requireAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const sharp = (await import("sharp")).default;
+      
+      // Get all success stories without JPEG versions but with WebP collages
+      const stories = await storage.getAllSuccessStories();
+      const storiesToBackfill = stories.filter(s => s.collagePhotoUrl && !s.jpegCollagePhotoUrl);
+      
+      console.log(`[JPEG Backfill] Found ${storiesToBackfill.length} success stories to backfill`);
+      
+      const results = {
+        total: storiesToBackfill.length,
+        successful: 0,
+        failed: 0,
+        errors: [] as string[]
+      };
+      
+      for (const story of storiesToBackfill) {
+        try {
+          console.log(`[JPEG Backfill] Processing success story: ${story.customerName}`);
+          
+          // Download the WebP collage
+          const webpBuffer = await objectStorageService.downloadBuffer(story.collagePhotoUrl);
+          if (!webpBuffer) {
+            throw new Error(`Failed to download WebP collage: ${story.collagePhotoUrl}`);
+          }
+          
+          // Convert to JPEG
+          const jpegBuffer = await sharp(webpBuffer)
+            .jpeg({ quality: 90 })
+            .toBuffer();
+          
+          // Upload JPEG version - replace .webp with .jpg in the path
+          const jpegPath = story.collagePhotoUrl.replace(/\.webp$/i, '.jpg');
+          await objectStorageService.uploadBuffer(jpegBuffer, jpegPath, 'image/jpeg');
+          
+          // Update database
+          await storage.updateSuccessStory(story.id, {
+            jpegCollagePhotoUrl: jpegPath
+          });
+          
+          console.log(`[JPEG Backfill] ✅ Successfully backfilled JPEG for: ${story.customerName}`);
+          results.successful++;
+          
+        } catch (error: any) {
+          console.error(`[JPEG Backfill] ❌ Failed to backfill ${story.customerName}:`, error);
+          results.failed++;
+          results.errors.push(`${story.customerName}: ${error.message}`);
+        }
+      }
+      
+      console.log(`[JPEG Backfill] Complete: ${results.successful} successful, ${results.failed} failed`);
+      res.json(results);
+      
+    } catch (error: any) {
+      console.error("[JPEG Backfill] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

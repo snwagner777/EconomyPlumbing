@@ -87,7 +87,7 @@ export interface IStorage {
   getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
   approveSuccessStory(id: string, collagePhotoUrl: string, jpegCollagePhotoUrl?: string): Promise<CustomerSuccessStory>;
   unapproveSuccessStory(id: string): Promise<CustomerSuccessStory>;
-  updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location'>>): Promise<CustomerSuccessStory>;
+  updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl'>>): Promise<CustomerSuccessStory>;
   deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
