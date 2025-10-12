@@ -43,7 +43,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
-- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, and before/after image composition.
+- **AI Services:** OpenAI (GPT-4o Vision) for blog generation and photo analysis. Before/after composite creation is available but currently disabled per user preference.
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations for multi-source photo import.
 - **Google Services:** Google Places API for review updates, Google Maps.
 - **SEO Data:** DataForSEO API for historical review import.

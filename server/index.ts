@@ -371,7 +371,8 @@ async function refreshReviewsPeriodically() {
   
   // Start daily before/after composite creation (runs at 2am daily)
   // Groups photos from same job uploaded in last 24 hours and creates before/after collages
-  startDailyCompositeJob();
+  // DISABLED: User requested to disable automatic composite creation
+  // startDailyCompositeJob();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
