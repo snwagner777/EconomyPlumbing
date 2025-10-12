@@ -87,7 +87,8 @@ function ScrollToTop() {
   const [location] = useLocation();
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    // Immediately scroll to top - use 'auto' to override smooth scroll behavior for navigation
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     // Re-run phone number replacement on route change
     setTimeout(replacePhoneNumbers, 100);
   }, [location]);
