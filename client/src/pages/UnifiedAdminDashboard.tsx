@@ -53,7 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/schema";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'maintenance';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -146,6 +146,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Phone,
       section: 'tracking-numbers' as AdminSection,
       description: "Phone number tracking"
+    },
+    {
+      title: "Maintenance",
+      icon: Settings,
+      section: 'maintenance' as AdminSection,
+      description: "System maintenance tools"
     },
   ];
 
@@ -2620,6 +2626,82 @@ function TrackingNumbersSection() {
   );
 }
 
+function MaintenanceSection() {
+  const { toast } = useToast();
+  const [isReprocessing, setIsReprocessing] = useState(false);
+
+  const reprocessMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/reprocess-success-story-collages', {
+        method: 'POST',
+      });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Reprocessing Complete",
+        description: `Successfully reprocessed ${data.successful} of ${data.total} success stories with AI focal point detection.`,
+      });
+      setIsReprocessing(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Reprocessing Failed",
+        description: error.message || "An error occurred while reprocessing collages.",
+        variant: "destructive",
+      });
+      setIsReprocessing(false);
+    },
+  });
+
+  const handleReprocess = () => {
+    if (confirm("This will regenerate all success story collages with AI-detected focal points. This may take several minutes. Continue?")) {
+      setIsReprocessing(true);
+      reprocessMutation.mutate();
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Success Story Maintenance</CardTitle>
+          <CardDescription>
+            Tools for maintaining and improving success story collages
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <div>
+              <h3 className="text-sm font-semibold mb-1">Reprocess Collages with AI Focal Points</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Regenerate all success story collages using OpenAI to detect the focal point in each photo. 
+                This ensures images are correctly positioned in the Polaroid frames.
+              </p>
+            </div>
+            <Button
+              onClick={handleReprocess}
+              disabled={isReprocessing}
+              data-testid="button-reprocess-collages"
+            >
+              {isReprocessing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Reprocessing...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Reprocess All Collages
+                </>
+              )}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 export default function UnifiedAdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
@@ -2680,6 +2762,8 @@ export default function UnifiedAdminDashboard() {
         return <PageMetadataSection />;
       case 'tracking-numbers':
         return <TrackingNumbersSection />;
+      case 'maintenance':
+        return <MaintenanceSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -2693,6 +2777,7 @@ export default function UnifiedAdminDashboard() {
       'commercial-customers': 'Commercial Customers',
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
+      'maintenance': 'Maintenance',
     };
     return titles[activeSection];
   };
