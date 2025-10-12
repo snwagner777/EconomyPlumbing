@@ -447,11 +447,11 @@ ${productUrls}
     }
   });
 
-  // Convert blog image to JPEG for RSS feeds - new format with .jpg extension
-  app.get("/api/blog/images/:encodedPath.jpg", async (req, res) => {
+  // Helper function to convert images to JPEG for RSS feeds
+  const convertImageToJPEG = async (encodedPath: string, res: any) => {
     try {
       // Decode the base64-encoded path
-      const imageUrl = Buffer.from(req.params.encodedPath, 'base64').toString('utf-8');
+      const imageUrl = Buffer.from(encodedPath, 'base64').toString('utf-8');
       
       let imageBuffer: Buffer;
 
@@ -480,12 +480,14 @@ ${productUrls}
             const [buffer] = await file.download();
             imageBuffer = buffer;
           } else {
-            // Fall back to local filesystem
-            imageBuffer = await fs.readFile(normalizedPath);
+            // Fall back to local filesystem with original path (without leading slash)
+            const fsPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+            imageBuffer = await fs.readFile(fsPath);
           }
         } catch {
-          // Last resort: try filesystem
-          imageBuffer = await fs.readFile(normalizedPath);
+          // Last resort: try filesystem with original path (without leading slash)
+          const fsPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+          imageBuffer = await fs.readFile(fsPath);
         }
       }
 
@@ -500,9 +502,19 @@ ${productUrls}
       res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
       res.send(jpegBuffer);
     } catch (error: any) {
-      console.error("Error converting blog image to JPEG:", error);
+      console.error("Error converting image to JPEG:", error);
       res.status(500).json({ message: "Failed to convert image" });
     }
+  };
+
+  // Convert blog image to JPEG for RSS feeds - with .jpg extension for RSS reader compatibility
+  app.get("/api/blog/images/:encodedPath.jpg", async (req, res) => {
+    await convertImageToJPEG(req.params.encodedPath, res);
+  });
+
+  // Convert success story image to JPEG for RSS feeds - with .jpg extension for RSS reader compatibility
+  app.get("/api/success-stories/images/:encodedPath.jpg", async (req, res) => {
+    await convertImageToJPEG(req.params.encodedPath, res);
   });
 
   // Legacy endpoint - kept for backwards compatibility
@@ -2265,7 +2277,7 @@ ${rssItems}
         if (story.collagePhotoUrl) {
           if (story.collagePhotoUrl.endsWith('.webp')) {
             const encodedPath = Buffer.from(story.collagePhotoUrl).toString('base64');
-            imageUrl = `${baseUrl}/api/blog/images/${encodedPath}.jpg`;
+            imageUrl = `${baseUrl}/api/success-stories/images/${encodedPath}.jpg`;
           } else {
             // Already JPEG or PNG
             imageUrl = story.collagePhotoUrl.startsWith('http') 

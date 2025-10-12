@@ -14,8 +14,8 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Utilizes a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema. Includes performance optimizations like resource preconnect, image lazy loading, font optimization, client-side code splitting, and universal WebP image conversion. A dynamic sitemap auto-updates.
 - **Accessibility:** WCAG AA Compliant with focus on contrast ratios, `aria-label` usage, and dynamic Open Graph image construction.
 - **Pages:** Includes Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, and conversion-optimized SEO landing pages.
-- **RSS Feeds:** Blog RSS feed with responsive WebP images served via `/api/blog/images/{base64}.jpg` endpoints (URLs end in .jpg for RSS reader compatibility). Success Stories RSS configured to use customer testimonials with WebP-to-JPEG conversion.
-- **Admin Panels:** Page Metadata management displays actual default SEO values instead of generic "Default" placeholders, showing what title/description each page currently uses.
+- **RSS Feeds:** Blog RSS feed with responsive WebP images served via `/api/blog/images/{base64}.jpg` endpoints (URLs end in .jpg for RSS reader compatibility). Success Stories RSS feed serves customer testimonials with dedicated `/api/success-stories/images/{base64}.jpg` endpoint for semantic clarity.
+- **Admin Panels:** Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
