@@ -142,6 +142,8 @@ export interface IStorage {
   // Imported Photos (Google Drive)
   createImportedPhoto(photo: InsertImportedPhoto): Promise<ImportedPhoto>;
   getAllImportedPhotos(): Promise<ImportedPhoto[]>;
+  deleteImportedPhoto(id: string): Promise<void>;
+  deleteCompanyCamPhoto(id: string): Promise<void>;
   
   // Tracking Numbers (Dynamic Phone Numbers)
   getAllTrackingNumbers(): Promise<TrackingNumber[]>;
@@ -2321,6 +2323,16 @@ Call (512) 368-9159 or schedule service online.`,
     // MemStorage stub - not used in production
     return [];
   }
+  
+  async deleteImportedPhoto(id: string): Promise<void> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
+  
+  async deleteCompanyCamPhoto(id: string): Promise<void> {
+    // MemStorage stub - not used in production
+    throw new Error("Not implemented in MemStorage");
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2910,6 +2922,18 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(importedPhotos)
       .orderBy(sql`${importedPhotos.fetchedAt} DESC`);
+  }
+  
+  async deleteImportedPhoto(id: string): Promise<void> {
+    await db
+      .delete(importedPhotos)
+      .where(eq(importedPhotos.id, id));
+  }
+  
+  async deleteCompanyCamPhoto(id: string): Promise<void> {
+    await db
+      .delete(companyCamPhotos)
+      .where(eq(companyCamPhotos.id, id));
   }
 
   // Tracking Numbers methods

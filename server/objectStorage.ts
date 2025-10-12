@@ -180,6 +180,11 @@ export class ObjectStorageService {
 
     await file.delete();
   }
+  
+  // Alias for deleteFile for consistency
+  async deleteObject(filePath: string): Promise<void> {
+    await this.deleteFile(filePath);
+  }
 }
 
 function parseObjectPath(path: string): {
