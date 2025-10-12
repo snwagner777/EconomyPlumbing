@@ -207,6 +207,82 @@ async function downloadImage(url: string): Promise<Buffer> {
 }
 
 /**
+ * Detect focal point (main subject area) in image using OpenAI Vision
+ * Returns normalized coordinates (0-1) for the focal point center
+ */
+async function detectFocalPoint(imageBuffer: Buffer): Promise<{ x: number; y: number } | null> {
+  try {
+    console.log(`[Focal Point] Analyzing image for focal point...`);
+    
+    // Convert buffer to base64
+    const base64Image = imageBuffer.toString('base64');
+    const metadata = await sharp(imageBuffer).metadata();
+    const mimeType = metadata.format === 'png' ? 'image/png' : metadata.format === 'webp' ? 'image/webp' : 'image/jpeg';
+    const dataUri = `data:${mimeType};base64,${base64Image}`;
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a computer vision expert analyzing plumbing work photos. Your task is to identify the main focal point - the most important subject that should be centered when cropping the image for a polaroid-style frame.
+
+Look for:
+- The primary plumbing fixture, pipe, or equipment being worked on
+- The main problem area or repair location
+- The most visually important element
+
+Return the focal point as normalized coordinates (0 to 1 range) where:
+- x: 0 = left edge, 0.5 = horizontal center, 1 = right edge
+- y: 0 = top edge, 0.5 = vertical center, 1 = bottom edge
+
+Respond ONLY with a JSON object: {"x": 0.5, "y": 0.5}
+
+If the image has no clear focal point (blank, too dark, etc.), respond with: {"x": 0.5, "y": 0.5} for center crop.`
+        },
+        {
+          role: "user",
+          content: [
+            {
+              type: "image_url",
+              image_url: { url: dataUri }
+            },
+            {
+              type: "text",
+              text: "Identify the focal point coordinates for this plumbing photo."
+            }
+          ]
+        }
+      ],
+      max_completion_tokens: 100,
+    });
+
+    const content = response.choices[0].message.content || "";
+    console.log(`[Focal Point] OpenAI response: ${content}`);
+    
+    // Parse the JSON response
+    const match = content.match(/\{[^}]+\}/);
+    if (match) {
+      const parsed = JSON.parse(match[0]);
+      if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+        // Clamp values to 0-1 range
+        const x = Math.max(0, Math.min(1, parsed.x));
+        const y = Math.max(0, Math.min(1, parsed.y));
+        console.log(`[Focal Point] ✅ Detected focal point at (${x}, ${y})`);
+        return { x, y };
+      }
+    }
+    
+    console.log(`[Focal Point] Could not parse focal point, using center`);
+    return { x: 0.5, y: 0.5 };
+  } catch (error) {
+    console.error(`[Focal Point] Error detecting focal point:`, error);
+    // Default to center if detection fails
+    return { x: 0.5, y: 0.5 };
+  }
+}
+
+/**
  * Create a polaroid-style before/after composite image
  */
 export async function createBeforeAfterComposite(
@@ -220,16 +296,48 @@ export async function createBeforeAfterComposite(
   const beforeBuffer = await downloadImage(beforeUrl);
   const afterBuffer = await downloadImage(afterUrl);
 
+  // Detect focal points for intelligent cropping
+  console.log(`[Compositor] Detecting focal points for smart positioning...`);
+  const beforeFocalPoint = await detectFocalPoint(beforeBuffer);
+  const afterFocalPoint = await detectFocalPoint(afterBuffer);
+
   // Resize images to consistent size (800x600 for each photo)
   const photoWidth = 800;
   const photoHeight = 600;
 
+  // Convert normalized focal points (0-1) to sharp position strings
+  const getFocalPosition = (focal: { x: number; y: number } | null): string => {
+    if (!focal) return 'center';
+    
+    // Determine position based on focal point
+    const xPos = focal.x < 0.33 ? 'left' : focal.x > 0.67 ? 'right' : 'centre';
+    const yPos = focal.y < 0.33 ? 'top' : focal.y > 0.67 ? 'bottom' : 'centre';
+    
+    // Combine into position string (e.g., "left top", "centre", "right bottom")
+    if (xPos === 'centre' && yPos === 'centre') return 'centre';
+    if (xPos === 'centre') return yPos;
+    if (yPos === 'centre') return xPos;
+    return `${yPos} ${xPos}`;
+  };
+
+  const beforePosition = getFocalPosition(beforeFocalPoint);
+  const afterPosition = getFocalPosition(afterFocalPoint);
+  
+  console.log(`[Compositor] Before photo focal position: ${beforePosition}`);
+  console.log(`[Compositor] After photo focal position: ${afterPosition}`);
+
   const beforeImage = await sharp(beforeBuffer)
-    .resize(photoWidth, photoHeight, { fit: "cover" })
+    .resize(photoWidth, photoHeight, { 
+      fit: "cover",
+      position: beforePosition as any
+    })
     .toBuffer();
 
   const afterImage = await sharp(afterBuffer)
-    .resize(photoWidth, photoHeight, { fit: "cover" })
+    .resize(photoWidth, photoHeight, { 
+      fit: "cover",
+      position: afterPosition as any
+    })
     .toBuffer();
 
   // Create polaroid-style frames
