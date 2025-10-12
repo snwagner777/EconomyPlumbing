@@ -44,7 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
 - **AI Services:** OpenAI (GPT-4o Vision) for blog generation and photo analysis. Before/after composite creation is available but currently disabled per user preference.
-- **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations for multi-source photo import.
+- **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations for multi-source photo import. Automatic cleanup deletes unused photos after 60 days. Google Drive photos are automatically deleted from Drive after successful download/import.
 - **Google Services:** Google Places API for review updates, Google Maps.
 - **SEO Data:** DataForSEO API for historical review import.
 - **Social Media:** Meta Graph API for automated posting to Facebook/Instagram.
