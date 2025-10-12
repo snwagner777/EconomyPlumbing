@@ -447,7 +447,65 @@ ${productUrls}
     }
   });
 
-  // Convert blog image to JPEG for RSS feeds (must be before :slug route)
+  // Convert blog image to JPEG for RSS feeds - new format with .jpg extension
+  app.get("/api/blog/images/:encodedPath.jpg", async (req, res) => {
+    try {
+      // Decode the base64-encoded path
+      const imageUrl = Buffer.from(req.params.encodedPath, 'base64').toString('utf-8');
+      
+      let imageBuffer: Buffer;
+
+      // Handle different image sources
+      if (imageUrl.startsWith('http')) {
+        // External URL
+        const response = await fetch(imageUrl);
+        imageBuffer = Buffer.from(await response.arrayBuffer());
+      } else {
+        // Local/object storage path
+        const sharp = await import('sharp');
+        const fs = await import('fs/promises');
+        const { ObjectStorageService } = await import('./objectStorage');
+        const objectStorage = new ObjectStorageService();
+        
+        // Normalize path for object storage: remove leading slash and 'public-objects/' prefix
+        let normalizedPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
+        if (normalizedPath.startsWith('public-objects/')) {
+          normalizedPath = normalizedPath.substring('public-objects/'.length);
+        }
+        
+        try {
+          // Try object storage first
+          const file = await objectStorage.searchPublicObject(normalizedPath);
+          if (file) {
+            const [buffer] = await file.download();
+            imageBuffer = buffer;
+          } else {
+            // Fall back to local filesystem
+            imageBuffer = await fs.readFile(normalizedPath);
+          }
+        } catch {
+          // Last resort: try filesystem
+          imageBuffer = await fs.readFile(normalizedPath);
+        }
+      }
+
+      // Convert to JPEG
+      const sharp = await import('sharp');
+      const jpegBuffer = await sharp.default(imageBuffer)
+        .jpeg({ quality: 90 })
+        .toBuffer();
+
+      // Cache for 1 year (images don't change)
+      res.setHeader('Content-Type', 'image/jpeg');
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      res.send(jpegBuffer);
+    } catch (error: any) {
+      console.error("Error converting blog image to JPEG:", error);
+      res.status(500).json({ message: "Failed to convert image" });
+    }
+  });
+
+  // Legacy endpoint - kept for backwards compatibility
   app.get("/api/blog/image-jpeg", async (req, res) => {
     try {
       const imageUrl = req.query.url as string;
@@ -600,9 +658,10 @@ ${productUrls}
             (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
             `${baseUrl}/attached_assets/logo.jpg`;
           
-          // If image is WebP, use conversion endpoint for RSS
+          // If image is WebP, use conversion endpoint for RSS (with .jpg extension for RSS reader compatibility)
           if (imageUrl.endsWith('.webp')) {
-            imageUrl = `${baseUrl}/api/blog/image-jpeg?url=${encodeURIComponent(post.featuredImage || '')}`;
+            const encodedPath = Buffer.from(post.featuredImage || '').toString('base64');
+            imageUrl = `${baseUrl}/api/blog/images/${encodedPath}.jpg`;
           }
           
           // HTML-escape the title for safe use in attributes
@@ -2194,32 +2253,40 @@ ${rssItems}
   // RSS feed for Success Stories page
   app.get("/api/success-stories/rss", async (req, res) => {
     try {
-      const composites = await storage.getBeforeAfterComposites();
+      const stories = await storage.getApprovedSuccessStories();
       const baseUrl = 'https://www.plumbersthatcare.com';
 
-      // Build RSS XML
-      const rssItems = composites.slice(0, 20).map(composite => {
-        const pubDate = new Date(composite.createdAt).toUTCString();
+      // Build RSS XML from customer success stories
+      const rssItems = stories.slice(0, 20).map(story => {
+        const pubDate = new Date(story.submittedAt).toUTCString();
         
-        // Use JPEG version for RSS (better compatibility with social media tools)
-        const jpegUrl = composite.jpegCompositeUrl 
-          ? (composite.jpegCompositeUrl.startsWith('http') 
-              ? composite.jpegCompositeUrl 
-              : `${baseUrl}${composite.jpegCompositeUrl}`)
-          : `${baseUrl}/api/before-after-composites/${composite.id}/download`; // Fallback to conversion endpoint
+        // Convert WebP collage image to JPEG with .jpg extension for RSS readers
+        let imageUrl = `${baseUrl}/attached_assets/logo.jpg`; // Default fallback
+        if (story.collagePhotoUrl) {
+          if (story.collagePhotoUrl.endsWith('.webp')) {
+            const encodedPath = Buffer.from(story.collagePhotoUrl).toString('base64');
+            imageUrl = `${baseUrl}/api/blog/images/${encodedPath}.jpg`;
+          } else {
+            // Already JPEG or PNG
+            imageUrl = story.collagePhotoUrl.startsWith('http') 
+              ? story.collagePhotoUrl 
+              : `${baseUrl}${story.collagePhotoUrl}`;
+          }
+        }
         
         return `
     <item>
-      <title><![CDATA[${composite.caption || 'Before & After Transformation'}]]></title>
+      <title><![CDATA[${story.customerName} - ${story.serviceCategory}]]></title>
       <link>${baseUrl}/success-stories</link>
-      <guid isPermaLink="false">${composite.id}</guid>
+      <guid isPermaLink="false">${story.id}</guid>
       <pubDate>${pubDate}</pubDate>
-      <category>${composite.category}</category>
+      <category>${story.serviceCategory}</category>
       <description><![CDATA[
-        <img src="${jpegUrl}" alt="${composite.caption || 'Before and after transformation'}" style="max-width: 100%;" />
-        <p>${composite.caption || 'See this amazing plumbing transformation!'}</p>
+        <img src="${imageUrl}" alt="${story.customerName} success story" style="max-width: 100%;" />
+        <p><strong>${story.location}</strong></p>
+        <p>${story.story}</p>
       ]]></description>
-      <enclosure url="${jpegUrl}" type="image/jpeg" />
+      <enclosure url="${imageUrl}" type="image/jpeg" />
     </item>`;
       }).join('');
 
@@ -2228,7 +2295,7 @@ ${rssItems}
   <channel>
     <title>Economy Plumbing Services - Success Stories</title>
     <link>${baseUrl}/success-stories</link>
-    <description>Real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more.</description>
+    <description>Real customer testimonials and before/after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more.</description>
     <language>en-us</language>
     <atom:link href="${baseUrl}/api/success-stories/rss" rel="self" type="application/rss+xml" />
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
