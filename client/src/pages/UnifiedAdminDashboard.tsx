@@ -1752,7 +1752,12 @@ function PageMetadataSection() {
                       {page.customMetadata?.title ? (
                         <div className="text-sm">{page.customMetadata.title}</div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Default</span>
+                        <div className="max-w-md">
+                          <div className="text-sm text-muted-foreground line-clamp-2">
+                            {page.defaultTitle || `${page.title} | Economy Plumbing`}
+                          </div>
+                          <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
+                        </div>
                       )}
                     </td>
                     <td className="p-3">
@@ -1764,10 +1769,14 @@ function PageMetadataSection() {
                           </Badge>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Default</span>
+                        <div className="max-w-md">
+                          <div className="text-sm text-muted-foreground line-clamp-2">
+                            {page.defaultDescription || `Professional ${page.title.toLowerCase()} services in Austin & Marble Falls, TX. Licensed plumbers, same-day service available.`}
+                          </div>
+                          <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
+                        </div>
                       )}
-                    </td>
-                    <td className="p-3 text-center">
+                    </td>                    <td className="p-3 text-center">
                       {page.hasCustom ? (
                         <Badge variant="default" className="text-xs">Custom</Badge>
                       ) : (
