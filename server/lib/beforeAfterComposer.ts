@@ -305,19 +305,20 @@ export async function createBeforeAfterComposite(
   const photoWidth = 800;
   const photoHeight = 600;
 
-  // Convert normalized focal points (0-1) to sharp position strings
+  // Convert normalized focal points (0-1) to sharp gravity strings
   const getFocalPosition = (focal: { x: number; y: number } | null): string => {
-    if (!focal) return 'center';
+    if (!focal) return 'centre';
     
-    // Determine position based on focal point
-    const xPos = focal.x < 0.33 ? 'left' : focal.x > 0.67 ? 'right' : 'centre';
-    const yPos = focal.y < 0.33 ? 'top' : focal.y > 0.67 ? 'bottom' : 'centre';
+    // Sharp accepts these gravity values: northwest, north, northeast, west, centre, east, southwest, south, southeast
+    // Map focal point coordinates to Sharp gravity
+    const xPos = focal.x < 0.33 ? 'west' : focal.x > 0.67 ? 'east' : 'centre';
+    const yPos = focal.y < 0.33 ? 'north' : focal.y > 0.67 ? 'south' : 'centre';
     
-    // Combine into position string (e.g., "left top", "centre", "right bottom")
+    // Combine into Sharp gravity string
     if (xPos === 'centre' && yPos === 'centre') return 'centre';
     if (xPos === 'centre') return yPos;
     if (yPos === 'centre') return xPos;
-    return `${yPos} ${xPos}`;
+    return `${yPos}${xPos}`; // e.g., "northwest", "northeast", "southwest", "southeast"
   };
 
   const beforePosition = getFocalPosition(beforeFocalPoint);
