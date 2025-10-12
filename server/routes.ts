@@ -467,9 +467,14 @@ ${productUrls}
         const { ObjectStorageService } = await import('./objectStorage');
         const objectStorage = new ObjectStorageService();
         
-        // Normalize path for object storage: remove leading slash and 'public-objects/' prefix
+        // Normalize path for object storage
         let normalizedPath = imageUrl.startsWith('/') ? imageUrl.substring(1) : imageUrl;
-        if (normalizedPath.startsWith('public-objects/')) {
+        
+        // Remove bucket-specific prefix patterns
+        // Pattern: replit-objstore-{id}/public/ or public-objects/
+        if (normalizedPath.includes('/public/')) {
+          normalizedPath = normalizedPath.split('/public/')[1];
+        } else if (normalizedPath.startsWith('public-objects/')) {
           normalizedPath = normalizedPath.substring('public-objects/'.length);
         }
         
