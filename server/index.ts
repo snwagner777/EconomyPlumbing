@@ -10,6 +10,7 @@ import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
+import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { setupOAuth } from "./replitAuth";
 
 const app = express();
@@ -373,6 +374,9 @@ async function refreshReviewsPeriodically() {
   // Groups photos from same job uploaded in last 24 hours and creates before/after collages
   // DISABLED: User requested to disable automatic composite creation
   // startDailyCompositeJob();
+  
+  // Start photo cleanup job (runs daily at 3am to delete unused photos older than 60 days)
+  startPhotoCleanupJob();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
