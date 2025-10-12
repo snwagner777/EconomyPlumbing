@@ -14,8 +14,10 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Utilizes a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, canonical URLs, and extensive JSON-LD schema. Default OpenGraph and Twitter Card tags are server-rendered in `index.html` for immediate social media scraper visibility, with React Helmet providing page-specific overrides. All og:image URLs use absolute production URLs (`https://www.plumbersthatcare.com`). Includes performance optimizations like resource preconnect, image lazy loading, font optimization, client-side code splitting, and universal WebP image conversion. A dynamic sitemap auto-updates.
 - **Accessibility:** WCAG AA Compliant with focus on contrast ratios, `aria-label` usage, and dynamic Open Graph image construction.
 - **Pages:** Includes Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, and conversion-optimized SEO landing pages.
-- **RSS Feeds:** Blog RSS feed (`/rss.xml`) and Success Stories RSS feed (`/api/success-stories/rss.xml`) with responsive WebP images served via conversion endpoints (URLs end in .jpg for RSS reader compatibility). Image conversion endpoints normalize object storage paths by stripping `/replit-objstore-{id}/public/` prefixes to match `searchPublicObject` requirements.
-- **Admin Panels:** Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
+- **RSS Feeds:** Blog RSS feed (`/rss.xml`) and Success Stories RSS feed (`/api/success-stories/rss.xml`) use pre-generated JPEG images for maximum RSS reader and social media automation compatibility (Zapier, etc.). New content automatically generates both WebP (website) and JPEG (RSS/social) versions at creation time. Legacy content uses fallback conversion endpoints.
+- **Admin Panels:** 
+  - Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
+  - Maintenance panel includes JPEG backfill tools to generate JPEG versions for existing WebP images, ensuring full RSS/social media compatibility for all content.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
@@ -48,4 +50,4 @@ Preferred communication style: Simple, everyday language.
 - **Social Media:** Meta Graph API for automated posting to Facebook/Instagram.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple`.
-- **Image Processing:** Sharp library for WebP conversion.
+- **Image Processing:** Sharp library for dual-format image generation (WebP for website performance, JPEG for RSS/social media compatibility). All new blog posts and success stories automatically generate both formats at creation time, stored in object storage.
