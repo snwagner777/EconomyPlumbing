@@ -59,11 +59,11 @@ export function SEOHead({
   // Always use production URL for OpenGraph images - social platforms require absolute URLs
   const productionUrl = "https://www.plumbersthatcare.com";
   
-  // Use optimized 1200x630 OG image for social sharing (better for Facebook, Twitter, iMessage)
+  // Use logo for social sharing
   // Add cache-busting parameter to force social platforms to refresh the image
   const fullOgImage = ogImage 
     ? (ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}`)
-    : `${productionUrl}/attached_assets/og-image-social.jpg?v=3`;
+    : `${productionUrl}/attached_assets/logo.jpg?v=1`;
 
   return (
     <Helmet>
