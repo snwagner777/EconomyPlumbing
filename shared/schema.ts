@@ -114,6 +114,10 @@ export const customerSuccessStories = pgTable("customer_success_stories", {
   afterPhotoUrl: text("after_photo_url").notNull(),
   collagePhotoUrl: text("collage_photo_url"), // AI-generated before/after composite image (WebP)
   jpegCollagePhotoUrl: text("jpeg_collage_photo_url"), // JPEG version for RSS/social media
+  beforeFocalX: integer("before_focal_x"), // Manual focal point override (0-100 from left)
+  beforeFocalY: integer("before_focal_y"), // Manual focal point override (0-100 from top)
+  afterFocalX: integer("after_focal_x"), // Manual focal point override (0-100 from left)
+  afterFocalY: integer("after_focal_y"), // Manual focal point override (0-100 from top)
   serviceCategory: text("service_category").notNull(), // water-heater, drain-cleaning, etc.
   location: text("location").notNull(),
   approved: boolean("approved").notNull().default(false), // Moderation flag
