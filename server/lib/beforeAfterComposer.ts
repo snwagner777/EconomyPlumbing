@@ -284,11 +284,19 @@ If the image has no clear focal point (blank, too dark, etc.), respond with: {"x
 
 /**
  * Create a polaroid-style before/after composite image
+ * @param beforeUrl URL of the before photo
+ * @param afterUrl URL of the after photo
+ * @param outputPath Output path for the composite
+ * @param manualFocalPoints Optional manual focal points {before: {x, y}, after: {x, y}} in 0-100 range
  */
 export async function createBeforeAfterComposite(
   beforeUrl: string,
   afterUrl: string,
-  outputPath: string
+  outputPath: string,
+  manualFocalPoints?: {
+    before?: { x: number; y: number };
+    after?: { x: number; y: number };
+  }
 ): Promise<string> {
   console.log(`[Compositor] Creating before/after composite...`);
 
@@ -296,10 +304,33 @@ export async function createBeforeAfterComposite(
   const beforeBuffer = await downloadImage(beforeUrl);
   const afterBuffer = await downloadImage(afterUrl);
 
-  // Detect focal points for intelligent cropping
-  console.log(`[Compositor] Detecting focal points for smart positioning...`);
-  const beforeFocalPoint = await detectFocalPoint(beforeBuffer);
-  const afterFocalPoint = await detectFocalPoint(afterBuffer);
+  // Use manual focal points if provided, otherwise detect with AI
+  let beforeFocalPoint: { x: number; y: number } | null;
+  let afterFocalPoint: { x: number; y: number } | null;
+
+  if (manualFocalPoints?.before) {
+    // Convert from 0-100 range to 0-1 range
+    beforeFocalPoint = {
+      x: manualFocalPoints.before.x / 100,
+      y: manualFocalPoints.before.y / 100
+    };
+    console.log(`[Compositor] Using manual before focal point: (${beforeFocalPoint.x}, ${beforeFocalPoint.y})`);
+  } else {
+    console.log(`[Compositor] Detecting before focal point with AI...`);
+    beforeFocalPoint = await detectFocalPoint(beforeBuffer);
+  }
+
+  if (manualFocalPoints?.after) {
+    // Convert from 0-100 range to 0-1 range
+    afterFocalPoint = {
+      x: manualFocalPoints.after.x / 100,
+      y: manualFocalPoints.after.y / 100
+    };
+    console.log(`[Compositor] Using manual after focal point: (${afterFocalPoint.x}, ${afterFocalPoint.y})`);
+  } else {
+    console.log(`[Compositor] Detecting after focal point with AI...`);
+    afterFocalPoint = await detectFocalPoint(afterBuffer);
+  }
 
   // Resize images to consistent size (800x600 for each photo)
   const photoWidth = 800;
