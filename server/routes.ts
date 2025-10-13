@@ -324,7 +324,6 @@ ${productUrls}
       const targetCategories = category ? [category] : categories;
       
       const { suggestBlogTopic, generateBlogPost } = await import("./lib/blogTopicAnalyzer");
-      const { processBlogImage } = await import("./lib/blogImageProcessor");
       
       const allGeneratedBlogs = [];
       
@@ -373,11 +372,47 @@ ${productUrls}
             let featuredImage = null;
             let jpegFeaturedImage = null;
             if (photo.photoUrl) {
-              console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
-              const processedImage = await processBlogImage(photo.photoUrl, blogPost.title);
-              featuredImage = processedImage.imagePath;
-              jpegFeaturedImage = processedImage.jpegImagePath;
-              console.log(`[Historic Blog Generation] Cropped images saved - WebP: ${featuredImage}, JPEG: ${jpegFeaturedImage}`);
+              try {
+                console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
+                const processedImage = await processBlogImage(photo.photoUrl, blogPost.title);
+                featuredImage = processedImage.imagePath;
+                jpegFeaturedImage = processedImage.jpegImagePath;
+                console.log(`[Historic Blog Generation] Cropped images saved - WebP: ${featuredImage}, JPEG: ${jpegFeaturedImage}`);
+              } catch (imageError) {
+                console.error(`[Historic Blog Generation] ⚠️ Image processing failed, attempting simple conversion:`, imageError);
+                // Fallback: Convert WebP to JPEG without cropping
+                try {
+                  const sharpLib = (await import("sharp")).default;
+                  const objectStorage = new ObjectStorageService();
+                  
+                  // Download WebP image
+                  const webpBuffer = await objectStorage.downloadBuffer(photo.photoUrl);
+                  if (webpBuffer) {
+                    // Convert to JPEG
+                    const jpegBuffer = await sharpLib(webpBuffer)
+                      .jpeg({ quality: 90 })
+                      .toBuffer();
+                    
+                    // Upload JPEG with same path but .jpg extension
+                    const jpegPath = photo.photoUrl.replace(/\.webp$/i, '.jpg');
+                    await objectStorage.uploadBuffer(jpegBuffer, jpegPath, 'image/jpeg');
+                    
+                    featuredImage = photo.photoUrl;
+                    jpegFeaturedImage = jpegPath;
+                    console.log(`[Historic Blog Generation] ✅ Fallback JPEG created: ${jpegPath}`);
+                  } else {
+                    // Last resort: use WebP for both (RSS readers may support it)
+                    featuredImage = photo.photoUrl;
+                    jpegFeaturedImage = photo.photoUrl;
+                    console.warn(`[Historic Blog Generation] ⚠️ Using WebP for both formats`);
+                  }
+                } catch (conversionError) {
+                  console.error(`[Historic Blog Generation] ❌ JPEG conversion failed:`, conversionError);
+                  // Last resort: use WebP for both
+                  featuredImage = photo.photoUrl;
+                  jpegFeaturedImage = photo.photoUrl;
+                }
+              }
             }
             
             // Step 5: Save to database
@@ -3797,12 +3832,63 @@ Write in a professional yet friendly tone.`;
       const publishDate = new Date();
       publishDate.setMonth(publishDate.getMonth() - monthsAgo);
 
+      // Process image and generate JPEG version
+      let featuredImage = photo.photoUrl;
+      let jpegFeaturedImage = null;
+      
+      if (photo.photoUrl) {
+        try {
+          console.log(`[Manual Blog Post] Processing image for: ${title}`);
+          const processed = await processBlogImage(photo.photoUrl, title);
+          
+          featuredImage = processed.imagePath;
+          jpegFeaturedImage = processed.jpegImagePath;
+          console.log(`[Manual Blog Post] ✅ Image processed - WebP: ${featuredImage}, JPEG: ${jpegFeaturedImage}`);
+        } catch (imageError) {
+          console.error(`[Manual Blog Post] ⚠️ Image processing failed, attempting simple conversion:`, imageError);
+          // Fallback: Convert WebP to JPEG without cropping
+          try {
+            const sharpLib = (await import("sharp")).default;
+            const objectStorage = new ObjectStorageService();
+            
+            // Download WebP image
+            const webpBuffer = await objectStorage.downloadBuffer(photo.photoUrl);
+            if (webpBuffer) {
+              // Convert to JPEG
+              const jpegBuffer = await sharpLib(webpBuffer)
+                .jpeg({ quality: 90 })
+                .toBuffer();
+              
+              // Upload JPEG with same path but .jpg extension
+              const jpegPath = photo.photoUrl.replace(/\.webp$/i, '.jpg');
+              await objectStorage.uploadBuffer(jpegBuffer, jpegPath, 'image/jpeg');
+              
+              featuredImage = photo.photoUrl;
+              jpegFeaturedImage = jpegPath;
+              console.log(`[Manual Blog Post] ✅ Fallback JPEG created: ${jpegPath}`);
+            } else {
+              // Last resort: use WebP for both (RSS readers may support it)
+              featuredImage = photo.photoUrl;
+              jpegFeaturedImage = photo.photoUrl;
+              console.warn(`[Manual Blog Post] ⚠️ Using WebP for both formats`);
+            }
+          } catch (conversionError) {
+            console.error(`[Manual Blog Post] ❌ JPEG conversion failed:`, conversionError);
+            // Last resort: use WebP for both
+            featuredImage = photo.photoUrl;
+            jpegFeaturedImage = photo.photoUrl;
+          }
+        }
+      }
+
       const post = await storage.createBlogPost({
         title,
         content,
         slug,
         excerpt: content.substring(0, 150).replace(/#+\s*/g, '').trim() + '...',
-        featuredImage: photo.photoUrl,
+        featuredImage,
+        jpegFeaturedImage,
+        imageId: photoId,
         author: 'Economy Plumbing Services',
         category: photo.category || 'General',
         published: true,
