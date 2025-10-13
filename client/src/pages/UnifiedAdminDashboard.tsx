@@ -52,6 +52,7 @@ import {
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/schema";
+import { FocalPointEditor } from "@/components/FocalPointEditor";
 
 type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
 
@@ -589,6 +590,11 @@ function SuccessStoriesSection() {
     location: "",
   });
 
+  const [isFocalPointDialogOpen, setIsFocalPointDialogOpen] = useState(false);
+  const [focalPointStory, setFocalPointStory] = useState<any | null>(null);
+  const [beforeFocalPoint, setBeforeFocalPoint] = useState<{ x: number; y: number } | null>(null);
+  const [afterFocalPoint, setAfterFocalPoint] = useState<{ x: number; y: number } | null>(null);
+
   const { data: storiesData, isLoading } = useQuery<{ stories: any[] }>({
     queryKey: ['/api/admin/success-stories'],
   });
@@ -665,6 +671,31 @@ function SuccessStoriesSection() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/success-stories'] });
       queryClient.invalidateQueries({ queryKey: ['/api/success-stories'] });
       handleCloseEditDialog();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateFocalPointsMutation = useMutation({
+    mutationFn: async ({ id, focalPoints }: { id: string; focalPoints: any }) => {
+      return await apiRequest("PUT", `/api/admin/success-stories/${id}/focal-points`, focalPoints);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Focal Points Updated",
+        description: "The collage has been regenerated with your custom focal points.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/success-stories'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/success-stories'] });
+      setIsFocalPointDialogOpen(false);
+      setFocalPointStory(null);
+      setBeforeFocalPoint(null);
+      setAfterFocalPoint(null);
     },
     onError: (error: any) => {
       toast({
@@ -780,6 +811,35 @@ function SuccessStoriesSection() {
     updateMutation.mutate({
       id: editingStory.id,
       updates: editFormData,
+    });
+  };
+
+  const handleOpenFocalPointEditor = (story: any) => {
+    setFocalPointStory(story);
+    setBeforeFocalPoint(
+      story.beforeFocalX !== null && story.beforeFocalY !== null
+        ? { x: story.beforeFocalX, y: story.beforeFocalY }
+        : { x: 50, y: 50 }
+    );
+    setAfterFocalPoint(
+      story.afterFocalX !== null && story.afterFocalY !== null
+        ? { x: story.afterFocalX, y: story.afterFocalY }
+        : { x: 50, y: 50 }
+    );
+    setIsFocalPointDialogOpen(true);
+  };
+
+  const handleSaveFocalPoints = () => {
+    if (!focalPointStory) return;
+
+    updateFocalPointsMutation.mutate({
+      id: focalPointStory.id,
+      focalPoints: {
+        beforeFocalX: beforeFocalPoint?.x,
+        beforeFocalY: beforeFocalPoint?.y,
+        afterFocalX: afterFocalPoint?.x,
+        afterFocalY: afterFocalPoint?.y,
+      },
     });
   };
 
@@ -985,6 +1045,14 @@ function SuccessStoriesSection() {
                   </Button>
                   <Button
                     variant="outline"
+                    onClick={() => handleOpenFocalPointEditor(story)}
+                    data-testid={`button-focal-points-${story.id}`}
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Adjust Focal Points
+                  </Button>
+                  <Button
+                    variant="outline"
                     onClick={() => handleUnapprove(story.id)}
                     disabled={unapproveMutation.isPending}
                     data-testid={`button-unapprove-${story.id}`}
@@ -1084,6 +1152,57 @@ function SuccessStoriesSection() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Focal Point Editor Dialog */}
+      <Dialog open={isFocalPointDialogOpen} onOpenChange={setIsFocalPointDialogOpen}>
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Adjust Focal Points</DialogTitle>
+            <DialogDescription>
+              Click on each image to set where the main subject should be centered in the collage.
+              The collage will be regenerated with your custom positioning.
+            </DialogDescription>
+          </DialogHeader>
+          {focalPointStory && (
+            <div className="grid gap-6 py-4">
+              <FocalPointEditor
+                imageUrl={focalPointStory.beforePhotoUrl}
+                initialFocalPoint={beforeFocalPoint || undefined}
+                onFocalPointChange={setBeforeFocalPoint}
+                label="Before Photo - Click to set focal point"
+              />
+              <FocalPointEditor
+                imageUrl={focalPointStory.afterPhotoUrl}
+                initialFocalPoint={afterFocalPoint || undefined}
+                onFocalPointChange={setAfterFocalPoint}
+                label="After Photo - Click to set focal point"
+              />
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsFocalPointDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveFocalPoints} 
+                  disabled={updateFocalPointsMutation.isPending}
+                  data-testid="button-save-focal-points"
+                >
+                  {updateFocalPointsMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Regenerating Collage...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Save & Regenerate Collage
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
