@@ -103,7 +103,7 @@ export function SEOHead({
       <meta property="twitter:description" content={finalDescription} />
       <meta property="twitter:image" content={fullOgImage} />
       <meta property="twitter:image:alt" content={ogImageAlt} />
-      <meta name="twitter:site" content="@plumberscare" />
+      <meta name="twitter:site" content="@plumbersthatcare" />
 
       {/* Article-specific meta tags */}
       {ogType === "article" && articlePublishedTime && (
