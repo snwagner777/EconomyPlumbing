@@ -53,6 +53,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/schema";
 import { FocalPointEditor } from "@/components/FocalPointEditor";
+import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 
 type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
 
@@ -1261,56 +1262,34 @@ function SuccessStoriesSection() {
         </DialogContent>
       </Dialog>
 
-      {/* Focal Point Editor Dialog */}
-      <Dialog open={isFocalPointDialogOpen} onOpenChange={setIsFocalPointDialogOpen}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Adjust Focal Points</DialogTitle>
-            <DialogDescription>
-              Click on each image to set where the main subject should be centered in the collage.
-              The collage will be regenerated with your custom positioning.
-            </DialogDescription>
-          </DialogHeader>
-          {focalPointStory && (
-            <div className="grid gap-6 py-4">
-              <FocalPointEditor
-                imageUrl={focalPointStory.beforePhotoUrl}
-                initialFocalPoint={beforeFocalPoint || undefined}
-                onFocalPointChange={setBeforeFocalPoint}
-                label="Before Photo - Click to set focal point"
-              />
-              <FocalPointEditor
-                imageUrl={focalPointStory.afterPhotoUrl}
-                initialFocalPoint={afterFocalPoint || undefined}
-                onFocalPointChange={setAfterFocalPoint}
-                label="After Photo - Click to set focal point"
-              />
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsFocalPointDialogOpen(false)}>
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={handleSaveFocalPoints} 
-                  disabled={updateFocalPointsMutation.isPending}
-                  data-testid="button-save-focal-points"
-                >
-                  {updateFocalPointsMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Regenerating Collage...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="mr-2 h-4 w-4" />
-                      Save & Regenerate Collage
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Draggable Collage Editor */}
+      {focalPointStory && (
+        <DraggableCollageEditor
+          beforeImageUrl={focalPointStory.beforePhotoUrl}
+          afterImageUrl={focalPointStory.afterPhotoUrl}
+          initialBeforeFocal={beforeFocalPoint || { x: 50, y: 50 }}
+          initialAfterFocal={afterFocalPoint || { x: 50, y: 50 }}
+          onSave={(focalPoints) => {
+            updateFocalPointsMutation.mutate({
+              id: focalPointStory.id,
+              focalPoints: {
+                beforeFocalX: focalPoints.before.x,
+                beforeFocalY: focalPoints.before.y,
+                afterFocalX: focalPoints.after.x,
+                afterFocalY: focalPoints.after.y,
+              },
+            });
+          }}
+          onClose={() => {
+            setIsFocalPointDialogOpen(false);
+            setFocalPointStory(null);
+            setBeforeFocalPoint(null);
+            setAfterFocalPoint(null);
+          }}
+          open={isFocalPointDialogOpen}
+          isSaving={updateFocalPointsMutation.isPending}
+        />
+      )}
     </div>
   );
 }
