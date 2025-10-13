@@ -84,10 +84,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/20-gas-pipe-repair/': '/gas-services',
     
     // Old blog posts - redirect to blog home or specific posts if available
-    '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services': '/blog',
-    '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services/': '/blog',
-    '/signs-of-a-slab-leak-in-austin-and-marble-falls': '/blog',
-    '/signs-of-a-slab-leak-in-austin-and-marble-falls/': '/blog',
     '/the-importance-of-slab-leak-repair-for-your-home-or-business': '/blog',
     '/the-importance-of-slab-leak-repair-for-your-home-or-business/': '/blog',
     '/the-importance-of-water-heater-maintenance-for-austin-homeowners': '/blog',
