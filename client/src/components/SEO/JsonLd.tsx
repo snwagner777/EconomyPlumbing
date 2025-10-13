@@ -16,6 +16,7 @@ export function createLocalBusinessSchema(aggregateRating?: { ratingValue: strin
   return {
     "@context": "https://schema.org",
     "@type": "Plumber",
+    "@id": "https://www.plumbersthatcare.com/#austin",
     "name": "Economy Plumbing Services",
     "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
     "logo": {
@@ -33,10 +34,11 @@ export function createLocalBusinessSchema(aggregateRating?: { ratingValue: strin
     "currenciesAccepted": "USD",
     "hasMap": "https://maps.google.com/?q=701+Tillery+St+%2312+Austin+TX+78702",
     "sameAs": [
-      "https://facebook.com/econoplumbing",
-      "https://instagram.com/plumbersthatcare_atx",
-      "https://yelp.com/biz/economy-plumbing-services-austin-3",
-      "https://nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/"
+      "https://www.facebook.com/econoplumbing",
+      "https://www.instagram.com/plumbersthatcare_atx",
+      "https://www.yelp.com/biz/economy-plumbing-services-austin-3",
+      "https://www.nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/",
+      "https://www.plumbersthatcare.com"
     ],
     "address": {
       "@type": "PostalAddress",
@@ -239,10 +241,13 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
   return {
     "@context": "https://schema.org",
     "@type": "Service",
+    "@id": serviceUrl,
+    "name": serviceName,
     "serviceType": serviceName,
     "description": serviceDescription,
     "provider": {
       "@type": "Plumber",
+      "@id": "https://www.plumbersthatcare.com/#austin",
       "name": "Economy Plumbing Services",
       "telephone": ["+15123689159", "+18304603565"],
       "url": "https://www.plumbersthatcare.com",
@@ -267,11 +272,45 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
         "worstRating": "1"
       }
     },
-    "areaServed": {
-      "@type": "State",
-      "name": "Texas"
-    },
-    "url": serviceUrl
+    "areaServed": [
+      {
+        "@type": "City",
+        "name": "Austin",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Cedar Park",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Leander",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Round Rock",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Georgetown",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Pflugerville",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      },
+      {
+        "@type": "City",
+        "name": "Marble Falls",
+        "containedIn": { "@type": "State", "name": "Texas" }
+      }
+    ],
+    "url": serviceUrl,
+    "category": "Plumbing Services"
   };
 }
 
@@ -316,26 +355,33 @@ export function createBlogPostSchema(post: any) {
   
   const publishDate = new Date(post.publishDate);
   
+  // Calculate word count from content
+  const wordCount = post.content ? post.content.split(/\s+/).filter((word: string) => word.length > 0).length : 0;
+  
   return {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
+    "@id": postUrl,
     "headline": post.title,
     "description": post.metaDescription || post.excerpt || post.content?.substring(0, 160) || "",
     "image": {
       "@type": "ImageObject",
       "url": imageUrl,
       "width": "1200",
-      "height": "630"
+      "height": "630",
+      "caption": post.title
     },
     "datePublished": publishDate.toISOString(),
     "dateModified": publishDate.toISOString(),
     "author": {
       "@type": "Organization",
+      "@id": `${baseUrl}/#organization`,
       "name": post.author || "Economy Plumbing Services",
       "url": baseUrl
     },
     "publisher": {
       "@type": "Organization",
+      "@id": `${baseUrl}/#organization`,
       "name": "Economy Plumbing Services",
       "url": baseUrl,
       "logo": {
@@ -350,6 +396,7 @@ export function createBlogPostSchema(post: any) {
       "@id": postUrl
     },
     "articleBody": post.content,
+    "wordCount": wordCount,
     "keywords": post.category,
     "inLanguage": "en-US",
     "about": {
@@ -363,6 +410,7 @@ export function createBlogPostSchema(post: any) {
       "name": "Economy Plumbing Blog",
       "publisher": {
         "@type": "Organization",
+        "@id": `${baseUrl}/#organization`,
         "name": "Economy Plumbing Services"
       }
     }

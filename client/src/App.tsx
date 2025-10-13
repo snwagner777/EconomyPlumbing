@@ -134,7 +134,8 @@ function Router() {
       <Route path="/rooter-services" component={RooterServices} />
       <Route path="/sewage-pump-services" component={SewagePumpServices} />
       <Route path="/services" component={Services} />
-      <Route path="/toilet-repair-services" component={ToiletFaucet} />
+      {/* 301 redirect: toilet-repair-services -> toilet-faucet for SEO canonicalization */}
+      <Route path="/toilet-repair-services">{() => <Redirect to="/toilet-faucet" />}</Route>
       <Route path="/water-heater-guide" component={WaterHeaterGuide} />
       <Route path="/water-leak-repair" component={LeakRepair} />
       <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
@@ -145,7 +146,8 @@ function Router() {
       <Route path="/plumber-austin" component={AustinServiceArea} />
       <Route path="/plumber-in-cedar-park--tx" component={CedarParkServiceArea} />
       <Route path="/plumber-leander" component={LeanderServiceArea} />
-      <Route path="/plumber-in-leander--tx524c3ae3" component={LeanderServiceArea} />
+      {/* 301 redirect: legacy Leander URL -> canonical Leander URL for SEO */}
+      <Route path="/plumber-in-leander--tx524c3ae3">{() => <Redirect to="/plumber-leander" />}</Route>
       <Route path="/round-rock-plumber" component={RoundRockServiceArea} />
       <Route path="/plumber-georgetown" component={GeorgetownServiceArea} />
       <Route path="/plumber-pflugerville" component={PflugervilleServiceArea} />

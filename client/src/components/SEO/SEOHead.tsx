@@ -1,6 +1,7 @@
 import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { generateCanonicalUrl } from "@/lib/canonicalUrl";
 
 export interface SEOProps {
   title: string;
@@ -53,17 +54,19 @@ export function SEOHead({
   const finalTitle = dbMetadata?.title || title;
   const finalDescription = dbMetadata?.description || description;
   
-  const url = canonical ?? (typeof window !== 'undefined' ? window.location.href : "https://www.plumbersthatcare.com");
+  // Generate canonical URL from location if not explicitly provided
+  const canonicalUrl = canonical || (dbMetadata?.canonical || generateCanonicalUrl(location));
+  
   const siteName = "Economy Plumbing Services";
   
   // Always use production URL for OpenGraph images - social platforms require absolute URLs
   const productionUrl = "https://www.plumbersthatcare.com";
   
-  // Use logo for social sharing
+  // Use optimized 1200x630 OG image for social sharing (optimal for Facebook/Twitter)
   // Add cache-busting parameter to force social platforms to refresh the image
   const fullOgImage = ogImage 
     ? (ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}`)
-    : `${productionUrl}/attached_assets/logo.jpg?v=1`;
+    : `${productionUrl}/attached_assets/og-image-social.jpg?v=2`;
 
   return (
     <Helmet>
@@ -71,7 +74,7 @@ export function SEOHead({
       <title>{finalTitle}</title>
       <meta name="title" content={finalTitle} />
       <meta name="description" content={finalDescription} />
-      {canonical && <link rel="canonical" href={canonical} />}
+      <link rel="canonical" href={canonicalUrl} />
       
       {/* RSS Feed */}
       <link 
@@ -83,7 +86,7 @@ export function SEOHead({
 
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={ogType} />
-      <meta property="og:url" content={url} />
+      <meta property="og:url" content={canonicalUrl} />
       <meta property="og:title" content={finalTitle} />
       <meta property="og:description" content={finalDescription} />
       <meta property="og:image" content={fullOgImage} />
@@ -95,11 +98,12 @@ export function SEOHead({
 
       {/* Twitter */}
       <meta property="twitter:card" content={twitterCard} />
-      <meta property="twitter:url" content={url} />
+      <meta property="twitter:url" content={canonicalUrl} />
       <meta property="twitter:title" content={finalTitle} />
       <meta property="twitter:description" content={finalDescription} />
       <meta property="twitter:image" content={fullOgImage} />
       <meta property="twitter:image:alt" content={ogImageAlt} />
+      <meta name="twitter:site" content="@plumberscare" />
 
       {/* Article-specific meta tags */}
       {ogType === "article" && articlePublishedTime && (
