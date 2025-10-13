@@ -2658,6 +2658,51 @@ ${rssItems}
     }
   });
 
+  // Update photo focal point (admin only)
+  app.put("/api/admin/photos/:id/focal-point", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { focalPointX, focalPointY, photoSource } = req.body;
+
+      // Validate inputs
+      if (focalPointX !== null && (typeof focalPointX !== 'number' || focalPointX < 0 || focalPointX > 100)) {
+        return res.status(400).json({ error: "focalPointX must be a number between 0 and 100" });
+      }
+      if (focalPointY !== null && (typeof focalPointY !== 'number' || focalPointY < 0 || focalPointY > 100)) {
+        return res.status(400).json({ error: "focalPointY must be a number between 0 and 100" });
+      }
+
+      // Update the appropriate table based on photo source
+      if (photoSource === 'google-drive') {
+        await db
+          .update(importedPhotos)
+          .set({
+            focalPointX: focalPointX === null ? null : Math.round(focalPointX),
+            focalPointY: focalPointY === null ? null : Math.round(focalPointY),
+          })
+          .where(eq(importedPhotos.id, id));
+      } else {
+        // Default to companyCamPhotos for companycam and other sources
+        await db
+          .update(companyCamPhotos)
+          .set({
+            focalPointX: focalPointX === null ? null : Math.round(focalPointX),
+            focalPointY: focalPointY === null ? null : Math.round(focalPointY),
+          })
+          .where(eq(companyCamPhotos.id, id));
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Focal point updated successfully",
+        focalPoint: { x: focalPointX, y: focalPointY }
+      });
+    } catch (error: any) {
+      console.error("[Admin] Error updating focal point:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get photo stats (admin only)
   app.get("/api/admin/stats", requireAdmin, async (req, res) => {
     try {

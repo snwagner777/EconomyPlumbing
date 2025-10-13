@@ -326,6 +326,10 @@ function PhotoManagement() {
   const [showBlogPostDialog, setShowBlogPostDialog] = useState(false);
   const { toast } = useToast();
 
+  const [isFocalPointDialogOpen, setIsFocalPointDialogOpen] = useState(false);
+  const [focalPointPhoto, setFocalPointPhoto] = useState<any | null>(null);
+  const [focalPoint, setFocalPoint] = useState<{ x: number; y: number } | null>(null);
+
   // Fetch photos with filters
   const { data: photosData, isLoading: photosLoading } = useQuery({
     queryKey: ['/api/admin/photos', categoryFilter, qualityFilter, statusFilter],
@@ -379,6 +383,53 @@ function PhotoManagement() {
 
   const getSelectedPhotoObjects = () => {
     return photos.filter((p: any) => selectedPhotos.includes(p.id));
+  };
+
+  const updateFocalPointMutation = useMutation({
+    mutationFn: async ({ id, focalPoint, photoSource }: { id: string; focalPoint: { x: number; y: number } | null; photoSource: string }) => {
+      return await apiRequest("PUT", `/api/admin/photos/${id}/focal-point`, {
+        focalPointX: focalPoint?.x,
+        focalPointY: focalPoint?.y,
+        photoSource,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Focal Point Updated",
+        description: "The photo's focal point has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      setIsFocalPointDialogOpen(false);
+      setFocalPointPhoto(null);
+      setFocalPoint(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleOpenFocalPointEditor = (photo: any) => {
+    setFocalPointPhoto(photo);
+    setFocalPoint(
+      photo.focalPointX !== null && photo.focalPointY !== null
+        ? { x: photo.focalPointX, y: photo.focalPointY }
+        : { x: 50, y: 50 }
+    );
+    setIsFocalPointDialogOpen(true);
+  };
+
+  const handleSaveFocalPoint = () => {
+    if (!focalPointPhoto) return;
+
+    updateFocalPointMutation.mutate({
+      id: focalPointPhoto.id,
+      focalPoint,
+      photoSource: focalPointPhoto.photoSource || 'companycam',
+    });
   };
 
   return (
@@ -531,6 +582,17 @@ function PhotoManagement() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenFocalPointEditor(photo);
+                        }}
+                        data-testid={`focal-point-photo-${photo.id}`}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                   <div className="mt-2 space-y-1">
@@ -576,6 +638,50 @@ function PhotoManagement() {
           }}
         />
       )}
+
+      {/* Focal Point Editor Dialog */}
+      <Dialog open={isFocalPointDialogOpen} onOpenChange={setIsFocalPointDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Adjust Focal Point</DialogTitle>
+            <DialogDescription>
+              Click on the image to set where the main subject should be centered when this photo is used.
+            </DialogDescription>
+          </DialogHeader>
+          {focalPointPhoto && (
+            <div className="grid gap-6 py-4">
+              <FocalPointEditor
+                imageUrl={focalPointPhoto.photoUrl}
+                initialFocalPoint={focalPoint || undefined}
+                onFocalPointChange={setFocalPoint}
+                label="Click to set focal point"
+              />
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsFocalPointDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveFocalPoint} 
+                  disabled={updateFocalPointMutation.isPending}
+                  data-testid="button-save-photo-focal-point"
+                >
+                  {updateFocalPointMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Save Focal Point
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
