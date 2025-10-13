@@ -3381,6 +3381,95 @@ ${rssItems}
     }
   });
 
+  // Update focal points and regenerate collage (admin only)
+  app.put("/api/admin/success-stories/:id/focal-points", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { beforeFocalX, beforeFocalY, afterFocalX, afterFocalY } = req.body;
+
+      console.log(`[Success Stories] Updating focal points for story ${id}...`);
+
+      // Get the story first
+      const stories = await storage.getAllSuccessStories();
+      const storyData = stories.find(s => s.id === id);
+      
+      if (!storyData) {
+        return res.status(404).json({ error: "Success story not found" });
+      }
+
+      // Save focal points to database
+      const updatedStory = await storage.updateSuccessStory(id, {
+        beforeFocalX: beforeFocalX !== undefined ? beforeFocalX : null,
+        beforeFocalY: beforeFocalY !== undefined ? beforeFocalY : null,
+        afterFocalX: afterFocalX !== undefined ? afterFocalX : null,
+        afterFocalY: afterFocalY !== undefined ? afterFocalY : null,
+      });
+
+      // Regenerate collage with new focal points if story is approved
+      if (storyData.approved && storyData.beforePhotoUrl && storyData.afterPhotoUrl) {
+        console.log(`[Success Stories] Regenerating collage with new focal points...`);
+        
+        const { ObjectStorageService } = await import("./objectStorage");
+        const { createBeforeAfterComposite } = await import("./lib/beforeAfterComposer");
+        const path = await import("path");
+        const fs = await import("fs/promises");
+        const os = await import("os");
+        
+        const objectStorageService = new ObjectStorageService();
+        const publicSearchPaths = objectStorageService.getPublicObjectSearchPaths();
+        const publicPath = publicSearchPaths[0];
+        
+        // Create collage in temp directory
+        const tmpDir = os.tmpdir();
+        const webpFilename = `success_story_${id}_${Date.now()}.webp`;
+        const jpegFilename = webpFilename.replace('.webp', '.jpg');
+        const tmpWebpPath = path.join(tmpDir, webpFilename);
+        const tmpJpegPath = path.join(tmpDir, jpegFilename);
+        
+        // Create manual focal points object (only if set)
+        const manualFocalPoints: any = {};
+        if (beforeFocalX !== undefined && beforeFocalY !== undefined) {
+          manualFocalPoints.before = { x: beforeFocalX, y: beforeFocalY };
+        }
+        if (afterFocalX !== undefined && afterFocalY !== undefined) {
+          manualFocalPoints.after = { x: afterFocalX, y: afterFocalY };
+        }
+        
+        // Create the collage with manual focal points
+        await createBeforeAfterComposite(
+          storyData.beforePhotoUrl,
+          storyData.afterPhotoUrl,
+          tmpWebpPath,
+          Object.keys(manualFocalPoints).length > 0 ? manualFocalPoints : undefined
+        );
+        
+        // Upload both WebP and JPEG to object storage
+        const webpObjectPath = `${publicPath}/success_stories/${webpFilename}`;
+        const jpegObjectPath = `${publicPath}/success_stories/${jpegFilename}`;
+        
+        await objectStorageService.uploadFile(tmpWebpPath, webpObjectPath, 'image/webp');
+        await objectStorageService.uploadFile(tmpJpegPath, jpegObjectPath, 'image/jpeg');
+        
+        // Clean up temp files
+        await fs.unlink(tmpWebpPath).catch(() => {});
+        await fs.unlink(tmpJpegPath).catch(() => {});
+        
+        // Update the success story with new collage URLs
+        await storage.updateSuccessStory(id, {
+          collagePhotoUrl: webpObjectPath,
+          jpegCollagePhotoUrl: jpegObjectPath
+        });
+        
+        console.log(`[Success Stories] ✅ Collage regenerated with custom focal points`);
+      }
+
+      res.json({ story: updatedStory });
+    } catch (error: any) {
+      console.error("[Success Stories] Error updating focal points:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Generate AI caption for success story (admin only)
   app.post("/api/admin/generate-story-caption", requireAdmin, async (req, res) => {
     try {
