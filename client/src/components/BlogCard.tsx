@@ -85,10 +85,9 @@ const BlogCard = memo(({ post, priority = false }: BlogCardProps) => {
           <Link
             href={`/${post.slug}`}
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground hover:text-primary transition-colors"
-            aria-label={`Read more about ${post.title}`}
             data-testid={`link-read-more-${post.slug}`}
           >
-            Read More
+            Read Full Article
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
