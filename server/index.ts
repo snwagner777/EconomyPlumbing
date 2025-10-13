@@ -84,16 +84,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/20-gas-pipe-repair/': '/gas-services',
     
     // Old blog posts - redirect to blog home or specific posts if available
-    '/the-importance-of-slab-leak-repair-for-your-home-or-business': '/blog',
-    '/the-importance-of-slab-leak-repair-for-your-home-or-business/': '/blog',
     '/the-importance-of-water-heater-maintenance-for-austin-homeowners': '/blog',
     '/the-importance-of-water-heater-maintenance-for-austin-homeowners/': '/blog',
-    '/how-often-should-i-test-my-backflow-preventer': '/blog',
-    '/how-often-should-i-test-my-backflow-preventer/': '/blog',
     '/why-rheem': '/water-heater-services',
     '/why-rheem/': '/water-heater-services',
-    '/dont-miss-our-limited-time-plumbing-specials-on-groupon-your-trusted-plumber-in-austin-is-offering-amazing-deals': '/blog',
-    '/dont-miss-our-limited-time-plumbing-specials-on-groupon-your-trusted-plumber-in-austin-is-offering-amazing-deals/': '/blog',
     
     // WordPress date archives, categories, tags, authors
     '/2023/08/08': '/blog',
