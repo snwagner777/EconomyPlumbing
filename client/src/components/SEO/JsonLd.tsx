@@ -258,6 +258,13 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
         "@type": "GeoCoordinates",
         "latitude": "30.2672",
         "longitude": "-97.7431"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.3",
+        "reviewCount": "495",
+        "bestRating": "5",
+        "worstRating": "1"
       }
     },
     "areaServed": {
