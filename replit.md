@@ -18,7 +18,7 @@ Preferred communication style: Simple, everyday language.
 - **Admin Panels:** 
   - Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
   - Success Stories admin includes collage reprocessing tool to regenerate all existing collages with AI focal point detection for improved photo positioning
-  - Manual Focal Point Editing: All photos (CompanyCam, Google Drive, imported) and success story before/after images support manual focal point adjustment via click-to-set interface. Manual focal points override AI detection for precise subject positioning in collages and featured images.
+  - Drag-to-Position Collage Editor: Success story before/after images use an intuitive drag-based interface where admins can drag images around within the collage preview to precisely position the main subject. The preview shows exactly how the image will appear in the final collage, with full 0-100% focal range support and touch/pointer compatibility. Manual positioning overrides AI detection for precise control.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
