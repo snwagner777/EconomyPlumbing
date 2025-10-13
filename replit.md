@@ -18,6 +18,7 @@ Preferred communication style: Simple, everyday language.
 - **Admin Panels:** 
   - Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
   - Success Stories admin includes collage reprocessing tool to regenerate all existing collages with AI focal point detection for improved photo positioning
+  - Manual Focal Point Editing: All photos (CompanyCam, Google Drive, imported) and success story before/after images support manual focal point adjustment via click-to-set interface. Manual focal points override AI detection for precise subject positioning in collages and featured images.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
@@ -43,7 +44,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan for appointment scheduling.
 - **Email Integration:** Resend for transactional emails and 404 alerts.
-- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, and success story focal point detection. Success story collages use AI-powered focal point detection to intelligently position before/after photos in Polaroid-style frames, ensuring the main subject is properly centered. Before/after composite creation is available but currently disabled per user preference.
+- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, and success story focal point detection. Success story collages use AI-powered focal point detection to intelligently position before/after photos in Polaroid-style frames, ensuring the main subject is properly centered. Manual focal point editing overrides AI detection for precise control. Before/after composite creation is available but currently disabled per user preference.
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations for multi-source photo import. Automatic cleanup deletes unused photos after 60 days. Google Drive photos are automatically deleted from Drive after successful download/import.
 - **Google Services:** Google Places API for review updates, Google Maps.
 - **SEO Data:** DataForSEO API for historical review import.
