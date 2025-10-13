@@ -335,42 +335,63 @@ export async function createBeforeAfterComposite(
   // Resize images to consistent size (800x600 for each photo)
   const photoWidth = 800;
   const photoHeight = 600;
+  const targetAspect = photoWidth / photoHeight;
 
-  // Convert normalized focal points (0-1) to sharp gravity strings
-  const getFocalPosition = (focal: { x: number; y: number } | null): string => {
-    if (!focal) return 'centre';
+  // Helper function to resize and crop image with precise focal point positioning
+  const resizeWithFocalPoint = async (buffer: Buffer, focal: { x: number; y: number } | null): Promise<Buffer> => {
+    const metadata = await sharp(buffer).metadata();
+    const sourceWidth = metadata.width!;
+    const sourceHeight = metadata.height!;
+    const sourceAspect = sourceWidth / sourceHeight;
     
-    // Sharp accepts these gravity values: northwest, north, northeast, west, centre, east, southwest, south, southeast
-    // Map focal point coordinates to Sharp gravity
-    const xPos = focal.x < 0.33 ? 'west' : focal.x > 0.67 ? 'east' : 'centre';
-    const yPos = focal.y < 0.33 ? 'north' : focal.y > 0.67 ? 'south' : 'centre';
+    if (!focal) {
+      // No focal point, just use center crop
+      return sharp(buffer)
+        .resize(photoWidth, photoHeight, { 
+          fit: "cover",
+          position: "centre"
+        })
+        .toBuffer();
+    }
     
-    // Combine into Sharp gravity string
-    if (xPos === 'centre' && yPos === 'centre') return 'centre';
-    if (xPos === 'centre') return yPos;
-    if (yPos === 'centre') return xPos;
-    return `${yPos}${xPos}`; // e.g., "northwest", "northeast", "southwest", "southeast"
+    // Calculate the crop region that will center the focal point
+    // We want to extract a region that:
+    // 1. Has the same aspect ratio as our target (4:3)
+    // 2. Centers the focal point in that region
+    
+    let cropWidth: number, cropHeight: number;
+    
+    if (sourceAspect > targetAspect) {
+      // Source is wider - crop width, keep full height
+      cropHeight = sourceHeight;
+      cropWidth = Math.round(sourceHeight * targetAspect);
+    } else {
+      // Source is taller or same - crop height, keep full width
+      cropWidth = sourceWidth;
+      cropHeight = Math.round(sourceWidth / targetAspect);
+    }
+    
+    // Calculate crop position to center the focal point
+    // Focal point is at (focal.x * sourceWidth, focal.y * sourceHeight)
+    // We want it at the center of our crop (cropWidth/2, cropHeight/2)
+    let left = Math.round(focal.x * sourceWidth - cropWidth / 2);
+    let top = Math.round(focal.y * sourceHeight - cropHeight / 2);
+    
+    // Clamp to image boundaries
+    left = Math.max(0, Math.min(left, sourceWidth - cropWidth));
+    top = Math.max(0, Math.min(top, sourceHeight - cropHeight));
+    
+    console.log(`[Compositor] Crop region: ${cropWidth}x${cropHeight} at (${left}, ${top}) for focal (${focal.x}, ${focal.y})`);
+    
+    // Extract the crop region and resize to target size
+    return sharp(buffer)
+      .extract({ left, top, width: cropWidth, height: cropHeight })
+      .resize(photoWidth, photoHeight)
+      .toBuffer();
   };
 
-  const beforePosition = getFocalPosition(beforeFocalPoint);
-  const afterPosition = getFocalPosition(afterFocalPoint);
-  
-  console.log(`[Compositor] Before photo focal position: ${beforePosition}`);
-  console.log(`[Compositor] After photo focal position: ${afterPosition}`);
-
-  const beforeImage = await sharp(beforeBuffer)
-    .resize(photoWidth, photoHeight, { 
-      fit: "cover",
-      position: beforePosition as any
-    })
-    .toBuffer();
-
-  const afterImage = await sharp(afterBuffer)
-    .resize(photoWidth, photoHeight, { 
-      fit: "cover",
-      position: afterPosition as any
-    })
-    .toBuffer();
+  const beforeImage = await resizeWithFocalPoint(beforeBuffer, beforeFocalPoint);
+  const afterImage = await resizeWithFocalPoint(afterBuffer, afterFocalPoint);
 
   // Create polaroid-style frames
   const frameMargin = 40; // White border around photo

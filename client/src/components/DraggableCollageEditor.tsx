@@ -19,6 +19,13 @@ interface FocalPoint {
   y: number;
 }
 
+interface DragState {
+  startPointerX: number;
+  startPointerY: number;
+  startFocalX: number;
+  startFocalY: number;
+}
+
 export function DraggableCollageEditor({
   beforeImageUrl,
   afterImageUrl,
@@ -34,6 +41,9 @@ export function DraggableCollageEditor({
   
   const [isDraggingBefore, setIsDraggingBefore] = useState(false);
   const [isDraggingAfter, setIsDraggingAfter] = useState(false);
+  
+  const beforeDragState = useRef<DragState | null>(null);
+  const afterDragState = useRef<DragState | null>(null);
   
   const beforeRef = useRef<HTMLDivElement>(null);
   const afterRef = useRef<HTMLDivElement>(null);
@@ -51,6 +61,8 @@ export function DraggableCollageEditor({
     const handlePointerUp = () => {
       setIsDraggingBefore(false);
       setIsDraggingAfter(false);
+      beforeDragState.current = null;
+      afterDragState.current = null;
     };
 
     if (isDraggingBefore || isDraggingAfter) {
@@ -65,9 +77,28 @@ export function DraggableCollageEditor({
 
   const handlePointerDown = (type: 'before' | 'after') => (e: PointerEvent) => {
     e.preventDefault();
+    const ref = type === 'before' ? beforeRef : afterRef;
+    const focal = type === 'before' ? beforeFocal : afterFocal;
+    
+    if (!ref.current) return;
+    
+    const rect = ref.current.getBoundingClientRect();
+    const pointerX = e.clientX - rect.left;
+    const pointerY = e.clientY - rect.top;
+    
+    // Store the starting position and focal point
+    const dragState: DragState = {
+      startPointerX: pointerX,
+      startPointerY: pointerY,
+      startFocalX: focal.x,
+      startFocalY: focal.y,
+    };
+    
     if (type === 'before') {
+      beforeDragState.current = dragState;
       setIsDraggingBefore(true);
     } else {
+      afterDragState.current = dragState;
       setIsDraggingAfter(true);
     }
   };
@@ -76,23 +107,33 @@ export function DraggableCollageEditor({
     const isDragging = type === 'before' ? isDraggingBefore : isDraggingAfter;
     const ref = type === 'before' ? beforeRef : afterRef;
     const setFocal = type === 'before' ? setBeforeFocal : setAfterFocal;
+    const dragState = type === 'before' ? beforeDragState.current : afterDragState.current;
     
-    if (!isDragging || !ref.current) return;
+    if (!isDragging || !ref.current || !dragState) return;
 
     const rect = ref.current.getBoundingClientRect();
     
-    // Get pointer position relative to frame
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    // Convert to percentage (0-100) within the frame
-    // This represents where the user clicked as a focal point
-    const focalX = (x / rect.width) * 100;
-    const focalY = (y / rect.height) * 100;
-
+    // Get current pointer position relative to frame
+    const pointerX = e.clientX - rect.left;
+    const pointerY = e.clientY - rect.top;
+    
+    // Calculate how far the pointer has moved (in pixels)
+    const deltaX = pointerX - dragState.startPointerX;
+    const deltaY = pointerY - dragState.startPointerY;
+    
+    // Convert pixel delta to percentage delta
+    // Since the image is 200% size, moving 1% of frame = moving 0.5% of image focal point
+    const focalDeltaX = (deltaX / rect.width) * 100 * 0.5;
+    const focalDeltaY = (deltaY / rect.height) * 100 * 0.5;
+    
+    // Calculate new focal point by SUBTRACTING the delta
+    // (dragging right means we want to see more of the left part of the image)
+    const newFocalX = dragState.startFocalX - focalDeltaX;
+    const newFocalY = dragState.startFocalY - focalDeltaY;
+    
     // Clamp to valid range
-    const clampedX = Math.max(0, Math.min(100, focalX));
-    const clampedY = Math.max(0, Math.min(100, focalY));
+    const clampedX = Math.max(0, Math.min(100, newFocalX));
+    const clampedY = Math.max(0, Math.min(100, newFocalY));
 
     setFocal({ x: clampedX, y: clampedY });
   };
