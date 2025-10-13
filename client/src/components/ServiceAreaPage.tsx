@@ -86,6 +86,13 @@ export default function ServiceAreaPage({
       "containedIn": { "@type": "State", "name": "Texas" }
     },
     "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.3",
+      "reviewCount": "495",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
   };
 
   return (
