@@ -236,13 +236,39 @@ export async function processBlogImage(
     // Analyze image for smart cropping
     const analysis = await analyzeImageForCropping(imageUrl, blogTitle);
     
-    // Create the cropped version
-    const fullSourcePath = sourceImagePath.startsWith("/") 
-      ? `.${sourceImagePath}` 
-      : sourceImagePath;
+    // Handle object storage paths by downloading to temp first
+    let fullSourcePath: string;
+    let tempFilePath: string | null = null;
+    
+    if (sourceImagePath.includes('/replit-objstore-') || sourceImagePath.includes('/public-objects/')) {
+      console.log(`📦 [BlogImageProcessor] Downloading from object storage...`);
+      const { ObjectStorageService } = await import("../objectStorage");
+      const objectStorage = new ObjectStorageService();
+      const path = await import("path");
+      
+      // Download to temp file
+      const filename = path.basename(sourceImagePath);
+      tempFilePath = path.join('/tmp', `blog_temp_${Date.now()}_${filename}`);
+      const buffer = await objectStorage.downloadBuffer(sourceImagePath);
+      if (!buffer) {
+        throw new Error(`Failed to download image from object storage: ${sourceImagePath}`);
+      }
+      await fs.writeFile(tempFilePath, buffer);
+      fullSourcePath = tempFilePath;
+    } else {
+      // Local file path
+      fullSourcePath = sourceImagePath.startsWith("/") 
+        ? `.${sourceImagePath}` 
+        : sourceImagePath;
+    }
     
     const outputDir = "./attached_assets/blog_images";
     const croppedImages = await createSmartCrop(fullSourcePath, outputDir, analysis);
+    
+    // Clean up temp file if created
+    if (tempFilePath) {
+      await fs.unlink(tempFilePath).catch(() => {});
+    }
     
     return {
       imagePath: croppedImages.webp,
