@@ -84,8 +84,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/20-gas-pipe-repair/': '/gas-services',
     
     // Old blog posts - redirect to blog home or specific posts if available
-    '/hiring-a-plumber-near-me-tips-for-choosing-the-right-professional': '/blog',
-    '/hiring-a-plumber-near-me-tips-for-choosing-the-right-professional/': '/blog',
     '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services': '/blog',
     '/why-plumbers-are-expensive-exploring-the-costs-behind-plumbing-services/': '/blog',
     '/signs-of-a-slab-leak-in-austin-and-marble-falls': '/blog',
