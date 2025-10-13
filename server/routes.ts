@@ -3426,13 +3426,12 @@ ${rssItems}
     }
   });
 
-  // Update focal points and regenerate collage (admin only)
-  app.put("/api/admin/success-stories/:id/focal-points", requireAdmin, async (req, res) => {
+  // Swap before/after photos (admin only)
+  app.put("/api/admin/success-stories/:id/swap-photos", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const { beforeFocalX, beforeFocalY, afterFocalX, afterFocalY } = req.body;
 
-      console.log(`[Success Stories] Updating focal points for story ${id}...`);
+      console.log(`[Success Stories] Swapping before/after photos for story ${id}...`);
 
       // Get the story first
       const stories = await storage.getAllSuccessStories();
@@ -3442,12 +3441,106 @@ ${rssItems}
         return res.status(404).json({ error: "Success story not found" });
       }
 
-      // Save focal points to database
+      // Swap the URLs and focal points
       const updatedStory = await storage.updateSuccessStory(id, {
-        beforeFocalX: beforeFocalX !== undefined ? beforeFocalX : null,
-        beforeFocalY: beforeFocalY !== undefined ? beforeFocalY : null,
-        afterFocalX: afterFocalX !== undefined ? afterFocalX : null,
-        afterFocalY: afterFocalY !== undefined ? afterFocalY : null,
+        beforePhotoUrl: storyData.afterPhotoUrl,
+        afterPhotoUrl: storyData.beforePhotoUrl,
+        beforeFocalX: storyData.afterFocalX,
+        beforeFocalY: storyData.afterFocalY,
+        afterFocalX: storyData.beforeFocalX,
+        afterFocalY: storyData.beforeFocalY,
+      });
+
+      // Regenerate collage with swapped photos if story is approved
+      if (storyData.approved && storyData.beforePhotoUrl && storyData.afterPhotoUrl) {
+        console.log(`[Success Stories] Regenerating collage with swapped photos...`);
+        
+        const { ObjectStorageService } = await import("./objectStorage");
+        const { createBeforeAfterComposite } = await import("./lib/beforeAfterComposer");
+        const path = await import("path");
+        const fs = await import("fs/promises");
+        const os = await import("os");
+        
+        const objectStorageService = new ObjectStorageService();
+        const publicSearchPaths = objectStorageService.getPublicObjectSearchPaths();
+        const publicPath = publicSearchPaths[0];
+        
+        // Create collage in temp directory
+        const tmpDir = os.tmpdir();
+        const webpFilename = `success_story_${id}_${Date.now()}.webp`;
+        const jpegFilename = webpFilename.replace('.webp', '.jpg');
+        const tmpWebpPath = path.join(tmpDir, webpFilename);
+        const tmpJpegPath = path.join(tmpDir, jpegFilename);
+        
+        // Create manual focal points object if they exist (already swapped in updatedStory)
+        const manualFocalPoints: any = {};
+        if (updatedStory.beforeFocalX !== null && updatedStory.beforeFocalY !== null) {
+          manualFocalPoints.before = { x: updatedStory.beforeFocalX, y: updatedStory.beforeFocalY };
+        }
+        if (updatedStory.afterFocalX !== null && updatedStory.afterFocalY !== null) {
+          manualFocalPoints.after = { x: updatedStory.afterFocalX, y: updatedStory.afterFocalY };
+        }
+        
+        // Create the collage with swapped photos
+        await createBeforeAfterComposite(
+          updatedStory.beforePhotoUrl,
+          updatedStory.afterPhotoUrl,
+          tmpWebpPath,
+          Object.keys(manualFocalPoints).length > 0 ? manualFocalPoints : undefined
+        );
+        
+        // Upload both WebP and JPEG to object storage
+        const webpObjectPath = `${publicPath}/success_stories/${webpFilename}`;
+        const jpegObjectPath = `${publicPath}/success_stories/${jpegFilename}`;
+        
+        await objectStorageService.uploadFile(tmpWebpPath, webpObjectPath, 'image/webp');
+        await objectStorageService.uploadFile(tmpJpegPath, jpegObjectPath, 'image/jpeg');
+        
+        // Clean up temp files
+        await fs.unlink(tmpWebpPath).catch(() => {});
+        await fs.unlink(tmpJpegPath).catch(() => {});
+        
+        // Update the success story with new collage URLs
+        await storage.updateSuccessStory(id, {
+          collagePhotoUrl: webpObjectPath,
+          jpegCollagePhotoUrl: jpegObjectPath
+        });
+        
+        console.log(`[Success Stories] ✅ Collage regenerated with swapped photos`);
+      }
+
+      res.json({ story: updatedStory });
+    } catch (error: any) {
+      console.error("[Success Stories] Error swapping photos:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update focal points and regenerate collage (admin only)
+  app.put("/api/admin/success-stories/:id/focal-points", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { beforeFocalX, beforeFocalY, afterFocalX, afterFocalY } = req.body;
+
+      console.log(`[Success Stories] Updating focal points for story ${id}...`, { beforeFocalX, beforeFocalY, afterFocalX, afterFocalY });
+
+      // Get the story first
+      const stories = await storage.getAllSuccessStories();
+      const storyData = stories.find(s => s.id === id);
+      
+      if (!storyData) {
+        return res.status(404).json({ error: "Success story not found" });
+      }
+
+      // Validate and round focal points to integers
+      const roundFocal = (val: any) => val !== undefined && val !== null ? Math.round(Number(val)) : null;
+
+      // Save focal points to database (rounded to integers)
+      const updatedStory = await storage.updateSuccessStory(id, {
+        beforeFocalX: roundFocal(beforeFocalX),
+        beforeFocalY: roundFocal(beforeFocalY),
+        afterFocalX: roundFocal(afterFocalX),
+        afterFocalY: roundFocal(afterFocalY),
       });
 
       // Regenerate collage with new focal points if story is approved

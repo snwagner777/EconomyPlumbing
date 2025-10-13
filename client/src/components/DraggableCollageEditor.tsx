@@ -139,9 +139,10 @@ export function DraggableCollageEditor({
   };
 
   const handleSave = () => {
+    // Round focal points to integers for database storage
     onSave({
-      before: beforeFocal,
-      after: afterFocal
+      before: { x: Math.round(beforeFocal.x), y: Math.round(beforeFocal.y) },
+      after: { x: Math.round(afterFocal.x), y: Math.round(afterFocal.y) }
     });
   };
 
