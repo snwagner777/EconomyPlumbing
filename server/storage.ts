@@ -59,7 +59,7 @@ import {
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -2355,7 +2355,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getBlogPosts(): Promise<BlogPost[]> {
-    return await db.select().from(blogPosts);
+    return await db.select().from(blogPosts).orderBy(desc(blogPosts.publishDate));
   }
 
   async getBlogPostBySlug(slug: string): Promise<BlogPost | undefined> {
