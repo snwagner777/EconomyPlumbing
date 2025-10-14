@@ -4,8 +4,8 @@ import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp"
 export default function LeakRepair() {
   return (
     <ServicePage
-      title="Leak Detection & Repair | Austin & Marble Falls Plumber"
-      metaDescription="Fast leak detection & repair in Austin & Marble Falls. Slab leaks, water heaters, pipe & faucet leaks. Emergency 24/7 service. Call (512) 368-9159."
+      title="Leak Detection & Slab Leak Repair Austin TX | Advanced Technology"
+      metaDescription="Fast leak detection using electronic equipment. Slab leak specialists, pipe leak repair, hidden leak detection. 24/7 emergency service in Central Texas."
       canonical="https://www.plumbersthatcare.com/leak-repair"
       heroImage={leakImage}
       heroImageAlt="Professional leak detection and repair service in Austin and Marble Falls TX"

@@ -5,8 +5,8 @@ import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8
 export default function DrainCleaning() {
   return (
     <ServicePage
-      title="Drain Cleaning Austin & Marble Falls | Economy Plumbing"
-      metaDescription="Austin & Marble Falls drain cleaning, water heater & sewer services. Video inspection, hydro jetting, root removal. Same-day service. Call (512) 368-9159."
+      title="Drain Cleaning Austin TX | Video Inspection & Hydro Jetting Service"
+      metaDescription="Professional drain and sewer cleaning in Central Texas. Video camera inspection, hydro jetting, root removal. Clear tough clogs fast. Same-day service available."
       canonical="https://www.plumbersthatcare.com/drain-cleaning"
       heroImage={drainImage}
       heroImageAlt="Professional drain cleaning and sewer line service in Austin and Marble Falls TX"

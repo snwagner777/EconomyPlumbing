@@ -5,8 +5,8 @@ import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b
 export default function CommercialPlumbing() {
   return (
     <ServicePage
-      title="Commercial Plumbing Austin & Marble Falls | Economy Plumbing"
-      metaDescription="Austin & Marble Falls commercial plumbing & water heaters. Maintenance, emergency repairs, code compliance. Restaurants, offices. Call (512) 368-9159."
+      title="Commercial Plumbing Austin TX | Restaurants, Offices & Businesses"
+      metaDescription="Minimize downtime with 24/7 commercial plumbing service. Preventive maintenance, emergency repairs, code compliance. Serving Austin restaurants, offices & multi-tenant buildings."
       canonical="https://www.plumbersthatcare.com/commercial-plumbing"
       heroImage={commercialImage}
       heroImageAlt="Professional commercial plumbing services for businesses in Austin and Marble Falls TX"
