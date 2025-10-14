@@ -78,8 +78,8 @@ export default function About() {
   return (
     <>
       <SEOHead
-        title="About Us | Family-Owned Plumbing | Austin TX"
-        description="Family-owned plumbing company serving Central Texas since 2005. Licensed professionals specializing in water heaters & drain cleaning. Call (512) 368-9159."
+        title="About Us | Family-Owned Plumbing Company | Austin TX"
+        description="Family-owned plumbing company serving Central Texas since 2005. Licensed professionals specializing in water heaters and drain cleaning. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/about"
         schema={organizationSchema}
       />

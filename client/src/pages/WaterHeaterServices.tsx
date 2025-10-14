@@ -5,8 +5,8 @@ import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_72
 export default function WaterHeaterServices() {
   return (
     <ServicePage
-      title="Water Heater Repair & Installation Austin TX"
-      metaDescription="Expert water heater repair, installation & replacement in Austin. Tankless specialists. Same-day service. Licensed plumbers. Call (512) 368-9159 today."
+      title="Water Heater Repair & Installation Austin TX | Expert"
+      metaDescription="Expert water heater repair, installation & replacement in Austin. Tankless specialists, same-day service available. Licensed plumbers. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/water-heater-services"
       heroImage={waterHeaterImage}
       heroImageAlt="Professional water heater installation and repair service in Austin and Marble Falls TX"

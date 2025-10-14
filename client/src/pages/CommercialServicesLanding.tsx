@@ -67,8 +67,8 @@ export default function CommercialServicesLanding() {
   return (
     <>
       <SEOHead
-        title="Commercial Plumbing Austin | 25% Off First Service"
-        description="Stop facility downtime with trusted commercial plumbing. Restaurants, offices & businesses. 24/7 emergency, preventive maintenance. Call (512) 368-9159 today."
+        title="Commercial Plumbing Austin TX | 25% Off First Service"
+        description="Stop downtime with trusted commercial plumbing in Austin. Restaurants, offices, businesses. 24/7 emergency service, preventive plans. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/commercial-services"
         schema={localBusinessSchema}
       />

@@ -249,8 +249,8 @@ export default function Home() {
   return (
     <>
       <SEOHead
-        title="Economy Plumbing Austin TX | Licensed Since 2005"
-        description="Trusted Austin plumbing experts since 2005. Water heater specialists, drain cleaning & emergency plumbing. Licensed, insured & same-day. Call (512) 368-9159."
+        title="Economy Plumbing Austin TX | Licensed Experts Since 2005"
+        description="Trusted Austin plumbing experts since 2005. Water heater specialists, drain cleaning & emergency service. Licensed, insured, same-day. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/"
         schema={[localBusinessSchema, marbleFallsSchema, organizationSchema, faqSchema]}
       />

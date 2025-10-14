@@ -5,8 +5,8 @@ import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8
 export default function DrainCleaning() {
   return (
     <ServicePage
-      title="Drain Cleaning Austin TX | Video Inspection"
-      metaDescription="Professional drain cleaning in Austin. Video inspection, hydro jetting, root removal. Clear tough clogs fast. Same-day service. Call (512) 368-9159 now."
+      title="Drain Cleaning Austin TX | Video Inspection & Hydro"
+      metaDescription="Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/drain-cleaning"
       heroImage={drainImage}
       heroImageAlt="Professional drain cleaning and sewer line service in Austin and Marble Falls TX"

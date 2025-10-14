@@ -118,7 +118,7 @@ export default function ServiceAreaPage() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title={`${cityName} Plumber | Licensed Plumbing Services TX`}
+        title={`${cityName} Plumber | Licensed Plumbing Services | Texas`}
         description={serviceArea.metaDescription}
         canonical={`https://www.plumbersthatcare.com/service-area/${slug}`}
       />
