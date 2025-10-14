@@ -68,6 +68,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     
     // VIP Membership redirects
     '/product/platinum-vip-membership': '/store',
+    '/product/silver-vip-membership': '/store',
     '/product/rental-vip': '/store/rental-vip',
     '/product/commercial-vip': '/store/commercial-vip',
     
