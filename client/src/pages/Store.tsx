@@ -1,27 +1,49 @@
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import type { Product } from "@shared/schema";
 import { openScheduler } from "@/lib/scheduler";
-import { createProductSchema } from "@/components/SEO/JsonLd";
-import { trackAddToCart } from "@/lib/conversionTracking";
+
+/*
+ * ECWID SETUP INSTRUCTIONS:
+ * 
+ * 1. Create your Ecwid account at https://www.ecwid.com/
+ * 2. Choose a plan (Venture $15/mo or Business $35/mo recommended)
+ * 3. After creating your account, find your Store ID:
+ *    - Go to Ecwid Admin → Settings → General → Store Profile
+ *    - Copy your Store ID (it's a number like "12345678")
+ * 4. Replace "YOUR_STORE_ID" below with your actual Store ID
+ * 5. Add all your products/memberships in Ecwid dashboard
+ * 
+ * DROP-SHIPPING SETUP (After store is running):
+ * 1. Install Printful app from Ecwid App Market for custom branded products
+ * 2. Install Spocket app from Ecwid App Market for US/EU supplier products
+ * 3. Connect Stripe in Ecwid Settings → Payment for seamless checkout
+ * 
+ * See /tmp/ecwid_products_reference.txt for list of products to add to Ecwid
+ */
+
+const ECWID_STORE_ID = "YOUR_STORE_ID"; // Replace with your actual Ecwid store ID
 
 export default function Store() {
-  
-  const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ['/api/products'],
-  });
+  useEffect(() => {
+    // Load Ecwid script dynamically
+    if (ECWID_STORE_ID !== "YOUR_STORE_ID") {
+      const script = document.createElement('script');
+      script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}`;
+      script.setAttribute('data-cfasync', 'false');
+      script.charset = 'utf-8';
+      document.body.appendChild(script);
 
-  const memberships = products?.filter(p => p.category === 'membership') || [];
-  const physicalProducts = products?.filter(p => p.category === 'product') || [];
-
-  // Create schema for all products
-  const productSchemas = products?.map(product => createProductSchema(product)) || [];
+      return () => {
+        // Cleanup: remove script when component unmounts
+        document.body.removeChild(script);
+      };
+    }
+  }, []);
 
   return (
     <>
@@ -31,7 +53,6 @@ export default function Store() {
         canonical="https://www.plumbersthatcare.com/store"
         ogImage="https://www.plumbersthatcare.com/attached_assets/logo.jpg"
         ogImageAlt="Economy Plumbing Services - VIP Memberships and Professional Products"
-        schema={productSchemas.length > 0 ? productSchemas : undefined}
       />
 
       <div className="min-h-screen flex flex-col">
@@ -50,157 +71,32 @@ export default function Store() {
             </div>
           </section>
 
-          {/* Memberships Section */}
-          <section className="py-16 lg:py-24 bg-muted/30">
+          {/* Ecwid Store Section */}
+          <section className="py-16 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">VIP Maintenance Memberships</h2>
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                  Priority service, exclusive discounts, and peace of mind protection for your home
-                </p>
-              </div>
-
-              {isLoading ? (
+              {ECWID_STORE_ID === "YOUR_STORE_ID" ? (
                 <div className="text-center py-12">
-                  <p className="text-muted-foreground">Loading memberships...</p>
-                </div>
-              ) : memberships.length > 0 ? (
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                  {memberships.map((membership) => (
-                    <Link 
-                      key={membership.id}
-                      href={`/store/checkout/${membership.slug}`}
-                      data-testid={`card-membership-${membership.slug}`}
-                      onClick={() => trackAddToCart(membership.name, membership.price / 100)}
-                    >
-                      <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
-                        {membership.image && (
-                          <div className="bg-gradient-to-b from-primary/5 to-transparent p-8 flex items-center justify-center border-b">
-                            <img 
-                              src={membership.image} 
-                              alt={`${membership.name} - VIP plumbing maintenance membership`}
-                              width="128"
-                              height="128"
-                              loading="lazy"
-                              decoding="async"
-                              className="w-32 h-32 object-contain"
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="p-6 flex flex-col flex-1">
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-2">{membership.name}</h3>
-                            <div className="flex items-baseline gap-2 mb-3">
-                              <span className="text-3xl font-bold text-primary">${(membership.price / 100).toFixed(2)}</span>
-                              {membership.name.toLowerCase().includes('platinum') ? (
-                                <span className="text-sm text-muted-foreground">/3 years</span>
-                              ) : (
-                                <span className="text-sm text-muted-foreground">/year</span>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground line-clamp-2">{membership.description}</p>
-                          </div>
-
-                          {membership.features && membership.features.length > 0 && (
-                            <div className="mb-6 flex-1">
-                              <ul className="space-y-2">
-                                {membership.features.slice(0, 4).map((feature, idx) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                    <span className="text-sm">{feature}</span>
-                                  </li>
-                                ))}
-                                {membership.features.length > 4 && (
-                                  <li className="text-sm text-muted-foreground">+ {membership.features.length - 4} more benefits</li>
-                                )}
-                              </ul>
-                            </div>
-                          )}
-
-                          <div className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-center font-medium mt-auto">
-                            Purchase Now
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
-                  ))}
+                  <Card className="p-8 max-w-2xl mx-auto">
+                    <h2 className="text-2xl font-bold mb-4">Store Setup Required</h2>
+                    <p className="text-muted-foreground mb-4">
+                      To display your Ecwid store, please update the ECWID_STORE_ID constant in 
+                      <code className="bg-muted px-2 py-1 rounded mx-1">client/src/pages/Store.tsx</code>
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      See instructions at the top of Store.tsx for setup steps
+                    </p>
+                  </Card>
                 </div>
               ) : (
-                <div className="text-center py-12">
-                  <p className="text-muted-foreground">No memberships available at this time.</p>
+                <div 
+                  id={`my-store-${ECWID_STORE_ID}`}
+                  data-testid="ecwid-store-widget"
+                >
+                  {/* Ecwid store will render here */}
                 </div>
               )}
             </div>
           </section>
-
-          {/* Products Section */}
-          {physicalProducts.length > 0 && (
-            <section className="py-16 lg:py-24">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="text-center mb-12">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">Professional Plumbing Products</h2>
-                  <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                    High-quality products recommended by our expert plumbers
-                  </p>
-                </div>
-
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                  {physicalProducts.map((product) => (
-                    <Link 
-                      key={product.id}
-                      href={`/store/checkout/${product.slug}`}
-                      data-testid={`card-product-${product.slug}`}
-                      onClick={() => trackAddToCart(product.name, product.price / 100)}
-                    >
-                      <Card className="flex flex-col overflow-hidden hover-elevate active-elevate-2 transition-all cursor-pointer h-full">
-                        {product.image && (
-                          <div className="bg-gradient-to-b from-muted/50 to-transparent p-8 flex items-center justify-center border-b">
-                            <img 
-                              src={product.image} 
-                              alt={`${product.name} - professional plumbing product`}
-                              width="320"
-                              height="160"
-                              loading="lazy"
-                              decoding="async"
-                              className="w-full h-40 object-contain"
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="p-6 flex flex-col flex-1">
-                          <div className="mb-4">
-                            <h3 className="text-xl font-bold mb-2">{product.name}</h3>
-                            <div className="flex items-baseline gap-2 mb-3">
-                              <span className="text-3xl font-bold text-primary">${(product.price / 100).toFixed(2)}</span>
-                            </div>
-                            <p className="text-sm text-muted-foreground line-clamp-3">{product.description}</p>
-                          </div>
-
-                          {product.features && product.features.length > 0 && (
-                            <div className="mb-6 flex-1">
-                              <ul className="space-y-2">
-                                {product.features.map((feature, idx) => (
-                                  <li key={idx} className="flex items-start gap-2">
-                                    <Check className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                    <span className="text-sm">{feature}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-
-                          <div className="w-full bg-primary text-primary-foreground rounded-md px-4 py-2 text-center font-medium mt-auto">
-                            Purchase Now
-                          </div>
-                        </div>
-                      </Card>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-            </section>
-          )}
 
           {/* Benefits Section */}
           <section className="py-16 lg:py-24 bg-muted/30">
