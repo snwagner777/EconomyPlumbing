@@ -4,8 +4,8 @@ import pumpImage from "@assets/optimized/sewage_pump_sump_pum_ab93819a.webp";
 export default function SewagePumpServices() {
   return (
     <ServicePage
-      title="Sump & Sewage Pump Services Austin TX | Economy Plumbing"
-      metaDescription="Austin & Marble Falls sump, sewage pump & water heater services. Installation, repair, battery backup, prevent flooding. Emergency. Call (512) 368-9159."
+      title="Sump Pump & Sewage Pump Installation Austin TX | Prevent Flooding"
+      metaDescription="Protect your home with expert sump pump and sewage ejector pump services. Installation, repair, battery backup systems. Prevent basement flooding in Central Texas."
       canonical="https://www.plumbersthatcare.com/sewage-pump-services"
       heroImage={pumpImage}
       heroImageAlt="Professional sump pump and sewage pump services in Central Texas"

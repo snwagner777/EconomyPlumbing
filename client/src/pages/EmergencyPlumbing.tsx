@@ -4,8 +4,8 @@ import emergencyImage from "@assets/optimized/Emergency_plumbing_service_arrival
 export default function EmergencyPlumbing() {
   return (
     <ServicePage
-      title="24/7 Emergency Plumber Austin TX | Economy Plumbing"
-      metaDescription="Austin & Marble Falls 24/7 emergency plumbing. Fast response for burst pipes, water heaters, sewer backups. Nights & weekends. Call (512) 368-9159 now."
+      title="24/7 Emergency Plumber Austin TX | 60-90 Minute Response Time"
+      metaDescription="Emergency plumbing service available 24/7 in Central Texas. Fast response for burst pipes, sewer backups, major leaks. Nights, weekends & holidays covered."
       canonical="https://www.plumbersthatcare.com/emergency"
       heroImage={emergencyImage}
       heroImageAlt="24/7 emergency plumbing service in Austin and Marble Falls TX"

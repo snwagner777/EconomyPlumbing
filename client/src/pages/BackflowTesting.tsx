@@ -5,8 +5,8 @@ import backflowImage from "@assets/optimized/backflow_preventer_p_c5a67665.webp"
 export default function BackflowTesting() {
   return (
     <ServicePage
-      title="Backflow Testing Austin & Marble Falls | Economy Plumbing"
-      metaDescription="Austin & Marble Falls backflow testing, water heater & plumbing services. Annual testing, installation, repair. City-compliant. Call (512) 368-9159 today."
+      title="Certified Backflow Testing Austin TX | Annual Inspections"
+      metaDescription="State-certified backflow testing and device installation. Annual testing, city-compliant reports, direct filing. RPZ, DCVA, PVB testing in Central Texas."
       canonical="https://www.plumbersthatcare.com/backflow-testing"
       heroImage={backflowImage}
       heroImageAlt="Certified backflow testing and prevention service in Central Texas"

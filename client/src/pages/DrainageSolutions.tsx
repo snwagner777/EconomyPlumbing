@@ -4,8 +4,8 @@ import drainageImage from "@assets/optimized/outdoor_drainage_sys_77a8cb62.webp"
 export default function DrainageSolutions() {
   return (
     <ServicePage
-      title="Drainage Pipe Repair Austin & Marble Falls | Economy"
-      metaDescription="Austin & Marble Falls drainage pipe, water heater & sewer repair. Fix slow drains, broken pipes, sewer lines. Expert plumbing solutions. (512) 368-9159."
+      title="Drain Pipe Repair & Replacement Austin TX | Cast Iron Specialists"
+      metaDescription="Expert drainage pipe repair and replacement. Cast iron pipe specialists, sewer line repair, broken pipe fixes. Trenchless options available in Central Texas."
       canonical="https://www.plumbersthatcare.com/drainage-solutions"
       heroImage={drainageImage}
       heroImageAlt="Professional drainage pipe repair and replacement services in Central Texas"

@@ -5,8 +5,8 @@ import permitImage from "@assets/optimized/Plumber_installing_water_heater_3f7d8
 export default function PermitResolution() {
   return (
     <ServicePage
-      title="Permit Resolution Austin & Marble Falls | Economy Plumbing"
-      metaDescription="Austin & Marble Falls plumbing permit resolution, water heater & code compliance. Fix unpermitted work, code violations. Work with inspectors. (512) 368-9159."
+      title="Plumbing Permit Resolution Austin TX | Fix Unpermitted Work"
+      metaDescription="Resolve plumbing permit issues and code violations. Fix unpermitted work for home sales. Work with city inspectors. Expert code compliance in Central Texas."
       canonical="https://www.plumbersthatcare.com/permit-resolution-services"
       heroImage={permitImage}
       heroImageAlt="Professional plumbing permit resolution and code compliance service in Central Texas"

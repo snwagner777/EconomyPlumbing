@@ -4,8 +4,8 @@ import disposalImage from "@assets/optimized/kitchen_garbage_disp_6fe0b331.webp"
 export default function GarbageDisposalRepair() {
   return (
     <ServicePage
-      title="Garbage Disposal Repair Austin TX | Economy Plumbing"
-      metaDescription="Austin & Marble Falls garbage disposal, water heater & drain repair. Fix jammed, leaking, broken disposals. New installations. Call (512) 368-9159 today."
+      title="Garbage Disposal Repair & Installation Austin TX | Same-Day Service"
+      metaDescription="Fix jammed, leaking, or broken garbage disposals. Expert repair and new disposal installation. All brands serviced. Same-day service available in Central Texas."
       canonical="https://www.plumbersthatcare.com/garbage-disposal-repair"
       heroImage={disposalImage}
       heroImageAlt="Professional garbage disposal repair and installation service in Central Texas"
