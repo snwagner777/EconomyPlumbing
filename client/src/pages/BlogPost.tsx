@@ -111,7 +111,7 @@ export default function BlogPost() {
         ogType="article"
         ogImage={post.featuredImage ? 
           (post.featuredImage.startsWith('http') ? post.featuredImage : `https://www.plumbersthatcare.com${post.featuredImage}`) : 
-          undefined}
+          "https://www.plumbersthatcare.com/attached_assets/logo.jpg"}
         ogImageAlt={`Featured image for: ${post.title}`}
         schema={blogPostSchema && breadcrumbSchema ? [blogPostSchema, breadcrumbSchema] : undefined}
         articlePublishedTime={new Date(post.publishDate).toISOString()}

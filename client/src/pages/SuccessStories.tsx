@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Helmet } from "react-helmet";
 import { Filter, Search, ExternalLink, Phone, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +18,7 @@ import Footer from "@/components/Footer";
 import SuccessStoryForm from "@/components/SuccessStoryForm";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { SEOHead } from "@/components/SEO/SEOHead";
 import type { BeforeAfterComposite, CustomerSuccessStory } from "@shared/schema";
 
 export default function SuccessStories() {
@@ -61,21 +61,25 @@ export default function SuccessStories() {
   const storyCategories = customerStories?.map(s => s.serviceCategory) || [];
   const categories = Array.from(new Set([...compositeCategories, ...storyCategories]));
 
+  // Use first available composite image as OG image, or logo as fallback
+  const ogImage = composites && composites.length > 0 && composites[0].jpegCompositeUrl
+    ? `https://www.plumbersthatcare.com${composites[0].jpegCompositeUrl}`
+    : "https://www.plumbersthatcare.com/attached_assets/logo.jpg";
+
   return (
     <>
-      <Helmet>
-        <title>Success Stories | Economy Plumbing Services</title>
-        <meta 
-          name="description" 
-          content="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more." 
-        />
-        <link rel="alternate" type="application/rss+xml" title="Success Stories RSS Feed" href="/api/success-stories/rss.xml" />
-        <script 
-          type="text/javascript" 
-          src="https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f" 
-          defer
-        />
-      </Helmet>
+      <SEOHead
+        title="Success Stories | Economy Plumbing Services"
+        description="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more."
+        canonical="https://www.plumbersthatcare.com/success-stories"
+        ogImage={ogImage}
+        ogImageAlt="Economy Plumbing Services - Real plumbing project transformations"
+      />
+      <script 
+        type="text/javascript" 
+        src="https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f" 
+        defer
+      />
 
       <Header />
 
