@@ -4,8 +4,8 @@ import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec3
 export default function ToiletFaucet() {
   return (
     <ServicePage
-      title="Toilet & Faucet Installation Austin TX | Modern Fixture Upgrades"
-      metaDescription="Expert toilet and faucet installation, repair & replacement. Water-efficient fixtures, touchless faucets, modern upgrades. All brands serviced in Austin area."
+      title="Toilet & Faucet Repair Austin TX | All Brands"
+      metaDescription="Expert toilet & faucet installation, repair & replacement. Water-efficient fixtures, modern upgrades. All brands serviced. Call (512) 368-9159 today."
       canonical="https://www.plumbersthatcare.com/toilet-faucet"
       heroImage={toiletImage}
       heroImageAlt="Professional toilet and faucet installation and repair in Austin and Marble Falls TX"

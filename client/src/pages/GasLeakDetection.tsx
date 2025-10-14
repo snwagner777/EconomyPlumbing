@@ -4,8 +4,8 @@ import gasLeakImage from "@assets/optimized/gas_line_installatio_9713d531.webp";
 export default function GasLeakDetection() {
   return (
     <ServicePage
-      title="Emergency Gas Leak Detection Austin TX | 24/7 Safety Response"
-      metaDescription="Immediate gas leak detection and repair. Electronic leak detection, licensed gas technicians, 24/7 emergency response. Protect your family's safety in Central Texas."
+      title="Gas Leak Detection Austin TX | 24/7 Emergency"
+      metaDescription="Immediate gas leak detection & repair. Electronic detection, licensed gas technicians, 24/7 emergency response. Protect your family. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/gas-leak-detection"
       heroImage={gasLeakImage}
       heroImageAlt="Professional gas leak detection and emergency repair service in Central Texas"

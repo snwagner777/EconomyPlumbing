@@ -153,8 +153,8 @@ export default function FAQ() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Plumbing FAQ Austin TX | Expert Answers to Common Questions"
-        description="Get expert answers to common plumbing questions. Water heater advice, emergency services, pricing, service areas. Learn from licensed Austin plumbers with 20+ years experience."
+        title="Plumbing FAQ Austin TX | Common Questions Answered"
+        description="Expert answers to common plumbing questions. Water heater advice, emergency services, pricing & service areas. 20+ years experience. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/faq"
         schema={faqSchema}
       />

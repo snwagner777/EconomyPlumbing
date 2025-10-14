@@ -259,8 +259,8 @@ export default function PlumberNearMe() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Top-Rated Plumber Near Me Austin TX | 4.9★ Google Rating | 495+ Reviews"
-        description="Austin's highest-rated plumber with 495+ 5-star reviews. Same-day emergency service, water heater specialists, drain experts. Family-owned since 2005. Book online today."
+        title="Plumber Near Me Austin TX | 4.9★ Rated | 495+ Reviews"
+        description="Austin's highest-rated plumber with 495+ 5-star reviews. Same-day emergency service, water heater & drain experts. Family-owned since 2005. Call (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/plumber-near-me"
         schema={localBusinessSchema}
       />

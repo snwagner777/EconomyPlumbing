@@ -4,8 +4,8 @@ import drainageImage from "@assets/optimized/outdoor_drainage_sys_77a8cb62.webp"
 export default function DrainageSolutions() {
   return (
     <ServicePage
-      title="Drain Pipe Repair & Replacement Austin TX | Cast Iron Specialists"
-      metaDescription="Expert drainage pipe repair and replacement. Cast iron pipe specialists, sewer line repair, broken pipe fixes. Trenchless options available in Central Texas."
+      title="Drain Pipe Repair Austin TX | Cast Iron Specialists"
+      metaDescription="Expert drainage pipe repair & replacement. Cast iron pipe specialists, sewer line repair, broken pipe fixes. Trenchless options. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/drainage-solutions"
       heroImage={drainageImage}
       heroImageAlt="Professional drainage pipe repair and replacement services in Central Texas"

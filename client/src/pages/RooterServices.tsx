@@ -4,8 +4,8 @@ import rooterImage from "@assets/optimized/Drain_cleaning_professional_service_e
 export default function RooterServices() {
   return (
     <ServicePage
-      title="Rooter Service Austin TX | Professional Sewer Line Cleaning"
-      metaDescription="Expert rooter and sewer line cleaning services. Clear tough clogs, remove tree roots, eliminate grease buildup. Advanced equipment for residential & commercial properties."
+      title="Rooter Service Austin TX | Sewer Line Cleaning"
+      metaDescription="Expert rooter & sewer line cleaning. Clear tough clogs, remove tree roots, eliminate grease buildup. Residential & commercial service. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/rooter-services"
       heroImage={rooterImage}
       heroImageAlt="Professional rooter service and drain cleaning in Central Texas"

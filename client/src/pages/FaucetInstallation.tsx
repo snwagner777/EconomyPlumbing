@@ -4,8 +4,8 @@ import faucetImage from "@assets/optimized/Toilet_and_faucet_installation_18dec3
 export default function FaucetInstallation() {
   return (
     <ServicePage
-      title="Kitchen & Bathroom Faucet Installation Austin TX | All Brands"
-      metaDescription="Professional faucet installation and repair for kitchen, bathroom, and shower. Touchless faucets, fixture upgrades, leak repairs. All brands serviced in Austin area."
+      title="Faucet Installation Austin TX | Kitchen & Bathroom"
+      metaDescription="Professional faucet installation & repair for kitchen, bathroom & shower. Touchless faucets, fixture upgrades & leak repairs. Call (512) 368-9159 today."
       canonical="https://www.plumbersthatcare.com/faucet-installation"
       heroImage={faucetImage}
       heroImageAlt="Professional faucet installation and repair service in Central Texas"
