@@ -66,8 +66,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/product/bio-pure-septic-&-drain-rv-restore-&-maintain-32-oz': '/store/bio-pure-septic-drain-rv-restore-maintain-32-oz',
     '/shop/p/bio-pure-septic-drain-rv-restore-maintain-32-oz-7-septic-treatments': '/store/bio-pure-septic-drain-rv-restore-maintain-32-oz',
     
-    // VIP Membership redirect
+    // VIP Membership redirects
     '/product/platinum-vip-membership': '/store',
+    '/product/rental-vip': '/store/rental-vip',
     
     // Old page names
     '/home-old': '/',
