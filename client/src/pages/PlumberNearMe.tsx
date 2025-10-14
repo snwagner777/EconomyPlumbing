@@ -259,8 +259,8 @@ export default function PlumberNearMe() {
   return (
     <div className="min-h-screen flex flex-col">
       <SEOHead
-        title="Plumber Near Me Austin TX | 24/7 Emergency Plumbing"
-        description="Looking for a plumber near you in Austin or Marble Falls? 24/7 emergency service, water heater repair, drain cleaning. Same-day service. Call (512) 368-9159."
+        title="Top-Rated Plumber Near Me Austin TX | 4.9★ Google Rating | 495+ Reviews"
+        description="Austin's highest-rated plumber with 495+ 5-star reviews. Same-day emergency service, water heater specialists, drain experts. Family-owned since 2005. Book online today."
         canonical="https://www.plumbersthatcare.com/plumber-near-me"
         schema={localBusinessSchema}
       />

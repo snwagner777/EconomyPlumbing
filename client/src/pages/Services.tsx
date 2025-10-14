@@ -98,7 +98,7 @@ export default function Services() {
   return (
     <div className="min-h-screen">
       <SEOHead
-        title="Plumbing Services | Complete Plumbing Solutions Austin & Marble Falls TX"
+        title="Full Service Plumbing Austin TX | All Services Under One Roof"
         description="Austin & Marble Falls plumbing: water heaters, drain cleaning, leak repair, gas lines, backflow testing. Licensed plumbers 24/7. Call (512) 368-9159 now!"
         canonical="https://www.plumbersthatcare.com/services"
       />
