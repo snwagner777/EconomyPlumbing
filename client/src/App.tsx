@@ -47,8 +47,6 @@ const Blog = lazy(() => import("@/pages/Blog"));
 const BlogPost = lazy(() => import("@/pages/BlogPost"));
 const About = lazy(() => import("@/pages/About"));
 const Store = lazy(() => import("@/pages/Store"));
-const Checkout = lazy(() => import("@/pages/Checkout"));
-const StoreSuccess = lazy(() => import("@/pages/StoreSuccess"));
 const ScheduleAppointment = lazy(() => import("@/pages/ScheduleAppointment"));
 const DrainageSolutions = lazy(() => import("@/pages/DrainageSolutions"));
 const FaucetInstallation = lazy(() => import("@/pages/FaucetInstallation"));
@@ -170,14 +168,24 @@ function Router() {
       <Route path="/membership-benefits" component={MembershipBenefits} />
       <Route path="/success-stories" component={SuccessStories} />
       
-      {/* Store & Shop */}
-      <Route path="/store/success" component={StoreSuccess} />
-      <Route path="/store/checkout/:slug" component={Checkout} />
+      {/* Store & Shop - Now using Ecwid */}
       <Route path="/store" component={Store} />
       <Route path="/shop" component={Store} />
       <Route path="/category/memberships" component={Store} />
       <Route path="/category/products" component={Store} />
       <Route path="/signin">{() => <Redirect to="/store" />}</Route>
+      
+      {/* 301 redirects: Old product URLs -> /store (Ecwid manages products now) */}
+      <Route path="/store/checkout/commercial-vip">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/platinum-vip-membership-tank">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/platinum-vip-membership-tankless">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/rental-vip">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/silver-vip-membership-tank">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/silver-vip-membership-tankless">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/checkout/bio-pure-septic-drain-rv-restore-maintain-32-oz">{() => <Redirect to="/store" />}</Route>
+      {/* Catch-all for any other old checkout URLs */}
+      <Route path="/store/checkout/:slug">{() => <Redirect to="/store" />}</Route>
+      <Route path="/store/success">{() => <Redirect to="/store" />}</Route>
       
       {/* Blog listing page */}
       <Route path="/blog" component={Blog} />
