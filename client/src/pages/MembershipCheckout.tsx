@@ -16,10 +16,10 @@ import type { Product } from "@shared/schema";
 // Load Stripe with appropriate keys based on test mode
 function getStripePromise(isTestMode: boolean) {
   if (isTestMode) {
-    if (!import.meta.env.TESTING_VITE_STRIPE_PUBLIC_KEY) {
-      throw new Error('Missing required Stripe test key: TESTING_VITE_STRIPE_PUBLIC_KEY');
+    if (!import.meta.env.VITE_TESTING_STRIPE_PUBLIC_KEY) {
+      throw new Error('Missing required Stripe test key: VITE_TESTING_STRIPE_PUBLIC_KEY');
     }
-    return loadStripe(import.meta.env.TESTING_VITE_STRIPE_PUBLIC_KEY);
+    return loadStripe(import.meta.env.VITE_TESTING_STRIPE_PUBLIC_KEY);
   } else {
     if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
       throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
