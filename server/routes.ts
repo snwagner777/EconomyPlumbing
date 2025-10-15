@@ -4147,7 +4147,7 @@ Write in a professional yet friendly tone.`;
   // TEST MODE: Create payment intent using test Stripe keys (for safe testing)
   app.post("/api/create-payment-intent/test", async (req, res) => {
     try {
-      const { productId } = req.body;
+      const { productId, customerInfo } = req.body;
 
       if (!productId) {
         return res.status(400).json({ 
@@ -4213,8 +4213,48 @@ Write in a professional yet friendly tone.`;
           serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
           durationBillingId: product.durationBillingId || '',
           testMode: "true", // Mark this as a test transaction
+          // Add customer info to metadata
+          customerType: customerInfo?.customerType || '',
+          customerName: customerInfo?.locationName || customerInfo?.customerName || '',
+          email: customerInfo?.email || '',
+          phone: customerInfo?.phone || '',
         },
       });
+
+      // Save customer info to pending purchases if provided
+      if (customerInfo) {
+        const purchaseData: any = {
+          paymentIntentId: paymentIntent.id,
+          productId: product.id,
+          customerType: customerInfo.customerType,
+          street: customerInfo.street,
+          city: customerInfo.city,
+          state: customerInfo.state,
+          zip: customerInfo.zip,
+          billingName: customerInfo.billingName,
+          billingStreet: customerInfo.billingStreet,
+          billingCity: customerInfo.billingCity,
+          billingState: customerInfo.billingState,
+          billingZip: customerInfo.billingZip,
+          phone: customerInfo.phone,
+          email: customerInfo.email,
+        };
+
+        if (customerInfo.customerType === 'residential') {
+          // For residential, locationName from form is the customer name
+          purchaseData.customerName = customerInfo.locationName;
+          purchaseData.locationName = customerInfo.locationName;
+        } else {
+          // For commercial
+          purchaseData.companyName = customerInfo.companyName;
+          purchaseData.locationName = customerInfo.locationName;
+          purchaseData.contactPersonName = customerInfo.contactPersonName;
+          purchaseData.locationPhone = customerInfo.locationPhone;
+          purchaseData.extension = customerInfo.extension;
+        }
+
+        await storage.createPendingPurchase(purchaseData);
+      }
 
       res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error: any) {
@@ -4249,7 +4289,7 @@ Write in a professional yet friendly tone.`;
   // Reference: blueprint:javascript_stripe - Create payment intent for VIP memberships
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
-      const { productId } = req.body;
+      const { productId, customerInfo } = req.body;
 
       if (!productId) {
         return res.status(400).json({ 
@@ -4315,8 +4355,48 @@ Write in a professional yet friendly tone.`;
           sku: product.sku || '',
           serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
           durationBillingId: product.durationBillingId || '',
+          // Add customer info to metadata
+          customerType: customerInfo?.customerType || '',
+          customerName: customerInfo?.locationName || customerInfo?.customerName || '',
+          email: customerInfo?.email || '',
+          phone: customerInfo?.phone || '',
         },
       });
+
+      // Save customer info to pending purchases if provided
+      if (customerInfo) {
+        const purchaseData: any = {
+          paymentIntentId: paymentIntent.id,
+          productId: product.id,
+          customerType: customerInfo.customerType,
+          street: customerInfo.street,
+          city: customerInfo.city,
+          state: customerInfo.state,
+          zip: customerInfo.zip,
+          billingName: customerInfo.billingName,
+          billingStreet: customerInfo.billingStreet,
+          billingCity: customerInfo.billingCity,
+          billingState: customerInfo.billingState,
+          billingZip: customerInfo.billingZip,
+          phone: customerInfo.phone,
+          email: customerInfo.email,
+        };
+
+        if (customerInfo.customerType === 'residential') {
+          // For residential, locationName from form is the customer name
+          purchaseData.customerName = customerInfo.locationName;
+          purchaseData.locationName = customerInfo.locationName;
+        } else {
+          // For commercial
+          purchaseData.companyName = customerInfo.companyName;
+          purchaseData.locationName = customerInfo.locationName;
+          purchaseData.contactPersonName = customerInfo.contactPersonName;
+          purchaseData.locationPhone = customerInfo.locationPhone;
+          purchaseData.extension = customerInfo.extension;
+        }
+
+        await storage.createPendingPurchase(purchaseData);
+      }
 
       res.json({ clientSecret: paymentIntent.client_secret });
     } catch (error: any) {
