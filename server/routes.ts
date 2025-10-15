@@ -1328,7 +1328,18 @@ ${rssItems}
     }
   });
 
-  // Save customer info before payment
+  /* ============================================================================
+   * DISABLED: Custom Store Endpoints (Replaced by Ecwid - October 2025)
+   * 
+   * The following endpoints were used for the custom-built store with Stripe
+   * integration. They are now disabled because the store has been converted to
+   * use Ecwid, which handles all product management, checkout, and payments.
+   * 
+   * Keeping these commented out for reference in case they're needed later.
+   * ============================================================================ */
+
+  /*
+  // DISABLED: Save customer info before payment
   app.post("/api/pending-purchase", async (req, res) => {
     try {
       const { paymentIntentId, productId, customerType, customerName, companyName, 
@@ -1400,249 +1411,250 @@ ${rssItems}
       res.status(500).json({ message: "Failed to save customer info: " + error.message });
     }
   });
+  */
 
-  // Stripe webhook endpoint (raw body already applied in server/index.ts)
-  app.post("/api/webhooks/stripe", async (req, res) => {
-    const sig = req.headers['stripe-signature'];
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  // DISABLED:   // Stripe webhook endpoint (raw body already applied in server/index.ts)
+  // DISABLED:   app.post("/api/webhooks/stripe", async (req, res) => {
+  // DISABLED:     const sig = req.headers['stripe-signature'];
+  // DISABLED:     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  // DISABLED: 
+  // DISABLED:     if (!webhookSecret) {
+  // DISABLED:       console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured');
+  // DISABLED:       return res.status(500).send('Webhook secret not configured');
+  // DISABLED:     }
+  // DISABLED: 
+  // DISABLED:     if (!sig) {
+  // DISABLED:       return res.status(400).send('No signature');
+  // DISABLED:     }
+  // DISABLED: 
+  // DISABLED:     let event: Stripe.Event;
+  // DISABLED: 
+  // DISABLED:     try {
+  // DISABLED:       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  // DISABLED:       event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  // DISABLED:     } catch (err: any) {
+  // DISABLED:       console.error(`[Stripe Webhook] Signature verification failed:`, err.message);
+  // DISABLED:       return res.status(400).send(`Webhook Error: ${err.message}`);
+  // DISABLED:     }
+  // DISABLED: 
+  // DISABLED:     // Handle the event
+  // DISABLED:     if (event.type === 'payment_intent.succeeded') {
+  // DISABLED:       const paymentIntent = event.data.object as Stripe.PaymentIntent;
+  // DISABLED:       console.log(`[Stripe Webhook] Payment succeeded: ${paymentIntent.id}`);
+  // DISABLED: 
+  // DISABLED:       try {
+  // DISABLED:         // Find pending purchase by payment intent ID
+  // DISABLED:         const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntent.id);
+  // DISABLED: 
+  // DISABLED:         if (!pendingPurchase) {
+  // DISABLED:           console.warn(`[Stripe Webhook] No pending purchase found for payment intent: ${paymentIntent.id}`);
+  // DISABLED:           return res.json({ received: true, warning: 'No pending purchase found' });
+  // DISABLED:         }
+  // DISABLED: 
+  // DISABLED:         // Get product to check if ServiceTitan sync is enabled
+  // DISABLED:         const product = await storage.getProductById(pendingPurchase.productId);
+  // DISABLED: 
+  // DISABLED:         if (!product) {
+  // DISABLED:           console.error(`[Stripe Webhook] Product not found: ${pendingPurchase.productId}`);
+  // DISABLED:           return res.json({ received: true, error: 'Product not found' });
+  // DISABLED:         }
+  // DISABLED: 
+  // DISABLED:         if (product.serviceTitanEnabled && product.serviceTitanMembershipTypeId) {
+  // DISABLED:           // Create ServiceTitan membership record
+  // DISABLED:           const membership = await storage.createServiceTitanMembership({
+  // DISABLED:             customerType: pendingPurchase.customerType,
+  // DISABLED:             customerName: pendingPurchase.customerName || null,
+  // DISABLED:             companyName: pendingPurchase.companyName || null,
+  // DISABLED:             contactPersonName: pendingPurchase.contactPersonName || null,
+  // DISABLED:             street: pendingPurchase.street,
+  // DISABLED:             city: pendingPurchase.city,
+  // DISABLED:             state: pendingPurchase.state,
+  // DISABLED:             zip: pendingPurchase.zip,
+  // DISABLED:             phone: pendingPurchase.phone,
+  // DISABLED:             email: pendingPurchase.email,
+  // DISABLED:             serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
+  // DISABLED:             serviceTitanCustomerId: null,
+  // DISABLED:             serviceTitanMembershipId: null,
+  // DISABLED:             serviceTitanInvoiceId: null,
+  // DISABLED:             productId: product.id,
+  // DISABLED:             stripePaymentIntentId: paymentIntent.id,
+  // DISABLED:             stripeCustomerId: paymentIntent.customer as string | null,
+  // DISABLED:             amount: paymentIntent.amount,
+  // DISABLED:             syncStatus: 'pending',
+  // DISABLED:             syncError: null,
+  // DISABLED:           });
+  // DISABLED: 
+  // DISABLED:           console.log(`[Stripe Webhook] Created ServiceTitan membership record: ${membership.id}`);
+  // DISABLED: 
+  // DISABLED:           // TODO: Trigger ServiceTitan sync (will be implemented in Task 5)
+  // DISABLED:           // For now, just log that sync would happen
+  // DISABLED:           console.log(`[Stripe Webhook] ServiceTitan sync queued for membership: ${membership.id}`);
+  // DISABLED:         }
+  // DISABLED: 
+  // DISABLED:         // Send sales notification email
+  // DISABLED:         try {
+  // DISABLED:           const { sendSalesNotificationEmail } = await import('./email');
+  // DISABLED:           await sendSalesNotificationEmail({
+  // DISABLED:             productName: product.name,
+  // DISABLED:             productPrice: product.price,
+  // DISABLED:             customerType: pendingPurchase.customerType as 'residential' | 'commercial',
+  // DISABLED:             customerName: pendingPurchase.customerName || undefined,
+  // DISABLED:             companyName: pendingPurchase.companyName || undefined,
+  // DISABLED:             contactPersonName: pendingPurchase.contactPersonName || undefined,
+  // DISABLED:             email: pendingPurchase.email,
+  // DISABLED:             phone: pendingPurchase.phone,
+  // DISABLED:             street: pendingPurchase.street,
+  // DISABLED:             city: pendingPurchase.city,
+  // DISABLED:             state: pendingPurchase.state,
+  // DISABLED:             zip: pendingPurchase.zip,
+  // DISABLED:             stripePaymentIntentId: paymentIntent.id,
+  // DISABLED:           });
+  // DISABLED:           console.log(`[Stripe Webhook] Sales notification email sent for payment: ${paymentIntent.id}`);
+  // DISABLED:         } catch (emailError: any) {
+  // DISABLED:           // Don't fail the webhook if email fails
+  // DISABLED:           console.error('[Stripe Webhook] Failed to send sales notification email:', emailError.message);
+  // DISABLED:         }
+  // DISABLED: 
+  // DISABLED:         // Clean up pending purchase
+  // DISABLED:         await storage.deletePendingPurchase(pendingPurchase.id);
+  // DISABLED:         console.log(`[Stripe Webhook] Deleted pending purchase: ${pendingPurchase.id}`);
+  // DISABLED: 
+  // DISABLED:         res.json({ received: true, processed: true });
+  // DISABLED:       } catch (error: any) {
+  // DISABLED:         console.error('[Stripe Webhook] Error processing payment:', error);
+  // DISABLED:         return res.status(500).json({ received: true, error: error.message });
+  // DISABLED:       }
+  // DISABLED:     } else {
+  // DISABLED:       // Return 200 for other event types to acknowledge receipt
+  // DISABLED:       res.json({ received: true });
+  // DISABLED:     }
+  // DISABLED:   });
 
-    if (!webhookSecret) {
-      console.error('[Stripe Webhook] STRIPE_WEBHOOK_SECRET not configured');
-      return res.status(500).send('Webhook secret not configured');
-    }
+  // DISABLED:   // Get purchase success details
+  // DISABLED:   app.get("/api/purchase-success/:paymentIntentId", async (req, res) => {
+  // DISABLED:     try {
+  // DISABLED:       const { paymentIntentId } = req.params;
+  // DISABLED:       const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  // DISABLED:       
+  // DISABLED:       if (!stripeSecretKey) {
+  // DISABLED:         return res.status(503).json({ 
+  // DISABLED:           message: "Payment processing is not configured." 
+  // DISABLED:         });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       const stripe = new Stripe(stripeSecretKey);
+  // DISABLED:       
+  // DISABLED:       // Retrieve payment intent from Stripe
+  // DISABLED:       const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  // DISABLED:       
+  // DISABLED:       if (paymentIntent.status !== 'succeeded') {
+  // DISABLED:         return res.status(400).json({ message: "Payment not completed" });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       // Try to get pending purchase first (may not exist if webhook processed already)
+  // DISABLED:       const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntentId);
+  // DISABLED:       
+  // DISABLED:       let customerInfo = null;
+  // DISABLED:       let productId = null;
+  // DISABLED:       
+  // DISABLED:       if (pendingPurchase) {
+  // DISABLED:         // Use pending purchase data
+  // DISABLED:         customerInfo = {
+  // DISABLED:           customerType: pendingPurchase.customerType,
+  // DISABLED:           customerName: pendingPurchase.customerName,
+  // DISABLED:           companyName: pendingPurchase.companyName,
+  // DISABLED:           contactPersonName: pendingPurchase.contactPersonName,
+  // DISABLED:           email: pendingPurchase.email,
+  // DISABLED:           phone: pendingPurchase.phone,
+  // DISABLED:           street: pendingPurchase.street,
+  // DISABLED:           city: pendingPurchase.city,
+  // DISABLED:           state: pendingPurchase.state,
+  // DISABLED:           zip: pendingPurchase.zip,
+  // DISABLED:         };
+  // DISABLED:         productId = pendingPurchase.productId;
+  // DISABLED:       } else {
+  // DISABLED:         // Webhook already processed - get info from payment intent metadata
+  // DISABLED:         productId = paymentIntent.metadata?.productId;
+  // DISABLED:         
+  // DISABLED:         if (productId && paymentIntent.metadata) {
+  // DISABLED:           customerInfo = {
+  // DISABLED:             customerType: paymentIntent.metadata.customerType || 'residential',
+  // DISABLED:             customerName: paymentIntent.metadata.customerName || null,
+  // DISABLED:             companyName: paymentIntent.metadata.companyName || null,
+  // DISABLED:             contactPersonName: paymentIntent.metadata.contactPersonName || null,
+  // DISABLED:             email: paymentIntent.metadata.email || '',
+  // DISABLED:             phone: paymentIntent.metadata.phone || '',
+  // DISABLED:             street: paymentIntent.metadata.street || '',
+  // DISABLED:             city: paymentIntent.metadata.city || '',
+  // DISABLED:             state: paymentIntent.metadata.state || '',
+  // DISABLED:             zip: paymentIntent.metadata.zip || '',
+  // DISABLED:           };
+  // DISABLED:         }
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       if (!customerInfo || !productId) {
+  // DISABLED:         return res.status(404).json({ message: "Purchase details not found" });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       const product = await storage.getProductById(productId);
+  // DISABLED:       if (!product) {
+  // DISABLED:         return res.status(404).json({ message: "Product not found" });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       res.json({
+  // DISABLED:         product,
+  // DISABLED:         customerInfo,
+  // DISABLED:         transactionId: paymentIntentId,
+  // DISABLED:       });
+  // DISABLED:     } catch (error: any) {
+  // DISABLED:       console.error("[Purchase Success] Error:", error);
+  // DISABLED:       res.status(500).json({ message: error.message });
+  // DISABLED:     }
+  // DISABLED:   });
 
-    if (!sig) {
-      return res.status(400).send('No signature');
-    }
-
-    let event: Stripe.Event;
-
-    try {
-      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    } catch (err: any) {
-      console.error(`[Stripe Webhook] Signature verification failed:`, err.message);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
-    }
-
-    // Handle the event
-    if (event.type === 'payment_intent.succeeded') {
-      const paymentIntent = event.data.object as Stripe.PaymentIntent;
-      console.log(`[Stripe Webhook] Payment succeeded: ${paymentIntent.id}`);
-
-      try {
-        // Find pending purchase by payment intent ID
-        const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntent.id);
-
-        if (!pendingPurchase) {
-          console.warn(`[Stripe Webhook] No pending purchase found for payment intent: ${paymentIntent.id}`);
-          return res.json({ received: true, warning: 'No pending purchase found' });
-        }
-
-        // Get product to check if ServiceTitan sync is enabled
-        const product = await storage.getProductById(pendingPurchase.productId);
-
-        if (!product) {
-          console.error(`[Stripe Webhook] Product not found: ${pendingPurchase.productId}`);
-          return res.json({ received: true, error: 'Product not found' });
-        }
-
-        if (product.serviceTitanEnabled && product.serviceTitanMembershipTypeId) {
-          // Create ServiceTitan membership record
-          const membership = await storage.createServiceTitanMembership({
-            customerType: pendingPurchase.customerType,
-            customerName: pendingPurchase.customerName || null,
-            companyName: pendingPurchase.companyName || null,
-            contactPersonName: pendingPurchase.contactPersonName || null,
-            street: pendingPurchase.street,
-            city: pendingPurchase.city,
-            state: pendingPurchase.state,
-            zip: pendingPurchase.zip,
-            phone: pendingPurchase.phone,
-            email: pendingPurchase.email,
-            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
-            serviceTitanCustomerId: null,
-            serviceTitanMembershipId: null,
-            serviceTitanInvoiceId: null,
-            productId: product.id,
-            stripePaymentIntentId: paymentIntent.id,
-            stripeCustomerId: paymentIntent.customer as string | null,
-            amount: paymentIntent.amount,
-            syncStatus: 'pending',
-            syncError: null,
-          });
-
-          console.log(`[Stripe Webhook] Created ServiceTitan membership record: ${membership.id}`);
-
-          // TODO: Trigger ServiceTitan sync (will be implemented in Task 5)
-          // For now, just log that sync would happen
-          console.log(`[Stripe Webhook] ServiceTitan sync queued for membership: ${membership.id}`);
-        }
-
-        // Send sales notification email
-        try {
-          const { sendSalesNotificationEmail } = await import('./email');
-          await sendSalesNotificationEmail({
-            productName: product.name,
-            productPrice: product.price,
-            customerType: pendingPurchase.customerType as 'residential' | 'commercial',
-            customerName: pendingPurchase.customerName || undefined,
-            companyName: pendingPurchase.companyName || undefined,
-            contactPersonName: pendingPurchase.contactPersonName || undefined,
-            email: pendingPurchase.email,
-            phone: pendingPurchase.phone,
-            street: pendingPurchase.street,
-            city: pendingPurchase.city,
-            state: pendingPurchase.state,
-            zip: pendingPurchase.zip,
-            stripePaymentIntentId: paymentIntent.id,
-          });
-          console.log(`[Stripe Webhook] Sales notification email sent for payment: ${paymentIntent.id}`);
-        } catch (emailError: any) {
-          // Don't fail the webhook if email fails
-          console.error('[Stripe Webhook] Failed to send sales notification email:', emailError.message);
-        }
-
-        // Clean up pending purchase
-        await storage.deletePendingPurchase(pendingPurchase.id);
-        console.log(`[Stripe Webhook] Deleted pending purchase: ${pendingPurchase.id}`);
-
-        res.json({ received: true, processed: true });
-      } catch (error: any) {
-        console.error('[Stripe Webhook] Error processing payment:', error);
-        return res.status(500).json({ received: true, error: error.message });
-      }
-    } else {
-      // Return 200 for other event types to acknowledge receipt
-      res.json({ received: true });
-    }
-  });
-
-  // Get purchase success details
-  app.get("/api/purchase-success/:paymentIntentId", async (req, res) => {
-    try {
-      const { paymentIntentId } = req.params;
-      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-      
-      if (!stripeSecretKey) {
-        return res.status(503).json({ 
-          message: "Payment processing is not configured." 
-        });
-      }
-
-      const stripe = new Stripe(stripeSecretKey);
-      
-      // Retrieve payment intent from Stripe
-      const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
-      
-      if (paymentIntent.status !== 'succeeded') {
-        return res.status(400).json({ message: "Payment not completed" });
-      }
-
-      // Try to get pending purchase first (may not exist if webhook processed already)
-      const pendingPurchase = await storage.getPendingPurchaseByPaymentIntent(paymentIntentId);
-      
-      let customerInfo = null;
-      let productId = null;
-      
-      if (pendingPurchase) {
-        // Use pending purchase data
-        customerInfo = {
-          customerType: pendingPurchase.customerType,
-          customerName: pendingPurchase.customerName,
-          companyName: pendingPurchase.companyName,
-          contactPersonName: pendingPurchase.contactPersonName,
-          email: pendingPurchase.email,
-          phone: pendingPurchase.phone,
-          street: pendingPurchase.street,
-          city: pendingPurchase.city,
-          state: pendingPurchase.state,
-          zip: pendingPurchase.zip,
-        };
-        productId = pendingPurchase.productId;
-      } else {
-        // Webhook already processed - get info from payment intent metadata
-        productId = paymentIntent.metadata?.productId;
-        
-        if (productId && paymentIntent.metadata) {
-          customerInfo = {
-            customerType: paymentIntent.metadata.customerType || 'residential',
-            customerName: paymentIntent.metadata.customerName || null,
-            companyName: paymentIntent.metadata.companyName || null,
-            contactPersonName: paymentIntent.metadata.contactPersonName || null,
-            email: paymentIntent.metadata.email || '',
-            phone: paymentIntent.metadata.phone || '',
-            street: paymentIntent.metadata.street || '',
-            city: paymentIntent.metadata.city || '',
-            state: paymentIntent.metadata.state || '',
-            zip: paymentIntent.metadata.zip || '',
-          };
-        }
-      }
-
-      if (!customerInfo || !productId) {
-        return res.status(404).json({ message: "Purchase details not found" });
-      }
-
-      const product = await storage.getProductById(productId);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      res.json({
-        product,
-        customerInfo,
-        transactionId: paymentIntentId,
-      });
-    } catch (error: any) {
-      console.error("[Purchase Success] Error:", error);
-      res.status(500).json({ message: error.message });
-    }
-  });
-
-  // Stripe payment intent endpoint
-  app.post("/api/create-payment-intent", async (req, res) => {
-    try {
-      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
-      
-      if (!stripeSecretKey) {
-        return res.status(503).json({ 
-          message: "Payment processing is not configured. Please contact us directly at (512) 368-9159." 
-        });
-      }
-
-      const stripe = new Stripe(stripeSecretKey);
-      const { productId, quantity = 1 } = req.body;
-
-      const product = await storage.getProductById(productId);
-      if (!product) {
-        return res.status(404).json({ message: "Product not found" });
-      }
-
-      const amount = Math.round(product.price * quantity); // Price is already in cents
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount,
-        currency: "usd",
-        automatic_payment_methods: {
-          enabled: true, // Enables all available payment methods including Apple Pay, Google Pay, Link, etc.
-        },
-        metadata: {
-          productId: product.id,
-          productName: product.name,
-          quantity: quantity.toString(),
-        },
-      });
-
-      res.json({ 
-        clientSecret: paymentIntent.client_secret,
-        amount: paymentIntent.amount,
-        paymentIntentId: paymentIntent.id // Return payment intent ID
-      });
-    } catch (error: any) {
-      res.status(500).json({ message: "Payment initialization failed: " + error.message });
-    }
-  });
+  // DISABLED:   // Stripe payment intent endpoint
+  // DISABLED:   app.post("/api/create-payment-intent", async (req, res) => {
+  // DISABLED:     try {
+  // DISABLED:       const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+  // DISABLED:       
+  // DISABLED:       if (!stripeSecretKey) {
+  // DISABLED:         return res.status(503).json({ 
+  // DISABLED:           message: "Payment processing is not configured. Please contact us directly at (512) 368-9159." 
+  // DISABLED:         });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       const stripe = new Stripe(stripeSecretKey);
+  // DISABLED:       const { productId, quantity = 1 } = req.body;
+  // DISABLED: 
+  // DISABLED:       const product = await storage.getProductById(productId);
+  // DISABLED:       if (!product) {
+  // DISABLED:         return res.status(404).json({ message: "Product not found" });
+  // DISABLED:       }
+  // DISABLED: 
+  // DISABLED:       const amount = Math.round(product.price * quantity); // Price is already in cents
+  // DISABLED: 
+  // DISABLED:       const paymentIntent = await stripe.paymentIntents.create({
+  // DISABLED:         amount,
+  // DISABLED:         currency: "usd",
+  // DISABLED:         automatic_payment_methods: {
+  // DISABLED:           enabled: true, // Enables all available payment methods including Apple Pay, Google Pay, Link, etc.
+  // DISABLED:         },
+  // DISABLED:         metadata: {
+  // DISABLED:           productId: product.id,
+  // DISABLED:           productName: product.name,
+  // DISABLED:           quantity: quantity.toString(),
+  // DISABLED:         },
+  // DISABLED:       });
+  // DISABLED: 
+  // DISABLED:       res.json({ 
+  // DISABLED:         clientSecret: paymentIntent.client_secret,
+  // DISABLED:         amount: paymentIntent.amount,
+  // DISABLED:         paymentIntentId: paymentIntent.id // Return payment intent ID
+  // DISABLED:       });
+  // DISABLED:     } catch (error: any) {
+  // DISABLED:       res.status(500).json({ message: "Payment initialization failed: " + error.message });
+  // DISABLED:     }
+  // DISABLED:   });
 
   // Photo quality testing endpoint
   app.post("/api/photos/analyze", async (req, res) => {
