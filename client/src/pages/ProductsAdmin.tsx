@@ -28,10 +28,17 @@ export default function ProductsAdmin() {
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: { id: string; updates: Partial<Product> }) => {
-      await apiRequest("PATCH", `/api/products/${data.id}`, data.updates);
+      const response = await apiRequest("PATCH", `/api/products/${data.id}`, data.updates);
+      const updatedProduct = await response.json() as Product;
+      return updatedProduct;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/products'] });
+    onSuccess: async (updatedProduct) => {
+      // Manually update the cache with the server response
+      queryClient.setQueryData<Product[]>(['/api/products'], (old) => {
+        if (!old) return old;
+        return old.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+      });
+      
       toast({
         title: "Success",
         description: "Product updated successfully",
@@ -161,7 +168,7 @@ export default function ProductsAdmin() {
           </DialogHeader>
           
           {editingProduct && (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form key={editingProduct.id} onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Product Name</Label>
                 <Input

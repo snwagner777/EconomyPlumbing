@@ -19,6 +19,7 @@ Preferred communication style: Simple, everyday language.
   - Page Metadata management displays actual default SEO values (e.g., "Water Heater Services | Economy Plumbing") instead of generic "Default" placeholders, showing what title/description each page currently uses when no custom metadata is set.
   - Success Stories admin includes collage reprocessing tool to regenerate all existing collages with AI focal point detection for improved photo positioning
   - Drag-to-Position Collage Editor: Success story before/after images use an intuitive drag-based interface where admins can drag images around within the collage preview to precisely position the main subject. Features proper drag state tracking (stores starting position and focal point), natural movement with 0.5 scaling for 200% zoom, and pixel-perfect preview accuracy. Backend uses extract-based cropping to center focal points exactly as shown in preview, replacing previous discrete gravity positioning. Manual positioning overrides AI detection for precise control.
+  - Products Admin (/admin/products): Manages VIP membership SKUs and ServiceTitan integration fields. Allows editing of SKU codes and Duration Billing IDs for each membership product, enabling automated sync via Zapier to ServiceTitan when customers purchase memberships.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.

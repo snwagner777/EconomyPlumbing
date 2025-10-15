@@ -951,6 +951,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Proprietary Microbial Bio-Enzyme Power Breaks Down, Digests Waste & Eliminates Odors (24/7) - Wonderful Citrus Ginger Scent - 4 Septic Treatments + 16 Drain Treatments or 1 Septic Shock",
         price: 2953, // $29.53
         category: "product",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/bio-pure.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -962,6 +963,8 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -971,6 +974,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Includes water heater flush of up to two (2) tank-type water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 1 year, as well as preferred customer emergency scheduling.",
         price: 13925, // $139.25
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/silver-tank-type.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -982,6 +986,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -991,6 +996,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Includes water heater flush of up to two (2) tankless water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 1 year, as well as preferred customer emergency scheduling.",
         price: 21212, // $212.12
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/tankless+vip+silver.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -1002,6 +1008,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -1011,6 +1018,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Includes (3) annual water heater flush of up to two (2) tank-type water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 3 years, as well as preferred customer emergency scheduling.",
         price: 31977, // $319.77
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/platinum-tank-type.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -1022,6 +1030,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -1031,6 +1040,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Includes (3) annual water heater flush of up to two (2) tankless water heaters (in one service visit) with general plumbing checkup & entitles customer to preferred customer pricing for the duration of 3 years, as well as preferred customer emergency scheduling.",
         price: 59980, // $599.80
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/platinum-tankless.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -1042,6 +1052,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -1051,6 +1062,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Enroll your business in our commercial VIP program today! Become a VIP customer at your business & receive Priority Service for emergencies, Membership savings on EVERY service item, and Yearly plumbing inspection at no charge.",
         price: 11900, // $119.00
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/commercial+VIP-98834175.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -1062,6 +1074,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       },
       {
@@ -1071,6 +1084,7 @@ Call (512) 368-9159 or schedule service online.`,
         description: "Enroll all your rental properties in our VIP program today! Every rental property in our coverage area will get Priority service in the event of an emergency and Savings on every task completed.",
         price: 10910, // $109.10
         category: "membership",
+        sku: null,
         image: "https://irp.cdn-website.com/90e1856f/dms3rep/multi/commercial+VIP-98834175.png",
         stripeProductId: null,
         stripePriceId: null,
@@ -1082,6 +1096,7 @@ Call (512) 368-9159 or schedule service online.`,
         ],
         active: true,
         serviceTitanMembershipTypeId: null,
+        durationBillingId: null,
         serviceTitanEnabled: false
       }
     ];
