@@ -25,7 +25,7 @@ export default function MembershipBenefits() {
     {
       icon: Shield,
       title: "Discounted Rates",
-      description: "Save 15-20% on all plumbing repairs and installations. Membership pays for itself with just one major repair."
+      description: "Save 10-15% on all plumbing repairs and installations. Membership pays for itself with just one major repair."
     },
     {
       icon: Clock,
@@ -60,7 +60,7 @@ export default function MembershipBenefits() {
     <div className="min-h-screen">
       <SEOHead
         title="Membership Benefits | Economy Plumbing TX"
-        description="VIP plumbing membership: priority service, 15-20% discounts, annual maintenance, 24/7 support. Save on repairs. Austin & Marble Falls. (512) 368-9159."
+        description="VIP plumbing membership: priority service, 10-15% discounts, annual maintenance, 24/7 support. Save on repairs. Austin & Marble Falls. (512) 368-9159."
         canonical="https://www.plumbersthatcare.com/membership-benefits"
       />
 
