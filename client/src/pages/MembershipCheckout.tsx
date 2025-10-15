@@ -96,7 +96,7 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
 
     setIsProcessing(true);
 
-    // Build billing details from customer info
+    // Build billing and shipping details from customer info
     const billingDetails: any = {
       name: customerInfo.customerType === 'residential' 
         ? customerInfo.locationName 
@@ -112,6 +112,20 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
       },
     };
 
+    const shippingDetails: any = {
+      name: customerInfo.customerType === 'residential' 
+        ? customerInfo.locationName 
+        : customerInfo.companyName,
+      phone: customerInfo.phone,
+      address: {
+        line1: customerInfo.street,
+        city: customerInfo.city,
+        state: customerInfo.state,
+        postal_code: customerInfo.zip,
+        country: 'US',
+      },
+    };
+
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
@@ -119,6 +133,7 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
         payment_method_data: {
           billing_details: billingDetails,
         },
+        shipping: shippingDetails,
       },
     });
 

@@ -4148,8 +4148,6 @@ Write in a professional yet friendly tone.`;
   app.post("/api/create-payment-intent/test", async (req, res) => {
     try {
       const { productId, customerInfo } = req.body;
-      
-      console.log('[TEST PAYMENT INTENT] Received customerInfo:', JSON.stringify(customerInfo, null, 2));
 
       if (!productId) {
         return res.status(400).json({ 
@@ -4236,8 +4234,6 @@ Write in a professional yet friendly tone.`;
         billingZip: customerInfo?.billingZip || '',
       };
       
-      console.log('[TEST PAYMENT INTENT] Sending metadata to Stripe:', JSON.stringify(metadata, null, 2));
-      
       // Build billing_details from customer info
       const billingDetails: any = {};
       
@@ -4255,8 +4251,6 @@ Write in a professional yet friendly tone.`;
           country: 'US',
         };
       }
-      
-      console.log('[TEST PAYMENT INTENT] Sending billing_details to Stripe:', JSON.stringify(billingDetails, null, 2));
       
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,

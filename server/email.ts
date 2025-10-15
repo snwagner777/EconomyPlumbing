@@ -360,19 +360,13 @@ export async function sendMembershipPurchaseNotification(data: {
           ${data.durationBillingId ? `<p><strong>Duration Billing ID:</strong> ${data.durationBillingId}</p>` : ''}
         </div>
 
+        ${data.customerType === 'residential' ? `
         <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
           <h3 style="margin-top: 0;">Customer Information</h3>
-          <p><strong>Type:</strong> ${data.customerType === 'residential' ? '🏠 Residential' : '🏢 Commercial'}</p>
-          ${data.customerType === 'commercial' ? `
-            ${data.companyName ? `<p><strong>Company:</strong> ${data.companyName}</p>` : ''}
-            ${data.locationName ? `<p><strong>Location:</strong> ${data.locationName}</p>` : ''}
-            ${data.contactPersonName ? `<p><strong>Contact Person:</strong> ${data.contactPersonName}</p>` : ''}
-          ` : `
-            ${data.locationName ? `<p><strong>Name:</strong> ${data.locationName}</p>` : ''}
-          `}
+          <p><strong>Type:</strong> 🏠 Residential</p>
+          <p><strong>Name:</strong> ${data.locationName}</p>
           <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
           <p><strong>Phone:</strong> ${data.phone}</p>
-          ${data.locationPhone ? `<p><strong>Location Phone:</strong> ${data.locationPhone}${data.extension ? ` ext. ${data.extension}` : ''}</p>` : ''}
         </div>
 
         <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -389,6 +383,38 @@ export async function sendMembershipPurchaseNotification(data: {
           <p style="margin: 5px 0;">${data.billingCity}, ${data.billingState} ${data.billingZip}</p>
         </div>
         ` : ''}
+        ` : `
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Company Information</h3>
+          <p><strong>Type:</strong> 🏢 Commercial</p>
+          <p><strong>Company:</strong> ${data.companyName}</p>
+          <p><strong>Location Name:</strong> ${data.locationName}</p>
+          <p><strong>Contact Person:</strong> ${data.contactPersonName}</p>
+          <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Location Contact</h3>
+          <p><strong>Location Phone:</strong> ${data.locationPhone}${data.extension ? ` ext. ${data.extension}` : ''}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Location Address</h3>
+          <p style="margin: 5px 0;">${data.street}</p>
+          <p style="margin: 5px 0;">${data.city}, ${data.state} ${data.zip}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Billing Information</h3>
+          ${data.billingName ? `<p><strong>Billing Contact:</strong> ${data.billingName}</p>` : ''}
+          <p><strong>Billing Phone:</strong> ${data.phone}</p>
+          ${data.billingStreet ? `
+          <p style="margin-top: 10px;"><strong>Billing Address:</strong></p>
+          <p style="margin: 5px 0;">${data.billingStreet}</p>
+          <p style="margin: 5px 0;">${data.billingCity}, ${data.billingState} ${data.billingZip}</p>
+          ` : ''}
+        </div>
+        `}
 
         <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0;">
           <p style="margin: 0;"><strong>✅ Next Steps:</strong></p>
