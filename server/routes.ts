@@ -4213,11 +4213,28 @@ Write in a professional yet friendly tone.`;
           serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
           durationBillingId: product.durationBillingId || '',
           testMode: "true", // Mark this as a test transaction
-          // Add customer info to metadata
+          // Customer type and identification
           customerType: customerInfo?.customerType || '',
-          customerName: customerInfo?.locationName || customerInfo?.customerName || '',
+          customerName: customerInfo?.locationName || '',
+          companyName: customerInfo?.companyName || '',
+          contactPersonName: customerInfo?.contactPersonName || '',
+          locationName: customerInfo?.locationName || '',
+          // Contact info
           email: customerInfo?.email || '',
           phone: customerInfo?.phone || '',
+          locationPhone: customerInfo?.locationPhone || '',
+          extension: customerInfo?.extension || '',
+          // Location address
+          street: customerInfo?.street || '',
+          city: customerInfo?.city || '',
+          state: customerInfo?.state || '',
+          zip: customerInfo?.zip || '',
+          // Billing address
+          billingName: customerInfo?.billingName || '',
+          billingStreet: customerInfo?.billingStreet || '',
+          billingCity: customerInfo?.billingCity || '',
+          billingState: customerInfo?.billingState || '',
+          billingZip: customerInfo?.billingZip || '',
         },
       });
 
@@ -4355,11 +4372,28 @@ Write in a professional yet friendly tone.`;
           sku: product.sku || '',
           serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
           durationBillingId: product.durationBillingId || '',
-          // Add customer info to metadata
+          // Customer type and identification
           customerType: customerInfo?.customerType || '',
-          customerName: customerInfo?.locationName || customerInfo?.customerName || '',
+          customerName: customerInfo?.locationName || '',
+          companyName: customerInfo?.companyName || '',
+          contactPersonName: customerInfo?.contactPersonName || '',
+          locationName: customerInfo?.locationName || '',
+          // Contact info
           email: customerInfo?.email || '',
           phone: customerInfo?.phone || '',
+          locationPhone: customerInfo?.locationPhone || '',
+          extension: customerInfo?.extension || '',
+          // Location address
+          street: customerInfo?.street || '',
+          city: customerInfo?.city || '',
+          state: customerInfo?.state || '',
+          zip: customerInfo?.zip || '',
+          // Billing address
+          billingName: customerInfo?.billingName || '',
+          billingStreet: customerInfo?.billingStreet || '',
+          billingCity: customerInfo?.billingCity || '',
+          billingState: customerInfo?.billingState || '',
+          billingZip: customerInfo?.billingZip || '',
         },
       });
 
