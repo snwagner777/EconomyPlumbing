@@ -4144,6 +4144,105 @@ Write in a professional yet friendly tone.`;
     }
   });
 
+  // TEST MODE: Create payment intent using test Stripe keys (for safe testing)
+  app.post("/api/create-payment-intent/test", async (req, res) => {
+    try {
+      const { productId } = req.body;
+
+      if (!productId) {
+        return res.status(400).json({ 
+          error: "MISSING_PRODUCT_ID",
+          message: "Product ID is required" 
+        });
+      }
+
+      // Get product details from database - NEVER trust client-side pricing
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ 
+          error: "PRODUCT_NOT_FOUND",
+          message: "Product not found" 
+        });
+      }
+
+      // Verify product is active and available for purchase
+      if (!product.active) {
+        return res.status(400).json({ 
+          error: "PRODUCT_UNAVAILABLE",
+          message: "This product is no longer available for purchase" 
+        });
+      }
+
+      // Verify this is a membership product (case-insensitive check)
+      if (product.category.toLowerCase() !== 'membership') {
+        return res.status(400).json({ 
+          error: "NOT_A_MEMBERSHIP",
+          message: "This product is not a VIP membership. Please use the store for other products." 
+        });
+      }
+
+      // Initialize Stripe with TEST keys
+      const stripeSecretKey = process.env.TESTING_STRIPE_SECRET_KEY;
+      if (!stripeSecretKey) {
+        throw new Error('Missing required Stripe test secret: TESTING_STRIPE_SECRET_KEY');
+      }
+      const stripe = new Stripe(stripeSecretKey, {
+        apiVersion: "2023-10-16",
+      });
+
+      // Product price is already stored in cents in the database
+      const amountInCents = product.price;
+
+      if (amountInCents <= 0) {
+        return res.status(400).json({ 
+          error: "INVALID_PRICE",
+          message: "Product has an invalid price" 
+        });
+      }
+
+      // Create payment intent with server-side validated pricing
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amountInCents,
+        currency: "usd",
+        metadata: {
+          productId: product.id,
+          productName: product.name,
+          productSlug: product.slug,
+          category: product.category,
+          testMode: "true", // Mark this as a test transaction
+        },
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error('Error creating TEST payment intent:', error);
+      
+      // Return structured error for better client-side handling
+      if (error.type === 'StripeAuthenticationError') {
+        return res.status(500).json({ 
+          error: "STRIPE_AUTH_ERROR",
+          message: "Unable to authenticate with payment processor. Please try again later." 
+        });
+      }
+      
+      // Stripe API errors (network, rate limit, etc)
+      if (error.type && error.type.startsWith('Stripe')) {
+        console.error('[Stripe API Error]', error.type, error.message);
+        return res.status(500).json({ 
+          error: "STRIPE_API_ERROR",
+          message: "Payment processor error. Please try again." 
+        });
+      }
+      
+      // Unexpected errors - log for monitoring
+      console.error('[Test Payment Intent Creation Failed]', error.message, error.stack);
+      res.status(500).json({ 
+        error: "PAYMENT_INTENT_FAILED",
+        message: "Unable to create payment intent. Please try again." 
+      });
+    }
+  });
+
   // Reference: blueprint:javascript_stripe - Create payment intent for VIP memberships
   app.post("/api/create-payment-intent", async (req, res) => {
     try {
