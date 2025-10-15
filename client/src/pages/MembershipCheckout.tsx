@@ -2,23 +2,33 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Loader2 } from "lucide-react";
+import { CheckCircle, Loader2, TestTube } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@shared/schema";
 
-if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-  throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
+// Load Stripe with appropriate keys based on test mode
+function getStripePromise(isTestMode: boolean) {
+  if (isTestMode) {
+    if (!import.meta.env.TESTING_VITE_STRIPE_PUBLIC_KEY) {
+      throw new Error('Missing required Stripe test key: TESTING_VITE_STRIPE_PUBLIC_KEY');
+    }
+    return loadStripe(import.meta.env.TESTING_VITE_STRIPE_PUBLIC_KEY);
+  } else {
+    if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
+      throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
+    }
+    return loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+  }
 }
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-function CheckoutForm({ product }: { product: Product }) {
+function CheckoutForm({ product, isTestMode }: { product: Product; isTestMode: boolean }) {
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
@@ -37,7 +47,7 @@ function CheckoutForm({ product }: { product: Product }) {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/store/checkout/success?product=${product.slug}`,
+        return_url: `${window.location.origin}/store/checkout/success?product=${product.slug}${isTestMode ? '&test=true' : ''}`,
       },
     });
 
@@ -64,10 +74,13 @@ function CheckoutForm({ product }: { product: Product }) {
         {isProcessing ? (
           <>
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            Processing...
+            {isTestMode ? 'Processing Test Payment...' : 'Processing...'}
           </>
         ) : (
-          `Purchase ${product.name}`
+          <>
+            {isTestMode && <TestTube className="w-4 h-4 mr-2" />}
+            {isTestMode ? `Test Purchase ${product.name}` : `Purchase ${product.name}`}
+          </>
         )}
       </Button>
     </form>
@@ -79,6 +92,15 @@ export default function MembershipCheckout() {
   const { toast } = useToast();
   const [clientSecret, setClientSecret] = useState("");
 
+  // Check for test mode via query parameter
+  const isTestMode = useMemo(() => {
+    const params = new URLSearchParams(window.location.search);
+    return params.has('testmode');
+  }, []);
+
+  // Load Stripe with appropriate keys
+  const stripePromise = useMemo(() => getStripePromise(isTestMode), [isTestMode]);
+
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: ['/api/products', slug],
   });
@@ -86,7 +108,9 @@ export default function MembershipCheckout() {
   useEffect(() => {
     if (product) {
       // Server validates pricing for security - never trust client-side amounts
-      apiRequest("POST", "/api/create-payment-intent", { 
+      // Use test endpoint if in test mode
+      const endpoint = isTestMode ? "/api/create-payment-intent/test" : "/api/create-payment-intent";
+      apiRequest("POST", endpoint, { 
         productId: product.id
       })
         .then(async (res) => {
@@ -124,7 +148,7 @@ export default function MembershipCheckout() {
           });
         });
     }
-  }, [product, toast]);
+  }, [product, toast, isTestMode]);
 
   if (isLoading || !product) {
     return (
@@ -158,6 +182,18 @@ export default function MembershipCheckout() {
 
       <div className="min-h-screen flex flex-col">
         <Header />
+        
+        {/* TEST MODE BANNER */}
+        {isTestMode && (
+          <div className="bg-yellow-500 dark:bg-yellow-600 text-black dark:text-white py-3 px-4">
+            <div className="max-w-7xl mx-auto flex items-center justify-center gap-2">
+              <TestTube className="w-5 h-5" />
+              <p className="font-semibold text-center">
+                TEST MODE - Use card 4242 4242 4242 4242 - No real charges will be made
+              </p>
+            </div>
+          </div>
+        )}
         
         <main className="flex-1 py-16 lg:py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -213,18 +249,34 @@ export default function MembershipCheckout() {
 
               {/* Payment Form */}
               <Card className="p-6">
-                <h2 className="text-2xl font-bold mb-6">Payment Details</h2>
+                <h2 className="text-2xl font-bold mb-6">{isTestMode ? 'Test Payment Details' : 'Payment Details'}</h2>
+                
+                {/* Test Card Instructions (only shown in test mode) */}
+                {isTestMode && (
+                  <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <p className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">Use these test cards:</p>
+                    <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                      <li><strong>Success:</strong> 4242 4242 4242 4242</li>
+                      <li><strong>3D Secure:</strong> 4000 0025 0000 3155</li>
+                      <li><strong>Declined:</strong> 4000 0000 0000 9995</li>
+                    </ul>
+                    <p className="text-xs text-blue-700 dark:text-blue-300 mt-2">
+                      Use any future expiry date, any CVC, any ZIP
+                    </p>
+                  </div>
+                )}
+
                 {!clientSecret ? (
                   <div className="flex items-center justify-center py-12">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
                 ) : (
                   <Elements stripe={stripePromise} options={{ clientSecret }}>
-                    <CheckoutForm product={product} />
+                    <CheckoutForm product={product} isTestMode={isTestMode} />
                   </Elements>
                 )}
                 <p className="text-xs text-muted-foreground mt-4 text-center">
-                  Your payment is secure and encrypted with Stripe
+                  {isTestMode ? 'Test mode - Powered by Stripe Test Environment' : 'Your payment is secure and encrypted with Stripe'}
                 </p>
               </Card>
             </div>
