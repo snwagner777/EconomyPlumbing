@@ -75,6 +75,7 @@ export const products = pgTable("products", {
   description: text("description").notNull(),
   price: integer("price").notNull(), // in cents
   category: text("category").notNull(), // 'membership' or 'product'
+  sku: text("sku"), // Product SKU for Zapier/ServiceTitan integration
   image: text("image"),
   stripeProductId: text("stripe_product_id"),
   stripePriceId: text("stripe_price_id"),
@@ -83,6 +84,7 @@ export const products = pgTable("products", {
   
   // ServiceTitan integration fields (for memberships)
   serviceTitanMembershipTypeId: text("service_titan_membership_type_id"), // Maps product to ST membership type
+  durationBillingId: text("duration_billing_id"), // ServiceTitan duration/billing ID for membership
   serviceTitanEnabled: boolean("service_titan_enabled").notNull().default(false), // Enable ST sync for this product
 }, (table) => ({
   categoryIdx: index("products_category_idx").on(table.category),
