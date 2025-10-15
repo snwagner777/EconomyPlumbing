@@ -251,7 +251,14 @@ export default function Header() {
                       className="block px-4 py-2 text-sm hover-elevate"
                       data-testid="link-store"
                     >
-                      Products & Memberships
+                      Products
+                    </Link>
+                    <Link
+                      href="/membership-benefits"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-memberships"
+                    >
+                      VIP Memberships
                     </Link>
                     <Link
                       href="/privacy-policy"
@@ -418,7 +425,10 @@ export default function Header() {
               {mobileStoreOpen && (
                 <div className="pb-2 space-y-1">
                   <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
-                    Products & Memberships
+                    Products
+                  </Link>
+                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-memberships" onClick={() => setMobileMenuOpen(false)}>
+                    VIP Memberships
                   </Link>
                   <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy" onClick={() => setMobileMenuOpen(false)}>
                     Privacy Policy
