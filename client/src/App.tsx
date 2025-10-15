@@ -64,6 +64,8 @@ const FAQ = lazy(() => import("@/pages/FAQ"));
 const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
+const MembershipCheckout = lazy(() => import("@/pages/MembershipCheckout"));
+const MembershipSuccess = lazy(() => import("@/pages/MembershipSuccess"));
 const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const OAuthAdminLogin = lazy(() => import("@/pages/OAuthAdminLogin"));
 const UnifiedAdminDashboard = lazy(() => import("@/pages/UnifiedAdminDashboard"));
@@ -166,6 +168,8 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />
       <Route path="/membership-benefits" component={MembershipBenefits} />
+      <Route path="/membership-checkout/:slug" component={MembershipCheckout} />
+      <Route path="/membership-success" component={MembershipSuccess} />
       <Route path="/success-stories" component={SuccessStories} />
       
       {/* Store & Shop - Now using Square Online */}
