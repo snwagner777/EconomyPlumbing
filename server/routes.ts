@@ -818,6 +818,17 @@ ${rssItems}
     }
   });
 
+  // Update product
+  app.patch("/api/products/:id", async (req, res) => {
+    try {
+      const updatedProduct = await storage.updateProduct(req.params.id, req.body);
+      res.json(updatedProduct);
+    } catch (error) {
+      console.error('[Products] Error updating product:', error);
+      res.status(500).json({ message: "Failed to update product" });
+    }
+  });
+
   // Create new service area (triggers sitemap ping)
   app.post("/api/service-areas", async (req, res) => {
     try {

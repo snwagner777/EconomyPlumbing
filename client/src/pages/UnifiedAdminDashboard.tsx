@@ -47,7 +47,8 @@ import {
   XCircle,
   Upload,
   Sparkles,
-  Loader2
+  Loader2,
+  Package
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -132,6 +133,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       description: "Review & approve stories"
     },
     {
+      title: "Products & Memberships",
+      icon: Package,
+      href: '/admin/products',
+      description: "SKUs & ServiceTitan setup"
+    },
+    {
       title: "Commercial Customers",
       icon: Building2,
       section: 'commercial-customers' as AdminSection,
@@ -177,17 +184,30 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    onClick={() => setActiveSection(item.section)}
-                    isActive={activeSection === item.section}
-                    data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <div className="flex flex-col items-start">
-                      <span className="text-sm font-medium">{item.title}</span>
-                      <span className="text-xs text-muted-foreground">{item.description}</span>
-                    </div>
-                  </SidebarMenuButton>
+                  {item.href ? (
+                    <SidebarMenuButton
+                      onClick={() => setLocation(item.href!)}
+                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium">{item.title}</span>
+                        <span className="text-xs text-muted-foreground">{item.description}</span>
+                      </div>
+                    </SidebarMenuButton>
+                  ) : (
+                    <SidebarMenuButton
+                      onClick={() => setActiveSection(item.section!)}
+                      isActive={activeSection === item.section}
+                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-medium">{item.title}</span>
+                        <span className="text-xs text-muted-foreground">{item.description}</span>
+                      </div>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

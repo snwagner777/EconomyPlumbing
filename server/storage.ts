@@ -77,6 +77,7 @@ export interface IStorage {
   getProductBySlug(slug: string): Promise<Product | undefined>;
   getProductById(id: string): Promise<Product | undefined>;
   createProduct(product: InsertProduct): Promise<Product>;
+  updateProduct(id: string, updates: Partial<InsertProduct>): Promise<Product>;
   
   // Contact submissions
   createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission>;
@@ -2405,6 +2406,20 @@ export class DatabaseStorage implements IStorage {
       .values(product)
       .returning();
     return created;
+  }
+
+  async updateProduct(id: string, updates: Partial<InsertProduct>): Promise<Product> {
+    const [updated] = await db
+      .update(products)
+      .set(updates)
+      .where(eq(products.id, id))
+      .returning();
+    
+    if (!updated) {
+      throw new Error(`Product with id ${id} not found`);
+    }
+    
+    return updated;
   }
 
   async createContactSubmission(submission: InsertContactSubmission): Promise<ContactSubmission> {
