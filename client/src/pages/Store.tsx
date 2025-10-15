@@ -36,11 +36,29 @@ export default function Store() {
       script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}`;
       script.setAttribute('data-cfasync', 'false');
       script.charset = 'utf-8';
+      
+      // Initialize Ecwid widget once script loads
+      script.onload = () => {
+        // @ts-ignore - Ecwid global is added by the loaded script
+        if (window.Ecwid) {
+          // @ts-ignore
+          window.Ecwid.init();
+        }
+      };
+
       document.body.appendChild(script);
 
       return () => {
         // Cleanup: remove script when component unmounts
-        document.body.removeChild(script);
+        if (document.body.contains(script)) {
+          document.body.removeChild(script);
+        }
+        // Clean up Ecwid instance if it exists
+        // @ts-ignore
+        if (window.Ecwid && window.Ecwid.destroy) {
+          // @ts-ignore
+          window.Ecwid.destroy();
+        }
       };
     }
   }, []);
