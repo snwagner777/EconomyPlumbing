@@ -1,5 +1,4 @@
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -8,61 +7,26 @@ import { Check } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
 
 /*
- * ECWID SETUP INSTRUCTIONS:
+ * SQUARE ONLINE SETUP INSTRUCTIONS:
  * 
- * 1. Create your Ecwid account at https://www.ecwid.com/
- * 2. Choose a plan (Venture $15/mo or Business $35/mo recommended)
- * 3. After creating your account, find your Store ID:
- *    - Go to Ecwid Admin → Settings → General → Store Profile
- *    - Copy your Store ID (it's a number like "12345678")
- * 4. Replace "YOUR_STORE_ID" below with your actual Store ID
- * 5. Add all your products/memberships in Ecwid dashboard
+ * 1. Create your Square Online account at https://squareup.com/us/en/online-store
+ * 2. Set up your store (free plan available!)
+ * 3. Add your products/memberships
+ * 4. Get your store URL (looks like: https://yourstore.square.site)
+ * 5. Replace "YOUR_SQUARE_STORE_URL" below with your actual Square store URL
  * 
  * DROP-SHIPPING SETUP (After store is running):
- * 1. Install Printful app from Ecwid App Market for custom branded products
- * 2. Install Spocket app from Ecwid App Market for US/EU supplier products
- * 3. Connect Stripe in Ecwid Settings → Payment for seamless checkout
+ * 1. Install Printful app from Square App Marketplace for custom branded products
+ * 2. Install Spocket app from Square App Marketplace for US/EU supplier products
+ * 3. Stripe is built into Square - no separate setup needed!
  * 
- * See /tmp/ecwid_products_reference.txt for list of products to add to Ecwid
+ * See /tmp/SQUARE_SETUP_GUIDE.md for detailed instructions
+ * See /tmp/ecwid_products_reference.txt for list of products to add
  */
 
-const ECWID_STORE_ID = "YOUR_STORE_ID"; // Replace with your actual Ecwid store ID
+const SQUARE_STORE_URL = "YOUR_SQUARE_STORE_URL"; // Replace with your actual Square store URL
 
 export default function Store() {
-  useEffect(() => {
-    // Load Ecwid script dynamically
-    if (ECWID_STORE_ID !== "YOUR_STORE_ID") {
-      const script = document.createElement('script');
-      script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}`;
-      script.setAttribute('data-cfasync', 'false');
-      script.charset = 'utf-8';
-      
-      // Initialize Ecwid widget once script loads
-      script.onload = () => {
-        // @ts-ignore - Ecwid global is added by the loaded script
-        if (window.Ecwid) {
-          // @ts-ignore
-          window.Ecwid.init();
-        }
-      };
-
-      document.body.appendChild(script);
-
-      return () => {
-        // Cleanup: remove script when component unmounts
-        if (document.body.contains(script)) {
-          document.body.removeChild(script);
-        }
-        // Clean up Ecwid instance if it exists
-        // @ts-ignore
-        if (window.Ecwid && window.Ecwid.destroy) {
-          // @ts-ignore
-          window.Ecwid.destroy();
-        }
-      };
-    }
-  }, []);
-
   return (
     <>
       <SEOHead
@@ -89,28 +53,40 @@ export default function Store() {
             </div>
           </section>
 
-          {/* Ecwid Store Section */}
+          {/* Square Store Section */}
           <section className="py-16 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {ECWID_STORE_ID === "YOUR_STORE_ID" ? (
+              {SQUARE_STORE_URL === "YOUR_SQUARE_STORE_URL" ? (
                 <div className="text-center py-12">
                   <Card className="p-8 max-w-2xl mx-auto">
                     <h2 className="text-2xl font-bold mb-4">Store Setup Required</h2>
                     <p className="text-muted-foreground mb-4">
-                      To display your Ecwid store, please update the ECWID_STORE_ID constant in 
+                      To display your Square Online store, please update the SQUARE_STORE_URL constant in 
                       <code className="bg-muted px-2 py-1 rounded mx-1">client/src/pages/Store.tsx</code>
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground mb-6">
                       See instructions at the top of Store.tsx for setup steps
                     </p>
+                    <div className="space-y-2 text-sm text-left bg-muted/50 p-4 rounded-md">
+                      <p className="font-semibold">Quick Setup:</p>
+                      <ol className="list-decimal list-inside space-y-1 ml-2">
+                        <li>Create a Square Online store (FREE plan available)</li>
+                        <li>Get your store URL (e.g., https://yourstore.square.site)</li>
+                        <li>Replace SQUARE_STORE_URL in this file</li>
+                        <li>Save and refresh - your store will appear!</li>
+                      </ol>
+                    </div>
                   </Card>
                 </div>
               ) : (
-                <div 
-                  id={`my-store-${ECWID_STORE_ID}`}
-                  data-testid="ecwid-store-widget"
-                >
-                  {/* Ecwid store will render here */}
+                <div className="w-full">
+                  <iframe
+                    src={SQUARE_STORE_URL}
+                    title="Economy Plumbing Store"
+                    className="w-full border-0 rounded-lg shadow-sm"
+                    style={{ minHeight: '800px', height: '100vh' }}
+                    data-testid="square-store-iframe"
+                  />
                 </div>
               )}
             </div>
