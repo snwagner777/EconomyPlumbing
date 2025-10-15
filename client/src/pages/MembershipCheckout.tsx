@@ -85,17 +85,30 @@ export default function MembershipCheckout() {
 
   useEffect(() => {
     if (product) {
+      // Server validates pricing for security - never trust client-side amounts
       apiRequest("POST", "/api/create-payment-intent", { 
-        productId: product.id,
-        amount: product.price 
+        productId: product.id
       })
         .then((data) => {
           setClientSecret(data.clientSecret);
         })
         .catch((error) => {
+          // Handle specific error cases
+          let errorMessage = 'Failed to initialize checkout. Please try again.';
+          
+          if (error.error === 'NOT_A_MEMBERSHIP') {
+            errorMessage = 'This product must be purchased through our store.';
+          } else if (error.error === 'PRODUCT_NOT_FOUND') {
+            errorMessage = 'This membership is no longer available.';
+          } else if (error.error === 'PRODUCT_UNAVAILABLE') {
+            errorMessage = 'This membership is currently unavailable.';
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          
           toast({
             title: "Error",
-            description: "Failed to initialize checkout. Please try again.",
+            description: errorMessage,
             variant: "destructive",
           });
         });
