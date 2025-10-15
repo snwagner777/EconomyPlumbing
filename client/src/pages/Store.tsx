@@ -3,9 +3,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Check } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Check, CheckCircle } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
 import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
+import type { Product } from "@shared/schema";
 
 /*
  * ECWID SETUP INSTRUCTIONS:
@@ -27,6 +31,29 @@ import { useEffect } from "react";
 const ECWID_STORE_ID = "90741099"; // Your Ecwid Store ID
 
 export default function Store() {
+  const { data: products } = useQuery<Product[]>({
+    queryKey: ['/api/products'],
+  });
+
+  const memberships = products?.filter(p => p.category === 'membership') || [];
+
+  const membershipTiers = memberships.map((membership) => {
+    const isPlatinum = membership.name.toLowerCase().includes('platinum');
+    const priceDisplay = isPlatinum 
+      ? `$${(membership.price / 100).toFixed(2)} / 3 years`
+      : `$${(membership.price / 100).toFixed(2)} / year`;
+    
+    return {
+      name: membership.name,
+      slug: membership.slug,
+      price: priceDisplay,
+      description: membership.description,
+      features: membership.features || [],
+      image: membership.image,
+      popular: isPlatinum && membership.name.toLowerCase().includes('tank')
+    };
+  });
+
   useEffect(() => {
     // Load Ecwid script
     const script = document.createElement('script');
@@ -55,11 +82,11 @@ export default function Store() {
   return (
     <>
       <SEOHead
-        title="Plumbing Products & Supplies | Economy Plumbing Store"
-        description="Shop quality plumbing products with fast shipping. BioPure water treatment & more. Drop-shipped to Austin & Marble Falls. Call (512) 368-9159 today!"
+        title="VIP Memberships & Plumbing Products | Economy Store"
+        description="VIP memberships with 10-15% discounts & quality plumbing products. Priority service, fast shipping to Austin & Marble Falls. Call (512) 368-9159!"
         canonical="https://www.plumbersthatcare.com/store"
         ogImage="https://www.plumbersthatcare.com/attached_assets/logo.jpg"
-        ogImageAlt="Economy Plumbing Services - Quality Plumbing Products"
+        ogImageAlt="Economy Plumbing Services - VIP Memberships and Products"
       />
 
       <div className="min-h-screen flex flex-col">
@@ -70,17 +97,80 @@ export default function Store() {
           <section className="bg-primary/5 py-16 lg:py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="text-center max-w-3xl mx-auto">
-                <h1 className="text-4xl md:text-5xl font-bold mb-6">Plumbing Products</h1>
+                <h1 className="text-4xl md:text-5xl font-bold mb-6">Store</h1>
                 <p className="text-xl text-muted-foreground">
-                  Quality plumbing products and supplies delivered to your door
+                  VIP memberships and quality plumbing products
                 </p>
               </div>
             </div>
           </section>
 
-          {/* Ecwid Store Section */}
+          {/* VIP Memberships Section */}
+          {membershipTiers.length > 0 && (
+            <section className="py-16 lg:py-20 bg-muted/30">
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="text-center mb-12">
+                  <h2 className="text-3xl font-bold mb-4">VIP Memberships</h2>
+                  <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                    Save money with priority service, discounts, and annual maintenance
+                  </p>
+                </div>
+
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                  {membershipTiers.map((tier, idx) => (
+                    <Card key={idx} className={`p-8 relative flex flex-col ${tier.popular ? 'border-primary border-2' : ''}`}>
+                      {tier.popular && (
+                        <Badge className="absolute top-4 right-4 bg-primary">Most Popular</Badge>
+                      )}
+                      {tier.image && (
+                        <div className="mb-4 flex justify-center">
+                          <img 
+                            src={tier.image} 
+                            alt={`${tier.name} VIP membership tier`}
+                            width="128"
+                            height="128"
+                            loading="lazy"
+                            decoding="async"
+                            className="w-32 h-32 object-contain"
+                          />
+                        </div>
+                      )}
+                      <div className="text-center mb-6">
+                        <h3 className="text-2xl font-bold mb-2">{tier.name}</h3>
+                        <p className="text-3xl font-poppins font-bold text-primary mb-2">{tier.price}</p>
+                        <p className="text-muted-foreground text-sm">{tier.description}</p>
+                      </div>
+                      <ul className="space-y-3 mb-8 flex-1">
+                        {tier.features.map((feature, featureIdx) => (
+                          <li key={featureIdx} className="flex items-start gap-2">
+                            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button 
+                        asChild 
+                        className="w-full"
+                        data-testid={`button-purchase-${tier.slug}`}
+                      >
+                        <Link href={`/store/checkout/${tier.slug}`}>Purchase Now</Link>
+                      </Button>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Ecwid Products Section */}
           <section className="py-16 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-12">
+                <h2 className="text-3xl font-bold mb-4">Plumbing Products</h2>
+                <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                  Professional-grade products delivered to your door
+                </p>
+              </div>
               <div className="w-full">
                 {/* Ecwid store widget will load here */}
                 <div 
