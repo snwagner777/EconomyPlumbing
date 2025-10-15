@@ -24,7 +24,7 @@ import { useEffect } from "react";
  * See /tmp/ecwid_products_reference.txt for list of products to add
  */
 
-const ECWID_STORE_ID = "YOUR_STORE_ID"; // Replace with your actual Ecwid Store ID
+const ECWID_STORE_ID = "90741099"; // Your Ecwid Store ID
 
 export default function Store() {
   useEffect(() => {
