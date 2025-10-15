@@ -4133,6 +4133,48 @@ Write in a professional yet friendly tone.`;
     }
   });
 
+  // Reference: blueprint:javascript_stripe - Create payment intent for VIP memberships
+  app.post("/api/create-payment-intent", async (req, res) => {
+    try {
+      const { productId, amount } = req.body;
+
+      if (!productId || !amount) {
+        return res.status(400).json({ message: "Missing required fields: productId, amount" });
+      }
+
+      // Get product details
+      const product = await storage.getProductById(productId);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+
+      // Initialize Stripe
+      const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+      if (!stripeSecretKey) {
+        throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
+      }
+      const stripe = new Stripe(stripeSecretKey, {
+        apiVersion: "2023-10-16",
+      });
+
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount), // Amount already in cents from frontend
+        currency: "usd",
+        metadata: {
+          productId: product.id,
+          productName: product.name,
+          productSlug: product.slug,
+        },
+      });
+
+      res.json({ clientSecret: paymentIntent.client_secret });
+    } catch (error: any) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ message: "Error creating payment intent: " + error.message });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
