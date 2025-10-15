@@ -87,7 +87,7 @@ export interface IStorage {
   getAllSuccessStories(): Promise<CustomerSuccessStory[]>;
   approveSuccessStory(id: string, collagePhotoUrl: string, jpegCollagePhotoUrl?: string): Promise<CustomerSuccessStory>;
   unapproveSuccessStory(id: string): Promise<CustomerSuccessStory>;
-  updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory>;
+  updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforePhotoUrl' | 'afterPhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory>;
   deleteSuccessStory(id: string): Promise<void>;
   
   // Service areas
@@ -2050,7 +2050,7 @@ Call (512) 368-9159 or schedule service online.`,
     return story;
   }
 
-  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory> {
+  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforePhotoUrl' | 'afterPhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory> {
     const story = this.customerSuccessStories.get(id);
     if (!story) {
       throw new Error(`Success story with id ${id} not found`);
@@ -2467,7 +2467,7 @@ export class DatabaseStorage implements IStorage {
     return story;
   }
 
-  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory> {
+  async updateSuccessStory(id: string, updates: Partial<Pick<CustomerSuccessStory, 'customerName' | 'story' | 'location' | 'jpegCollagePhotoUrl' | 'collagePhotoUrl' | 'beforePhotoUrl' | 'afterPhotoUrl' | 'beforeFocalX' | 'beforeFocalY' | 'afterFocalX' | 'afterFocalY'>>): Promise<CustomerSuccessStory> {
     const [story] = await db
       .update(customerSuccessStories)
       .set(updates)

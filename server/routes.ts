@@ -2,7 +2,7 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
@@ -3488,7 +3488,7 @@ ${rssItems}
         return res.status(404).json({ error: "Success story not found" });
       }
 
-      // Swap the URLs and focal points
+      // Swap the photo URLs and focal points
       const updatedStory = await storage.updateSuccessStory(id, {
         beforePhotoUrl: storyData.afterPhotoUrl,
         afterPhotoUrl: storyData.beforePhotoUrl,
@@ -3925,8 +3925,8 @@ Write in a professional yet friendly tone.`;
       const sharp = (await import("sharp")).default;
       
       // Get all blog posts without JPEG versions but with WebP featured images
-      const posts = await storage.getAllBlogPosts();
-      const postsToBackfill = posts.filter(p => p.featuredImage && !p.jpegFeaturedImage);
+      const posts = await storage.getBlogPosts();
+      const postsToBackfill = posts.filter((p: any) => p.featuredImage && !p.jpegFeaturedImage);
       
       console.log(`[JPEG Backfill] Found ${postsToBackfill.length} blog posts to backfill`);
       
@@ -3940,6 +3940,12 @@ Write in a professional yet friendly tone.`;
       for (const post of postsToBackfill) {
         try {
           console.log(`[JPEG Backfill] Processing blog post: ${post.title}`);
+          
+          // Skip if no featured image
+          if (!post.featuredImage) {
+            console.log(`[JPEG Backfill] ⏭️ Skipping ${post.title} - no featured image`);
+            continue;
+          }
           
           // Download the WebP image
           const webpBuffer = await objectStorageService.downloadBuffer(post.featuredImage);
@@ -4002,6 +4008,12 @@ Write in a professional yet friendly tone.`;
       for (const story of storiesToBackfill) {
         try {
           console.log(`[JPEG Backfill] Processing success story: ${story.customerName}`);
+          
+          // Skip if no collage URL
+          if (!story.collagePhotoUrl) {
+            console.log(`[JPEG Backfill] ⏭️ Skipping ${story.customerName} - no collage URL`);
+            continue;
+          }
           
           // Download the WebP collage
           const webpBuffer = await objectStorageService.downloadBuffer(story.collagePhotoUrl);
