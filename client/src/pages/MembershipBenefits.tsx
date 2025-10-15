@@ -99,7 +99,7 @@ export default function MembershipBenefits() {
             })}
           </div>
 
-          <div className="text-center mb-12">
+          <div className="text-center mb-12" id="choose-plan">
             <h2 className="text-3xl font-bold mb-4">Choose Your Membership Level</h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
               Select the plan that best fits your needs and start saving today
@@ -142,8 +142,9 @@ export default function MembershipBenefits() {
                   asChild 
                   className="w-full"
                   variant={tier.popular ? "default" : "outline"}
+                  data-testid={`button-purchase-${tier.slug}`}
                 >
-                  <Link href={`/store/checkout/${tier.slug}`}>Purchase Now</Link>
+                  <Link href={`/membership-checkout/${tier.slug}`}>Purchase Now</Link>
                 </Button>
               </Card>
             ))}
@@ -161,8 +162,11 @@ export default function MembershipBenefits() {
             <Button 
               asChild
               size="lg"
+              data-testid="button-view-plans"
             >
-              <Link href="/store">View Membership Plans</Link>
+              <Link href="#choose-plan" onClick={(e) => { e.preventDefault(); document.getElementById('choose-plan')?.scrollIntoView({ behavior: 'smooth' }); }}>
+                View Membership Plans
+              </Link>
             </Button>
             <Button 
               asChild
