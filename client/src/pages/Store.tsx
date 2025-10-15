@@ -24,7 +24,7 @@ import { openScheduler } from "@/lib/scheduler";
  * See /tmp/ecwid_products_reference.txt for list of products to add
  */
 
-const SQUARE_STORE_URL = "YOUR_SQUARE_STORE_URL"; // Replace with your actual Square store URL
+const SQUARE_STORE_URL = "https://economy-plumbing-services-llc.square.site"; // Your Square Online store
 
 export default function Store() {
   return (
