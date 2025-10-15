@@ -144,7 +144,7 @@ export default function MembershipBenefits() {
                   variant={tier.popular ? "default" : "outline"}
                   data-testid={`button-purchase-${tier.slug}`}
                 >
-                  <Link href={`/membership-checkout/${tier.slug}`}>Purchase Now</Link>
+                  <Link href={`/store/checkout/${tier.slug}`}>Purchase Now</Link>
                 </Button>
               </Card>
             ))}

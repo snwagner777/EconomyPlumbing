@@ -37,7 +37,7 @@ function CheckoutForm({ product }: { product: Product }) {
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: `${window.location.origin}/membership-success?product=${product.slug}`,
+        return_url: `${window.location.origin}/store/checkout/success?product=${product.slug}`,
       },
     });
 
@@ -89,19 +89,30 @@ export default function MembershipCheckout() {
       apiRequest("POST", "/api/create-payment-intent", { 
         productId: product.id
       })
-        .then((data) => {
+        .then(async (res) => {
+          const data = await res.json();
           setClientSecret(data.clientSecret);
         })
-        .catch((error) => {
+        .catch(async (error) => {
           // Handle specific error cases
           let errorMessage = 'Failed to initialize checkout. Please try again.';
           
-          if (error.error === 'NOT_A_MEMBERSHIP') {
-            errorMessage = 'This product must be purchased through our store.';
-          } else if (error.error === 'PRODUCT_NOT_FOUND') {
-            errorMessage = 'This membership is no longer available.';
-          } else if (error.error === 'PRODUCT_UNAVAILABLE') {
-            errorMessage = 'This membership is currently unavailable.';
+          // Try to parse error response if it's a Response object
+          if (error instanceof Response) {
+            try {
+              const errorData = await error.json();
+              if (errorData.error === 'NOT_A_MEMBERSHIP') {
+                errorMessage = 'This product must be purchased through our store.';
+              } else if (errorData.error === 'PRODUCT_NOT_FOUND') {
+                errorMessage = 'This membership is no longer available.';
+              } else if (errorData.error === 'PRODUCT_UNAVAILABLE') {
+                errorMessage = 'This membership is currently unavailable.';
+              } else if (errorData.message) {
+                errorMessage = errorData.message;
+              }
+            } catch {
+              // Couldn't parse error, use default message
+            }
           } else if (error.message) {
             errorMessage = error.message;
           }
@@ -121,7 +132,7 @@ export default function MembershipCheckout() {
         <SEOHead
           title="Checkout | Economy Plumbing Services"
           description="Complete your VIP membership purchase for Economy Plumbing Services in Austin & Marble Falls, Texas."
-          canonical={`https://www.plumbersthatcare.com/membership-checkout/${slug}`}
+          canonical={`https://www.plumbersthatcare.com/store/checkout/${slug}`}
         />
         <div className="min-h-screen flex flex-col">
           <Header />
@@ -142,7 +153,7 @@ export default function MembershipCheckout() {
       <SEOHead
         title={`${product.name} Checkout | Economy Plumbing`}
         description={`Purchase ${product.name} for ${priceDisplay}. Priority service, discounts & peace of mind. Austin & Marble Falls. Call (512) 368-9159!`}
-        canonical={`https://www.plumbersthatcare.com/membership-checkout/${slug}`}
+        canonical={`https://www.plumbersthatcare.com/store/checkout/${slug}`}
       />
 
       <div className="min-h-screen flex flex-col">

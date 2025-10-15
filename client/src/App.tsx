@@ -168,8 +168,8 @@ function Router() {
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />
       <Route path="/membership-benefits" component={MembershipBenefits} />
-      <Route path="/membership-checkout/:slug" component={MembershipCheckout} />
-      <Route path="/membership-success" component={MembershipSuccess} />
+      <Route path="/store/checkout/:slug" component={MembershipCheckout} />
+      <Route path="/store/checkout/success" component={MembershipSuccess} />
       <Route path="/success-stories" component={SuccessStories} />
       
       {/* Store & Shop - Now using Square Online */}

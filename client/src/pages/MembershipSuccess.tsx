@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Phone } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { trackConversion } from "@/lib/analytics";
+import { trackEvent } from "@/lib/analytics";
 
 export default function MembershipSuccess() {
   const [location] = useLocation();
@@ -15,10 +15,7 @@ export default function MembershipSuccess() {
 
   useEffect(() => {
     // Track membership purchase conversion
-    trackConversion('membership_purchase', {
-      product: productSlug || 'unknown',
-      category: 'membership'
-    });
+    trackEvent('membership_purchase', 'membership', productSlug || 'unknown');
   }, [productSlug]);
 
   return (
@@ -26,7 +23,7 @@ export default function MembershipSuccess() {
       <SEOHead
         title="Purchase Successful | Economy Plumbing Services"
         description="Thank you for your VIP membership purchase! Welcome to priority plumbing service in Austin & Marble Falls, Texas."
-        canonical="https://www.plumbersthatcare.com/membership-success"
+        canonical="https://www.plumbersthatcare.com/store/checkout/success"
       />
 
       <div className="min-h-screen flex flex-col">
