@@ -30,15 +30,15 @@ export default function Store() {
   useEffect(() => {
     // Load Ecwid script
     const script = document.createElement('script');
-    script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data-app-id=ecwid-integration`;
-    script.async = true;
+    script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data_platform=code`;
+    script.type = 'text/javascript';
     script.setAttribute('charset', 'utf-8');
     script.setAttribute('data-cfasync', 'false');
     
     // Initialize Ecwid once script loads
     script.onload = () => {
-      if (window.Ecwid) {
-        window.Ecwid.init();
+      if (window.xProductBrowser) {
+        window.xProductBrowser(`id=my-store-${ECWID_STORE_ID}`);
       }
     };
     
@@ -177,5 +177,6 @@ declare global {
     Ecwid?: {
       init: () => void;
     };
+    xProductBrowser?: (...args: string[]) => void;
   }
 }
