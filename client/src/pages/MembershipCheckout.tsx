@@ -96,10 +96,29 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
 
     setIsProcessing(true);
 
+    // Build billing details from customer info
+    const billingDetails: any = {
+      name: customerInfo.customerType === 'residential' 
+        ? customerInfo.locationName 
+        : customerInfo.companyName,
+      email: customerInfo.email,
+      phone: customerInfo.phone,
+      address: {
+        line1: customerInfo.billingStreet || customerInfo.street,
+        city: customerInfo.billingCity || customerInfo.city,
+        state: customerInfo.billingState || customerInfo.state,
+        postal_code: customerInfo.billingZip || customerInfo.zip,
+        country: 'US',
+      },
+    };
+
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/store/checkout/success?product=${product.slug}${isTestMode ? '&test=true' : ''}`,
+        payment_method_data: {
+          billing_details: billingDetails,
+        },
       },
     });
 

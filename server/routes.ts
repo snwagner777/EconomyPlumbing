@@ -4238,10 +4238,43 @@ Write in a professional yet friendly tone.`;
       
       console.log('[TEST PAYMENT INTENT] Sending metadata to Stripe:', JSON.stringify(metadata, null, 2));
       
+      // Build billing_details from customer info
+      const billingDetails: any = {};
+      
+      if (customerInfo) {
+        billingDetails.name = customerInfo.customerType === 'residential' 
+          ? customerInfo.locationName 
+          : customerInfo.companyName;
+        billingDetails.email = customerInfo.email;
+        billingDetails.phone = customerInfo.phone;
+        billingDetails.address = {
+          line1: customerInfo.billingStreet || customerInfo.street,
+          city: customerInfo.billingCity || customerInfo.city,
+          state: customerInfo.billingState || customerInfo.state,
+          postal_code: customerInfo.billingZip || customerInfo.zip,
+          country: 'US',
+        };
+      }
+      
+      console.log('[TEST PAYMENT INTENT] Sending billing_details to Stripe:', JSON.stringify(billingDetails, null, 2));
+      
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "usd",
         metadata,
+        ...(Object.keys(billingDetails).length > 0 && {
+          shipping: {
+            name: billingDetails.name,
+            phone: billingDetails.phone,
+            address: {
+              line1: customerInfo?.street || '',
+              city: customerInfo?.city || '',
+              state: customerInfo?.state || '',
+              postal_code: customerInfo?.zip || '',
+              country: 'US',
+            },
+          },
+        }),
       });
 
       // Save customer info to pending purchases if provided
@@ -4367,40 +4400,57 @@ Write in a professional yet friendly tone.`;
       }
 
       // Create payment intent with server-side validated pricing
+      const metadata = {
+        productId: product.id,
+        productName: product.name,
+        productSlug: product.slug,
+        category: product.category,
+        sku: product.sku || '',
+        serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
+        durationBillingId: product.durationBillingId || '',
+        // Customer type and identification
+        customerType: customerInfo?.customerType || '',
+        customerName: customerInfo?.locationName || '',
+        companyName: customerInfo?.companyName || '',
+        contactPersonName: customerInfo?.contactPersonName || '',
+        locationName: customerInfo?.locationName || '',
+        // Contact info
+        email: customerInfo?.email || '',
+        phone: customerInfo?.phone || '',
+        locationPhone: customerInfo?.locationPhone || '',
+        extension: customerInfo?.extension || '',
+        // Location address
+        street: customerInfo?.street || '',
+        city: customerInfo?.city || '',
+        state: customerInfo?.state || '',
+        zip: customerInfo?.zip || '',
+        // Billing address
+        billingName: customerInfo?.billingName || '',
+        billingStreet: customerInfo?.billingStreet || '',
+        billingCity: customerInfo?.billingCity || '',
+        billingState: customerInfo?.billingState || '',
+        billingZip: customerInfo?.billingZip || '',
+      };
+      
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "usd",
-        metadata: {
-          productId: product.id,
-          productName: product.name,
-          productSlug: product.slug,
-          category: product.category,
-          sku: product.sku || '',
-          serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
-          durationBillingId: product.durationBillingId || '',
-          // Customer type and identification
-          customerType: customerInfo?.customerType || '',
-          customerName: customerInfo?.locationName || '',
-          companyName: customerInfo?.companyName || '',
-          contactPersonName: customerInfo?.contactPersonName || '',
-          locationName: customerInfo?.locationName || '',
-          // Contact info
-          email: customerInfo?.email || '',
-          phone: customerInfo?.phone || '',
-          locationPhone: customerInfo?.locationPhone || '',
-          extension: customerInfo?.extension || '',
-          // Location address
-          street: customerInfo?.street || '',
-          city: customerInfo?.city || '',
-          state: customerInfo?.state || '',
-          zip: customerInfo?.zip || '',
-          // Billing address
-          billingName: customerInfo?.billingName || '',
-          billingStreet: customerInfo?.billingStreet || '',
-          billingCity: customerInfo?.billingCity || '',
-          billingState: customerInfo?.billingState || '',
-          billingZip: customerInfo?.billingZip || '',
-        },
+        metadata,
+        ...(customerInfo && {
+          shipping: {
+            name: customerInfo.customerType === 'residential' 
+              ? customerInfo.locationName 
+              : customerInfo.companyName,
+            phone: customerInfo.phone,
+            address: {
+              line1: customerInfo.street || '',
+              city: customerInfo.city || '',
+              state: customerInfo.state || '',
+              postal_code: customerInfo.zip || '',
+              country: 'US',
+            },
+          },
+        }),
       });
 
       // Save customer info to pending purchases if provided
