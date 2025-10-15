@@ -4148,6 +4148,8 @@ Write in a professional yet friendly tone.`;
   app.post("/api/create-payment-intent/test", async (req, res) => {
     try {
       const { productId, customerInfo } = req.body;
+      
+      console.log('[TEST PAYMENT INTENT] Received customerInfo:', JSON.stringify(customerInfo, null, 2));
 
       if (!productId) {
         return res.status(400).json({ 
@@ -4201,41 +4203,45 @@ Write in a professional yet friendly tone.`;
       }
 
       // Create payment intent with server-side validated pricing
+      const metadata = {
+        productId: product.id,
+        productName: product.name,
+        productSlug: product.slug,
+        category: product.category,
+        sku: product.sku || '',
+        serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
+        durationBillingId: product.durationBillingId || '',
+        testMode: "true", // Mark this as a test transaction
+        // Customer type and identification
+        customerType: customerInfo?.customerType || '',
+        customerName: customerInfo?.locationName || '',
+        companyName: customerInfo?.companyName || '',
+        contactPersonName: customerInfo?.contactPersonName || '',
+        locationName: customerInfo?.locationName || '',
+        // Contact info
+        email: customerInfo?.email || '',
+        phone: customerInfo?.phone || '',
+        locationPhone: customerInfo?.locationPhone || '',
+        extension: customerInfo?.extension || '',
+        // Location address
+        street: customerInfo?.street || '',
+        city: customerInfo?.city || '',
+        state: customerInfo?.state || '',
+        zip: customerInfo?.zip || '',
+        // Billing address
+        billingName: customerInfo?.billingName || '',
+        billingStreet: customerInfo?.billingStreet || '',
+        billingCity: customerInfo?.billingCity || '',
+        billingState: customerInfo?.billingState || '',
+        billingZip: customerInfo?.billingZip || '',
+      };
+      
+      console.log('[TEST PAYMENT INTENT] Sending metadata to Stripe:', JSON.stringify(metadata, null, 2));
+      
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "usd",
-        metadata: {
-          productId: product.id,
-          productName: product.name,
-          productSlug: product.slug,
-          category: product.category,
-          sku: product.sku || '',
-          serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
-          durationBillingId: product.durationBillingId || '',
-          testMode: "true", // Mark this as a test transaction
-          // Customer type and identification
-          customerType: customerInfo?.customerType || '',
-          customerName: customerInfo?.locationName || '',
-          companyName: customerInfo?.companyName || '',
-          contactPersonName: customerInfo?.contactPersonName || '',
-          locationName: customerInfo?.locationName || '',
-          // Contact info
-          email: customerInfo?.email || '',
-          phone: customerInfo?.phone || '',
-          locationPhone: customerInfo?.locationPhone || '',
-          extension: customerInfo?.extension || '',
-          // Location address
-          street: customerInfo?.street || '',
-          city: customerInfo?.city || '',
-          state: customerInfo?.state || '',
-          zip: customerInfo?.zip || '',
-          // Billing address
-          billingName: customerInfo?.billingName || '',
-          billingStreet: customerInfo?.billingStreet || '',
-          billingCity: customerInfo?.billingCity || '',
-          billingState: customerInfo?.billingState || '',
-          billingZip: customerInfo?.billingZip || '',
-        },
+        metadata,
       });
 
       // Save customer info to pending purchases if provided
