@@ -141,7 +141,6 @@ export default function MembershipBenefits() {
                 <Button 
                   asChild 
                   className="w-full"
-                  variant={tier.popular ? "default" : "outline"}
                   data-testid={`button-purchase-${tier.slug}`}
                 >
                   <Link href={`/store/checkout/${tier.slug}`}>Purchase Now</Link>
