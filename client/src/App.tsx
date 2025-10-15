@@ -65,6 +65,7 @@ const PrivacyPolicy = lazy(() => import("@/pages/PrivacyPolicy"));
 const RefundReturns = lazy(() => import("@/pages/RefundReturns"));
 const MembershipBenefits = lazy(() => import("@/pages/MembershipBenefits"));
 const MembershipCheckout = lazy(() => import("@/pages/MembershipCheckout"));
+const TestMembershipCheckout = lazy(() => import("@/pages/TestMembershipCheckout"));
 const MembershipSuccess = lazy(() => import("@/pages/MembershipSuccess"));
 const SuccessStories = lazy(() => import("@/pages/SuccessStories"));
 const OAuthAdminLogin = lazy(() => import("@/pages/OAuthAdminLogin"));
@@ -170,6 +171,7 @@ function Router() {
       <Route path="/refund_returns" component={RefundReturns} />
       <Route path="/membership-benefits" component={MembershipBenefits} />
       <Route path="/store/checkout/:slug" component={MembershipCheckout} />
+      <Route path="/test/checkout/:slug" component={TestMembershipCheckout} />
       <Route path="/store/checkout/success" component={MembershipSuccess} />
       <Route path="/success-stories" component={SuccessStories} />
       
