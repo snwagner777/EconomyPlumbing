@@ -210,16 +210,35 @@ export const pendingPurchases = pgTable("pending_purchases", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   paymentIntentId: text("payment_intent_id").notNull().unique(),
   productId: varchar("product_id").notNull(),
-  customerType: text("customer_type").notNull(),
-  customerName: text("customer_name"),
-  companyName: text("company_name"),
-  contactPersonName: text("contact_person_name"),
+  customerType: text("customer_type").notNull(), // 'residential' or 'commercial'
+  
+  // Residential fields
+  customerName: text("customer_name"), // Residential: customer name / Commercial: not used
+  
+  // Commercial fields
+  companyName: text("company_name"), // Commercial only
+  contactPersonName: text("contact_person_name"), // Commercial only
+  locationPhone: text("location_phone"), // Commercial only
+  extension: text("extension"), // Commercial only
+  
+  // Location address (both types)
+  locationName: text("location_name"), // Residential: same as customerName / Commercial: business location name
   street: text("street").notNull(),
   city: text("city").notNull(),
   state: text("state").notNull(),
   zip: text("zip").notNull(),
+  
+  // Billing address (both types)
+  billingName: text("billing_name"), // Person/company name for billing
+  billingStreet: text("billing_street"),
+  billingCity: text("billing_city"),
+  billingState: text("billing_state"),
+  billingZip: text("billing_zip"),
+  
+  // Contact info (both types)
   phone: text("phone").notNull(),
   email: text("email").notNull(),
+  
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
   paymentIntentIdIdx: index("pending_purchases_payment_intent_id_idx").on(table.paymentIntentId),
@@ -235,12 +254,22 @@ export const serviceTitanMemberships = pgTable("service_titan_memberships", {
   // Commercial customer fields
   companyName: text("company_name"),
   contactPersonName: text("contact_person_name"),
+  locationPhone: text("location_phone"),
+  extension: text("extension"),
   
-  // Structured address fields (required by ServiceTitan API)
+  // Location address (both types)
+  locationName: text("location_name"),
   street: text("street").notNull(),
   city: text("city").notNull(),
   state: text("state").notNull(),
   zip: text("zip").notNull(),
+  
+  // Billing address (both types)
+  billingName: text("billing_name"),
+  billingStreet: text("billing_street"),
+  billingCity: text("billing_city"),
+  billingState: text("billing_state"),
+  billingZip: text("billing_zip"),
   
   // Contact info
   phone: text("phone").notNull(),

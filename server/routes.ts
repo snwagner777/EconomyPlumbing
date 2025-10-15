@@ -4209,6 +4209,9 @@ Write in a professional yet friendly tone.`;
           productName: product.name,
           productSlug: product.slug,
           category: product.category,
+          sku: product.sku || '',
+          serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
+          durationBillingId: product.durationBillingId || '',
           testMode: "true", // Mark this as a test transaction
         },
       });
@@ -4309,6 +4312,9 @@ Write in a professional yet friendly tone.`;
           productName: product.name,
           productSlug: product.slug,
           category: product.category,
+          sku: product.sku || '',
+          serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || '',
+          durationBillingId: product.durationBillingId || '',
         },
       });
 
