@@ -28,10 +28,6 @@ const ECWID_STORE_ID = "90741099"; // Your Ecwid Store ID
 
 export default function Store() {
   useEffect(() => {
-    if (ECWID_STORE_ID === "YOUR_STORE_ID") {
-      return; // Don't load Ecwid script if not configured
-    }
-
     // Load Ecwid script
     const script = document.createElement('script');
     script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data-app-id=ecwid-integration`;
@@ -85,37 +81,13 @@ export default function Store() {
           {/* Ecwid Store Section */}
           <section className="py-16 lg:py-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              {ECWID_STORE_ID === "YOUR_STORE_ID" ? (
-                <div className="text-center py-12">
-                  <Card className="p-8 max-w-2xl mx-auto">
-                    <h2 className="text-2xl font-bold mb-4">Store Setup Required</h2>
-                    <p className="text-muted-foreground mb-4">
-                      To display your Ecwid store, please update the ECWID_STORE_ID constant in 
-                      <code className="bg-muted px-2 py-1 rounded mx-1">client/src/pages/Store.tsx</code>
-                    </p>
-                    <p className="text-sm text-muted-foreground mb-6">
-                      See instructions at the top of Store.tsx for setup steps
-                    </p>
-                    <div className="space-y-2 text-sm text-left bg-muted/50 p-4 rounded-md">
-                      <p className="font-semibold">Quick Setup:</p>
-                      <ol className="list-decimal list-inside space-y-1 ml-2">
-                        <li>Create an Ecwid account at ecwid.com</li>
-                        <li>Get your Store ID from Settings → General</li>
-                        <li>Replace ECWID_STORE_ID in this file</li>
-                        <li>Save and refresh - your store will appear!</li>
-                      </ol>
-                    </div>
-                  </Card>
-                </div>
-              ) : (
-                <div className="w-full">
-                  {/* Ecwid store widget will load here */}
-                  <div 
-                    id="my-store-container"
-                    data-testid="ecwid-store-container"
-                  />
-                </div>
-              )}
+              <div className="w-full">
+                {/* Ecwid store widget will load here */}
+                <div 
+                  id="my-store-90741099"
+                  data-testid="ecwid-store-container"
+                />
+              </div>
             </div>
           </section>
 
