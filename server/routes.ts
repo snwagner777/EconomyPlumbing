@@ -1329,11 +1329,11 @@ ${rssItems}
   });
 
   /* ============================================================================
-   * DISABLED: Custom Store Endpoints (Replaced by Ecwid - October 2025)
+   * DISABLED: Custom Store Endpoints (Replaced by Square Online - October 2025)
    * 
    * The following endpoints were used for the custom-built store with Stripe
    * integration. They are now disabled because the store has been converted to
-   * use Ecwid, which handles all product management, checkout, and payments.
+   * use Square Online, which handles all product management, checkout, and payments.
    * 
    * Keeping these commented out for reference in case they're needed later.
    * ============================================================================ */

@@ -168,14 +168,14 @@ function Router() {
       <Route path="/membership-benefits" component={MembershipBenefits} />
       <Route path="/success-stories" component={SuccessStories} />
       
-      {/* Store & Shop - Now using Ecwid */}
+      {/* Store & Shop - Now using Square Online */}
       <Route path="/store" component={Store} />
       <Route path="/shop" component={Store} />
       <Route path="/category/memberships" component={Store} />
       <Route path="/category/products" component={Store} />
       <Route path="/signin">{() => <Redirect to="/store" />}</Route>
       
-      {/* 301 redirects: Old product URLs -> /store (Ecwid manages products now) */}
+      {/* 301 redirects: Old product URLs -> /store (Square Online manages products now) */}
       <Route path="/store/checkout/commercial-vip">{() => <Redirect to="/store" />}</Route>
       <Route path="/store/checkout/platinum-vip-membership-tank">{() => <Redirect to="/store" />}</Route>
       <Route path="/store/checkout/platinum-vip-membership-tankless">{() => <Redirect to="/store" />}</Route>
