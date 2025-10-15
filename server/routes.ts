@@ -4310,6 +4310,41 @@ Write in a professional yet friendly tone.`;
         }
 
         await storage.createPendingPurchase(purchaseData);
+        
+        // Send email notification
+        try {
+          const { sendMembershipPurchaseNotification } = await import('./email.js');
+          await sendMembershipPurchaseNotification({
+            productName: product.name,
+            productSlug: product.slug,
+            amount: amountInCents,
+            customerType: customerInfo.customerType,
+            customerName: customerInfo.customerType === 'residential' ? customerInfo.locationName : undefined,
+            companyName: customerInfo.companyName,
+            contactPersonName: customerInfo.contactPersonName,
+            locationName: customerInfo.locationName,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            locationPhone: customerInfo.locationPhone,
+            extension: customerInfo.extension,
+            street: customerInfo.street,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            zip: customerInfo.zip,
+            billingName: customerInfo.billingName,
+            billingStreet: customerInfo.billingStreet,
+            billingCity: customerInfo.billingCity,
+            billingState: customerInfo.billingState,
+            billingZip: customerInfo.billingZip,
+            sku: product.sku,
+            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
+            durationBillingId: product.durationBillingId,
+            paymentIntentId: paymentIntent.id,
+            testMode: true,
+          });
+        } catch (emailError) {
+          console.error('[Email] Failed to send membership notification (non-fatal):', emailError);
+        }
       }
 
       res.json({ clientSecret: paymentIntent.client_secret });
@@ -4486,6 +4521,41 @@ Write in a professional yet friendly tone.`;
         }
 
         await storage.createPendingPurchase(purchaseData);
+        
+        // Send email notification
+        try {
+          const { sendMembershipPurchaseNotification } = await import('./email.js');
+          await sendMembershipPurchaseNotification({
+            productName: product.name,
+            productSlug: product.slug,
+            amount: amountInCents,
+            customerType: customerInfo.customerType,
+            customerName: customerInfo.customerType === 'residential' ? customerInfo.locationName : undefined,
+            companyName: customerInfo.companyName,
+            contactPersonName: customerInfo.contactPersonName,
+            locationName: customerInfo.locationName,
+            email: customerInfo.email,
+            phone: customerInfo.phone,
+            locationPhone: customerInfo.locationPhone,
+            extension: customerInfo.extension,
+            street: customerInfo.street,
+            city: customerInfo.city,
+            state: customerInfo.state,
+            zip: customerInfo.zip,
+            billingName: customerInfo.billingName,
+            billingStreet: customerInfo.billingStreet,
+            billingCity: customerInfo.billingCity,
+            billingState: customerInfo.billingState,
+            billingZip: customerInfo.billingZip,
+            sku: product.sku,
+            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
+            durationBillingId: product.durationBillingId,
+            paymentIntentId: paymentIntent.id,
+            testMode: false,
+          });
+        } catch (emailError) {
+          console.error('[Email] Failed to send membership notification (non-fatal):', emailError);
+        }
       }
 
       res.json({ clientSecret: paymentIntent.client_secret });

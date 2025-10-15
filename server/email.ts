@@ -301,3 +301,127 @@ export async function sendSuccessStoryNotificationEmail(data: {
     throw error;
   }
 }
+
+export async function sendMembershipPurchaseNotification(data: {
+  productName: string;
+  productSlug: string;
+  amount: number;
+  customerType: string;
+  customerName?: string;
+  companyName?: string;
+  contactPersonName?: string;
+  locationName?: string;
+  email: string;
+  phone: string;
+  locationPhone?: string;
+  extension?: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+  billingName?: string;
+  billingStreet?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingZip?: string;
+  sku?: string;
+  serviceTitanMembershipTypeId?: string;
+  durationBillingId?: string;
+  paymentIntentId: string;
+  testMode?: boolean;
+}) {
+  console.log('[Email] Starting sendMembershipPurchaseNotification for:', data.productName);
+  
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const contactEmail = process.env.CONTACT_EMAIL;
+
+    if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured');
+      throw new Error('CONTACT_EMAIL not configured');
+    }
+
+    const priceDisplay = `$${(data.amount / 100).toFixed(2)}`;
+    const displayName = data.customerType === 'residential' 
+      ? data.customerName || data.locationName 
+      : data.companyName;
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0ea5e9;">🎉 New VIP Membership Purchase!</h2>
+        ${data.testMode ? `<div style="background-color: #fef3c7; padding: 10px; border-radius: 8px; margin-bottom: 20px;"><strong>⚠️ TEST MODE:</strong> This is a test transaction</div>` : ''}
+        
+        <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Membership Details</h3>
+          <p><strong>Product:</strong> ${data.productName}</p>
+          <p><strong>Amount:</strong> ${priceDisplay}</p>
+          ${data.sku ? `<p><strong>SKU:</strong> ${data.sku}</p>` : ''}
+          ${data.serviceTitanMembershipTypeId ? `<p><strong>ServiceTitan Membership Type:</strong> ${data.serviceTitanMembershipTypeId}</p>` : ''}
+          ${data.durationBillingId ? `<p><strong>Duration Billing ID:</strong> ${data.durationBillingId}</p>` : ''}
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Customer Information</h3>
+          <p><strong>Type:</strong> ${data.customerType === 'residential' ? '🏠 Residential' : '🏢 Commercial'}</p>
+          ${data.customerType === 'commercial' ? `
+            ${data.companyName ? `<p><strong>Company:</strong> ${data.companyName}</p>` : ''}
+            ${data.locationName ? `<p><strong>Location:</strong> ${data.locationName}</p>` : ''}
+            ${data.contactPersonName ? `<p><strong>Contact Person:</strong> ${data.contactPersonName}</p>` : ''}
+          ` : `
+            ${data.locationName ? `<p><strong>Name:</strong> ${data.locationName}</p>` : ''}
+          `}
+          <p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>
+          <p><strong>Phone:</strong> ${data.phone}</p>
+          ${data.locationPhone ? `<p><strong>Location Phone:</strong> ${data.locationPhone}${data.extension ? ` ext. ${data.extension}` : ''}</p>` : ''}
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Location Address</h3>
+          <p style="margin: 5px 0;">${data.street}</p>
+          <p style="margin: 5px 0;">${data.city}, ${data.state} ${data.zip}</p>
+        </div>
+
+        ${data.billingStreet ? `
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">Billing Address</h3>
+          ${data.billingName ? `<p><strong>Billing Name:</strong> ${data.billingName}</p>` : ''}
+          <p style="margin: 5px 0;">${data.billingStreet}</p>
+          <p style="margin: 5px 0;">${data.billingCity}, ${data.billingState} ${data.billingZip}</p>
+        </div>
+        ` : ''}
+
+        <div style="background-color: #f0fdf4; padding: 15px; border-radius: 8px; margin: 20px 0;">
+          <p style="margin: 0;"><strong>✅ Next Steps:</strong></p>
+          <ul style="margin: 10px 0;">
+            <li>Customer data has been saved to the database</li>
+            <li>Zapier will sync this to ServiceTitan automatically</li>
+            <li>Payment Intent ID: <code>${data.paymentIntentId}</code></li>
+          </ul>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="color: #6b7280; font-size: 14px;">
+          This notification was triggered by a successful VIP membership purchase.
+        </p>
+      </div>
+    `;
+
+    console.log('[Email] Attempting to send membership purchase notification...');
+    console.log('[Email] Subject:', `New VIP Membership: ${displayName} - ${priceDisplay}`);
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: contactEmail,
+      subject: `${data.testMode ? '[TEST] ' : ''}New VIP Membership: ${displayName} - ${priceDisplay}`,
+      html: emailHtml,
+    });
+
+    console.log('[Email] ✓ Membership purchase notification sent successfully! Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('[Email Error] ✗ Failed to send membership purchase notification:', error);
+    console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
+    // Don't throw - we don't want to fail the purchase if email fails
+    return null;
+  }
+}
