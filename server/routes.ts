@@ -137,7 +137,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { url: 'rooter-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'sewage-pump-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
-        { url: 'toilet-repair-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'water-heater-guide', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'water-leak-repair', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'water-pressure-solutions', lastmod: now, changefreq: 'monthly', priority: '0.8' },
@@ -4187,7 +4186,7 @@ Write in a professional yet friendly tone.`;
         throw new Error('Missing required Stripe test secret: TESTING_STRIPE_SECRET_KEY');
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: "2024-11-20.acacia",
+        apiVersion: "2025-09-30.clover",
       });
 
       // Product price is already stored in cents in the database
@@ -4415,7 +4414,7 @@ Write in a professional yet friendly tone.`;
         throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: "2024-11-20.acacia",
+        apiVersion: "2025-09-30.clover",
       });
 
       // Product price is already stored in cents in the database
