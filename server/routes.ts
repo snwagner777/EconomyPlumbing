@@ -4187,7 +4187,7 @@ Write in a professional yet friendly tone.`;
         throw new Error('Missing required Stripe test secret: TESTING_STRIPE_SECRET_KEY');
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: "2023-10-16",
+        apiVersion: "2024-11-20.acacia",
       });
 
       // Product price is already stored in cents in the database
@@ -4330,9 +4330,9 @@ Write in a professional yet friendly tone.`;
             billingCity: customerInfo.billingCity,
             billingState: customerInfo.billingState,
             billingZip: customerInfo.billingZip,
-            sku: product.sku,
-            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
-            durationBillingId: product.durationBillingId,
+            sku: product.sku || undefined,
+            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || undefined,
+            durationBillingId: product.durationBillingId || undefined,
             paymentIntentId: paymentIntent.id,
             testMode: true,
           });
@@ -4415,7 +4415,7 @@ Write in a professional yet friendly tone.`;
         throw new Error('Missing required Stripe secret: STRIPE_SECRET_KEY');
       }
       const stripe = new Stripe(stripeSecretKey, {
-        apiVersion: "2023-10-16",
+        apiVersion: "2024-11-20.acacia",
       });
 
       // Product price is already stored in cents in the database
@@ -4541,9 +4541,9 @@ Write in a professional yet friendly tone.`;
             billingCity: customerInfo.billingCity,
             billingState: customerInfo.billingState,
             billingZip: customerInfo.billingZip,
-            sku: product.sku,
-            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId,
-            durationBillingId: product.durationBillingId,
+            sku: product.sku || undefined,
+            serviceTitanMembershipTypeId: product.serviceTitanMembershipTypeId || undefined,
+            durationBillingId: product.durationBillingId || undefined,
             paymentIntentId: paymentIntent.id,
             testMode: false,
           });
