@@ -384,6 +384,37 @@ async function refreshReviewsPeriodically() {
     throw err;
   });
 
+  // Add caching headers for static assets in production
+  if (app.get("env") !== "development") {
+    app.use((req: Request, res: Response, next: NextFunction) => {
+      const url = req.url;
+      
+      // Cache any hashed assets aggressively (they have content hashes so are immutable)
+      // Matches patterns like: main-abc123def.js, logo-789xyz.webp, styles-456abc.css
+      if (/[.-][a-f0-9]{8,}\.(js|css|woff2?|ttf|otf|eot|svg|webp|png|jpg|jpeg|gif|ico|json)$/i.test(url)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // Cache unhashed fonts and icons for 1 year (these rarely change)
+      else if (/\.(woff2?|ttf|otf|eot|ico)$/i.test(url)) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      // Cache unhashed images for 1 week (allow for updates)
+      else if (/\.(webp|png|jpg|jpeg|gif|svg)$/i.test(url)) {
+        res.setHeader('Cache-Control', 'public, max-age=604800'); // 1 week
+      }
+      // Cache manifest and other JSON for 1 day
+      else if (/\.(json|xml)$/i.test(url)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400'); // 1 day
+      }
+      // HTML should be cached but always revalidated for freshness
+      else if (/\.html$/i.test(url) || url === '/' || !url.includes('.')) {
+        res.setHeader('Cache-Control', 'public, max-age=0, must-revalidate');
+      }
+      
+      next();
+    });
+  }
+  
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
