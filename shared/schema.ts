@@ -44,6 +44,7 @@ export const adminWhitelist = pgTable("admin_whitelist", {
 export const blogPosts = pgTable("blog_posts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: text("title").notNull(),
+  h1: text("h1"), // Custom H1 tag (optional, falls back to title if not set)
   slug: text("slug").notNull().unique(),
   content: text("content").notNull(),
   excerpt: text("excerpt"),

@@ -148,7 +148,7 @@ export default function BlogPost() {
                 {post.category}
               </Badge>
               <h1 className="text-4xl lg:text-5xl font-bold mb-4" data-testid="text-title">
-                {post.title}
+                {post.h1 || post.title}
               </h1>
               <div className="flex items-center gap-6 text-muted-foreground">
                 <div className="flex items-center gap-2">
