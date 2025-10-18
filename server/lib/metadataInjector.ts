@@ -28,12 +28,11 @@ function escapeHtml(text: string): string {
 /**
  * Inject metadata into HTML
  */
-function injectMetadata(html: string, title: string, description: string, canonical: string, h1?: string): string {
+function injectMetadata(html: string, title: string, description: string, canonical: string): string {
   // Escape all metadata to prevent HTML injection
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
   const safeCanonical = escapeHtml(canonical);
-  const safeH1 = h1 ? escapeHtml(h1) : null;
   
   // Replace title
   html = html.replace(
@@ -67,14 +66,9 @@ function injectMetadata(html: string, title: string, description: string, canoni
     );
   }
   
-  // Inject H1 tag for crawlers (hidden from visual users)
-  // This ensures crawlers see H1 tags even without JavaScript execution
-  if (safeH1) {
-    html = html.replace(
-      /<body[^>]*>/i,
-      (match) => `${match}\n  <h1 style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">${safeH1}</h1>`
-    );
-  }
+  // Note: Hidden H1 tags removed as they're considered black-hat SEO
+  // and cause "Multiple H1 tags" errors in SEO audits.
+  // Pages should have their own visible H1 tags in the content.
   
   return html;
 }
@@ -99,20 +93,16 @@ export function createMetadataInjector(storage: IStorage) {
     }
     
     // Check database for metadata (single source of truth)
-    let metadata: { path: string; title: string; description: string; canonical?: string; h1?: string } | null = null;
+    let metadata: { path: string; title: string; description: string; canonical?: string } | null = null;
     
     try {
       const dbMetadata = await storage.getPageMetadataByPath(path);
       if (dbMetadata) {
-        // Extract H1 from title (remove site suffix for cleaner H1)
-        const h1 = dbMetadata.title.split('|')[0].trim();
-        
         metadata = {
           path: dbMetadata.path,
           title: dbMetadata.title,
           description: dbMetadata.description,
           canonical: dbMetadata.canonicalUrl || undefined,
-          h1: h1,
         };
       }
     } catch (error) {
@@ -129,13 +119,10 @@ export function createMetadataInjector(storage: IStorage) {
         const serviceArea = await storage.getServiceAreaBySlug(slug);
         
         if (serviceArea) {
-          const h1 = `Professional Plumbing Services in ${serviceArea.cityName}, Texas`;
-          
           metadata = {
             path,
             title: `${serviceArea.cityName} Plumber | Licensed Plumbing Services | Texas`,
             description: serviceArea.metaDescription || `Trusted plumbing services in ${serviceArea.cityName}, TX. Water heater repair, drain cleaning, emergency plumbing. Licensed plumbers.`,
-            h1: h1,
           };
         }
       } catch (error) {
@@ -159,7 +146,6 @@ export function createMetadataInjector(storage: IStorage) {
             path,
             title: post.title,
             description: post.metaDescription || post.excerpt || `Read about ${post.title} from Economy Plumbing.`,
-            h1: post.title,
           };
         }
       } catch (error) {
@@ -210,7 +196,7 @@ export function createMetadataInjector(storage: IStorage) {
         
         const html = Buffer.concat(chunks).toString('utf-8');
         if (html.includes('<!DOCTYPE html>')) {
-          const injected = injectMetadata(html, metadata!.title, metadata!.description, canonical, metadata!.h1);
+          const injected = injectMetadata(html, metadata!.title, metadata!.description, canonical);
           return originalEnd.call(this, injected, 'utf-8', callback);
         }
       }
@@ -222,13 +208,13 @@ export function createMetadataInjector(storage: IStorage) {
     res.send = function(data: any): Response {
       // Handle string HTML
       if (typeof data === 'string' && data.includes('<!DOCTYPE html>')) {
-        data = injectMetadata(data, metadata!.title, metadata!.description, canonical, metadata!.h1);
+        data = injectMetadata(data, metadata!.title, metadata!.description, canonical);
       }
       // Handle Buffer HTML
       else if (Buffer.isBuffer(data)) {
         const str = data.toString('utf-8');
         if (str.includes('<!DOCTYPE html>')) {
-          data = Buffer.from(injectMetadata(str, metadata!.title, metadata!.description, canonical, metadata!.h1));
+          data = Buffer.from(injectMetadata(str, metadata!.title, metadata!.description, canonical));
         }
       }
       
