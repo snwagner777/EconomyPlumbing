@@ -113,7 +113,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // SEO Landing Pages
         { url: 'plumber-near-me', lastmod: now, changefreq: 'weekly', priority: '0.9' },
-        { url: 'commercial-services', lastmod: now, changefreq: 'weekly', priority: '0.9' },
         
         // Main Service Pages
         { url: 'water-heater-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
@@ -125,9 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { url: 'commercial-plumbing', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         
         // Additional Service Pages
-        { url: 'backflow-testing', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'drainage-solutions', lastmod: now, changefreq: 'monthly', priority: '0.8' },
-        { url: 'drain-cleaning-services', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'faucet-installation', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'garbage-disposal-repair', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         { url: 'gas-leak-detection', lastmod: now, changefreq: 'monthly', priority: '0.8' },
@@ -170,7 +167,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         // Store Pages
         { url: 'store', lastmod: now, changefreq: 'monthly', priority: '0.8' },
-        { url: 'shop', lastmod: now, changefreq: 'monthly', priority: '0.8' },
         
         // Blog & Success Stories
         { url: 'blog', lastmod: now, changefreq: 'weekly', priority: '0.8' },
