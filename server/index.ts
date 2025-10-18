@@ -182,6 +182,26 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Block access to source files and development paths
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const path = req.path;
+  
+  // Block access to source code files and directories
+  if (path.startsWith('/src/') || 
+      path.startsWith('/server/') ||
+      path.startsWith('/client/') ||
+      path.startsWith('/node_modules/') ||
+      path.endsWith('.tsx') ||
+      path.endsWith('.ts') ||
+      path.endsWith('.jsx') ||
+      path.endsWith('.env')) {
+    log(`403 Forbidden: Blocked access to source file ${path}`);
+    return res.status(403).send('Forbidden');
+  }
+  
+  next();
+});
+
 // Normalize trailing slashes - 301 redirect all trailing-slash URLs to non-slash version
 // This ensures crawlers (Ahrefs, Google, etc.) always hit SSR cache
 app.use((req: Request, res: Response, next: NextFunction) => {
