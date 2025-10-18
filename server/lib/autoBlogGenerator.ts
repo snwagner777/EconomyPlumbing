@@ -148,6 +148,12 @@ async function checkAndGenerateBlogs(storage: IStorage) {
     
     console.log(`[Auto Blog Generator] ✅ Successfully generated ${savedCount} blog post(s) with today's date`);
     
+    // Invalidate SSR cache if any posts were created
+    if (savedCount > 0 && global.invalidateSSRCache) {
+      console.log('[Auto Blog Generator] Invalidating SSR cache...');
+      global.invalidateSSRCache();
+    }
+    
   } catch (error: any) {
     console.error('[Auto Blog Generator] Error in automated blog generation:', error.message);
   } finally {

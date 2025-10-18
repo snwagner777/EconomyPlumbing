@@ -14,6 +14,25 @@ import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { setupOAuth } from "./replitAuth";
 
+/**
+ * Global SSR Cache Invalidation System
+ * 
+ * When content changes (blog posts, tracking numbers, page metadata, success stories),
+ * this function clears all SSR caches so crawlers see fresh content on their next visit.
+ * 
+ * Usage in routes/background jobs:
+ *   if (global.invalidateSSRCache) global.invalidateSSRCache();
+ * 
+ * Benefits:
+ * - Cache persists indefinitely until content changes (optimal performance)
+ * - No time-based expiration needed
+ * - PageSpeed scores improve (zero rendering overhead after first request)
+ * - Crawlers always see up-to-date content
+ */
+declare global {
+  var invalidateSSRCache: (() => void) | undefined;
+}
+
 const app = express();
 
 // Enable gzip/brotli compression for all responses

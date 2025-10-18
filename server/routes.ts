@@ -2975,6 +2975,10 @@ ${rssItems}
       const data = insertTrackingNumberSchema.parse(req.body);
       
       const trackingNumber = await storage.createTrackingNumber(data);
+      
+      // Invalidate SSR cache (tracking numbers changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ trackingNumber });
     } catch (error: any) {
       console.error("[Tracking Numbers] Error creating tracking number:", error);
@@ -3006,6 +3010,10 @@ ${rssItems}
     try {
       const { id } = req.params;
       await storage.deleteTrackingNumber(id);
+      
+      // Invalidate SSR cache (tracking numbers changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ success: true });
     } catch (error: any) {
       console.error("[Tracking Numbers] Error deleting tracking number:", error);
@@ -3284,6 +3292,10 @@ ${rssItems}
       }
       
       const metadata = await storage.upsertPageMetadata(data);
+      
+      // Invalidate SSR cache (page metadata changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ metadata });
     } catch (error: any) {
       console.error("[Page Metadata] Error upserting metadata:", error);
@@ -3296,6 +3308,10 @@ ${rssItems}
     try {
       const { id } = req.params;
       await storage.deletePageMetadata(id);
+      
+      // Invalidate SSR cache (page metadata changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ success: true });
     } catch (error: any) {
       console.error("[Page Metadata] Error deleting metadata:", error);
@@ -3417,6 +3433,10 @@ ${rssItems}
       
       // Approve with both collage URLs
       const story = await storage.approveSuccessStory(id, collageUrl, jpegCollageUrl);
+      
+      // Invalidate SSR cache (success story published)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ story });
     } catch (error: any) {
       console.error("[Success Stories] Error approving story:", error);
@@ -3437,6 +3457,9 @@ ${rssItems}
       
       console.log(`[Success Stories] ✅ Story unapproved and moved to pending queue`);
       
+      // Invalidate SSR cache (success story removed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ story });
     } catch (error: any) {
       console.error("[Success Stories] Error unapproving story:", error);
@@ -3449,6 +3472,10 @@ ${rssItems}
     try {
       const { id } = req.params;
       await storage.deleteSuccessStory(id);
+      
+      // Invalidate SSR cache (success story deleted)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ success: true });
     } catch (error: any) {
       console.error("[Success Stories] Error deleting story:", error);
@@ -3482,6 +3509,9 @@ ${rssItems}
       });
 
       console.log(`[Success Stories] ✅ Story updated successfully`);
+      
+      // Invalidate SSR cache (success story updated)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
 
       res.json({ story: updatedStory });
     } catch (error: any) {
