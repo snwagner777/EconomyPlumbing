@@ -421,14 +421,19 @@ async function refreshReviewsPeriodically() {
   const { isCrawler, renderPageForCrawler } = await import("./lib/ssrRenderer");
   
   app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const userAgent = req.get('user-agent') || '';
     const requestPath = req.path;
     
-    // Detect if this is a crawler and which source
+    // OPTIMIZATION: Skip crawler check entirely for non-SSR pages (faster for 99% of requests)
+    if (requestPath !== '/schedule-appointment') {
+      return next();
+    }
+    
+    // Only check User-Agent for pages that have SSR enabled
+    const userAgent = req.get('user-agent') || '';
     const crawlerInfo = isCrawler(userAgent);
     
-    // Only apply SSR to /schedule-appointment (Phase 1 test)
-    if (requestPath === '/schedule-appointment' && crawlerInfo.isCrawler) {
+    // Apply SSR only for crawlers on SSR-enabled pages
+    if (crawlerInfo.isCrawler) {
       try {
         // Read the base index.html
         const indexPath = path.resolve(import.meta.dirname, "..", "client", "index.html");
