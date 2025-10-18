@@ -7,7 +7,7 @@ Economy Plumbing Services is a full-stack web application designed to enhance th
 Preferred communication style: Simple, everyday language.
 
 ## Development Standards
-- **Client-Side Rendering (CSR) with React Helmet:** Following the same proven approach as other projects (80%+ Ahrefs scores), this site uses React SPA with client-side rendering. Modern crawlers (Google, Bing, Ahrefs) execute JavaScript perfectly. All SEO meta tags, titles, and structured data are managed via React Helmet on each page component.
+- **Client-Side Rendering (CSR) with Server-Side Metadata Injection:** Following the same proven approach as other projects (80%+ Ahrefs scores), this site uses React SPA with client-side rendering. Server-side middleware (`server/lib/metadataInjector.ts`) injects unique title/description/canonical tags into the initial HTML before sending to browsers/crawlers - ensuring meta tags are present WITHOUT JavaScript execution. This delivers crawler-ready SEO metadata while maintaining the simplicity of CSR. All metadata values are HTML-escaped to prevent injection attacks.
 - **URL Normalization:** All trailing-slash URLs (e.g., `/about/`) automatically 301 redirect to non-trailing-slash versions (`/about`) to prevent duplicate content issues.
 - **Source File Security:** `/src/*` files blocked with 403 Forbidden to prevent crawlers from indexing development files.
 - **Curated Content for Crawlers:** Random/rotating content (reviews, blog posts) shown on pages must display curated, consistent content to crawlers (e.g., top-rated reviews, latest posts) instead of random selections. This ensures stable SEO signals.
