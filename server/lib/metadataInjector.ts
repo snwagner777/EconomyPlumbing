@@ -5,11 +5,10 @@
  * BEFORE sending to the client. This ensures crawlers see the correct
  * metadata even without JavaScript execution.
  * 
- * This matches the approach used in your other 80%+ scoring projects.
+ * All metadata is stored in the database - no static config files.
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { getMetadataForPath, getDefaultBlogMetadata } from './metadataConfig';
 import type { IStorage } from '../storage';
 
 const baseUrl = 'https://www.plumbersthatcare.com';
@@ -89,7 +88,7 @@ export function createMetadataInjector(storage: IStorage) {
       return next();
     }
     
-    // FIRST: Check database for admin-configured custom metadata
+    // Check database for metadata (single source of truth)
     let metadata: { path: string; title: string; description: string; canonical?: string } | null = null;
     
     try {
@@ -103,15 +102,10 @@ export function createMetadataInjector(storage: IStorage) {
         };
       }
     } catch (error) {
-      // Database error - fall through to static config
+      // Database error - continue without metadata
     }
     
-    // SECOND: If no custom metadata, use static config from metadataConfig.ts
-    if (!metadata) {
-      metadata = getMetadataForPath(path);
-    }
-    
-    // THIRD: If still no metadata, check if it's a blog post (single-level path)
+    // If no metadata found, check if it's a blog post (single-level path)
     const pathParts = path.split('/').filter(Boolean);
     if (!metadata && pathParts.length === 1) {
       const slug = pathParts[0];
@@ -129,8 +123,7 @@ export function createMetadataInjector(storage: IStorage) {
           };
         }
       } catch (error) {
-        // If database fetch fails, use default blog metadata
-        metadata = getDefaultBlogMetadata(slug);
+        // If database fetch fails, skip metadata injection for this blog post
       }
     }
     
