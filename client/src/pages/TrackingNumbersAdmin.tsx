@@ -166,6 +166,10 @@ export default function TrackingNumbersAdmin() {
 
   const handleEdit = (number: TrackingNumber) => {
     setEditingNumber(number);
+    // Check if this is a custom channel key (not in predefined list)
+    const allPredefinedKeys = CHANNEL_TYPES.flatMap(cat => cat.options.map(opt => opt.value));
+    const isCustom = !allPredefinedKeys.includes(number.channelKey);
+    setIsCustomChannelKey(isCustom);
     setIsDialogOpen(true);
   };
 
@@ -330,8 +334,17 @@ export default function TrackingNumbersAdmin() {
                 <div className="grid gap-2">
                   <Label htmlFor="channelType">Channel Type</Label>
                   <Select
-                    value={editingNumber.channelKey}
-                    onValueChange={(value) => setEditingNumber({ ...editingNumber, channelKey: value })}
+                    value={isCustomChannelKey ? "" : editingNumber.channelKey}
+                    onValueChange={(value) => {
+                      if (value === "") {
+                        // Selected "None (Custom)" - enable custom mode
+                        setIsCustomChannelKey(true);
+                      } else {
+                        // Selected a predefined option - set it and lock
+                        setEditingNumber({ ...editingNumber, channelKey: value });
+                        setIsCustomChannelKey(false);
+                      }
+                    }}
                   >
                     <SelectTrigger data-testid="select-channelType">
                       <SelectValue placeholder="Select channel type..." />
@@ -354,7 +367,7 @@ export default function TrackingNumbersAdmin() {
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="channelKey">
-                    Channel Key {editingNumber.channelKey ? "(Auto-filled)" : "(Custom - Enter Manually)"}
+                    Channel Key {isCustomChannelKey ? "(Custom - Enter Manually)" : "(Auto-filled)"}
                   </Label>
                   <Input
                     id="channelKey"
@@ -362,11 +375,11 @@ export default function TrackingNumbersAdmin() {
                     onChange={(e) => setEditingNumber({ ...editingNumber, channelKey: e.target.value })}
                     data-testid="input-channelKey"
                     placeholder="e.g., doorhanger, b2bcard, custom_source"
-                    disabled={editingNumber.channelKey !== ""}
-                    className={editingNumber.channelKey !== "" ? "bg-muted" : ""}
+                    disabled={!isCustomChannelKey}
+                    className={!isCustomChannelKey ? "bg-muted" : ""}
                   />
                   <p className="text-xs text-muted-foreground">
-                    {editingNumber.channelKey !== "" 
+                    {!isCustomChannelKey
                       ? "Select 'None (Custom Channel)' from dropdown to edit manually" 
                       : "Enter any custom channel key (e.g., doorhanger, radio_ad, etc.)"}
                   </p>
