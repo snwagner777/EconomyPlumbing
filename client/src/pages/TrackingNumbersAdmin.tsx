@@ -9,9 +9,70 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { LogOut, Phone, Plus, Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+// Comprehensive list of channel types for tracking
+const CHANNEL_TYPES = [
+  { category: "Default", options: [
+    { value: "default", label: "Default/Organic Traffic" },
+  ]},
+  { category: "Paid Advertising", options: [
+    { value: "google", label: "Google Ads" },
+    { value: "bing", label: "Bing Ads" },
+    { value: "facebook", label: "Facebook/Instagram Ads" },
+    { value: "youtube", label: "YouTube Ads" },
+    { value: "tiktok", label: "TikTok Ads" },
+    { value: "linkedin", label: "LinkedIn Ads" },
+    { value: "pinterest", label: "Pinterest Ads" },
+    { value: "twitter", label: "Twitter/X Ads" },
+  ]},
+  { category: "Local Directories & Review Sites", options: [
+    { value: "yelp", label: "Yelp" },
+    { value: "nextdoor", label: "Nextdoor" },
+    { value: "thumbtack", label: "Thumbtack" },
+    { value: "angi", label: "Angi (Angie's List)" },
+    { value: "homeadvisor", label: "HomeAdvisor" },
+    { value: "porch", label: "Porch" },
+  ]},
+  { category: "Search Engine Crawlers (SSR)", options: [
+    { value: "googlebot", label: "🤖 Googlebot (Google Crawler)" },
+    { value: "bingbot", label: "🤖 Bingbot (Bing Crawler)" },
+    { value: "yahoo", label: "🤖 Yahoo Slurp (Yahoo Crawler)" },
+    { value: "duckduckgo", label: "🤖 DuckDuckBot" },
+    { value: "baidu", label: "🤖 Baiduspider (China)" },
+    { value: "yandex", label: "🤖 Yandexbot (Russia)" },
+  ]},
+  { category: "Social Media Crawlers (SSR)", options: [
+    { value: "facebookbot", label: "🤖 Facebook Crawler (Link Previews)" },
+    { value: "twitterbot", label: "🤖 Twitterbot (Card Previews)" },
+    { value: "linkedinbot", label: "🤖 LinkedInbot (Link Previews)" },
+    { value: "pinterestbot", label: "🤖 Pinterestbot" },
+    { value: "whatsapp", label: "🤖 WhatsApp Preview" },
+    { value: "telegram", label: "🤖 Telegram Preview" },
+    { value: "slack", label: "🤖 Slackbot (Link Previews)" },
+    { value: "discord", label: "🤖 Discordbot (Link Previews)" },
+  ]},
+  { category: "SEO & Analytics Crawlers", options: [
+    { value: "seranking", label: "🤖 SE Ranking Crawler" },
+    { value: "ahrefsbot", label: "🤖 Ahrefsbot" },
+    { value: "semrushbot", label: "🤖 SEMrushbot" },
+    { value: "mj12bot", label: "🤖 MJ12bot (Majestic)" },
+    { value: "dotbot", label: "🤖 DotBot (Moz)" },
+  ]},
+  { category: "Other Sources", options: [
+    { value: "email", label: "Email Marketing" },
+    { value: "sms", label: "SMS Marketing" },
+    { value: "print", label: "Print Advertising" },
+    { value: "radio", label: "Radio Advertising" },
+    { value: "tv", label: "TV Advertising" },
+    { value: "direct", label: "Direct Traffic" },
+    { value: "referral", label: "Referral Traffic" },
+    { value: "custom", label: "Custom Source" },
+  ]},
+];
 
 interface TrackingNumber {
   id: string;
@@ -262,12 +323,53 @@ export default function TrackingNumbersAdmin() {
             {editingNumber && (
               <div className="grid gap-4 py-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="channelName">Channel Name</Label>
+                  <Label htmlFor="channelType">Channel Type</Label>
+                  <Select
+                    value={editingNumber.channelKey}
+                    onValueChange={(value) => setEditingNumber({ ...editingNumber, channelKey: value })}
+                  >
+                    <SelectTrigger data-testid="select-channelType">
+                      <SelectValue placeholder="Select channel type..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CHANNEL_TYPES.map((category) => (
+                        <optgroup key={category.category} label={category.category}>
+                          {category.options.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    🤖 = Bot/Crawler (will get this number when crawling your site for SEO)
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="channelKey">Channel Key (Auto-filled)</Label>
+                  <Input
+                    id="channelKey"
+                    value={editingNumber.channelKey}
+                    onChange={(e) => setEditingNumber({ ...editingNumber, channelKey: e.target.value })}
+                    data-testid="input-channelKey"
+                    placeholder="e.g., google, bing, facebook"
+                    disabled
+                    className="bg-muted"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    This is automatically set by the dropdown above
+                  </p>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="channelName">Channel Display Name</Label>
                   <Input
                     id="channelName"
                     value={editingNumber.channelName}
                     onChange={(e) => setEditingNumber({ ...editingNumber, channelName: e.target.value })}
                     data-testid="input-channelName"
+                    placeholder="e.g., Google Ads, Bingbot Crawler"
                   />
                 </div>
                 <div className="grid gap-2">

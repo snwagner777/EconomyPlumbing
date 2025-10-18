@@ -110,18 +110,23 @@ const pageMetadata: Record<string, PageMetadata> = {
 export function isCrawler(userAgent: string): { isCrawler: boolean; source: string | null } {
   const ua = userAgent.toLowerCase();
   
-  // Map crawler user agents to traffic sources (for phone number tracking)
+  // Map crawler user agents to channel keys (matches tracking_numbers.channelKey in database)
+  // These channel keys map to the dropdown options in the admin panel
   const crawlerMapping: Record<string, string> = {
-    'googlebot': 'google',
-    'bingbot': 'bing',
-    'slurp': 'yahoo',
-    'duckduckbot': 'duckduckgo',
-    'baiduspider': 'baidu',
-    'yandexbot': 'yandex',
-    'facebookexternalhit': 'facebook',
-    'twitterbot': 'twitter',
-    'linkedinbot': 'linkedin',
-    'pinterestbot': 'pinterest',
+    'googlebot': 'googlebot',           // Google Search crawler
+    'bingbot': 'bingbot',               // Bing Search crawler
+    'slurp': 'yahoo',                   // Yahoo Search crawler
+    'duckduckbot': 'duckduckgo',        // DuckDuckGo crawler
+    'baiduspider': 'baidu',             // Baidu crawler (China)
+    'yandexbot': 'yandex',              // Yandex crawler (Russia)
+    'facebookexternalhit': 'facebookbot', // Facebook link preview crawler
+    'twitterbot': 'twitterbot',         // Twitter/X card preview
+    'linkedinbot': 'linkedinbot',       // LinkedIn link preview
+    'pinterestbot': 'pinterestbot',     // Pinterest crawler
+    'whatsapp': 'whatsapp',             // WhatsApp link preview
+    'telegrambot': 'telegram',          // Telegram link preview
+    'slackbot': 'slack',                // Slack link preview
+    'discordbot': 'discord',            // Discord link preview
   };
   
   // Check all crawler patterns (including ones without phone tracking)
