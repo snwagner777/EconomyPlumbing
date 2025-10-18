@@ -11,52 +11,41 @@ import { eq } from "drizzle-orm";
 // Generate a unique H1 from a title
 function generateH1FromTitle(title: string): string {
   // Strategy: Make H1 more conversational and user-focused
-  // while keeping the same keywords
+  // while keeping the same keywords, but keep it simple
   
-  // Remove common suffixes and modifiers
-  let h1 = title
-    .replace(/\s*-\s*Complete Guide$/i, "")
-    .replace(/\s*-\s*Expert Guide$/i, "")
-    .replace(/\s*-\s*.*Guide$/i, "")
-    .replace(/\s*\|\s*Economy Plumbing$/i, "")
-    .replace(/\s*\|\s*.*$/i, "")
-    .trim();
+  let h1 = title.trim();
   
-  // Add conversational elements based on content type
-  if (title.toLowerCase().includes("guide") || title.toLowerCase().includes("how to")) {
-    // For guides, make them more conversational
-    if (!h1.startsWith("How") && !h1.startsWith("Your")) {
-      h1 = `Your Complete Guide to ${h1}`;
-    } else if (h1.startsWith("How to ")) {
-      h1 = h1.replace(/^How to /, "How to Successfully ");
+  // Simple, consistent approach: Add descriptive prefix based on content type
+  if (title.toLowerCase().includes("how to")) {
+    // How-to articles: emphasize the action
+    h1 = title.replace(/^How to /i, "How to Properly ");
+  } else if (title.toLowerCase().includes("guide")) {
+    // Guides: add "complete" or "expert"
+    if (!title.toLowerCase().includes("complete") && !title.toLowerCase().includes("expert")) {
+      h1 = `Complete ${title}`;
+    } else {
+      h1 = title.replace(/Guide/i, "Expert Guide");
     }
   } else if (title.toLowerCase().includes("cost") || title.toLowerCase().includes("price")) {
-    // For cost/pricing articles
-    if (!h1.toLowerCase().includes("what")) {
-      h1 = `Understanding ${h1}`;
-    }
-  } else if (title.toLowerCase().includes("austin") || title.toLowerCase().includes("marble falls")) {
-    // For location-specific content
-    const location = title.match(/(Austin|Marble Falls)/i)?.[0] || "";
-    if (location && !h1.toLowerCase().startsWith("professional")) {
-      h1 = h1.replace(new RegExp(`${location}\\s*`, "i"), "");
-      h1 = `Professional ${h1} in ${location}`;
-    }
+    // Cost/pricing articles: add "understanding"
+    h1 = `Understanding ${title}`;
   } else if (title.toLowerCase().includes("tips") || title.toLowerCase().includes("advice")) {
-    // For tips and advice
-    if (!h1.toLowerCase().includes("expert") && !h1.toLowerCase().includes("professional")) {
-      h1 = `Expert ${h1}`;
-    }
+    // Tips: add "expert" or "professional"
+    h1 = `Expert ${title}`;
+  } else if (title.toLowerCase().match(/\b(why|what|when|where|which)\b/)) {
+    // Question-based: add "understanding"
+    h1 = `Understanding ${title}`;
+  } else if (title.toLowerCase().includes("signs of") || title.toLowerCase().includes("symptoms")) {
+    // Diagnostic content: add "recognizing"
+    h1 = `Recognizing ${title}`;
   } else {
-    // Default: add "Everything You Need to Know About"
-    if (!h1.toLowerCase().includes("expert") && !h1.toLowerCase().includes("complete")) {
-      h1 = `Everything You Need to Know About ${h1}`;
-    }
+    // Default: add "your guide to"
+    h1 = `Your Guide to ${title}`;
   }
   
   // Ensure H1 is different from title
   if (h1 === title) {
-    h1 = `Professional Guide: ${h1}`;
+    h1 = `Expert Guide: ${h1}`;
   }
   
   return h1;

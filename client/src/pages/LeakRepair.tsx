@@ -24,6 +24,7 @@ export default function LeakRepair() {
       heroSubtitle="Fast, Professional Leak Detection & Repair in Central Texas"
       overviewTitle="Expert Leak Detection & Repair"
       overviewDescription="Don't let a small leak become a major problem. Our experienced technicians use advanced leak detection equipment to quickly locate and repair all types of leaks, from visible faucet drips to hidden slab leaks."
+      blogCategory="Leak Repair"
       benefits={[
         "Fast leak detection",
         "Advanced leak detection technology",
@@ -87,7 +88,6 @@ export default function LeakRepair() {
       ]}
       reviewsCategory="leak"
       reviewsTitle="Leak Repair Customer Reviews"
-      blogCategory="Emergency Tips"
     />
   );
 }

@@ -13,6 +13,7 @@ import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
+import RelatedBlogPosts from "@/components/RelatedBlogPosts";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
@@ -392,6 +393,11 @@ export default function ServicePage({
           </div>
         </div>
       </section>
+
+      {/* Related Blog Posts - adds internal links to blog posts for better SEO */}
+      {blogCategory && (
+        <RelatedBlogPosts category={blogCategory} limit={3} title="Helpful Articles & Tips" />
+      )}
 
       <Footer />
     </div>

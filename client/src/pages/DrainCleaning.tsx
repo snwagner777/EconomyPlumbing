@@ -15,6 +15,7 @@ export default function DrainCleaning() {
       overviewTitle="Expert Drain Cleaning Solutions"
       overviewDescription="From simple clogs to complex sewer line issues, our professional drain cleaning services keep your plumbing flowing smoothly. We use advanced equipment including video inspection and hydro jetting for thorough, lasting results."
       customSection={<CommercialCustomersShowcase />}
+      blogCategory="Drain Cleaning"
       benefits={[
         "Video camera inspection",
         "Hydro jetting technology",
@@ -78,7 +79,6 @@ export default function DrainCleaning() {
       ]}
       reviewsCategory="drain"
       reviewsTitle="Drain Cleaning Customer Reviews"
-      blogCategory="Drain Cleaning"
     />
   );
 }

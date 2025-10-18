@@ -3,6 +3,13 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business in Austin and Marble Falls, Texas. It provides service information, covered areas, and blog content, alongside an **Ecwid-powered online store** for maintenance memberships and drop-shipped products. The project focuses on improving local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
 
+## Recent SEO Improvements (October 2025)
+Implemented comprehensive SEO fixes to address SE Ranking audit issues and improve search engine visibility:
+- **Multiple H1 Tags Fixed**: Removed black-hat hidden H1 tag injection from server-side metadata injector
+- **Unique H1 Tags**: Added custom H1 field to blog_posts table; all 141 blog posts now have unique H1 tags that differ from meta titles (e.g., "Austin Water Heater Guide" → "Complete Austin Water Heater Guide")
+- **Internal Linking**: Created RelatedBlogPosts component that automatically links service pages to relevant blog posts by category, solving "no inbound links" issues
+- **3XX Redirects Eliminated**: Updated all external social media links to use canonical URLs with "www" subdomain (Facebook, Instagram, Yelp, Nextdoor)
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
