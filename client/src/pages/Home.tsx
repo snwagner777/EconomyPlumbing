@@ -139,7 +139,7 @@ export default function Home() {
         "Safety inspections",
         "New installations",
       ],
-      link: "/gas-services",
+      link: "/gas-line-services",
     },
     {
       icon: Shield,

@@ -211,7 +211,7 @@ While it's tempting to oversize "just in case," oversized tank heaters waste ene
       relatedServices={[
         { title: "Water Heater Services", path: "/water-heater-services" },
         { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
-        { title: "Gas Line Services", path: "/gas-services" },
+        { title: "Gas Line Services", path: "/gas-line-services" },
         { title: "Emergency Plumbing", path: "/emergency-plumbing" }
       ]}
       blogCategory="Water Heaters"

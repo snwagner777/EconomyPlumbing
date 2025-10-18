@@ -65,7 +65,7 @@ const ALL_PAGES = [
   { path: '/drain-cleaning', title: 'Drain Cleaning' },
   { path: '/leak-repair', title: 'Leak Repair' },
   { path: '/toilet-faucet', title: 'Toilet & Faucet' },
-  { path: '/gas-services', title: 'Gas Services' },
+  { path: '/gas-line-services', title: 'Gas Services' },
   { path: '/commercial-plumbing', title: 'Commercial Plumbing' },
   { path: '/backflow', title: 'Backflow Testing' },
   { path: '/emergency', title: 'Emergency Plumbing' },

@@ -69,7 +69,7 @@ export default function GasLeakDetection() {
         }
       ]}
       relatedServices={[
-        { title: "Gas Line Services", path: "/gas-services" },
+        { title: "Gas Line Services", path: "/gas-line-services" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Leak Repair Services", path: "/leak-repair" },
         { title: "Water Heater Services", path: "/water-heater-services" }

@@ -55,17 +55,17 @@ const serviceCategories = [
     title: "Gas Services",
     icon: Flame,
     services: [
-      { name: "Gas Line Installation", path: "/gas-services" },
+      { name: "Gas Line Installation", path: "/gas-line-services" },
       { name: "Gas Leak Detection", path: "/gas-leak-detection" },
-      { name: "Gas Line Repair", path: "/gas-services" },
-      { name: "Appliance Hookups", path: "/gas-services" }
+      { name: "Gas Line Repair", path: "/gas-line-services" },
+      { name: "Appliance Hookups", path: "/gas-line-services" }
     ]
   },
   {
     title: "Specialty Services",
     icon: Shield,
     services: [
-      { name: "Backflow Testing", path: "/backflow-testing" },
+      { name: "Backflow Testing", path: "/backflow" },
       { name: "Backflow Prevention", path: "/backflow" },
       { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
       { name: "Permit Resolution", path: "/permit-resolution-services" }
@@ -87,7 +87,7 @@ const serviceCategories = [
     services: [
       { name: "Commercial Plumbing", path: "/commercial-plumbing" },
       { name: "Restaurant Plumbing", path: "/commercial-plumbing" },
-      { name: "Backflow Certification", path: "/backflow-testing" }
+      { name: "Backflow Certification", path: "/backflow" }
     ]
   }
 ];

@@ -36,7 +36,7 @@ const SERVICES = [
   { name: "Drain Cleaning", path: "/drain-cleaning" },
   { name: "Leak Repair", path: "/leak-repair" },
   { name: "Toilet & Faucet Services", path: "/toilet-faucet" },
-  { name: "Gas Services", path: "/gas-services" },
+  { name: "Gas Services", path: "/gas-line-services" },
   { name: "Backflow Services", path: "/backflow" },
   { name: "Commercial Plumbing", path: "/commercial-plumbing" },
 ];

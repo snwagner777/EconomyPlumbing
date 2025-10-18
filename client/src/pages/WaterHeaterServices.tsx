@@ -204,7 +204,7 @@ Our experienced technicians will assess your home's hot water demands, available
       ]}
       relatedServices={[
         { title: "Leak Repair Services", path: "/leak-repair" },
-        { title: "Gas Services", path: "/gas-services" },
+        { title: "Gas Services", path: "/gas-line-services" },
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Emergency Plumbing", path: "/emergency-plumbing" }
       ]}

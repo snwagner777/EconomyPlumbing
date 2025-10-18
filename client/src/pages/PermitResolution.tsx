@@ -73,8 +73,8 @@ export default function PermitResolution() {
       relatedServices={[
         { title: "Commercial Plumbing", path: "/commercial-plumbing" },
         { title: "Water Heater Services", path: "/water-heater-services" },
-        { title: "Gas Line Services", path: "/gas-services" },
-        { title: "Backflow Testing", path: "/backflow-testing" }
+        { title: "Gas Line Services", path: "/gas-line-services" },
+        { title: "Backflow Testing", path: "/backflow" }
       ]}
     />
   );
