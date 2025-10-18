@@ -94,6 +94,7 @@ export default function TrackingNumbersAdmin() {
   const [, setLocation] = useLocation();
   const [editingNumber, setEditingNumber] = useState<TrackingNumber | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isCustomChannelKey, setIsCustomChannelKey] = useState(false);
   const { toast } = useToast();
 
   // Check auth status
