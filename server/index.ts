@@ -90,6 +90,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/backflow-testing/': '/backflow',
     '/commercial-services': '/commercial-plumbing',
     '/commercial-services/': '/commercial-plumbing',
+    '/gas-services': '/gas-line-services',
+    '/gas-services/': '/gas-line-services',
     
     // Old service URLs
     '/water-heater-experts-in-austin': '/water-heater-services',
@@ -100,8 +102,8 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/sewer-line-repairs-and-replacements-in-austin-tx/': '/services',
     '/sewer-lines-repairs-and-replacements-in-austin': '/services',
     '/sewer-lines-repairs-and-replacements-in-austin/': '/services',
-    '/20-gas-pipe-repair': '/gas-services',
-    '/20-gas-pipe-repair/': '/gas-services',
+    '/20-gas-pipe-repair': '/gas-line-services',
+    '/20-gas-pipe-repair/': '/gas-line-services',
     
     // Old blog posts - redirect to blog home or specific posts if available
     '/the-importance-of-water-heater-maintenance-for-austin-homeowners': '/blog',
