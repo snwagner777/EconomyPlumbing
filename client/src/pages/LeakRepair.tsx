@@ -1,12 +1,23 @@
+import { useLocation } from "wouter";
 import ServicePage from "@/components/ServicePage";
 import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 
 export default function LeakRepair() {
+  const [location] = useLocation();
+  
+  const isWaterLeakRepair = location === "/water-leak-repair";
+  const title = isWaterLeakRepair 
+    ? "Water Leak Repair Austin TX | Fast Leak Detection" 
+    : "Leak Detection & Slab Leak Repair Austin TX | 24/7";
+  const canonical = isWaterLeakRepair
+    ? "https://www.plumbersthatcare.com/water-leak-repair"
+    : "https://www.plumbersthatcare.com/leak-repair";
+  
   return (
     <ServicePage
-      title="Leak Detection & Slab Leak Repair Austin TX | 24/7"
+      title={title}
       metaDescription="Fast leak detection with electronic equipment. Slab leak specialists, pipe & hidden leak repair. 24/7 emergency service available. Call (512) 368-9159."
-      canonical="https://www.plumbersthatcare.com/leak-repair"
+      canonical={canonical}
       heroImage={leakImage}
       heroImageAlt="Professional leak detection and repair service in Austin and Marble Falls TX"
       heroTitle="Leak Repair Services"

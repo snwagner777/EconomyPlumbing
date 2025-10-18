@@ -73,7 +73,7 @@ export function SEOHead({
       {/* Primary Meta Tags */}
       <title>{finalTitle}</title>
       <meta name="title" content={finalTitle} />
-      <meta name="description" content={finalDescription} />
+      {/* Description is handled server-side by metadataInjector to avoid duplicates */}
       {/* Canonical is handled server-side by metadataInjector for better SEO */}
       
       {/* RSS Feed */}
