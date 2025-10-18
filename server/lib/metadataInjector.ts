@@ -152,7 +152,7 @@ export function createMetadataInjector(storage: IStorage) {
     // Check if response is HTML
     const checkHtml = () => {
       const contentType = res.getHeader('content-type');
-      isHtml = contentType && contentType.toString().includes('text/html');
+      isHtml = contentType ? contentType.toString().includes('text/html') : false;
     };
     
     // @ts-ignore
