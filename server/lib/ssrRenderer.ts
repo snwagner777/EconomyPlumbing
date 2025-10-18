@@ -606,6 +606,164 @@ export const ssrPages: SSRPageConfig[] = [
     content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Marble Falls, TX</h1><p class="text-xl mb-8">Expert plumbing services in Marble Falls and the Hill Country.</p></div></div>`
   },
   
+  // Additional specific service area pages
+  {
+    path: '/plumber-in-cedar-park--tx',
+    title: 'Plumber in Cedar Park, TX | Economy Plumbing',
+    description: 'Trusted plumber in Cedar Park, TX. Water heaters, drain cleaning, leak repair. Same-day service available. Licensed & insured plumbers. Call (512) 368-9159 today!',
+    h1: 'Professional Plumber in Cedar Park, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Cedar Park, TX</h1><p class="text-xl mb-8">Expert plumbing services in Cedar Park and surrounding areas.</p></div></div>`
+  },
+  {
+    path: '/plumber-leander',
+    title: 'Plumber in Leander, TX | Economy Plumbing',
+    description: 'Trusted plumber in Leander, TX. Emergency plumbing, water heaters, drain cleaning, leak repair. Licensed & insured. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Leander, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Leander, TX</h1><p class="text-xl mb-8">Quality plumbing services in Leander and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/round-rock-plumber',
+    title: 'Plumber in Round Rock, TX | Economy Plumbing',
+    description: 'Trusted plumber in Round Rock, TX. Water heater repair, drain cleaning, emergency plumbing. Licensed & insured plumbers. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Round Rock, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Round Rock, TX</h1><p class="text-xl mb-8">Reliable plumbing services in Round Rock and surrounding communities.</p></div></div>`
+  },
+  {
+    path: '/plumber-georgetown',
+    title: 'Plumber in Georgetown, TX | Economy Plumbing',
+    description: 'Trusted plumber in Georgetown, TX. Water heaters, drain cleaning, leak repair, emergency service. Licensed & insured plumbers. Call (512) 368-9159 today!',
+    h1: 'Professional Plumber in Georgetown, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Georgetown, TX</h1><p class="text-xl mb-8">Expert plumbing services in Georgetown and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-pflugerville',
+    title: 'Plumber in Pflugerville, TX | Economy Plumbing',
+    description: 'Trusted plumber in Pflugerville, TX. Emergency plumbing, water heaters, drain cleaning. Licensed & insured. Same-day service available. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Pflugerville, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Pflugerville, TX</h1><p class="text-xl mb-8">Quality plumbing services in Pflugerville and nearby areas.</p></div></div>`
+  },
+  {
+    path: '/plumber-liberty-hill',
+    title: 'Plumber in Liberty Hill, TX | Economy Plumbing',
+    description: 'Trusted plumber in Liberty Hill, TX. Water heaters, drain cleaning, leak repair. Licensed & insured plumbers. Same-day service. Call (512) 368-9159 today!',
+    h1: 'Professional Plumber in Liberty Hill, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Liberty Hill, TX</h1><p class="text-xl mb-8">Expert plumbing services in Liberty Hill and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-buda',
+    title: 'Plumber in Buda, TX | Economy Plumbing Services',
+    description: 'Trusted plumber in Buda, TX. Emergency plumbing, water heater repair, drain cleaning, leak repair. Licensed & insured. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Buda, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Buda, TX</h1><p class="text-xl mb-8">Quality plumbing services in Buda and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-kyle',
+    title: 'Plumber in Kyle, TX | Economy Plumbing Services',
+    description: 'Trusted plumber in Kyle, TX. Water heaters, drain cleaning, leak repair, emergency plumbing. Licensed & insured plumbers. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Kyle, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Kyle, TX</h1><p class="text-xl mb-8">Expert plumbing services in Kyle and surrounding communities.</p></div></div>`
+  },
+  {
+    path: '/plumber-burnet',
+    title: 'Plumber in Burnet, TX | Economy Plumbing Services',
+    description: 'Trusted plumber in Burnet, TX. Water heater repair, drain cleaning, emergency plumbing. Licensed & insured plumbers. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Burnet, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Burnet, TX</h1><p class="text-xl mb-8">Reliable plumbing services in Burnet and the Hill Country.</p></div></div>`
+  },
+  {
+    path: '/plumber-horseshoe-bay',
+    title: 'Plumber in Horseshoe Bay, TX | Economy Plumbing',
+    description: 'Trusted plumber in Horseshoe Bay, TX. Water heaters, drain cleaning, leak repair. Licensed & insured plumbers. Same-day service available. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Horseshoe Bay, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Horseshoe Bay, TX</h1><p class="text-xl mb-8">Expert plumbing services in Horseshoe Bay and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-kingsland',
+    title: 'Plumber in Kingsland, TX | Economy Plumbing',
+    description: 'Trusted plumber in Kingsland, TX. Emergency plumbing, water heaters, drain cleaning. Licensed & insured. Same-day service available. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Kingsland, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Kingsland, TX</h1><p class="text-xl mb-8">Quality plumbing services in Kingsland and nearby areas.</p></div></div>`
+  },
+  {
+    path: '/plumber-granite-shoals',
+    title: 'Plumber in Granite Shoals, TX | Economy Plumbing',
+    description: 'Trusted plumber in Granite Shoals, TX. Water heater repair, drain cleaning, leak repair. Licensed & insured plumbers. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Granite Shoals, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Granite Shoals, TX</h1><p class="text-xl mb-8">Expert plumbing services in Granite Shoals and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-bertram',
+    title: 'Plumber in Bertram, TX | Economy Plumbing Services',
+    description: 'Trusted plumber in Bertram, TX. Emergency plumbing, water heaters, drain cleaning, leak repair. Licensed & insured. Same-day service. Call (512) 368-9159!',
+    h1: 'Professional Plumber in Bertram, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Bertram, TX</h1><p class="text-xl mb-8">Quality plumbing services in Bertram and the surrounding area.</p></div></div>`
+  },
+  {
+    path: '/plumber-spicewood',
+    title: 'Plumber in Spicewood, TX | Economy Plumbing',
+    description: 'Trusted plumber in Spicewood, TX. Water heaters, drain cleaning, leak repair, emergency service. Licensed & insured plumbers. Call (512) 368-9159 today!',
+    h1: 'Professional Plumber in Spicewood, TX',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Spicewood, TX</h1><p class="text-xl mb-8">Expert plumbing services in Spicewood and the Hill Country.</p></div></div>`
+  },
+  
+  // Additional service pages that map to different components
+  {
+    path: '/water-heater-services',
+    title: 'Water Heater Services | Economy Plumbing',
+    description: 'Water heater repair & installation in Austin & Marble Falls, TX. Tank & tankless. Same-day service. 24/7 emergency repairs. Licensed plumbers. Call (512) 368-9159!',
+    h1: 'Water Heater Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Water Heater Services</h1><p class="text-xl mb-8">Expert water heater repair and installation services.</p></div></div>`
+  },
+  {
+    path: '/drain-cleaning',
+    title: 'Drain Cleaning | Economy Plumbing Services',
+    description: 'Professional drain cleaning in Austin & Marble Falls, TX. Clear clogs fast. Hydro jetting, rooter service. 24/7 emergency service. Licensed plumbers. Call (512) 368-9159!',
+    h1: 'Drain Cleaning Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Drain Cleaning Services</h1><p class="text-xl mb-8">Professional drain cleaning for homes and businesses.</p></div></div>`
+  },
+  {
+    path: '/leak-repair',
+    title: 'Leak Repair Services | Economy Plumbing',
+    description: 'Emergency leak repair in Austin & Marble Falls, TX. Slab leaks, pipe leaks, water line leaks. 24/7 service. Licensed & insured plumbers. Call (512) 368-9159!',
+    h1: 'Leak Repair Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Leak Repair Services</h1><p class="text-xl mb-8">Fast, professional leak detection and repair.</p></div></div>`
+  },
+  {
+    path: '/toilet-faucet',
+    title: 'Toilet & Faucet Services | Economy Plumbing',
+    description: 'Toilet & faucet repair in Austin & Marble Falls, TX. Fix leaks, clogs, installations. Same-day service available. Licensed plumbers. Call (512) 368-9159!',
+    h1: 'Toilet & Faucet Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Toilet & Faucet Services</h1><p class="text-xl mb-8">Expert toilet and faucet repair and installation.</p></div></div>`
+  },
+  {
+    path: '/gas-services',
+    title: 'Gas Line Services | Economy Plumbing',
+    description: 'Professional gas line services in Austin & Marble Falls, TX. Installation, repair, leak detection. Licensed & certified. 24/7 emergency service. Call (512) 368-9159!',
+    h1: 'Gas Line Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Gas Line Services</h1><p class="text-xl mb-8">Expert gas line installation, repair, and leak detection.</p></div></div>`
+  },
+  {
+    path: '/backflow',
+    title: 'Backflow Testing | Economy Plumbing Services',
+    description: 'Certified backflow testing in Austin & Marble Falls, TX. Annual inspections, repairs, installations. Protect your water supply. Licensed testers. Call (512) 368-9159!',
+    h1: 'Backflow Testing Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Backflow Testing Services</h1><p class="text-xl mb-8">Certified backflow prevention testing and installations.</p></div></div>`
+  },
+  {
+    path: '/commercial-plumbing',
+    title: 'Commercial Plumbing | Economy Plumbing Services',
+    description: 'Commercial plumbing in Austin & Marble Falls, TX. Restaurants, offices, retail. Installations, repairs, maintenance. Licensed & insured. Call (512) 368-9159!',
+    h1: 'Commercial Plumbing Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Commercial Plumbing Services</h1><p class="text-xl mb-8">Comprehensive plumbing solutions for businesses.</p></div></div>`
+  },
+  {
+    path: '/emergency-plumbing',
+    title: '24/7 Emergency Plumbing | Economy Plumbing',
+    description: 'Emergency plumber in Austin & Marble Falls, TX. 24/7 service for burst pipes, gas leaks, water heaters. Fast response. Licensed & insured. Call (512) 368-9159 NOW!',
+    h1: '24/7 Emergency Plumbing',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">24/7 Emergency Plumbing</h1><p class="text-xl mb-8">Fast emergency plumbing services available around the clock.</p></div></div>`
+  },
+  
   // Store pages
   {
     path: '/store',
