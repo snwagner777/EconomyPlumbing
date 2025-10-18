@@ -2,7 +2,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import path from "path";
+import * as path from "path";
+import * as fs from "fs";
 import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
 import { startMembershipSyncJob } from "./lib/membershipSyncJob";
@@ -414,6 +415,53 @@ async function refreshReviewsPeriodically() {
       next();
     });
   }
+  
+  // Server-Side Rendering (SSR) for crawlers - Phase 1
+  // Only renders /schedule-appointment for testing
+  const { isCrawler, renderPageForCrawler } = await import("./lib/ssrRenderer");
+  
+  app.use(async (req: Request, res: Response, next: NextFunction) => {
+    const userAgent = req.get('user-agent') || '';
+    const requestPath = req.path;
+    
+    // Detect if this is a crawler and which source
+    const crawlerInfo = isCrawler(userAgent);
+    
+    // Only apply SSR to /schedule-appointment (Phase 1 test)
+    if (requestPath === '/schedule-appointment' && crawlerInfo.isCrawler) {
+      try {
+        // Read the base index.html
+        const indexPath = path.resolve(import.meta.dirname, "..", "client", "index.html");
+        const baseHTML = await fs.promises.readFile(indexPath, "utf-8");
+        
+        // Get crawler-specific phone number from database
+        let phoneNumber: string | undefined;
+        if (crawlerInfo.source) {
+          const trackingNumbers = await storage.getAllTrackingNumbers();
+          const trackingConfig = trackingNumbers.find((tn: any) => 
+            tn.source?.toLowerCase() === crawlerInfo.source?.toLowerCase()
+          );
+          if (trackingConfig && trackingConfig.enabled) {
+            phoneNumber = trackingConfig.phoneNumber;
+            log(`[SSR] Using ${crawlerInfo.source} tracking number for crawler: ${phoneNumber}`);
+          }
+        }
+        
+        // Render page with metadata and crawler-specific phone number
+        const renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
+        
+        if (renderedHTML) {
+          log(`[SSR] Serving rendered HTML for crawler: ${userAgent.substring(0, 50)}...`);
+          return res.status(200).set({ "Content-Type": "text/html" }).send(renderedHTML);
+        }
+      } catch (error) {
+        log(`[SSR] Error rendering page: ${error}`);
+        // Fall through to normal handling on error
+      }
+    }
+    
+    next();
+  });
   
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
