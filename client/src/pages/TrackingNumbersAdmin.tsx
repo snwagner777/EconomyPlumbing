@@ -184,6 +184,7 @@ export default function TrackingNumbersAdmin() {
     updateMutation.mutate({
       id: editingNumber.id,
       updates: {
+        channelKey: editingNumber.channelKey, // ✅ NOW SAVES THE CHANNEL TYPE!
         channelName: editingNumber.channelName,
         displayNumber: editingNumber.displayNumber,
         rawNumber: editingNumber.rawNumber,
