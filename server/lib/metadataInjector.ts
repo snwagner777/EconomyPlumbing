@@ -89,10 +89,29 @@ export function createMetadataInjector(storage: IStorage) {
       return next();
     }
     
-    // Get metadata for this path
-    let metadata = getMetadataForPath(path);
+    // FIRST: Check database for admin-configured custom metadata
+    let metadata: { path: string; title: string; description: string; canonical?: string } | null = null;
     
-    // If no static metadata, check if it's a blog post (single-level path)
+    try {
+      const dbMetadata = await storage.getPageMetadataByPath(path);
+      if (dbMetadata) {
+        metadata = {
+          path: dbMetadata.path,
+          title: dbMetadata.title,
+          description: dbMetadata.description,
+          canonical: dbMetadata.canonicalUrl || undefined,
+        };
+      }
+    } catch (error) {
+      // Database error - fall through to static config
+    }
+    
+    // SECOND: If no custom metadata, use static config from metadataConfig.ts
+    if (!metadata) {
+      metadata = getMetadataForPath(path);
+    }
+    
+    // THIRD: If still no metadata, check if it's a blog post (single-level path)
     const pathParts = path.split('/').filter(Boolean);
     if (!metadata && pathParts.length === 1) {
       const slug = pathParts[0];
