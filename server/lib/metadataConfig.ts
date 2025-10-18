@@ -46,7 +46,7 @@ export const pageMetadata: PageMetadata[] = [
     description: 'Professional toilet and faucet installation, repair & replacement in Austin. Modern fixtures, water-saving options. Licensed plumbers. Call (512) 368-9159.',
   },
   {
-    path: '/gas-services',
+    path: '/gas-line-services',
     title: 'Gas Line Services Austin TX | Installation & Repair',
     description: 'Licensed gas line services in Austin. Installation, repair, leak detection. Safe, code-compliant work. Emergency service available. Call (512) 368-9159.',
   },
@@ -109,6 +109,87 @@ export const pageMetadata: PageMetadata[] = [
     path: '/service-area',
     title: 'Service Areas | Austin & Marble Falls Plumber - Economy Plumbing',
     description: 'Economy Plumbing serves Austin, Marble Falls, Cedar Park, Leander, Round Rock, Georgetown, and surrounding Central Texas communities. View our full service area.',
+  },
+  // Service Area Pages
+  {
+    path: '/plumber-austin',
+    title: 'Professional Plumber in Austin, TX | Economy Plumbing',
+    description: 'Austin\'s trusted plumber since 2012. Water heaters, drain cleaning, leak repair & more. Licensed & insured. Same-day service. Call (512) 368-9159.',
+  },
+  {
+    path: '/plumber-in-cedar-park--tx',
+    title: 'Professional Plumber in Cedar Park, TX | Economy Plumbing',
+    description: 'Professional plumbing services in Cedar Park, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 368-9159 for service.',
+  },
+  {
+    path: '/plumber-leander',
+    title: 'Professional Plumber in Leander, TX | Economy Plumbing',
+    description: 'Expert plumbing services in Leander, TX. Water heater repair, drain cleaning, leak detection, and emergency plumbing. Call (512) 368-9159.',
+  },
+  {
+    path: '/round-rock-plumber',
+    title: 'Professional Plumber in Round Rock, TX | Economy Plumbing',
+    description: 'Round Rock plumbing services. Water heaters, drain cleaning, leak repair, gas services. Licensed plumbers. Call (512) 368-9159.',
+  },
+  {
+    path: '/plumber-georgetown',
+    title: 'Professional Plumber in Georgetown, TX | Economy Plumbing',
+    description: 'Georgetown plumbing experts. Water heater installation, drain cleaning, leak repair, and commercial plumbing. Call (512) 368-9159.',
+  },
+  {
+    path: '/plumber-pflugerville',
+    title: 'Professional Plumber in Pflugerville, TX | Economy Plumbing',
+    description: 'Pflugerville plumbing services. Expert water heater repair, drain cleaning, and emergency plumbing. Licensed plumbers. Call (512) 368-9159.',
+  },
+  {
+    path: '/plumber-marble-falls',
+    title: 'Professional Plumber in Marble Falls, TX | Economy Plumbing',
+    description: 'Expert plumbing services in Marble Falls, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing. Licensed plumbers. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-burnet',
+    title: 'Professional Plumber in Burnet, TX | Economy Plumbing',
+    description: 'Professional plumbing services in Burnet, TX. Water heater installation, drain cleaning, leak repair, and more. Licensed & insured. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-horseshoe-bay',
+    title: 'Professional Plumber in Horseshoe Bay, TX | Economy Plumbing',
+    description: 'Quality plumbing services in Horseshoe Bay, TX. Water heater services, drain cleaning, leak repair, and emergency plumbing. Call (830) 460-3565 for service.',
+  },
+  {
+    path: '/plumber-kingsland',
+    title: 'Professional Plumber in Kingsland, TX | Economy Plumbing',
+    description: 'Trusted plumbing services in Kingsland, TX. Water heater repair, drain cleaning, leak detection, commercial plumbing. Licensed plumbers. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-granite-shoals',
+    title: 'Professional Plumber in Granite Shoals, TX | Economy Plumbing',
+    description: 'Reliable plumbing services in Granite Shoals, TX. Expert water heater repair, drain cleaning, and emergency plumbing. Same-day service. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-bertram',
+    title: 'Professional Plumber in Bertram, TX | Economy Plumbing',
+    description: 'Professional plumbing services in Bertram, TX. Water heater install, drain cleaning, leak repair, gas services. Licensed & insured. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-spicewood',
+    title: 'Professional Plumber in Spicewood, TX | Economy Plumbing',
+    description: 'Expert plumbing services in Spicewood, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing. Same-day service. Call (830) 460-3565.',
+  },
+  {
+    path: '/plumber-liberty-hill',
+    title: 'Professional Plumber in Liberty Hill, TX | Economy Plumbing',
+    description: 'Quality plumbing services in Liberty Hill, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 368-9159 for service.',
+  },
+  {
+    path: '/plumber-buda',
+    title: 'Professional Plumber in Buda, TX | Economy Plumbing',
+    description: 'Buda, TX plumber near Austin. Expert water heater repair, drain cleaning & emergency plumbing services. Same-day service available. Call (512) 368-9159 now.',
+  },
+  {
+    path: '/plumber-kyle',
+    title: 'Professional Plumber in Kyle, TX | Economy Plumbing',
+    description: 'Reliable plumbing services in Kyle, TX. Water heater installation, drain cleaning, leak repair, and commercial plumbing. Licensed plumbers. Call (512) 368-9159.',
   },
 ];
 

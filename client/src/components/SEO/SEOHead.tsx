@@ -74,7 +74,7 @@ export function SEOHead({
       <title>{finalTitle}</title>
       <meta name="title" content={finalTitle} />
       <meta name="description" content={finalDescription} />
-      <link rel="canonical" href={canonicalUrl} />
+      {/* Canonical is handled server-side by metadataInjector for better SEO */}
       
       {/* RSS Feed */}
       <link 
