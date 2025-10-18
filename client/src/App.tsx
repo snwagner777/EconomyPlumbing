@@ -10,19 +10,21 @@ import { useAnalytics } from "@/hooks/use-analytics";
 import CookieBanner from "@/components/CookieBanner";
 import { PhoneConfigProvider } from "@/contexts/PhoneConfigContext";
 
-// Critical pages - eagerly loaded for best UX
+// Critical pages - eagerly loaded for best initial load
 import Home from "@/pages/Home";
-import WaterHeaterServices from "@/pages/WaterHeaterServices";
-import DrainCleaning from "@/pages/DrainCleaning";
-import LeakRepair from "@/pages/LeakRepair";
-import ToiletFaucet from "@/pages/ToiletFaucet";
-import GasServices from "@/pages/GasServices";
-import CommercialPlumbing from "@/pages/CommercialPlumbing";
-import BackflowTesting from "@/pages/BackflowTesting";
-import EmergencyPlumbing from "@/pages/EmergencyPlumbing";
-import PlumberNearMe from "@/pages/PlumberNearMe";
-import CommercialServicesLanding from "@/pages/CommercialServicesLanding";
 import NotFound from "@/pages/not-found";
+
+// Service pages - lazy loaded to reduce main bundle
+const WaterHeaterServices = lazy(() => import("@/pages/WaterHeaterServices"));
+const DrainCleaning = lazy(() => import("@/pages/DrainCleaning"));
+const LeakRepair = lazy(() => import("@/pages/LeakRepair"));
+const ToiletFaucet = lazy(() => import("@/pages/ToiletFaucet"));
+const GasServices = lazy(() => import("@/pages/GasServices"));
+const CommercialPlumbing = lazy(() => import("@/pages/CommercialPlumbing"));
+const BackflowTesting = lazy(() => import("@/pages/BackflowTesting"));
+const EmergencyPlumbing = lazy(() => import("@/pages/EmergencyPlumbing"));
+const PlumberNearMe = lazy(() => import("@/pages/PlumberNearMe"));
+const CommercialServicesLanding = lazy(() => import("@/pages/CommercialServicesLanding"));
 
 // Lazy load less critical pages for better performance
 const ServiceAreas = lazy(() => import("@/pages/ServiceAreas"));

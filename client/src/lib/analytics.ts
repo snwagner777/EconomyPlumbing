@@ -52,13 +52,31 @@ export const initGA = () => {
     console.log('Google Analytics initialized successfully');
   };
 
-  // Use requestIdleCallback for non-critical GA loading
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadGA);
-  } else {
-    // Fallback for browsers without requestIdleCallback
-    setTimeout(loadGA, 1);
-  }
+  // Aggressively defer GA - wait 3 seconds OR first user interaction
+  let loaded = false;
+  
+  const deferredLoad = () => {
+    if (loaded) return;
+    loaded = true;
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadGA, { timeout: 500 });
+    } else {
+      loadGA(); // Load immediately on fallback (already waited 3s)
+    }
+  };
+  
+  // Load on first user interaction OR after 3 seconds
+  const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+  const loadOnInteraction = () => {
+    events.forEach(event => document.removeEventListener(event, loadOnInteraction));
+    deferredLoad();
+  };
+  
+  events.forEach(event => document.addEventListener(event, loadOnInteraction, { once: true, passive: true }));
+  
+  // Fallback: load after 3 seconds even without interaction
+  setTimeout(deferredLoad, 3000);
 };
 
 export const trackPageView = (url: string) => {
@@ -133,11 +151,31 @@ export const initMetaPixel = () => {
     console.log('Meta Pixel initialized successfully');
   };
 
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadMetaPixel);
-  } else {
-    setTimeout(loadMetaPixel, 1);
-  }
+  // Aggressively defer Meta Pixel - wait 3 seconds OR first user interaction
+  let loaded = false;
+  
+  const deferredLoad = () => {
+    if (loaded) return;
+    loaded = true;
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadMetaPixel, { timeout: 500 });
+    } else {
+      loadMetaPixel(); // Load immediately on fallback (already waited 3s)
+    }
+  };
+  
+  // Load on first user interaction OR after 3 seconds
+  const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+  const loadOnInteraction = () => {
+    events.forEach(event => document.removeEventListener(event, loadOnInteraction));
+    deferredLoad();
+  };
+  
+  events.forEach(event => document.addEventListener(event, loadOnInteraction, { once: true, passive: true }));
+  
+  // Fallback: load after 3 seconds even without interaction
+  setTimeout(deferredLoad, 3000);
 };
 
 // Google Tag Manager initialization
@@ -185,11 +223,31 @@ export const initGTM = () => {
     console.log('Google Tag Manager initialized successfully');
   };
 
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadGTM);
-  } else {
-    setTimeout(loadGTM, 1);
-  }
+  // Aggressively defer GTM - wait 3 seconds OR first user interaction
+  let loaded = false;
+  
+  const deferredLoad = () => {
+    if (loaded) return;
+    loaded = true;
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadGTM, { timeout: 500 });
+    } else {
+      loadGTM(); // Load immediately on fallback (already waited 3s)
+    }
+  };
+  
+  // Load on first user interaction OR after 3 seconds
+  const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+  const loadOnInteraction = () => {
+    events.forEach(event => document.removeEventListener(event, loadOnInteraction));
+    deferredLoad();
+  };
+  
+  events.forEach(event => document.addEventListener(event, loadOnInteraction, { once: true, passive: true }));
+  
+  // Fallback: load after 3 seconds even without interaction
+  setTimeout(deferredLoad, 3000);
 };
 
 // Microsoft Clarity initialization
@@ -222,11 +280,31 @@ export const initClarity = () => {
     console.log('Microsoft Clarity initialized successfully');
   };
 
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(loadClarity);
-  } else {
-    setTimeout(loadClarity, 1);
-  }
+  // Aggressively defer Clarity - wait 3 seconds OR first user interaction
+  let loaded = false;
+  
+  const deferredLoad = () => {
+    if (loaded) return;
+    loaded = true;
+    
+    if ('requestIdleCallback' in window) {
+      requestIdleCallback(loadClarity, { timeout: 500 });
+    } else {
+      loadClarity(); // Load immediately on fallback (already waited 3s)
+    }
+  };
+  
+  // Load on first user interaction OR after 3 seconds
+  const events = ['mousedown', 'touchstart', 'keydown', 'scroll'];
+  const loadOnInteraction = () => {
+    events.forEach(event => document.removeEventListener(event, loadOnInteraction));
+    deferredLoad();
+  };
+  
+  events.forEach(event => document.addEventListener(event, loadOnInteraction, { once: true, passive: true }));
+  
+  // Fallback: load after 3 seconds even without interaction
+  setTimeout(deferredLoad, 3000);
 };
 
 // Track Meta Pixel events
