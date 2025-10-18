@@ -28,7 +28,7 @@ function escapeHtml(text: string): string {
 /**
  * Inject metadata into HTML
  */
-function injectMetadata(html: string, title: string, description: string, canonical: string): string {
+function injectMetadata(html: string, title: string, description: string, canonical: string, h1?: string): string {
   // Escape all metadata to prevent HTML injection
   const safeTitle = escapeHtml(title);
   const safeDescription = escapeHtml(description);
@@ -66,9 +66,16 @@ function injectMetadata(html: string, title: string, description: string, canoni
     );
   }
   
-  // Note: Hidden H1 tags removed as they're considered black-hat SEO
-  // and cause "Multiple H1 tags" errors in SEO audits.
-  // Pages should have their own visible H1 tags in the content.
+  // Inject H1 tag server-side for crawlers (if provided)
+  // This ensures crawlers see H1 tags even without JavaScript execution
+  if (h1) {
+    const safeH1 = escapeHtml(h1);
+    // Inject immediately after body tag so it's the first visible element
+    html = html.replace(
+      /<body[^>]*>/i,
+      (match) => `${match}\n    <h1 class="sr-only" data-seo-h1="true">${safeH1}</h1>`
+    );
+  }
   
   return html;
 }
@@ -93,7 +100,7 @@ export function createMetadataInjector(storage: IStorage) {
     }
     
     // Check database for metadata (single source of truth)
-    let metadata: { path: string; title: string; description: string; canonical?: string } | null = null;
+    let metadata: { path: string; title: string; description: string; canonical?: string; h1?: string } | null = null;
     
     try {
       const dbMetadata = await storage.getPageMetadataByPath(path);
@@ -109,8 +116,47 @@ export function createMetadataInjector(storage: IStorage) {
       // Database error - continue without metadata
     }
     
-    // If no metadata found, check if it's a service area page
     const pathParts = path.split('/').filter(Boolean);
+    
+    // If metadata exists but doesn't have H1, try to generate it based on page type
+    if (metadata && !metadata.h1) {
+      // Check for plumber-{city} alias routes
+      const plumberAliasMap: Record<string, string> = {
+        '/plumber-austin': 'austin',
+        '/plumber-in-cedar-park--tx': 'cedar-park',
+        '/plumber-leander': 'leander',
+        '/plumber-georgetown': 'georgetown',
+        '/plumber-pflugerville': 'pflugerville',
+        '/round-rock-plumber': 'round-rock',
+      };
+      
+      if (plumberAliasMap[path]) {
+        const slug = plumberAliasMap[path];
+        try {
+          const serviceArea = await storage.getServiceAreaBySlug(slug);
+          if (serviceArea) {
+            metadata.h1 = `Professional Plumber in ${serviceArea.cityName}, TX`;
+          }
+        } catch (error) {
+          // Skip if database fetch fails
+        }
+      }
+      
+      // Check if it's a service area page
+      if (!metadata.h1 && pathParts.length === 2 && pathParts[0] === 'service-area') {
+        const slug = pathParts[1];
+        try {
+          const serviceArea = await storage.getServiceAreaBySlug(slug);
+          if (serviceArea) {
+            metadata.h1 = `Professional Plumber in ${serviceArea.cityName}, TX`;
+          }
+        } catch (error) {
+          // Skip if database fetch fails
+        }
+      }
+    }
+    
+    // If no metadata found, check if it's a service area page
     if (!metadata && pathParts.length === 2 && pathParts[0] === 'service-area') {
       const slug = pathParts[1];
       
@@ -123,6 +169,7 @@ export function createMetadataInjector(storage: IStorage) {
             path,
             title: `${serviceArea.cityName} Plumber | Licensed Plumbing Services | Texas`,
             description: serviceArea.metaDescription || `Trusted plumbing services in ${serviceArea.cityName}, TX. Water heater repair, drain cleaning, emergency plumbing. Licensed plumbers.`,
+            h1: `Professional Plumber in ${serviceArea.cityName}, TX`,
           };
         }
       } catch (error) {
@@ -146,6 +193,7 @@ export function createMetadataInjector(storage: IStorage) {
             path,
             title: post.title,
             description: post.metaDescription || post.excerpt || `Read about ${post.title} from Economy Plumbing.`,
+            h1: post.h1 || post.title, // Use custom H1 or fall back to title
           };
         }
       } catch (error) {
@@ -196,7 +244,7 @@ export function createMetadataInjector(storage: IStorage) {
         
         const html = Buffer.concat(chunks).toString('utf-8');
         if (html.includes('<!DOCTYPE html>')) {
-          const injected = injectMetadata(html, metadata!.title, metadata!.description, canonical);
+          const injected = injectMetadata(html, metadata!.title, metadata!.description, canonical, metadata!.h1);
           return originalEnd.call(this, injected, 'utf-8', callback);
         }
       }
@@ -208,13 +256,13 @@ export function createMetadataInjector(storage: IStorage) {
     res.send = function(data: any): Response {
       // Handle string HTML
       if (typeof data === 'string' && data.includes('<!DOCTYPE html>')) {
-        data = injectMetadata(data, metadata!.title, metadata!.description, canonical);
+        data = injectMetadata(data, metadata!.title, metadata!.description, canonical, metadata!.h1);
       }
       // Handle Buffer HTML
       else if (Buffer.isBuffer(data)) {
         const str = data.toString('utf-8');
         if (str.includes('<!DOCTYPE html>')) {
-          data = Buffer.from(injectMetadata(str, metadata!.title, metadata!.description, canonical));
+          data = Buffer.from(injectMetadata(str, metadata!.title, metadata!.description, canonical, metadata!.h1));
         }
       }
       
