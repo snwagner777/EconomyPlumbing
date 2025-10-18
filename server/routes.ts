@@ -642,6 +642,9 @@ ${productUrls}
       // Notify search engines about new page
       notifySearchEnginesNewPage('blog post');
       
+      // Invalidate SSR cache (new content published)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.status(201).json(newPost);
     } catch (error) {
       console.error('[Blog] Error creating blog post:', error);
@@ -2987,6 +2990,10 @@ ${rssItems}
       const updates = insertTrackingNumberSchema.partial().parse(req.body);
       
       const trackingNumber = await storage.updateTrackingNumber(id, updates);
+      
+      // Invalidate SSR cache (tracking numbers changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      
       res.json({ trackingNumber });
     } catch (error: any) {
       console.error("[Tracking Numbers] Error updating tracking number:", error);

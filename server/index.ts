@@ -421,11 +421,17 @@ async function refreshReviewsPeriodically() {
   const { isCrawler, renderPageForCrawler } = await import("./lib/ssrRenderer");
   
   // SSR Cache: In-memory cache for rendered HTML and tracking numbers
+  // Event-driven invalidation - cache persists until content changes
   const ssrCache = {
-    trackingNumbers: { data: null as any[] | null, timestamp: 0 },
-    html: new Map<string, { html: string; timestamp: number }>(),
-    TRACKING_TTL: 5 * 60 * 1000, // 5 minutes
-    HTML_TTL: 60 * 60 * 1000, // 1 hour
+    trackingNumbers: { data: null as any[] | null },
+    html: new Map<string, string>(),
+  };
+  
+  // Global cache invalidation function
+  global.invalidateSSRCache = () => {
+    ssrCache.html.clear();
+    ssrCache.trackingNumbers.data = null;
+    log('[SSR Cache] Cache invalidated - will regenerate on next crawler visit');
   };
   
   app.use(async (req: Request, res: Response, next: NextFunction) => {
@@ -445,27 +451,25 @@ async function refreshReviewsPeriodically() {
       try {
         // Cache key based on path + crawler source
         const cacheKey = `${requestPath}:${crawlerInfo.source || 'default'}`;
-        const now = Date.now();
         
-        // Check HTML cache first
+        // Check HTML cache first (persists until invalidated)
         const cachedHTML = ssrCache.html.get(cacheKey);
-        if (cachedHTML && (now - cachedHTML.timestamp) < ssrCache.HTML_TTL) {
+        if (cachedHTML) {
           log(`[SSR Cache] Serving cached HTML for ${cacheKey}`);
-          return res.status(200).set({ "Content-Type": "text/html" }).send(cachedHTML.html);
+          return res.status(200).set({ "Content-Type": "text/html" }).send(cachedHTML);
         }
         
         // Read the base index.html (cached by Node.js)
         const indexPath = path.resolve(import.meta.dirname, "..", "client", "index.html");
         const baseHTML = await fs.promises.readFile(indexPath, "utf-8");
         
-        // Get crawler-specific phone number (with caching)
+        // Get crawler-specific phone number (cached until invalidated)
         let phoneNumber: string | undefined;
         if (crawlerInfo.source) {
-          // Check tracking numbers cache
-          if (!ssrCache.trackingNumbers.data || (now - ssrCache.trackingNumbers.timestamp) > ssrCache.TRACKING_TTL) {
-            log(`[SSR Cache] Refreshing tracking numbers cache`);
+          // Load tracking numbers if not cached
+          if (!ssrCache.trackingNumbers.data) {
+            log(`[SSR Cache] Loading tracking numbers into cache`);
             ssrCache.trackingNumbers.data = await storage.getAllTrackingNumbers();
-            ssrCache.trackingNumbers.timestamp = now;
           }
           
           const trackingConfig = ssrCache.trackingNumbers.data.find((tn: any) => 
@@ -480,8 +484,8 @@ async function refreshReviewsPeriodically() {
         const renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
         
         if (renderedHTML) {
-          // Cache the rendered HTML
-          ssrCache.html.set(cacheKey, { html: renderedHTML, timestamp: now });
+          // Cache the rendered HTML (persists until content changes)
+          ssrCache.html.set(cacheKey, renderedHTML);
           log(`[SSR Cache] Generated and cached HTML for ${cacheKey}`);
           
           return res.status(200).set({ "Content-Type": "text/html" }).send(renderedHTML);
