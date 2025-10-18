@@ -76,6 +76,7 @@ export default function PermitResolution() {
         { title: "Gas Line Services", path: "/gas-line-services" },
         { title: "Backflow Testing", path: "/backflow" }
       ]}
+      blogCategory="Maintenance"
     />
   );
 }

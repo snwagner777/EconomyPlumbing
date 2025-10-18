@@ -76,6 +76,7 @@ export default function GasLeakDetection() {
       ]}
       reviewsCategory="gas"
       reviewsTitle="Gas Leak Detection Customer Reviews"
+      blogCategory="Gas Services"
     />
   );
 }

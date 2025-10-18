@@ -76,6 +76,7 @@ export default function SewagePumpServices() {
       ]}
       reviewsCategory="sewer"
       reviewsTitle="Sump & Sewage Pump Customer Reviews"
+      blogCategory="Maintenance"
     />
   );
 }

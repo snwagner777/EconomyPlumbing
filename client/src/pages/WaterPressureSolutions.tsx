@@ -76,6 +76,7 @@ export default function WaterPressureSolutions() {
       ]}
       reviewsCategory="pipe"
       reviewsTitle="Water Pressure Customer Reviews"
+      blogCategory="Maintenance"
     />
   );
 }

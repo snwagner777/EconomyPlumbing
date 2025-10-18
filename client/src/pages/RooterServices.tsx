@@ -76,6 +76,7 @@ export default function RooterServices() {
       ]}
       reviewsCategory="drain"
       reviewsTitle="Rooter Service Customer Reviews"
+      blogCategory="Drain Cleaning"
     />
   );
 }

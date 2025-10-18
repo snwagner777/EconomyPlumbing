@@ -78,6 +78,7 @@ export default function HydroJetting() {
       ]}
       reviewsCategory="drain"
       reviewsTitle="Hydro Jetting Customer Reviews"
+      blogCategory="Drain Cleaning"
     />
   );
 }

@@ -42,6 +42,7 @@ import fs from "fs";
 import { ObjectStorageService } from "./objectStorage";
 import { analyzeProductionPhoto } from "./lib/productionPhotoAnalyzer";
 import OpenAI from "openai";
+import { generateH1FromTitle } from "./lib/generateH1";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reference: javascript_object_storage integration - public file serving endpoint
@@ -439,6 +440,7 @@ ${productUrls}
               jpegFeaturedImage,
               author: "Economy Plumbing",
               published: true,
+              h1: generateH1FromTitle(blogPost.title),
             });
             
             // Update with historic date and metadata
@@ -650,7 +652,13 @@ ${productUrls}
   // Create new blog post (triggers sitemap ping)
   app.post("/api/blog", async (req, res) => {
     try {
-      const newPost = await storage.createBlogPost(req.body);
+      // Automatically generate H1 if not provided
+      const postData = {
+        ...req.body,
+        h1: req.body.h1 || generateH1FromTitle(req.body.title)
+      };
+      
+      const newPost = await storage.createBlogPost(postData);
       
       // Notify search engines about new page
       notifySearchEnginesNewPage('blog post');
@@ -2601,6 +2609,7 @@ ${rssItems}
             featuredImage,
             author: "Economy Plumbing",
             published: true,
+            h1: generateH1FromTitle(scheduledBlog.title),
           });
           
           // Update blog post with schedule data
@@ -3964,6 +3973,7 @@ Write in a professional yet friendly tone.`;
         author: 'Economy Plumbing Services',
         category: photo.category || 'General',
         published: true,
+        h1: generateH1FromTitle(title),
       });
 
       // Mark photo as used
