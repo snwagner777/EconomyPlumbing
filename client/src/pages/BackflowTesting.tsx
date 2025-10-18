@@ -7,7 +7,7 @@ export default function BackflowTesting() {
     <ServicePage
       title="Backflow Testing Austin TX | State Certified Annual"
       metaDescription="State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests. Call (512) 368-9159."
-      canonical="https://www.plumbersthatcare.com/backflow-testing"
+      canonical="https://www.plumbersthatcare.com/backflow"
       heroImage={backflowImage}
       heroImageAlt="Certified backflow testing and prevention service in Central Texas"
       heroTitle="Backflow Testing & Prevention"

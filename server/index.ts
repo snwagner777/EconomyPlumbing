@@ -13,6 +13,7 @@ import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { setupOAuth } from "./replitAuth";
+import { createMetadataInjector } from "./lib/metadataInjector";
 
 const app = express();
 
@@ -465,6 +466,11 @@ async function refreshReviewsPeriodically() {
       next();
     });
   }
+  
+  // Server-side metadata injection
+  // Injects title, description, and canonical tags into initial HTML
+  // This ensures crawlers see correct metadata WITHOUT JavaScript execution
+  app.use(createMetadataInjector(storage));
   
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route

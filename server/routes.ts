@@ -107,6 +107,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const baseUrl = "https://www.plumbersthatcare.com";
       const now = new Date().toISOString().split('T')[0];
       
+      // URLs that redirect (should be excluded from sitemap)
+      const redirectUrls = new Set([
+        '/hydro-jetting-drainage-solutions',
+        '/water-heater-experts-in-austin',
+        '/sewer-line-repairs-and-replacements-in-austin-tx',
+        '/sewer-lines-repairs-and-replacements-in-austin',
+        '/20-gas-pipe-repair',
+        '/the-importance-of-water-heater-maintenance-for-austin-homeowners',
+        '/why-rheem',
+      ]);
+      
       // Static pages with priorities
       const staticPages = [
         { url: '', lastmod: now, changefreq: 'weekly', priority: '1.0' },
@@ -186,7 +197,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   </url>`).join('\n');
       
       // Generate blog post URLs (sorted by newest first)
+      // Exclude posts that have 301 redirects set up
       const blogUrls = posts
+        .filter(post => !redirectUrls.has(`/${post.slug}`))
         .sort((a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime())
         .map(post => {
           const postDate = new Date(post.publishDate).toISOString().split('T')[0];
