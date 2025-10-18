@@ -182,6 +182,28 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// Normalize trailing slashes - 301 redirect all trailing-slash URLs to non-slash version
+// This ensures crawlers (Ahrefs, Google, etc.) always hit SSR cache
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const path = req.path;
+  
+  // Skip if it's just the root "/" or if it doesn't have a trailing slash
+  if (path === '/' || !path.endsWith('/')) {
+    return next();
+  }
+  
+  // Remove trailing slash
+  const cleanPath = path.slice(0, -1);
+  
+  // Build redirect URL preserving query parameters
+  const redirectUrl = req.query && Object.keys(req.query).length > 0
+    ? `${cleanPath}?${new URLSearchParams(req.query as any).toString()}`
+    : cleanPath;
+  
+  log(`301 Redirect: ${path} → ${cleanPath} (trailing slash normalization)`);
+  return res.redirect(301, redirectUrl);
+});
+
 // Stripe webhook must use raw body for signature verification
 // This must come BEFORE express.json() middleware
 app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
