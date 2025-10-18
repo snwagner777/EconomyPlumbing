@@ -110,6 +110,7 @@ export function createMetadataInjector(storage: IStorage) {
           title: dbMetadata.title,
           description: dbMetadata.description,
           canonical: dbMetadata.canonicalUrl || undefined,
+          h1: dbMetadata.h1 || undefined, // Include H1 from database if available
         };
       }
     } catch (error) {
@@ -120,14 +121,24 @@ export function createMetadataInjector(storage: IStorage) {
     
     // If metadata exists but doesn't have H1, try to generate it based on page type
     if (metadata && !metadata.h1) {
-      // Check for plumber-{city} alias routes
+      // Check for plumber-{city} alias routes (complete list of all 16 alias routes)
       const plumberAliasMap: Record<string, string> = {
         '/plumber-austin': 'austin',
         '/plumber-in-cedar-park--tx': 'cedar-park',
         '/plumber-leander': 'leander',
+        '/round-rock-plumber': 'round-rock',
         '/plumber-georgetown': 'georgetown',
         '/plumber-pflugerville': 'pflugerville',
-        '/round-rock-plumber': 'round-rock',
+        '/plumber-marble-falls': 'marble-falls',
+        '/plumber-burnet': 'burnet',
+        '/plumber-horseshoe-bay': 'horseshoe-bay',
+        '/plumber-kingsland': 'kingsland',
+        '/plumber-granite-shoals': 'granite-shoals',
+        '/plumber-bertram': 'bertram',
+        '/plumber-spicewood': 'spicewood',
+        '/plumber-liberty-hill': 'liberty-hill',
+        '/plumber-buda': 'buda',
+        '/plumber-kyle': 'kyle',
       };
       
       if (plumberAliasMap[path]) {
