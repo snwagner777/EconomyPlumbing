@@ -175,17 +175,14 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Block access to source files and development paths
+// Note: In development, Vite serves /src/* files, so don't block them
 app.use((req: Request, res: Response, next: NextFunction) => {
   const path = req.path;
   
-  // Block access to source code files and directories
-  if (path.startsWith('/src/') || 
-      path.startsWith('/server/') ||
-      path.startsWith('/client/') ||
+  // Only block server-side source files and sensitive directories
+  // Allow /src/* in development for Vite
+  if (path.startsWith('/server/') ||
       path.startsWith('/node_modules/') ||
-      path.endsWith('.tsx') ||
-      path.endsWith('.ts') ||
-      path.endsWith('.jsx') ||
       path.endsWith('.env')) {
     log(`403 Forbidden: Blocked access to source file ${path}`);
     return res.status(403).send('Forbidden');
