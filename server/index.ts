@@ -14,25 +14,6 @@ import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { setupOAuth } from "./replitAuth";
 
-/**
- * Global SSR Cache Invalidation System
- * 
- * When content changes (blog posts, tracking numbers, page metadata, success stories),
- * this function clears all SSR caches so crawlers see fresh content on their next visit.
- * 
- * Usage in routes/background jobs:
- *   if (global.invalidateSSRCache) global.invalidateSSRCache();
- * 
- * Benefits:
- * - Cache persists indefinitely until content changes (optimal performance)
- * - No time-based expiration needed
- * - PageSpeed scores improve (zero rendering overhead after first request)
- * - Crawlers always see up-to-date content
- */
-declare global {
-  var invalidateSSRCache: (() => void) | undefined;
-}
-
 const app = express();
 
 // Enable gzip/brotli compression for all responses
@@ -211,7 +192,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Normalize trailing slashes - 301 redirect all trailing-slash URLs to non-slash version
-// This ensures crawlers (Ahrefs, Google, etc.) always hit SSR cache
+// This prevents duplicate content issues in SEO tools
 app.use((req: Request, res: Response, next: NextFunction) => {
   const path = req.path;
   
@@ -484,153 +465,6 @@ async function refreshReviewsPeriodically() {
       next();
     });
   }
-  
-  // Server-Side Rendering (SSR) for crawlers (comprehensive with caching)
-  // Static pages defined in lib/ssrRenderer.ts + on-demand blog posts
-  const { isCrawler, renderPageForCrawler, generateBlogPostSSR, ssrPages } = await import("./lib/ssrRenderer");
-  
-  // SSR Cache: In-memory cache for rendered HTML and tracking numbers
-  // Event-driven invalidation - cache persists until content changes
-  const ssrCache = {
-    trackingNumbers: { data: null as any[] | null },
-    html: new Map<string, string>(),
-  };
-  
-  // Global cache invalidation function
-  global.invalidateSSRCache = (specificPath?: string) => {
-    if (specificPath) {
-      // Clear cache for specific page (e.g., when a blog post is updated)
-      const keys = Array.from(ssrCache.html.keys());
-      for (const key of keys) {
-        if (key.startsWith(specificPath + ':')) {
-          ssrCache.html.delete(key);
-          log(`[SSR Cache] Invalidated cache for ${key}`);
-        }
-      }
-    } else {
-      // Clear all cache
-      ssrCache.html.clear();
-      ssrCache.trackingNumbers.data = null;
-      log('[SSR Cache] Full cache invalidated - will regenerate on next crawler visit');
-    }
-  };
-  
-  // Get list of SSR-enabled paths for fast lookup
-  const ssrPaths = new Set(ssrPages.map(p => p.path));
-  
-  // Paths that should NOT use SSR (store/shopping pages, API, admin, etc.)
-  const excludedPaths = [
-    '/store', '/shop', '/api/', '/admin/', '/signin', 
-    '/category/', '/attached_assets/', '/rss.xml'
-  ];
-  
-  app.use(async (req: Request, res: Response, next: NextFunction) => {
-    const requestPath = req.path;
-    
-    // Skip excluded paths (store, admin, API, etc.)
-    if (excludedPaths.some(excluded => requestPath.startsWith(excluded))) {
-      return next();
-    }
-    
-    // Check if this is a static SSR page OR potentially a blog post
-    const isStaticSSRPage = ssrPaths.has(requestPath);
-    const isPotentialBlogPost = requestPath.match(/^\/[a-z0-9-]+$/); // Simple slug pattern
-    
-    // OPTIMIZATION: Skip crawler check if not SSR-eligible
-    if (!isStaticSSRPage && !isPotentialBlogPost) {
-      return next();
-    }
-    
-    // Only check User-Agent for pages that have SSR enabled
-    const userAgent = req.get('user-agent') || '';
-    const crawlerInfo = isCrawler(userAgent);
-    
-    // Apply SSR only for crawlers on SSR-enabled pages
-    if (crawlerInfo.isCrawler) {
-      try {
-        // Cache key based on path + crawler source
-        const cacheKey = `${requestPath}:${crawlerInfo.source || 'default'}`;
-        
-        // Check HTML cache first (persists until invalidated)
-        const cachedHTML = ssrCache.html.get(cacheKey);
-        if (cachedHTML) {
-          log(`[SSR Cache] Serving cached HTML for ${cacheKey}`);
-          return res.status(200).set({ "Content-Type": "text/html" }).send(cachedHTML);
-        }
-        
-        // Read the base index.html (cached by Node.js)
-        const indexPath = path.resolve(import.meta.dirname, "..", "client", "index.html");
-        const baseHTML = await fs.promises.readFile(indexPath, "utf-8");
-        
-        // Get crawler-specific phone number (cached until invalidated)
-        let phoneNumber: string | undefined;
-        if (crawlerInfo.source) {
-          // Load tracking numbers if not cached
-          if (!ssrCache.trackingNumbers.data) {
-            log(`[SSR Cache] Loading tracking numbers into cache`);
-            ssrCache.trackingNumbers.data = await storage.getAllTrackingNumbers();
-          }
-          
-          const trackingConfig = ssrCache.trackingNumbers.data.find((tn: any) => 
-            tn.channelKey?.toLowerCase() === crawlerInfo.source?.toLowerCase()
-          );
-          if (trackingConfig && trackingConfig.isActive) {
-            phoneNumber = trackingConfig.displayNumber;
-          }
-        }
-        
-        // Try rendering static page first
-        let renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
-        let pageExists = !!renderedHTML;
-        
-        // If not a static page, try generating blog post SSR
-        if (!renderedHTML && isPotentialBlogPost) {
-          const slug = requestPath.substring(1); // Remove leading slash
-          const blogPostConfig = await generateBlogPostSSR(slug, storage);
-          
-          if (blogPostConfig) {
-            renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber, blogPostConfig);
-            pageExists = true;
-            log(`[SSR] Generated on-demand blog post SSR for /${slug}`);
-          }
-        }
-        
-        if (renderedHTML && pageExists) {
-          // Cache the rendered HTML (persists until content changes)
-          ssrCache.html.set(cacheKey, renderedHTML);
-          log(`[SSR Cache] Generated and cached HTML for ${cacheKey}`);
-          
-          return res.status(200).set({ "Content-Type": "text/html" }).send(renderedHTML);
-        }
-        
-        // If we tried SSR but page doesn't exist, return 404 for crawlers
-        if (!pageExists && (isStaticSSRPage || isPotentialBlogPost)) {
-          log(`[SSR] Page not found for crawler: ${requestPath}`);
-          
-          // Return a proper 404 HTML page for crawlers
-          const notFoundHTML = baseHTML
-            .replace(/<title>.*?<\/title>/, '<title>Page Not Found | Economy Plumbing</title>')
-            .replace(/<meta name="description"[^>]*>/i, '<meta name="description" content="The page you are looking for could not be found." />')
-            .replace('<div id="root"></div>', `
-              <div id="root">
-                <div style="padding: 64px 16px; text-align: center;">
-                  <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 16px;">404 - Page Not Found</h1>
-                  <p style="font-size: 20px; color: #666; margin-bottom: 32px;">The page you are looking for does not exist.</p>
-                  <a href="/" style="color: #2563eb; text-decoration: underline;">Return to Homepage</a>
-                </div>
-              </div>
-            `);
-          
-          return res.status(404).set({ "Content-Type": "text/html" }).send(notFoundHTML);
-        }
-      } catch (error) {
-        log(`[SSR] Error rendering page: ${error}`);
-        // Fall through to normal handling on error
-      }
-    }
-    
-    next();
-  });
   
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
