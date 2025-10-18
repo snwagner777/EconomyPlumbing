@@ -439,10 +439,10 @@ async function refreshReviewsPeriodically() {
         if (crawlerInfo.source) {
           const trackingNumbers = await storage.getAllTrackingNumbers();
           const trackingConfig = trackingNumbers.find((tn: any) => 
-            tn.source?.toLowerCase() === crawlerInfo.source?.toLowerCase()
+            tn.channelKey?.toLowerCase() === crawlerInfo.source?.toLowerCase()
           );
-          if (trackingConfig && trackingConfig.enabled) {
-            phoneNumber = trackingConfig.phoneNumber;
+          if (trackingConfig && trackingConfig.isActive) {
+            phoneNumber = trackingConfig.displayNumber;
             log(`[SSR] Using ${crawlerInfo.source} tracking number for crawler: ${phoneNumber}`);
           }
         }
