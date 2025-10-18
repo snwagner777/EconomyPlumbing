@@ -32,7 +32,8 @@ export default function Footer() {
                 aria-label="Visit our Facebook page"
                 data-testid="link-facebook"
               >
-                <Facebook className="w-6 h-6" />
+                <Facebook className="w-6 h-6" aria-hidden="true" />
+                <span className="sr-only">Visit our Facebook page</span>
               </a>
               <a 
                 href="https://www.instagram.com/plumbersthatcare_atx" 
@@ -42,7 +43,8 @@ export default function Footer() {
                 aria-label="Visit our Instagram page"
                 data-testid="link-instagram"
               >
-                <Instagram className="w-6 h-6" />
+                <Instagram className="w-6 h-6" aria-hidden="true" />
+                <span className="sr-only">Visit our Instagram page</span>
               </a>
               <a 
                 href="https://www.yelp.com/biz/economy-plumbing-services-austin-3" 
@@ -52,7 +54,8 @@ export default function Footer() {
                 aria-label="Visit our Yelp page"
                 data-testid="link-yelp"
               >
-                <SiYelp className="w-6 h-6" />
+                <SiYelp className="w-6 h-6" aria-hidden="true" />
+                <span className="sr-only">Visit our Yelp page</span>
               </a>
               <a 
                 href="https://www.nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/" 
@@ -62,7 +65,8 @@ export default function Footer() {
                 aria-label="Visit our Nextdoor page"
                 data-testid="link-nextdoor"
               >
-                <SiNextdoor className="w-6 h-6" />
+                <SiNextdoor className="w-6 h-6" aria-hidden="true" />
+                <span className="sr-only">Visit our Nextdoor page</span>
               </a>
             </div>
             <div className="flex flex-col gap-2 mt-4">
