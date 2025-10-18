@@ -116,6 +116,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         '/20-gas-pipe-repair',
         '/the-importance-of-water-heater-maintenance-for-austin-homeowners',
         '/why-rheem',
+        '/gas-services', // Redirects to /gas-line-services
+        '/backflow-testing', // Redirects to /backflow
       ]);
       
       // Static pages with priorities
@@ -130,7 +132,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         { url: 'drain-cleaning', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         { url: 'leak-repair', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         { url: 'toilet-faucet', lastmod: now, changefreq: 'monthly', priority: '0.9' },
-        { url: 'gas-services', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         { url: 'backflow', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         { url: 'commercial-plumbing', lastmod: now, changefreq: 'monthly', priority: '0.9' },
         
