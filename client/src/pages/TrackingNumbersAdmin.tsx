@@ -16,13 +16,16 @@ import { useToast } from "@/hooks/use-toast";
 
 // Comprehensive list of channel types for tracking
 const CHANNEL_TYPES = [
+  { category: "None/Custom", options: [
+    { value: "", label: "None (Custom Channel)" },
+  ]},
   { category: "Default", options: [
     { value: "default", label: "Default/Organic Traffic" },
   ]},
   { category: "Paid Advertising", options: [
-    { value: "google", label: "Google Ads" },
-    { value: "bing", label: "Bing Ads" },
-    { value: "facebook", label: "Facebook/Instagram Ads" },
+    { value: "googlebot", label: "Google Ads (+ Googlebot)" },
+    { value: "bingbot", label: "Bing Ads (+ Bingbot)" },
+    { value: "facebookbot", label: "Facebook/Instagram Ads (+ FB Crawler)" },
     { value: "youtube", label: "YouTube Ads" },
     { value: "tiktok", label: "TikTok Ads" },
     { value: "linkedin", label: "LinkedIn Ads" },
@@ -349,18 +352,22 @@ export default function TrackingNumbersAdmin() {
                   </p>
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="channelKey">Channel Key (Auto-filled)</Label>
+                  <Label htmlFor="channelKey">
+                    Channel Key {editingNumber.channelKey ? "(Auto-filled)" : "(Custom - Enter Manually)"}
+                  </Label>
                   <Input
                     id="channelKey"
                     value={editingNumber.channelKey}
                     onChange={(e) => setEditingNumber({ ...editingNumber, channelKey: e.target.value })}
                     data-testid="input-channelKey"
-                    placeholder="e.g., google, bing, facebook"
-                    disabled
-                    className="bg-muted"
+                    placeholder="e.g., doorhanger, b2bcard, custom_source"
+                    disabled={editingNumber.channelKey !== ""}
+                    className={editingNumber.channelKey !== "" ? "bg-muted" : ""}
                   />
                   <p className="text-xs text-muted-foreground">
-                    This is automatically set by the dropdown above
+                    {editingNumber.channelKey !== "" 
+                      ? "Select 'None (Custom Channel)' from dropdown to edit manually" 
+                      : "Enter any custom channel key (e.g., doorhanger, radio_ad, etc.)"}
                   </p>
                 </div>
                 <div className="grid gap-2">
