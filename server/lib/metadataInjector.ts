@@ -153,9 +153,11 @@ export function createMetadataInjector(storage: IStorage) {
         const post = posts.find(p => p.slug === slug);
         
         if (post) {
+          // Use post title directly without suffix to avoid overly long titles
+          // Blog titles are already SEO-optimized and descriptive
           metadata = {
             path,
-            title: `${post.title} | Economy Plumbing Blog`,
+            title: post.title,
             description: post.metaDescription || post.excerpt || `Read about ${post.title} from Economy Plumbing.`,
             h1: post.title,
           };
