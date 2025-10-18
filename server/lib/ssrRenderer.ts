@@ -55,6 +55,60 @@ export interface SSRPageConfig {
  * Add new pages here to enable SSR
  */
 export const ssrPages: SSRPageConfig[] = [
+  // Home page
+  {
+    path: '/',
+    title: 'Economy Plumbing Services | Austin & Marble Falls Plumber',
+    description: 'Central Texas\' Best Little Plumbing Company Since 2012. Licensed, insured plumbing services including water heater repair, drain cleaning, emergency plumbing. Call (512) 368-9159!',
+    h1: 'Professional Plumbing Services in Austin & Marble Falls',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumbing Services in Austin & Marble Falls</h1><p class="text-xl mb-8">Economy Plumbing Services provides professional plumbing services across Central Texas. Licensed, insured, and ready to serve you 24/7.</p></div></div>`
+  },
+  
+  // About page
+  {
+    path: '/about',
+    title: 'About Economy Plumbing | Austin & Marble Falls, TX',
+    description: 'Meet Economy Plumbing Services - Central Texas\' trusted plumber since 2012. Licensed, insured, family-owned. Serving Austin & Marble Falls with pride. Call (512) 368-9159!',
+    h1: 'About Economy Plumbing Services',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">About Economy Plumbing Services</h1><p class="text-xl mb-8">Central Texas' Best Little Plumbing Company Since 2012. Family-owned, licensed, and insured plumbing services you can trust.</p></div></div>`
+  },
+  
+  // Contact page
+  {
+    path: '/contact',
+    title: 'Contact Us | Economy Plumbing Services',
+    description: 'Contact Economy Plumbing for service in Austin & Marble Falls, TX. Call (512) 368-9159 for same-day service. Licensed plumbers ready to help 24/7!',
+    h1: 'Contact Economy Plumbing',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Contact Economy Plumbing</h1><p class="text-xl mb-8">Get in touch for professional plumbing services across Central Texas.</p><p class="text-2xl font-bold mb-4">Call us: <a href="tel:5123689159" class="text-primary">(512) 368-9159</a></p></div></div>`
+  },
+  
+  // FAQ page
+  {
+    path: '/faq',
+    title: 'Frequently Asked Questions | Economy Plumbing',
+    description: 'Common plumbing questions answered. Service areas, pricing, emergency service info for Austin & Marble Falls, TX. Licensed plumbers ready to help. Call (512) 368-9159!',
+    h1: 'Frequently Asked Questions',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Frequently Asked Questions</h1><p class="text-xl mb-8">Find answers to common plumbing questions and learn more about our services.</p></div></div>`
+  },
+  
+  // Success Stories page
+  {
+    path: '/success-stories',
+    title: 'Customer Success Stories | Economy Plumbing',
+    description: 'Real plumbing transformations in Austin & Marble Falls, TX. See before/after photos. Read customer reviews. Licensed & insured plumbers. Call (512) 368-9159!',
+    h1: 'Customer Success Stories',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Customer Success Stories</h1><p class="text-xl mb-8">See real transformations from our satisfied customers across Central Texas.</p></div></div>`
+  },
+  
+  // Blog listing page
+  {
+    path: '/blog',
+    title: 'Plumbing Tips & News | Economy Plumbing Blog',
+    description: 'Expert plumbing advice, maintenance tips, industry news from Austin & Marble Falls, TX. Learn from licensed plumbers. Save money on repairs. Call (512) 368-9159!',
+    h1: 'Plumbing Tips & News',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Plumbing Tips & News</h1><p class="text-xl mb-8">Expert advice and helpful tips from Economy Plumbing Services.</p></div></div>`
+  },
+  
   {
     path: '/schedule-appointment',
     title: 'Schedule Your Appointment | Economy Plumbing',
@@ -964,42 +1018,85 @@ export function renderPageForCrawler(
   
   html = html.replace('</head>', `${ogTags}\n  </head>`);
   
-  // Create simple navigation for crawlers (fixes "no outgoing links" and "orphan pages" issues)
-  const crawlerNav = `
-    <nav style="display: none;">
-      <a href="https://www.plumbersthatcare.com/">Home</a>
-      <a href="https://www.plumbersthatcare.com/about">About</a>
-      <a href="https://www.plumbersthatcare.com/contact">Contact</a>
-      <a href="https://www.plumbersthatcare.com/services">Services</a>
-      <a href="https://www.plumbersthatcare.com/water-heater-services">Water Heater Services</a>
-      <a href="https://www.plumbersthatcare.com/drain-cleaning">Drain Cleaning</a>
-      <a href="https://www.plumbersthatcare.com/leak-repair">Leak Repair</a>
-      <a href="https://www.plumbersthatcare.com/toilet-faucet">Toilet & Faucet</a>
-      <a href="https://www.plumbersthatcare.com/gas-services">Gas Services</a>
-      <a href="https://www.plumbersthatcare.com/backflow-testing">Backflow Testing</a>
-      <a href="https://www.plumbersthatcare.com/commercial-plumbing">Commercial Plumbing</a>
-      <a href="https://www.plumbersthatcare.com/emergency-plumbing">Emergency Plumbing</a>
-      <a href="https://www.plumbersthatcare.com/service-area">Service Areas</a>
-      <a href="https://www.plumbersthatcare.com/plumber-austin">Austin</a>
-      <a href="https://www.plumbersthatcare.com/plumber-in-cedar-park--tx">Cedar Park</a>
-      <a href="https://www.plumbersthatcare.com/plumber-leander">Leander</a>
-      <a href="https://www.plumbersthatcare.com/round-rock-plumber">Round Rock</a>
-      <a href="https://www.plumbersthatcare.com/plumber-georgetown">Georgetown</a>
-      <a href="https://www.plumbersthatcare.com/plumber-pflugerville">Pflugerville</a>
-      <a href="https://www.plumbersthatcare.com/plumber-marble-falls">Marble Falls</a>
-      <a href="https://www.plumbersthatcare.com/blog">Blog</a>
-      <a href="https://www.plumbersthatcare.com/store">Store</a>
-      <a href="https://www.plumbersthatcare.com/faq">FAQ</a>
-      <a href="https://www.plumbersthatcare.com/success-stories">Success Stories</a>
-      <a href="https://www.plumbersthatcare.com/schedule-appointment">Schedule Appointment</a>
-      <a href="https://www.plumbersthatcare.com/membership-benefits">VIP Membership</a>
+  // Add navigation for non-JS crawlers
+  // This will be replaced when React hydrates (same links, just different styling)
+  // Standard SPA practice - not cloaking as content is identical
+  const basicNav = `
+    <nav style="background: #f8f9fa; padding: 16px; border-bottom: 1px solid #dee2e6; margin-bottom: 24px;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="margin-bottom: 12px; font-size: 18px; font-weight: bold;">
+          <a href="https://www.plumbersthatcare.com/" style="color: #0066cc; text-decoration: none;">Economy Plumbing Services</a>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 16px; font-size: 14px;">
+          <a href="https://www.plumbersthatcare.com/" style="color: #495057;">Home</a>
+          <a href="https://www.plumbersthatcare.com/about" style="color: #495057;">About</a>
+          <a href="https://www.plumbersthatcare.com/services" style="color: #495057;">Services</a>
+          <a href="https://www.plumbersthatcare.com/service-area" style="color: #495057;">Service Areas</a>
+          <a href="https://www.plumbersthatcare.com/blog" style="color: #495057;">Blog</a>
+          <a href="https://www.plumbersthatcare.com/contact" style="color: #495057;">Contact</a>
+          <a href="https://www.plumbersthatcare.com/schedule-appointment" style="color: #495057;">Schedule</a>
+        </div>
+      </div>
     </nav>
   `;
   
-  // Inject navigation and page content into body for crawlers
+  const basicFooter = `
+    <footer style="background: #1a202c; color: #e2e8f0; padding: 32px 16px; margin-top: 48px;">
+      <div style="max-width: 1200px; margin: 0 auto;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 24px;">
+          <div>
+            <h4 style="color: white; margin-bottom: 12px;">Services</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+              <a href="https://www.plumbersthatcare.com/water-heater-services" style="color: #e2e8f0;">Water Heater Services</a>
+              <a href="https://www.plumbersthatcare.com/drain-cleaning" style="color: #e2e8f0;">Drain Cleaning</a>
+              <a href="https://www.plumbersthatcare.com/leak-repair" style="color: #e2e8f0;">Leak Repair</a>
+              <a href="https://www.plumbersthatcare.com/toilet-faucet" style="color: #e2e8f0;">Toilet & Faucet</a>
+              <a href="https://www.plumbersthatcare.com/gas-services" style="color: #e2e8f0;">Gas Services</a>
+              <a href="https://www.plumbersthatcare.com/backflow-testing" style="color: #e2e8f0;">Backflow Testing</a>
+              <a href="https://www.plumbersthatcare.com/commercial-plumbing" style="color: #e2e8f0;">Commercial Plumbing</a>
+              <a href="https://www.plumbersthatcare.com/emergency-plumbing" style="color: #e2e8f0;">Emergency Plumbing</a>
+              <a href="https://www.plumbersthatcare.com/services" style="color: #e2e8f0;">View All Services</a>
+            </div>
+          </div>
+          <div>
+            <h4 style="color: white; margin-bottom: 12px;">Service Areas</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+              <a href="https://www.plumbersthatcare.com/plumber-austin" style="color: #e2e8f0;">Austin</a>
+              <a href="https://www.plumbersthatcare.com/plumber-in-cedar-park--tx" style="color: #e2e8f0;">Cedar Park</a>
+              <a href="https://www.plumbersthatcare.com/plumber-leander" style="color: #e2e8f0;">Leander</a>
+              <a href="https://www.plumbersthatcare.com/round-rock-plumber" style="color: #e2e8f0;">Round Rock</a>
+              <a href="https://www.plumbersthatcare.com/plumber-georgetown" style="color: #e2e8f0;">Georgetown</a>
+              <a href="https://www.plumbersthatcare.com/plumber-pflugerville" style="color: #e2e8f0;">Pflugerville</a>
+              <a href="https://www.plumbersthatcare.com/plumber-marble-falls" style="color: #e2e8f0;">Marble Falls</a>
+              <a href="https://www.plumbersthatcare.com/service-area" style="color: #e2e8f0;">View All Areas</a>
+            </div>
+          </div>
+          <div>
+            <h4 style="color: white; margin-bottom: 12px;">Company</h4>
+            <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px;">
+              <a href="https://www.plumbersthatcare.com/about" style="color: #e2e8f0;">About Us</a>
+              <a href="https://www.plumbersthatcare.com/blog" style="color: #e2e8f0;">Blog</a>
+              <a href="https://www.plumbersthatcare.com/success-stories" style="color: #e2e8f0;">Success Stories</a>
+              <a href="https://www.plumbersthatcare.com/store" style="color: #e2e8f0;">Store</a>
+              <a href="https://www.plumbersthatcare.com/contact" style="color: #e2e8f0;">Contact</a>
+              <a href="https://www.plumbersthatcare.com/faq" style="color: #e2e8f0;">FAQ</a>
+              <a href="https://www.plumbersthatcare.com/membership-benefits" style="color: #e2e8f0;">VIP Membership</a>
+              <a href="https://www.plumbersthatcare.com/schedule-appointment" style="color: #e2e8f0;">Schedule Appointment</a>
+            </div>
+          </div>
+        </div>
+        <div style="border-top: 1px solid #4a5568; padding-top: 16px; text-align: center; font-size: 14px;">
+          <p>© ${new Date().getFullYear()} Economy Plumbing Services | <a href="https://www.plumbersthatcare.com/privacy-policy" style="color: #e2e8f0;">Privacy Policy</a></p>
+        </div>
+      </div>
+    </footer>
+  `;
+  
+  // Inject navigation, content, and footer for non-JS crawlers
+  // React will replace all of this when JS loads (standard SPA hydration)
   html = html.replace(
     '<div id="root"></div>',
-    `<div id="root">${crawlerNav}${config.content}</div>`
+    `<div id="root">${basicNav}${config.content}${basicFooter}</div>`
   );
   
   return html;
