@@ -435,9 +435,9 @@ async function refreshReviewsPeriodically() {
     });
   }
   
-  // Server-Side Rendering (SSR) for crawlers - Phase 1 (with caching)
-  // Only renders /schedule-appointment for testing
-  const { isCrawler, renderPageForCrawler } = await import("./lib/ssrRenderer");
+  // Server-Side Rendering (SSR) for crawlers (config-based with caching)
+  // Add pages to ssrPages array in lib/ssrRenderer.ts to enable SSR
+  const { isCrawler, renderPageForCrawler, ssrPages } = await import("./lib/ssrRenderer");
   
   // SSR Cache: In-memory cache for rendered HTML and tracking numbers
   // Event-driven invalidation - cache persists until content changes
@@ -453,11 +453,14 @@ async function refreshReviewsPeriodically() {
     log('[SSR Cache] Cache invalidated - will regenerate on next crawler visit');
   };
   
+  // Get list of SSR-enabled paths for fast lookup
+  const ssrPaths = new Set(ssrPages.map(p => p.path));
+  
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     const requestPath = req.path;
     
     // OPTIMIZATION: Skip crawler check entirely for non-SSR pages (faster for 99% of requests)
-    if (requestPath !== '/schedule-appointment') {
+    if (!ssrPaths.has(requestPath)) {
       return next();
     }
     
