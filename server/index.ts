@@ -435,9 +435,9 @@ async function refreshReviewsPeriodically() {
     });
   }
   
-  // Server-Side Rendering (SSR) for crawlers (config-based with caching)
-  // Add pages to ssrPages array in lib/ssrRenderer.ts to enable SSR
-  const { isCrawler, renderPageForCrawler, ssrPages } = await import("./lib/ssrRenderer");
+  // Server-Side Rendering (SSR) for crawlers (comprehensive with caching)
+  // Static pages defined in lib/ssrRenderer.ts + on-demand blog posts
+  const { isCrawler, renderPageForCrawler, generateBlogPostSSR, ssrPages } = await import("./lib/ssrRenderer");
   
   // SSR Cache: In-memory cache for rendered HTML and tracking numbers
   // Event-driven invalidation - cache persists until content changes
@@ -447,20 +447,47 @@ async function refreshReviewsPeriodically() {
   };
   
   // Global cache invalidation function
-  global.invalidateSSRCache = () => {
-    ssrCache.html.clear();
-    ssrCache.trackingNumbers.data = null;
-    log('[SSR Cache] Cache invalidated - will regenerate on next crawler visit');
+  global.invalidateSSRCache = (specificPath?: string) => {
+    if (specificPath) {
+      // Clear cache for specific page (e.g., when a blog post is updated)
+      const keys = Array.from(ssrCache.html.keys());
+      for (const key of keys) {
+        if (key.startsWith(specificPath + ':')) {
+          ssrCache.html.delete(key);
+          log(`[SSR Cache] Invalidated cache for ${key}`);
+        }
+      }
+    } else {
+      // Clear all cache
+      ssrCache.html.clear();
+      ssrCache.trackingNumbers.data = null;
+      log('[SSR Cache] Full cache invalidated - will regenerate on next crawler visit');
+    }
   };
   
   // Get list of SSR-enabled paths for fast lookup
   const ssrPaths = new Set(ssrPages.map(p => p.path));
   
+  // Paths that should NOT use SSR (store/shopping pages, API, admin, etc.)
+  const excludedPaths = [
+    '/store', '/shop', '/api/', '/admin/', '/signin', 
+    '/category/', '/attached_assets/', '/rss.xml'
+  ];
+  
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     const requestPath = req.path;
     
-    // OPTIMIZATION: Skip crawler check entirely for non-SSR pages (faster for 99% of requests)
-    if (!ssrPaths.has(requestPath)) {
+    // Skip excluded paths (store, admin, API, etc.)
+    if (excludedPaths.some(excluded => requestPath.startsWith(excluded))) {
+      return next();
+    }
+    
+    // Check if this is a static SSR page OR potentially a blog post
+    const isStaticSSRPage = ssrPaths.has(requestPath);
+    const isPotentialBlogPost = requestPath.match(/^\/[a-z0-9-]+$/); // Simple slug pattern
+    
+    // OPTIMIZATION: Skip crawler check if not SSR-eligible
+    if (!isStaticSSRPage && !isPotentialBlogPost) {
       return next();
     }
     
@@ -502,15 +529,49 @@ async function refreshReviewsPeriodically() {
           }
         }
         
-        // Render page with metadata and crawler-specific phone number
-        const renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
+        // Try rendering static page first
+        let renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
+        let pageExists = !!renderedHTML;
         
-        if (renderedHTML) {
+        // If not a static page, try generating blog post SSR
+        if (!renderedHTML && isPotentialBlogPost) {
+          const slug = requestPath.substring(1); // Remove leading slash
+          const blogPostConfig = await generateBlogPostSSR(slug, storage);
+          
+          if (blogPostConfig) {
+            renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber, blogPostConfig);
+            pageExists = true;
+            log(`[SSR] Generated on-demand blog post SSR for /${slug}`);
+          }
+        }
+        
+        if (renderedHTML && pageExists) {
           // Cache the rendered HTML (persists until content changes)
           ssrCache.html.set(cacheKey, renderedHTML);
           log(`[SSR Cache] Generated and cached HTML for ${cacheKey}`);
           
           return res.status(200).set({ "Content-Type": "text/html" }).send(renderedHTML);
+        }
+        
+        // If we tried SSR but page doesn't exist, return 404 for crawlers
+        if (!pageExists && (isStaticSSRPage || isPotentialBlogPost)) {
+          log(`[SSR] Page not found for crawler: ${requestPath}`);
+          
+          // Return a proper 404 HTML page for crawlers
+          const notFoundHTML = baseHTML
+            .replace(/<title>.*?<\/title>/, '<title>Page Not Found | Economy Plumbing</title>')
+            .replace(/<meta name="description"[^>]*>/i, '<meta name="description" content="The page you are looking for could not be found." />')
+            .replace('<div id="root"></div>', `
+              <div id="root">
+                <div style="padding: 64px 16px; text-align: center;">
+                  <h1 style="font-size: 48px; font-weight: bold; margin-bottom: 16px;">404 - Page Not Found</h1>
+                  <p style="font-size: 20px; color: #666; margin-bottom: 32px;">The page you are looking for does not exist.</p>
+                  <a href="/" style="color: #2563eb; text-decoration: underline;">Return to Homepage</a>
+                </div>
+              </div>
+            `);
+          
+          return res.status(404).set({ "Content-Type": "text/html" }).send(notFoundHTML);
         }
       } catch (error) {
         log(`[SSR] Error rendering page: ${error}`);
