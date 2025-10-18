@@ -105,8 +105,28 @@ export function createMetadataInjector(storage: IStorage) {
       // Database error - continue without metadata
     }
     
-    // If no metadata found, check if it's a blog post (single-level path)
+    // If no metadata found, check if it's a service area page
     const pathParts = path.split('/').filter(Boolean);
+    if (!metadata && pathParts.length === 2 && pathParts[0] === 'service-area') {
+      const slug = pathParts[1];
+      
+      // Try to fetch service area from database
+      try {
+        const serviceArea = await storage.getServiceAreaBySlug(slug);
+        
+        if (serviceArea) {
+          metadata = {
+            path,
+            title: `${serviceArea.cityName} Plumber | Licensed Plumbing Services | Texas`,
+            description: serviceArea.metaDescription || `Trusted plumbing services in ${serviceArea.cityName}, TX. Water heater repair, drain cleaning, emergency plumbing. Licensed plumbers.`,
+          };
+        }
+      } catch (error) {
+        // If database fetch fails, skip metadata injection for this service area
+      }
+    }
+    
+    // If no metadata found, check if it's a blog post (single-level path)
     if (!metadata && pathParts.length === 1) {
       const slug = pathParts[0];
       
