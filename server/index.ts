@@ -416,9 +416,17 @@ async function refreshReviewsPeriodically() {
     });
   }
   
-  // Server-Side Rendering (SSR) for crawlers - Phase 1
+  // Server-Side Rendering (SSR) for crawlers - Phase 1 (with caching)
   // Only renders /schedule-appointment for testing
   const { isCrawler, renderPageForCrawler } = await import("./lib/ssrRenderer");
+  
+  // SSR Cache: In-memory cache for rendered HTML and tracking numbers
+  const ssrCache = {
+    trackingNumbers: { data: null as any[] | null, timestamp: 0 },
+    html: new Map<string, { html: string; timestamp: number }>(),
+    TRACKING_TTL: 5 * 60 * 1000, // 5 minutes
+    HTML_TTL: 60 * 60 * 1000, // 1 hour
+  };
   
   app.use(async (req: Request, res: Response, next: NextFunction) => {
     const requestPath = req.path;
@@ -435,20 +443,36 @@ async function refreshReviewsPeriodically() {
     // Apply SSR only for crawlers on SSR-enabled pages
     if (crawlerInfo.isCrawler) {
       try {
-        // Read the base index.html
+        // Cache key based on path + crawler source
+        const cacheKey = `${requestPath}:${crawlerInfo.source || 'default'}`;
+        const now = Date.now();
+        
+        // Check HTML cache first
+        const cachedHTML = ssrCache.html.get(cacheKey);
+        if (cachedHTML && (now - cachedHTML.timestamp) < ssrCache.HTML_TTL) {
+          log(`[SSR Cache] Serving cached HTML for ${cacheKey}`);
+          return res.status(200).set({ "Content-Type": "text/html" }).send(cachedHTML.html);
+        }
+        
+        // Read the base index.html (cached by Node.js)
         const indexPath = path.resolve(import.meta.dirname, "..", "client", "index.html");
         const baseHTML = await fs.promises.readFile(indexPath, "utf-8");
         
-        // Get crawler-specific phone number from database
+        // Get crawler-specific phone number (with caching)
         let phoneNumber: string | undefined;
         if (crawlerInfo.source) {
-          const trackingNumbers = await storage.getAllTrackingNumbers();
-          const trackingConfig = trackingNumbers.find((tn: any) => 
+          // Check tracking numbers cache
+          if (!ssrCache.trackingNumbers.data || (now - ssrCache.trackingNumbers.timestamp) > ssrCache.TRACKING_TTL) {
+            log(`[SSR Cache] Refreshing tracking numbers cache`);
+            ssrCache.trackingNumbers.data = await storage.getAllTrackingNumbers();
+            ssrCache.trackingNumbers.timestamp = now;
+          }
+          
+          const trackingConfig = ssrCache.trackingNumbers.data.find((tn: any) => 
             tn.channelKey?.toLowerCase() === crawlerInfo.source?.toLowerCase()
           );
           if (trackingConfig && trackingConfig.isActive) {
             phoneNumber = trackingConfig.displayNumber;
-            log(`[SSR] Using ${crawlerInfo.source} tracking number for crawler: ${phoneNumber}`);
           }
         }
         
@@ -456,7 +480,10 @@ async function refreshReviewsPeriodically() {
         const renderedHTML = renderPageForCrawler(requestPath, baseHTML, phoneNumber);
         
         if (renderedHTML) {
-          log(`[SSR] Serving rendered HTML for crawler: ${userAgent.substring(0, 50)}...`);
+          // Cache the rendered HTML
+          ssrCache.html.set(cacheKey, { html: renderedHTML, timestamp: now });
+          log(`[SSR Cache] Generated and cached HTML for ${cacheKey}`);
+          
           return res.status(200).set({ "Content-Type": "text/html" }).send(renderedHTML);
         }
       } catch (error) {
