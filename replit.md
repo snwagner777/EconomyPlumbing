@@ -4,11 +4,26 @@
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business in Austin and Marble Falls, Texas. It provides service information, covered areas, and blog content, alongside an **Ecwid-powered online store** for maintenance memberships and drop-shipped products. The project focuses on improving local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
 
 ## Recent SEO Improvements (October 2025)
-Implemented comprehensive SEO fixes to address SE Ranking audit issues and improve search engine visibility:
+Implemented comprehensive SEO fixes to achieve 91/100 SE Ranking health score and address all critical audit issues:
+
+### Phase 1 - Core Infrastructure (Completed)
 - **Multiple H1 Tags Fixed**: Removed black-hat hidden H1 tag injection from server-side metadata injector
-- **Unique H1 Tags**: Added custom H1 field to blog_posts table; all 141 blog posts now have unique H1 tags that differ from meta titles (e.g., "Austin Water Heater Guide" → "Complete Austin Water Heater Guide")
-- **Internal Linking**: Created RelatedBlogPosts component that automatically links service pages to relevant blog posts by category, solving "no inbound links" issues
-- **3XX Redirects Eliminated**: Updated all external social media links to use canonical URLs with "www" subdomain (Facebook, Instagram, Yelp, Nextdoor)
+- **Unique H1 Tags**: Added custom H1 field to blog_posts table with automated generation via `generateH1FromTitle()` utility
+- **H1 Automation**: All 4 blog creation workflows (manual admin, AI scheduler, historic backfill, photo-to-blog) automatically generate unique H1 tags
+- **Internal Linking**: Created RelatedBlogPosts component that automatically links service pages to relevant blog posts by category
+- **3XX Redirects Eliminated**: Updated all external social media links to use canonical URLs with "www" subdomain
+
+### Phase 2 - Content Optimization (Completed October 18, 2025)
+- **Category Standardization**: Normalized all 141 blog posts to use 6 service-aligned categories ("Water Heaters", "Drain Cleaning", "Leak Repair", "Maintenance", "Emergency Tips", "Gas Services"). Migrated legacy categories: Tips→Emergency Tips, Drains→Drain Cleaning, Leaks→Leak Repair, Faucets/General Plumbing/Commercial→Maintenance. This ensures every blog post receives inbound links from service pages.
+- **Title Optimization**: Shortened 116 blog post titles from >60 characters to ≤60 characters (SEO best practice) while preserving keywords. Removed redundant location phrases and filler words.
+- **External Link Cleanup**: Removed all placeholder/broken external links (example.com, url-to-image.com, AI-generated dummy URLs) from blog post content, eliminating 3XX redirect issues.
+
+### Scripts & Automation
+- `server/lib/generateH1.ts` - Centralized H1 generation utility (adds descriptive prefixes like "Complete", "Expert", "Understanding")
+- `server/scripts/generate-blog-h1s.ts` - One-time backfill for existing posts (uses shared utility)
+- `server/scripts/standardize-blog-categories.ts` - Category normalization (57 posts updated)
+- `server/scripts/shorten-long-titles.ts` - Intelligent title shortening (116 posts updated)
+- `server/scripts/remove-placeholder-links.ts` - External link cleanup (8 posts updated)
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
