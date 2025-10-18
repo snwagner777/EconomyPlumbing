@@ -604,6 +604,36 @@ export const ssrPages: SSRPageConfig[] = [
     description: 'Trusted plumber in Marble Falls, TX. Water heaters, drain cleaning, leak repair, emergency service. Licensed & insured plumbers. Same-day service. Call (512) 368-9159!',
     h1: 'Professional Plumber in Marble Falls, TX',
     content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Professional Plumber in Marble Falls, TX</h1><p class="text-xl mb-8">Expert plumbing services in Marble Falls and the Hill Country.</p></div></div>`
+  },
+  
+  // Store pages
+  {
+    path: '/store',
+    title: 'Plumbing Products & VIP Memberships | Economy Plumbing',
+    description: 'Shop Economy Plumbing VIP memberships & plumbing products in Austin & Marble Falls, TX. Priority service, discounts, quality products. Call (512) 368-9159!',
+    h1: 'Store - VIP Memberships & Products',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Store - VIP Memberships & Products</h1><p class="text-xl mb-8">Browse our VIP membership packages and quality plumbing products. All memberships include priority service, exclusive discounts, and peace of mind.</p></div></div>`
+  },
+  {
+    path: '/shop',
+    title: 'Shop Plumbing Products & Memberships | Economy Plumbing',
+    description: 'Shop Economy Plumbing VIP memberships & plumbing products in Austin & Marble Falls, TX. Priority service, discounts, quality products. Call (512) 368-9159!',
+    h1: 'Shop - VIP Memberships & Products',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Shop - VIP Memberships & Products</h1><p class="text-xl mb-8">Browse our VIP membership packages and quality plumbing products.</p></div></div>`
+  },
+  {
+    path: '/category/memberships',
+    title: 'VIP Membership Plans | Economy Plumbing Services',
+    description: 'Economy Plumbing VIP memberships in Austin & Marble Falls, TX. 6 tiers from Silver to Platinum. Priority service, discounts, free inspections. Call (512) 368-9159!',
+    h1: 'VIP Membership Plans',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">VIP Membership Plans</h1><p class="text-xl mb-8">Choose the perfect VIP membership tier for your home or business. All memberships include priority service and exclusive benefits.</p></div></div>`
+  },
+  {
+    path: '/category/products',
+    title: 'Plumbing Products | Economy Plumbing Services',
+    description: 'Quality plumbing products from Economy Plumbing in Austin & Marble Falls, TX. Professional-grade fixtures, parts & supplies. Expert advice included. Call (512) 368-9159!',
+    h1: 'Plumbing Products',
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Plumbing Products</h1><p class="text-xl mb-8">Browse our selection of quality plumbing products and supplies.</p></div></div>`
   }
 ];
 
