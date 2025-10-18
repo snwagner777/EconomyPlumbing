@@ -175,6 +175,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Blog & Success Stories
         { url: 'blog', lastmod: now, changefreq: 'weekly', priority: '0.8' },
         { url: 'success-stories', lastmod: now, changefreq: 'weekly', priority: '0.8' },
+        
+        // Appointment & Emergency
+        { url: 'schedule-appointment', lastmod: now, changefreq: 'monthly', priority: '0.9' },
+        { url: 'emergency-plumbing', lastmod: now, changefreq: 'monthly', priority: '0.9' },
       ];
       
       // Generate static page URLs
@@ -198,15 +202,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   </url>`;
         }).join('\n');
       
-      // Generate product URLs (store checkout pages)
-      const productUrls = products
-        .filter(p => p.active)
-        .map(product => `  <url>
-    <loc>${baseUrl}/store/checkout/${product.slug}</loc>
-    <lastmod>${now}</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>`).join('\n');
+      // Product URLs removed - Square Online now manages products
+      // Old Ecwid product checkout URLs redirect to /store, causing "3XX redirect in sitemap" error
+      const productUrls = '';
       
       const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

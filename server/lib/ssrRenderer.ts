@@ -964,10 +964,42 @@ export function renderPageForCrawler(
   
   html = html.replace('</head>', `${ogTags}\n  </head>`);
   
-  // Inject basic content into body for crawlers
+  // Create simple navigation for crawlers (fixes "no outgoing links" and "orphan pages" issues)
+  const crawlerNav = `
+    <nav style="display: none;">
+      <a href="https://www.plumbersthatcare.com/">Home</a>
+      <a href="https://www.plumbersthatcare.com/about">About</a>
+      <a href="https://www.plumbersthatcare.com/contact">Contact</a>
+      <a href="https://www.plumbersthatcare.com/services">Services</a>
+      <a href="https://www.plumbersthatcare.com/water-heater-services">Water Heater Services</a>
+      <a href="https://www.plumbersthatcare.com/drain-cleaning">Drain Cleaning</a>
+      <a href="https://www.plumbersthatcare.com/leak-repair">Leak Repair</a>
+      <a href="https://www.plumbersthatcare.com/toilet-faucet">Toilet & Faucet</a>
+      <a href="https://www.plumbersthatcare.com/gas-services">Gas Services</a>
+      <a href="https://www.plumbersthatcare.com/backflow-testing">Backflow Testing</a>
+      <a href="https://www.plumbersthatcare.com/commercial-plumbing">Commercial Plumbing</a>
+      <a href="https://www.plumbersthatcare.com/emergency-plumbing">Emergency Plumbing</a>
+      <a href="https://www.plumbersthatcare.com/service-area">Service Areas</a>
+      <a href="https://www.plumbersthatcare.com/plumber-austin">Austin</a>
+      <a href="https://www.plumbersthatcare.com/plumber-in-cedar-park--tx">Cedar Park</a>
+      <a href="https://www.plumbersthatcare.com/plumber-leander">Leander</a>
+      <a href="https://www.plumbersthatcare.com/round-rock-plumber">Round Rock</a>
+      <a href="https://www.plumbersthatcare.com/plumber-georgetown">Georgetown</a>
+      <a href="https://www.plumbersthatcare.com/plumber-pflugerville">Pflugerville</a>
+      <a href="https://www.plumbersthatcare.com/plumber-marble-falls">Marble Falls</a>
+      <a href="https://www.plumbersthatcare.com/blog">Blog</a>
+      <a href="https://www.plumbersthatcare.com/store">Store</a>
+      <a href="https://www.plumbersthatcare.com/faq">FAQ</a>
+      <a href="https://www.plumbersthatcare.com/success-stories">Success Stories</a>
+      <a href="https://www.plumbersthatcare.com/schedule-appointment">Schedule Appointment</a>
+      <a href="https://www.plumbersthatcare.com/membership-benefits">VIP Membership</a>
+    </nav>
+  `;
+  
+  // Inject navigation and page content into body for crawlers
   html = html.replace(
     '<div id="root"></div>',
-    `<div id="root">${config.content}</div>`
+    `<div id="root">${crawlerNav}${config.content}</div>`
   );
   
   return html;
