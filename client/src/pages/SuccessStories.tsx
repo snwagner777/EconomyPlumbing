@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Filter, Search, ExternalLink, Phone, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,22 @@ export default function SuccessStories() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const phoneConfig = usePhoneConfig();
+
+  // Load NiceJob widget script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
 
   const { data: composites, isLoading: compositesLoading } = useQuery<BeforeAfterComposite[]>({
     queryKey: ["/api/before-after-composites"],
@@ -74,11 +90,6 @@ export default function SuccessStories() {
         canonical="https://www.plumbersthatcare.com/success-stories"
         ogImage={ogImage}
         ogImageAlt="Economy Plumbing Services - Real plumbing project transformations"
-      />
-      <script 
-        type="text/javascript" 
-        src="https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f" 
-        defer
       />
 
       <Header />

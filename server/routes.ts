@@ -2,6 +2,11 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+
+// Declare global types for SSR cache invalidation
+declare global {
+  var invalidateSSRCache: (() => void) | undefined;
+}
 import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
