@@ -116,7 +116,7 @@ export function SEOHead({
       {/* Schema.org JSON-LD */}
       {schema && (
         <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(schema) ? schema : [schema])}
+          {JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [schema])}
         </script>
       )}
     </Helmet>
