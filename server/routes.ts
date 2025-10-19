@@ -5465,6 +5465,106 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
   // ServiceTitan Customer Portal Routes
   
+  // Verify account number and send verification code
+  app.post("/api/portal/auth/verify-account", async (req, res) => {
+    try {
+      const { customerId } = req.body;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      console.log("[Portal Auth] Verifying account:", customerId);
+
+      // Get customer from ServiceTitan to verify it exists
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      
+      const customer = await serviceTitan.getCustomer(parseInt(customerId));
+      if (!customer) {
+        return res.status(404).json({ error: "Account not found" });
+      }
+
+      // Get customer contacts to find email/phone
+      const contacts = await serviceTitan.getCustomerContacts(parseInt(customerId));
+      
+      // Find email or phone for verification
+      const emailContact = contacts.find((c: any) => c.type?.toLowerCase().includes('email'));
+      const phoneContact = contacts.find((c: any) => 
+        c.type?.toLowerCase().includes('phone') || c.type?.toLowerCase().includes('mobile')
+      );
+
+      let verificationType: 'sms' | 'email' = 'email';
+      let contactValue: string;
+      
+      if (phoneContact?.value) {
+        verificationType = 'sms';
+        contactValue = phoneContact.value;
+      } else if (emailContact?.value) {
+        verificationType = 'email';
+        contactValue = emailContact.value;
+      } else {
+        return res.status(400).json({ 
+          error: "No email or phone found for this account. Please contact us directly." 
+        });
+      }
+
+      // Generate verification code
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const uuid = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + (verificationType === 'sms' ? 15 * 60 * 1000 : 60 * 60 * 1000));
+
+      // Store verification
+      const { portalVerifications } = await import('@shared/schema');
+      await db.insert(portalVerifications).values({
+        customerId: parseInt(customerId),
+        contactValue,
+        verificationType,
+        code: verificationType === 'sms' ? code : uuid,
+        expiresAt,
+      });
+
+      // Send verification
+      if (verificationType === 'sms') {
+        const { sendSMS } = await import('./lib/sms');
+        await sendSMS({
+          to: contactValue,
+          body: `Your Economy Plumbing customer portal verification code is: ${code}. Valid for 15 minutes.`,
+        });
+        console.log("[Portal Auth] SMS sent to", contactValue);
+        res.json({ 
+          message: `A 6-digit verification code has been sent to ${contactValue.replace(/.(?=.{4})/g, '*')}`,
+          verificationType: 'sms'
+        });
+      } else {
+        const { sendEmail } = await import('./lib/emailTemplates');
+        const magicLink = `${req.protocol}://${req.get('host')}/customer-portal?token=${uuid}`;
+        
+        await sendEmail({
+          to: contactValue,
+          subject: 'Your Customer Portal Access Link',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Customer Portal Access</h2>
+              <p>Click the link below to access your customer portal:</p>
+              <p><a href="${magicLink}" style="display: inline-block; padding: 12px 24px; background-color: #1d4ed8; color: white; text-decoration: none; border-radius: 5px;">Access Portal</a></p>
+              <p>This link will expire in 1 hour.</p>
+              <p>If you didn't request this, please ignore this email.</p>
+            </div>
+          `,
+        });
+        console.log("[Portal Auth] Email sent to", contactValue);
+        res.json({ 
+          message: `A verification link has been sent to ${contactValue.replace(/(.{3})(.*)(@.*)/, '$1***$3')}`,
+          verificationType: 'email'
+        });
+      }
+    } catch (error: any) {
+      console.error("[Portal Auth] Account verification error:", error);
+      res.status(500).json({ error: "Failed to verify account" });
+    }
+  });
+
   // Send verification code (SMS or email magic link)
   app.post("/api/portal/auth/send-code", async (req, res) => {
     try {
