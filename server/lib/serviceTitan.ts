@@ -655,10 +655,8 @@ class ServiceTitanAPI {
       let totalContacts = 0;
       const pageSize = 50;
 
-      // Delete existing data to do a full refresh
-      console.log('[ServiceTitan Sync] Clearing existing cached data...');
-      await db.delete(serviceTitanContacts);
-      await db.delete(serviceTitanCustomers);
+      // Use upsert strategy - no deletion, just update existing records
+      console.log('[ServiceTitan Sync] Using upsert strategy for zero-downtime sync...');
 
       while (hasMore) {
         console.log(`[ServiceTitan Sync] Fetching page ${page}...`);
@@ -703,6 +701,10 @@ class ServiceTitanAPI {
             });
             
             totalCustomers++;
+
+            // Clean up old contacts for this customer before syncing new ones
+            // This ensures we don't have stale contacts if they were removed in ServiceTitan
+            await db.delete(serviceTitanContacts).where(eq(serviceTitanContacts.customerId, customer.id));
 
             // Fetch and store customer contacts
             const contacts = await this.getCustomerContacts(customer.id);
