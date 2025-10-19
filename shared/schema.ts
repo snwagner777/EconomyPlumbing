@@ -365,6 +365,9 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   id: integer("id").primaryKey(), // ServiceTitan customer ID (not UUID, this is the actual ST ID)
   name: text("name").notNull(),
   type: text("type").notNull(), // 'Residential' or 'Commercial'
+  email: text("email"),
+  phone: text("phone"),
+  mobilePhone: text("mobile_phone"),
   street: text("street"),
   city: text("city"),
   state: text("state"),
@@ -374,6 +377,9 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
 }, (table) => ({
   activeIdx: index("st_customers_active_idx").on(table.active),
+  emailIdx: index("st_customers_email_idx").on(table.email),
+  phoneIdx: index("st_customers_phone_idx").on(table.phone),
+  mobilePhoneIdx: index("st_customers_mobile_phone_idx").on(table.mobilePhone),
   typeIdx: index("st_customers_type_idx").on(table.type),
   lastSyncedIdx: index("st_customers_last_synced_idx").on(table.lastSyncedAt),
 }));

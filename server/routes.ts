@@ -6204,29 +6204,11 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // Customer Leaderboard - Top customers by service usage
+  // TODO: Re-implement for refer-a-friend page using actual ServiceTitan job/appointment data
   app.get("/api/customer-leaderboard", async (req, res) => {
     try {
-      const { serviceTitanCustomers } = await import("@shared/schema");
-      
-      // Get top 10 customers by total services (appointment count)
-      const topCustomers = await db.select({
-        id: serviceTitanCustomers.id,
-        name: serviceTitanCustomers.name,
-        type: serviceTitanCustomers.type,
-        totalServices: sql<number>`COALESCE(${serviceTitanCustomers.customFields}->>'totalServicesCount', '0')::integer`,
-        isVIPMember: sql<boolean>`CASE WHEN ${serviceTitanCustomers.customFields}->>'hasActiveMembership' = 'true' THEN true ELSE false END`,
-      })
-        .from(serviceTitanCustomers)
-        .orderBy(sql`COALESCE(${serviceTitanCustomers.customFields}->>'totalServicesCount', '0')::integer DESC`)
-        .limit(10);
-      
-      // Add ranks
-      const leaderboard = topCustomers.map((customer, index) => ({
-        ...customer,
-        rank: index + 1,
-      }));
-      
-      res.json({ leaderboard });
+      // Placeholder until we implement proper leaderboard with ServiceTitan job data
+      res.json({ leaderboard: [] });
     } catch (error: any) {
       console.error("[Leaderboard] Error:", error);
       res.status(500).json({ error: "Failed to fetch leaderboard" });
@@ -6273,6 +6255,27 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error("[Admin] Portal stats error:", error);
       res.status(500).json({ error: "Failed to fetch portal stats" });
+    }
+  });
+
+  // Test SMS endpoint
+  app.post("/api/test-sms", async (req, res) => {
+    try {
+      const { to, message } = req.body;
+      
+      if (!to) {
+        return res.status(400).json({ error: "Phone number required" });
+      }
+      
+      const { sendSMS } = await import("./lib/sms");
+      const testMessage = message || "Test message from Economy Plumbing Services - Zoom Phone SMS integration is working! 🎉";
+      
+      await sendSMS({ to, message: testMessage });
+      
+      res.json({ success: true, message: "SMS sent successfully" });
+    } catch (error: any) {
+      console.error("[Test SMS] Error:", error);
+      res.status(500).json({ error: error.message || "Failed to send SMS" });
     }
   });
 
