@@ -410,31 +410,15 @@ export default function ReferAFriend() {
             Send a Referral Now
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Use our online referral form to submit your friend's information
+            Use our online referral form powered by NiceJob
           </p>
         </div>
         
-        {/* 
-          NICEJOB REFERRAL WIDGET SETUP INSTRUCTIONS:
-          
-          To enable the online referral form:
-          1. Log into your NiceJob admin panel (app.nicejob.com)
-          2. Navigate to Settings > Product Settings > Referrals
-          3. Enable the referral widget if not already enabled
-          4. Copy the embed code for the "Referral Form Widget"
-          5. Replace this comment block with the embed code
-          
-          The SDK script is already loaded in the useEffect hook above.
-          
-          Example embed code format:
-          <div class="nj-referral-widget" data-widget-id="YOUR_REFERRAL_WIDGET_ID"></div>
-        */}
-        <div className="bg-muted rounded-lg p-12 text-center max-w-2xl mx-auto">
-          <p className="text-muted-foreground">
-            NiceJob referral form widget will display here once configured in your NiceJob admin panel.
-            <br />
-            <span className="text-sm">See instructions in source code above.</span>
-          </p>
+        {/* NiceJob Recommendation Widget */}
+        <div className="max-w-2xl mx-auto">
+          <div className="nj-recommendation" data-testid="nicejob-referral-widget">
+            Recommend us!
+          </div>
         </div>
       </section>
 

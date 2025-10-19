@@ -19,7 +19,9 @@ import {
   AlertCircle,
   Phone as PhoneIcon,
   Mail,
-  Hash
+  Hash,
+  Gift,
+  Heart
 } from "lucide-react";
 
 interface ServiceTitanCustomer {
@@ -510,6 +512,61 @@ export default function CustomerPortal() {
                           ))}
                         </div>
                       )}
+                    </CardContent>
+                  </Card>
+
+                  {/* Referral Program */}
+                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                    <CardHeader>
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-6 h-6 text-primary" />
+                        <CardTitle>Refer a Friend, Earn Rewards</CardTitle>
+                      </div>
+                      <CardDescription>
+                        Love our service? Share it with friends and family
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                        <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium mb-1">You Both Save</p>
+                          <p className="text-sm text-muted-foreground">
+                            Earn service credits for every friend you refer. They get a new customer discount and priority scheduling!
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <Button
+                          asChild
+                          className="flex-1"
+                          data-testid="button-refer-program"
+                        >
+                          <a href="/refer-a-friend">
+                            <Gift className="w-4 h-4 mr-2" />
+                            Start Referring
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
+                          className="flex-1"
+                          data-testid="button-share-link"
+                        >
+                          <a 
+                            href="https://nicejob.com/economy-"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Share Your Link
+                          </a>
+                        </Button>
+                      </div>
+
+                      <p className="text-xs text-center text-muted-foreground">
+                        Powered by NiceJob - Track your referrals and rewards
+                      </p>
                     </CardContent>
                   </Card>
                 </>
