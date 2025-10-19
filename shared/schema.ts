@@ -340,26 +340,6 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
   contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
 }));
 
-// VIP Memberships - tracks which ServiceTitan customers have active VIP memberships
-export const vipMemberships = pgTable("vip_memberships", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  serviceTitanCustomerId: integer("service_titan_customer_id").notNull().unique(), // References service_titan_customers.id
-  membershipType: text("membership_type").notNull().default('standard'), // 'standard', 'premium', etc.
-  status: text("status").notNull().default('active'), // 'active', 'expired', 'cancelled'
-  startDate: timestamp("start_date").notNull().defaultNow(),
-  expirationDate: timestamp("expiration_date"), // Null = lifetime membership
-  renewalDate: timestamp("renewal_date"), // For auto-renewals
-  productId: varchar("product_id"), // References products table if purchased online
-  stripeSubscriptionId: text("stripe_subscription_id"), // For recurring billing
-  notes: text("notes"), // Admin notes
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-}, (table) => ({
-  customerIdIdx: index("vip_memberships_customer_id_idx").on(table.serviceTitanCustomerId),
-  statusIdx: index("vip_memberships_status_idx").on(table.status),
-  expirationIdx: index("vip_memberships_expiration_idx").on(table.expirationDate),
-}));
-
 export const trackingNumbers = pgTable("tracking_numbers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   channelKey: text("channel_key").notNull().unique(), // e.g., 'google', 'facebook', 'yelp'
@@ -610,12 +590,6 @@ export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanCo
   lastSyncedAt: true,
 });
 
-export const insertVipMembershipSchema = createInsertSchema(vipMemberships).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -656,8 +630,6 @@ export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
 export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
-export type VipMembership = typeof vipMemberships.$inferSelect;
-export type InsertVipMembership = z.infer<typeof insertVipMembershipSchema>;
 export type OAuthUser = typeof oauthUsers.$inferSelect;
 export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
 export type AdminWhitelist = typeof adminWhitelist.$inferSelect;

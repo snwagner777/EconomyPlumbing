@@ -638,6 +638,37 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get customer memberships (VIP status, active memberships)
+   */
+  async getCustomerMemberships(customerId: number): Promise<any[]> {
+    try {
+      // ServiceTitan memberships API endpoint
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
+      const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
+      
+      console.log('[ServiceTitan] Memberships response:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Map memberships to display format
+      const memberships = result.data || [];
+      return memberships.map((membership: any) => ({
+        id: membership.id,
+        membershipType: membership.membershipType?.name || 'VIP Membership',
+        status: membership.status || 'Active',
+        startDate: membership.from || membership.createdOn,
+        expirationDate: membership.to || membership.expirationDate,
+        renewalDate: membership.nextScheduledDate,
+        balance: parseFloat(membership.balance || '0'),
+        totalValue: parseFloat(membership.total || '0'),
+        description: membership.memo || membership.description || '',
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer memberships error:', error);
+      // Return empty array on error rather than throwing
+      return [];
+    }
+  }
+
+  /**
    * Sync all customers from ServiceTitan to local database
    * Paginates through all customers and stores them with normalized contacts
    */
