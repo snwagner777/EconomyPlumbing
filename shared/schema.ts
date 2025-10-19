@@ -657,6 +657,23 @@ export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanCo
   lastSyncedAt: true,
 });
 
+export const otpVerifications = pgTable("otp_verifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull(),
+  otp: text("otp").notNull(),
+  verified: boolean("verified").notNull().default(false),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  phoneNumberIdx: index("otp_verifications_phone_number_idx").on(table.phoneNumber),
+  expiresAtIdx: index("otp_verifications_expires_at_idx").on(table.expiresAt),
+}));
+
+export const insertOtpVerificationSchema = createInsertSchema(otpVerifications).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -701,3 +718,5 @@ export type OAuthUser = typeof oauthUsers.$inferSelect;
 export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
 export type AdminWhitelist = typeof adminWhitelist.$inferSelect;
 export type InsertAdminWhitelist = typeof adminWhitelist.$inferInsert;
+export type OtpVerification = typeof otpVerifications.$inferSelect;
+export type InsertOtpVerification = z.infer<typeof insertOtpVerificationSchema>;
