@@ -223,10 +223,12 @@ class ServiceTitanAPI {
                 
                 // Check if any contact phone matches
                 for (const contact of contacts) {
-                  if (contact.phoneNumber) {
-                    const normalizedContactPhone = this.normalizePhone(contact.phoneNumber);
+                  // Phone number is in the 'value' field for phone-type contacts
+                  const phoneValue = contact.value || contact.phoneSettings?.phoneNumber;
+                  if (phoneValue && (contact.type === 'Phone' || contact.type === 'MobilePhone')) {
+                    const normalizedContactPhone = this.normalizePhone(phoneValue);
                     if (normalizedContactPhone === normalizedSearchPhone) {
-                      console.log(`[ServiceTitan] MATCH FOUND! Customer ${customer.id} (${customer.name}) has matching phone`);
+                      console.log(`[ServiceTitan] MATCH FOUND! Customer ${customer.id} (${customer.name}) has matching phone: ${phoneValue}`);
                       return customer;
                     }
                   }
