@@ -198,30 +198,17 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  {item.href ? (
-                    <SidebarMenuButton
-                      onClick={() => setLocation(item.href!)}
-                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">{item.title}</span>
-                        <span className="text-xs text-muted-foreground">{item.description}</span>
-                      </div>
-                    </SidebarMenuButton>
-                  ) : (
-                    <SidebarMenuButton
-                      onClick={() => setActiveSection(item.section!)}
-                      isActive={activeSection === item.section}
-                      data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">{item.title}</span>
-                        <span className="text-xs text-muted-foreground">{item.description}</span>
-                      </div>
-                    </SidebarMenuButton>
-                  )}
+                  <SidebarMenuButton
+                    onClick={() => setActiveSection(item.section)}
+                    isActive={activeSection === item.section}
+                    data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <div className="flex flex-col items-start">
+                      <span className="text-sm font-medium">{item.title}</span>
+                      <span className="text-xs text-muted-foreground">{item.description}</span>
+                    </div>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -3446,6 +3433,8 @@ export default function UnifiedAdminDashboard() {
         return <TrackingNumbersSection />;
       case 'products':
         return <ProductsSection />;
+      case 'referrals':
+        return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3460,6 +3449,7 @@ export default function UnifiedAdminDashboard() {
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
+      'referrals': 'Referral Tracking',
     };
     return titles[activeSection];
   };

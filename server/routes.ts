@@ -867,6 +867,77 @@ ${rssItems}
     }
   });
 
+  // OTP Authentication endpoints for Customer Portal
+  app.post("/api/otp/send", async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ message: "Phone number is required" });
+      }
+
+      // Get Twilio SMS service
+      const { getTwilioSMS } = await import('./lib/twilioSMS');
+      const twilioSMS = getTwilioSMS();
+      
+      if (!twilioSMS) {
+        return res.status(503).json({ message: "SMS service not available. Please call us instead." });
+      }
+
+      // Create OTP code
+      const { getOTPStore } = await import('./lib/otpStore');
+      const otpStore = getOTPStore();
+      const code = otpStore.createOTP(phoneNumber);
+      
+      if (!code) {
+        return res.status(429).json({ message: "Please wait a minute before requesting another code" });
+      }
+
+      // Send via SMS
+      const sent = await twilioSMS.sendOTP(phoneNumber, code);
+      
+      if (!sent) {
+        return res.status(500).json({ message: "Failed to send verification code. Please try again." });
+      }
+
+      console.log(`[OTP] Sent code to ${phoneNumber}`);
+      res.json({ message: "Verification code sent!" });
+    } catch (error: any) {
+      console.error('[OTP] Error sending code:', error);
+      res.status(500).json({ message: "Error sending code: " + error.message });
+    }
+  });
+
+  app.post("/api/otp/verify", async (req, res) => {
+    try {
+      const { phoneNumber, code } = req.body;
+      
+      if (!phoneNumber || !code) {
+        return res.status(400).json({ message: "Phone number and code are required" });
+      }
+
+      // Verify OTP
+      const { getOTPStore } = await import('./lib/otpStore');
+      const otpStore = getOTPStore();
+      const valid = otpStore.verifyOTP(phoneNumber, code);
+      
+      if (!valid) {
+        return res.status(401).json({ message: "Invalid or expired code" });
+      }
+
+      console.log(`[OTP] ✅ Verified for ${phoneNumber}`);
+      
+      // Return success - client can now proceed with customer lookup
+      res.json({ 
+        verified: true,
+        message: "Phone number verified!" 
+      });
+    } catch (error: any) {
+      console.error('[OTP] Error verifying code:', error);
+      res.status(500).json({ message: "Error verifying code: " + error.message });
+    }
+  });
+
   // Spam protection: Rate limiting map (IP -> last submission timestamp)
   const submissionRateLimit = new Map<string, number>();
   const RATE_LIMIT_WINDOW = 60000; // 1 minute
