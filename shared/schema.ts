@@ -628,6 +628,36 @@ export const portalAnalytics = pgTable("portal_analytics", {
   foundIdx: index("portal_analytics_found_idx").on(table.found),
 }));
 
+// Customer Portal Authentication (SMS codes and email magic links)
+export const portalVerifications = pgTable("portal_verifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Verification details
+  verificationType: text("verification_type").notNull(), // 'sms' or 'email'
+  contactValue: text("contact_value").notNull(), // Phone number or email address
+  
+  // Code/token
+  code: text("code").notNull(), // 6-digit code for SMS, UUID token for email
+  
+  // Customer info
+  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  
+  // Verification status
+  verified: boolean("verified").notNull().default(false),
+  verifiedAt: timestamp("verified_at"),
+  
+  // Security & expiry
+  expiresAt: timestamp("expires_at").notNull(), // 10 min for SMS, 1 hour for email
+  attempts: integer("attempts").notNull().default(0), // Track failed attempts
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  codeIdx: index("portal_verifications_code_idx").on(table.code),
+  contactIdx: index("portal_verifications_contact_idx").on(table.contactValue),
+  expiresIdx: index("portal_verifications_expires_idx").on(table.expiresAt),
+}));
+
 export const pageMetadata = pgTable("page_metadata", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   path: text("path").notNull().unique(), // URL path like '/commercial-plumbing' or '/about'

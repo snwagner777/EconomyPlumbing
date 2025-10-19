@@ -5463,6 +5463,219 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // ServiceTitan Customer Portal Routes
+  
+  // Send verification code (SMS or email magic link)
+  app.post("/api/portal/auth/send-code", async (req, res) => {
+    try {
+      const { contactValue, verificationType } = req.body;
+
+      if (!contactValue || !verificationType) {
+        return res.status(400).json({ error: "Contact value and verification type required" });
+      }
+
+      if (!['sms', 'email'].includes(verificationType)) {
+        return res.status(400).json({ error: "Invalid verification type" });
+      }
+
+      console.log(`[Portal Auth] Sending ${verificationType} verification to:`, contactValue);
+
+      // Check if ServiceTitan is configured
+      const tenantId = process.env.SERVICETITAN_TENANT_ID;
+      const clientId = process.env.SERVICETITAN_CLIENT_ID;
+      const clientSecret = process.env.SERVICETITAN_CLIENT_SECRET;
+      const appKey = process.env.SERVICETITAN_APP_KEY;
+
+      if (!tenantId || !clientId || !clientSecret || !appKey) {
+        return res.status(503).json({ error: "ServiceTitan integration not configured" });
+      }
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      // Search for customer using the contact value
+      const searchValue = contactValue;
+      const customerId = await serviceTitan.searchCustomerWithFallback(searchValue);
+
+      if (!customerId) {
+        console.log("[Portal Auth] No customer found with provided contact");
+        return res.status(404).json({ 
+          error: "No account found. Please check your information and try again.",
+          found: false 
+        });
+      }
+
+      console.log("[Portal Auth] Customer found:", customerId);
+
+      // Generate verification code or token
+      const code = verificationType === 'sms' 
+        ? Math.floor(100000 + Math.random() * 900000).toString() // 6-digit code
+        : crypto.randomUUID(); // UUID token for email magic link
+
+      // Set expiry time (10 min for SMS, 1 hour for email)
+      const expiryMinutes = verificationType === 'sms' ? 10 : 60;
+      const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
+
+      // Store verification in database
+      const { portalVerifications } = await import("@shared/schema");
+      await db.insert(portalVerifications).values({
+        verificationType,
+        contactValue,
+        code,
+        customerId,
+        expiresAt,
+      });
+
+      console.log("[Portal Auth] Verification code created, expiring in", expiryMinutes, "minutes");
+
+      // Send verification based on type
+      if (verificationType === 'sms') {
+        // Send SMS code
+        try {
+          const { sendSMS } = await import("./lib/sms");
+          const message = `Your Economy Plumbing verification code is: ${code}\n\nThis code expires in 10 minutes.`;
+          await sendSMS(contactValue, message);
+          console.log("[Portal Auth] SMS sent successfully");
+          
+          return res.json({ 
+            success: true, 
+            message: "Verification code sent via SMS",
+            expiresIn: expiryMinutes * 60 // seconds
+          });
+        } catch (error) {
+          console.error("[Portal Auth] SMS send failed:", error);
+          return res.status(500).json({ error: "Failed to send SMS verification code" });
+        }
+      } else if (verificationType === 'email') {
+        // Send email magic link
+        try {
+          const { sendEmail } = await import("./lib/email");
+          const magicLink = `${req.protocol}://${req.get('host')}/customer-portal?token=${code}`;
+          
+          await sendEmail({
+            to: contactValue,
+            subject: "Access Your Customer Portal - Economy Plumbing",
+            html: `
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              </head>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background-color: #0066cc; padding: 20px; text-align: center;">
+                  <h1 style="color: white; margin: 0;">Economy Plumbing Services</h1>
+                </div>
+                <div style="padding: 30px; background-color: #f9f9f9;">
+                  <h2>Access Your Customer Portal</h2>
+                  <p>Click the button below to securely access your customer portal:</p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="${magicLink}" style="background-color: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+                      Access Portal
+                    </a>
+                  </div>
+                  <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
+                  <p style="background-color: #fff; padding: 10px; border-left: 4px solid #0066cc; word-break: break-all; font-size: 13px;">
+                    ${magicLink}
+                  </p>
+                  <p style="color: #999; font-size: 12px; margin-top: 30px;">
+                    This link expires in 1 hour. If you didn't request this, please ignore this email.
+                  </p>
+                </div>
+                <div style="background-color: #333; color: white; padding: 20px; text-align: center; font-size: 12px;">
+                  <p>Economy Plumbing Services<br>
+                  Austin & Marble Falls, Texas<br>
+                  (512) 396-7811</p>
+                </div>
+              </body>
+              </html>
+            `,
+          });
+          
+          console.log("[Portal Auth] Email magic link sent successfully");
+          
+          return res.json({ 
+            success: true, 
+            message: "Magic link sent to your email",
+            expiresIn: expiryMinutes * 60 // seconds
+          });
+        } catch (error) {
+          console.error("[Portal Auth] Email send failed:", error);
+          return res.status(500).json({ error: "Failed to send email magic link" });
+        }
+      }
+    } catch (error: any) {
+      console.error("[Portal Auth] Send code error:", error);
+      res.status(500).json({ error: "Failed to send verification code" });
+    }
+  });
+
+  // Verify code and return customer ID
+  app.post("/api/portal/auth/verify-code", async (req, res) => {
+    try {
+      const { contactValue, code } = req.body;
+
+      if (!contactValue || !code) {
+        return res.status(400).json({ error: "Contact value and code required" });
+      }
+
+      console.log("[Portal Auth] Verifying code for:", contactValue);
+
+      const { portalVerifications } = await import("@shared/schema");
+      const { eq, and, lt } = await import("drizzle-orm");
+
+      // Find verification record
+      const verifications = await db
+        .select()
+        .from(portalVerifications)
+        .where(
+          and(
+            eq(portalVerifications.contactValue, contactValue),
+            eq(portalVerifications.code, code),
+            eq(portalVerifications.verified, false)
+          )
+        )
+        .limit(1);
+
+      if (verifications.length === 0) {
+        console.log("[Portal Auth] Invalid code");
+        return res.status(401).json({ error: "Invalid verification code" });
+      }
+
+      const verification = verifications[0];
+
+      // Check if expired
+      if (new Date() > new Date(verification.expiresAt)) {
+        console.log("[Portal Auth] Code expired");
+        return res.status(401).json({ error: "Verification code expired. Please request a new one." });
+      }
+
+      // Check attempts (max 5)
+      if (verification.attempts >= 5) {
+        console.log("[Portal Auth] Too many attempts");
+        return res.status(429).json({ error: "Too many failed attempts. Please request a new code." });
+      }
+
+      // Mark as verified
+      await db
+        .update(portalVerifications)
+        .set({ 
+          verified: true, 
+          verifiedAt: new Date() 
+        })
+        .where(eq(portalVerifications.id, verification.id));
+
+      console.log("[Portal Auth] Verification successful for customer:", verification.customerId);
+
+      return res.json({ 
+        success: true,
+        customerId: verification.customerId
+      });
+    } catch (error: any) {
+      console.error("[Portal Auth] Verify code error:", error);
+      res.status(500).json({ error: "Failed to verify code" });
+    }
+  });
+
   app.get("/api/servicetitan/customer/search", async (req, res) => {
     try {
       const { phone, email } = req.query;
