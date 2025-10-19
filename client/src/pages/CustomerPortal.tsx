@@ -1330,15 +1330,13 @@ export default function CustomerPortal() {
                         
                         <div className="pt-2 border-t">
                           <Button
-                            asChild
                             variant="outline"
                             className="w-full"
+                            onClick={() => setShowReferralModal(true)}
                             data-testid="button-refer-more"
                           >
-                            <a href="/refer-a-friend">
-                              <Gift className="w-4 h-4 mr-2" />
-                              Refer Another Friend
-                            </a>
+                            <Gift className="w-4 h-4 mr-2" />
+                            Refer Another Friend
                           </Button>
                         </div>
                       </CardContent>
@@ -1369,24 +1367,20 @@ export default function CustomerPortal() {
                       
                       <div className="flex flex-col sm:flex-row gap-3">
                         <Button
-                          asChild
                           className="flex-1"
+                          onClick={() => setShowReferralModal(true)}
                           data-testid="button-refer-program"
                         >
-                          <a href="/refer-a-friend">
-                            <Gift className="w-4 h-4 mr-2" />
-                            Refer Friends Now
-                          </a>
+                          <Gift className="w-4 h-4 mr-2" />
+                          Refer Friends Now
                         </Button>
                         <Button
-                          asChild
                           variant="outline"
                           className="flex-1"
+                          onClick={() => window.location.href = '/refer-a-friend'}
                           data-testid="button-learn-rewards"
                         >
-                          <a href="/refer-a-friend">
-                            Learn About Rewards
-                          </a>
+                          Learn About Rewards
                         </Button>
                       </div>
 
