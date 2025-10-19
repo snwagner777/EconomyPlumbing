@@ -4,7 +4,6 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { initDynamicPhoneNumbers, replacePhoneNumbers } from "@/lib/dynamicPhoneNumbers";
 import { initAllAnalytics } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import CookieBanner from "@/components/CookieBanner";
@@ -92,8 +91,6 @@ function ScrollToTop() {
   useEffect(() => {
     // Immediately scroll to top - use 'auto' to override smooth scroll behavior for navigation
     window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
-    // Re-run phone number replacement on route change
-    setTimeout(replacePhoneNumbers, 100);
   }, [location]);
 
   return null;
@@ -222,20 +219,7 @@ function Router() {
 }
 
 function App() {
-  const [location] = useLocation();
-
   useEffect(() => {
-    // Initialize dynamic phone number tracking
-    initDynamicPhoneNumbers();
-  }, []); // Run once on mount
-
-  useEffect(() => {
-    // Re-run phone number replacement on route changes
-    replacePhoneNumbers();
-  }, [location]); // Run whenever route changes
-
-  useEffect(() => {
-    // Initialize Google Analytics
     // Initialize all analytics platforms (GA, Meta Pixel, GTM, Clarity)
     // Each platform checks for its own environment variable and gracefully skips if missing
     initAllAnalytics();

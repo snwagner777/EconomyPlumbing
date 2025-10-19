@@ -8,8 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Shield, Clock, Phone } from "lucide-react";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import type { Product } from "@shared/schema";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function MembershipBenefits() {
+  const phoneConfig = usePhoneConfig();
   const { data: products } = useQuery<Product[]>({
     queryKey: ['/api/products'],
   });
@@ -60,7 +62,7 @@ export default function MembershipBenefits() {
     <div className="min-h-screen">
       <SEOHead
         title="Membership Benefits | Economy Plumbing TX"
-        description="VIP plumbing membership: priority service, 10-15% discounts, annual maintenance, 24/7 support. Save on repairs. Austin & Marble Falls. (512) 368-9159."
+        description={`VIP plumbing membership: priority service, 10-15% discounts, annual maintenance, 24/7 support. Save on repairs. Austin & Marble Falls. ${phoneConfig.display}.`}
         canonical="https://www.plumbersthatcare.com/membership-benefits"
       />
 
@@ -172,7 +174,7 @@ export default function MembershipBenefits() {
               size="lg"
               variant="outline"
             >
-              <a href="tel:+15123689159" className="flex items-center gap-2">
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 Call to Enroll
               </a>

@@ -13,7 +13,7 @@ import { format } from "date-fns";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 // Map blog categories to review categories
 const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
@@ -34,6 +34,7 @@ export default function BlogPost() {
   const [match, params] = useRoute("/:slug");
   const slug = params?.slug || "";
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
@@ -283,11 +284,11 @@ export default function BlogPost() {
               <div className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 <a
-                  href="tel:+18304603565"
+                  href={marbleFallsPhoneConfig.tel}
                   className="text-2xl font-bold hover:underline"
                   data-testid="link-phone-marble"
                 >
-                  (830) 460-3565
+                  {marbleFallsPhoneConfig.display}
                 </a>
                 <span className="text-white/80">Marble Falls</span>
               </div>

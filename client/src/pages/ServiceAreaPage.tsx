@@ -16,6 +16,7 @@ import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import heroImage from "@assets/optimized/professional_plumber_49e7ef9b.webp";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 const SERVICES = [
   { name: "Water Heater Services", path: "/water-heater-services" },
@@ -29,6 +30,8 @@ const SERVICES = [
 
 export default function ServiceAreaPage() {
   const { slug } = useParams();
+  const phoneConfig = usePhoneConfig();
+  const marbleFallsPhone = useMarbleFallsPhone();
   
   const { data: serviceArea, isLoading, error } = useQuery<ServiceArea>({
     queryKey: [`/api/service-areas/${slug}`],
@@ -45,8 +48,9 @@ export default function ServiceAreaPage() {
     { name: "Liberty Hill", path: "/service-area/liberty-hill" },
   ];
 
-  const phone = serviceArea?.region === "marble-falls" ? "(830) 460-3565" : "(512) 368-9159";
-  const phoneLink = serviceArea?.region === "marble-falls" ? "8304603565" : "5123689159";
+  const activePhone = serviceArea?.region === "marble-falls" ? marbleFallsPhone : phoneConfig;
+  const phone = activePhone.display;
+  const phoneLink = activePhone.tel;
   const cityName = serviceArea?.cityName || "Central Texas";
 
   const faqs = serviceArea?.uniqueFaqs 
@@ -65,7 +69,7 @@ export default function ServiceAreaPage() {
       "addressRegion": "TX",
       "addressCountry": "US"
     },
-    "telephone": `+1${phoneLink}`,
+    "telephone": phoneLink.replace('tel:', '+'),
     "geo": coordinates ? {
       "@type": "GeoCoordinates",
       "latitude": coordinates.latitude,
@@ -200,7 +204,7 @@ export default function ServiceAreaPage() {
                 className="bg-transparent border-white text-white hover:bg-white/10"
                 data-testid="button-call"
               >
-                <a href={`tel:+1${phoneLink}`} className="flex items-center gap-2">
+                <a href={phoneLink} className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   {phone}
                 </a>

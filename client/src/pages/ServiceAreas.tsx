@@ -444,11 +444,11 @@ export default function ServiceAreas() {
                   <h3 className="text-2xl font-bold mb-2">Marble Falls Area Office</h3>
                   <p className="opacity-90 mb-4">2409 Commerce Street, Marble Falls, TX 78654</p>
                   <a 
-                    href="tel:+18304603565"
+                    href={marbleFallsPhoneConfig.tel}
                     className="text-2xl font-poppins font-bold hover-elevate inline-block px-3 py-2 rounded-md"
                     data-testid="link-phone-office-marble-falls"
                   >
-                    (830) 460-3565
+                    {marbleFallsPhoneConfig.display}
                   </a>
                 </div>
               </div>

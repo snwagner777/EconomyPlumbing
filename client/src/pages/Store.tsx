@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
 import { useEffect } from "react";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 /*
  * ECWID SETUP INSTRUCTIONS:
@@ -27,6 +28,7 @@ import { useEffect } from "react";
 const ECWID_STORE_ID = "90741099"; // Your Ecwid Store ID
 
 export default function Store() {
+  const phoneConfig = usePhoneConfig();
   useEffect(() => {
     // Load Ecwid script
     const script = document.createElement('script');
@@ -56,7 +58,7 @@ export default function Store() {
     <>
       <SEOHead
         title="Plumbing Products & Supplies | Economy Plumbing Store"
-        description="Shop quality plumbing products with fast shipping. BioPure water treatment & more. Drop-shipped to Austin & Marble Falls. Call (512) 368-9159 today!"
+        description={`Shop quality plumbing products with fast shipping. BioPure water treatment & more. Drop-shipped to Austin & Marble Falls. Call ${phoneConfig.display} today!`}
         canonical="https://www.plumbersthatcare.com/store"
         ogImage="https://www.plumbersthatcare.com/attached_assets/logo.jpg"
         ogImageAlt="Economy Plumbing Services - Quality Plumbing Products"
@@ -156,7 +158,7 @@ export default function Store() {
                       asChild
                       data-testid="button-call-us"
                     >
-                      <a href="tel:+15123689159">Call (512) 368-9159</a>
+                      <a href={phoneConfig.tel}>Call {phoneConfig.display}</a>
                     </Button>
                   </div>
                 </div>

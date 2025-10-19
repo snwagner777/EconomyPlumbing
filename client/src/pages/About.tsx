@@ -6,8 +6,11 @@ import { Button } from "@/components/ui/button";
 import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { Link } from "wouter";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function About() {
+  const phoneConfig = usePhoneConfig();
+  const marbleFallsPhone = useMarbleFallsPhone();
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -24,7 +27,7 @@ export default function About() {
       "postalCode": "78702",
       "addressCountry": "US"
     },
-    "telephone": ["+15123689159", "+18304603565"],
+    "telephone": [phoneConfig.tel.replace('tel:', '+'), marbleFallsPhone.tel.replace('tel:', '+')],
     "areaServed": [
       { "@type": "City", "name": "Austin", "containedIn": { "@type": "State", "name": "Texas" } },
       { "@type": "City", "name": "Marble Falls", "containedIn": { "@type": "State", "name": "Texas" } }
@@ -79,7 +82,7 @@ export default function About() {
     <>
       <SEOHead
         title="About Us | Family-Owned Plumbing Company | Austin TX"
-        description="Family-owned plumbing company serving Central Texas since 2005. Licensed professionals specializing in water heaters and drain cleaning. Call (512) 368-9159."
+        description={`Family-owned plumbing company serving Central Texas since 2005. Licensed professionals specializing in water heaters and drain cleaning. Call ${phoneConfig.display}.`}
         canonical="https://www.plumbersthatcare.com/about"
         schema={organizationSchema}
       />
@@ -264,12 +267,12 @@ export default function About() {
                   <div className="mt-8 pt-8 border-t border-border">
                     <p className="text-sm text-muted-foreground mb-2">Call us today for a free estimate</p>
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center text-lg font-semibold">
-                      <a href="tel:+15123689159" className="hover:text-primary" data-testid="link-phone-austin">
-                        Austin: (512) 368-9159
+                      <a href={phoneConfig.tel} className="hover:text-primary" data-testid="link-phone-austin">
+                        Austin: {phoneConfig.display}
                       </a>
                       <span className="hidden sm:inline text-muted-foreground">|</span>
-                      <a href="tel:+18304603565" className="hover:text-primary" data-testid="link-phone-marble-falls">
-                        Marble Falls: (830) 460-3565
+                      <a href={marbleFallsPhone.tel} className="hover:text-primary" data-testid="link-phone-marble-falls">
+                        Marble Falls: {marbleFallsPhone.display}
                       </a>
                     </div>
                   </div>
