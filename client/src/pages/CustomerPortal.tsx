@@ -31,8 +31,14 @@ import {
   Wrench,
   MapPin,
   Home,
-  MessageSquare
+  MessageSquare,
+  Share2,
+  Copy,
+  Check,
+  TrendingUp
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { SiFacebook, SiX } from "react-icons/si";
 
 interface ServiceTitanCustomer {
   id: number;
@@ -96,7 +102,9 @@ export default function CustomerPortal() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [copied, setCopied] = useState(false);
   const phoneConfig = usePhoneConfig();
+  const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -106,6 +114,17 @@ export default function CustomerPortal() {
   // Fetch referrals for this customer
   const { data: referralsData } = useQuery<{ referrals: any[] }>({
     queryKey: ['/api/referrals/customer', customerId],
+    enabled: !!customerId,
+  });
+
+  // Fetch referral code and link for this customer
+  const { data: referralLinkData } = useQuery<{
+    code: string;
+    url: string;
+    clicks: number;
+    conversions: number;
+  }>({
+    queryKey: ['/api/referrals/code', customerId],
     enabled: !!customerId,
   });
 
@@ -173,6 +192,53 @@ export default function CustomerPortal() {
       day: 'numeric',
       year: 'numeric',
     });
+  };
+
+  const copyReferralLink = async () => {
+    if (!referralLinkData?.url) return;
+    
+    try {
+      await navigator.clipboard.writeText(referralLinkData.url);
+      setCopied(true);
+      toast({
+        title: "Link copied!",
+        description: "Your referral link has been copied to clipboard",
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Please try again",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const shareViaFacebook = () => {
+    if (!referralLinkData?.url) return;
+    const url = encodeURIComponent(referralLinkData.url);
+    const text = encodeURIComponent("Check out Economy Plumbing Services! They're the best plumbers in Austin. Use my referral link to get started:");
+    window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}&quote=${text}`, '_blank');
+  };
+
+  const shareViaX = () => {
+    if (!referralLinkData?.url) return;
+    const url = encodeURIComponent(referralLinkData.url);
+    const text = encodeURIComponent("Check out Economy Plumbing Services! Best plumbers in Austin 💧");
+    window.open(`https://twitter.com/intent/tweet?url=${url}&text=${text}`, '_blank');
+  };
+
+  const shareViaEmail = () => {
+    if (!referralLinkData?.url) return;
+    const subject = encodeURIComponent("I recommend Economy Plumbing Services");
+    const body = encodeURIComponent(`Hi!\n\nI wanted to share Economy Plumbing Services with you. They've been great for all my plumbing needs in the Austin area!\n\nCheck them out here: ${referralLinkData.url}\n\nBest regards`);
+    window.location.href = `mailto:?subject=${subject}&body=${body}`;
+  };
+
+  const shareViaSMS = () => {
+    if (!referralLinkData?.url) return;
+    const text = encodeURIComponent(`Check out Economy Plumbing Services - best plumbers in Austin! ${referralLinkData.url}`);
+    window.location.href = `sms:?&body=${text}`;
   };
 
   const formatTime = (dateString: string) => {
@@ -805,6 +871,105 @@ export default function CustomerPortal() {
                         <p className="text-xs text-center text-muted-foreground">
                           Takes less than 2 minutes - makes a huge difference!
                         </p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Referral Link Sharing */}
+                  {referralLinkData && (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Share2 className="w-6 h-6 text-primary" />
+                          <CardTitle>Share Your Referral Link</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Share your unique link with friends and family to earn rewards
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Referral Link with Copy Button */}
+                        <div className="space-y-2">
+                          <Label htmlFor="referral-link">Your Unique Referral Link</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="referral-link"
+                              value={referralLinkData.url}
+                              readOnly
+                              className="font-mono text-sm"
+                              data-testid="input-referral-link"
+                            />
+                            <Button
+                              onClick={copyReferralLink}
+                              variant="outline"
+                              size="icon"
+                              data-testid="button-copy-link"
+                            >
+                              {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="p-4 bg-background rounded-lg border">
+                            <div className="flex items-center gap-2 mb-1">
+                              <TrendingUp className="w-4 h-4 text-muted-foreground" />
+                              <p className="text-sm text-muted-foreground">Total Clicks</p>
+                            </div>
+                            <p className="text-2xl font-bold" data-testid="text-clicks">{referralLinkData.clicks}</p>
+                          </div>
+                          <div className="p-4 bg-background rounded-lg border">
+                            <div className="flex items-center gap-2 mb-1">
+                              <CheckCircle className="w-4 h-4 text-muted-foreground" />
+                              <p className="text-sm text-muted-foreground">Conversions</p>
+                            </div>
+                            <p className="text-2xl font-bold text-primary" data-testid="text-conversions">{referralLinkData.conversions}</p>
+                          </div>
+                        </div>
+
+                        {/* Social Sharing Buttons */}
+                        <div className="space-y-2">
+                          <Label>Share on Social Media</Label>
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <Button
+                              onClick={shareViaFacebook}
+                              variant="outline"
+                              className="gap-2"
+                              data-testid="button-share-facebook"
+                            >
+                              <SiFacebook className="w-4 h-4" />
+                              Facebook
+                            </Button>
+                            <Button
+                              onClick={shareViaX}
+                              variant="outline"
+                              className="gap-2"
+                              data-testid="button-share-x"
+                            >
+                              <SiX className="w-4 h-4" />
+                              X
+                            </Button>
+                            <Button
+                              onClick={shareViaEmail}
+                              variant="outline"
+                              className="gap-2"
+                              data-testid="button-share-email"
+                            >
+                              <Mail className="w-4 h-4" />
+                              Email
+                            </Button>
+                            <Button
+                              onClick={shareViaSMS}
+                              variant="outline"
+                              className="gap-2"
+                              data-testid="button-share-sms"
+                            >
+                              <MessageSquare className="w-4 h-4" />
+                              SMS
+                            </Button>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   )}
