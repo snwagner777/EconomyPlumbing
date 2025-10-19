@@ -4912,6 +4912,30 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Admin: Manually trigger ServiceTitan sync
+  app.post("/api/admin/trigger-sync", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { syncServiceTitanCustomers, resetSyncLock } = await import('./lib/serviceTitanSync');
+      
+      // Reset lock first (in case it's stuck)
+      resetSyncLock();
+      
+      // Trigger sync in background
+      syncServiceTitanCustomers().catch(error => {
+        console.error("[Admin] Background sync error:", error);
+      });
+      
+      res.json({ success: true, message: "Sync started (lock reset)" });
+    } catch (error: any) {
+      console.error("[Admin] Trigger sync error:", error);
+      res.status(500).json({ error: "Failed to start sync" });
+    }
+  });
+
   // Admin: Get Customer Portal analytics
   app.get("/api/admin/portal-stats", async (req, res) => {
     try {

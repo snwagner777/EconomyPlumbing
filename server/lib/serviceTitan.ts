@@ -792,6 +792,10 @@ class ServiceTitanAPI {
 
         page++;
         
+        // Update heartbeat to prevent stale lock detection
+        const { updateSyncHeartbeat } = await import('./serviceTitanSync');
+        updateSyncHeartbeat();
+        
         // Log progress every 10 pages
         if (page % 10 === 0) {
           console.log(`[ServiceTitan Sync] Progress: ${totalCustomers} customers, ${totalContacts} contacts`);

@@ -261,9 +261,11 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
   const goodQualityUnused = unusedPhotos.filter((p: any) => p.isGoodQuality);
 
   // Fetch ServiceTitan sync status
-  const { data: syncStatus, isLoading: syncLoading } = useQuery<SyncStatus>({
+  const { data: syncStatus, isLoading: syncLoading, refetch: refetchSync } = useQuery<SyncStatus>({
     queryKey: ['/api/admin/sync-status'],
     refetchInterval: 5000, // Refresh every 5 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 
   // Fetch Customer Portal stats
@@ -275,7 +277,7 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
   // Manual sync trigger mutation - FIXED ENDPOINT
   const syncMutation = useMutation({
     mutationFn: async () => {
-      const response = await fetch('/api/admin/sync-servicetitan', {
+      const response = await fetch('/api/admin/trigger-sync', {
         method: 'POST',
         credentials: 'include',
       });
@@ -287,7 +289,7 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
     onSuccess: () => {
       toast({
         title: "Sync Started",
-        description: "Customer sync is running in the background. Check the progress below.",
+        description: "Sync lock reset! Numbers should start increasing now. Check progress below.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/sync-status'] });
     },
