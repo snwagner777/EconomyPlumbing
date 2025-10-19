@@ -84,6 +84,7 @@ const RestaurantPlumbing = lazy(() => import("@/pages/commercial/RestaurantPlumb
 const RetailPlumbing = lazy(() => import("@/pages/commercial/RetailPlumbing"));
 const OfficeBuilding = lazy(() => import("@/pages/commercial/OfficeBuilding"));
 const PropertyManagement = lazy(() => import("@/pages/commercial/PropertyManagement"));
+const ReferAFriend = lazy(() => import("@/pages/ReferAFriend"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -183,6 +184,7 @@ function Router() {
       
       {/* Utility pages */}
       <Route path="/contact" component={Contact} />
+      <Route path="/refer-a-friend" component={ReferAFriend} />
       <Route path="/faq" component={FAQ} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />
