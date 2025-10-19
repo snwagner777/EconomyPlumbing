@@ -6,6 +6,7 @@ import ServiceAreaCard from "@/components/ServiceAreaCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
+import { Link } from "wouter";
 import {
   Droplets,
   Wind,
@@ -299,18 +300,14 @@ export default function Home() {
                     <span>Emergency Plumbing</span>
                   </li>
                 </ul>
-                <a 
-                  href="#footer-services" 
+                <Link 
+                  href="/services" 
                   className="inline-flex items-center gap-2 text-foreground font-medium hover-elevate px-2 py-1 rounded-md"
                   data-testid="link-view-all-services"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document.querySelector('footer')?.scrollIntoView({ behavior: 'smooth' });
-                  }}
                 >
                   View All Services
                   <ArrowRight className="w-4 h-4" />
-                </a>
+                </Link>
               </Card>
             </div>
 
