@@ -1373,20 +1373,40 @@ export default function CustomerPortal() {
                     <CardHeader>
                       <div className="flex items-center gap-2">
                         <Gift className="w-6 h-6 text-primary" />
-                        <CardTitle>Refer a Friend, Earn Rewards</CardTitle>
+                        <CardTitle>Earn $25 for Every Referral!</CardTitle>
                       </div>
                       <CardDescription>
-                        Love our service? Share it with friends and family
+                        Our Referral Rewards Program makes it easy to earn credits
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                        <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                        <div>
-                          <p className="font-medium mb-1">You Both Save</p>
-                          <p className="text-sm text-muted-foreground">
-                            Earn service credits for every friend you refer. They get a new customer discount and priority scheduling!
-                          </p>
+                      <div className="grid gap-3">
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <DollarSign className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">$25 Service Credit Per Referral</p>
+                            <p className="text-sm text-muted-foreground">
+                              When your friend completes a service call of $200 or more, you automatically earn a $25 credit toward future services!
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">Climb the Leaderboard</p>
+                            <p className="text-sm text-muted-foreground">
+                              Compete with other customers for the top spot! Our referral leaderboard tracks successful referrals and showcases our top advocates.
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">They Win Too</p>
+                            <p className="text-sm text-muted-foreground">
+                              Your friends get priority scheduling and join the Economy Plumbing family with the same quality service you love!
+                            </p>
+                          </div>
                         </div>
                       </div>
                       
@@ -1396,8 +1416,8 @@ export default function CustomerPortal() {
                           onClick={() => setShowReferralModal(true)}
                           data-testid="button-refer-program"
                         >
-                          <Gift className="w-4 h-4 mr-2" />
-                          Refer Friends Now
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share Your Link Now
                         </Button>
                         <Button
                           variant="outline"
@@ -1405,7 +1425,7 @@ export default function CustomerPortal() {
                           onClick={() => window.location.href = '/refer-a-friend'}
                           data-testid="button-learn-rewards"
                         >
-                          Learn About Rewards
+                          View Leaderboard
                         </Button>
                       </div>
 
