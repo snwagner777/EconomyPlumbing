@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -23,6 +23,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export default function ReferAFriend() {
   const phoneConfig = usePhoneConfig();
 
+  const [niceJobReady, setNiceJobReady] = useState(false);
+
   useEffect(() => {
     // Load NiceJob SDK
     const script = document.createElement('script');
@@ -30,7 +32,28 @@ export default function ReferAFriend() {
     script.async = true;
     
     script.onload = () => {
-      console.log('NiceJob SDK loaded successfully');
+      console.log('NiceJob SDK script loaded');
+      // Wait for NiceJob to initialize
+      const checkNiceJob = setInterval(() => {
+        // @ts-ignore
+        if (window.NiceJob) {
+          console.log('NiceJob SDK initialized', window.NiceJob);
+          clearInterval(checkNiceJob);
+          setNiceJobReady(true);
+        }
+      }, 100);
+      
+      // Stop checking after 10 seconds
+      setTimeout(() => {
+        clearInterval(checkNiceJob);
+        if (!niceJobReady) {
+          console.error('NiceJob SDK failed to initialize after 10 seconds');
+        }
+      }, 10000);
+    };
+    
+    script.onerror = () => {
+      console.error('Failed to load NiceJob SDK script');
     };
     
     document.body.appendChild(script);
@@ -51,17 +74,43 @@ export default function ReferAFriend() {
 
   const handleOpenReferralForm = () => {
     // @ts-ignore - NiceJob SDK
-    if (window.NiceJob && typeof window.NiceJob.openRecommendation === 'function') {
+    if (!window.NiceJob) {
+      console.error('NiceJob SDK not loaded');
+      alert('The referral form is still loading. Please wait a moment and try again.');
+      return;
+    }
+
+    // @ts-ignore
+    console.log('Attempting to open NiceJob form. Available methods:', Object.keys(window.NiceJob));
+    
+    try {
+      // @ts-ignore - Try different possible method names
+      if (typeof window.NiceJob.openRecommendation === 'function') {
+        // @ts-ignore
+        window.NiceJob.openRecommendation();
       // @ts-ignore
-      window.NiceJob.openRecommendation();
+      } else if (typeof window.NiceJob.open === 'function') {
+        // @ts-ignore
+        window.NiceJob.open();
+      // @ts-ignore
+      } else if (typeof window.NiceJob.showWidget === 'function') {
+        // @ts-ignore
+        window.NiceJob.showWidget();
+      } else {
+        // @ts-ignore
+        console.error('No known NiceJob method found. Available:', window.NiceJob);
+        alert('The referral form is not configured correctly. Please contact support.');
+        return;
+      }
+      
       try {
         trackEvent('Refer a Friend CTA', 'Referral Page', 'Open Form');
       } catch (error) {
         console.warn('Analytics not available:', error);
       }
-    } else {
-      console.warn('NiceJob SDK not loaded yet. Please wait a moment and try again.');
-      alert('The referral form is still loading. Please wait a moment and try again.');
+    } catch (error) {
+      console.error('Error opening NiceJob form:', error);
+      alert('There was an error opening the referral form. Please try again or contact support.');
     }
   };
 
