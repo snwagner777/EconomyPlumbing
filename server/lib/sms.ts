@@ -4,11 +4,13 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-if (!accountSid || !authToken || !twilioPhoneNumber) {
-  throw new Error('Missing required Twilio environment variables');
+const isTwilioConfigured = !!(accountSid && authToken && twilioPhoneNumber);
+
+if (!isTwilioConfigured) {
+  console.warn('[Twilio] Missing environment variables. SMS functionality will be disabled.');
 }
 
-const client = twilio(accountSid, authToken);
+const client = isTwilioConfigured ? twilio(accountSid, authToken) : null;
 
 export interface SendSMSOptions {
   to: string;
@@ -16,6 +18,11 @@ export interface SendSMSOptions {
 }
 
 export async function sendSMS({ to, message }: SendSMSOptions): Promise<void> {
+  if (!isTwilioConfigured || !client) {
+    console.warn('[Twilio] SMS not configured - skipping SMS to:', to);
+    throw new Error('Twilio is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER environment variables.');
+  }
+  
   try {
     await client.messages.create({
       body: message,
