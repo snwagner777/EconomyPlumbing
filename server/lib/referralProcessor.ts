@@ -45,8 +45,10 @@ export class ReferralProcessor {
 
   /**
    * Step 1: Match referees to ServiceTitan customers
-   * Updates status from 'pending' to 'contacted' when referee is found in ServiceTitan
-   * IMPORTANT: Only matches NEW customers (created after referral submitted OR no prior jobs)
+   * Updates status from 'pending' to 'contacted' when referee becomes a customer
+   * 
+   * IMPORTANT: We already checked if they were an existing customer at submission time.
+   * If they show up in ServiceTitan now but didn't at submission, they're a NEW customer!
    */
   private async matchRefereesToCustomers(): Promise<void> {
     const pendingReferrals = await db
@@ -64,6 +66,12 @@ export class ReferralProcessor {
     const api = getServiceTitanAPI();
 
     for (const referral of pendingReferrals) {
+      // Skip if already marked as ineligible
+      if (referral.creditNotes?.includes('ineligible') || referral.creditNotes?.includes('already a customer')) {
+        console.log(`[Referral Processor] ⏭️ Skipping referral ${referral.id} - marked as ineligible`);
+        continue;
+      }
+
       try {
         // Try to find referee by phone first
         const customerId = await api.searchCustomerWithFallback(referral.refereePhone);
@@ -73,70 +81,24 @@ export class ReferralProcessor {
           (referral.refereeEmail ? await api.searchCustomerWithFallback(referral.refereeEmail) : null);
 
         if (finalCustomerId) {
-          // CRITICAL: Verify this is a NEW customer, not an existing one
-          const isNewCustomer = await this.verifyNewCustomer(finalCustomerId, referral.submittedAt);
+          // They became a customer! (We already verified they weren't one at submission)
+          console.log(`[Referral Processor] ✅ Referee "${referral.refereeName}" became a customer (ID: ${finalCustomerId})`);
           
-          if (isNewCustomer) {
-            console.log(`[Referral Processor] ✅ Matched referee "${referral.refereeName}" to NEW ServiceTitan customer ${finalCustomerId}`);
-            
-            await db
-              .update(referrals)
-              .set({
-                refereeCustomerId: finalCustomerId,
-                status: 'contacted',
-                contactedAt: new Date(),
-                updatedAt: new Date()
-              })
-              .where(eq(referrals.id, referral.id));
-          } else {
-            console.log(`[Referral Processor] ❌ Referee "${referral.refereeName}" is an EXISTING customer (ineligible for referral)`);
-            
-            // Mark as ineligible
-            await db
-              .update(referrals)
-              .set({
-                status: 'pending',
-                creditNotes: 'Referee was an existing customer - not eligible for referral credit',
-                updatedAt: new Date()
-              })
-              .where(eq(referrals.id, referral.id));
-          }
+          await db
+            .update(referrals)
+            .set({
+              refereeCustomerId: finalCustomerId,
+              status: 'contacted',
+              contactedAt: new Date(),
+              updatedAt: new Date()
+            })
+            .where(eq(referrals.id, referral.id));
         } else {
           console.log(`[Referral Processor] ⏳ Referee "${referral.refereeName}" not yet a customer`);
         }
       } catch (error) {
         console.error(`[Referral Processor] Error matching referral ${referral.id}:`, error);
       }
-    }
-  }
-
-  /**
-   * Verify customer is NEW (created after referral OR no jobs before referral)
-   */
-  private async verifyNewCustomer(customerId: number, referralDate: Date): Promise<boolean> {
-    const api = getServiceTitanAPI();
-    
-    try {
-      // Check if customer had any jobs BEFORE the referral was submitted
-      // If they had prior jobs, they're an existing customer
-      const allJobs = await api.getCustomerJobs(customerId);
-      
-      const priorJobs = allJobs.filter(job => {
-        const jobDate = job.completedOn ? new Date(job.completedOn) : null;
-        return jobDate && jobDate < referralDate;
-      });
-
-      if (priorJobs.length > 0) {
-        console.log(`[Referral Processor] Customer ${customerId} had ${priorJobs.length} jobs BEFORE referral - existing customer`);
-        return false;
-      }
-
-      console.log(`[Referral Processor] Customer ${customerId} has no prior jobs - NEW customer ✓`);
-      return true;
-    } catch (error) {
-      console.error(`[Referral Processor] Error verifying new customer ${customerId}:`, error);
-      // On error, be conservative and assume existing customer
-      return false;
     }
   }
 

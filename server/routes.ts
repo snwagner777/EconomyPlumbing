@@ -1053,6 +1053,28 @@ ${rssItems}
         console.error('[Referral] Error looking up referrer:', error);
         // Continue even if lookup fails - we can match later
       }
+
+      // CRITICAL: Check if referee is ALREADY a customer (ineligible for referral)
+      let refereeCustomerId: number | null = null;
+      let isExistingCustomer = false;
+      
+      try {
+        // Search by phone first, then email
+        refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
+        if (!refereeCustomerId && refereeEmail) {
+          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
+        }
+        
+        if (refereeCustomerId) {
+          isExistingCustomer = true;
+          console.log(`[Referral] ❌ Referee "${refereeName}" is ALREADY a customer (ID: ${refereeCustomerId}) - ineligible`);
+        } else {
+          console.log(`[Referral] ✅ Referee "${refereeName}" is NOT yet a customer - eligible`);
+        }
+      } catch (error) {
+        console.error('[Referral] Error checking referee:', error);
+        // Continue - we'll check later
+      }
       
       // Store referral in database
       const { referrals } = await import('@shared/schema');
@@ -1063,7 +1085,9 @@ ${rssItems}
         refereeName,
         refereePhone,
         refereeEmail: refereeEmail || null,
+        refereeCustomerId: isExistingCustomer ? refereeCustomerId : null,
         status: 'pending',
+        creditNotes: isExistingCustomer ? 'Referee was already a customer when referral submitted - ineligible' : null,
       }).returning();
       
       console.log(`[Referral] Created referral ${referral.id} - Referrer: ${referrerName}, Referee: ${refereeName}`);
