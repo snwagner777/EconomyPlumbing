@@ -161,7 +161,7 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Search for customer by email or phone using Contacts Search API
+   * Search for customer by email or phone (trying multiple approaches)
    */
   async searchCustomer(email: string, phone: string): Promise<ServiceTitanCustomer | null> {
     try {
@@ -169,16 +169,33 @@ class ServiceTitanAPI {
       
       let customerId: number | null = null;
 
-      // Search by phone if provided (use Contacts Search API)
-      if (phone && phone.trim()) {
-        console.log('[ServiceTitan] Searching by phone using Contacts Search API...');
-        
-        // Normalize the search phone number (remove all non-digits and leading 1)
-        const normalizedPhone = this.normalizePhone(phone);
-        console.log(`[ServiceTitan] Normalized search phone: "${normalizedPhone}"`);
+      // Strategy 1: Try email search first if provided (most reliable)
+      if (email && email.trim()) {
+        console.log('[ServiceTitan] Strategy 1: Searching by email...');
         
         try {
-          // Use Contacts Search API endpoint
+          const emailResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+            `/customers?email=${encodeURIComponent(email.trim())}`
+          );
+
+          if (emailResults.data && emailResults.data.length > 0) {
+            console.log(`[ServiceTitan] Found customer by email: ${emailResults.data[0].id}`);
+            return emailResults.data[0];
+          }
+          console.log('[ServiceTitan] No customer found by email');
+        } catch (error: any) {
+          console.error('[ServiceTitan] Email search error:', error.message);
+        }
+      }
+
+      // Strategy 2: Try Contacts Search API for phone (if available)
+      if (!customerId && phone && phone.trim()) {
+        console.log('[ServiceTitan] Strategy 2: Trying Contacts Search API for phone...');
+        
+        const normalizedPhone = this.normalizePhone(phone);
+        console.log(`[ServiceTitan] Normalized phone: "${normalizedPhone}"`);
+        
+        try {
           const contactsSearchUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/contacts/search`;
           const searchResults = await this.request<{ data: any[] }>(
             contactsSearchUrl,
@@ -190,74 +207,88 @@ class ServiceTitanAPI {
                 pageSize: 10
               })
             },
-            true // Use full URL
+            true
           );
 
-          console.log(`[ServiceTitan] Contacts search returned ${searchResults.data?.length || 0} results`);
-
           if (searchResults.data && searchResults.data.length > 0) {
-            // Get the first matching contact's customer ID
             customerId = searchResults.data[0].customerId;
-            console.log(`[ServiceTitan] Found contact with customerId: ${customerId}`);
-          } else {
-            console.log('[ServiceTitan] No contacts found matching phone number');
+            console.log(`[ServiceTitan] Contacts Search found customerId: ${customerId}`);
           }
         } catch (error: any) {
-          console.error('[ServiceTitan] Contacts search error:', error.message);
-          // Fall through to email search or return null
+          console.log('[ServiceTitan] Contacts Search API not available, trying alternative methods...');
         }
       }
 
-      // Search by email if provided and phone didn't find anything
-      if (!customerId && email && email.trim()) {
-        console.log('[ServiceTitan] Searching by email using Contacts Search API...');
+      // Strategy 3: Optimized pagination search (check first 250 customers in 5 pages)
+      if (!customerId && phone && phone.trim()) {
+        console.log('[ServiceTitan] Strategy 3: Fast pagination search (250 customers max)...');
         
-        try {
-          // Use Contacts Search API endpoint for email
-          const contactsSearchUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/contacts/search`;
-          const searchResults = await this.request<{ data: any[] }>(
-            contactsSearchUrl,
-            {
-              method: 'POST',
-              body: JSON.stringify({
-                value: email.trim(),
-                page: 1,
-                pageSize: 10
-              })
-            },
-            true // Use full URL
+        const normalizedPhone = this.normalizePhone(phone);
+        const MAX_PAGES = 5; // Only check 5 pages (250 customers) for speed
+        const PAGE_SIZE = 50;
+        const BATCH_SIZE = 10; // Check 10 customers at a time
+        
+        for (let page = 1; page <= MAX_PAGES; page++) {
+          console.log(`[ServiceTitan] Checking page ${page}/${MAX_PAGES}...`);
+          
+          const pageResults = await this.request<{ data: ServiceTitanCustomer[], hasMore?: boolean }>(
+            `/customers?page=${page}&pageSize=${PAGE_SIZE}`
           );
-
-          console.log(`[ServiceTitan] Email contacts search returned ${searchResults.data?.length || 0} results`);
-
-          if (searchResults.data && searchResults.data.length > 0) {
-            // Get the first matching contact's customer ID
-            customerId = searchResults.data[0].customerId;
-            console.log(`[ServiceTitan] Found contact with customerId: ${customerId}`);
-          } else {
-            console.log('[ServiceTitan] No contacts found matching email');
+          
+          if (!pageResults.data || pageResults.data.length === 0) {
+            break;
           }
-        } catch (error: any) {
-          console.error('[ServiceTitan] Email contacts search error:', error.message);
+
+          // Check customers in batches
+          for (let i = 0; i < pageResults.data.length; i += BATCH_SIZE) {
+            const batch = pageResults.data.slice(i, i + BATCH_SIZE);
+            
+            const results = await Promise.allSettled(
+              batch.map(async (customer) => {
+                try {
+                  const contacts = await this.getCustomerContacts(customer.id);
+                  
+                  for (const contact of contacts) {
+                    const phoneValue = contact.value || contact.phoneSettings?.phoneNumber;
+                    if (phoneValue && (contact.type === 'Phone' || contact.type === 'MobilePhone')) {
+                      if (this.normalizePhone(phoneValue) === normalizedPhone) {
+                        console.log(`[ServiceTitan] MATCH FOUND! Customer ${customer.id} (${customer.name})`);
+                        return customer;
+                      }
+                    }
+                  }
+                  return null;
+                } catch (error) {
+                  return null;
+                }
+              })
+            );
+            
+            // Check for match
+            for (const result of results) {
+              if (result.status === 'fulfilled' && result.value) {
+                return result.value;
+              }
+            }
+          }
+          
+          // Stop if no more pages
+          if (pageResults.hasMore === false || pageResults.data.length < PAGE_SIZE) {
+            break;
+          }
         }
+        
+        console.log(`[ServiceTitan] No match found in first ${MAX_PAGES * PAGE_SIZE} customers`);
       }
 
-      // If we found a customer ID, fetch the full customer details
+      // If we found a customer ID from Contacts Search, fetch full details
       if (customerId) {
         console.log(`[ServiceTitan] Fetching customer details for ID: ${customerId}`);
-        try {
-          const customer = await this.request<ServiceTitanCustomer>(
-            `/customers/${customerId}`
-          );
-          console.log(`[ServiceTitan] Successfully retrieved customer: ${customer.name}`);
-          return customer;
-        } catch (error: any) {
-          console.error('[ServiceTitan] Error fetching customer details:', error.message);
-          throw error;
-        }
+        const customer = await this.request<ServiceTitanCustomer>(`/customers/${customerId}`);
+        return customer;
       }
 
-      console.log('[ServiceTitan] Customer not found by email or phone');
+      console.log('[ServiceTitan] Customer not found by any method');
       return null;
     } catch (error: any) {
       console.error('[ServiceTitan] Search customer error:', error.message || error);

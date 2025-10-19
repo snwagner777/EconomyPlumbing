@@ -18,7 +18,8 @@ import {
   CheckCircle,
   AlertCircle,
   Phone as PhoneIcon,
-  Mail
+  Mail,
+  Hash
 } from "lucide-react";
 
 interface ServiceTitanCustomer {
@@ -66,7 +67,7 @@ interface CustomerData {
 
 export default function CustomerPortal() {
   const [lookupValue, setLookupValue] = useState("");
-  const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
+  const [lookupType, setLookupType] = useState<"phone" | "email" | "account">("phone");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -83,25 +84,40 @@ export default function CustomerPortal() {
     setIsSearching(true);
 
     try {
-      const params = new URLSearchParams({
-        [lookupType]: lookupValue,
-      });
-      const response = await fetch(`/api/servicetitan/customer/search?${params}`);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Customer not found');
-      }
+      // For account number, use direct customer ID lookup
+      if (lookupType === 'account') {
+        const response = await fetch(`/api/servicetitan/customer/${lookupValue}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Customer not found');
+        }
 
-      const customer = await response.json();
-      setCustomerId(customer.id);
+        const customer = await response.json();
+        setCustomerId(customer.customer.id);
+      } else {
+        // For phone/email, use search endpoint
+        const params = new URLSearchParams({
+          [lookupType]: lookupValue,
+        });
+        const response = await fetch(`/api/servicetitan/customer/search?${params}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Customer not found');
+        }
+
+        const customer = await response.json();
+        setCustomerId(customer.id);
+      }
     } catch (err) {
       console.error('Customer lookup failed:', err);
-      setLookupError(
-        lookupType === 'phone'
-          ? 'We couldn\'t find an account with that phone number. Please make sure it\'s the same number you provided when you scheduled service, or try searching by email instead.'
-          : 'We couldn\'t find an account with that email address. Please make sure it\'s the same email you provided when you scheduled service, or try searching by phone number instead.'
-      );
+      const errorMessages = {
+        phone: 'We couldn\'t find an account with that phone number. Please try searching by email or account number instead.',
+        email: 'We couldn\'t find an account with that email address. Please try searching by phone or account number instead.',
+        account: 'We couldn\'t find an account with that number. Please check your invoice or receipt for your customer ID, or try searching by phone or email instead.'
+      };
+      setLookupError(errorMessages[lookupType]);
     } finally {
       setIsSearching(false);
     }
@@ -167,11 +183,11 @@ export default function CustomerPortal() {
               <CardHeader>
                 <CardTitle>Find Your Account</CardTitle>
                 <CardDescription>
-                  Enter your phone number or email to access your account
+                  Enter your phone number, email, or account number to access your account
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <Button
                     variant={lookupType === "phone" ? "default" : "outline"}
                     onClick={() => setLookupType("phone")}
@@ -190,21 +206,41 @@ export default function CustomerPortal() {
                     <Mail className="w-4 h-4 mr-2" />
                     Email
                   </Button>
+                  <Button
+                    variant={lookupType === "account" ? "default" : "outline"}
+                    onClick={() => setLookupType("account")}
+                    className="flex-1"
+                    data-testid="button-lookup-account"
+                  >
+                    <Hash className="w-4 h-4 mr-2" />
+                    Account #
+                  </Button>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="lookup-input">
-                    {lookupType === "phone" ? "Phone Number" : "Email Address"}
+                    {lookupType === "phone" ? "Phone Number" : lookupType === "email" ? "Email Address" : "Account Number"}
                   </Label>
                   <Input
                     id="lookup-input"
-                    type={lookupType === "phone" ? "tel" : "email"}
-                    placeholder={lookupType === "phone" ? "(512) 555-1234" : "your@email.com"}
+                    type={lookupType === "phone" ? "tel" : lookupType === "email" ? "email" : "text"}
+                    placeholder={
+                      lookupType === "phone" 
+                        ? "(512) 555-1234" 
+                        : lookupType === "email" 
+                        ? "your@email.com" 
+                        : "1234567"
+                    }
                     value={lookupValue}
                     onChange={(e) => setLookupValue(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
                     data-testid="input-lookup"
                   />
+                  {lookupType === "account" && (
+                    <p className="text-xs text-muted-foreground">
+                      Find your account number on any invoice or receipt
+                    </p>
+                  )}
                 </div>
 
                 <Button
