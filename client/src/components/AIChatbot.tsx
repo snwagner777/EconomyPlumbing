@@ -113,7 +113,7 @@ export default function AIChatbot() {
     return (
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-50 hover:scale-110 transition-transform"
+        className="fixed bottom-4 right-4 md:bottom-6 md:right-6 h-14 w-14 rounded-full shadow-lg z-50 hover:scale-110 transition-transform"
         size="icon"
         data-testid="button-open-chatbot"
       >
@@ -123,7 +123,7 @@ export default function AIChatbot() {
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] shadow-2xl z-50 flex flex-col">
+    <Card className="fixed inset-x-0 bottom-0 md:inset-x-auto md:bottom-6 md:right-6 w-full md:w-96 h-[calc(100vh-80px)] md:h-[600px] rounded-t-lg md:rounded-lg shadow-2xl z-50 flex flex-col">
       {/* Header */}
       <CardHeader className="pb-3 border-b flex-shrink-0">
         <div className="flex items-center justify-between">
