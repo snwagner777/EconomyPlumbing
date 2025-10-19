@@ -64,7 +64,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -143,7 +143,7 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
     {
       title: "Products & Memberships",
       icon: Package,
-      href: '/admin/products',
+      section: 'products' as AdminSection,
       description: "SKUs & ServiceTitan setup"
     },
     {
@@ -531,6 +531,73 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
               </div>
               <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Active</Badge>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Conversion Tracking */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-primary" />
+            <CardTitle>Conversion Tracking Overview</CardTitle>
+          </div>
+          <CardDescription>
+            Monitor key conversion events across the website
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Calendar className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium">Scheduler Opens</p>
+              </div>
+              <p className="text-2xl font-bold">-</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ServiceTitan scheduler clicks
+              </p>
+            </div>
+
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Phone className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium">Phone Clicks</p>
+              </div>
+              <p className="text-2xl font-bold">-</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Click-to-call conversions
+              </p>
+            </div>
+
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Mail className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium">Form Submissions</p>
+              </div>
+              <p className="text-2xl font-bold">-</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Contact form completions
+              </p>
+            </div>
+
+            <div className="p-4 border rounded-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <FileText className="w-4 h-4 text-primary" />
+                <p className="text-sm font-medium">Portal Searches</p>
+              </div>
+              <p className="text-2xl font-bold">{portalStats?.totalSearches || 0}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Customer portal lookups
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 p-4 bg-muted/30 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              <strong>Note:</strong> Full conversion tracking with Google Analytics, Meta Pixel, and Microsoft Clarity is active. 
+              Advanced analytics available in your Google Analytics dashboard.
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -2421,6 +2488,209 @@ function PageMetadataSection() {
   );
 }
 
+function ProductsSection() {
+  const { toast } = useToast();
+  const [editingProduct, setEditingProduct] = useState<any | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const { data: products, isLoading } = useQuery<any[]>({
+    queryKey: ['/api/products'],
+  });
+
+  const updateProductMutation = useMutation({
+    mutationFn: async (data: { id: string; updates: any }) => {
+      const response = await apiRequest("PATCH", `/api/products/${data.id}`, data.updates);
+      const updatedProduct = await response.json();
+      return updatedProduct;
+    },
+    onSuccess: async (updatedProduct) => {
+      queryClient.setQueryData<any[]>(['/api/products'], (old) => {
+        if (!old) return old;
+        return old.map(p => p.id === updatedProduct.id ? updatedProduct : p);
+      });
+      
+      toast({
+        title: "Success",
+        description: "Product updated successfully",
+      });
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEdit = (product: any) => {
+    setEditingProduct(product);
+    setIsDialogOpen(true);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    const formData = new FormData(e.currentTarget);
+    const updates: any = {
+      name: formData.get('name') as string,
+      description: formData.get('description') as string,
+      price: parseInt(formData.get('price') as string) * 100,
+      sku: formData.get('sku') as string || null,
+      durationBillingId: formData.get('durationBillingId') as string || null,
+      serviceTitanMembershipTypeId: formData.get('serviceTitanMembershipTypeId') as string || null,
+    };
+
+    updateProductMutation.mutate({ id: editingProduct.id, updates });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  const memberships = products?.filter(p => p.category === 'membership') || [];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-semibold mb-4">VIP Memberships</h2>
+        <div className="grid gap-4">
+          {memberships.map((product) => (
+            <Card key={product.id} className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-xl font-semibold">{product.name}</h3>
+                    <span className="text-2xl font-bold text-primary">
+                      ${(product.price / 100).toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+                  
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
+                        <Package className="w-4 h-4" />
+                        <span className="font-medium">SKU</span>
+                      </div>
+                      <span className="text-foreground">{product.sku || 'Not set'}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
+                        <Package className="w-4 h-4" />
+                        <span className="font-medium">Duration Billing ID</span>
+                      </div>
+                      <span className="text-foreground font-mono text-xs">{product.durationBillingId || 'Not set'}</span>
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
+                        <Package className="w-4 h-4" />
+                        <span className="font-medium">ServiceTitan Type ID</span>
+                      </div>
+                      <span className="text-foreground font-mono text-xs">{product.serviceTitanMembershipTypeId || 'Not set'}</span>
+                    </div>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => handleEdit(product)}
+                  size="sm"
+                  variant="outline"
+                  data-testid={`button-edit-product-${product.id}`}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Product</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Product Name</Label>
+              <Input
+                id="name"
+                name="name"
+                defaultValue={editingProduct?.name}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                defaultValue={editingProduct?.description}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="price">Price (in dollars)</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                step="0.01"
+                defaultValue={editingProduct ? (editingProduct.price / 100).toFixed(2) : ''}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="sku">SKU</Label>
+              <Input
+                id="sku"
+                name="sku"
+                defaultValue={editingProduct?.sku || ''}
+                placeholder="e.g., VIP-ANNUAL"
+              />
+            </div>
+            <div>
+              <Label htmlFor="durationBillingId">Duration Billing ID</Label>
+              <Input
+                id="durationBillingId"
+                name="durationBillingId"
+                defaultValue={editingProduct?.durationBillingId || ''}
+                placeholder="ServiceTitan billing ID"
+              />
+            </div>
+            <div>
+              <Label htmlFor="serviceTitanMembershipTypeId">ServiceTitan Membership Type ID</Label>
+              <Input
+                id="serviceTitanMembershipTypeId"
+                name="serviceTitanMembershipTypeId"
+                defaultValue={editingProduct?.serviceTitanMembershipTypeId || ''}
+                placeholder="ServiceTitan membership type ID"
+              />
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={updateProductMutation.isPending}>
+                {updateProductMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function TrackingNumbersSection() {
   const [editingNumber, setEditingNumber] = useState<TrackingNumber | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -3166,6 +3436,8 @@ export default function UnifiedAdminDashboard() {
         return <PageMetadataSection />;
       case 'tracking-numbers':
         return <TrackingNumbersSection />;
+      case 'products':
+        return <ProductsSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3179,6 +3451,7 @@ export default function UnifiedAdminDashboard() {
       'commercial-customers': 'Commercial Customers',
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
+      'products': 'Products & Memberships',
     };
     return titles[activeSection];
   };

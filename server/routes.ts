@@ -4886,6 +4886,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       }
 
       const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+      const { isSyncRunning } = await import('./lib/serviceTitanSync');
 
       // Get customer and contact counts
       const [customerCount, contactCount] = await Promise.all([
@@ -4903,7 +4904,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         totalCustomers: Number(customerCount[0]?.count || 0),
         totalContacts: Number(contactCount[0]?.count || 0),
         lastSyncedAt: recentCustomer[0]?.lastSynced || null,
-        isRunning: false, // Would need global state to track
+        isRunning: isSyncRunning(),
       });
     } catch (error: any) {
       console.error("[Admin] Sync status error:", error);

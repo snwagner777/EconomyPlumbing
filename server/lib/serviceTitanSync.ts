@@ -4,6 +4,13 @@ import { getServiceTitanAPI } from "./serviceTitan";
 let syncInProgress = false;
 
 /**
+ * Check if a ServiceTitan sync is currently running
+ */
+export function isSyncRunning(): boolean {
+  return syncInProgress;
+}
+
+/**
  * Sync all customers from ServiceTitan to local database
  * Protected by mutex to prevent concurrent execution
  */
