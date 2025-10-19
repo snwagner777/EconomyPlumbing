@@ -5556,12 +5556,13 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         appKey,
       });
 
-      // Fetch customer, appointments, invoices, and memberships in parallel
-      const [customer, appointments, invoices, memberships] = await Promise.all([
+      // Fetch customer, appointments, invoices, memberships, and estimates in parallel
+      const [customer, appointments, invoices, memberships, estimates] = await Promise.all([
         serviceTitan.getCustomer(parseInt(customerId)),
         serviceTitan.getCustomerAppointments(parseInt(customerId)),
         serviceTitan.getCustomerInvoices(parseInt(customerId)),
         serviceTitan.getCustomerMemberships(parseInt(customerId)),
+        serviceTitan.getCustomerEstimates(parseInt(customerId)),
       ]);
 
       res.json({
@@ -5569,6 +5570,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         appointments,
         invoices,
         memberships,
+        estimates,
       });
     } catch (error: any) {
       console.error("Customer data fetch error:", error);

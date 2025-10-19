@@ -685,6 +685,44 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get customer estimates (open quotes/proposals)
+   */
+  async getCustomerEstimates(customerId: number): Promise<any[]> {
+    try {
+      // ServiceTitan Sales & Estimates API endpoint
+      const salesUrl = `https://api.servicetitan.io/sales/v2/tenant/${this.config.tenantId}/estimates?customerId=${customerId}&pageSize=50`;
+      const result = await this.request<{ data: any[] }>(salesUrl, {}, true);
+      
+      console.log('[ServiceTitan] Estimates response:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Map estimates to display format
+      const estimates = result.data || [];
+      
+      // Filter for open/pending estimates
+      const openEstimates = estimates.filter((est: any) => 
+        est.status === 'Open' || est.status === 'Pending' || (!est.status && !est.soldOn)
+      );
+      
+      return openEstimates.map((estimate: any) => ({
+        id: estimate.id,
+        estimateNumber: estimate.number || estimate.estimateNumber || estimate.id?.toString(),
+        total: parseFloat(estimate.total || estimate.subtotal || '0'),
+        status: estimate.status || 'Open',
+        createdOn: estimate.createdOn || estimate.createdDate,
+        expiresOn: estimate.expiresOn || estimate.expirationDate,
+        jobId: estimate.jobId,
+        jobNumber: estimate.job?.jobNumber || null,
+        summary: estimate.name || estimate.summary || `Estimate #${estimate.number || estimate.id}`,
+        items: estimate.items || [],
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer estimates error:', error);
+      // Return empty array on error rather than throwing
+      return [];
+    }
+  }
+
+  /**
    * Sync all customers from ServiceTitan to local database
    * Paginates through all customers and stores them with normalized contacts
    */
