@@ -140,9 +140,13 @@ export default function AIChatbot() {
     chatbotUI = (
       <Button
         onClick={() => setIsOpen(true)}
-        className={`fixed h-14 w-14 rounded-full shadow-lg z-50 hover:scale-110 transition-transform ${
-          isMobile ? 'bottom-4 right-4' : 'bottom-6 right-6'
-        }`}
+        className="h-14 w-14 rounded-full shadow-lg hover:scale-110 transition-transform"
+        style={{
+          position: 'fixed',
+          bottom: isMobile ? '1rem' : '1.5rem',
+          right: isMobile ? '1rem' : '1.5rem',
+          zIndex: 9999
+        }}
         size="icon"
         data-testid="button-open-chatbot"
       >
@@ -164,7 +168,7 @@ export default function AIChatbot() {
           borderTopRightRadius: '0.5rem',
           borderBottomLeftRadius: 0,
           borderBottomRightRadius: 0,
-          zIndex: 50
+          zIndex: 9999
         }}
       >
         {/* Header */}
@@ -299,7 +303,7 @@ export default function AIChatbot() {
           right: '1.5rem',
           width: '24rem',
           height: '600px',
-          zIndex: 50
+          zIndex: 9999
         }}
       >
       {/* Header */}
