@@ -1157,6 +1157,24 @@ ${rssItems}
 
       const code = generateCode(customerData.name || `CUSTOMER-${customerId}`);
       
+      // Store/update referral code mapping
+      const { referralCodes } = await import('@shared/schema');
+      await db.insert(referralCodes).values({
+        code,
+        customerId,
+        customerName: customerData.name || `Customer ${customerId}`,
+        customerPhone: customerData.phoneNumber || null,
+      }).onConflictDoUpdate({
+        target: referralCodes.code,
+        set: {
+          customerId,
+          customerName: customerData.name || `Customer ${customerId}`,
+          customerPhone: customerData.phoneNumber || null,
+        }
+      });
+
+      console.log(`[Referrals] Created/updated referral code mapping: ${code} → Customer ${customerId}`);
+      
       // Use localhost in development, production domain otherwise
       const baseUrl = process.env.NODE_ENV === 'production' 
         ? 'https://www.plumbersthatcare.com'
@@ -1220,16 +1238,23 @@ ${rssItems}
         return res.status(400).json({ message: "Missing required fields" });
       }
 
-      // Convert referral code back to name (JOHN-SMITH → John Smith)
-      const referrerNameFromCode = referralCode
-        .split('-')
-        .map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
-        .join(' ');
-
       console.log(`[Referrals] Capturing referee: ${refereeName} (${refereePhone}) referred by code: ${referralCode}`);
 
-      // We'll find the referrer later during ServiceTitan sync
-      // For now, just store the name from the code
+      // Look up referrer from code mapping
+      const { referralCodes } = await import('@shared/schema');
+      const [codeMapping] = await db
+        .select()
+        .from(referralCodes)
+        .where(eq(referralCodes.code, referralCode))
+        .limit(1);
+
+      if (!codeMapping) {
+        console.error(`[Referrals] Referral code not found: ${referralCode}`);
+        return res.status(404).json({ message: "Invalid referral code" });
+      }
+
+      console.log(`[Referrals] Found referrer: Customer ${codeMapping.customerId} (${codeMapping.customerName})`);
+
       const { getServiceTitanAPI } = await import('./lib/serviceTitan');
       const serviceTitan = getServiceTitanAPI();
 
@@ -1248,13 +1273,14 @@ ${rssItems}
         console.error('[Referrals] Error checking referee:', error);
       }
 
-      // Create referral record
+      // Create referral record with proper referrer info from code mapping
       const { referrals } = await import('@shared/schema');
       
       const [referral] = await db.insert(referrals).values({
-        referrerName: referrerNameFromCode,
-        referrerPhone: 'PENDING', // Will be filled in by ServiceTitan sync
-        referrerCustomerId: null, // Will be matched by ServiceTitan sync
+        referralCode,
+        referrerName: codeMapping.customerName,
+        referrerPhone: codeMapping.customerPhone || 'UNKNOWN',
+        referrerCustomerId: codeMapping.customerId, // Already have the correct customer ID!
         refereeName,
         refereePhone,
         refereeEmail: refereeEmail || null,

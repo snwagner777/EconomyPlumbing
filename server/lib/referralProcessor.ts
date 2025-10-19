@@ -31,6 +31,8 @@ export class ReferralProcessor {
     try {
       console.log('[Referral Processor] Starting referral processing cycle...');
       
+      // NOTE: Referrers are now matched via referralCodes table when referee info is captured
+      // No need for separate referrer matching step!
       await this.matchRefereesToCustomers();
       await this.checkForCompletedJobs();
       await this.issueCreditsForCompletedJobs();

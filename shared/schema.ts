@@ -107,11 +107,25 @@ export const contactSubmissions = pgTable("contact_submissions", {
   submittedAtIdx: index("contact_submissions_submitted_at_idx").on(table.submittedAt),
 }));
 
+// Referral code mapping (code → customer ID)
+export const referralCodes = pgTable("referral_codes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  code: text("code").notNull().unique(), // e.g., "JOHN-SMITH"
+  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  codeIdx: index("referral_codes_code_idx").on(table.code),
+  customerIdIdx: index("referral_codes_customer_id_idx").on(table.customerId),
+}));
+
 // Referral tracking system
 export const referrals = pgTable("referrals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
   // Referrer info (existing customer)
+  referralCode: text("referral_code"), // The code used (e.g., "JOHN-SMITH") - links to referralCodes table
   referrerName: text("referrer_name").notNull(),
   referrerPhone: text("referrer_phone").notNull(),
   referrerCustomerId: integer("referrer_customer_id"), // ServiceTitan customer ID (null if not found yet)
