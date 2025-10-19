@@ -4779,9 +4779,25 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       // Use hybrid search: local cache first, then live fallback
       const searchValue = (phone as string) || (email as string);
+      const searchType = phone ? 'phone' : 'email';
       console.log("[Customer Portal] Hybrid search for:", searchValue);
       
       const customerId = await serviceTitan.searchCustomerWithFallback(searchValue);
+
+      // Log search attempt for analytics
+      try {
+        const { portalAnalytics } = await import("@shared/schema");
+        await db.insert(portalAnalytics).values({
+          searchType,
+          searchValue,
+          found: !!customerId,
+          customerId: customerId || undefined,
+        });
+        console.log("[Portal Analytics] Logged search:", { searchType, found: !!customerId });
+      } catch (error) {
+        console.error("[Portal Analytics] Failed to log search:", error);
+        // Non-fatal - continue with response
+      }
 
       if (!customerId) {
         console.log("[Customer Portal] No customer found with provided credentials");
@@ -4943,12 +4959,35 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      // For now, return mock data - would track this in production
-      // You could add a portal_analytics table if you want to track searches
+      const { portalAnalytics } = await import("@shared/schema");
+
+      // Count total searches
+      const totalSearchesResult = await db.select({ count: sql<number>`count(*)` })
+        .from(portalAnalytics);
+      const totalSearches = Number(totalSearchesResult[0]?.count || 0);
+
+      // Count successful searches (found customers)
+      const foundSearchesResult = await db.select({ count: sql<number>`count(*)` })
+        .from(portalAnalytics)
+        .where(sql`${portalAnalytics.found} = true`);
+      const totalCustomers = Number(foundSearchesResult[0]?.count || 0);
+
+      // Get recent searches (last 10)
+      const recentSearches = await db.select({
+        id: portalAnalytics.id,
+        searchType: portalAnalytics.searchType,
+        searchValue: portalAnalytics.searchValue,
+        found: portalAnalytics.found,
+        timestamp: portalAnalytics.timestamp,
+      })
+        .from(portalAnalytics)
+        .orderBy(sql`${portalAnalytics.timestamp} DESC`)
+        .limit(10);
+
       res.json({
-        totalSearches: 0,
-        totalCustomers: 0,
-        recentSearches: [],
+        totalSearches,
+        totalCustomers,
+        recentSearches,
       });
     } catch (error: any) {
       console.error("[Admin] Portal stats error:", error);

@@ -561,6 +561,19 @@ export const insertCommercialCustomerSchema = createInsertSchema(commercialCusto
 });
 
 // Page metadata for SEO management
+// Customer Portal Analytics (track search attempts)
+export const portalAnalytics = pgTable("portal_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  searchType: text("search_type").notNull(), // 'phone' or 'email'
+  searchValue: text("search_value").notNull(), // The phone/email searched for
+  found: boolean("found").notNull(), // Whether customer was found
+  customerId: integer("customer_id"), // ServiceTitan customer ID if found
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+}, (table) => ({
+  timestampIdx: index("portal_analytics_timestamp_idx").on(table.timestamp),
+  foundIdx: index("portal_analytics_found_idx").on(table.found),
+}));
+
 export const pageMetadata = pgTable("page_metadata", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   path: text("path").notNull().unique(), // URL path like '/commercial-plumbing' or '/about'
