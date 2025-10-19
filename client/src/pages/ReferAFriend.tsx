@@ -28,9 +28,19 @@ export default function ReferAFriend() {
     const script = document.createElement('script');
     script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
     script.async = true;
+    
+    script.onload = () => {
+      console.log('NiceJob SDK loaded successfully');
+    };
+    
     document.body.appendChild(script);
     
-    trackEvent('Page View', 'Referral Page', 'Loaded');
+    // Guard trackEvent to prevent crashes when analytics aren't loaded
+    try {
+      trackEvent('Page View', 'Referral Page', 'Loaded');
+    } catch (error) {
+      console.warn('Analytics not loaded yet:', error);
+    }
 
     return () => {
       if (script.parentNode) {
@@ -41,10 +51,17 @@ export default function ReferAFriend() {
 
   const handleOpenReferralForm = () => {
     // @ts-ignore - NiceJob SDK
-    if (window.NiceJob) {
+    if (window.NiceJob && typeof window.NiceJob.openRecommendation === 'function') {
       // @ts-ignore
       window.NiceJob.openRecommendation();
-      trackEvent('Refer a Friend CTA', 'Referral Page', 'Open Form');
+      try {
+        trackEvent('Refer a Friend CTA', 'Referral Page', 'Open Form');
+      } catch (error) {
+        console.warn('Analytics not available:', error);
+      }
+    } else {
+      console.warn('NiceJob SDK not loaded yet. Please wait a moment and try again.');
+      alert('The referral form is still loading. Please wait a moment and try again.');
     }
   };
 
