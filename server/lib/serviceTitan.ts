@@ -192,6 +192,8 @@ class ServiceTitanAPI {
             const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
               `/customers?phoneNumber=${encodeURIComponent(phoneFormat)}`
             );
+            
+            console.log(`[ServiceTitan] Phone search results for "${phoneFormat}":`, JSON.stringify(phoneResults, null, 2));
 
             console.log('[ServiceTitan] Phone search results:', JSON.stringify(phoneResults, null, 2));
 
