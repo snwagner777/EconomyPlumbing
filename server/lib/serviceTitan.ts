@@ -148,6 +148,19 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Normalize phone number to digits only for comparison
+   */
+  private normalizePhone(phone: string): string {
+    // Remove all non-digits
+    const digits = phone.replace(/\D/g, '');
+    // Remove leading 1 for US numbers
+    if (digits.length === 11 && digits.startsWith('1')) {
+      return digits.substring(1);
+    }
+    return digits;
+  }
+
+  /**
    * Search for customer by email or phone
    */
   async searchCustomer(email: string, phone: string): Promise<ServiceTitanCustomer | null> {
@@ -162,16 +175,13 @@ class ServiceTitanAPI {
             `/customers?email=${encodeURIComponent(email.trim())}`
           );
 
-          console.log('[ServiceTitan] Email search results:', JSON.stringify(emailResults, null, 2));
-
           if (emailResults.data && emailResults.data.length > 0) {
             console.log(`[ServiceTitan] Found customer by email: ${emailResults.data[0].id}`);
             return emailResults.data[0];
           }
-          console.log('[ServiceTitan] No customer found by email - data array is empty or missing');
+          console.log('[ServiceTitan] No customer found by email');
         } catch (error: any) {
           console.error('[ServiceTitan] Email search error:', error.message);
-          console.error('[ServiceTitan] Full email search error:', error);
         }
       }
 
@@ -179,42 +189,75 @@ class ServiceTitanAPI {
       if (phone && phone.trim()) {
         console.log('[ServiceTitan] Searching by phone...');
         
-        // Try different phone number formats
-        const phoneFormats = [
-          phone.trim(),
-          phone.replace(/\D/g, ''), // Remove all non-digits
-          `+1${phone.replace(/\D/g, '')}`, // Add +1 country code
-        ];
+        // Normalize the search phone number
+        const normalizedSearchPhone = this.normalizePhone(phone);
+        console.log(`[ServiceTitan] Normalized search phone: "${normalizedSearchPhone}"`);
         
-        for (const phoneFormat of phoneFormats) {
-          try {
-            console.log(`[ServiceTitan] Trying phone format: "${phoneFormat}"`);
-            const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-              `/customers?phoneNumber=${encodeURIComponent(phoneFormat)}`
-            );
-            
-            console.log(`[ServiceTitan] Phone search results for "${phoneFormat}":`, JSON.stringify(phoneResults, null, 2));
+        // ServiceTitan's phone API doesn't filter properly, so we need to check contacts
+        const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+          `/customers?phoneNumber=${encodeURIComponent(phone)}`
+        );
+        
+        if (!phoneResults.data || phoneResults.data.length === 0) {
+          console.log('[ServiceTitan] No customers returned from phone search');
+          return null;
+        }
 
-            console.log('[ServiceTitan] Phone search results:', JSON.stringify(phoneResults, null, 2));
-
-            if (phoneResults.data && phoneResults.data.length > 0) {
-              console.log(`[ServiceTitan] Found customer by phone: ${phoneResults.data[0].id}`);
-              return phoneResults.data[0];
+        console.log(`[ServiceTitan] Phone search returned ${phoneResults.data.length} customers to check`);
+        
+        // Cap at 50 customers to avoid excessive API calls
+        const customersToCheck = phoneResults.data.slice(0, 50);
+        console.log(`[ServiceTitan] Checking first ${customersToCheck.length} customers`);
+        
+        // Check customers in batches of 5 concurrent requests
+        const BATCH_SIZE = 5;
+        for (let i = 0; i < customersToCheck.length; i += BATCH_SIZE) {
+          const batch = customersToCheck.slice(i, i + BATCH_SIZE);
+          console.log(`[ServiceTitan] Checking batch ${Math.floor(i / BATCH_SIZE) + 1} (customers ${i + 1}-${Math.min(i + BATCH_SIZE, customersToCheck.length)})`);
+          
+          // Process batch in parallel
+          const results = await Promise.allSettled(
+            batch.map(async (customer) => {
+              try {
+                const contacts = await this.getCustomerContacts(customer.id);
+                
+                // Check if any contact phone matches
+                for (const contact of contacts) {
+                  if (contact.phoneNumber) {
+                    const normalizedContactPhone = this.normalizePhone(contact.phoneNumber);
+                    if (normalizedContactPhone === normalizedSearchPhone) {
+                      console.log(`[ServiceTitan] MATCH FOUND! Customer ${customer.id} (${customer.name}) has matching phone`);
+                      return customer;
+                    }
+                  }
+                }
+                return null;
+              } catch (error) {
+                console.error(`[ServiceTitan] Error checking customer ${customer.id}:`, error);
+                return null;
+              }
+            })
+          );
+          
+          // Check if we found a match in this batch
+          for (const result of results) {
+            if (result.status === 'fulfilled' && result.value) {
+              return result.value;
             }
-            console.log(`[ServiceTitan] No customer found with phone format "${phoneFormat}"`);
-          } catch (error: any) {
-            console.error(`[ServiceTitan] Phone search error for format "${phoneFormat}":`, error.message);
           }
         }
         
-        console.log('[ServiceTitan] Customer not found with any phone format');
+        console.log(`[ServiceTitan] No matching customer found after checking ${customersToCheck.length} customers`);
+        if (phoneResults.data.length > 50) {
+          console.log(`[ServiceTitan] WARNING: ${phoneResults.data.length - 50} additional customers were not checked`);
+        }
       }
 
       console.log('[ServiceTitan] Customer not found by email or phone');
       return null;
     } catch (error: any) {
       console.error('[ServiceTitan] Search customer error:', error.message || error);
-      throw error; // Re-throw to see the actual error
+      throw error;
     }
   }
 
