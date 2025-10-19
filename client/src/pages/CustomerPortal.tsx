@@ -927,6 +927,85 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
+                  {/* Referral Program Promotion */}
+                  <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+                    <CardHeader>
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                            <Gift className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <CardTitle>Earn $25 Credit</CardTitle>
+                            <CardDescription className="mt-1">
+                              Refer friends and family to Economy Plumbing
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Badge variant="default" className="bg-primary">
+                          Referral Rewards
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid md:grid-cols-2 gap-3">
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <Gift className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">You Get $25</p>
+                            <p className="text-sm text-muted-foreground">
+                              When your referral completes a service of $200+
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">They Get $25</p>
+                            <p className="text-sm text-muted-foreground">
+                              Your friend saves on their first service call
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {referralLinkData && (
+                        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                          <div className="flex items-center justify-between gap-3 mb-2">
+                            <p className="text-sm font-medium">Your Referral Stats</p>
+                            <Share2 className="w-4 h-4 text-primary" />
+                          </div>
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <p className="text-muted-foreground">Link Clicks</p>
+                              <p className="font-semibold text-lg" data-testid="text-referral-clicks">{referralLinkData.clicks}</p>
+                            </div>
+                            <div>
+                              <p className="text-muted-foreground">Completed Referrals</p>
+                              <p className="font-semibold text-lg text-primary" data-testid="text-referral-conversions">{referralLinkData.conversions}</p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <p className="text-sm text-muted-foreground text-center">
+                        Share your unique referral link with friends and family. When they complete a qualifying service, you both earn $25 credit!
+                      </p>
+
+                      <Button
+                        asChild
+                        className="w-full"
+                        size="lg"
+                        data-testid="button-start-referring"
+                      >
+                        <a href="/refer-a-friend">
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Start Referring & Earning
+                        </a>
+                      </Button>
+                    </CardContent>
+                  </Card>
+
                   {/* Savings Calculator - Show value to members and missed savings to non-members */}
                   {(() => {
                     // Calculate total from paid invoices
