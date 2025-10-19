@@ -1022,6 +1022,184 @@ ${rssItems}
     }
   });
 
+  // Get referrals for a specific customer (Customer Portal)
+  app.get("/api/referrals/customer/:customerId", async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.customerId);
+      if (isNaN(customerId)) {
+        return res.status(400).json({ message: "Invalid customer ID" });
+      }
+
+      const { referrals } = await import('@shared/schema');
+      const { or } = await import('drizzle-orm');
+      
+      // Get referrals where customer is either the referrer or referee
+      const customerReferrals = await db
+        .select()
+        .from(referrals)
+        .where(
+          or(
+            eq(referrals.referrerCustomerId, customerId),
+            eq(referrals.refereeCustomerId, customerId)
+          )
+        )
+        .orderBy(sql`${referrals.submittedAt} DESC`);
+
+      res.json({ referrals: customerReferrals });
+    } catch (error: any) {
+      console.error('[Referrals] Error fetching customer referrals:', error);
+      res.status(500).json({ message: "Error fetching referrals" });
+    }
+  });
+
+  // Get all referrals (Admin Dashboard)
+  app.get("/api/admin/referrals", isAuthenticated, async (req, res) => {
+    try {
+      const { referrals } = await import('@shared/schema');
+      
+      const allReferrals = await db
+        .select()
+        .from(referrals)
+        .orderBy(sql`${referrals.submittedAt} DESC`)
+        .limit(1000); // Limit to last 1000 referrals
+
+      res.json({ referrals: allReferrals });
+    } catch (error: any) {
+      console.error('[Admin] Error fetching referrals:', error);
+      res.status(500).json({ message: "Error fetching referrals" });
+    }
+  });
+
+  // Update referral status (Admin Dashboard)
+  app.patch("/api/admin/referrals/:referralId", isAuthenticated, async (req, res) => {
+    try {
+      const { referralId } = req.params;
+      const { status, creditNotes } = req.body;
+      
+      if (!status) {
+        return res.status(400).json({ message: "Status is required" });
+      }
+
+      const { referrals } = await import('@shared/schema');
+      
+      const updateData: any = {
+        status,
+        updatedAt: new Date()
+      };
+      
+      if (creditNotes) {
+        updateData.creditNotes = creditNotes;
+      }
+      
+      // If manually marking as credited, set credited timestamp
+      if (status === 'credited' && !creditNotes) {
+        updateData.creditedAt = new Date();
+        updateData.creditedBy = 'manual';
+      }
+
+      const [updatedReferral] = await db
+        .update(referrals)
+        .set(updateData)
+        .where(eq(referrals.id, referralId))
+        .returning();
+
+      if (!updatedReferral) {
+        return res.status(404).json({ message: "Referral not found" });
+      }
+
+      res.json({ referral: updatedReferral });
+    } catch (error: any) {
+      console.error('[Admin] Error updating referral:', error);
+      res.status(500).json({ message: "Error updating referral" });
+    }
+  });
+
+  // Manually issue credit for a referral (Admin Dashboard)
+  app.post("/api/admin/referrals/:referralId/issue-credit", isAuthenticated, async (req, res) => {
+    try {
+      const { referralId } = req.params;
+      const { amount, memo } = req.body;
+      
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Valid amount is required" });
+      }
+
+      const { referrals } = await import('@shared/schema');
+      
+      // Get referral
+      const [referral] = await db
+        .select()
+        .from(referrals)
+        .where(eq(referrals.id, referralId))
+        .limit(1);
+
+      if (!referral) {
+        return res.status(404).json({ message: "Referral not found" });
+      }
+
+      if (!referral.referrerCustomerId) {
+        return res.status(400).json({ message: "No referrer customer ID found" });
+      }
+
+      // Issue credit via ServiceTitan API
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      
+      const credit = await serviceTitan.createCustomerCredit(
+        referral.referrerCustomerId,
+        amount,
+        memo || `Manual referral credit for ${referral.refereeName}`
+      );
+
+      // Update referral
+      const [updatedReferral] = await db
+        .update(referrals)
+        .set({
+          status: 'credited',
+          creditedAt: new Date(),
+          creditedBy: 'manual',
+          creditAmount: amount,
+          creditNotes: `Manual credit issued: ServiceTitan adjustment #${credit.id}`,
+          updatedAt: new Date()
+        })
+        .where(eq(referrals.id, referralId))
+        .returning();
+
+      res.json({ referral: updatedReferral, credit });
+    } catch (error: any) {
+      console.error('[Admin] Error issuing credit:', error);
+      res.status(500).json({ message: "Error issuing credit: " + error.message });
+    }
+  });
+
+  // Get referral statistics (Admin Dashboard)
+  app.get("/api/admin/referral-stats", isAuthenticated, async (req, res) => {
+    try {
+      const { referrals } = await import('@shared/schema');
+      
+      const stats = await db
+        .select({
+          status: referrals.status,
+          count: sql<number>`count(*)::int`,
+          totalCredits: sql<number>`sum(CASE WHEN ${referrals.status} = 'credited' THEN ${referrals.creditAmount} ELSE 0 END)::int`
+        })
+        .from(referrals)
+        .groupBy(referrals.status);
+
+      const totalReferrals = stats.reduce((sum, stat) => sum + stat.count, 0);
+      const totalCreditsIssued = stats.reduce((sum, stat) => sum + (stat.totalCredits || 0), 0);
+
+      res.json({ 
+        stats,
+        totalReferrals,
+        totalCreditsIssued: totalCreditsIssued / 100 // Convert cents to dollars
+      });
+    } catch (error: any) {
+      console.error('[Admin] Error fetching referral stats:', error);
+      res.status(500).json({ message: "Error fetching stats" });
+    }
+  });
+
   // Customer Success Story submission with spam protection and photo upload
   app.post("/api/success-stories", async (req, res) => {
     try {
