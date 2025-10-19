@@ -17,8 +17,8 @@ export function securityHeadersMiddleware(req: Request, res: Response, next: Nex
     "img-src 'self' data: https: blob:",
     // Connect sources: Stripe API + telemetry, analytics APIs, NiceJob API
     "connect-src 'self' https://api.stripe.com https://m.stripe.network https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://graph.facebook.com https://www.clarity.ms https://c.clarity.ms https://cdn.nicejob.co https://api.nicejob.co https://app.nicejob.com",
-    // Frames: Stripe checkout/Elements iframes, NiceJob widget iframes
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://app.nicejob.com https://cdn.nicejob.co",
+    // Frames: Stripe checkout/Elements iframes, NiceJob widget iframes, ServiceTitan scheduler
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://app.nicejob.com https://cdn.nicejob.co https://go.servicetitan.com",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self' https://js.stripe.com https://app.nicejob.com",

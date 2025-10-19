@@ -82,8 +82,12 @@ export default function ScheduleAppointment() {
                 <CardContent className="p-0">
                   <iframe 
                     src="https://go.servicetitan.com/webscheduler?tenantid=576158144&campaignid=3261493" 
-                    style={{ width: '100%', height: '700px' }}
+                    style={{ width: '100%', height: '700px', border: 'none' }}
                     title="ServiceTitan Web Scheduler"
+                    frameBorder="0"
+                    allow="payment; geolocation"
+                    loading="lazy"
+                    data-testid="iframe-scheduler"
                   />
                 </CardContent>
               </Card>
