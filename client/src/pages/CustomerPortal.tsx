@@ -69,6 +69,7 @@ export default function CustomerPortal() {
   const [lookupValue, setLookupValue] = useState("");
   const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [lookupError, setLookupError] = useState<string | null>(null);
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -77,6 +78,8 @@ export default function CustomerPortal() {
 
   const handleLookup = async () => {
     if (!lookupValue.trim()) return;
+    
+    setLookupError(null);
 
     try {
       // First, search for the customer
@@ -86,14 +89,19 @@ export default function CustomerPortal() {
       const response = await fetch(`/api/servicetitan/customer/search?${params}`);
       
       if (!response.ok) {
-        throw new Error('Customer not found');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Customer not found');
       }
 
       const customer = await response.json();
       setCustomerId(customer.id);
     } catch (err) {
       console.error('Customer lookup failed:', err);
-      alert('Customer not found. Please check your information and try again.');
+      setLookupError(
+        lookupType === 'phone'
+          ? 'We couldn\'t find an account with that phone number. Please make sure it\'s the same number you provided when you scheduled service, or try searching by email instead.'
+          : 'We couldn\'t find an account with that email address. Please make sure it\'s the same email you provided when you scheduled service, or try searching by phone number instead.'
+      );
     }
   };
 
@@ -207,6 +215,18 @@ export default function CustomerPortal() {
                 >
                   Access My Account
                 </Button>
+
+                {lookupError && (
+                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                      <div className="text-destructive">
+                        <p className="font-medium mb-1">Account Not Found</p>
+                        <p>{lookupError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ) : (
@@ -220,15 +240,17 @@ export default function CustomerPortal() {
                 </div>
               ) : error ? (
                 <Card>
-                  <CardContent className="pt-6 text-center">
-                    <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
-                    <h3 className="text-xl font-semibold mb-2">Error Loading Data</h3>
-                    <p className="text-muted-foreground mb-4">
-                      We couldn't load your account information. Please try again.
-                    </p>
-                    <Button onClick={() => setCustomerId(null)} data-testid="button-try-again">
-                      Try Again
-                    </Button>
+                  <CardContent className="pt-6">
+                    <div className="text-center mb-6">
+                      <AlertCircle className="w-12 h-12 mx-auto mb-4 text-destructive" />
+                      <h3 className="text-xl font-semibold mb-2">Error Loading Data</h3>
+                      <p className="text-muted-foreground mb-4">
+                        We couldn't load your account information. Please try again.
+                      </p>
+                      <Button onClick={() => setCustomerId(null)} data-testid="button-try-again">
+                        Try Again
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               ) : customerData ? (
