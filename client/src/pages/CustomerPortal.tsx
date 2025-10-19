@@ -90,11 +90,25 @@ interface ServiceTitanMembership {
   description: string;
 }
 
+interface ServiceTitanEstimate {
+  id: number;
+  estimateNumber: string;
+  total: number;
+  status: string;
+  createdOn: string;
+  expiresOn?: string;
+  jobId?: number;
+  jobNumber?: string;
+  summary: string;
+  items?: any[];
+}
+
 interface CustomerData {
   customer: ServiceTitanCustomer;
   appointments: ServiceTitanAppointment[];
   invoices: ServiceTitanInvoice[];
   memberships: ServiceTitanMembership[];
+  estimates: ServiceTitanEstimate[];
 }
 
 export default function CustomerPortal() {
@@ -815,6 +829,69 @@ export default function CustomerPortal() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Open Estimates */}
+                  {customerData.estimates && customerData.estimates.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-6 h-6 text-primary" />
+                          <CardTitle>Open Estimates</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Pending quotes and proposals for your review
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {customerData.estimates.map((estimate) => (
+                            <div
+                              key={estimate.id}
+                              className="flex items-start gap-4 p-4 border rounded-lg bg-primary/5"
+                              data-testid={`estimate-${estimate.id}`}
+                            >
+                              <FileText className="w-5 h-5 text-primary mt-1" />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h4 className="font-semibold">Estimate #{estimate.estimateNumber}</h4>
+                                    {estimate.summary && (
+                                      <p className="text-sm text-muted-foreground">{estimate.summary}</p>
+                                    )}
+                                  </div>
+                                  {getStatusBadge(estimate.status)}
+                                </div>
+                                <div className="text-sm space-y-1">
+                                  <div className="flex justify-between">
+                                    <span><strong>Total:</strong></span>
+                                    <span className="font-semibold text-primary">{formatCurrency(estimate.total)}</span>
+                                  </div>
+                                  <p className="text-muted-foreground">
+                                    Created: {formatDate(estimate.createdOn)}
+                                  </p>
+                                  {estimate.expiresOn && (
+                                    <p className="text-muted-foreground">
+                                      Expires: {formatDate(estimate.expiresOn)}
+                                    </p>
+                                  )}
+                                  {estimate.jobNumber && (
+                                    <p className="text-muted-foreground">
+                                      Job #{estimate.jobNumber}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="mt-3 pt-3 border-t">
+                                  <p className="text-xs text-muted-foreground">
+                                    Questions about this estimate? Call us at <a href={`tel:${phoneConfig.displayNumber}`} className="text-primary hover:underline">{phoneConfig.displayNumber}</a>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Leave a Review (show if they have completed appointments) */}
                   {completedAppointments.length > 0 && (
