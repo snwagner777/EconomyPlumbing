@@ -23,96 +23,14 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 export default function ReferAFriend() {
   const phoneConfig = usePhoneConfig();
 
-  const [niceJobReady, setNiceJobReady] = useState(false);
-
   useEffect(() => {
-    // Load NiceJob SDK
-    const script = document.createElement('script');
-    script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
-    script.async = true;
-    
-    script.onload = () => {
-      console.log('NiceJob SDK script loaded');
-      // Wait for NiceJob to initialize
-      const checkNiceJob = setInterval(() => {
-        // @ts-ignore
-        if (window.NiceJob) {
-          console.log('NiceJob SDK initialized', window.NiceJob);
-          clearInterval(checkNiceJob);
-          setNiceJobReady(true);
-        }
-      }, 100);
-      
-      // Stop checking after 10 seconds
-      setTimeout(() => {
-        clearInterval(checkNiceJob);
-        if (!niceJobReady) {
-          console.error('NiceJob SDK failed to initialize after 10 seconds');
-        }
-      }, 10000);
-    };
-    
-    script.onerror = () => {
-      console.error('Failed to load NiceJob SDK script');
-    };
-    
-    document.body.appendChild(script);
-    
-    // Guard trackEvent to prevent crashes when analytics aren't loaded
+    // Track page view
     try {
       trackEvent('Page View', 'Referral Page', 'Loaded');
     } catch (error) {
       console.warn('Analytics not loaded yet:', error);
     }
-
-    return () => {
-      if (script.parentNode) {
-        document.body.removeChild(script);
-      }
-    };
   }, []);
-
-  const handleOpenReferralForm = () => {
-    // @ts-ignore - NiceJob SDK
-    if (!window.NiceJob) {
-      console.error('NiceJob SDK not loaded');
-      alert('The referral form is still loading. Please wait a moment and try again.');
-      return;
-    }
-
-    // @ts-ignore
-    console.log('Attempting to open NiceJob form. Available methods:', Object.keys(window.NiceJob));
-    
-    try {
-      // @ts-ignore - Try different possible method names
-      if (typeof window.NiceJob.openRecommendation === 'function') {
-        // @ts-ignore
-        window.NiceJob.openRecommendation();
-      // @ts-ignore
-      } else if (typeof window.NiceJob.open === 'function') {
-        // @ts-ignore
-        window.NiceJob.open();
-      // @ts-ignore
-      } else if (typeof window.NiceJob.showWidget === 'function') {
-        // @ts-ignore
-        window.NiceJob.showWidget();
-      } else {
-        // @ts-ignore
-        console.error('No known NiceJob method found. Available:', window.NiceJob);
-        alert('The referral form is not configured correctly. Please contact support.');
-        return;
-      }
-      
-      try {
-        trackEvent('Refer a Friend CTA', 'Referral Page', 'Open Form');
-      } catch (error) {
-        console.warn('Analytics not available:', error);
-      }
-    } catch (error) {
-      console.error('Error opening NiceJob form:', error);
-      alert('There was an error opening the referral form. Please try again or contact support.');
-    }
-  };
 
   const handlePhoneClick = () => {
     trackEvent('Refer a Friend CTA', 'Referral Page', 'Phone Call');
@@ -192,7 +110,7 @@ export default function ReferAFriend() {
                 </p>
               </div>
 
-              {/* NiceJob Referral Widget - Prominent placement */}
+              {/* Referral CTA - Call or Text */}
               <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background" data-testid="card-referral-form">
                 <CardContent className="pt-8 pb-8 text-center">
                   <div className="mb-6">
@@ -201,20 +119,36 @@ export default function ReferAFriend() {
                     </div>
                     <h3 className="text-2xl font-bold mb-2">Ready to Refer?</h3>
                     <p className="text-muted-foreground">
-                      Click below to open the referral form and send your friend's info
+                      Give us a call or send a text to refer a friend
                     </p>
                   </div>
-                  <Button 
-                    size="lg" 
-                    className="w-full text-lg h-14"
-                    onClick={handleOpenReferralForm}
-                    data-testid="button-open-referral-form"
-                  >
-                    <MessageCircle className="w-5 h-5 mr-2" />
-                    Send a Referral Now
-                  </Button>
+                  <div className="space-y-3">
+                    <Button 
+                      asChild
+                      size="lg" 
+                      className="w-full text-lg h-14"
+                      data-testid="button-call-to-refer"
+                    >
+                      <a href={`tel:${phoneConfig.tel}`} onClick={handlePhoneClick}>
+                        <Phone className="w-5 h-5 mr-2" />
+                        Call to Refer: {phoneConfig.display}
+                      </a>
+                    </Button>
+                    <Button 
+                      asChild
+                      variant="outline"
+                      size="lg" 
+                      className="w-full text-lg h-14"
+                      data-testid="button-text-to-refer"
+                    >
+                      <a href={`sms:${phoneConfig.tel}`}>
+                        <MessageCircle className="w-5 h-5 mr-2" />
+                        Text Us to Refer
+                      </a>
+                    </Button>
+                  </div>
                   <p className="text-sm text-muted-foreground mt-4">
-                    Quick and easy - takes less than 30 seconds
+                    Quick and easy - we'll help you set it up
                   </p>
                 </CardContent>
               </Card>
@@ -223,9 +157,9 @@ export default function ReferAFriend() {
                 <div className="flex items-start gap-3">
                   <Shield className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-medium mb-1">Secure & Tracked by NiceJob</p>
+                    <p className="text-sm font-medium mb-1">Secure & Easy Process</p>
                     <p className="text-xs text-muted-foreground">
-                      Every referral is automatically tracked. We'll notify you when your credit is applied.
+                      Every referral is tracked. We'll notify you when your $50 credit is applied to your account.
                     </p>
                   </div>
                 </div>

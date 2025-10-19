@@ -48,13 +48,21 @@ import {
   Upload,
   Sparkles,
   Loader2,
-  Package
+  Package,
+  Database,
+  Search,
+  Activity,
+  BarChart3,
+  Mail,
+  Calendar,
+  AlertCircle
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/schema";
 import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
+import { Progress } from "@/components/ui/progress";
 
 type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers';
 
@@ -230,13 +238,192 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
   );
 }
 
+interface SyncStatus {
+  totalCustomers: number;
+  totalContacts: number;
+  lastSyncedAt: string | null;
+  isRunning: boolean;
+}
+
+interface PortalStats {
+  totalSearches: number;
+  totalCustomers: number;
+  recentSearches: {
+    searchType: string;
+    timestamp: string;
+    found: boolean;
+  }[];
+}
+
 function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
+  const { toast } = useToast();
   const unusedPhotos = photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl);
   const goodQualityUnused = unusedPhotos.filter((p: any) => p.isGoodQuality);
 
+  // Fetch ServiceTitan sync status
+  const { data: syncStatus, isLoading: syncLoading } = useQuery<SyncStatus>({
+    queryKey: ['/api/admin/sync-status'],
+    refetchInterval: 5000, // Refresh every 5 seconds
+  });
+
+  // Fetch Customer Portal stats
+  const { data: portalStats, isLoading: statsLoading } = useQuery<PortalStats>({
+    queryKey: ['/api/admin/portal-stats'],
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  // Manual sync trigger mutation - FIXED ENDPOINT
+  const syncMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/sync-servicetitan', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to start sync');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sync Started",
+        description: "Customer sync is running in the background. Check the progress below.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/sync-status'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to start customer sync",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const syncProgress = syncStatus?.totalCustomers 
+    ? Math.min((syncStatus.totalCustomers / 12000) * 100, 100) 
+    : 0;
+
   return (
     <div className="space-y-6">
-      {/* Stats Overview */}
+      {/* ServiceTitan Sync Overview */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>ServiceTitan Sync</CardTitle>
+                <CardDescription>Customer database synchronization</CardDescription>
+              </div>
+              <Button
+                onClick={() => syncMutation.mutate()}
+                disabled={syncMutation.isPending || syncStatus?.isRunning}
+                size="sm"
+                data-testid="button-manual-sync"
+              >
+                {syncMutation.isPending || syncStatus?.isRunning ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Syncing...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Manual Sync
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Customers</p>
+                <p className="text-2xl font-bold">
+                  {syncLoading ? <Skeleton className="h-8 w-20" /> : syncStatus?.totalCustomers.toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Contacts</p>
+                <p className="text-2xl font-bold">
+                  {syncLoading ? <Skeleton className="h-8 w-20" /> : syncStatus?.totalContacts.toLocaleString()}
+                </p>
+              </div>
+            </div>
+            
+            {!syncLoading && syncStatus && (
+              <>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Sync Progress</span>
+                    <span className="font-medium">{Math.round(syncProgress)}%</span>
+                  </div>
+                  <Progress value={syncProgress} className="h-2" />
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t">
+                  <div className="flex items-center gap-2">
+                    <div className={`h-2 w-2 rounded-full ${syncStatus.isRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                    <span className="text-sm text-muted-foreground">
+                      Status: {syncStatus.isRunning ? 'Running' : 'Idle'}
+                    </span>
+                  </div>
+                  {syncStatus.lastSyncedAt && (
+                    <span className="text-xs text-muted-foreground">
+                      Last: {new Date(syncStatus.lastSyncedAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Portal</CardTitle>
+            <CardDescription>Portal usage analytics</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Searches</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? <Skeleton className="h-8 w-16" /> : portalStats?.totalSearches || 0}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Customers Found</p>
+                <p className="text-2xl font-bold">
+                  {statsLoading ? <Skeleton className="h-8 w-16" /> : portalStats?.recentSearches.filter(s => s.found).length || 0}
+                </p>
+              </div>
+            </div>
+
+            {!statsLoading && portalStats && portalStats.recentSearches.length > 0 && (
+              <div className="space-y-2 pt-2 border-t">
+                <p className="text-sm font-medium">Recent Searches</p>
+                <div className="space-y-1">
+                  {portalStats.recentSearches.slice(0, 3).map((search, i) => (
+                    <div key={i} className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground truncate">
+                        {search.searchType === 'phone' ? <Phone className="inline h-3 w-3 mr-1" /> : <Mail className="inline h-3 w-3 mr-1" />}
+                        {search.searchType}
+                      </span>
+                      <Badge variant={search.found ? "default" : "secondary"} className="text-xs">
+                        {search.found ? <CheckCircle className="h-3 w-3 mr-1" /> : <XCircle className="h-3 w-3 mr-1" />}
+                        {search.found ? 'Found' : 'Not Found'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Photo Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
@@ -299,6 +486,19 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className={`h-2 w-2 rounded-full ${syncStatus?.isRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                <div>
+                  <p className="text-sm font-medium">ServiceTitan Sync</p>
+                  <p className="text-xs text-muted-foreground">Customer data synchronization</p>
+                </div>
+              </div>
+              <Badge variant="outline" className={syncStatus?.isRunning ? "bg-green-50 text-green-700 border-green-200" : "bg-gray-50 text-gray-700 border-gray-200"}>
+                {syncStatus?.isRunning ? 'Syncing' : 'Idle'}
+              </Badge>
+            </div>
+
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
