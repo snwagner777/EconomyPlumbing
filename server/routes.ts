@@ -5529,7 +5529,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         const { sendSMS } = await import('./lib/sms');
         await sendSMS({
           to: contactValue,
-          body: `Your Economy Plumbing customer portal verification code is: ${code}. Valid for 15 minutes.`,
+          message: `Your Economy Plumbing customer portal verification code is: ${code}. Valid for 15 minutes.`,
         });
         console.log("[Portal Auth] SMS sent to", contactValue);
         res.json({ 
@@ -5537,7 +5537,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
           verificationType: 'sms'
         });
       } else {
-        const { sendEmail } = await import('./lib/emailTemplates');
+        const { sendEmail } = await import('./email');
         const magicLink = `${req.protocol}://${req.get('host')}/customer-portal?token=${uuid}`;
         
         await sendEmail({
@@ -5785,11 +5785,36 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         })
         .where(eq(portalVerifications.id, verification.id));
 
-      console.log("[Portal Auth] Verification successful for customer:", verification.customerId);
+      console.log("[Portal Auth] Verification successful, searching for all matching customers...");
+
+      // Fetch all matching customer accounts for multi-account support
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+      
+      const matchingCustomers = await serviceTitan.searchAllMatchingCustomers(verification.contactValue);
+
+      if (matchingCustomers.length === 0) {
+        console.warn("[Portal Auth] Verified but no customers found in cache");
+        // Fallback to single customer ID from verification
+        return res.json({ 
+          success: true,
+          customerId: verification.customerId,
+          customers: verification.customerId ? [{
+            id: verification.customerId,
+            name: 'Your Account',
+            type: 'Residential',
+            address: ''
+          }] : []
+        });
+      }
+
+      console.log(`[Portal Auth] Found ${matchingCustomers.length} matching customer account(s)`);
 
       return res.json({ 
         success: true,
-        customerId: verification.customerId
+        customerId: matchingCustomers[0].id, // For backward compatibility
+        customers: matchingCustomers,
+        multipleAccounts: matchingCustomers.length > 1
       });
     } catch (error: any) {
       console.error("[Portal Auth] Verify code error:", error);
@@ -5809,7 +5834,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       console.log(`[Portal] PDF request received: ${type} #${number} for customer ${customerId}`);
 
       // Send email notification to admin
-      const { sendEmail } = await import('./lib/emailTemplates');
+      const { sendEmail } = await import('./email');
       
       const subject = `Customer Portal: PDF Request for ${type} #${number}`;
       const htmlContent = `
@@ -5876,12 +5901,12 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitan = getServiceTitanAPI();
 
-      // Use hybrid search: local cache first, then live fallback
+      // Search for ALL matching customers (support multi-account)
       const searchValue = (phone as string) || (email as string);
       const searchType = phone ? 'phone' : 'email';
-      console.log("[Customer Portal] Hybrid search for:", searchValue);
+      console.log("[Customer Portal] Searching for all matching customers:", searchValue);
       
-      const customerId = await serviceTitan.searchCustomerWithFallback(searchValue);
+      const matchingCustomers = await serviceTitan.searchAllMatchingCustomers(searchValue);
 
       // Log search attempt for analytics
       try {
@@ -5889,27 +5914,30 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         await db.insert(portalAnalytics).values({
           searchType,
           searchValue,
-          found: !!customerId,
-          customerId: customerId || undefined,
+          found: matchingCustomers.length > 0,
+          customerId: matchingCustomers.length > 0 ? matchingCustomers[0].id : undefined,
         });
-        console.log("[Portal Analytics] Logged search:", { searchType, found: !!customerId });
+        console.log("[Portal Analytics] Logged search:", { searchType, found: matchingCustomers.length > 0, count: matchingCustomers.length });
       } catch (error) {
         console.error("[Portal Analytics] Failed to log search:", error);
         // Non-fatal - continue with response
       }
 
-      if (!customerId) {
-        console.log("[Customer Portal] No customer found with provided credentials");
+      if (matchingCustomers.length === 0) {
+        console.log("[Customer Portal] No customers found with provided credentials");
         return res.status(404).json({ 
           error: "Customer not found", 
           message: "No account found with the provided phone number or email address." 
         });
       }
 
-      console.log("[Customer Portal] Customer found:", customerId);
+      console.log(`[Customer Portal] Found ${matchingCustomers.length} matching customer(s)`);
       
-      // Return just the customer ID - frontend will fetch full data
-      res.json({ id: customerId });
+      // Return all matching customers - frontend will handle selection if multiple
+      res.json({ 
+        customers: matchingCustomers,
+        multipleAccounts: matchingCustomers.length > 1
+      });
     } catch (error: any) {
       console.error("[Customer Portal] Search error:", error.message);
       console.error("[Customer Portal] Full error:", error);

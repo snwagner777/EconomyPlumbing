@@ -111,6 +111,13 @@ interface CustomerData {
   estimates: ServiceTitanEstimate[];
 }
 
+interface CustomerAccount {
+  id: number;
+  name: string;
+  type: string;
+  address?: string;
+}
+
 export default function CustomerPortal() {
   const [lookupValue, setLookupValue] = useState("");
   const [lookupType, setLookupType] = useState<"phone" | "email">("email");
@@ -120,8 +127,12 @@ export default function CustomerPortal() {
   const [copied, setCopied] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
   
+  // Multi-account support
+  const [availableAccounts, setAvailableAccounts] = useState<CustomerAccount[]>([]);
+  const [showAccountSelection, setShowAccountSelection] = useState(false);
+  
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'authenticated'>('lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'select-account' | 'authenticated'>('lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -278,18 +289,59 @@ export default function CustomerPortal() {
       }
 
       const result = await response.json();
-      setCustomerId(result.customerId.toString());
-      setVerificationStep('authenticated');
       
-      toast({
-        title: "Access granted",
-        description: "Welcome to your customer portal!",
-      });
+      // Check if multiple accounts exist
+      if (result.customers && result.customers.length > 1) {
+        setAvailableAccounts(result.customers);
+        setVerificationStep('select-account');
+        toast({
+          title: "Multiple accounts found",
+          description: "Please select which account you'd like to access",
+        });
+      } else if (result.customers && result.customers.length === 1) {
+        // Single account - auto-select it
+        setCustomerId(result.customers[0].id.toString());
+        setVerificationStep('authenticated');
+        toast({
+          title: "Access granted",
+          description: "Welcome to your customer portal!",
+        });
+      } else if (result.customerId) {
+        // Backward compatibility for old response format
+        setCustomerId(result.customerId.toString());
+        setVerificationStep('authenticated');
+        toast({
+          title: "Access granted",
+          description: "Welcome to your customer portal!",
+        });
+      } else {
+        throw new Error('No customer data returned');
+      }
     } catch (err: any) {
       console.error('Verification failed:', err);
       setLookupError(err.message || 'Invalid verification code. Please try again.');
     } finally {
       setIsVerifying(false);
+    }
+  };
+
+  const handleSelectAccount = (accountId: number) => {
+    setCustomerId(accountId.toString());
+    setVerificationStep('authenticated');
+    setShowAccountSelection(false);
+    
+    // Store selected account for future reference
+    localStorage.setItem('selectedAccountId', accountId.toString());
+    
+    toast({
+      title: "Account selected",
+      description: "Welcome to your customer portal!",
+    });
+  };
+
+  const handleSwitchAccount = () => {
+    if (availableAccounts.length > 1) {
+      setShowAccountSelection(true);
     }
   };
 
@@ -558,6 +610,58 @@ export default function CustomerPortal() {
                       </div>
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            ) : verificationStep === 'select-account' ? (
+              <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                  <CardTitle>Select Your Account</CardTitle>
+                  <CardDescription>
+                    We found multiple accounts associated with your contact information. Please select which account you'd like to access.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {availableAccounts.map((account) => (
+                    <Card
+                      key={account.id}
+                      className="hover-elevate active-elevate-2 cursor-pointer"
+                      onClick={() => handleSelectAccount(account.id)}
+                      data-testid={`account-option-${account.id}`}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-start gap-3">
+                          {account.type === 'Commercial' ? (
+                            <Users className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <Home className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                          )}
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-semibold">{account.name}</p>
+                              <Badge variant="secondary" className="text-xs">
+                                {account.type}
+                              </Badge>
+                            </div>
+                            {account.address && (
+                              <p className="text-sm text-muted-foreground flex items-start gap-1">
+                                <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                                {account.address}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  <Button
+                    variant="outline"
+                    onClick={handleBackToLookup}
+                    className="w-full mt-4"
+                    data-testid="button-back-to-lookup-from-select"
+                  >
+                    Back
+                  </Button>
                 </CardContent>
               </Card>
             ) : null

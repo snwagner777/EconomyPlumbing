@@ -881,6 +881,60 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Search for ALL customers matching phone or email (for multi-account support)
+   * Returns array of customer IDs with full customer details
+   */
+  async searchAllMatchingCustomers(phoneOrEmail: string): Promise<Array<{
+    id: number;
+    name: string;
+    type: string;
+    address?: string;
+  }>> {
+    try {
+      const { serviceTitanContacts, serviceTitanCustomers } = await import('@shared/schema');
+      const { eq, inArray } = await import('drizzle-orm');
+      
+      // Normalize input
+      const normalized = phoneOrEmail.includes('@') 
+        ? normalizeEmail(phoneOrEmail)
+        : normalizePhone(phoneOrEmail);
+      
+      if (!normalized) return [];
+
+      // Find all matching contact records
+      const contactResults = await db
+        .select({ customerId: serviceTitanContacts.customerId })
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalized));
+
+      if (contactResults.length === 0) {
+        console.log('[ServiceTitan] No matching customers in cache');
+        return [];
+      }
+
+      // Get unique customer IDs
+      const customerIds = Array.from(new Set(contactResults.map(c => c.customerId)));
+      console.log(`[ServiceTitan] Found ${customerIds.length} matching customer(s) in cache`);
+
+      // Fetch full customer details
+      const customers = await db
+        .select()
+        .from(serviceTitanCustomers)
+        .where(inArray(serviceTitanCustomers.id, customerIds));
+
+      return customers.map(c => ({
+        id: c.id,
+        name: c.name || 'Unknown',
+        type: c.type || 'Residential',
+        address: [c.street, c.city, c.state, c.zip].filter(Boolean).join(', ')
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Search all matching customers error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Search with fallback: Try local cache first, then live API
    * Caches result on-demand if found via live API
    */
