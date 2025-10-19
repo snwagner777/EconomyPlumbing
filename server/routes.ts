@@ -5822,6 +5822,31 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get available arrival windows from ServiceTitan
+  app.get("/api/servicetitan/arrival-windows", async (req, res) => {
+    try {
+      console.log('[Portal] Fetching arrival windows from ServiceTitan');
+
+      // Get ServiceTitan API
+      const { ServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = new ServiceTitanAPI({
+        tenantId: process.env.SERVICETITAN_TENANT_ID!,
+        clientId: process.env.SERVICETITAN_CLIENT_ID!,
+        clientSecret: process.env.SERVICETITAN_CLIENT_SECRET!,
+        appKey: process.env.SERVICETITAN_APP_KEY!,
+      });
+
+      const windows = await serviceTitan.getArrivalWindows();
+      
+      console.log(`[Portal] Found ${windows.length} arrival windows`);
+      
+      res.json({ windows });
+    } catch (error: any) {
+      console.error("[Portal] Get arrival windows error:", error);
+      res.status(500).json({ error: "Failed to fetch arrival windows" });
+    }
+  });
+
   // Reschedule appointment
   app.post("/api/portal/reschedule-appointment", async (req, res) => {
     try {

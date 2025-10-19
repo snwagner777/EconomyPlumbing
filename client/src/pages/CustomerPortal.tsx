@@ -146,13 +146,6 @@ export default function CustomerPortal() {
   const [newAppointmentDate, setNewAppointmentDate] = useState("");
   const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
-
-  // Define appointment time windows
-  const timeWindows = [
-    { value: "morning", label: "Morning (8:00 AM - 12:00 PM)", start: "08:00", end: "12:00" },
-    { value: "afternoon", label: "Afternoon (12:00 PM - 4:00 PM)", start: "12:00", end: "16:00" },
-    { value: "evening", label: "Evening (4:00 PM - 8:00 PM)", start: "16:00", end: "20:00" },
-  ];
   
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
@@ -178,6 +171,15 @@ export default function CustomerPortal() {
     queryKey: ['/api/referrals/code', customerId],
     enabled: !!customerId,
   });
+
+  // Fetch arrival windows from ServiceTitan
+  const { data: arrivalWindowsData } = useQuery<{
+    windows: Array<{ start: string; end: string; label: string }>;
+  }>({
+    queryKey: ['/api/servicetitan/arrival-windows'],
+  });
+
+  const timeWindows = arrivalWindowsData?.windows || [];
 
   // Separate upcoming and completed appointments
   const upcomingAppointments = customerData?.appointments.filter(apt => {
@@ -377,14 +379,25 @@ export default function CustomerPortal() {
     const dateStr = appointmentDate.toISOString().split('T')[0];
     setNewAppointmentDate(dateStr);
     
-    // Pre-select time window based on current appointment time
-    const hour = appointmentDate.getHours();
-    if (hour < 12) {
-      setNewAppointmentWindow("morning");
-    } else if (hour < 16) {
-      setNewAppointmentWindow("afternoon");
-    } else {
-      setNewAppointmentWindow("evening");
+    // Pre-select time window based on current appointment's arrival window
+    if (appointment.arrivalWindowStart && appointment.arrivalWindowEnd && timeWindows.length > 0) {
+      const startTime = new Date(appointment.arrivalWindowStart);
+      const endTime = new Date(appointment.arrivalWindowEnd);
+      
+      const startStr = `${startTime.getUTCHours().toString().padStart(2, '0')}:${startTime.getUTCMinutes().toString().padStart(2, '0')}`;
+      const endStr = `${endTime.getUTCHours().toString().padStart(2, '0')}:${endTime.getUTCMinutes().toString().padStart(2, '0')}`;
+      
+      // Find matching window
+      const matchingWindow = timeWindows.find(w => w.start === startStr && w.end === endStr);
+      if (matchingWindow) {
+        setNewAppointmentWindow(`${matchingWindow.start}-${matchingWindow.end}`);
+      } else if (timeWindows.length > 0) {
+        // Default to first window if no match
+        setNewAppointmentWindow(`${timeWindows[0].start}-${timeWindows[0].end}`);
+      }
+    } else if (timeWindows.length > 0) {
+      // Default to first window
+      setNewAppointmentWindow(`${timeWindows[0].start}-${timeWindows[0].end}`);
     }
     
     setRescheduleDialogOpen(true);
@@ -403,15 +416,19 @@ export default function CustomerPortal() {
     setIsRescheduling(true);
 
     try {
-      // Get the selected time window
-      const selectedWindow = timeWindows.find(w => w.value === newAppointmentWindow);
+      // Parse the selected window (format: "HH:MM-HH:MM")
+      const [startTime, endTime] = newAppointmentWindow.split('-');
+      
+      // Find the matching window to get the label
+      const selectedWindow = timeWindows.find(w => `${w.start}-${w.end}` === newAppointmentWindow);
+      
       if (!selectedWindow) {
         throw new Error("Invalid time window selected");
       }
 
       // Combine date and window times into ISO strings
-      const newStartDateTime = new Date(`${newAppointmentDate}T${selectedWindow.start}:00`);
-      const newEndDateTime = new Date(`${newAppointmentDate}T${selectedWindow.end}:00`);
+      const newStartDateTime = new Date(`${newAppointmentDate}T${startTime}:00`);
+      const newEndDateTime = new Date(`${newAppointmentDate}T${endTime}:00`);
 
       const response = await fetch('/api/portal/reschedule-appointment', {
         method: 'POST',
@@ -432,7 +449,7 @@ export default function CustomerPortal() {
 
       toast({
         title: "Appointment Rescheduled!",
-        description: `Your appointment has been moved to ${newStartDateTime.toLocaleDateString()} during the ${selectedWindow.label.split(' ')[0]} window.`,
+        description: `Your appointment has been moved to ${newStartDateTime.toLocaleDateString()} (${selectedWindow.label}).`,
       });
 
       // Refresh customer data
@@ -1730,9 +1747,9 @@ export default function CustomerPortal() {
                     <SelectContent>
                       {timeWindows.map((window) => (
                         <SelectItem 
-                          key={window.value} 
-                          value={window.value}
-                          data-testid={`option-${window.value}`}
+                          key={`${window.start}-${window.end}`} 
+                          value={`${window.start}-${window.end}`}
+                          data-testid={`option-${window.start}-${window.end}`}
                         >
                           {window.label}
                         </SelectItem>

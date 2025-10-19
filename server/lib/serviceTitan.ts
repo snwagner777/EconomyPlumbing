@@ -549,6 +549,68 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get available arrival windows from ServiceTitan
+   * This fetches recent appointments and extracts unique arrival windows
+   */
+  async getArrivalWindows(): Promise<Array<{ start: string; end: string; label: string }>> {
+    try {
+      // Fetch recent appointments to see what windows are being used
+      const jpmUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/appointments?pageSize=100`;
+      const result = await this.request<{ data: any[] }>(jpmUrl, {}, true);
+      
+      const appointments = result.data || [];
+      
+      // Extract unique arrival windows
+      const windowsMap = new Map<string, { start: string; end: string }>();
+      
+      appointments.forEach((apt: any) => {
+        if (apt.arrivalWindowStart && apt.arrivalWindowEnd) {
+          const startTime = new Date(apt.arrivalWindowStart);
+          const endTime = new Date(apt.arrivalWindowEnd);
+          
+          // Format as HH:MM
+          const startStr = `${startTime.getUTCHours().toString().padStart(2, '0')}:${startTime.getUTCMinutes().toString().padStart(2, '0')}`;
+          const endStr = `${endTime.getUTCHours().toString().padStart(2, '0')}:${endTime.getUTCMinutes().toString().padStart(2, '0')}`;
+          
+          const key = `${startStr}-${endStr}`;
+          if (!windowsMap.has(key)) {
+            windowsMap.set(key, { start: startStr, end: endStr });
+          }
+        }
+      });
+      
+      // Convert to array and sort by start time
+      const windows = Array.from(windowsMap.values()).sort((a, b) => {
+        return a.start.localeCompare(b.start);
+      });
+      
+      // Format with labels
+      return windows.map(w => {
+        const formatTime = (timeStr: string) => {
+          const [hours, minutes] = timeStr.split(':').map(Number);
+          const period = hours >= 12 ? 'PM' : 'AM';
+          const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+          return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+        };
+        
+        return {
+          start: w.start,
+          end: w.end,
+          label: `${formatTime(w.start)} - ${formatTime(w.end)}`
+        };
+      });
+    } catch (error) {
+      console.error('[ServiceTitan] Get arrival windows error:', error);
+      // Return default windows if API fails
+      return [
+        { start: "08:00", end: "12:00", label: "8:00 AM - 12:00 PM" },
+        { start: "12:00", end: "16:00", label: "12:00 PM - 4:00 PM" },
+        { start: "16:00", end: "20:00", label: "4:00 PM - 8:00 PM" }
+      ];
+    }
+  }
+
+  /**
    * Reschedule an appointment
    */
   async rescheduleAppointment(appointmentId: number, newStart: string, newEnd: string): Promise<any> {
