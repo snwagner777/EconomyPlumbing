@@ -4323,23 +4323,12 @@ Write in a professional yet friendly tone.`;
         };
       }
       
+      // Create payment intent without shipping info to avoid conflicts with frontend updates
+      // All customer info is stored in metadata and pending_purchases table
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "usd",
         metadata,
-        ...(Object.keys(billingDetails).length > 0 && {
-          shipping: {
-            name: billingDetails.name,
-            phone: billingDetails.phone,
-            address: {
-              line1: customerInfo?.street || '',
-              city: customerInfo?.city || '',
-              state: customerInfo?.state || '',
-              postal_code: customerInfo?.zip || '',
-              country: 'US',
-            },
-          },
-        }),
       });
 
       // Save customer info to pending purchases if provided
@@ -4532,25 +4521,12 @@ Write in a professional yet friendly tone.`;
         billingZip: customerInfo?.billingZip || '',
       };
       
+      // Create payment intent without shipping info to avoid conflicts with frontend updates
+      // All customer info is stored in metadata and pending_purchases table
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amountInCents,
         currency: "usd",
         metadata,
-        ...(customerInfo && {
-          shipping: {
-            name: customerInfo.customerType === 'residential' 
-              ? customerInfo.locationName 
-              : customerInfo.companyName,
-            phone: customerInfo.phone,
-            address: {
-              line1: customerInfo.street || '',
-              city: customerInfo.city || '',
-              state: customerInfo.state || '',
-              postal_code: customerInfo.zip || '',
-              country: 'US',
-            },
-          },
-        }),
       });
 
       // Save customer info to pending purchases if provided

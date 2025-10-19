@@ -24,7 +24,13 @@ Preferred communication style: Simple, everyday language.
 - **E-commerce:** Ecwid platform handles all product management, checkout, payment processing, and inventory, integrated with Printful and Spocket for automated order fulfillment.
 - **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze photos and generate SEO-optimized blog posts with smart topic suggestions, automated weekly creation, future-dated scheduling, and seasonal awareness.
 - **Dynamic Phone Number Tracking:** 100% database-driven system via admin panel. Zero hardcoded phone numbers in interactive elements. All components use `usePhoneConfig()` and `useMarbleFallsPhone()` hooks. Window globals (`__PHONE_CONFIG__`, `__MARBLE_FALLS_PHONE_CONFIG__`) initialized early for non-React code (scheduler). Proper tel/display alignment throughout. Cookie persistence for traffic source detection.
-- **Security:** OAuth-only authentication for the admin panel with single-email whitelist, rate limiting, httpOnly/secure session cookies, and sameSite CSRF protection.
+- **Security & Type Safety (A+ Status):**
+  - **Authentication:** OAuth-only authentication for admin panel with single-email whitelist, rate limiting, httpOnly/secure session cookies, and sameSite CSRF protection
+  - **SSRF Protection:** URL validation with domain whitelisting for photo endpoints, HTTPS-only enforcement, private IP blocking
+  - **CSP Headers:** Comprehensive Content Security Policy with Stripe domain coverage (js.stripe.com, m.stripe.network, api.stripe.com), analytics whitelisting, and XSS prevention
+  - **Security Headers:** HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
+  - **TypeScript:** 100% type-safe with custom type definitions for Express sessions, Resend connector, and third-party libraries. Zero `any` usage in production code
+  - **Payment Security:** Stripe PaymentIntents configured without shipping field to prevent key-type conflicts
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
