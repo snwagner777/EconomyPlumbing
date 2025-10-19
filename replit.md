@@ -18,13 +18,14 @@ Implemented comprehensive SEO fixes to achieve 91/100 SE Ranking health score an
 - **Title Optimization**: Shortened 116 blog post titles from >60 characters to ≤60 characters (SEO best practice) while preserving keywords. Removed redundant location phrases and filler words.
 - **External Link Cleanup**: Removed all placeholder/broken external links (example.com, url-to-image.com, AI-generated dummy URLs) from blog post content, eliminating 3XX redirect issues.
 
-### Phase 3 - Crawler Visibility (Completed October 18, 2025)
+### Phase 3 - Crawler Visibility (Completed October 19, 2025)
 - **Server-Side H1 Injection**: Implemented server-side H1 tag injection in `metadataInjector.ts` to fix 156 missing H1 errors (SE Ranking crawler doesn't execute JavaScript). Injects screen-reader-only H1 tags (`<h1 class="sr-only" data-seo-h1="true">`) immediately after `<body>` tag for crawler visibility without duplicate visual headings.
 - **Complete Page Coverage (173 total pages)**:
   - 141 blog posts: H1 from database `h1` column
   - 16 service area pages (/service-area/*): Generated as "Professional Plumber in {City}, TX"
   - 16 plumber alias routes: All alias routes mapped to service area slugs (/plumber-austin, /plumber-in-cedar-park--tx, /plumber-leander, /round-rock-plumber, /plumber-georgetown, /plumber-pflugerville, /plumber-marble-falls, /plumber-burnet, /plumber-horseshoe-bay, /plumber-kingsland, /plumber-granite-shoals, /plumber-bertram, /plumber-spicewood, /plumber-liberty-hill, /plumber-buda, /plumber-kyle)
 - **Footer Anchor Text Fix**: Added screen-reader text to social media icon links to fix 204 missing anchor text errors. Icons now have descriptive sr-only text ("Follow us on Facebook", etc.) visible to crawlers while maintaining icon-only visual design.
+- **OpenGraph & Twitter URL Sync**: Fixed all OpenGraph (`og:url`) and Twitter Card (`twitter:url`) tags to match canonical URLs across all 173+ pages. Previously all pages showed homepage URL, causing SEO mismatch issues. Server-side injection now ensures all three URL tags (canonical, og:url, twitter:url) are synchronized for proper social sharing and search engine signals.
 
 ### Scripts & Automation
 - `server/lib/generateH1.ts` - Centralized H1 generation utility (adds descriptive prefixes like "Complete", "Expert", "Understanding")
