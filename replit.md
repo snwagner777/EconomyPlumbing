@@ -3,6 +3,13 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business. It provides service information, covered areas, and blog content, alongside an Ecwid-powered online store for maintenance memberships and drop-shipped products. The project aims to improve local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
 
+## Recent Changes (October 19, 2025)
+- **Zoom Phone SMS Integration:** Replaced Twilio with Zoom Phone for SMS messaging. Test endpoint confirmed working (200 status). Credentials configured: ZOOM_PHONE_API_KEY, ZOOM_PHONE_NUMBER.
+- **ServiceTitan Customer Data Schema:** Synchronized schema with database - added email, phone, mobilePhone columns to serviceTitanCustomers table with proper indexes for fast lookups.
+- **Customer Portal Email Display:** Fixed email display bug by updating searchAllMatchingCustomers function to return email, phone, and mobilePhone fields in customer data responses.
+- **Session Management:** Implemented server-side session storage for persistent login - portalCustomerId now saved to session on successful verification for seamless multi-page navigation.
+- **Leaderboard Endpoint:** Temporarily disabled broken leaderboard endpoint (was accessing non-existent customFields) - returns empty array as placeholder until proper implementation with ServiceTitan job data.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -56,6 +63,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend.
+- **SMS Integration:** Zoom Phone API for SMS messaging (replaced Twilio).
 - **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, success story focal point detection, and customer support chatbot (GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations.
 - **Google Services:** Google Places API, Google Maps.
