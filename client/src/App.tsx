@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { initAllAnalytics } from "@/lib/analytics";
 import { useAnalytics } from "@/hooks/use-analytics";
 import CookieBanner from "@/components/CookieBanner";
+import AIChatbot from "@/components/AIChatbot";
 import { PhoneConfigProvider } from "@/contexts/PhoneConfigContext";
 
 // Critical pages - eagerly loaded for best initial load
@@ -75,6 +76,7 @@ const SuccessStoriesAdmin = lazy(() => import("@/pages/SuccessStoriesAdmin"));
 const CommercialCustomersAdmin = lazy(() => import("@/pages/CommercialCustomersAdmin"));
 const PageMetadataAdmin = lazy(() => import("@/pages/PageMetadataAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/ProductsAdmin"));
+const WaterHeaterCalculator = lazy(() => import("@/pages/WaterHeaterCalculator"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -137,6 +139,7 @@ function Router() {
       {/* 301 redirect: toilet-repair-services -> toilet-faucet for SEO canonicalization */}
       <Route path="/toilet-repair-services">{() => <Redirect to="/toilet-faucet" />}</Route>
       <Route path="/water-heater-guide" component={WaterHeaterGuide} />
+      <Route path="/water-heater-calculator" component={WaterHeaterCalculator} />
       <Route path="/water-leak-repair" component={LeakRepair} />
       <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
       
@@ -231,6 +234,7 @@ function App() {
         <PhoneConfigProvider>
           <CookieBanner />
           <Toaster />
+          <AIChatbot />
           <Router />
         </PhoneConfigProvider>
       </TooltipProvider>

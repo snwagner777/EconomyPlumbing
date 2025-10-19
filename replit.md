@@ -13,7 +13,9 @@ Preferred communication style: Simple, everyday language.
 - **Design System:** Features a primary blue and secondary teal color scheme, charcoal text, and silver accents, with Inter and Poppins typography. Supports light/dark modes.
 - **SEO & Performance:** Utilizes a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, and auto-generated canonical URLs. Default OpenGraph and Twitter Card tags are server-rendered with page-specific overrides. JSON-LD structured data is enriched with `@id` references, blog `wordCount`, and detailed `serviceAreaServed` arrays. 301 redirects are implemented for duplicate URL aliases. Includes performance optimizations like resource preconnect, image lazy loading, font optimization, aggressive code splitting, and universal WebP image conversion. Dynamic sitemap auto-updates with all service areas.
 - **Accessibility:** WCAG AA Compliant with focus on contrast ratios, descriptive link text, and proper OpenGraph image handling.
-- **Pages:** Includes Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Ecwid Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, and conversion-optimized SEO landing pages.
+- **Pages:** Includes Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Ecwid Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, Water Heater Size Calculator (interactive tool), and conversion-optimized SEO landing pages.
+- **Interactive Tools:** Water Heater Size Calculator provides instant recommendations based on household size, bathrooms, and usage patterns. Captures qualified leads with integrated quote request forms.
+- **AI Chatbot:** Floating chatbot available site-wide powered by OpenAI GPT-4o-mini. Answers common plumbing questions, provides pricing estimates, and intelligently hands off to SMS/phone when customer needs human assistance. Integrates with dynamic phone tracking system.
 - **RSS Feeds:** Blog RSS feed (`/rss.xml`) and Success Stories RSS feed (`/api/success-stories/rss.xml`) use pre-generated JPEG images for maximum compatibility.
 - **Admin Panels:** Features metadata management, a success stories admin with a collage reprocessing tool and a drag-to-position collage editor with AI focal point detection, and a products admin for managing VIP membership SKUs and ServiceTitan integration fields.
 
@@ -54,7 +56,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend.
-- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, and success story focal point detection.
+- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, success story focal point detection, and customer support chatbot (GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations.
 - **Google Services:** Google Places API, Google Maps.
 - **SEO Data:** DataForSEO API.

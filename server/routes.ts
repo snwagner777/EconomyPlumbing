@@ -4629,6 +4629,106 @@ Write in a professional yet friendly tone.`;
     }
   });
 
+  // AI Chatbot endpoint
+  app.post("/api/chatbot", async (req, res) => {
+    try {
+      const { messages } = req.body;
+
+      if (!messages || !Array.isArray(messages)) {
+        return res.status(400).json({ error: "Invalid messages format" });
+      }
+
+      // Check if OpenAI is configured
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (!openaiKey) {
+        return res.json({
+          message: "I'm having trouble connecting right now. Please text or call us directly for immediate assistance!",
+          needsHandoff: true
+        });
+      }
+
+      const openai = new OpenAI({ apiKey: openaiKey });
+
+      // System prompt for the chatbot
+      const systemPrompt = `You are an AI assistant for Economy Plumbing Services, a trusted plumbing company serving Austin and Marble Falls, Texas.
+
+Your role:
+- Answer common plumbing questions (water heaters, drains, leaks, pricing estimates)
+- Help customers understand services
+- Provide general scheduling information
+- Be friendly, helpful, and professional
+
+Services we offer:
+- Water heater installation & repair (tank and tankless)
+- Drain cleaning & hydro jetting
+- Leak detection & repair
+- Emergency plumbing (24/7)
+- Backflow testing
+- Commercial plumbing
+- Gas line services
+- Toilet & faucet repair
+
+Pricing estimates:
+- Water heater installation: $1,200-$2,800 depending on size
+- Drain cleaning: $150-$400
+- Leak repair: $200-$600
+- Emergency service: Available 24/7
+
+When to hand off to human via SMS/Call:
+- Customer wants specific pricing for their situation
+- Customer wants to schedule an appointment
+- Customer has an emergency (burst pipe, major leak, no hot water)
+- Customer asks complex technical questions beyond general info
+- Customer explicitly asks to speak with someone
+- You're unsure or don't have enough information
+
+If handoff is needed, respond with: "I'd be happy to connect you with our team! They can provide personalized pricing and schedule your service. Would you prefer to text or call us?"
+
+Keep responses concise (2-3 sentences max). Be warm and helpful.`;
+
+      // Call OpenAI API
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ],
+        temperature: 0.7,
+        max_tokens: 300,
+      });
+
+      const aiResponse = completion.choices[0]?.message?.content || "I'm having trouble right now. Please text or call us!";
+
+      // Detect if handoff keywords are present
+      const handoffKeywords = [
+        "connect you with",
+        "speak with",
+        "talk to",
+        "text or call",
+        "contact our team",
+        "schedule",
+        "pricing for your",
+        "emergency",
+      ];
+
+      const needsHandoff = handoffKeywords.some(keyword => 
+        aiResponse.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+      res.json({
+        message: aiResponse,
+        needsHandoff
+      });
+
+    } catch (error: any) {
+      console.error("Chatbot error:", error);
+      res.status(500).json({
+        message: "I'm having trouble connecting right now. Please text or call us directly for immediate assistance!",
+        needsHandoff: true
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
