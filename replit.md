@@ -4,6 +4,8 @@
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business. It provides service information, covered areas, and blog content, alongside an Ecwid-powered online store for maintenance memberships and drop-shipped products. The project aims to improve local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
 
 ## Recent Changes (October 19, 2025)
+- **Customer Portal Referral Promotion:** Added prominent referral program card with dual $25 reward messaging, real-time stats (clicks, conversions), and "Start Referring & Earning" CTA linking to /refer-a-friend page.
+- **Estimates Filtering:** Customer Portal now filters estimates to show only open/pending ones - excludes approved, declined, expired, closed, and sold estimates. Section auto-hides when no open estimates exist.
 - **Zoom Phone SMS Integration:** Replaced Twilio with Zoom Phone for SMS messaging. Test endpoint confirmed working (200 status). Credentials configured: ZOOM_PHONE_API_KEY, ZOOM_PHONE_NUMBER.
 - **ServiceTitan Customer Data Schema:** Synchronized schema with database - added email, phone, mobilePhone columns to serviceTitanCustomers table with proper indexes for fast lookups.
 - **Customer Portal Email Display:** Fixed email display bug by updating searchAllMatchingCustomers function to return email, phone, and mobilePhone fields in customer data responses.
