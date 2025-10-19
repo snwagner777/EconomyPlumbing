@@ -2,6 +2,8 @@
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
+    __PHONE_CONFIG__: { display: string; tel: string };
+    __MARBLE_FALLS_PHONE_CONFIG__: { display: string; tel: string };
   }
 }
 
@@ -114,11 +116,14 @@ export const openScheduler = async () => {
 
 // Show user-friendly error message
 const showSchedulerError = () => {
+  const austinPhone = window.__PHONE_CONFIG__?.display || '(512) 368-9159';
+  const marbleFallsPhone = window.__MARBLE_FALLS_PHONE_CONFIG__?.display || '(830) 460-3565';
+  
   alert(
     'Online scheduler is temporarily unavailable.\n\n' +
     'Please call us directly:\n' +
-    'Austin: (512) 368-9159\n' +
-    'Marble Falls: (830) 460-3565\n\n' +
+    `Austin: ${austinPhone}\n` +
+    `Marble Falls: ${marbleFallsPhone}\n\n` +
     'Or refresh the page and try again.'
   );
 };

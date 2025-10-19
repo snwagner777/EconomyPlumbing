@@ -4,7 +4,7 @@ import { Menu, X, Phone, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 declare global {
   interface Window {
@@ -29,6 +29,7 @@ export default function Header() {
   const [location] = useLocation();
   
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
 
   const services = [
     { name: "All Services", path: "/services", featured: true },
@@ -450,12 +451,12 @@ export default function Header() {
                 {phoneConfig.display} <span className="text-sm font-normal">Austin</span>
               </a>
               <a 
-                href="tel:+18304603565" 
+                href={marbleFallsPhoneConfig.tel}
                 className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg"
                 data-testid="mobile-phone-marble-falls"
               >
                 <Phone className="w-5 h-5" />
-                (830) 460-3565 <span className="text-sm font-normal">Marble Falls</span>
+                {marbleFallsPhoneConfig.display} <span className="text-sm font-normal">Marble Falls</span>
               </a>
               <Button onClick={() => { openScheduler(); setMobileMenuOpen(false); }} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service

@@ -8,7 +8,7 @@ import { Phone, Mail, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 interface ContactFormProps {
   pageContext?: string;
@@ -16,6 +16,7 @@ interface ContactFormProps {
 
 export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
   const { toast } = useToast();
   const [formStartTime] = useState(Date.now()); // Track when form was loaded
   const [formData, setFormData] = useState({
@@ -223,11 +224,11 @@ export default function ContactForm({ pageContext = "Contact Page" }: ContactFor
                     Austin Area: {phoneConfig.display}
                   </a>
                   <a 
-                    href="tel:+18304603565" 
+                    href={marbleFallsPhoneConfig.tel}
                     className="block text-lg font-poppins font-bold text-foreground hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="contact-phone-marble-falls"
                   >
-                    Marble Falls Area: (830) 460-3565
+                    Marble Falls Area: {marbleFallsPhoneConfig.display}
                   </a>
                 </div>
               </div>

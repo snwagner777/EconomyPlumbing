@@ -31,6 +31,7 @@ interface DetectionRules {
 declare global {
   interface Window {
     __PHONE_CONFIG__: PhoneConfig;
+    __MARBLE_FALLS_PHONE_CONFIG__: PhoneConfig;
   }
 }
 
@@ -170,6 +171,7 @@ export function PhoneConfigProvider({ children }: { children: ReactNode }) {
     
     // Update both the window global (for legacy code) and React state
     window.__PHONE_CONFIG__ = newConfig;
+    window.__MARBLE_FALLS_PHONE_CONFIG__ = MARBLE_FALLS_PHONE;
     setPhoneConfig(newConfig);
   }, [location, trackingData, isLoading]);
 

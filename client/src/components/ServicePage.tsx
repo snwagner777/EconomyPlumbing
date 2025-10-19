@@ -17,7 +17,7 @@ import RelatedBlogPosts from "@/components/RelatedBlogPosts";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema, createServiceSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 interface FAQ {
   question: string;
@@ -99,6 +99,7 @@ export default function ServicePage({
   customSection,
 }: ServicePageProps) {
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
   const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
@@ -339,9 +340,9 @@ export default function ServicePage({
               asChild
               data-testid="button-call-marble-falls-cta"
             >
-              <a href="tel:+18304603565" className="flex items-center gap-2">
+              <a href={marbleFallsPhoneConfig.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                Marble Falls: (830) 460-3565
+                Marble Falls: {marbleFallsPhoneConfig.display}
               </a>
             </Button>
           </div>

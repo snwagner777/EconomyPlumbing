@@ -43,10 +43,11 @@ import {
   createMarbleFallsLocationSchema,
   createOrganizationSchema,
 } from "@/components/SEO/JsonLd";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function Home() {
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
   const marbleFallsSchema = createMarbleFallsLocationSchema();
   const organizationSchema = createOrganizationSchema();
   const faqSchema = createFAQSchema([
@@ -363,7 +364,7 @@ export default function Home() {
                   variant="outline"
                   data-testid="button-call-marble-falls-cta"
                 >
-                  <a href="tel:+18304603565">Call Marble Falls: (830) 460-3565</a>
+                  <a href={marbleFallsPhoneConfig.tel}>Call Marble Falls: {marbleFallsPhoneConfig.display}</a>
                 </Button>
               </div>
             </div>
@@ -409,7 +410,7 @@ export default function Home() {
               <ServiceAreaCard
                 title="Marble Falls Area"
                 address="2409 Commerce Street, Marble Falls, TX 78654"
-                phone="(830) 460-3565"
+                phone={marbleFallsPhoneConfig.display}
                 cities={[
                   "Marble Falls",
                   "Burnet",

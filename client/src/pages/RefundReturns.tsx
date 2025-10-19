@@ -1,10 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function RefundReturns() {
   const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -121,7 +122,7 @@ export default function RefundReturns() {
           <p>For questions about refunds, returns, or our satisfaction guarantee, please contact us:</p>
           <ul>
             <li><strong>Austin Area:</strong> <a href={phoneConfig.tel} className="text-primary hover:underline">{phoneConfig.display}</a></li>
-            <li><strong>Marble Falls Area:</strong> <a href="tel:+18304603565" className="text-primary hover:underline">(830) 460-3565</a></li>
+            <li><strong>Marble Falls Area:</strong> <a href={marbleFallsPhoneConfig.tel} className="text-primary hover:underline">{marbleFallsPhoneConfig.display}</a></li>
             <li><strong>Address:</strong> 701 Tillery St #12, Austin, TX 78702</li>
           </ul>
 

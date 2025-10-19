@@ -1,8 +1,11 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SEOHead } from "@/components/SEO/SEOHead";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function PrivacyPolicy() {
+  const phoneConfig = usePhoneConfig();
+  const marbleFallsPhoneConfig = useMarbleFallsPhone();
   const webPageSchema = {
     "@context": "https://schema.org",
     "@type": "WebPage",
@@ -114,7 +117,7 @@ export default function PrivacyPolicy() {
           <h2>Contact Us</h2>
           <p>If you have questions about this Privacy Policy, please contact us:</p>
           <ul>
-            <li>By phone: (512) 368-9159 (Austin) or (830) 460-3565 (Marble Falls)</li>
+            <li>By phone: {phoneConfig.display} (Austin) or {marbleFallsPhoneConfig.display} (Marble Falls)</li>
             <li>By mail: 701 Tillery St #12, Austin, TX 78702</li>
           </ul>
         </div>
