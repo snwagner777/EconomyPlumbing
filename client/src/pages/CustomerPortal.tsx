@@ -113,7 +113,7 @@ interface CustomerData {
 
 export default function CustomerPortal() {
   const [lookupValue, setLookupValue] = useState("");
-  const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
+  const [lookupType, setLookupType] = useState<"phone" | "email">("email");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -250,11 +250,7 @@ export default function CustomerPortal() {
       });
     } catch (err: any) {
       console.error('Customer lookup failed:', err);
-      const errorMessages = {
-        phone: err.message || 'We couldn\'t find an account with that phone number. Please try searching by email instead.',
-        email: err.message || 'We couldn\'t find an account with that email address. Please try searching by phone instead.',
-      };
-      setLookupError(errorMessages[lookupType]);
+      setLookupError(err.message || 'We couldn\'t find an account with that email address. Please verify your email and try again.');
     } finally {
       setIsSearching(false);
     }
@@ -444,43 +440,19 @@ export default function CustomerPortal() {
                 <CardHeader>
                   <CardTitle>Find Your Account</CardTitle>
                   <CardDescription>
-                    Enter your phone number or email to access your account
+                    Enter your email address to access your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      variant={lookupType === "phone" ? "default" : "outline"}
-                      onClick={() => setLookupType("phone")}
-                      className="flex-1"
-                      data-testid="button-lookup-phone"
-                    >
-                      <PhoneIcon className="w-4 h-4 mr-2" />
-                      Phone
-                    </Button>
-                    <Button
-                      variant={lookupType === "email" ? "default" : "outline"}
-                      onClick={() => setLookupType("email")}
-                      className="flex-1"
-                      data-testid="button-lookup-email"
-                    >
-                      <Mail className="w-4 h-4 mr-2" />
-                      Email
-                    </Button>
-                  </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="lookup-input">
-                      {lookupType === "phone" ? "Phone Number" : "Email Address"}
+                      Email Address
                     </Label>
                     <Input
                       id="lookup-input"
-                      type={lookupType === "phone" ? "tel" : "email"}
-                      placeholder={
-                        lookupType === "phone" 
-                          ? "(512) 555-1234" 
-                          : "your@email.com"
-                      }
+                      type="email"
+                      placeholder="your@email.com"
                       value={lookupValue}
                       onChange={(e) => setLookupValue(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
@@ -755,16 +727,28 @@ export default function CustomerPortal() {
                           <p className="text-xs font-medium text-muted-foreground mb-2">Your Benefits</p>
                           <div className="grid gap-2">
                             <div className="flex items-center gap-2 text-sm">
+                              <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>15% off all service calls</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
                               <Star className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Priority Scheduling</span>
+                              <span>Priority same-day service</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>No Overtime Charges</span>
+                              <span>No trip charges</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Annual Maintenance Included</span>
+                              <span>Annual plumbing inspection included</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Clock className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>After-hours service at regular rates</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>Waived diagnostic fees</span>
                             </div>
                           </div>
                         </div>
@@ -790,22 +774,34 @@ export default function CustomerPortal() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          Join our VIP Membership program and enjoy exclusive benefits including priority scheduling, no overtime charges, and annual maintenance!
+                          Join our VIP Membership program and save 15% on every service call, plus enjoy priority same-day service, no trip charges, and more!
                         </p>
 
                         {/* Member Benefits Preview */}
                         <div className="grid gap-2">
                           <div className="flex items-center gap-2 text-sm">
+                            <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">15% off all service calls</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
                             <Star className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Priority Scheduling</span>
+                            <span className="text-muted-foreground">Priority same-day service</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">No Overtime Charges</span>
+                            <span className="text-muted-foreground">No trip charges</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Annual Maintenance</span>
+                            <span className="text-muted-foreground">Annual plumbing inspection</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Clock className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">After-hours service at regular rates</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">Waived diagnostic fees</span>
                           </div>
                         </div>
 
