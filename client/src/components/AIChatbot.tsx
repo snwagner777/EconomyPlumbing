@@ -123,7 +123,7 @@ export default function AIChatbot() {
   }
 
   return (
-    <Card className="fixed inset-x-0 bottom-0 md:inset-x-auto md:bottom-6 md:right-6 w-full md:w-96 h-[calc(100vh-80px)] md:h-[600px] rounded-t-lg md:rounded-lg shadow-2xl z-50 flex flex-col">
+    <Card className="fixed left-0 right-0 bottom-0 md:left-auto md:right-6 md:bottom-6 w-full md:w-96 h-[calc(100vh-80px)] md:h-[600px] rounded-t-lg md:rounded-lg shadow-2xl z-50 flex flex-col">
       {/* Header */}
       <CardHeader className="pb-3 border-b flex-shrink-0">
         <div className="flex items-center justify-between">
