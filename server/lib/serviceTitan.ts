@@ -193,66 +193,83 @@ class ServiceTitanAPI {
         const normalizedSearchPhone = this.normalizePhone(phone);
         console.log(`[ServiceTitan] Normalized search phone: "${normalizedSearchPhone}"`);
         
-        // ServiceTitan's phone API doesn't filter properly, so we need to check contacts
-        const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-          `/customers?phoneNumber=${encodeURIComponent(phone)}`
-        );
-        
-        if (!phoneResults.data || phoneResults.data.length === 0) {
-          console.log('[ServiceTitan] No customers returned from phone search');
-          return null;
-        }
-
-        console.log(`[ServiceTitan] Phone search returned ${phoneResults.data.length} customers to check`);
-        
-        // Cap at 50 customers to avoid excessive API calls
-        const customersToCheck = phoneResults.data.slice(0, 50);
-        console.log(`[ServiceTitan] Checking first ${customersToCheck.length} customers`);
-        
-        // Check customers in batches of 5 concurrent requests
+        // ServiceTitan's phone API doesn't filter properly, so we need to paginate and check all customers
+        const PAGE_SIZE = 50;
+        const MAX_PAGES = 20; // Check up to 1000 customers (20 pages * 50)
         const BATCH_SIZE = 5;
-        for (let i = 0; i < customersToCheck.length; i += BATCH_SIZE) {
-          const batch = customersToCheck.slice(i, i + BATCH_SIZE);
-          console.log(`[ServiceTitan] Checking batch ${Math.floor(i / BATCH_SIZE) + 1} (customers ${i + 1}-${Math.min(i + BATCH_SIZE, customersToCheck.length)})`);
+        
+        let currentPage = 1;
+        let totalChecked = 0;
+        
+        while (currentPage <= MAX_PAGES) {
+          console.log(`[ServiceTitan] Fetching page ${currentPage}...`);
           
-          // Process batch in parallel
-          const results = await Promise.allSettled(
-            batch.map(async (customer) => {
-              try {
-                const contacts = await this.getCustomerContacts(customer.id);
-                
-                // Check if any contact phone matches
-                for (const contact of contacts) {
-                  // Phone number is in the 'value' field for phone-type contacts
-                  const phoneValue = contact.value || contact.phoneSettings?.phoneNumber;
-                  if (phoneValue && (contact.type === 'Phone' || contact.type === 'MobilePhone')) {
-                    const normalizedContactPhone = this.normalizePhone(phoneValue);
-                    if (normalizedContactPhone === normalizedSearchPhone) {
-                      console.log(`[ServiceTitan] MATCH FOUND! Customer ${customer.id} (${customer.name}) has matching phone: ${phoneValue}`);
-                      return customer;
-                    }
-                  }
-                }
-                return null;
-              } catch (error) {
-                console.error(`[ServiceTitan] Error checking customer ${customer.id}:`, error);
-                return null;
-              }
-            })
+          const pageResults = await this.request<{ data: ServiceTitanCustomer[], hasMore?: boolean }>(
+            `/customers?phoneNumber=${encodeURIComponent(phone)}&page=${currentPage}&pageSize=${PAGE_SIZE}`
           );
           
-          // Check if we found a match in this batch
-          for (const result of results) {
-            if (result.status === 'fulfilled' && result.value) {
-              return result.value;
+          if (!pageResults.data || pageResults.data.length === 0) {
+            console.log(`[ServiceTitan] Page ${currentPage} returned no customers, stopping search`);
+            break;
+          }
+
+          console.log(`[ServiceTitan] Page ${currentPage} returned ${pageResults.data.length} customers`);
+          totalChecked += pageResults.data.length;
+          
+          // Check customers in this page in batches
+          for (let i = 0; i < pageResults.data.length; i += BATCH_SIZE) {
+            const batch = pageResults.data.slice(i, i + BATCH_SIZE);
+            const batchNumber = Math.floor((totalChecked - pageResults.data.length + i) / BATCH_SIZE) + 1;
+            const customerStart = totalChecked - pageResults.data.length + i + 1;
+            const customerEnd = Math.min(customerStart + BATCH_SIZE - 1, totalChecked);
+            
+            console.log(`[ServiceTitan] Page ${currentPage}, Batch ${batchNumber}: Checking customers ${customerStart}-${customerEnd}`);
+            
+            // Process batch in parallel
+            const results = await Promise.allSettled(
+              batch.map(async (customer) => {
+                try {
+                  const contacts = await this.getCustomerContacts(customer.id);
+                  
+                  // Check if any contact phone matches
+                  for (const contact of contacts) {
+                    // Phone number is in the 'value' field for phone-type contacts
+                    const phoneValue = contact.value || contact.phoneSettings?.phoneNumber;
+                    if (phoneValue && (contact.type === 'Phone' || contact.type === 'MobilePhone')) {
+                      const normalizedContactPhone = this.normalizePhone(phoneValue);
+                      if (normalizedContactPhone === normalizedSearchPhone) {
+                        console.log(`[ServiceTitan] MATCH FOUND on page ${currentPage}! Customer ${customer.id} (${customer.name}) has matching phone: ${phoneValue}`);
+                        return customer;
+                      }
+                    }
+                  }
+                  return null;
+                } catch (error) {
+                  console.error(`[ServiceTitan] Error checking customer ${customer.id}:`, error);
+                  return null;
+                }
+              })
+            );
+            
+            // Check if we found a match in this batch
+            for (const result of results) {
+              if (result.status === 'fulfilled' && result.value) {
+                console.log(`[ServiceTitan] Total customers checked: ${totalChecked}`);
+                return result.value;
+              }
             }
           }
+          
+          // Check if there are more pages
+          if (pageResults.hasMore === false || pageResults.data.length < PAGE_SIZE) {
+            console.log(`[ServiceTitan] No more pages available, stopping search`);
+            break;
+          }
+          
+          currentPage++;
         }
         
-        console.log(`[ServiceTitan] No matching customer found after checking ${customersToCheck.length} customers`);
-        if (phoneResults.data.length > 50) {
-          console.log(`[ServiceTitan] WARNING: ${phoneResults.data.length - 50} additional customers were not checked`);
-        }
+        console.log(`[ServiceTitan] No matching customer found after checking ${totalChecked} customers across ${currentPage} pages`);
       }
 
       console.log('[ServiceTitan] Customer not found by email or phone');

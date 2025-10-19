@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   User,
@@ -70,6 +69,7 @@ export default function CustomerPortal() {
   const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -80,9 +80,9 @@ export default function CustomerPortal() {
     if (!lookupValue.trim()) return;
     
     setLookupError(null);
+    setIsSearching(true);
 
     try {
-      // First, search for the customer
       const params = new URLSearchParams({
         [lookupType]: lookupValue,
       });
@@ -102,6 +102,8 @@ export default function CustomerPortal() {
           ? 'We couldn\'t find an account with that phone number. Please make sure it\'s the same number you provided when you scheduled service, or try searching by email instead.'
           : 'We couldn\'t find an account with that email address. Please make sure it\'s the same email you provided when you scheduled service, or try searching by phone number instead.'
       );
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -151,7 +153,6 @@ export default function CustomerPortal() {
 
       <main className="min-h-screen py-12 px-4">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Customer Portal
@@ -162,7 +163,6 @@ export default function CustomerPortal() {
           </div>
 
           {!customerId ? (
-            /* Lookup Form */
             <Card className="max-w-md mx-auto">
               <CardHeader>
                 <CardTitle>Find Your Account</CardTitle>
@@ -210,10 +210,10 @@ export default function CustomerPortal() {
                 <Button
                   onClick={handleLookup}
                   className="w-full"
-                  disabled={!lookupValue.trim()}
+                  disabled={!lookupValue.trim() || isSearching}
                   data-testid="button-lookup-submit"
                 >
-                  Access My Account
+                  {isSearching ? 'Searching...' : 'Access My Account'}
                 </Button>
 
                 {lookupError && (
@@ -230,7 +230,6 @@ export default function CustomerPortal() {
               </CardContent>
             </Card>
           ) : (
-            /* Customer Data Display */
             <div className="space-y-6">
               {isLoading ? (
                 <div className="space-y-6">
@@ -255,7 +254,6 @@ export default function CustomerPortal() {
                 </Card>
               ) : customerData ? (
                 <>
-                  {/* Customer Info */}
                   <Card>
                     <CardHeader className="flex flex-row items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
@@ -295,7 +293,6 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* Upcoming Appointments */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -353,7 +350,6 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* Invoices */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
