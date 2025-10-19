@@ -1,8 +1,9 @@
 import { Resend } from 'resend';
+import type { ResendConnectionSettings, ResendCredentials } from './types/resend';
 
-let connectionSettings: any;
+let connectionSettings: ResendConnectionSettings | undefined;
 
-async function getCredentials() {
+async function getCredentials(): Promise<ResendCredentials> {
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
@@ -20,7 +21,7 @@ async function getCredentials() {
     throw new Error('X_REPLIT_TOKEN not found for repl/depl');
   }
 
-  connectionSettings = await fetch(
+  const response = await fetch(
     'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
     {
       headers: {
@@ -28,19 +29,25 @@ async function getCredentials() {
         'X_REPLIT_TOKEN': xReplitToken
       }
     }
-  ).then(res => res.json()).then(data => data.items?.[0]);
+  );
+  
+  const data: ResendConnectionSettings = await response.json();
+  connectionSettings = data;
 
-  console.log('[Email Debug] Connection settings retrieved:', connectionSettings ? 'yes' : 'NO');
-  console.log('[Email Debug] API key exists:', connectionSettings?.settings?.api_key ? 'yes' : 'NO');
-  console.log('[Email Debug] From email:', connectionSettings?.settings?.from_email || 'NOT SET');
+  const settings = data.items?.[0]?.settings;
+  
+  console.log('[Email Debug] Connection settings retrieved:', settings ? 'yes' : 'NO');
+  console.log('[Email Debug] API key exists:', settings?.api_key ? 'yes' : 'NO');
+  console.log('[Email Debug] From email:', settings?.from_email || 'NOT SET');
 
-  if (!connectionSettings || (!connectionSettings.settings.api_key)) {
+  if (!settings?.api_key || !settings?.from_email) {
     console.error('[Email Error] Resend not connected properly');
     throw new Error('Resend not connected');
   }
+  
   return {
-    apiKey: connectionSettings.settings.api_key, 
-    fromEmail: connectionSettings.settings.from_email
+    apiKey: settings.api_key, 
+    fromEmail: settings.from_email
   };
 }
 

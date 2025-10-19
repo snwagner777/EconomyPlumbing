@@ -52,16 +52,20 @@ export function getSession() {
 }
 
 function updateUserSession(
-  user: any,
+  user: Express.User,
   tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers
-) {
+): void {
   user.claims = tokens.claims();
   user.access_token = tokens.access_token;
   user.refresh_token = tokens.refresh_token;
   user.expires_at = user.claims?.exp;
 }
 
-async function upsertOAuthUser(claims: any) {
+async function upsertOAuthUser(claims: Express.User['claims']): Promise<void> {
+  if (!claims?.sub || !claims?.email) {
+    throw new Error('Invalid OAuth claims: missing sub or email');
+  }
+  
   await storage.upsertOAuthUser({
     id: claims["sub"],
     email: claims["email"],
@@ -122,7 +126,7 @@ export async function setupOAuth(app: Express) {
   });
 
   app.get("/api/oauth/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, async (err: any, user: any) => {
+    passport.authenticate(`replitauth:${req.hostname}`, async (err: Error | null, user: Express.User | false) => {
       if (err || !user) {
         console.error("[OAuth] Authentication failed:", err);
         return res.redirect("/admin/oauth-login");
@@ -153,10 +157,10 @@ export async function setupOAuth(app: Express) {
         }
         
         // Set admin flag in session
-        (req as any).session.isAdmin = true;
+        req.session.isAdmin = true;
         
         // Save session before redirect
-        (req as any).session.save((saveErr: any) => {
+        req.session.save((saveErr) => {
           if (saveErr) {
             console.error("[OAuth] Session save error:", saveErr);
             return res.redirect("/admin/oauth-login");
@@ -182,9 +186,9 @@ export async function setupOAuth(app: Express) {
 
 // Middleware to check if OAuth user is authenticated
 export const isOAuthAuthenticated: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
+  const user = req.user;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated() || !user || !user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -212,9 +216,9 @@ export const isOAuthAuthenticated: RequestHandler = async (req, res, next) => {
 
 // Middleware to check if OAuth user is whitelisted as admin
 export const isOAuthAdmin: RequestHandler = async (req, res, next) => {
-  const user = req.user as any;
+  const user = req.user;
 
-  if (!req.isAuthenticated() || !user.claims?.email) {
+  if (!req.isAuthenticated() || !user || !user.claims?.email) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 

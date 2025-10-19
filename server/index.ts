@@ -14,8 +14,12 @@ import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
+import { securityHeadersMiddleware } from "./middleware/securityHeaders";
 
 const app = express();
+
+// Security headers (CSP, HSTS, etc.) - applied first for all responses
+app.use(securityHeadersMiddleware);
 
 // Enable gzip/brotli compression for all responses
 app.use(compression({

@@ -1699,8 +1699,20 @@ ${rssItems}
         return res.status(400).json({ message: "Photo URL is required" });
       }
 
+      // SECURITY: Validate URL to prevent SSRF attacks
+      const { validatePhotoUrl } = await import("./lib/urlValidator");
+      const validation = validatePhotoUrl(photoUrl);
+      
+      if (!validation.isValid) {
+        console.warn(`[Security] Rejected photo URL: ${photoUrl} - ${validation.error}`);
+        return res.status(400).json({ 
+          message: "Invalid photo URL", 
+          error: validation.error 
+        });
+      }
+
       const { analyzePhotoQuality } = await import("./lib/photoQualityAnalyzer");
-      const analysis = await analyzePhotoQuality(photoUrl, description);
+      const analysis = await analyzePhotoQuality(validation.sanitizedUrl!, description);
 
       res.json({
         success: true,
