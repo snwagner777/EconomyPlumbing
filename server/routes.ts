@@ -1211,6 +1211,67 @@ ${rssItems}
     }
   });
 
+  // Capture referee info from referral landing page
+  app.post("/api/referrals/capture-referee", async (req, res) => {
+    try {
+      const { referralCode, refereeName, refereePhone, refereeEmail } = req.body;
+      
+      if (!referralCode || !refereeName || !refereePhone) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Convert referral code back to name (JOHN-SMITH → John Smith)
+      const referrerNameFromCode = referralCode
+        .split('-')
+        .map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
+        .join(' ');
+
+      console.log(`[Referrals] Capturing referee: ${refereeName} (${refereePhone}) referred by code: ${referralCode}`);
+
+      // We'll find the referrer later during ServiceTitan sync
+      // For now, just store the name from the code
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+
+      // Check if referee is already a customer (mark as ineligible if they are)
+      let refereeCustomerId: number | null = null;
+      let creditNotes: string | null = null;
+
+      try {
+        const existingCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
+        if (existingCustomerId) {
+          refereeCustomerId = existingCustomerId;
+          creditNotes = 'ineligible - already a customer at time of referral';
+          console.log(`[Referrals] Referee "${refereeName}" is already a customer (ID: ${existingCustomerId}) - marking as ineligible`);
+        }
+      } catch (error) {
+        console.error('[Referrals] Error checking referee:', error);
+      }
+
+      // Create referral record
+      const { referrals } = await import('@shared/schema');
+      
+      const [referral] = await db.insert(referrals).values({
+        referrerName: referrerNameFromCode,
+        referrerPhone: 'PENDING', // Will be filled in by ServiceTitan sync
+        referrerCustomerId: null, // Will be matched by ServiceTitan sync
+        refereeName,
+        refereePhone,
+        refereeEmail: refereeEmail || null,
+        refereeCustomerId,
+        status: creditNotes ? 'contacted' : 'pending', // If already a customer, skip to contacted
+        submittedAt: new Date(),
+        creditNotes,
+      }).returning();
+
+      console.log(`[Referrals] Created referral record: ${referral.id}`);
+      res.json({ success: true, referralId: referral.id });
+    } catch (error: any) {
+      console.error('[Referrals] Error capturing referee:', error);
+      res.status(500).json({ message: "Error saving referral information" });
+    }
+  });
+
   // Get referrals for a specific customer (Customer Portal)
   app.get("/api/referrals/customer/:customerId", async (req, res) => {
     try {
