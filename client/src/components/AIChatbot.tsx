@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +40,11 @@ export default function AIChatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const phoneConfig = usePhoneConfig();
   const isMobile = useIsMobile();
+
+  // Guard against missing phoneConfig
+  if (!phoneConfig || !phoneConfig.tel || !phoneConfig.display) {
+    return null; // Don't render chatbot if phone config isn't loaded
+  }
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -127,8 +133,11 @@ export default function AIChatbot() {
     window.location.href = `sms:${phoneConfig.tel}`;
   };
 
+  // Build chatbot UI
+  let chatbotUI;
+  
   if (!isOpen) {
-    return (
+    chatbotUI = (
       <Button
         onClick={() => setIsOpen(true)}
         className={`fixed h-14 w-14 rounded-full shadow-lg z-50 hover:scale-110 transition-transform ${
@@ -140,11 +149,8 @@ export default function AIChatbot() {
         <MessageCircle className="w-6 h-6" />
       </Button>
     );
-  }
-
-  // Mobile layout
-  if (isMobile) {
-    return (
+  } else if (isMobile) {
+    chatbotUI = (
       <Card 
         className="shadow-2xl flex flex-col"
         style={{
@@ -282,21 +288,20 @@ export default function AIChatbot() {
         </div>
       </Card>
     );
-  }
-
-  // Desktop layout
-  return (
-    <Card 
-      className="shadow-2xl flex flex-col rounded-lg"
-      style={{
-        position: 'fixed',
-        bottom: '1.5rem',
-        right: '1.5rem',
-        width: '24rem',
-        height: '600px',
-        zIndex: 50
-      }}
-    >
+  } else {
+    // Desktop layout
+    chatbotUI = (
+      <Card 
+        className="shadow-2xl flex flex-col rounded-lg"
+        style={{
+          position: 'fixed',
+          bottom: '1.5rem',
+          right: '1.5rem',
+          width: '24rem',
+          height: '600px',
+          zIndex: 50
+        }}
+      >
       {/* Header */}
       <CardHeader className="pb-3 border-b flex-shrink-0">
         <div className="flex items-center justify-between">
@@ -417,5 +422,9 @@ export default function AIChatbot() {
         </p>
       </div>
     </Card>
-  );
+    );
+  }
+
+  // Render using portal to avoid SidebarProvider transform issues
+  return createPortal(chatbotUI, document.body);
 }
