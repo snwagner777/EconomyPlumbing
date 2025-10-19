@@ -49,7 +49,13 @@ export default function Header() {
     { name: "Sump & Sewage Pumps", path: "/sewage-pump-services" },
     { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
     { name: "Permit Resolution", path: "/permit-resolution-services" },
-    { name: "Commercial Plumbing", path: "/commercial-plumbing" },
+    { name: "Commercial Services", path: "/commercial-services", section: "Commercial" },
+    { name: "Restaurant Plumbing", path: "/commercial/restaurants", section: "Commercial", indent: true },
+    { name: "Retail Plumbing", path: "/commercial/retail", section: "Commercial", indent: true },
+    { name: "Office Buildings", path: "/commercial/office-buildings", section: "Commercial", indent: true },
+    { name: "Property Management", path: "/commercial/property-management", section: "Commercial", indent: true },
+    { name: "Winter Freeze Protection", path: "/winter-freeze-protection", section: "Seasonal" },
+    { name: "Summer Plumbing Prep", path: "/summer-plumbing-prep", section: "Seasonal" },
   ];
 
   const serviceAreas = [
@@ -181,11 +187,14 @@ export default function Header() {
                   className="absolute top-full left-0 pt-2 w-72"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
-                    {services.map((service) => (
+                    {services.map((service, index) => (
                       <Link
                         key={service.path}
                         href={service.path}
-                        className={`block px-4 py-2 text-sm hover-elevate ${service.featured ? 'font-semibold border-b border-border mb-1' : ''}`}
+                        className={`block py-2 text-sm hover-elevate ${
+                          service.featured ? 'font-semibold border-b border-border mb-1 px-4' : 
+                          service.indent ? 'pl-8 pr-4 text-muted-foreground' : 'px-4'
+                        }`}
                         data-testid={`link-service-${service.path.slice(1)}`}
                       >
                         {service.name}
@@ -236,7 +245,7 @@ export default function Header() {
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
                 data-testid="button-store-menu"
               >
-                Store
+                Customer Portal
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -244,9 +253,44 @@ export default function Header() {
                 <div
                   onMouseEnter={() => setStoreOpen(true)}
                   onMouseLeave={() => setStoreOpen(false)}
-                  className="absolute top-full left-0 pt-2 w-56"
+                  className="absolute top-full left-0 pt-2 w-64"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
+                    <Link
+                      href="/customer-portal"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-customer-portal"
+                    >
+                      Customer Portal
+                    </Link>
+                    <Link
+                      href="/refer-a-friend"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-referral-program"
+                    >
+                      Referral Program
+                    </Link>
+                    <Link
+                      href="/plumbing-cost-estimator"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-cost-estimator"
+                    >
+                      Plumbing Cost Estimator
+                    </Link>
+                    <Link
+                      href="/water-heater-calculator"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-water-heater-calc"
+                    >
+                      Water Heater Calculator
+                    </Link>
+                    <Link
+                      href="/membership-benefits"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-vip-membership"
+                    >
+                      VIP Membership
+                    </Link>
                     <Link
                       href="/store"
                       className="block px-4 py-2 text-sm hover-elevate"
@@ -254,23 +298,17 @@ export default function Header() {
                     >
                       Products
                     </Link>
-                    <Link
-                      href="/membership-benefits"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-memberships"
-                    >
-                      VIP Memberships
-                    </Link>
+                    <div className="border-t border-border my-2"></div>
                     <Link
                       href="/privacy-policy"
-                      className="block px-4 py-2 text-sm hover-elevate"
+                      className="block px-4 py-2 text-sm hover-elevate text-muted-foreground"
                       data-testid="link-privacy"
                     >
                       Privacy Policy
                     </Link>
                     <Link
                       href="/refund_returns"
-                      className="block px-4 py-2 text-sm hover-elevate"
+                      className="block px-4 py-2 text-sm hover-elevate text-muted-foreground"
                       data-testid="link-refunds"
                     >
                       Refund & Returns
@@ -420,21 +458,34 @@ export default function Header() {
                 className="flex items-center justify-between w-full py-3 text-sm font-medium"
                 data-testid="mobile-button-store"
               >
-                Store & Policies
+                Customer Portal
                 <ChevronDown className={`w-4 h-4 transition-transform ${mobileStoreOpen ? 'rotate-180' : ''}`} />
               </button>
               {mobileStoreOpen && (
                 <div className="pb-2 space-y-1">
+                  <Link href="/customer-portal" className="block py-2 pl-4 text-sm" data-testid="mobile-link-customer-portal" onClick={() => setMobileMenuOpen(false)}>
+                    Customer Portal
+                  </Link>
+                  <Link href="/refer-a-friend" className="block py-2 pl-4 text-sm" data-testid="mobile-link-referral-program" onClick={() => setMobileMenuOpen(false)}>
+                    Referral Program
+                  </Link>
+                  <Link href="/plumbing-cost-estimator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cost-estimator" onClick={() => setMobileMenuOpen(false)}>
+                    Plumbing Cost Estimator
+                  </Link>
+                  <Link href="/water-heater-calculator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-water-heater-calc" onClick={() => setMobileMenuOpen(false)}>
+                    Water Heater Calculator
+                  </Link>
+                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-vip-membership" onClick={() => setMobileMenuOpen(false)}>
+                    VIP Membership
+                  </Link>
                   <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
                     Products
                   </Link>
-                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-memberships" onClick={() => setMobileMenuOpen(false)}>
-                    VIP Memberships
-                  </Link>
-                  <Link href="/privacy-policy" className="block py-2 pl-4 text-sm" data-testid="mobile-link-privacy" onClick={() => setMobileMenuOpen(false)}>
+                  <div className="border-t border-border my-2 mx-4"></div>
+                  <Link href="/privacy-policy" className="block py-2 pl-4 text-sm text-muted-foreground" data-testid="mobile-link-privacy" onClick={() => setMobileMenuOpen(false)}>
                     Privacy Policy
                   </Link>
-                  <Link href="/refund_returns" className="block py-2 pl-4 text-sm" data-testid="mobile-link-refunds" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/refund_returns" className="block py-2 pl-4 text-sm text-muted-foreground" data-testid="mobile-link-refunds" onClick={() => setMobileMenuOpen(false)}>
                     Refund & Returns
                   </Link>
                 </div>
