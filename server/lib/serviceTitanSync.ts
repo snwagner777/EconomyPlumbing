@@ -39,7 +39,7 @@ export async function syncServiceTitanCustomers(): Promise<void> {
 export async function startServiceTitanSync(): Promise<void> {
   console.log('[ServiceTitan Sync] Scheduler started - will sync customers daily at 3am');
   
-  // Run initial sync on startup if database is empty or incomplete
+  // Run initial full sync on startup (no threshold - always sync all customers)
   try {
     const { serviceTitanCustomers } = await import('@shared/schema');
     const { db } = await import('../db');
@@ -48,18 +48,13 @@ export async function startServiceTitanSync(): Promise<void> {
     const result = await db.select({ count: count() }).from(serviceTitanCustomers);
     const customerCount = result[0]?.count || 0;
     
-    // Always sync if we have less than 10,000 customers (ServiceTitan has ~11,000+)
-    if (customerCount < 10000) {
-      console.log(`[ServiceTitan Sync] 🚀 Found ${customerCount} customers in cache - running full sync to catch up...`);
-      console.log('[ServiceTitan Sync] ⚠️  This may take 5-10 minutes for ~11,000 customers');
-      
-      // Run sync without blocking startup
-      syncServiceTitanCustomers().catch(error => {
-        console.error('[ServiceTitan Sync] Initial sync failed:', error);
-      });
-    } else {
-      console.log(`[ServiceTitan Sync] ✅ Database has ${customerCount} customers - sync complete`);
-    }
+    console.log(`[ServiceTitan Sync] 🚀 Starting full sync (current: ${customerCount} customers in cache)...`);
+    console.log('[ServiceTitan Sync] ⚠️  This may take 5-10 minutes for ~11,000 customers');
+    
+    // Run sync without blocking startup
+    syncServiceTitanCustomers().catch(error => {
+      console.error('[ServiceTitan Sync] Initial sync failed:', error);
+    });
   } catch (error) {
     console.error('[ServiceTitan Sync] Failed to check customer count:', error);
   }
