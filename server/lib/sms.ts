@@ -23,6 +23,10 @@ export async function sendSMS({ to, message }: SendSMSOptions): Promise<void> {
     throw new Error('Twilio is not configured. Please set TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER environment variables.');
   }
   
+  console.log('[Twilio] Sending SMS:');
+  console.log('  From:', twilioPhoneNumber);
+  console.log('  To:', to);
+  
   try {
     await client.messages.create({
       body: message,
