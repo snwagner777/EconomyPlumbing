@@ -2821,6 +2821,27 @@ ${rssItems}
     }
   });
 
+  // Manually trigger ServiceTitan customer sync (admin only)
+  app.post("/api/admin/sync-servicetitan", requireAdmin, async (req, res) => {
+    try {
+      console.log("[Admin] Manual ServiceTitan sync triggered");
+      const { syncServiceTitanCustomers } = await import("./lib/serviceTitanSync");
+      
+      // Trigger sync in background (don't wait)
+      syncServiceTitanCustomers().catch(error => {
+        console.error("[Admin] Background sync failed:", error);
+      });
+      
+      res.json({ 
+        success: true, 
+        message: "ServiceTitan customer sync started in background. Check server logs for progress."
+      });
+    } catch (error: any) {
+      console.error("[Admin] Error triggering sync:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Reprocess ALL photos with improved AI analysis (admin only)
   app.post("/api/admin/reprocess-photos", requireAdmin, async (req, res) => {
     try {
