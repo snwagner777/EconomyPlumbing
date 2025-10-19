@@ -4734,6 +4734,8 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     try {
       const { phone, email } = req.query;
 
+      console.log("[Customer Portal] Search request received - phone:", phone, "email:", email);
+
       if (!phone && !email) {
         return res.status(400).json({ error: "Phone or email required" });
       }
@@ -4745,8 +4747,11 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const appKey = process.env.SERVICETITAN_APP_KEY;
 
       if (!tenantId || !clientId || !clientSecret || !appKey) {
+        console.error("[Customer Portal] ServiceTitan credentials missing!");
         return res.status(503).json({ error: "ServiceTitan integration not configured" });
       }
+
+      console.log("[Customer Portal] ServiceTitan credentials found, initializing API...");
 
       const { ServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitan = new ServiceTitanAPI({
@@ -4757,19 +4762,23 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       });
 
       // Search for customer
+      console.log("[Customer Portal] Calling searchCustomer...");
       const customer = await serviceTitan.searchCustomer(
         (email as string) || "",
         (phone as string) || ""
       );
 
       if (!customer) {
-        return res.status(404).json({ error: "Customer not found" });
+        console.log("[Customer Portal] No customer found with provided credentials");
+        return res.status(404).json({ error: "Customer not found", message: "No account found with the provided phone number or email address." });
       }
 
+      console.log("[Customer Portal] Customer found:", customer.id);
       res.json(customer);
     } catch (error: any) {
-      console.error("Customer search error:", error);
-      res.status(500).json({ error: "Failed to search for customer" });
+      console.error("[Customer Portal] Search error:", error.message);
+      console.error("[Customer Portal] Full error:", error);
+      res.status(500).json({ error: "Failed to search for customer", details: error.message });
     }
   });
 

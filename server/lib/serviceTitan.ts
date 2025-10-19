@@ -96,11 +96,25 @@ class ServiceTitanAPI {
       ...options.headers,
     };
 
+    console.log('[ServiceTitan] API Request:', {
+      url,
+      method: options.method || 'GET',
+      hasToken: !!this.accessToken,
+      hasAppKey: !!this.config.appKey
+    });
+
     try {
       const response = await fetch(url, { ...options, headers });
 
+      console.log('[ServiceTitan] API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('[ServiceTitan] API Error Response:', errorText);
         throw new Error(`ServiceTitan API error: ${response.status} - ${errorText}`);
       }
 
@@ -110,7 +124,9 @@ class ServiceTitanAPI {
         return {} as T;
       }
 
-      return await response.json();
+      const jsonData = await response.json();
+      console.log('[ServiceTitan] API Success - Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'N/A');
+      return jsonData;
     } catch (error) {
       console.error('[ServiceTitan] API request error:', error);
       throw error;
