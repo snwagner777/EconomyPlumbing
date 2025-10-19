@@ -35,6 +35,7 @@ interface ContactFormSectionProps {
   phoneNumber?: string;
   phoneLabel?: string;
   className?: string;
+  phoneTel?: string; // Optional tel link override (should match phoneNumber if provided)
 }
 
 export default function ContactFormSection({ 
@@ -45,13 +46,15 @@ export default function ContactFormSection({
   pageContext = "Website Contact Form",
   phoneNumber,
   phoneLabel = "Austin",
-  className = ""
+  className = "",
+  phoneTel
 }: ContactFormSectionProps) {
   const defaultPhoneConfig = usePhoneConfig();
   const { toast } = useToast();
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [formStartTime] = useState(Date.now()); // Track when form was loaded
   const displayPhoneNumber = phoneNumber || defaultPhoneConfig.display;
+  const telLink = phoneTel || defaultPhoneConfig.tel;
 
   const form = useForm<InsertContactSubmission>({
     resolver: zodResolver(insertContactSubmissionSchema),
@@ -115,7 +118,7 @@ export default function ContactFormSection({
             className="bg-primary"
             data-testid="button-call-now"
           >
-            <a href={`tel:${displayPhoneNumber.replace(/\D/g, '')}`}>Call {displayPhoneNumber}</a>
+            <a href={telLink}>Call {displayPhoneNumber}</a>
           </Button>
         </Card>
       </section>
@@ -289,7 +292,7 @@ export default function ContactFormSection({
 
             <p className="text-sm text-center text-muted-foreground">
               Or call us directly at{" "}
-              <a href={`tel:${displayPhoneNumber.replace(/\D/g, '')}`} className="text-foreground hover:underline">
+              <a href={telLink} className="text-foreground hover:underline">
                 {displayPhoneNumber}
               </a>
               {phoneLabel && <span className="text-muted-foreground"> ({phoneLabel})</span>}

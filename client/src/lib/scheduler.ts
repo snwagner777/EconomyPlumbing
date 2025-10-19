@@ -116,8 +116,19 @@ export const openScheduler = async () => {
 
 // Show user-friendly error message
 const showSchedulerError = () => {
+  // Access window globals with multiple fallback levels
   const austinPhone = window.__PHONE_CONFIG__?.display || '(512) 368-9159';
-  const marbleFallsPhone = window.__MARBLE_FALLS_PHONE_CONFIG__?.display || '(830) 460-3565';
+  const marbleFallsPhone = window.__MARBLE_FALLS_PHONE_CONFIG__?.display || 
+                           window.__PHONE_CONFIG__?.display || 
+                           '(830) 460-3565';
+  
+  // Log missing config for debugging
+  if (!window.__PHONE_CONFIG__) {
+    console.warn('[Scheduler] window.__PHONE_CONFIG__ not initialized');
+  }
+  if (!window.__MARBLE_FALLS_PHONE_CONFIG__) {
+    console.warn('[Scheduler] window.__MARBLE_FALLS_PHONE_CONFIG__ not initialized');
+  }
   
   alert(
     'Online scheduler is temporarily unavailable.\n\n' +

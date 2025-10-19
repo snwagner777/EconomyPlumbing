@@ -331,6 +331,7 @@ export default function ServiceAreaPage({
         pageContext={`${city} Service Area Page`}
         phoneNumber={phone}
         phoneLabel={areaName}
+        phoneTel={phoneLink}
         className="py-16 lg:py-24"
       />
 

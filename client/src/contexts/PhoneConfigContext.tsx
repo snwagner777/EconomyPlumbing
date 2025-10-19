@@ -40,6 +40,11 @@ const DEFAULT_PHONE: PhoneConfig = {
   tel: 'tel:+15123689159'
 };
 
+const MARBLE_FALLS_PHONE: PhoneConfig = {
+  display: '(830) 460-3565',
+  tel: 'tel:+18304603565'
+};
+
 const PhoneConfigContext = createContext<PhoneConfig>(DEFAULT_PHONE);
 
 // Cookie helper functions
@@ -147,11 +152,14 @@ function getPhoneNumberFromTracking(trackingNumbers: TrackingNumber[]): PhoneCon
 export function PhoneConfigProvider({ children }: { children: ReactNode }) {
   const [location] = useLocation();
   const [phoneConfig, setPhoneConfig] = useState<PhoneConfig>(() => {
-    // Initialize from window.__PHONE_CONFIG__ set by inline script in index.html
-    if (window.__PHONE_CONFIG__) {
-      return window.__PHONE_CONFIG__;
+    // Initialize window globals immediately to avoid race conditions
+    if (!window.__PHONE_CONFIG__) {
+      window.__PHONE_CONFIG__ = DEFAULT_PHONE;
     }
-    return DEFAULT_PHONE;
+    if (!window.__MARBLE_FALLS_PHONE_CONFIG__) {
+      window.__MARBLE_FALLS_PHONE_CONFIG__ = MARBLE_FALLS_PHONE;
+    }
+    return window.__PHONE_CONFIG__;
   });
 
   // Fetch tracking numbers from API
@@ -191,8 +199,5 @@ export function useAustinPhone(): PhoneConfig {
 }
 
 export function useMarbleFallsPhone(): PhoneConfig {
-  return {
-    display: '(830) 460-3565',
-    tel: 'tel:+18304603565'
-  };
+  return MARBLE_FALLS_PHONE;
 }
