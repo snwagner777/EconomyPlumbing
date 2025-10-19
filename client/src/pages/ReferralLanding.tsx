@@ -38,10 +38,10 @@ export default function ReferralLanding() {
         console.error('[Referral Link] Error tracking click:', error);
       },
       onSettled: () => {
-        // Redirect to refer-a-friend page after tracking
+        // Redirect to referral offer page after tracking
         setTimeout(() => {
           setIsTracking(false);
-          setLocation("/refer-a-friend");
+          setLocation(`/referral-offer?code=${code}`);
         }, 500);
       }
     });
