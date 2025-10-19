@@ -636,6 +636,239 @@ class ServiceTitanAPI {
       return [];
     }
   }
+
+  /**
+   * Sync all customers from ServiceTitan to local database
+   * Paginates through all customers and stores them with normalized contacts
+   */
+  async syncAllCustomers(): Promise<{ customersCount: number; contactsCount: number; duration: number }> {
+    const startTime = Date.now();
+    console.log('[ServiceTitan Sync] Starting full customer sync...');
+    
+    try {
+      const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      let page = 1;
+      let hasMore = true;
+      let totalCustomers = 0;
+      let totalContacts = 0;
+      const pageSize = 50;
+
+      // Delete existing data to do a full refresh
+      console.log('[ServiceTitan Sync] Clearing existing cached data...');
+      await db.delete(serviceTitanContacts);
+      await db.delete(serviceTitanCustomers);
+
+      while (hasMore) {
+        console.log(`[ServiceTitan Sync] Fetching page ${page}...`);
+        
+        // Fetch customers page
+        const url = `${this.baseUrl}/customers?page=${page}&pageSize=${pageSize}`;
+        const result = await this.request<{ data: any[]; hasMore: boolean }>(url);
+        
+        const customers = result.data || [];
+        hasMore = result.hasMore || false;
+        
+        if (customers.length === 0) {
+          break;
+        }
+
+        // Process each customer
+        for (const customer of customers) {
+          try {
+            // Insert customer
+            await db.insert(serviceTitanCustomers).values({
+              id: customer.id,
+              name: customer.name || 'Unknown',
+              type: customer.type || 'Residential',
+              street: customer.address?.street || null,
+              city: customer.address?.city || null,
+              state: customer.address?.state || null,
+              zip: customer.address?.zip || null,
+              active: customer.active ?? true,
+              balance: customer.balance?.toString() || '0.00',
+            }).onConflictDoUpdate({
+              target: serviceTitanCustomers.id,
+              set: {
+                name: customer.name || 'Unknown',
+                type: customer.type || 'Residential',
+                street: customer.address?.street || null,
+                city: customer.address?.city || null,
+                state: customer.address?.state || null,
+                zip: customer.address?.zip || null,
+                active: customer.active ?? true,
+                balance: customer.balance?.toString() || '0.00',
+                lastSyncedAt: new Date(),
+              },
+            });
+            
+            totalCustomers++;
+
+            // Fetch and store customer contacts
+            const contacts = await this.getCustomerContacts(customer.id);
+            
+            for (const contact of contacts) {
+              const contactType = contact.type || 'Unknown';
+              const value = contact.value || contact.phoneNumber || contact.email || '';
+              
+              if (!value) continue;
+
+              // Normalize based on type
+              let normalizedValue = '';
+              if (contactType.toLowerCase().includes('phone') || contactType.toLowerCase().includes('mobile')) {
+                normalizedValue = normalizePhone(value);
+              } else if (contactType.toLowerCase().includes('email')) {
+                normalizedValue = normalizeEmail(value);
+              } else {
+                normalizedValue = value.toLowerCase().trim();
+              }
+
+              if (normalizedValue) {
+                await db.insert(serviceTitanContacts).values({
+                  customerId: customer.id,
+                  contactType,
+                  value,
+                  normalizedValue,
+                  isPrimary: false, // ServiceTitan doesn't expose primary flag clearly
+                }).onConflictDoNothing();
+                
+                totalContacts++;
+              }
+            }
+          } catch (error) {
+            console.error(`[ServiceTitan Sync] Error processing customer ${customer.id}:`, error);
+            // Continue with next customer
+          }
+        }
+
+        page++;
+        
+        // Log progress every 10 pages
+        if (page % 10 === 0) {
+          console.log(`[ServiceTitan Sync] Progress: ${totalCustomers} customers, ${totalContacts} contacts`);
+        }
+      }
+
+      const duration = Date.now() - startTime;
+      console.log(`[ServiceTitan Sync] ✅ Completed! ${totalCustomers} customers, ${totalContacts} contacts in ${(duration / 1000).toFixed(1)}s`);
+      
+      return { customersCount: totalCustomers, contactsCount: totalContacts, duration };
+    } catch (error) {
+      console.error('[ServiceTitan Sync] Failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search for customer by phone or email in local cache
+   * Returns customer ID if found
+   */
+  async searchLocalCustomer(phoneOrEmail: string): Promise<number | null> {
+    try {
+      const { serviceTitanContacts } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      // Normalize input
+      const normalized = phoneOrEmail.includes('@') 
+        ? normalizeEmail(phoneOrEmail)
+        : normalizePhone(phoneOrEmail);
+      
+      if (!normalized) return null;
+
+      // Search in contacts
+      const results = await db
+        .select({ customerId: serviceTitanContacts.customerId })
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalized))
+        .limit(1);
+
+      return results.length > 0 ? results[0].customerId : null;
+    } catch (error) {
+      console.error('[ServiceTitan] Local search error:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Search with fallback: Try local cache first, then live API
+   * Caches result on-demand if found via live API
+   */
+  async searchCustomerWithFallback(phoneOrEmail: string): Promise<number | null> {
+    // Try local cache first (instant)
+    const cachedCustomerId = await this.searchLocalCustomer(phoneOrEmail);
+    if (cachedCustomerId) {
+      console.log(`[ServiceTitan] ✅ Found customer ${cachedCustomerId} in local cache`);
+      return cachedCustomerId;
+    }
+
+    // Fallback to live API search (slower)
+    console.log('[ServiceTitan] 🔄 Not in cache, searching live API...');
+    const liveCustomer = await this.searchCustomer(phoneOrEmail, phoneOrEmail);
+    
+    if (liveCustomer) {
+      console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API, caching...`);
+      
+      // Cache on-demand
+      try {
+        const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+        
+        // Store customer
+        await db.insert(serviceTitanCustomers).values({
+          id: liveCustomer.id,
+          name: liveCustomer.name || 'Unknown',
+          type: liveCustomer.type || 'Residential',
+          street: liveCustomer.address?.street || null,
+          city: liveCustomer.address?.city || null,
+          state: liveCustomer.address?.state || null,
+          zip: liveCustomer.address?.zip || null,
+          active: true,
+          balance: '0.00',
+        }).onConflictDoUpdate({
+          target: serviceTitanCustomers.id,
+          set: { lastSyncedAt: new Date() },
+        });
+
+        // Store contacts
+        const contacts = await this.getCustomerContacts(liveCustomer.id);
+        for (const contact of contacts) {
+          const contactType = contact.type || 'Unknown';
+          const value = contact.value || contact.phoneNumber || contact.email || '';
+          
+          if (!value) continue;
+
+          let normalizedValue = '';
+          if (contactType.toLowerCase().includes('phone') || contactType.toLowerCase().includes('mobile')) {
+            normalizedValue = normalizePhone(value);
+          } else if (contactType.toLowerCase().includes('email')) {
+            normalizedValue = normalizeEmail(value);
+          } else {
+            normalizedValue = value.toLowerCase().trim();
+          }
+
+          if (normalizedValue) {
+            await db.insert(serviceTitanContacts).values({
+              customerId: liveCustomer.id,
+              contactType,
+              value,
+              normalizedValue,
+              isPrimary: false,
+            }).onConflictDoNothing();
+          }
+        }
+        
+        console.log(`[ServiceTitan] ✅ Cached customer ${liveCustomer.id} for future searches`);
+      } catch (error) {
+        console.error('[ServiceTitan] Failed to cache customer:', error);
+        // Non-fatal, customer was still found
+      }
+      
+      return liveCustomer.id;
+    }
+
+    console.log('[ServiceTitan] ❌ Customer not found in cache or live API');
+    return null;
+  }
 }
 
 // Singleton instance
