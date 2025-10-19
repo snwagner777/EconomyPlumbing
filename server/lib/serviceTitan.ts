@@ -161,115 +161,100 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Search for customer by email or phone
+   * Search for customer by email or phone using Contacts Search API
    */
   async searchCustomer(email: string, phone: string): Promise<ServiceTitanCustomer | null> {
     try {
       console.log(`[ServiceTitan] Searching for customer - email: "${email}", phone: "${phone}"`);
       
-      // Search by email if provided
-      if (email && email.trim()) {
-        console.log('[ServiceTitan] Searching by email...');
+      let customerId: number | null = null;
+
+      // Search by phone if provided (use Contacts Search API)
+      if (phone && phone.trim()) {
+        console.log('[ServiceTitan] Searching by phone using Contacts Search API...');
+        
+        // Normalize the search phone number (remove all non-digits and leading 1)
+        const normalizedPhone = this.normalizePhone(phone);
+        console.log(`[ServiceTitan] Normalized search phone: "${normalizedPhone}"`);
+        
         try {
-          const emailResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-            `/customers?email=${encodeURIComponent(email.trim())}`
+          // Use Contacts Search API endpoint
+          const contactsSearchUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/contacts/search`;
+          const searchResults = await this.request<{ data: any[] }>(
+            contactsSearchUrl,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                value: normalizedPhone,
+                page: 1,
+                pageSize: 10
+              })
+            },
+            true // Use full URL
           );
 
-          if (emailResults.data && emailResults.data.length > 0) {
-            console.log(`[ServiceTitan] Found customer by email: ${emailResults.data[0].id}`);
-            return emailResults.data[0];
+          console.log(`[ServiceTitan] Contacts search returned ${searchResults.data?.length || 0} results`);
+
+          if (searchResults.data && searchResults.data.length > 0) {
+            // Get the first matching contact's customer ID
+            customerId = searchResults.data[0].customerId;
+            console.log(`[ServiceTitan] Found contact with customerId: ${customerId}`);
+          } else {
+            console.log('[ServiceTitan] No contacts found matching phone number');
           }
-          console.log('[ServiceTitan] No customer found by email');
         } catch (error: any) {
-          console.error('[ServiceTitan] Email search error:', error.message);
+          console.error('[ServiceTitan] Contacts search error:', error.message);
+          // Fall through to email search or return null
         }
       }
 
-      // If not found by email, search by phone
-      if (phone && phone.trim()) {
-        console.log('[ServiceTitan] Searching by phone...');
+      // Search by email if provided and phone didn't find anything
+      if (!customerId && email && email.trim()) {
+        console.log('[ServiceTitan] Searching by email using Contacts Search API...');
         
-        // Normalize the search phone number
-        const normalizedSearchPhone = this.normalizePhone(phone);
-        console.log(`[ServiceTitan] Normalized search phone: "${normalizedSearchPhone}"`);
-        
-        // ServiceTitan's phone API doesn't filter properly, so we need to paginate and check all customers
-        const PAGE_SIZE = 50;
-        const MAX_PAGES = 20; // Check up to 1000 customers (20 pages * 50)
-        const BATCH_SIZE = 5;
-        
-        let currentPage = 1;
-        let totalChecked = 0;
-        
-        while (currentPage <= MAX_PAGES) {
-          console.log(`[ServiceTitan] Fetching page ${currentPage}...`);
-          
-          const pageResults = await this.request<{ data: ServiceTitanCustomer[], hasMore?: boolean }>(
-            `/customers?phoneNumber=${encodeURIComponent(phone)}&page=${currentPage}&pageSize=${PAGE_SIZE}`
-          );
-          
-          if (!pageResults.data || pageResults.data.length === 0) {
-            console.log(`[ServiceTitan] Page ${currentPage} returned no customers, stopping search`);
-            break;
-          }
-
-          console.log(`[ServiceTitan] Page ${currentPage} returned ${pageResults.data.length} customers`);
-          totalChecked += pageResults.data.length;
-          
-          // Check customers in this page in batches
-          for (let i = 0; i < pageResults.data.length; i += BATCH_SIZE) {
-            const batch = pageResults.data.slice(i, i + BATCH_SIZE);
-            const batchNumber = Math.floor((totalChecked - pageResults.data.length + i) / BATCH_SIZE) + 1;
-            const customerStart = totalChecked - pageResults.data.length + i + 1;
-            const customerEnd = Math.min(customerStart + BATCH_SIZE - 1, totalChecked);
-            
-            console.log(`[ServiceTitan] Page ${currentPage}, Batch ${batchNumber}: Checking customers ${customerStart}-${customerEnd}`);
-            
-            // Process batch in parallel
-            const results = await Promise.allSettled(
-              batch.map(async (customer) => {
-                try {
-                  const contacts = await this.getCustomerContacts(customer.id);
-                  
-                  // Check if any contact phone matches
-                  for (const contact of contacts) {
-                    // Phone number is in the 'value' field for phone-type contacts
-                    const phoneValue = contact.value || contact.phoneSettings?.phoneNumber;
-                    if (phoneValue && (contact.type === 'Phone' || contact.type === 'MobilePhone')) {
-                      const normalizedContactPhone = this.normalizePhone(phoneValue);
-                      if (normalizedContactPhone === normalizedSearchPhone) {
-                        console.log(`[ServiceTitan] MATCH FOUND on page ${currentPage}! Customer ${customer.id} (${customer.name}) has matching phone: ${phoneValue}`);
-                        return customer;
-                      }
-                    }
-                  }
-                  return null;
-                } catch (error) {
-                  console.error(`[ServiceTitan] Error checking customer ${customer.id}:`, error);
-                  return null;
-                }
+        try {
+          // Use Contacts Search API endpoint for email
+          const contactsSearchUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/contacts/search`;
+          const searchResults = await this.request<{ data: any[] }>(
+            contactsSearchUrl,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                value: email.trim(),
+                page: 1,
+                pageSize: 10
               })
-            );
-            
-            // Check if we found a match in this batch
-            for (const result of results) {
-              if (result.status === 'fulfilled' && result.value) {
-                console.log(`[ServiceTitan] Total customers checked: ${totalChecked}`);
-                return result.value;
-              }
-            }
+            },
+            true // Use full URL
+          );
+
+          console.log(`[ServiceTitan] Email contacts search returned ${searchResults.data?.length || 0} results`);
+
+          if (searchResults.data && searchResults.data.length > 0) {
+            // Get the first matching contact's customer ID
+            customerId = searchResults.data[0].customerId;
+            console.log(`[ServiceTitan] Found contact with customerId: ${customerId}`);
+          } else {
+            console.log('[ServiceTitan] No contacts found matching email');
           }
-          
-          // Check if there are more pages
-          if (pageResults.hasMore === false || pageResults.data.length < PAGE_SIZE) {
-            console.log(`[ServiceTitan] No more pages available, stopping search`);
-            break;
-          }
-          
-          currentPage++;
+        } catch (error: any) {
+          console.error('[ServiceTitan] Email contacts search error:', error.message);
         }
-        
-        console.log(`[ServiceTitan] No matching customer found after checking ${totalChecked} customers across ${currentPage} pages`);
+      }
+
+      // If we found a customer ID, fetch the full customer details
+      if (customerId) {
+        console.log(`[ServiceTitan] Fetching customer details for ID: ${customerId}`);
+        try {
+          const customer = await this.request<ServiceTitanCustomer>(
+            `/customers/${customerId}`
+          );
+          console.log(`[ServiceTitan] Successfully retrieved customer: ${customer.name}`);
+          return customer;
+        } catch (error: any) {
+          console.error('[ServiceTitan] Error fetching customer details:', error.message);
+          throw error;
+        }
       }
 
       console.log('[ServiceTitan] Customer not found by email or phone');
