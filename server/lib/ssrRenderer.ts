@@ -48,6 +48,7 @@ export interface SSRPageConfig {
   h1: string;
   content: string;
   ogImage?: string; // Optional custom OG image
+  ogImageAlt?: string; // Optional custom OG image alt text
 }
 
 /**
@@ -1007,6 +1008,7 @@ export function renderPageForCrawler(
   
   // Add OpenGraph tags
   const ogImage = config.ogImage || 'https://www.plumbersthatcare.com/attached_assets/logo.jpg';
+  const ogImageAlt = config.ogImageAlt || 'Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX';
   const ogTags = `
   <!-- OpenGraph for Social Media -->
   <meta property="og:type" content="website" />
@@ -1014,7 +1016,20 @@ export function renderPageForCrawler(
   <meta property="og:title" content="${config.title}" />
   <meta property="og:description" content="${config.description}" />
   <meta property="og:image" content="${ogImage}" />
-  <meta property="og:site_name" content="Economy Plumbing Services" />`;
+  <meta property="og:image:alt" content="${ogImageAlt}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="Economy Plumbing Services" />
+  <meta property="og:locale" content="en_US" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:url" content="${canonical}" />
+  <meta name="twitter:title" content="${config.title}" />
+  <meta name="twitter:description" content="${config.description}" />
+  <meta name="twitter:image" content="${ogImage}" />
+  <meta name="twitter:image:alt" content="${ogImageAlt}" />
+  <meta name="twitter:site" content="@plumbersthatcare" />`;
   
   html = html.replace('</head>', `${ogTags}\n  </head>`);
   
