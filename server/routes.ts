@@ -1357,13 +1357,20 @@ ${rssItems}
         : 'http://localhost:5000';
       const referralUrl = `${baseUrl}/ref/${referralCode}`;
 
-      // Send SMS notification
+      // Track outreach status
+      let smsSent = false;
+      let emailSent = false;
+
+      // Send SMS notification (graceful fallback if Twilio not configured)
       if (sendSMS) {
         try {
           await sendReferralNotification(refereePhone, referrerName, referralCode);
-          console.log(`[Referrals] SMS sent to ${refereePhone}`);
-        } catch (error) {
-          console.error('[Referrals] Failed to send SMS:', error);
+          console.log(`[Referrals] ✅ SMS sent to ${refereePhone}`);
+          smsSent = true;
+        } catch (error: any) {
+          // Log warning but don't fail the whole referral
+          console.warn(`[Referrals] ⚠️ SMS failed (continuing anyway): ${error.message}`);
+          // SMS failure is not critical - referral can still succeed via email or manual outreach
         }
       }
 
@@ -1385,9 +1392,10 @@ ${rssItems}
             text: emailTemplate.text,
           });
           
-          console.log(`[Referrals] Email sent to ${refereeEmail}`);
-        } catch (error) {
-          console.error('[Referrals] Failed to send email:', error);
+          console.log(`[Referrals] ✅ Email sent to ${refereeEmail}`);
+          emailSent = true;
+        } catch (error: any) {
+          console.warn(`[Referrals] ⚠️ Email failed (continuing anyway): ${error.message}`);
         }
       }
 
@@ -1426,8 +1434,13 @@ ${rssItems}
         creditNotes,
       }).returning();
 
-      console.log(`[Referrals] Created referral record: ${referral.id}`);
-      res.json({ success: true, referralId: referral.id });
+      console.log(`[Referrals] Created referral record: ${referral.id} (SMS: ${smsSent}, Email: ${emailSent})`);
+      res.json({ 
+        success: true, 
+        referralId: referral.id,
+        smsSent,
+        emailSent 
+      });
     } catch (error: any) {
       console.error('[Referrals] Error sending referral:', error);
       res.status(500).json({ message: "Error sending referral: " + error.message });
