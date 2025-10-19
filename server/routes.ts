@@ -1328,6 +1328,147 @@ ${rssItems}
     }
   });
 
+  // Send referral via SMS + Email (Customer Portal)
+  app.post("/api/referrals/send", async (req, res) => {
+    try {
+      const {
+        referrerName,
+        referrerPhone,
+        referrerCustomerId,
+        referralCode,
+        refereeName,
+        refereePhone,
+        refereeEmail,
+        sendEmail,
+        sendSMS,
+      } = req.body;
+
+      if (!referrerName || !referrerPhone || !referralCode || !refereeName || !refereePhone) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      const { sendSMS: sendSMSUtil, sendReferralNotification } = await import('./lib/sms');
+      const { getReferralEmailTemplate } = await import('./lib/emailTemplates');
+      const { getUncachableResendClient } = await import('./email');
+      
+      // Build referral URL
+      const baseUrl = process.env.NODE_ENV === 'production'
+        ? 'https://www.plumbersthatcare.com'
+        : 'http://localhost:5000';
+      const referralUrl = `${baseUrl}/ref/${referralCode}`;
+
+      // Send SMS notification
+      if (sendSMS) {
+        try {
+          await sendReferralNotification(refereePhone, referrerName, referralCode);
+          console.log(`[Referrals] SMS sent to ${refereePhone}`);
+        } catch (error) {
+          console.error('[Referrals] Failed to send SMS:', error);
+        }
+      }
+
+      // Send email notification
+      if (sendEmail && refereeEmail) {
+        try {
+          const { client, fromEmail } = await getUncachableResendClient();
+          const emailTemplate = getReferralEmailTemplate({
+            referrerName,
+            refereeName,
+            referralUrl,
+          });
+
+          await client.emails.send({
+            from: fromEmail,
+            to: refereeEmail,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            text: emailTemplate.text,
+          });
+          
+          console.log(`[Referrals] Email sent to ${refereeEmail}`);
+        } catch (error) {
+          console.error('[Referrals] Failed to send email:', error);
+        }
+      }
+
+      // Create referral record
+      const { referrals } = await import('@shared/schema');
+      const serviceTitan = await import('./lib/serviceTitan').then(m => m.default);
+      
+      let refereeCustomerId: number | null = null;
+      let creditNotes: string | null = null;
+      
+      // Check if referee is already a customer
+      try {
+        const existingCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
+        if (existingCustomerId) {
+          refereeCustomerId = existingCustomerId;
+          creditNotes = 'ineligible - already a customer at time of referral';
+          console.log(`[Referrals] Referee "${refereeName}" is already a customer (ID: ${existingCustomerId}) - marking as ineligible`);
+        }
+      } catch (error) {
+        console.error('[Referrals] Error checking referee:', error);
+      }
+
+      const [referral] = await db.insert(referrals).values({
+        referralCode,
+        referrerName,
+        referrerPhone,
+        referrerCustomerId: referrerCustomerId || null,
+        refereeName,
+        refereePhone,
+        refereeEmail: refereeEmail || null,
+        refereeCustomerId,
+        status: 'contacted', // Already contacted via SMS/Email
+        submittedAt: new Date(),
+        contactedAt: new Date(),
+        creditNotes,
+      }).returning();
+
+      console.log(`[Referrals] Created referral record: ${referral.id}`);
+      res.json({ success: true, referralId: referral.id });
+    } catch (error: any) {
+      console.error('[Referrals] Error sending referral:', error);
+      res.status(500).json({ message: "Error sending referral: " + error.message });
+    }
+  });
+
+  // Get referral leaderboard (top referrers)
+  app.get("/api/referrals/leaderboard", async (req, res) => {
+    try {
+      const { referrals } = await import('@shared/schema');
+      const { count } = await import('drizzle-orm');
+      
+      // Get top referrers by counting successful referrals
+      const leaderboard = await db
+        .select({
+          referrerName: referrals.referrerName,
+          referralCount: count(referrals.id),
+        })
+        .from(referrals)
+        .where(eq(referrals.status, 'credited'))
+        .groupBy(referrals.referrerName)
+        .orderBy(sql`count(${referrals.id}) DESC`)
+        .limit(10);
+
+      // Anonymize names (First name + Last initial)
+      const anonymizedLeaderboard = leaderboard.map(entry => {
+        const nameParts = entry.referrerName.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] + '.' : '';
+        return {
+          name: `${firstName} ${lastInitial}`.trim(),
+          referralCount: entry.referralCount,
+        };
+      });
+
+      res.json({ leaderboard: anonymizedLeaderboard });
+    } catch (error: any) {
+      console.error('[Referrals] Error fetching leaderboard:', error);
+      res.status(500).json({ message: "Error fetching leaderboard" });
+    }
+  });
+
   // Get all referrals (Admin Dashboard)
   app.get("/api/admin/referrals", async (req, res) => {
     try {
