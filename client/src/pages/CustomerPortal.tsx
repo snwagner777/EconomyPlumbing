@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { ReferralModal } from "@/components/ReferralModal";
@@ -143,8 +144,15 @@ export default function CustomerPortal() {
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
   const [appointmentToReschedule, setAppointmentToReschedule] = useState<ServiceTitanAppointment | null>(null);
   const [newAppointmentDate, setNewAppointmentDate] = useState("");
-  const [newAppointmentTime, setNewAppointmentTime] = useState("");
+  const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
+
+  // Define appointment time windows
+  const timeWindows = [
+    { value: "morning", label: "Morning (8:00 AM - 12:00 PM)", start: "08:00", end: "12:00" },
+    { value: "afternoon", label: "Afternoon (12:00 PM - 4:00 PM)", start: "12:00", end: "16:00" },
+    { value: "evening", label: "Evening (4:00 PM - 8:00 PM)", start: "16:00", end: "20:00" },
+  ];
   
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
@@ -364,22 +372,30 @@ export default function CustomerPortal() {
   const handleOpenRescheduleDialog = (appointment: ServiceTitanAppointment) => {
     setAppointmentToReschedule(appointment);
     
-    // Pre-fill with current appointment date/time
+    // Pre-fill with current appointment date
     const appointmentDate = new Date(appointment.start);
     const dateStr = appointmentDate.toISOString().split('T')[0];
-    const timeStr = appointmentDate.toTimeString().slice(0, 5);
-    
     setNewAppointmentDate(dateStr);
-    setNewAppointmentTime(timeStr);
+    
+    // Pre-select time window based on current appointment time
+    const hour = appointmentDate.getHours();
+    if (hour < 12) {
+      setNewAppointmentWindow("morning");
+    } else if (hour < 16) {
+      setNewAppointmentWindow("afternoon");
+    } else {
+      setNewAppointmentWindow("evening");
+    }
+    
     setRescheduleDialogOpen(true);
   };
 
   const handleRescheduleAppointment = async () => {
-    if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentTime || !customerId) {
+    if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentWindow || !customerId) {
       toast({
         variant: "destructive",
         title: "Missing Information",
-        description: "Please select both a date and time for your appointment.",
+        description: "Please select both a date and time window for your appointment.",
       });
       return;
     }
@@ -387,10 +403,15 @@ export default function CustomerPortal() {
     setIsRescheduling(true);
 
     try {
-      // Combine date and time into ISO strings
-      const newStartDateTime = new Date(`${newAppointmentDate}T${newAppointmentTime}`);
-      // Assume 2-hour appointment duration
-      const newEndDateTime = new Date(newStartDateTime.getTime() + 2 * 60 * 60 * 1000);
+      // Get the selected time window
+      const selectedWindow = timeWindows.find(w => w.value === newAppointmentWindow);
+      if (!selectedWindow) {
+        throw new Error("Invalid time window selected");
+      }
+
+      // Combine date and window times into ISO strings
+      const newStartDateTime = new Date(`${newAppointmentDate}T${selectedWindow.start}:00`);
+      const newEndDateTime = new Date(`${newAppointmentDate}T${selectedWindow.end}:00`);
 
       const response = await fetch('/api/portal/reschedule-appointment', {
         method: 'POST',
@@ -411,7 +432,7 @@ export default function CustomerPortal() {
 
       toast({
         title: "Appointment Rescheduled!",
-        description: `Your appointment has been moved to ${newStartDateTime.toLocaleDateString()} at ${newStartDateTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`,
+        description: `Your appointment has been moved to ${newStartDateTime.toLocaleDateString()} during the ${selectedWindow.label.split(' ')[0]} window.`,
       });
 
       // Refresh customer data
@@ -423,7 +444,7 @@ export default function CustomerPortal() {
       toast({
         variant: "destructive",
         title: "Rescheduling Failed",
-        description: error.message || "Unable to reschedule appointment. Please call us for assistance.",
+        description: error.message || "Unable to reschedule appointment. Please try again or call us for assistance.",
       });
     } finally {
       setIsRescheduling(false);
@@ -1667,7 +1688,7 @@ export default function CustomerPortal() {
           <DialogHeader>
             <DialogTitle>Reschedule Appointment</DialogTitle>
             <DialogDescription>
-              Choose a new date and time for your appointment. We'll update your schedule right away.
+              Choose a new date and time window for your appointment. We'll update your schedule right away.
             </DialogDescription>
           </DialogHeader>
 
@@ -1684,7 +1705,7 @@ export default function CustomerPortal() {
                 </p>
               </div>
 
-              {/* New date and time inputs */}
+              {/* New date and time window inputs */}
               <div className="grid gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-date">New Date</Label>
@@ -1698,14 +1719,26 @@ export default function CustomerPortal() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="new-time">New Time</Label>
-                  <Input
-                    id="new-time"
-                    type="time"
-                    value={newAppointmentTime}
-                    onChange={(e) => setNewAppointmentTime(e.target.value)}
-                    data-testid="input-new-time"
-                  />
+                  <Label htmlFor="new-window">Time Window</Label>
+                  <Select
+                    value={newAppointmentWindow}
+                    onValueChange={setNewAppointmentWindow}
+                  >
+                    <SelectTrigger id="new-window" data-testid="select-time-window">
+                      <SelectValue placeholder="Select a time window" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {timeWindows.map((window) => (
+                        <SelectItem 
+                          key={window.value} 
+                          value={window.value}
+                          data-testid={`option-${window.value}`}
+                        >
+                          {window.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
@@ -1726,7 +1759,7 @@ export default function CustomerPortal() {
             </Button>
             <Button
               onClick={handleRescheduleAppointment}
-              disabled={isRescheduling || !newAppointmentDate || !newAppointmentTime}
+              disabled={isRescheduling || !newAppointmentDate || !newAppointmentWindow}
               data-testid="button-confirm-reschedule"
             >
               {isRescheduling ? "Rescheduling..." : "Confirm Reschedule"}
