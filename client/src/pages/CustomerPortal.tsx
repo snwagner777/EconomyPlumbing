@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
@@ -119,6 +119,13 @@ export default function CustomerPortal() {
   const [isSearching, setIsSearching] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
+  
+  // Verification state
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'authenticated'>('lookup');
+  const [verificationCode, setVerificationCode] = useState("");
+  const [verificationMessage, setVerificationMessage] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
 
@@ -157,6 +164,56 @@ export default function CustomerPortal() {
     return isPast || isCompleted;
   }) || [];
 
+  // Check for magic link token on page load
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    
+    if (token) {
+      // Auto-verify email magic link
+      handleMagicLinkVerification(token);
+    }
+  }, []);
+
+  const handleMagicLinkVerification = async (token: string) => {
+    setIsVerifying(true);
+    try {
+      const response = await fetch('/api/portal/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactValue: '', // Token-based verification doesn't need contact value
+          code: token,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid or expired magic link');
+      }
+
+      const result = await response.json();
+      setCustomerId(result.customerId.toString());
+      setVerificationStep('authenticated');
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      toast({
+        title: "Access granted",
+        description: "Welcome to your customer portal!",
+      });
+    } catch (error) {
+      console.error('Magic link verification failed:', error);
+      toast({
+        title: "Verification failed",
+        description: "The magic link is invalid or has expired. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
   const handleLookup = async () => {
     if (!lookupValue.trim()) return;
     
@@ -164,35 +221,94 @@ export default function CustomerPortal() {
     setIsSearching(true);
 
     try {
-      // For account number, use direct customer ID lookup
+      // For account number, use direct customer ID lookup (no verification needed)
       if (lookupType === 'account') {
         setCustomerId(lookupValue);
+        setVerificationStep('authenticated');
       } else {
-        // For phone/email, use hybrid search (local cache + live fallback)
-        const params = new URLSearchParams({
-          [lookupType]: lookupValue,
+        // For phone/email, send verification code
+        const verificationType = lookupType === 'phone' ? 'sms' : 'email';
+        
+        const response = await fetch('/api/portal/auth/send-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contactValue: lookupValue,
+            verificationType,
+          }),
         });
-        const response = await fetch(`/api/servicetitan/customer/search?${params}`);
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Customer not found');
+          throw new Error(errorData.error || 'Customer not found');
         }
 
         const result = await response.json();
-        setCustomerId(result.id.toString());
+        
+        // Move to verification step
+        setVerificationStep('verify-code');
+        setVerificationMessage(result.message);
+        
+        toast({
+          title: "Verification sent",
+          description: result.message,
+        });
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Customer lookup failed:', err);
       const errorMessages = {
-        phone: 'We couldn\'t find an account with that phone number. Please try searching by email or account number instead.',
-        email: 'We couldn\'t find an account with that email address. Please try searching by phone or account number instead.',
+        phone: err.message || 'We couldn\'t find an account with that phone number. Please try searching by email or account number instead.',
+        email: err.message || 'We couldn\'t find an account with that email address. Please try searching by phone or account number instead.',
         account: 'We couldn\'t find an account with that number. Please check your invoice or receipt for your customer ID, or try searching by phone or email instead.'
       };
       setLookupError(errorMessages[lookupType]);
     } finally {
       setIsSearching(false);
     }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!verificationCode.trim()) return;
+    
+    setLookupError(null);
+    setIsVerifying(true);
+
+    try {
+      const response = await fetch('/api/portal/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactValue: lookupValue,
+          code: verificationCode,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Invalid verification code');
+      }
+
+      const result = await response.json();
+      setCustomerId(result.customerId.toString());
+      setVerificationStep('authenticated');
+      
+      toast({
+        title: "Access granted",
+        description: "Welcome to your customer portal!",
+      });
+    } catch (err: any) {
+      console.error('Verification failed:', err);
+      setLookupError(err.message || 'Invalid verification code. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  const handleBackToLookup = () => {
+    setVerificationStep('lookup');
+    setVerificationCode("");
+    setLookupError(null);
+    setVerificationMessage("");
   };
 
   const formatCurrency = (amount: number) => {
@@ -298,92 +414,172 @@ export default function CustomerPortal() {
           </div>
 
           {!customerId ? (
-            <Card className="max-w-md mx-auto">
-              <CardHeader>
-                <CardTitle>Find Your Account</CardTitle>
-                <CardDescription>
-                  Enter your phone number, email, or account number to access your account
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-2">
-                  <Button
-                    variant={lookupType === "phone" ? "default" : "outline"}
-                    onClick={() => setLookupType("phone")}
-                    className="flex-1"
-                    data-testid="button-lookup-phone"
-                  >
-                    <PhoneIcon className="w-4 h-4 mr-2" />
-                    Phone
-                  </Button>
-                  <Button
-                    variant={lookupType === "email" ? "default" : "outline"}
-                    onClick={() => setLookupType("email")}
-                    className="flex-1"
-                    data-testid="button-lookup-email"
-                  >
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </Button>
-                  <Button
-                    variant={lookupType === "account" ? "default" : "outline"}
-                    onClick={() => setLookupType("account")}
-                    className="flex-1"
-                    data-testid="button-lookup-account"
-                  >
-                    <Hash className="w-4 h-4 mr-2" />
-                    Account #
-                  </Button>
-                </div>
+            verificationStep === 'lookup' ? (
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Find Your Account</CardTitle>
+                  <CardDescription>
+                    Enter your phone number, email, or account number to access your account
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant={lookupType === "phone" ? "default" : "outline"}
+                      onClick={() => setLookupType("phone")}
+                      className="flex-1"
+                      data-testid="button-lookup-phone"
+                    >
+                      <PhoneIcon className="w-4 h-4 mr-2" />
+                      Phone
+                    </Button>
+                    <Button
+                      variant={lookupType === "email" ? "default" : "outline"}
+                      onClick={() => setLookupType("email")}
+                      className="flex-1"
+                      data-testid="button-lookup-email"
+                    >
+                      <Mail className="w-4 h-4 mr-2" />
+                      Email
+                    </Button>
+                    <Button
+                      variant={lookupType === "account" ? "default" : "outline"}
+                      onClick={() => setLookupType("account")}
+                      className="flex-1"
+                      data-testid="button-lookup-account"
+                    >
+                      <Hash className="w-4 h-4 mr-2" />
+                      Account #
+                    </Button>
+                  </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="lookup-input">
-                    {lookupType === "phone" ? "Phone Number" : lookupType === "email" ? "Email Address" : "Account Number"}
-                  </Label>
-                  <Input
-                    id="lookup-input"
-                    type={lookupType === "phone" ? "tel" : lookupType === "email" ? "email" : "text"}
-                    placeholder={
-                      lookupType === "phone" 
-                        ? "(512) 555-1234" 
-                        : lookupType === "email" 
-                        ? "your@email.com" 
-                        : "1234567"
-                    }
-                    value={lookupValue}
-                    onChange={(e) => setLookupValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-                    data-testid="input-lookup"
-                  />
-                  {lookupType === "account" && (
-                    <p className="text-xs text-muted-foreground">
-                      Find your account number on any invoice or receipt
-                    </p>
-                  )}
-                </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lookup-input">
+                      {lookupType === "phone" ? "Phone Number" : lookupType === "email" ? "Email Address" : "Account Number"}
+                    </Label>
+                    <Input
+                      id="lookup-input"
+                      type={lookupType === "phone" ? "tel" : lookupType === "email" ? "email" : "text"}
+                      placeholder={
+                        lookupType === "phone" 
+                          ? "(512) 555-1234" 
+                          : lookupType === "email" 
+                          ? "your@email.com" 
+                          : "1234567"
+                      }
+                      value={lookupValue}
+                      onChange={(e) => setLookupValue(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
+                      data-testid="input-lookup"
+                    />
+                    {lookupType === "account" && (
+                      <p className="text-xs text-muted-foreground">
+                        Find your account number on any invoice or receipt
+                      </p>
+                    )}
+                  </div>
 
-                <Button
-                  onClick={handleLookup}
-                  className="w-full"
-                  disabled={!lookupValue.trim() || isSearching}
-                  data-testid="button-lookup-submit"
-                >
-                  {isSearching ? 'Searching...' : 'Access My Account'}
-                </Button>
+                  <Button
+                    onClick={handleLookup}
+                    className="w-full"
+                    disabled={!lookupValue.trim() || isSearching}
+                    data-testid="button-lookup-submit"
+                  >
+                    {isSearching ? 'Searching...' : 'Access My Account'}
+                  </Button>
 
-                {lookupError && (
-                  <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                      <div className="text-destructive">
-                        <p className="font-medium mb-1">Account Not Found</p>
-                        <p>{lookupError}</p>
+                  {lookupError && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="text-destructive">
+                          <p className="font-medium mb-1">Account Not Found</p>
+                          <p>{lookupError}</p>
+                        </div>
                       </div>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : verificationStep === 'verify-code' ? (
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Enter Verification Code</CardTitle>
+                  <CardDescription>
+                    {verificationMessage}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="verification-code">
+                      {lookupType === 'phone' ? '6-Digit Code' : 'Check your email for the access link'}
+                    </Label>
+                    {lookupType === 'phone' && (
+                      <>
+                        <Input
+                          id="verification-code"
+                          type="text"
+                          placeholder="123456"
+                          value={verificationCode}
+                          onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                          maxLength={6}
+                          data-testid="input-verification-code"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Enter the 6-digit code sent to {lookupValue}
+                        </p>
+                      </>
+                    )}
+                    {lookupType === 'email' && (
+                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <Mail className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">Check your email</p>
+                            <p className="text-sm text-muted-foreground">
+                              We sent a secure access link to {lookupValue}. Click the link in the email to access your portal.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+
+                  {lookupType === 'phone' && (
+                    <Button
+                      onClick={handleVerifyCode}
+                      className="w-full"
+                      disabled={verificationCode.length !== 6 || isVerifying}
+                      data-testid="button-verify-code"
+                    >
+                      {isVerifying ? 'Verifying...' : 'Verify Code'}
+                    </Button>
+                  )}
+
+                  <Button
+                    variant="outline"
+                    onClick={handleBackToLookup}
+                    className="w-full"
+                    data-testid="button-back-to-lookup"
+                  >
+                    Try Another Method
+                  </Button>
+
+                  {lookupError && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="text-destructive">
+                          <p className="font-medium mb-1">Verification Failed</p>
+                          <p>{lookupError}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : null
           ) : (
             <div className="space-y-6">
               {isLoading ? (
