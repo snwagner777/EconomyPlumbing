@@ -148,13 +148,16 @@ class ServiceTitanAPI {
             `/customers?email=${encodeURIComponent(email.trim())}`
           );
 
+          console.log('[ServiceTitan] Email search results:', JSON.stringify(emailResults, null, 2));
+
           if (emailResults.data && emailResults.data.length > 0) {
             console.log(`[ServiceTitan] Found customer by email: ${emailResults.data[0].id}`);
             return emailResults.data[0];
           }
-          console.log('[ServiceTitan] No customer found by email');
+          console.log('[ServiceTitan] No customer found by email - data array is empty or missing');
         } catch (error: any) {
           console.error('[ServiceTitan] Email search error:', error.message);
+          console.error('[ServiceTitan] Full email search error:', error);
         }
       }
 
@@ -166,13 +169,16 @@ class ServiceTitanAPI {
             `/customers?phoneNumber=${encodeURIComponent(phone.trim())}`
           );
 
+          console.log('[ServiceTitan] Phone search results:', JSON.stringify(phoneResults, null, 2));
+
           if (phoneResults.data && phoneResults.data.length > 0) {
             console.log(`[ServiceTitan] Found customer by phone: ${phoneResults.data[0].id}`);
             return phoneResults.data[0];
           }
-          console.log('[ServiceTitan] No customer found by phone');
+          console.log('[ServiceTitan] No customer found by phone - data array is empty or missing');
         } catch (error: any) {
           console.error('[ServiceTitan] Phone search error:', error.message);
+          console.error('[ServiceTitan] Full phone search error:', error);
         }
       }
 
