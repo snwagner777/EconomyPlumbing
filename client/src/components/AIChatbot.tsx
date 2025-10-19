@@ -145,7 +145,22 @@ export default function AIChatbot() {
   // Mobile layout
   if (isMobile) {
     return (
-      <Card className="fixed left-0 right-0 bottom-0 w-full h-[calc(100vh-80px)] rounded-t-lg shadow-2xl z-50 flex flex-col">
+      <Card 
+        className="shadow-2xl flex flex-col"
+        style={{
+          position: 'fixed',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: 'calc(100vh - 80px)',
+          borderTopLeftRadius: '0.5rem',
+          borderTopRightRadius: '0.5rem',
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
+          zIndex: 50
+        }}
+      >
         {/* Header */}
         <CardHeader className="pb-3 border-b flex-shrink-0">
           <div className="flex items-center justify-between">
@@ -271,7 +286,17 @@ export default function AIChatbot() {
 
   // Desktop layout
   return (
-    <Card className="fixed bottom-6 right-6 w-96 h-[600px] rounded-lg shadow-2xl z-50 flex flex-col">
+    <Card 
+      className="shadow-2xl flex flex-col rounded-lg"
+      style={{
+        position: 'fixed',
+        bottom: '1.5rem',
+        right: '1.5rem',
+        width: '24rem',
+        height: '600px',
+        zIndex: 50
+      }}
+    >
       {/* Header */}
       <CardHeader className="pb-3 border-b flex-shrink-0">
         <div className="flex items-center justify-between">
