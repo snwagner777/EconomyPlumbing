@@ -23,7 +23,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Models:** Users, Blog Posts, Products (reference only), Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **E-commerce:** Ecwid platform handles all product management, checkout, payment processing, and inventory, integrated with Printful and Spocket for automated order fulfillment.
 - **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze photos and generate SEO-optimized blog posts with smart topic suggestions, automated weekly creation, future-dated scheduling, and seasonal awareness.
-- **Dynamic Phone Number Tracking:** Database-driven system for automatic phone number insertion based on traffic source, with cookie persistence and an admin panel for management.
+- **Dynamic Phone Number Tracking:** 100% database-driven system via admin panel. Zero hardcoded phone numbers in interactive elements. All components use `usePhoneConfig()` and `useMarbleFallsPhone()` hooks. Window globals (`__PHONE_CONFIG__`, `__MARBLE_FALLS_PHONE_CONFIG__`) initialized early for non-React code (scheduler). Proper tel/display alignment throughout. Cookie persistence for traffic source detection.
 - **Security:** OAuth-only authentication for the admin panel with single-email whitelist, rate limiting, httpOnly/secure session cookies, and sameSite CSRF protection.
 
 ### State Management
