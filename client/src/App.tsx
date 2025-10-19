@@ -78,6 +78,8 @@ const PageMetadataAdmin = lazy(() => import("@/pages/PageMetadataAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/ProductsAdmin"));
 const WaterHeaterCalculator = lazy(() => import("@/pages/WaterHeaterCalculator"));
 const PlumbingCostEstimator = lazy(() => import("@/pages/PlumbingCostEstimator"));
+const WinterFreezeProtection = lazy(() => import("@/pages/WinterFreezeProtection"));
+const SummerPlumbingPrep = lazy(() => import("@/pages/SummerPlumbingPrep"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -142,6 +144,8 @@ function Router() {
       <Route path="/water-heater-guide" component={WaterHeaterGuide} />
       <Route path="/water-heater-calculator" component={WaterHeaterCalculator} />
       <Route path="/plumbing-cost-estimator" component={PlumbingCostEstimator} />
+      <Route path="/winter-freeze-protection" component={WinterFreezeProtection} />
+      <Route path="/summer-plumbing-prep" component={SummerPlumbingPrep} />
       <Route path="/water-leak-repair" component={LeakRepair} />
       <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
       
