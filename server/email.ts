@@ -59,6 +59,31 @@ export async function getUncachableResendClient() {
   };
 }
 
+export async function sendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+}) {
+  console.log('[Email] Sending generic email to:', params.to);
+  
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: params.to,
+      subject: params.subject,
+      html: params.html
+    });
+    
+    console.log('[Email] Email sent successfully');
+    return result;
+  } catch (error) {
+    console.error('[Email] Failed to send email:', error);
+    throw error;
+  }
+}
+
 export async function sendContactFormEmail(data: {
   name: string;
   phone: string;

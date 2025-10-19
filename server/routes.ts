@@ -5649,7 +5649,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       } else if (verificationType === 'email') {
         // Send email magic link
         try {
-          const { sendEmail } = await import("./lib/email");
+          const { sendEmail } = await import("./email");
           const magicLink = `${req.protocol}://${req.get('host')}/customer-portal?token=${code}`;
           
           await sendEmail({
