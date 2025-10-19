@@ -981,6 +981,9 @@ class ServiceTitanAPI {
     id: number;
     name: string;
     type: string;
+    email?: string;
+    phone?: string;
+    mobilePhone?: string;
     address?: string;
   }>> {
     try {
@@ -1019,6 +1022,9 @@ class ServiceTitanAPI {
         id: c.id,
         name: c.name || 'Unknown',
         type: c.type || 'Residential',
+        email: c.email || undefined,
+        phone: c.phone || undefined,
+        mobilePhone: c.mobilePhone || undefined,
         address: [c.street, c.city, c.state, c.zip].filter(Boolean).join(', ')
       }));
     } catch (error) {
