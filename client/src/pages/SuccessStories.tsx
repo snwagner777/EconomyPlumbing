@@ -297,7 +297,30 @@ export default function SuccessStories() {
               Read reviews from real customers who've experienced our exceptional service firsthand.
             </p>
           </div>
-          <div className="nj-stories" data-testid="nicejob-reviews-widget"></div>
+          
+          {/* 
+            NICEJOB WIDGET SETUP INSTRUCTIONS:
+            
+            To display your NiceJob reviews widget here:
+            1. Log into your NiceJob admin panel (app.nicejob.com)
+            2. Navigate to Settings > Integrations > Website Widgets
+            3. Select "Reviews Widget" or "Success Stories Widget"
+            4. Copy the embed code provided
+            5. Replace this comment block with the embed code
+            
+            The SDK script is already loaded in the useEffect hook above.
+            You just need to add the widget container div with the correct class/data attributes.
+            
+            Example embed code format:
+            <div class="nj-widget" data-widget-id="YOUR_WIDGET_ID"></div>
+          */}
+          <div className="bg-muted rounded-lg p-12 text-center">
+            <p className="text-muted-foreground">
+              NiceJob reviews widget will display here once configured in your NiceJob admin panel.
+              <br />
+              <span className="text-sm">See instructions in source code above.</span>
+            </p>
+          </div>
         </div>
 
         {/* Submit Your Success Story */}
