@@ -4729,6 +4729,94 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // ServiceTitan Customer Portal Routes
+  app.get("/api/servicetitan/customer/search", async (req, res) => {
+    try {
+      const { phone, email } = req.query;
+
+      if (!phone && !email) {
+        return res.status(400).json({ error: "Phone or email required" });
+      }
+
+      // Check if ServiceTitan is configured
+      const tenantId = process.env.SERVICETITAN_TENANT_ID;
+      const clientId = process.env.SERVICETITAN_CLIENT_ID;
+      const clientSecret = process.env.SERVICETITAN_CLIENT_SECRET;
+      const appKey = process.env.SERVICETITAN_APP_KEY;
+
+      if (!tenantId || !clientId || !clientSecret || !appKey) {
+        return res.status(503).json({ error: "ServiceTitan integration not configured" });
+      }
+
+      const { ServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = new ServiceTitanAPI({
+        tenantId,
+        clientId,
+        clientSecret,
+        appKey,
+      });
+
+      // Search for customer
+      const customer = await serviceTitan.searchCustomer(
+        (email as string) || "",
+        (phone as string) || ""
+      );
+
+      if (!customer) {
+        return res.status(404).json({ error: "Customer not found" });
+      }
+
+      res.json(customer);
+    } catch (error: any) {
+      console.error("Customer search error:", error);
+      res.status(500).json({ error: "Failed to search for customer" });
+    }
+  });
+
+  app.get("/api/servicetitan/customer/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      // Check if ServiceTitan is configured
+      const tenantId = process.env.SERVICETITAN_TENANT_ID;
+      const clientId = process.env.SERVICETITAN_CLIENT_ID;
+      const clientSecret = process.env.SERVICETITAN_CLIENT_SECRET;
+      const appKey = process.env.SERVICETITAN_APP_KEY;
+
+      if (!tenantId || !clientId || !clientSecret || !appKey) {
+        return res.status(503).json({ error: "ServiceTitan integration not configured" });
+      }
+
+      const { ServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = new ServiceTitanAPI({
+        tenantId,
+        clientId,
+        clientSecret,
+        appKey,
+      });
+
+      // Fetch customer, appointments, and invoices in parallel
+      const [customer, appointments, invoices] = await Promise.all([
+        serviceTitan.getCustomer(parseInt(customerId)),
+        serviceTitan.getCustomerAppointments(parseInt(customerId)),
+        serviceTitan.getCustomerInvoices(parseInt(customerId)),
+      ]);
+
+      res.json({
+        customer,
+        appointments,
+        invoices,
+      });
+    } catch (error: any) {
+      console.error("Customer data fetch error:", error);
+      res.status(500).json({ error: "Failed to fetch customer data" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

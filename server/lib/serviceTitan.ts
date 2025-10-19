@@ -81,11 +81,14 @@ class ServiceTitanAPI {
 
   /**
    * Make authenticated API request
+   * @param endpoint - Either a relative endpoint (e.g., "/customers") or a full URL
+   * @param options - Fetch options
+   * @param useFullUrl - If true, endpoint is treated as a full URL instead of appending to baseUrl
    */
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  private async request<T>(endpoint: string, options: RequestInit = {}, useFullUrl: boolean = false): Promise<T> {
     await this.authenticate();
 
-    const url = `${this.baseUrl}${endpoint}`;
+    const url = useFullUrl ? endpoint : `${this.baseUrl}${endpoint}`;
     const headers = {
       'Authorization': `Bearer ${this.accessToken}`,
       'ST-App-Key': this.config.appKey,
@@ -352,6 +355,79 @@ class ServiceTitanAPI {
       throw error;
     }
   }
+
+  /**
+   * Get customer by ID
+   */
+  async getCustomer(customerId: number): Promise<ServiceTitanCustomer> {
+    try {
+      const result = await this.request<{ data: ServiceTitanCustomer }>(
+        `/customers/${customerId}`
+      );
+      return result.data;
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get customer appointments
+   */
+  async getCustomerAppointments(customerId: number): Promise<any[]> {
+    try {
+      // Use jpm (jobs, projects, memberships) API for appointments
+      const jpmUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/jobs?customerId=${customerId}&pageSize=50`;
+      const result = await this.request<{ data: any[] }>(jpmUrl, {}, true);
+      
+      // Map jobs to appointment format
+      const jobs = result.data || [];
+      return jobs.map((job: any) => ({
+        id: job.id,
+        start: job.start || job.scheduledOn,
+        end: job.end || job.completedOn,
+        status: job.jobStatus || job.status,
+        arrivalWindowStart: job.arrivalWindowStart,
+        arrivalWindowEnd: job.arrivalWindowEnd,
+        jobType: job.jobType || job.summary || 'Service Call',
+        jobNumber: job.jobNumber,
+        summary: job.summary,
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer appointments error:', error);
+      // Return empty array on error rather than throwing
+      return [];
+    }
+  }
+
+  /**
+   * Get customer invoices
+   */
+  async getCustomerInvoices(customerId: number): Promise<any[]> {
+    try {
+      // Use accounting API for invoices
+      const accountingUrl = `https://api.servicetitan.io/accounting/v2/tenant/${this.config.tenantId}/invoices?customerId=${customerId}&pageSize=50`;
+      const result = await this.request<{ data: any[] }>(accountingUrl, {}, true);
+      
+      // Map invoices to display format
+      const invoices = result.data || [];
+      return invoices.map((invoice: any) => ({
+        id: invoice.id,
+        invoiceNumber: invoice.invoiceNumber || invoice.number,
+        total: invoice.total || invoice.totalAmount || 0,
+        balance: invoice.balance || invoice.balanceDue || 0,
+        status: invoice.status || 'Unknown',
+        createdOn: invoice.createdOn || invoice.invoiceDate,
+        dueDate: invoice.dueDate,
+        jobNumber: invoice.jobNumber,
+        summary: invoice.summary || invoice.description,
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer invoices error:', error);
+      // Return empty array on error rather than throwing
+      return [];
+    }
+  }
 }
 
 // Singleton instance
@@ -378,3 +454,6 @@ export function getServiceTitanAPI(): ServiceTitanAPI {
 
   return serviceTitanAPI;
 }
+
+// Export the class for direct use
+export { ServiceTitanAPI };
