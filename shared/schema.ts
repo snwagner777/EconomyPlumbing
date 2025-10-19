@@ -107,6 +107,46 @@ export const contactSubmissions = pgTable("contact_submissions", {
   submittedAtIdx: index("contact_submissions_submitted_at_idx").on(table.submittedAt),
 }));
 
+// Referral tracking system
+export const referrals = pgTable("referrals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Referrer info (existing customer)
+  referrerName: text("referrer_name").notNull(),
+  referrerPhone: text("referrer_phone").notNull(),
+  referrerCustomerId: integer("referrer_customer_id"), // ServiceTitan customer ID (null if not found yet)
+  
+  // Referee info (person being referred)
+  refereeName: text("referee_name").notNull(),
+  refereePhone: text("referee_phone").notNull(),
+  refereeEmail: text("referee_email"),
+  refereeCustomerId: integer("referee_customer_id"), // ServiceTitan customer ID (null until they become a customer)
+  
+  // Status tracking
+  status: text("status").notNull().default('pending'), // 'pending', 'contacted', 'job_completed', 'credited'
+  creditAmount: integer("credit_amount").notNull().default(2500), // Amount in cents ($25.00)
+  
+  // Job completion tracking
+  firstJobId: text("first_job_id"), // ServiceTitan job ID when referee completes first job
+  firstJobDate: timestamp("first_job_date"), // Date when referee completed first job
+  firstJobAmount: integer("first_job_amount"), // Job amount in cents
+  
+  // Credit tracking
+  creditedAt: timestamp("credited_at"), // When credit was applied to referrer's account
+  creditedBy: varchar("credited_by"), // Admin user who applied the credit
+  creditNotes: text("credit_notes"), // Notes about credit application
+  
+  // Timestamps
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+  contactedAt: timestamp("contacted_at"), // When business contacted the referee
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  referrerCustomerIdIdx: index("referrals_referrer_customer_id_idx").on(table.referrerCustomerId),
+  refereeCustomerIdIdx: index("referrals_referee_customer_id_idx").on(table.refereeCustomerId),
+  statusIdx: index("referrals_status_idx").on(table.status),
+  submittedAtIdx: index("referrals_submitted_at_idx").on(table.submittedAt),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),

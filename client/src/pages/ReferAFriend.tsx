@@ -41,6 +41,7 @@ export default function ReferAFriend() {
   const [formData, setFormData] = useState({
     referrerName: '',
     referrerPhone: '',
+    referrerEmail: '',
     refereeName: '',
     refereePhone: '',
     refereeEmail: '',
@@ -71,6 +72,7 @@ export default function ReferAFriend() {
       setFormData({
         referrerName: '',
         referrerPhone: '',
+        referrerEmail: '',
         refereeName: '',
         refereePhone: '',
         refereeEmail: '',
@@ -227,6 +229,18 @@ export default function ReferAFriend() {
                         data-testid="input-referrer-phone"
                         placeholder="(512) 555-0100"
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="referrerEmail">Your Email (Optional)</Label>
+                      <Input
+                        id="referrerEmail"
+                        type="email"
+                        value={formData.referrerEmail}
+                        onChange={(e) => setFormData({ ...formData, referrerEmail: e.target.value })}
+                        data-testid="input-referrer-email"
+                        placeholder="you@example.com"
+                      />
+                      <p className="text-xs text-muted-foreground">Helps us match your account for faster credit</p>
                     </div>
                     <div className="border-t pt-4">
                       <p className="text-sm font-medium mb-3">Friend's Information</p>

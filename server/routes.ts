@@ -958,11 +958,44 @@ ${rssItems}
       submissionRateLimit.set(clientIp, now);
       
       // Validate referral data
-      const { referrerName, referrerPhone, refereeName, refereePhone, refereeEmail } = req.body;
+      const { referrerName, referrerPhone, referrerEmail, refereeName, refereePhone, refereeEmail } = req.body;
       
       if (!referrerName || !referrerPhone || !refereeName || !refereePhone) {
         return res.status(400).json({ message: "Missing required fields" });
       }
+      
+      // Try to find referrer's ServiceTitan customer ID immediately
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      let referrerCustomerId: number | null = null;
+      
+      try {
+        // Search by email first (more reliable), then phone
+        const searchValue = referrerEmail || referrerPhone;
+        referrerCustomerId = await serviceTitan.searchCustomerWithFallback(searchValue);
+        if (referrerCustomerId) {
+          console.log(`[Referral] ✅ Matched referrer to ServiceTitan customer ${referrerCustomerId}`);
+        } else {
+          console.log('[Referral] ⚠️ Could not find referrer in ServiceTitan yet');
+        }
+      } catch (error) {
+        console.error('[Referral] Error looking up referrer:', error);
+        // Continue even if lookup fails - we can match later
+      }
+      
+      // Store referral in database
+      const { referrals } = await import('@shared/schema');
+      const [referral] = await db.insert(referrals).values({
+        referrerName,
+        referrerPhone,
+        referrerCustomerId,
+        refereeName,
+        refereePhone,
+        refereeEmail: refereeEmail || null,
+        status: 'pending',
+      }).returning();
+      
+      console.log(`[Referral] Created referral ${referral.id} - Referrer: ${referrerName}, Referee: ${refereeName}`);
       
       // Send email notification to business
       try {
@@ -981,6 +1014,7 @@ ${rssItems}
       res.json({ 
         success: true, 
         message: "Referral submitted successfully! We'll reach out to your friend soon.",
+        referralId: referral.id,
       });
     } catch (error: any) {
       console.error('[Referral] Error:', error);
