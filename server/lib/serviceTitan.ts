@@ -125,7 +125,9 @@ class ServiceTitanAPI {
       }
 
       const jsonData = await response.json();
+      console.log('[ServiceTitan] API Success - Response structure:', Object.keys(jsonData));
       console.log('[ServiceTitan] API Success - Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'N/A');
+      console.log('[ServiceTitan] API Success - Full response:', JSON.stringify(jsonData).substring(0, 500));
       return jsonData;
     } catch (error) {
       console.error('[ServiceTitan] API request error:', error);
@@ -164,22 +166,34 @@ class ServiceTitanAPI {
       // If not found by email, search by phone
       if (phone && phone.trim()) {
         console.log('[ServiceTitan] Searching by phone...');
-        try {
-          const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-            `/customers?phoneNumber=${encodeURIComponent(phone.trim())}`
-          );
+        
+        // Try different phone number formats
+        const phoneFormats = [
+          phone.trim(),
+          phone.replace(/\D/g, ''), // Remove all non-digits
+          `+1${phone.replace(/\D/g, '')}`, // Add +1 country code
+        ];
+        
+        for (const phoneFormat of phoneFormats) {
+          try {
+            console.log(`[ServiceTitan] Trying phone format: "${phoneFormat}"`);
+            const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+              `/customers?phoneNumber=${encodeURIComponent(phoneFormat)}`
+            );
 
-          console.log('[ServiceTitan] Phone search results:', JSON.stringify(phoneResults, null, 2));
+            console.log('[ServiceTitan] Phone search results:', JSON.stringify(phoneResults, null, 2));
 
-          if (phoneResults.data && phoneResults.data.length > 0) {
-            console.log(`[ServiceTitan] Found customer by phone: ${phoneResults.data[0].id}`);
-            return phoneResults.data[0];
+            if (phoneResults.data && phoneResults.data.length > 0) {
+              console.log(`[ServiceTitan] Found customer by phone: ${phoneResults.data[0].id}`);
+              return phoneResults.data[0];
+            }
+            console.log(`[ServiceTitan] No customer found with phone format "${phoneFormat}"`);
+          } catch (error: any) {
+            console.error(`[ServiceTitan] Phone search error for format "${phoneFormat}":`, error.message);
           }
-          console.log('[ServiceTitan] No customer found by phone - data array is empty or missing');
-        } catch (error: any) {
-          console.error('[ServiceTitan] Phone search error:', error.message);
-          console.error('[ServiceTitan] Full phone search error:', error);
         }
+        
+        console.log('[ServiceTitan] Customer not found with any phone format');
       }
 
       console.log('[ServiceTitan] Customer not found by email or phone');
