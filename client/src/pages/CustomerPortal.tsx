@@ -1554,6 +1554,19 @@ export default function CustomerPortal() {
 
                     if (openEstimates.length === 0) return null;
 
+                    // Helper function to calculate days until expiration
+                    const getDaysUntilExpiration = (expiresOn: string) => {
+                      const now = new Date();
+                      const expirationDate = new Date(expiresOn);
+                      const diffTime = expirationDate.getTime() - now.getTime();
+                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                    };
+
+                    // Check if any estimates are expiring soon (within 7 days)
+                    const hasExpiringSoon = openEstimates.some(est => 
+                      est.expiresOn && getDaysUntilExpiration(est.expiresOn) <= 7 && getDaysUntilExpiration(est.expiresOn) > 0
+                    );
+
                     return (
                       <Card>
                         <CardHeader>
@@ -1566,14 +1579,57 @@ export default function CustomerPortal() {
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
+                          {/* Expiration Policy Notice */}
+                          <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
+                            <div className="flex items-start gap-2">
+                              <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                              <p className="text-sm text-muted-foreground">
+                                <strong>Expiration Policy:</strong> All estimates expire after 30 days. Material costs and availability may change after expiration.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Expiring Soon Alert */}
+                          {hasExpiringSoon && (
+                            <div className="mb-4 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
+                              <div className="flex items-start gap-3">
+                                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
+                                <div>
+                                  <p className="font-medium text-amber-800 dark:text-amber-400 mb-1">Action Required</p>
+                                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">
+                                    You have estimates expiring soon. Schedule your service now to lock in current pricing!
+                                  </p>
+                                  <Button
+                                    onClick={openScheduler}
+                                    size="sm"
+                                    className="bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
+                                    data-testid="button-schedule-expiring-estimate"
+                                  >
+                                    <Calendar className="w-4 h-4 mr-2" />
+                                    Schedule Service Now
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           <div className="space-y-4">
-                            {openEstimates.map((estimate) => (
+                            {openEstimates.map((estimate) => {
+                              const daysUntilExpiration = estimate.expiresOn ? getDaysUntilExpiration(estimate.expiresOn) : null;
+                              const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 7 && daysUntilExpiration > 0;
+                              const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
+
+                              return (
                             <div
                               key={estimate.id}
-                              className="flex items-start gap-4 p-4 border rounded-lg bg-primary/5"
+                              className={`flex items-start gap-4 p-4 border rounded-lg ${
+                                isExpiringSoon 
+                                  ? 'bg-amber-500/5 border-amber-500/30' 
+                                  : 'bg-primary/5'
+                              }`}
                               data-testid={`estimate-${estimate.id}`}
                             >
-                              <FileText className="w-5 h-5 text-primary mt-1" />
+                              <FileText className={`w-5 h-5 mt-1 ${isExpiringSoon ? 'text-amber-600 dark:text-amber-500' : 'text-primary'}`} />
                               <div className="flex-1">
                                 <div className="flex items-start justify-between gap-2 mb-2">
                                   <div>
@@ -1582,7 +1638,15 @@ export default function CustomerPortal() {
                                       <p className="text-sm text-muted-foreground">{estimate.summary}</p>
                                     )}
                                   </div>
-                                  {getStatusBadge(estimate.status)}
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {isExpiringSoon && (
+                                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
+                                        <Clock className="w-3 h-3 mr-1" />
+                                        {daysUntilExpiration} {daysUntilExpiration === 1 ? 'day' : 'days'} left
+                                      </Badge>
+                                    )}
+                                    {getStatusBadge(estimate.status)}
+                                  </div>
                                 </div>
                                 <div className="text-sm space-y-1">
                                   <div className="flex justify-between">
@@ -1593,8 +1657,11 @@ export default function CustomerPortal() {
                                     Created: {formatDate(estimate.createdOn)}
                                   </p>
                                   {estimate.expiresOn && (
-                                    <p className="text-muted-foreground">
+                                    <p className={`${isExpiringSoon ? 'text-amber-700 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
                                       Expires: {formatDate(estimate.expiresOn)}
+                                      {isExpiringSoon && (
+                                        <span className="ml-2 text-xs">⚠️ Expiring Soon!</span>
+                                      )}
                                     </p>
                                   )}
                                   {estimate.jobNumber && (
@@ -1604,6 +1671,31 @@ export default function CustomerPortal() {
                                   )}
                                 </div>
                                 <div className="mt-3 pt-3 border-t space-y-2">
+                                  {isExpiringSoon && (
+                                    <div className="flex gap-2 mb-2">
+                                      <Button
+                                        onClick={openScheduler}
+                                        size="sm"
+                                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
+                                        data-testid={`button-schedule-estimate-${estimate.id}`}
+                                      >
+                                        <Calendar className="w-4 h-4 mr-2" />
+                                        Schedule Now
+                                      </Button>
+                                      <Button
+                                        asChild
+                                        variant="outline"
+                                        size="sm"
+                                        className="flex-1"
+                                        data-testid={`button-call-estimate-${estimate.id}`}
+                                      >
+                                        <a href={`tel:${phoneConfig.tel}`}>
+                                          <PhoneIcon className="w-4 h-4 mr-2" />
+                                          Call Us
+                                        </a>
+                                      </Button>
+                                    </div>
+                                  )}
                                   <Button
                                     variant="outline"
                                     size="sm"
@@ -1619,10 +1711,11 @@ export default function CustomerPortal() {
                                 </div>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
                     );
                   })()}
 
