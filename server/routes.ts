@@ -1093,6 +1093,85 @@ ${rssItems}
     }
   });
 
+  // Get or create referral code for a customer
+  app.get("/api/referrals/code/:customerId", async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.customerId);
+      if (isNaN(customerId)) {
+        return res.status(400).json({ message: "Invalid customer ID" });
+      }
+
+      // Get customer info from ServiceTitan
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      
+      // Try to find customer
+      const customerData = await serviceTitan.getCustomer(customerId);
+      if (!customerData) {
+        return res.status(404).json({ message: "Customer not found" });
+      }
+
+      // Generate referral code from name (e.g., "John Smith" → "JOHN-SMITH")
+      const generateCode = (name: string): string => {
+        return name
+          .toUpperCase()
+          .replace(/[^A-Z0-9\s]/g, '')
+          .trim()
+          .replace(/\s+/g, '-')
+          .substring(0, 30); // Limit length
+      };
+
+      const code = generateCode(customerData.name || `CUSTOMER-${customerId}`);
+      const referralUrl = `https://www.plumbersthatcare.com/ref/${code}`;
+
+      // Get link stats
+      const clicksResult = await db.execute(sql`
+        SELECT COUNT(*) as clicks, SUM(CASE WHEN converted THEN 1 ELSE 0 END) as conversions
+        FROM referral_link_clicks
+        WHERE referral_code = ${code}
+      `);
+      
+      const stats = clicksResult.rows[0] as any;
+      
+      res.json({
+        code,
+        url: referralUrl,
+        clicks: parseInt(stats?.clicks || '0'),
+        conversions: parseInt(stats?.conversions || '0')
+      });
+    } catch (error: any) {
+      console.error('[Referrals] Error generating referral code:', error);
+      res.status(500).json({ message: "Error generating referral code" });
+    }
+  });
+
+  // Track referral link click
+  app.post("/api/referrals/track-click", async (req, res) => {
+    try {
+      const { code } = req.body;
+      
+      if (!code) {
+        return res.status(400).json({ message: "Referral code is required" });
+      }
+
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || '';
+      const referrerUrl = req.headers['referer'] || '';
+
+      // Record click
+      await db.execute(sql`
+        INSERT INTO referral_link_clicks (referral_code, clicked_at, ip_address, user_agent, referrer_url)
+        VALUES (${code}, NOW(), ${clientIp}, ${userAgent}, ${referrerUrl})
+      `);
+
+      console.log(`[Referral Link] Click tracked for code: ${code}`);
+      res.json({ tracked: true });
+    } catch (error: any) {
+      console.error('[Referrals] Error tracking click:', error);
+      res.status(500).json({ message: "Error tracking click" });
+    }
+  });
+
   // Get referrals for a specific customer (Customer Portal)
   app.get("/api/referrals/customer/:customerId", async (req, res) => {
     try {
