@@ -24,20 +24,7 @@ export default function ReferAFriend() {
   const phoneConfig = usePhoneConfig();
 
   useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
-
     trackEvent('Page View', 'Referral Page', 'Loaded');
-
-    return () => {
-      const existingScript = document.querySelector(`script[src="${script.src}"]`);
-      if (existingScript) {
-        document.body.removeChild(existingScript);
-      }
-    };
   }, []);
 
   const handlePhoneClick = () => {
@@ -121,9 +108,12 @@ export default function ReferAFriend() {
               {/* NiceJob Referral Widget - Prominent placement */}
               <Card className="border-primary/20" data-testid="card-referral-form">
                 <CardContent className="pt-6">
-                  <div className="nj-recommendation" data-testid="nicejob-referral-widget">
-                    Recommend us!
-                  </div>
+                  <iframe 
+                    src="https://app.nicejob.com/widgets/recommendation/af0b88b8-5c68-4702-83f4-085ac673376f"
+                    data-testid="nicejob-referral-widget"
+                    className="w-full border-0 min-h-[500px]"
+                    title="Referral Form"
+                  />
                 </CardContent>
               </Card>
 
