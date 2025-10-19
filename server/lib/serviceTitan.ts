@@ -700,7 +700,7 @@ class ServiceTitanAPI {
       let hasMore = true;
       let totalCustomers = 0;
       let totalContacts = 0;
-      const pageSize = 50;
+      const pageSize = 200; // Increased from 50 to reduce API calls
 
       // Use upsert strategy - no deletion, just update existing records
       console.log('[ServiceTitan Sync] Using upsert strategy for zero-downtime sync...');

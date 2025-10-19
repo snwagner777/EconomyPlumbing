@@ -85,6 +85,7 @@ const RetailPlumbing = lazy(() => import("@/pages/commercial/RetailPlumbing"));
 const OfficeBuilding = lazy(() => import("@/pages/commercial/OfficeBuilding"));
 const PropertyManagement = lazy(() => import("@/pages/commercial/PropertyManagement"));
 const ReferAFriend = lazy(() => import("@/pages/ReferAFriend"));
+const ReferralLanding = lazy(() => import("@/pages/ReferralLanding"));
 const CustomerPortal = lazy(() => import("@/pages/CustomerPortal"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 
@@ -186,6 +187,7 @@ function Router() {
       
       {/* Utility pages */}
       <Route path="/contact" component={Contact} />
+      <Route path="/ref/:code" component={ReferralLanding} />
       <Route path="/refer-a-friend" component={ReferAFriend} />
       <Route path="/customer-portal" component={CustomerPortal} />
       <Route path="/faq" component={FAQ} />
