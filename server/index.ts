@@ -13,6 +13,7 @@ import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { startServiceTitanSync } from "./lib/serviceTitanSync";
+import { getReferralProcessor } from "./lib/referralProcessor";
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
 import { securityHeadersMiddleware } from "./middleware/securityHeaders";
@@ -434,6 +435,25 @@ async function refreshReviewsPeriodically() {
   
   // Start ServiceTitan customer sync (runs daily at 3am)
   startServiceTitanSync();
+  
+  // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
+  const referralProcessor = getReferralProcessor();
+  
+  // Run immediately on startup
+  setTimeout(() => {
+    console.log('[Referral Processor] Running initial referral processing...');
+    referralProcessor.processPendingReferrals().catch(err => {
+      console.error('[Referral Processor] Error during initial processing:', err);
+    });
+  }, 5000); // Wait 5 seconds after startup
+  
+  // Then run every hour
+  setInterval(() => {
+    console.log('[Referral Processor] Running hourly referral processing...');
+    referralProcessor.processPendingReferrals().catch(err => {
+      console.error('[Referral Processor] Error during hourly processing:', err);
+    });
+  }, 60 * 60 * 1000); // Every hour
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

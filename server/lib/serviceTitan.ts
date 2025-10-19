@@ -921,6 +921,102 @@ class ServiceTitanAPI {
     console.log('[ServiceTitan] ❌ Customer not found in cache or live API');
     return null;
   }
+
+  /**
+   * Search for completed jobs for a customer after a specific date
+   * Used to detect when a referred customer has their first qualifying job
+   */
+  async getCustomerJobs(customerId: number, completedAfter?: Date): Promise<{
+    id: number;
+    jobNumber: string;
+    customerId: number;
+    completedOn: string | null;
+    total: number;
+    status: string;
+  }[]> {
+    try {
+      // ServiceTitan Jobs API uses a different base URL
+      const jobsBaseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}`;
+      
+      let endpoint = `${jobsBaseUrl}/jobs?customerId=${customerId}`;
+      
+      // Add date filter if provided
+      if (completedAfter) {
+        const dateStr = completedAfter.toISOString().split('T')[0]; // YYYY-MM-DD format
+        endpoint += `&completedOnOrAfter=${dateStr}`;
+      }
+
+      console.log('[ServiceTitan] Fetching jobs for customer', customerId, 'after', completedAfter);
+      
+      const response = await this.request<{
+        data: Array<{
+          id: number;
+          jobNumber: string;
+          customerId: number;
+          completedOn?: string;
+          total: number;
+          jobStatus: string;
+        }>;
+      }>(endpoint, {}, true);
+
+      return response.data.map(job => ({
+        id: job.id,
+        jobNumber: job.jobNumber,
+        customerId: job.customerId,
+        completedOn: job.completedOn || null,
+        total: job.total,
+        status: job.jobStatus
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan] Error fetching customer jobs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a customer credit adjustment (for referral rewards)
+   * Uses ServiceTitan Accounting API to issue credit to customer account
+   */
+  async createCustomerCredit(customerId: number, amount: number, memo: string): Promise<{
+    id: number;
+    customerId: number;
+    amount: number;
+    memo: string;
+  }> {
+    try {
+      // ServiceTitan Accounting API uses a different base URL
+      const accountingBaseUrl = `https://api.servicetitan.io/accounting/v2/tenant/${this.config.tenantId}`;
+      const endpoint = `${accountingBaseUrl}/customer-adjustments`;
+
+      console.log('[ServiceTitan] Creating customer credit:', {
+        customerId,
+        amount,
+        memo
+      });
+
+      const response = await this.request<{
+        id: number;
+        customerId: number;
+        amount: number;
+        memo: string;
+      }>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          customerId,
+          amount: amount, // Amount in cents (2500 = $25.00)
+          type: 'Credit',
+          memo,
+          date: new Date().toISOString()
+        })
+      }, true);
+
+      console.log('[ServiceTitan] ✅ Credit created successfully:', response.id);
+      return response;
+    } catch (error) {
+      console.error('[ServiceTitan] Error creating customer credit:', error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance
