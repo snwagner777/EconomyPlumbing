@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { 
   User,
   Calendar,
@@ -93,6 +95,7 @@ export default function CustomerPortal() {
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const phoneConfig = usePhoneConfig();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -328,22 +331,40 @@ export default function CustomerPortal() {
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button
-                          asChild
+                          onClick={openScheduler}
                           data-testid="button-schedule-appointment"
                         >
-                          <a href="https://go.servicetitan.com/#/Booking/Index/86a80759-1b8a-4b53-92f8-c72b4dddca0d" target="_blank" rel="noopener noreferrer">
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Schedule Appointment
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Schedule Appointment
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
+                          data-testid="button-call"
+                        >
+                          <a href={`tel:${phoneConfig.tel}`}>
+                            <PhoneIcon className="w-4 h-4 mr-2" />
+                            Call {phoneConfig.display}
                           </a>
                         </Button>
                         <Button
                           asChild
                           variant="outline"
-                          data-testid="button-request-service"
+                          data-testid="button-text"
                         >
-                          <a href="/contact?subject=Service%20Request">
+                          <a href={`sms:${phoneConfig.tel}`}>
                             <MessageSquare className="w-4 h-4 mr-2" />
-                            Request Service
+                            Text Us
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
+                          data-testid="button-contact-us"
+                        >
+                          <a href="/contact">
+                            <Mail className="w-4 h-4 mr-2" />
+                            Contact Us
                           </a>
                         </Button>
                         <Button

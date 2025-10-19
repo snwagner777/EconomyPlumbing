@@ -86,6 +86,7 @@ const OfficeBuilding = lazy(() => import("@/pages/commercial/OfficeBuilding"));
 const PropertyManagement = lazy(() => import("@/pages/commercial/PropertyManagement"));
 const ReferAFriend = lazy(() => import("@/pages/ReferAFriend"));
 const CustomerPortal = lazy(() => import("@/pages/CustomerPortal"));
+const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -224,6 +225,7 @@ function Router() {
       {/* Admin routes - OAuth only */}
       <Route path="/admin/oauth-login" component={OAuthAdminLogin} />
       <Route path="/admin/login">{() => <Redirect to="/admin/oauth-login" />}</Route>
+      <Route path="/admin/dashboard" component={AdminDashboard} />
       <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />

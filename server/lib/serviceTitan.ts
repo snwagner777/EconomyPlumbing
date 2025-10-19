@@ -642,7 +642,7 @@ class ServiceTitanAPI {
    */
   async getCustomerMemberships(customerId: number): Promise<any[]> {
     try {
-      // ServiceTitan memberships API endpoint
+      // ServiceTitan memberships API endpoint (recurring service events)
       const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
       
@@ -650,17 +650,33 @@ class ServiceTitanAPI {
       
       // Map memberships to display format
       const memberships = result.data || [];
-      return memberships.map((membership: any) => ({
-        id: membership.id,
-        membershipType: membership.membershipType?.name || 'VIP Membership',
-        status: membership.status || 'Active',
-        startDate: membership.from || membership.createdOn,
-        expirationDate: membership.to || membership.expirationDate,
-        renewalDate: membership.nextScheduledDate,
-        balance: parseFloat(membership.balance || '0'),
-        totalValue: parseFloat(membership.total || '0'),
-        description: membership.memo || membership.description || '',
-      }));
+      
+      // Filter for active/won memberships and get unique membership types
+      const activeMemberships = memberships.filter((m: any) => 
+        m.status === 'Won' || m.status === 'Completed' || m.membershipName
+      );
+      
+      // Group by membership to avoid duplicates
+      const uniqueMemberships = new Map();
+      activeMemberships.forEach((membership: any) => {
+        const key = membership.membershipId || membership.membershipName;
+        if (!uniqueMemberships.has(key) || new Date(membership.createdOn) > new Date(uniqueMemberships.get(key).startDate)) {
+          uniqueMemberships.set(key, {
+            id: membership.membershipId || membership.id,
+            membershipType: membership.membershipName || membership.locationRecurringServiceName || 'VIP Membership',
+            status: 'Active Member', // Show friendly status instead of raw API status
+            startDate: membership.createdOn,
+            expirationDate: membership.to || membership.expirationDate,
+            renewalDate: membership.date || membership.nextScheduledDate,
+            balance: parseFloat(membership.balance || '0'),
+            totalValue: parseFloat(membership.total || '0'),
+            description: membership.memo || membership.description || '',
+            rawStatus: membership.status, // Keep original for reference
+          });
+        }
+      });
+      
+      return Array.from(uniqueMemberships.values());
     } catch (error) {
       console.error('[ServiceTitan] Get customer memberships error:', error);
       // Return empty array on error rather than throwing

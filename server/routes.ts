@@ -4857,6 +4857,59 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Admin: Get ServiceTitan sync status
+  app.get("/api/admin/sync-status", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+
+      // Get customer and contact counts
+      const [customerCount, contactCount] = await Promise.all([
+        db.select({ count: sql<number>`count(*)` }).from(serviceTitanCustomers),
+        db.select({ count: sql<number>`count(*)` }).from(serviceTitanContacts)
+      ]);
+
+      // Get most recent sync timestamp
+      const recentCustomer = await db.select({ lastSynced: serviceTitanCustomers.lastSyncedAt })
+        .from(serviceTitanCustomers)
+        .orderBy(sql`${serviceTitanCustomers.lastSyncedAt} DESC`)
+        .limit(1);
+
+      res.json({
+        totalCustomers: Number(customerCount[0]?.count || 0),
+        totalContacts: Number(contactCount[0]?.count || 0),
+        lastSyncedAt: recentCustomer[0]?.lastSynced || null,
+        isRunning: false, // Would need global state to track
+      });
+    } catch (error: any) {
+      console.error("[Admin] Sync status error:", error);
+      res.status(500).json({ error: "Failed to fetch sync status" });
+    }
+  });
+
+  // Admin: Get Customer Portal analytics
+  app.get("/api/admin/portal-stats", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // For now, return mock data - would track this in production
+      // You could add a portal_analytics table if you want to track searches
+      res.json({
+        totalSearches: 0,
+        totalCustomers: 0,
+        recentSearches: [],
+      });
+    } catch (error: any) {
+      console.error("[Admin] Portal stats error:", error);
+      res.status(500).json({ error: "Failed to fetch portal stats" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
