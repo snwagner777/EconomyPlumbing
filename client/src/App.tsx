@@ -80,6 +80,10 @@ const WaterHeaterCalculator = lazy(() => import("@/pages/WaterHeaterCalculator")
 const PlumbingCostEstimator = lazy(() => import("@/pages/PlumbingCostEstimator"));
 const WinterFreezeProtection = lazy(() => import("@/pages/WinterFreezeProtection"));
 const SummerPlumbingPrep = lazy(() => import("@/pages/SummerPlumbingPrep"));
+const RestaurantPlumbing = lazy(() => import("@/pages/commercial/RestaurantPlumbing"));
+const RetailPlumbing = lazy(() => import("@/pages/commercial/RetailPlumbing"));
+const OfficeBuilding = lazy(() => import("@/pages/commercial/OfficeBuilding"));
+const PropertyManagement = lazy(() => import("@/pages/commercial/PropertyManagement"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -148,6 +152,12 @@ function Router() {
       <Route path="/summer-plumbing-prep" component={SummerPlumbingPrep} />
       <Route path="/water-leak-repair" component={LeakRepair} />
       <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
+      
+      {/* Commercial pages */}
+      <Route path="/commercial/restaurants" component={RestaurantPlumbing} />
+      <Route path="/commercial/retail" component={RetailPlumbing} />
+      <Route path="/commercial/office-buildings" component={OfficeBuilding} />
+      <Route path="/commercial/property-management" component={PropertyManagement} />
       
       {/* Service areas */}
       <Route path="/service-area" component={ServiceAreas} />
