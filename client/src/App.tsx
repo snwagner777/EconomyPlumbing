@@ -77,6 +77,7 @@ const CommercialCustomersAdmin = lazy(() => import("@/pages/CommercialCustomersA
 const PageMetadataAdmin = lazy(() => import("@/pages/PageMetadataAdmin"));
 const ProductsAdmin = lazy(() => import("@/pages/ProductsAdmin"));
 const WaterHeaterCalculator = lazy(() => import("@/pages/WaterHeaterCalculator"));
+const PlumbingCostEstimator = lazy(() => import("@/pages/PlumbingCostEstimator"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -140,6 +141,7 @@ function Router() {
       <Route path="/toilet-repair-services">{() => <Redirect to="/toilet-faucet" />}</Route>
       <Route path="/water-heater-guide" component={WaterHeaterGuide} />
       <Route path="/water-heater-calculator" component={WaterHeaterCalculator} />
+      <Route path="/plumbing-cost-estimator" component={PlumbingCostEstimator} />
       <Route path="/water-leak-repair" component={LeakRepair} />
       <Route path="/water-pressure-solutions" component={WaterPressureSolutions} />
       
