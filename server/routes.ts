@@ -1393,7 +1393,8 @@ ${rssItems}
 
       // Create referral record
       const { referrals } = await import('@shared/schema');
-      const serviceTitan = await import('./lib/serviceTitan').then(m => m.default);
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
       
       let refereeCustomerId: number | null = null;
       let creditNotes: string | null = null;

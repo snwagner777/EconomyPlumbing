@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Filter, Search, ExternalLink, Phone, Calendar } from "lucide-react";
+import { Filter, Search, ExternalLink, Phone, Calendar, Gift, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -337,6 +337,77 @@ export default function SuccessStories() {
               </CardHeader>
               <CardContent>
                 <SuccessStoryForm />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Referral Program Callout */}
+        <div className="py-16 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardContent className="pt-8 pb-8">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Gift className="w-8 h-8 text-primary" />
+                      <h3 className="text-2xl md:text-3xl font-bold">
+                        Love Our Service?
+                      </h3>
+                    </div>
+                    <p className="text-lg text-muted-foreground mb-4">
+                      Share Economy Plumbing with friends and family! You'll both get $25 off your next service.
+                    </p>
+                    <p className="text-muted-foreground mb-6">
+                      Check out our referral leaderboard to see who's leading the pack and start earning rewards today!
+                    </p>
+                    <div className="flex gap-3">
+                      <Button asChild data-testid="button-view-leaderboard">
+                        <a href="/refer-a-friend">
+                          <Trophy className="w-4 h-4 mr-2" />
+                          View Leaderboard
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" data-testid="button-get-referral-link">
+                        <a href="/customer-portal">
+                          <Gift className="w-4 h-4 mr-2" />
+                          Get Your Link
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="bg-background p-6 rounded-lg border">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Gift className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">$25 for You</p>
+                          <p className="text-sm text-muted-foreground">Per successful referral</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Gift className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">$25 for Them</p>
+                          <p className="text-sm text-muted-foreground">First service discount</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">Compete & Win</p>
+                          <p className="text-sm text-muted-foreground">Climb the leaderboard</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>

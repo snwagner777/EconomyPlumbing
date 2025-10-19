@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { ReferralModal } from "@/components/ReferralModal";
 import { 
   User,
   Users,
@@ -103,6 +104,7 @@ export default function CustomerPortal() {
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
 
@@ -929,9 +931,25 @@ export default function CustomerPortal() {
                           </div>
                         </div>
 
+                        {/* Send Referral Button */}
+                        <div className="pt-2">
+                          <Button
+                            onClick={() => setShowReferralModal(true)}
+                            className="w-full"
+                            size="lg"
+                            data-testid="button-send-referral"
+                          >
+                            <Gift className="w-5 h-5 mr-2" />
+                            Send a Referral Now
+                          </Button>
+                          <p className="text-xs text-center text-muted-foreground mt-2">
+                            Enter your friend's info and we'll send them your referral link via SMS and email
+                          </p>
+                        </div>
+
                         {/* Social Sharing Buttons */}
                         <div className="space-y-2">
-                          <Label>Share on Social Media</Label>
+                          <Label>Or Share on Social Media</Label>
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                             <Button
                               onClick={shareViaFacebook}
@@ -1109,6 +1127,18 @@ export default function CustomerPortal() {
       </main>
 
       <Footer />
+      
+      {/* Referral Modal */}
+      {customerData && referralLinkData && (
+        <ReferralModal
+          open={showReferralModal}
+          onOpenChange={setShowReferralModal}
+          customerName={customerData.customer.name}
+          customerPhone={customerData.customer.phoneNumber}
+          customerId={customerId!}
+          referralCode={referralLinkData.code}
+        />
+      )}
     </>
   );
 }
