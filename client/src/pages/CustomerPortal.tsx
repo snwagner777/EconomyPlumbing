@@ -77,6 +77,19 @@ export default function CustomerPortal() {
     enabled: !!customerId,
   });
 
+  // Separate upcoming and completed appointments
+  const upcomingAppointments = customerData?.appointments.filter(apt => {
+    const isUpcoming = new Date(apt.start) > new Date();
+    const isNotCompleted = !['Done', 'Completed', 'Cancelled'].includes(apt.status);
+    return isUpcoming && isNotCompleted;
+  }) || [];
+
+  const completedAppointments = customerData?.appointments.filter(apt => {
+    const isPast = new Date(apt.start) <= new Date();
+    const isCompleted = ['Done', 'Completed', 'Cancelled'].includes(apt.status);
+    return isPast || isCompleted;
+  }) || [];
+
   const handleLookup = async () => {
     if (!lookupValue.trim()) return;
     
@@ -86,17 +99,9 @@ export default function CustomerPortal() {
     try {
       // For account number, use direct customer ID lookup
       if (lookupType === 'account') {
-        const response = await fetch(`/api/servicetitan/customer/${lookupValue}`);
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.message || 'Customer not found');
-        }
-
-        const customer = await response.json();
-        setCustomerId(customer.customer.id);
+        setCustomerId(lookupValue);
       } else {
-        // For phone/email, use search endpoint
+        // For phone/email, use hybrid search (local cache + live fallback)
         const params = new URLSearchParams({
           [lookupType]: lookupValue,
         });
@@ -107,8 +112,8 @@ export default function CustomerPortal() {
           throw new Error(errorData.message || 'Customer not found');
         }
 
-        const customer = await response.json();
-        setCustomerId(customer.id);
+        const result = await response.json();
+        setCustomerId(result.id.toString());
       }
     } catch (err) {
       console.error('Customer lookup failed:', err);
@@ -329,6 +334,7 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
+                  {/* Upcoming Appointments */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -340,13 +346,13 @@ export default function CustomerPortal() {
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {customerData.appointments.length === 0 ? (
+                      {upcomingAppointments.length === 0 ? (
                         <p className="text-center py-8 text-muted-foreground" data-testid="text-no-appointments">
                           No upcoming appointments
                         </p>
                       ) : (
                         <div className="space-y-4">
-                          {customerData.appointments.map((appointment) => (
+                          {upcomingAppointments.map((appointment) => (
                             <div
                               key={appointment.id}
                               className="flex items-start gap-4 p-4 border rounded-lg"
@@ -385,6 +391,60 @@ export default function CustomerPortal() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Service History (Completed Appointments) */}
+                  {completedAppointments.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-6 h-6 text-primary" />
+                          <CardTitle>Service History</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Your completed service appointments
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {completedAppointments.slice(0, 5).map((appointment) => (
+                            <div
+                              key={appointment.id}
+                              className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30"
+                              data-testid={`appointment-completed-${appointment.id}`}
+                            >
+                              <Clock className="w-5 h-5 text-muted-foreground mt-1" />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h4 className="font-semibold">{appointment.jobType}</h4>
+                                    {appointment.summary && (
+                                      <p className="text-sm text-muted-foreground">{appointment.summary}</p>
+                                    )}
+                                  </div>
+                                  {getStatusBadge(appointment.status)}
+                                </div>
+                                <div className="text-sm space-y-1">
+                                  <p>
+                                    <strong>Date:</strong> {formatDate(appointment.start)}
+                                  </p>
+                                  {appointment.jobNumber && (
+                                    <p className="text-muted-foreground">
+                                      Job #{appointment.jobNumber}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {completedAppointments.length > 5 && (
+                            <p className="text-sm text-center text-muted-foreground">
+                              Showing 5 most recent service visits ({completedAppointments.length} total)
+                            </p>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   <Card>
                     <CardHeader>

@@ -4753,28 +4753,27 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       console.log("[Customer Portal] ServiceTitan credentials found, initializing API...");
 
-      const { ServiceTitanAPI } = await import("./lib/serviceTitan");
-      const serviceTitan = new ServiceTitanAPI({
-        tenantId,
-        clientId,
-        clientSecret,
-        appKey,
-      });
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
 
-      // Search for customer
-      console.log("[Customer Portal] Calling searchCustomer...");
-      const customer = await serviceTitan.searchCustomer(
-        (email as string) || "",
-        (phone as string) || ""
-      );
+      // Use hybrid search: local cache first, then live fallback
+      const searchValue = (phone as string) || (email as string);
+      console.log("[Customer Portal] Hybrid search for:", searchValue);
+      
+      const customerId = await serviceTitan.searchCustomerWithFallback(searchValue);
 
-      if (!customer) {
+      if (!customerId) {
         console.log("[Customer Portal] No customer found with provided credentials");
-        return res.status(404).json({ error: "Customer not found", message: "No account found with the provided phone number or email address." });
+        return res.status(404).json({ 
+          error: "Customer not found", 
+          message: "No account found with the provided phone number or email address." 
+        });
       }
 
-      console.log("[Customer Portal] Customer found:", customer.id);
-      res.json(customer);
+      console.log("[Customer Portal] Customer found:", customerId);
+      
+      // Return just the customer ID - frontend will fetch full data
+      res.json({ id: customerId });
     } catch (error: any) {
       console.error("[Customer Portal] Search error:", error.message);
       console.error("[Customer Portal] Full error:", error);
@@ -4823,6 +4822,36 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error("Customer data fetch error:", error);
       res.status(500).json({ error: "Failed to fetch customer data" });
+    }
+  });
+
+  // ServiceTitan Customer Sync (Admin only - manual trigger)
+  app.post("/api/servicetitan/sync-customers", async (req, res) => {
+    try {
+      // Fix auth check - use optional chaining
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      console.log("[ServiceTitan Sync] Manual sync triggered by admin");
+
+      const { syncServiceTitanCustomers } = await import("./lib/serviceTitanSync");
+
+      // Start sync in background to avoid timeout
+      res.json({ message: "Customer sync started. Check server logs for progress." });
+
+      // Run sync asynchronously
+      syncServiceTitanCustomers()
+        .then(() => {
+          console.log(`[ServiceTitan Sync] ✅ Manual sync completed`);
+        })
+        .catch(error => {
+          console.error(`[ServiceTitan Sync] ❌ Manual sync failed:`, error);
+        });
+
+    } catch (error: any) {
+      console.error("[ServiceTitan Sync] Error:", error);
+      res.status(500).json({ error: "Failed to start customer sync" });
     }
   });
 

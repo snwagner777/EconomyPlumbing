@@ -1,5 +1,5 @@
 import type { InsertServiceTitanMembership, InsertServiceTitanCustomer, InsertServiceTitanContact } from "@shared/schema";
-import { db } from "@db";
+import { db } from "../db";
 
 interface ServiceTitanConfig {
   clientId: string;
@@ -663,9 +663,8 @@ class ServiceTitanAPI {
       while (hasMore) {
         console.log(`[ServiceTitan Sync] Fetching page ${page}...`);
         
-        // Fetch customers page
-        const url = `${this.baseUrl}/customers?page=${page}&pageSize=${pageSize}`;
-        const result = await this.request<{ data: any[]; hasMore: boolean }>(url);
+        // Fetch customers page (use relative endpoint, request() will prepend baseUrl)
+        const result = await this.request<{ data: any[]; hasMore: boolean }>(`/customers?page=${page}&pageSize=${pageSize}`);
         
         const customers = result.data || [];
         hasMore = result.hasMore || false;
@@ -897,18 +896,27 @@ export function getServiceTitanAPI(): ServiceTitanAPI {
 }
 
 /**
- * Normalize phone number to digits only (strip formatting, country code)
+ * Normalize phone number to digits only (strip formatting, country code, extensions)
  * (512) 555-1234 → 5125551234
  * +1-512-555-1234 → 5125551234
+ * 512-555-1234 x123 → 5125551234
+ * 512-555-1234 ext 123 → 5125551234
  */
 export function normalizePhone(phone: string): string {
   if (!phone) return '';
+  
+  // Remove common extension markers before processing
+  // Match: x123, ext 123, ext. 123, extension 123, #123
+  const withoutExtension = phone.replace(/\s*(x|ext\.?|extension|#)\s*\d+/gi, '');
+  
   // Remove all non-digits
-  const digitsOnly = phone.replace(/\D/g, '');
+  const digitsOnly = withoutExtension.replace(/\D/g, '');
+  
   // Remove leading 1 (US country code) if present and 11 digits
   if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
     return digitsOnly.substring(1);
   }
+  
   return digitsOnly;
 }
 

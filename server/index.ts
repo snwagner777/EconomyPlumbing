@@ -12,6 +12,7 @@ import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
+import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
 import { securityHeadersMiddleware } from "./middleware/securityHeaders";
@@ -430,6 +431,9 @@ async function refreshReviewsPeriodically() {
   
   // Start photo cleanup job (runs daily at 3am to delete unused photos older than 60 days)
   startPhotoCleanupJob();
+  
+  // Start ServiceTitan customer sync (runs daily at 3am)
+  startServiceTitanSync();
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
