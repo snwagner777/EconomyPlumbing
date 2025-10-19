@@ -5822,6 +5822,54 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Reschedule appointment
+  app.post("/api/portal/reschedule-appointment", async (req, res) => {
+    try {
+      const { appointmentId, newStart, newEnd, customerId } = req.body;
+
+      if (!appointmentId || !newStart || !newEnd || !customerId) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      console.log(`[Portal] Reschedule request for appointment ${appointmentId}`);
+
+      // Get ServiceTitan API
+      const { ServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = new ServiceTitanAPI({
+        tenantId: process.env.SERVICETITAN_TENANT_ID!,
+        clientId: process.env.SERVICETITAN_CLIENT_ID!,
+        clientSecret: process.env.SERVICETITAN_CLIENT_SECRET!,
+        appKey: process.env.SERVICETITAN_APP_KEY!,
+      });
+
+      // Reschedule the appointment
+      const updatedAppointment = await serviceTitan.rescheduleAppointment(
+        parseInt(appointmentId),
+        newStart,
+        newEnd
+      );
+
+      console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully`);
+
+      res.json({ 
+        success: true, 
+        appointment: updatedAppointment,
+        message: "Appointment rescheduled successfully"
+      });
+    } catch (error: any) {
+      console.error("[Portal] Reschedule appointment error:", error);
+      
+      // Check if it's an invoiced appointment error
+      if (error.message && error.message.includes('invoice')) {
+        return res.status(400).json({ 
+          error: "This appointment cannot be rescheduled because it has been invoiced. Please call us to reschedule." 
+        });
+      }
+      
+      res.status(500).json({ error: "Failed to reschedule appointment. Please try again or call us for assistance." });
+    }
+  });
+
   // Request PDF for invoice or estimate
   app.post("/api/portal/request-pdf", async (req, res) => {
     try {

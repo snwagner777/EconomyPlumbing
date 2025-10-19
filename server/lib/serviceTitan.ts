@@ -549,6 +549,35 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Reschedule an appointment
+   */
+  async rescheduleAppointment(appointmentId: number, newStart: string, newEnd: string): Promise<any> {
+    try {
+      const jpmUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/appointments/${appointmentId}`;
+      
+      const payload = {
+        start: newStart,
+        end: newEnd,
+        arrivalWindowStart: newStart,
+        arrivalWindowEnd: newEnd,
+      };
+
+      console.log(`[ServiceTitan] Rescheduling appointment ${appointmentId} to ${newStart}`);
+      
+      const result = await this.request<{ data: any }>(jpmUrl, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      }, true);
+
+      console.log('[ServiceTitan] Appointment rescheduled successfully');
+      return result.data;
+    } catch (error) {
+      console.error('[ServiceTitan] Reschedule appointment error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get customer appointments (actual scheduled visits)
    */
   async getCustomerAppointments(customerId: number): Promise<any[]> {
