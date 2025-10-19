@@ -5682,6 +5682,59 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Request PDF for invoice or estimate
+  app.post("/api/portal/request-pdf", async (req, res) => {
+    try {
+      const { type, number, id, customerId, customerName, customerEmail } = req.body;
+
+      if (!type || !number || !id) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      console.log(`[Portal] PDF request received: ${type} #${number} for customer ${customerId}`);
+
+      // Send email notification to admin
+      const { sendEmail } = await import('./lib/emailTemplates');
+      
+      const subject = `Customer Portal: PDF Request for ${type} #${number}`;
+      const htmlContent = `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <h2 style="color: #1d4ed8;">PDF Request from Customer Portal</h2>
+          
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Type:</strong> ${type.charAt(0).toUpperCase() + type.slice(1)}</p>
+            <p><strong>Number:</strong> ${number}</p>
+            <p><strong>ID:</strong> ${id}</p>
+          </div>
+
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="color: #1d4ed8; margin-top: 0;">Customer Information</h3>
+            <p><strong>Customer ID:</strong> ${customerId}</p>
+            <p><strong>Name:</strong> ${customerName || 'Not provided'}</p>
+            <p><strong>Email:</strong> ${customerEmail || 'Not provided'}</p>
+          </div>
+
+          <div style="margin-top: 20px; padding: 15px; background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+            <p style="margin: 0;"><strong>Action Required:</strong> Please send the PDF for this ${type} to the customer.</p>
+          </div>
+        </div>
+      `;
+
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL || 'info@plumbersthatcare.com',
+        subject,
+        html: htmlContent,
+      });
+
+      console.log(`[Portal] PDF request email sent for ${type} #${number}`);
+
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("[Portal] PDF request error:", error);
+      res.status(500).json({ error: "Failed to send PDF request" });
+    }
+  });
+
   app.get("/api/servicetitan/customer/search", async (req, res) => {
     try {
       const { phone, email } = req.query;

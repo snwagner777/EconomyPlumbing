@@ -373,6 +373,38 @@ export default function CustomerPortal() {
     window.location.href = `sms:?&body=${text}`;
   };
 
+  const requestPDF = async (type: 'invoice' | 'estimate', number: string, id: number) => {
+    try {
+      const response = await fetch('/api/portal/request-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type,
+          number,
+          id,
+          customerId,
+          customerName: customerData?.customer.name,
+          customerEmail: customerData?.customer.email,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send request');
+      }
+
+      toast({
+        title: "PDF Requested",
+        description: `We've received your request for ${type} #${number}. We'll email you the PDF shortly.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Request Failed",
+        description: "Unable to send PDF request. Please call us directly.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -1018,6 +1050,17 @@ export default function CustomerPortal() {
                                     </p>
                                   )}
                                 </div>
+                                <div className="mt-3 pt-3 border-t">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => requestPDF('invoice', invoice.invoiceNumber, invoice.id)}
+                                    data-testid={`button-request-invoice-pdf-${invoice.id}`}
+                                  >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Request PDF Copy
+                                  </Button>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -1076,7 +1119,16 @@ export default function CustomerPortal() {
                                     </p>
                                   )}
                                 </div>
-                                <div className="mt-3 pt-3 border-t">
+                                <div className="mt-3 pt-3 border-t space-y-2">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => requestPDF('estimate', estimate.estimateNumber, estimate.id)}
+                                    data-testid={`button-request-estimate-pdf-${estimate.id}`}
+                                  >
+                                    <FileText className="w-4 h-4 mr-2" />
+                                    Request PDF Copy
+                                  </Button>
                                   <p className="text-xs text-muted-foreground">
                                     Questions about this estimate? Call us at <a href={`tel:${phoneConfig.displayNumber}`} className="text-primary hover:underline">{phoneConfig.displayNumber}</a>
                                   </p>
