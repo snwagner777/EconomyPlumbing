@@ -329,6 +329,16 @@ export default function CustomerPortal() {
                       <div className="flex gap-2 flex-wrap">
                         <Button
                           asChild
+                          data-testid="button-schedule-appointment"
+                        >
+                          <a href="https://go.servicetitan.com/#/Booking/Index/86a80759-1b8a-4b53-92f8-c72b4dddca0d" target="_blank" rel="noopener noreferrer">
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule Appointment
+                          </a>
+                        </Button>
+                        <Button
+                          asChild
+                          variant="outline"
                           data-testid="button-request-service"
                         >
                           <a href="/contact?subject=Service%20Request">
