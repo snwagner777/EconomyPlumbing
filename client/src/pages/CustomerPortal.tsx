@@ -68,10 +68,23 @@ interface ServiceTitanInvoice {
   summary?: string;
 }
 
+interface ServiceTitanMembership {
+  id: number;
+  membershipType: string;
+  status: string;
+  startDate: string;
+  expirationDate?: string;
+  renewalDate?: string;
+  balance: number;
+  totalValue: number;
+  description: string;
+}
+
 interface CustomerData {
   customer: ServiceTitanCustomer;
   appointments: ServiceTitanAppointment[];
   invoices: ServiceTitanInvoice[];
+  memberships: ServiceTitanMembership[];
 }
 
 export default function CustomerPortal() {
@@ -354,59 +367,138 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* VIP Membership Status - Moved to top per user request */}
-                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                    <CardHeader>
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-2">
-                          <Crown className="w-6 h-6 text-primary" />
-                          <div>
-                            <CardTitle>VIP Membership</CardTitle>
-                            <CardDescription className="mt-1">
-                              Not a VIP member yet
-                            </CardDescription>
+                  {/* VIP Membership Status - Shows real data from ServiceTitan */}
+                  {customerData.memberships && customerData.memberships.length > 0 ? (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-6 h-6 text-primary" />
+                            <div>
+                              <CardTitle>VIP Member</CardTitle>
+                              <CardDescription className="mt-1">
+                                {customerData.memberships[0].membershipType}
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <Badge variant="default" className="text-xs bg-primary">
+                            {customerData.memberships[0].status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid gap-3">
+                          {customerData.memberships[0].startDate && (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Member Since</span>
+                              <span className="font-medium">
+                                {new Date(customerData.memberships[0].startDate).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                          )}
+                          {customerData.memberships[0].expirationDate && (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Expires</span>
+                              <span className="font-medium">
+                                {new Date(customerData.memberships[0].expirationDate).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                          )}
+                          {customerData.memberships[0].renewalDate && (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-muted-foreground">Next Renewal</span>
+                              <span className="font-medium">
+                                {new Date(customerData.memberships[0].renewalDate).toLocaleDateString('en-US', { 
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  year: 'numeric' 
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Member Benefits */}
+                        <div className="pt-3 border-t">
+                          <p className="text-xs font-medium text-muted-foreground mb-2">Your Benefits</p>
+                          <div className="grid gap-2">
+                            <div className="flex items-center gap-2 text-sm">
+                              <Star className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>Priority Scheduling</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>No Overtime Charges</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm">
+                              <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
+                              <span>Annual Maintenance Included</span>
+                            </div>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          Available
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground">
-                        Join our VIP Membership program and enjoy exclusive benefits including priority scheduling, no overtime charges, and annual maintenance!
-                      </p>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <Crown className="w-6 h-6 text-primary" />
+                            <div>
+                              <CardTitle>VIP Membership</CardTitle>
+                              <CardDescription className="mt-1">
+                                Not a VIP member yet
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="text-xs">
+                            Available
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                          Join our VIP Membership program and enjoy exclusive benefits including priority scheduling, no overtime charges, and annual maintenance!
+                        </p>
 
-                      {/* Member Benefits Preview */}
-                      <div className="grid gap-2">
-                        <div className="flex items-center gap-2 text-sm">
-                          <Star className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-muted-foreground">Priority Scheduling</span>
+                        {/* Member Benefits Preview */}
+                        <div className="grid gap-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Star className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">Priority Scheduling</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">No Overtime Charges</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm">
+                            <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
+                            <span className="text-muted-foreground">Annual Maintenance</span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-muted-foreground">No Overtime Charges</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm">
-                          <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
-                          <span className="text-muted-foreground">Annual Maintenance</span>
-                        </div>
-                      </div>
 
-                      <div className="pt-2 border-t">
-                        <Button
-                          asChild
-                          className="w-full"
-                          data-testid="button-vip-membership"
-                        >
-                          <a href="/vip-membership">
-                            <Crown className="w-4 h-4 mr-2" />
-                            Learn About VIP Membership
-                          </a>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                        <div className="pt-2 border-t">
+                          <Button
+                            asChild
+                            className="w-full"
+                            data-testid="button-vip-membership"
+                          >
+                            <a href="/vip-membership">
+                              <Crown className="w-4 h-4 mr-2" />
+                              Learn About VIP Membership
+                            </a>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Service Address */}
                   {customerData.customer.address && (
