@@ -14,14 +14,37 @@ import {
   MessageCircle,
   Clock,
   Shield,
-  Users
+  Users,
+  Loader2
 } from "lucide-react";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { trackEvent } from "@/lib/analytics";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ReferAFriend() {
   const phoneConfig = usePhoneConfig();
+  const { toast } = useToast();
+  const [open, setOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    referrerName: '',
+    referrerPhone: '',
+    refereeName: '',
+    refereePhone: '',
+    refereeEmail: '',
+  });
 
   useEffect(() => {
     // Track page view
@@ -36,11 +59,44 @@ export default function ReferAFriend() {
     trackEvent('Refer a Friend CTA', 'Referral Page', 'Phone Call');
   };
 
+  const submitReferralMutation = useMutation({
+    mutationFn: async (data: typeof formData) => {
+      return await apiRequest('POST', '/api/referrals/submit', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Referral Submitted!",
+        description: "We'll reach out to your friend soon. You'll get $25 credit when they complete their first service.",
+      });
+      setFormData({
+        referrerName: '',
+        referrerPhone: '',
+        refereeName: '',
+        refereePhone: '',
+        refereeEmail: '',
+      });
+      setOpen(false);
+      trackEvent('Referral Form', 'Submitted', 'Success');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Please try again or call us directly.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitReferralMutation.mutate(formData);
+  };
+
   return (
     <>
       <SEOHead
-        title="Refer a Friend & Earn $50 Credit | Economy Plumbing Austin TX"
-        description="Refer a friend to Economy Plumbing and get $50 off your next service. They save $50 too! Unlimited referrals, instant tracking. Trusted Austin plumbers since 1999."
+        title="Refer a Friend & Earn $25 Credit | Economy Plumbing Austin TX"
+        description="Refer a friend to Economy Plumbing and get $25 off your next service. They save $25 too! Unlimited referrals, instant tracking. Trusted Austin plumbers since 1999."
         canonical="/refer-a-friend"
       />
 
@@ -55,10 +111,10 @@ export default function ReferAFriend() {
               Limited Time Offer
             </Badge>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              Give $50, Get $50
+              Give $25, Get $25
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-6">
-              Refer a friend to Economy Plumbing and you both save $50 on your next service
+              Refer a friend to Economy Plumbing and you both save $25 on your next service
             </p>
           </div>
 
@@ -69,7 +125,7 @@ export default function ReferAFriend() {
                 <DollarSign className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">$50 for You</p>
+                <p className="font-semibold">$25 for You</p>
                 <p className="text-sm text-muted-foreground">Service credit</p>
               </div>
             </div>
@@ -78,7 +134,7 @@ export default function ReferAFriend() {
                 <Gift className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">$50 for Them</p>
+                <p className="font-semibold">$25 for Them</p>
                 <p className="text-sm text-muted-foreground">First service discount</p>
               </div>
             </div>
@@ -106,52 +162,132 @@ export default function ReferAFriend() {
                   Send a Referral Now
                 </h2>
                 <p className="text-lg text-muted-foreground">
-                  Fill out the form and we'll reach out to your friend with priority scheduling. You'll automatically receive a $50 credit when they complete their first service.
+                  Fill out the form and we'll reach out to your friend with priority scheduling. You'll automatically receive a $25 credit when they complete their first service.
                 </p>
               </div>
 
-              {/* Referral CTA - Call or Text */}
-              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background" data-testid="card-referral-form">
-                <CardContent className="pt-8 pb-8 text-center">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <Gift className="w-8 h-8 text-primary" />
+              {/* Referral Form Dialog */}
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background cursor-pointer hover-elevate" data-testid="card-referral-form">
+                    <CardContent className="pt-8 pb-8 text-center">
+                      <div className="mb-6">
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                          <Gift className="w-8 h-8 text-primary" />
+                        </div>
+                        <h3 className="text-2xl font-bold mb-2">Ready to Refer?</h3>
+                        <p className="text-muted-foreground">
+                          Click to submit a referral
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg" 
+                        className="w-full text-lg h-14"
+                        data-testid="button-open-referral-form"
+                      >
+                        <Gift className="w-5 h-5 mr-2" />
+                        Send Referral
+                      </Button>
+                      <p className="text-sm text-muted-foreground mt-4">
+                        Quick and easy - takes less than 1 minute
+                      </p>
+                    </CardContent>
+                  </Card>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle className="flex items-center gap-2">
+                      <Gift className="w-5 h-5 text-primary" />
+                      Refer a Friend
+                    </DialogTitle>
+                    <DialogDescription>
+                      Share the love! Both you and your friend get $25 off.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="referrerName">Your Name</Label>
+                      <Input
+                        id="referrerName"
+                        value={formData.referrerName}
+                        onChange={(e) => setFormData({ ...formData, referrerName: e.target.value })}
+                        required
+                        data-testid="input-referrer-name"
+                        placeholder="John Doe"
+                      />
                     </div>
-                    <h3 className="text-2xl font-bold mb-2">Ready to Refer?</h3>
-                    <p className="text-muted-foreground">
-                      Give us a call or send a text to refer a friend
-                    </p>
-                  </div>
-                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="referrerPhone">Your Phone Number</Label>
+                      <Input
+                        id="referrerPhone"
+                        type="tel"
+                        value={formData.referrerPhone}
+                        onChange={(e) => setFormData({ ...formData, referrerPhone: e.target.value })}
+                        required
+                        data-testid="input-referrer-phone"
+                        placeholder="(512) 555-0100"
+                      />
+                    </div>
+                    <div className="border-t pt-4">
+                      <p className="text-sm font-medium mb-3">Friend's Information</p>
+                      <div className="space-y-3">
+                        <div className="space-y-2">
+                          <Label htmlFor="refereeName">Friend's Name</Label>
+                          <Input
+                            id="refereeName"
+                            value={formData.refereeName}
+                            onChange={(e) => setFormData({ ...formData, refereeName: e.target.value })}
+                            required
+                            data-testid="input-referee-name"
+                            placeholder="Jane Smith"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="refereePhone">Friend's Phone Number</Label>
+                          <Input
+                            id="refereePhone"
+                            type="tel"
+                            value={formData.refereePhone}
+                            onChange={(e) => setFormData({ ...formData, refereePhone: e.target.value })}
+                            required
+                            data-testid="input-referee-phone"
+                            placeholder="(512) 555-0200"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="refereeEmail">Friend's Email (Optional)</Label>
+                          <Input
+                            id="refereeEmail"
+                            type="email"
+                            value={formData.refereeEmail}
+                            onChange={(e) => setFormData({ ...formData, refereeEmail: e.target.value })}
+                            data-testid="input-referee-email"
+                            placeholder="jane@example.com"
+                          />
+                        </div>
+                      </div>
+                    </div>
                     <Button 
-                      asChild
-                      size="lg" 
-                      className="w-full text-lg h-14"
-                      data-testid="button-call-to-refer"
+                      type="submit" 
+                      className="w-full"
+                      disabled={submitReferralMutation.isPending}
+                      data-testid="button-submit-referral"
                     >
-                      <a href={`tel:${phoneConfig.tel}`} onClick={handlePhoneClick}>
-                        <Phone className="w-5 h-5 mr-2" />
-                        Call to Refer: {phoneConfig.display}
-                      </a>
+                      {submitReferralMutation.isPending ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Gift className="w-4 h-4 mr-2" />
+                          Submit Referral
+                        </>
+                      )}
                     </Button>
-                    <Button 
-                      asChild
-                      variant="outline"
-                      size="lg" 
-                      className="w-full text-lg h-14"
-                      data-testid="button-text-to-refer"
-                    >
-                      <a href={`sms:${phoneConfig.tel}`}>
-                        <MessageCircle className="w-5 h-5 mr-2" />
-                        Text Us to Refer
-                      </a>
-                    </Button>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-4">
-                    Quick and easy - we'll help you set it up
-                  </p>
-                </CardContent>
-              </Card>
+                  </form>
+                </DialogContent>
+              </Dialog>
 
               <div className="mt-6 p-4 bg-muted/30 rounded-lg border" data-testid="info-tracking">
                 <div className="flex items-start gap-3">
@@ -159,7 +295,7 @@ export default function ReferAFriend() {
                   <div>
                     <p className="text-sm font-medium mb-1">Secure & Easy Process</p>
                     <p className="text-xs text-muted-foreground">
-                      Every referral is tracked. We'll notify you when your $50 credit is applied to your account.
+                      Every referral is tracked. We'll notify you when your $25 credit is applied to your account.
                     </p>
                   </div>
                 </div>
@@ -195,7 +331,7 @@ export default function ReferAFriend() {
                     <div>
                       <p className="font-medium">We Reach Out</p>
                       <p className="text-sm text-muted-foreground">
-                        We contact them with priority scheduling and $50 discount
+                        We contact them with priority scheduling and $25 discount
                       </p>
                     </div>
                   </div>
@@ -204,9 +340,9 @@ export default function ReferAFriend() {
                       3
                     </div>
                     <div>
-                      <p className="font-medium">You Get $50 Credit</p>
+                      <p className="font-medium">You Get $25 Credit</p>
                       <p className="text-sm text-muted-foreground">
-                        After their service, you receive $50 off your next job
+                        After their service, you receive $25 off your next job
                       </p>
                     </div>
                   </div>
@@ -296,10 +432,10 @@ export default function ReferAFriend() {
           <Accordion type="single" collapsible className="space-y-4" data-testid="accordion-faq">
             <AccordionItem value="item-1" className="bg-background border rounded-lg px-6">
               <AccordionTrigger className="hover:no-underline" data-testid="accordion-trigger-credit">
-                <span className="font-semibold text-left">How do I get my $50 credit?</span>
+                <span className="font-semibold text-left">How do I get my $25 credit?</span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Submit a referral using the form above. When your friend completes their first service (minimum $200), we automatically apply a $50 credit to your account. You'll receive an email confirmation when the credit is added. Use it anytime on your next service call.
+                Submit a referral using the form above. When your friend completes their first service (minimum $200), we automatically apply a $25 credit to your account. You'll receive an email confirmation when the credit is added. Use it anytime on your next service call.
               </AccordionContent>
             </AccordionItem>
 
@@ -308,7 +444,7 @@ export default function ReferAFriend() {
                 <span className="font-semibold text-left">What does my friend get?</span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Your friend receives $50 off their first service (minimum $200 job), priority scheduling (often same-day or next-day), and the same 5-star service you experienced. We'll contact them directly to schedule at their convenience.
+                Your friend receives $25 off their first service (minimum $200 job), priority scheduling (often same-day or next-day), and the same 5-star service you experienced. We'll contact them directly to schedule at their convenience.
               </AccordionContent>
             </AccordionItem>
 
@@ -317,7 +453,7 @@ export default function ReferAFriend() {
                 <span className="font-semibold text-left">Is there a limit on referrals?</span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                No limit! Refer as many friends as you'd like. Each completed referral earns you another $50 credit. Credits never expire and can be stacked for larger jobs.
+                No limit! Refer as many friends as you'd like. Each completed referral earns you another $25 credit. Credits never expire and can be stacked for larger jobs.
               </AccordionContent>
             </AccordionItem>
 
@@ -335,7 +471,7 @@ export default function ReferAFriend() {
                 <span className="font-semibold text-left">How is this tracked?</span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                We use NiceJob, a professional referral tracking system. Every referral is logged automatically, whether submitted online, by phone, or when your friend mentions your name. You can check your referral status anytime by calling us at {phoneConfig.display}.
+                Every referral is tracked automatically. When your friend completes their first service, your $25 credit is applied to your account. You'll receive an email confirmation when the credit is added. You can check your referral status anytime by calling us at {phoneConfig.display}.
               </AccordionContent>
             </AccordionItem>
 
@@ -344,7 +480,7 @@ export default function ReferAFriend() {
                 <span className="font-semibold text-left">Can I refer businesses?</span>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground">
-                Absolutely! Commercial referrals qualify too. If you refer a restaurant, retail shop, office building, or property management company, you'll receive the same $50 credit per completed referral (minimum $500 commercial job).
+                Absolutely! Commercial referrals qualify too. If you refer a restaurant, retail shop, office building, or property management company, you'll receive the same $25 credit per completed referral (minimum $250 commercial job).
               </AccordionContent>
             </AccordionItem>
           </Accordion>
@@ -357,7 +493,7 @@ export default function ReferAFriend() {
           <div className="p-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-xl border border-primary/20" data-testid="section-final-cta">
             <Gift className="w-16 h-16 mx-auto mb-4 text-primary" />
             <h2 className="text-3xl font-bold mb-3">
-              Start Earning $50 Credits Today
+              Start Earning $25 Credits Today
             </h2>
             <p className="text-lg text-muted-foreground mb-6">
               Scroll back up to submit your first referral, or call us at {phoneConfig.display}

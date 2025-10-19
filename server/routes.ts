@@ -12,7 +12,7 @@ import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import Stripe from "stripe";
 import multer from "multer";
-import { sendContactFormEmail, sendSuccessStoryNotificationEmail } from "./email";
+import { sendContactFormEmail, sendReferralEmail, sendSuccessStoryNotificationEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
@@ -936,6 +936,55 @@ ${rssItems}
       });
     } catch (error: any) {
       res.status(400).json({ message: "Error submitting form: " + error.message });
+    }
+  });
+
+  // Referral submission endpoint
+  app.post("/api/referrals/submit", async (req, res) => {
+    try {
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const now = Date.now();
+      
+      // Spam protection: Rate limiting per IP
+      const lastSubmission = submissionRateLimit.get(clientIp);
+      if (lastSubmission && (now - lastSubmission) < RATE_LIMIT_WINDOW) {
+        console.log('[Spam] Rate limit exceeded for referral from IP:', clientIp);
+        return res.status(429).json({ 
+          message: "Too many submissions. Please wait a moment before trying again." 
+        });
+      }
+      
+      // Update rate limit tracking
+      submissionRateLimit.set(clientIp, now);
+      
+      // Validate referral data
+      const { referrerName, referrerPhone, refereeName, refereePhone, refereeEmail } = req.body;
+      
+      if (!referrerName || !referrerPhone || !refereeName || !refereePhone) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Send email notification to business
+      try {
+        await sendReferralEmail({
+          referrerName,
+          referrerPhone,
+          refereeName,
+          refereePhone,
+          refereeEmail: refereeEmail || undefined,
+        });
+      } catch (emailError) {
+        console.error('[Referral] Email sending failed:', emailError);
+        // Continue even if email fails
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Referral submitted successfully! We'll reach out to your friend soon.",
+      });
+    } catch (error: any) {
+      console.error('[Referral] Error:', error);
+      res.status(500).json({ message: "Error submitting referral: " + error.message });
     }
   });
 

@@ -119,7 +119,7 @@ export async function sendContactFormEmail(data: {
       </div>
     `;
 
-    console.log('[Email] Attempting to send email...');
+    console.log('[Email] Attempting to send contact form email...');
     console.log('[Email] Subject:', `New Contact: ${data.name} - ${data.service || 'Inquiry'}`);
     
     const result = await client.emails.send({
@@ -133,6 +133,81 @@ export async function sendContactFormEmail(data: {
     return result;
   } catch (error) {
     console.error('[Email Error] ✗ Failed to send email:', error);
+    console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+}
+
+export async function sendReferralEmail(data: {
+  referrerName: string;
+  referrerPhone: string;
+  refereeName: string;
+  refereePhone: string;
+  refereeEmail?: string;
+}) {
+  console.log('[Email] Starting sendReferralEmail for:', data.refereeName);
+  
+  try {
+    console.log('[Email] Getting Resend client...');
+    const { client, fromEmail } = await getUncachableResendClient();
+    const contactEmail = process.env.CONTACT_EMAIL;
+
+    console.log('[Email] From email:', fromEmail || 'NOT SET');
+    console.log('[Email] To email (CONTACT_EMAIL):', contactEmail || 'NOT SET');
+
+    if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured');
+      throw new Error('CONTACT_EMAIL not configured');
+    }
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0ea5e9;">New Referral Submission</h2>
+        
+        <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #0ea5e9;">
+          <h3 style="margin-top: 0; color: #0ea5e9;">Referrer Information</h3>
+          <p><strong>Name:</strong> ${data.referrerName}</p>
+          <p><strong>Phone:</strong> ${data.referrerPhone}</p>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0;">New Customer (Referee) Information</h3>
+          <p><strong>Name:</strong> ${data.refereeName}</p>
+          <p><strong>Phone:</strong> ${data.refereePhone}</p>
+          ${data.refereeEmail ? `<p><strong>Email:</strong> ${data.refereeEmail}</p>` : ''}
+        </div>
+
+        <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+          <h3 style="margin-top: 0; color: #f59e0b;">Action Required</h3>
+          <p>Contact <strong>${data.refereeName}</strong> and offer them:</p>
+          <ul>
+            <li>$25 off their first service (minimum $200 job)</li>
+            <li>Priority scheduling</li>
+          </ul>
+          <p>After they complete their first service, apply a $25 credit to <strong>${data.referrerName}</strong>'s account.</p>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="color: #6b7280; font-size: 14px;">
+          This referral was submitted from the Economy Plumbing Services website.
+        </p>
+      </div>
+    `;
+
+    console.log('[Email] Attempting to send referral email...');
+    console.log('[Email] Subject:', `New Referral: ${data.refereeName} (from ${data.referrerName})`);
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: contactEmail,
+      subject: `New Referral: ${data.refereeName} (from ${data.referrerName})`,
+      html: emailHtml,
+    });
+
+    console.log('[Email] ✓ Referral email sent successfully! Result:', JSON.stringify(result, null, 2));
+    return result;
+  } catch (error) {
+    console.error('[Email Error] ✗ Failed to send referral email:', error);
     console.error('[Email Error] Error details:', JSON.stringify(error, null, 2));
     throw error;
   }
