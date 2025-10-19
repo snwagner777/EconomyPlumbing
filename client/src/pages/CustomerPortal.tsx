@@ -179,18 +179,13 @@ export default function CustomerPortal() {
     queryKey: ['/api/servicetitan/arrival-windows'],
   });
 
-  // Fetch customer leaderboard
-  const { data: leaderboardData } = useQuery<{
-    leaderboard: Array<{
-      id: number;
-      name: string;
-      type: string;
-      totalServices: number;
-      isVIPMember: boolean;
-      rank: number;
-    }>;
+  // Fetch customer stats (service count and percentile ranking)
+  const { data: customerStats } = useQuery<{
+    serviceCount: number;
+    topPercentile: number;
   }>({
-    queryKey: ['/api/customer-leaderboard'],
+    queryKey: ['/api/portal/customer-stats', customerId],
+    enabled: !!customerId,
   });
 
   const timeWindows = arrivalWindowsData?.windows || [];
@@ -1212,79 +1207,55 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
-                  {/* Customer Leaderboard */}
-                  {leaderboardData && leaderboardData.leaderboard.length > 0 && (
+                  {/* Customer Service Stats */}
+                  {customerStats && (
                     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
                       <CardHeader>
                         <div className="flex items-center gap-2">
                           <Star className="w-6 h-6 text-primary" />
                           <div>
-                            <CardTitle>Top Customers</CardTitle>
+                            <CardTitle>Your Service History</CardTitle>
                             <CardDescription>
-                              Our most loyal customers by total services
+                              Track your loyalty and savings
                             </CardDescription>
                           </div>
                         </div>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-3">
-                          {leaderboardData.leaderboard.map((customer) => {
-                            const isCurrentCustomer = customer.id.toString() === customerId;
-                            
-                            return (
-                              <div
-                                key={customer.id}
-                                className={`flex items-center gap-4 p-3 rounded-lg border ${
-                                  isCurrentCustomer 
-                                    ? 'bg-primary/10 border-primary/30' 
-                                    : 'bg-background/50'
-                                }`}
-                                data-testid={`leaderboard-item-${customer.rank}`}
-                              >
-                                {/* Rank Badge */}
-                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold ${
-                                  customer.rank === 1 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-500' :
-                                  customer.rank === 2 ? 'bg-slate-500/20 text-slate-600 dark:text-slate-400' :
-                                  customer.rank === 3 ? 'bg-orange-500/20 text-orange-600 dark:text-orange-500' :
-                                  'bg-muted text-muted-foreground'
-                                }`}>
-                                  {customer.rank === 1 ? '🥇' : customer.rank === 2 ? '🥈' : customer.rank === 3 ? '🥉' : `#${customer.rank}`}
-                                </div>
-
-                                {/* Customer Info */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2">
-                                    <p className={`font-medium truncate ${isCurrentCustomer ? 'text-primary' : ''}`}>
-                                      {isCurrentCustomer ? 'You!' : customer.name}
-                                    </p>
-                                    {customer.isVIPMember && (
-                                      <Crown className="w-4 h-4 text-primary flex-shrink-0" />
-                                    )}
-                                  </div>
-                                  <p className="text-sm text-muted-foreground">
-                                    {customer.totalServices} {customer.totalServices === 1 ? 'service' : 'services'}
-                                  </p>
-                                </div>
-
-                                {/* You Badge */}
-                                {isCurrentCustomer && (
-                                  <Badge variant="default" className="bg-primary">
-                                    You
-                                  </Badge>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Not in Top 10 Message */}
-                        {customerId && !leaderboardData.leaderboard.some(c => c.id.toString() === customerId) && (
-                          <div className="mt-4 p-4 bg-muted/30 rounded-lg border text-center">
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Service Count */}
+                          <div className="p-4 bg-background rounded-lg border text-center">
+                            <div className="text-4xl font-bold text-primary mb-1" data-testid="text-service-count">
+                              {customerStats.serviceCount}
+                            </div>
                             <p className="text-sm text-muted-foreground">
-                              Keep using our services to climb the leaderboard! 🚀
+                              Total Services
                             </p>
                           </div>
-                        )}
+
+                          {/* Top Percentile */}
+                          <div className="p-4 bg-background rounded-lg border text-center">
+                            <div className="text-4xl font-bold text-primary mb-1" data-testid="text-top-percentile">
+                              Top {customerStats.topPercentile}%
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Customer Ranking
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Ranking Message */}
+                        <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20 text-center">
+                          <p className="text-sm font-medium">
+                            {customerStats.topPercentile <= 10 
+                              ? "You're one of our most valued customers! Thank you for your loyalty." 
+                              : customerStats.topPercentile <= 25
+                              ? "You're a highly valued customer! Keep using our services for more savings."
+                              : customerStats.topPercentile <= 50
+                              ? "Thank you for choosing Economy Plumbing Services! Continue scheduling services to climb the rankings."
+                              : "Use our services more to climb the rankings and unlock VIP benefits!"}
+                          </p>
+                        </div>
                       </CardContent>
                     </Card>
                   )}

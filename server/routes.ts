@@ -6203,6 +6203,89 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get customer stats (service count and percentile ranking)
+  app.get("/api/portal/customer-stats/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      console.log("[Portal] Fetching customer stats for:", customerId);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      // Get all jobs for this customer
+      const customerJobs = await serviceTitan.getCustomerJobs(parseInt(customerId));
+      
+      // Count completed jobs
+      const completedJobs = customerJobs.filter(job => 
+        job.completedOn && job.status?.toLowerCase().includes('complete')
+      );
+      const serviceCount = completedJobs.length;
+
+      console.log(`[Portal] Customer ${customerId} has ${serviceCount} completed services`);
+
+      // Calculate percentile ranking
+      // Get total service counts from our cached customers
+      const { serviceTitanCustomers } = await import('@shared/schema');
+      
+      // Get all customers with their job counts from our database
+      // We'll use a simple heuristic: customers with more than N services are "above" this customer
+      const allCustomers = await db.select({ 
+        id: serviceTitanCustomers.id 
+      }).from(serviceTitanCustomers);
+
+      // For now, use a simplified percentile calculation
+      // In production, you might want to cache job counts for all customers
+      let customersAboveCount = 0;
+      let customersChecked = 0;
+      
+      // Sample up to 100 customers for percentile calculation (for performance)
+      const sampleSize = Math.min(100, allCustomers.length);
+      const step = Math.max(1, Math.floor(allCustomers.length / sampleSize));
+      
+      for (let i = 0; i < allCustomers.length; i += step) {
+        if (customersChecked >= sampleSize) break;
+        
+        const otherCustomer = allCustomers[i];
+        if (otherCustomer.id === parseInt(customerId)) continue;
+        
+        try {
+          const otherJobs = await serviceTitan.getCustomerJobs(otherCustomer.id);
+          const otherCompletedCount = otherJobs.filter(job => 
+            job.completedOn && job.status?.toLowerCase().includes('complete')
+          ).length;
+          
+          if (otherCompletedCount > serviceCount) {
+            customersAboveCount++;
+          }
+          customersChecked++;
+        } catch (error) {
+          console.error(`[Portal] Error checking customer ${otherCustomer.id}:`, error);
+          // Continue with other customers
+        }
+      }
+
+      // Calculate percentile (what % of customers this customer is better than)
+      const percentile = customersChecked > 0 
+        ? Math.round((1 - (customersAboveCount / customersChecked)) * 100)
+        : 50; // Default to 50th percentile if we can't calculate
+
+      console.log(`[Portal] Customer ${customerId} is in top ${100 - percentile}% (${customersAboveCount}/${customersChecked} customers have more services)`);
+
+      res.json({
+        serviceCount,
+        topPercentile: 100 - percentile, // e.g., "top 15%" means 85th percentile
+      });
+    } catch (error: any) {
+      console.error("[Portal] Customer stats error:", error);
+      res.status(500).json({ error: "Failed to fetch customer stats" });
+    }
+  });
+
   // Customer Leaderboard - Top customers by service usage
   // TODO: Re-implement for refer-a-friend page using actual ServiceTitan job/appointment data
   app.get("/api/customer-leaderboard", async (req, res) => {
