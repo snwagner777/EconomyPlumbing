@@ -185,9 +185,11 @@ function Router() {
       <Route path="/plumber-bertram" component={BertramServiceArea} />
       <Route path="/plumber-spicewood" component={SpicewoodServiceArea} />
       
+      {/* Referral routes - MUST be before any other dynamic routes to avoid conflicts */}
+      <Route path="/ref/:code" component={ReferralLanding} />
+      
       {/* Utility pages */}
       <Route path="/contact" component={Contact} />
-      <Route path="/ref/:code" component={ReferralLanding} />
       <Route path="/refer-a-friend" component={ReferAFriend} />
       <Route path="/customer-portal" component={CustomerPortal} />
       <Route path="/faq" component={FAQ} />
