@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
+import crypto from "crypto";
 import { storage } from "./storage";
 
 // Declare global types for SSR cache invalidation
@@ -5614,26 +5615,31 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     try {
       const { contactValue, code } = req.body;
 
-      if (!contactValue || !code) {
-        return res.status(400).json({ error: "Contact value and code required" });
+      if (!code) {
+        return res.status(400).json({ error: "Verification code required" });
       }
 
-      console.log("[Portal Auth] Verifying code for:", contactValue);
+      console.log("[Portal Auth] Verifying code:", code.substring(0, 6) + "...");
 
       const { portalVerifications } = await import("@shared/schema");
-      const { eq, and, lt } = await import("drizzle-orm");
+      const { eq, and, or } = await import("drizzle-orm");
 
-      // Find verification record
-      const verifications = await db
-        .select()
-        .from(portalVerifications)
-        .where(
-          and(
+      // Find verification record - search by code alone for magic links, or code + contact for SMS
+      const whereClause = contactValue
+        ? and(
             eq(portalVerifications.contactValue, contactValue),
             eq(portalVerifications.code, code),
             eq(portalVerifications.verified, false)
           )
-        )
+        : and(
+            eq(portalVerifications.code, code),
+            eq(portalVerifications.verified, false)
+          );
+
+      const verifications = await db
+        .select()
+        .from(portalVerifications)
+        .where(whereClause)
         .limit(1);
 
       if (verifications.length === 0) {
@@ -5649,8 +5655,8 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.status(401).json({ error: "Verification code expired. Please request a new one." });
       }
 
-      // Check attempts (max 5)
-      if (verification.attempts >= 5) {
+      // Check attempts (max 5) - only for SMS codes, not magic links
+      if (verification.verificationType === 'sms' && verification.attempts >= 5) {
         console.log("[Portal Auth] Too many attempts");
         return res.status(429).json({ error: "Too many failed attempts. Please request a new code." });
       }
