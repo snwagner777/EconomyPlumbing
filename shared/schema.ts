@@ -310,9 +310,6 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   id: integer("id").primaryKey(), // ServiceTitan customer ID (not UUID, this is the actual ST ID)
   name: text("name").notNull(),
   type: text("type").notNull(), // 'Residential' or 'Commercial'
-  email: text("email"), // Extracted from contacts
-  phone: text("phone"), // Extracted from contacts
-  mobilePhone: text("mobile_phone"), // Extracted from contacts
   street: text("street"),
   city: text("city"),
   state: text("state"),
@@ -321,13 +318,26 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   balance: text("balance"), // Stored as text (ServiceTitan format)
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
 }, (table) => ({
-  // Critical indexes for fast phone/email search
-  emailIdx: index("st_customers_email_idx").on(table.email),
-  phoneIdx: index("st_customers_phone_idx").on(table.phone),
-  mobilePhoneIdx: index("st_customers_mobile_phone_idx").on(table.mobilePhone),
   activeIdx: index("st_customers_active_idx").on(table.active),
   typeIdx: index("st_customers_type_idx").on(table.type),
   lastSyncedIdx: index("st_customers_last_synced_idx").on(table.lastSyncedAt),
+}));
+
+// ServiceTitan Customer Contacts - stores all contact methods with normalization
+// This allows searching by any phone/email format and handles number changes
+export const serviceTitanContacts = pgTable("service_titan_contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: integer("customer_id").notNull(), // References service_titan_customers.id
+  contactType: text("contact_type").notNull(), // 'Phone', 'MobilePhone', 'Email', etc.
+  value: text("value").notNull(), // Raw value from ServiceTitan
+  normalizedValue: text("normalized_value").notNull(), // Normalized for searching (digits only for phones, lowercase for emails)
+  isPrimary: boolean("is_primary").notNull().default(false),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("st_contacts_customer_id_idx").on(table.customerId),
+  // Critical: Fast O(1) lookup by normalized phone/email
+  normalizedValueIdx: index("st_contacts_normalized_value_idx").on(table.normalizedValue),
+  contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
 }));
 
 export const trackingNumbers = pgTable("tracking_numbers", {
@@ -575,6 +585,11 @@ export const insertServiceTitanCustomerSchema = createInsertSchema(serviceTitanC
   lastSyncedAt: true,
 });
 
+export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanContacts).omit({
+  id: true,
+  lastSyncedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -613,6 +628,8 @@ export type PageMetadata = typeof pageMetadata.$inferSelect;
 export type InsertPageMetadata = z.infer<typeof insertPageMetadataSchema>;
 export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
+export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
+export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
 export type OAuthUser = typeof oauthUsers.$inferSelect;
 export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
 export type AdminWhitelist = typeof adminWhitelist.$inferSelect;

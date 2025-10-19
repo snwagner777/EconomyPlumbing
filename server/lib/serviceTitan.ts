@@ -1,4 +1,5 @@
-import type { InsertServiceTitanMembership } from "@shared/schema";
+import type { InsertServiceTitanMembership, InsertServiceTitanCustomer, InsertServiceTitanContact } from "@shared/schema";
+import { db } from "@db";
 
 interface ServiceTitanConfig {
   clientId: string;
@@ -660,6 +661,30 @@ export function getServiceTitanAPI(): ServiceTitanAPI {
   }
 
   return serviceTitanAPI;
+}
+
+/**
+ * Normalize phone number to digits only (strip formatting, country code)
+ * (512) 555-1234 → 5125551234
+ * +1-512-555-1234 → 5125551234
+ */
+export function normalizePhone(phone: string): string {
+  if (!phone) return '';
+  // Remove all non-digits
+  const digitsOnly = phone.replace(/\D/g, '');
+  // Remove leading 1 (US country code) if present and 11 digits
+  if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+    return digitsOnly.substring(1);
+  }
+  return digitsOnly;
+}
+
+/**
+ * Normalize email to lowercase for consistent searching
+ */
+export function normalizeEmail(email: string): string {
+  if (!email) return '';
+  return email.trim().toLowerCase();
 }
 
 // Export the class for direct use
