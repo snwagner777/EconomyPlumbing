@@ -140,40 +140,38 @@ export default function ReferAFriend() {
           </div>
 
           {leaderboardData && leaderboardData.leaderboard.length > 0 ? (
-            <div className="space-y-3">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
               {leaderboardData.leaderboard.map((entry, index) => (
                 <Card 
                   key={index}
                   className={`${
                     index === 0 
-                      ? 'border-yellow-500/50 bg-gradient-to-r from-yellow-500/10 to-background' 
+                      ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-background md:col-span-2 lg:col-span-1' 
                       : index === 1 
-                      ? 'border-gray-400/50 bg-gradient-to-r from-gray-400/10 to-background'
+                      ? 'border-gray-400/50 bg-gradient-to-br from-gray-400/10 to-background'
                       : index === 2
-                      ? 'border-amber-600/50 bg-gradient-to-r from-amber-600/10 to-background'
+                      ? 'border-amber-600/50 bg-gradient-to-br from-amber-600/10 to-background'
                       : ''
                   }`}
                   data-testid={`leaderboard-entry-${index}`}
                 >
-                  <CardContent className="py-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 flex items-center justify-center">
-                          {getMedalIcon(index)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-lg" data-testid={`leaderboard-name-${index}`}>
-                            {entry.name}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {entry.referralCount} successful {entry.referralCount === 1 ? 'referral' : 'referrals'}
-                          </p>
-                        </div>
+                  <CardContent className="py-6">
+                    <div className="text-center space-y-3">
+                      <div className="w-16 h-16 flex items-center justify-center mx-auto">
+                        {getMedalIcon(index)}
                       </div>
-                      <div className="text-right">
-                        <div className="flex items-center gap-1 text-primary font-bold">
+                      <div>
+                        <p className="font-bold text-xl mb-1" data-testid={`leaderboard-name-${index}`}>
+                          {entry.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {entry.referralCount} successful {entry.referralCount === 1 ? 'referral' : 'referrals'}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-center gap-1 text-primary font-bold">
                           <DollarSign className="w-5 h-5" />
-                          <span className="text-xl" data-testid={`leaderboard-earnings-${index}`}>
+                          <span className="text-2xl" data-testid={`leaderboard-earnings-${index}`}>
                             {entry.referralCount * 25}
                           </span>
                         </div>

@@ -179,6 +179,7 @@ export default function MembershipCheckout() {
   const [step, setStep] = useState<'info' | 'payment'>('info');
   const [clientSecret, setClientSecret] = useState("");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+  const [portalCustomerId, setPortalCustomerId] = useState<string | null>(null);
 
   // Check for test mode via query parameter
   const isTestMode = useMemo(() => {
@@ -193,6 +194,26 @@ export default function MembershipCheckout() {
     queryKey: ['/api/products', slug],
   });
 
+  // Check for active portal session and fetch customer data
+  const { data: portalData } = useQuery<{
+    customer: {
+      id: number;
+      name: string;
+      type: string;
+      email: string | null;
+      phone: string | null;
+      address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+      };
+    };
+  }>({
+    queryKey: ['/api/servicetitan/customer', portalCustomerId],
+    enabled: !!portalCustomerId,
+  });
+
   // Determine if this is a commercial product
   const isCommercialProduct = product?.slug === 'commercial-vip';
 
@@ -203,6 +224,82 @@ export default function MembershipCheckout() {
       sameAsBilling: false,
     },
   });
+
+  // Check for active portal session on mount
+  useEffect(() => {
+    const checkPortalSession = async () => {
+      try {
+        const response = await fetch('/api/portal/session');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.customerId) {
+            setPortalCustomerId(data.customerId.toString());
+          }
+        }
+      } catch (error) {
+        console.log('[Checkout] No active portal session');
+      }
+    };
+    
+    checkPortalSession();
+  }, []);
+
+  // Pre-fill form with portal customer data
+  useEffect(() => {
+    if (portalData?.customer) {
+      const customer = portalData.customer;
+      const isCommercial = customer.type?.toLowerCase() === 'commercial';
+      
+      // Check if we have complete address data
+      const hasAddress = customer.address?.street && customer.address?.city && 
+                        customer.address?.state && customer.address?.zip;
+      
+      if (!hasAddress) {
+        console.log('[Checkout] Customer profile incomplete - skipping auto-fill');
+        return;
+      }
+      
+      if (isCommercial) {
+        form.setValue('customerType', 'commercial');
+        if (customer.name) form.setValue('companyName', customer.name);
+        if (customer.address.street) form.setValue('locationName', customer.address.street);
+        if (customer.name) form.setValue('contactPersonName', customer.name);
+        if (customer.phone) form.setValue('phone', customer.phone);
+        if (customer.email) form.setValue('email', customer.email);
+        if (customer.address.street) form.setValue('street', customer.address.street);
+        if (customer.address.city) form.setValue('city', customer.address.city);
+        if (customer.address.state) form.setValue('state', customer.address.state);
+        if (customer.address.zip) form.setValue('zip', customer.address.zip);
+        // Pre-fill billing with same info if available
+        if (customer.name) form.setValue('billingName', customer.name);
+        if (customer.address.street) form.setValue('billingStreet', customer.address.street);
+        if (customer.address.city) form.setValue('billingCity', customer.address.city);
+        if (customer.address.state) form.setValue('billingState', customer.address.state);
+        if (customer.address.zip) form.setValue('billingZip', customer.address.zip);
+      } else {
+        form.setValue('customerType', 'residential');
+        if (customer.name) form.setValue('locationName', customer.name);
+        if (customer.phone) form.setValue('phone', customer.phone);
+        if (customer.email) form.setValue('email', customer.email);
+        if (customer.address.street) form.setValue('street', customer.address.street);
+        if (customer.address.city) form.setValue('city', customer.address.city);
+        if (customer.address.state) form.setValue('state', customer.address.state);
+        if (customer.address.zip) form.setValue('zip', customer.address.zip);
+        // Pre-fill billing with same info if available
+        if (customer.name) form.setValue('billingName', customer.name);
+        if (customer.address.street) form.setValue('billingStreet', customer.address.street);
+        if (customer.address.city) form.setValue('billingCity', customer.address.city);
+        if (customer.address.state) form.setValue('billingState', customer.address.state);
+        if (customer.address.zip) form.setValue('billingZip', customer.address.zip);
+        form.setValue('sameAsBilling', true);
+      }
+
+      toast({
+        title: "Info pre-filled",
+        description: "Your account information has been automatically filled in. Just add payment details to complete your purchase.",
+      });
+    }
+  }, [portalData, form, toast]);
 
   const customerType = form.watch('customerType');
   const sameAsBilling = form.watch('sameAsBilling');
