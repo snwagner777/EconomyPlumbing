@@ -34,9 +34,34 @@ export async function syncServiceTitanCustomers(): Promise<void> {
 
 /**
  * Start the ServiceTitan customer sync scheduler (runs daily at 3am)
+ * Also runs an initial sync on startup if database is empty
  */
-export function startServiceTitanSync(): void {
+export async function startServiceTitanSync(): Promise<void> {
   console.log('[ServiceTitan Sync] Scheduler started - will sync customers daily at 3am');
+  
+  // Run initial sync on startup if database is empty or has few customers
+  try {
+    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { db } = await import('../db');
+    const { count } = await import('drizzle-orm');
+    
+    const result = await db.select({ count: count() }).from(serviceTitanCustomers);
+    const customerCount = result[0]?.count || 0;
+    
+    if (customerCount < 1000) {
+      console.log(`[ServiceTitan Sync] 🚀 Only ${customerCount} customers in cache - running initial full sync...`);
+      console.log('[ServiceTitan Sync] ⚠️  This may take 5-10 minutes for ~11,000 customers');
+      
+      // Run sync without blocking startup
+      syncServiceTitanCustomers().catch(error => {
+        console.error('[ServiceTitan Sync] Initial sync failed:', error);
+      });
+    } else {
+      console.log(`[ServiceTitan Sync] ✅ Database has ${customerCount} customers - skipping initial sync`);
+    }
+  } catch (error) {
+    console.error('[ServiceTitan Sync] Failed to check customer count:', error);
+  }
   
   // Check every hour if it's time to run
   setInterval(checkAndSync, 60 * 60 * 1000); // 1 hour

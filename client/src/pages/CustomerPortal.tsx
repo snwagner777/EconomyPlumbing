@@ -21,7 +21,14 @@ import {
   Mail,
   Hash,
   Gift,
-  Heart
+  Heart,
+  Crown,
+  Star,
+  Shield,
+  Wrench,
+  MapPin,
+  Home,
+  MessageSquare
 } from "lucide-react";
 
 interface ServiceTitanCustomer {
@@ -298,7 +305,7 @@ export default function CustomerPortal() {
               ) : customerData ? (
                 <>
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4">
+                    <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
                       <div className="flex items-center gap-3">
                         <User className="w-8 h-8 text-primary" />
                         <div>
@@ -306,13 +313,24 @@ export default function CustomerPortal() {
                           <CardDescription>Customer Account</CardDescription>
                         </div>
                       </div>
-                      <Button
-                        variant="outline"
-                        onClick={() => setCustomerId(null)}
-                        data-testid="button-logout"
-                      >
-                        Switch Account
-                      </Button>
+                      <div className="flex gap-2 flex-wrap">
+                        <Button
+                          asChild
+                          data-testid="button-request-service"
+                        >
+                          <a href="/contact?subject=Service%20Request">
+                            <MessageSquare className="w-4 h-4 mr-2" />
+                            Request Service
+                          </a>
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => setCustomerId(null)}
+                          data-testid="button-logout"
+                        >
+                          Switch Account
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="grid md:grid-cols-2 gap-4">
@@ -335,6 +353,91 @@ export default function CustomerPortal() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* VIP Membership Status - Moved to top per user request */}
+                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                    <CardHeader>
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="flex items-center gap-2">
+                          <Crown className="w-6 h-6 text-primary" />
+                          <div>
+                            <CardTitle>VIP Membership</CardTitle>
+                            <CardDescription className="mt-1">
+                              Not a VIP member yet
+                            </CardDescription>
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          Available
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Join our VIP Membership program and enjoy exclusive benefits including priority scheduling, no overtime charges, and annual maintenance!
+                      </p>
+
+                      {/* Member Benefits Preview */}
+                      <div className="grid gap-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Star className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-muted-foreground">Priority Scheduling</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Shield className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-muted-foreground">No Overtime Charges</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm">
+                          <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
+                          <span className="text-muted-foreground">Annual Maintenance</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t">
+                        <Button
+                          asChild
+                          className="w-full"
+                          data-testid="button-vip-membership"
+                        >
+                          <a href="/vip-membership">
+                            <Crown className="w-4 h-4 mr-2" />
+                            Learn About VIP Membership
+                          </a>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Service Address */}
+                  {customerData.customer.address && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-6 h-6 text-primary" />
+                          <CardTitle>Service Address</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Primary location for service calls
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+                          <Home className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium" data-testid="text-service-address">
+                              {customerData.customer.address.street}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
+                            </p>
+                          </div>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-3 text-center">
+                          Need to update your service address? Call us at (512) 396-7811
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Upcoming Appointments */}
                   <Card>
@@ -514,6 +617,67 @@ export default function CustomerPortal() {
                       )}
                     </CardContent>
                   </Card>
+
+                  {/* Leave a Review (show if they have completed appointments) */}
+                  {completedAppointments.length > 0 && (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Star className="w-6 h-6 text-primary" />
+                          <CardTitle>Love Our Service?</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Share your experience and help others find great plumbing service
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                          <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-medium mb-1">Your Review Matters</p>
+                            <p className="text-sm text-muted-foreground">
+                              Help your neighbors find reliable plumbing service. Your honest feedback helps us improve and helps others make informed decisions.
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <Button
+                            asChild
+                            className="flex-1"
+                            data-testid="button-leave-google-review"
+                          >
+                            <a 
+                              href="https://g.page/r/CV-sfCZq8cAzEBM/review"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <Star className="w-4 h-4 mr-2" />
+                              Leave Google Review
+                            </a>
+                          </Button>
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="flex-1"
+                            data-testid="button-leave-facebook-review"
+                          >
+                            <a 
+                              href="https://www.facebook.com/economyplumbingservices/reviews"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Review on Facebook
+                            </a>
+                          </Button>
+                        </div>
+
+                        <p className="text-xs text-center text-muted-foreground">
+                          Takes less than 2 minutes - makes a huge difference!
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Referral Program */}
                   <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">

@@ -816,7 +816,7 @@ class ServiceTitanAPI {
         await db.insert(serviceTitanCustomers).values({
           id: liveCustomer.id,
           name: liveCustomer.name || 'Unknown',
-          type: liveCustomer.type || 'Residential',
+          type: (liveCustomer as any).type || 'Residential',
           street: liveCustomer.address?.street || null,
           city: liveCustomer.address?.city || null,
           state: liveCustomer.address?.state || null,
