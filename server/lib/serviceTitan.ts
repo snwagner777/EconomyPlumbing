@@ -449,18 +449,20 @@ class ServiceTitanAPI {
       const jpmUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/jobs?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(jpmUrl, {}, true);
       
-      // Map jobs to appointment format
+      console.log('[ServiceTitan] Jobs response structure:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Map jobs to appointment format based on actual ServiceTitan response
       const jobs = result.data || [];
       return jobs.map((job: any) => ({
         id: job.id,
-        start: job.start || job.scheduledOn,
-        end: job.end || job.completedOn,
-        status: job.jobStatus || job.status,
-        arrivalWindowStart: job.arrivalWindowStart,
-        arrivalWindowEnd: job.arrivalWindowEnd,
-        jobType: job.jobType || job.summary || 'Service Call',
-        jobNumber: job.jobNumber,
-        summary: job.summary,
+        start: job.createdOn || null,
+        end: job.completedOn || null,
+        status: job.jobStatus || 'Unknown',
+        arrivalWindowStart: null,
+        arrivalWindowEnd: null,
+        jobType: 'Service Call',
+        jobNumber: job.jobNumber || job.id?.toString(),
+        summary: job.summary || `Job #${job.jobNumber || job.id}`,
       }));
     } catch (error) {
       console.error('[ServiceTitan] Get customer appointments error:', error);
@@ -478,18 +480,20 @@ class ServiceTitanAPI {
       const accountingUrl = `https://api.servicetitan.io/accounting/v2/tenant/${this.config.tenantId}/invoices?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(accountingUrl, {}, true);
       
-      // Map invoices to display format
+      console.log('[ServiceTitan] Invoices response structure:', JSON.stringify(result, null, 2).substring(0, 500));
+      
+      // Map invoices to display format based on actual ServiceTitan response
       const invoices = result.data || [];
       return invoices.map((invoice: any) => ({
         id: invoice.id,
-        invoiceNumber: invoice.invoiceNumber || invoice.number,
-        total: invoice.total || invoice.totalAmount || 0,
-        balance: invoice.balance || invoice.balanceDue || 0,
-        status: invoice.status || 'Unknown',
-        createdOn: invoice.createdOn || invoice.invoiceDate,
-        dueDate: invoice.dueDate,
-        jobNumber: invoice.jobNumber,
-        summary: invoice.summary || invoice.description,
+        invoiceNumber: invoice.referenceNumber || invoice.id?.toString(),
+        total: parseFloat(invoice.total || '0'),
+        balance: parseFloat(invoice.balance || '0'),
+        status: invoice.balance === '0.00' || invoice.balance === 0 ? 'Paid' : 'Outstanding',
+        createdOn: invoice.invoiceDate || invoice.createdOn,
+        dueDate: invoice.dueDate || null,
+        jobNumber: invoice.referenceNumber || null,
+        summary: invoice.summary || `Invoice #${invoice.referenceNumber || invoice.id}`,
       }));
     } catch (error) {
       console.error('[ServiceTitan] Get customer invoices error:', error);
