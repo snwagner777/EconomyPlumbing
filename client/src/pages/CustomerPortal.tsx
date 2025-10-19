@@ -545,21 +545,17 @@ export default function CustomerPortal() {
                         >
                           <a href="/refer-a-friend">
                             <Gift className="w-4 h-4 mr-2" />
-                            Start Referring
+                            Refer Friends Now
                           </a>
                         </Button>
                         <Button
                           asChild
                           variant="outline"
                           className="flex-1"
-                          data-testid="button-share-link"
+                          data-testid="button-learn-rewards"
                         >
-                          <a 
-                            href="https://nicejob.com/economy-"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Share Your Link
+                          <a href="/refer-a-friend">
+                            Learn About Rewards
                           </a>
                         </Button>
                       </div>
