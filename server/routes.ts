@@ -5633,8 +5633,23 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         // Send SMS code
         try {
           const { sendSMS } = await import("./lib/sms");
+          
+          // Format phone number to E.164 format (add +1 for US numbers if not present)
+          let formattedPhone = contactValue.replace(/\D/g, ''); // Remove non-digits
+          if (formattedPhone.length === 10) {
+            formattedPhone = '+1' + formattedPhone; // US number
+          } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
+            formattedPhone = '+' + formattedPhone;
+          } else if (!formattedPhone.startsWith('+')) {
+            formattedPhone = '+' + formattedPhone;
+          } else {
+            formattedPhone = '+' + formattedPhone;
+          }
+          
+          console.log("[Portal Auth] Sending SMS to formatted number:", formattedPhone);
+          
           const message = `Your Economy Plumbing verification code is: ${code}\n\nThis code expires in 10 minutes.`;
-          await sendSMS({ to: contactValue, message });
+          await sendSMS({ to: formattedPhone, message });
           console.log("[Portal Auth] SMS sent successfully");
           
           return res.json({ 
