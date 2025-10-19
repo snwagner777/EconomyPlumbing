@@ -728,7 +728,7 @@ export default function CustomerPortal() {
                           <div className="grid gap-2">
                             <div className="flex items-center gap-2 text-sm">
                               <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>15% off all service calls</span>
+                              <span>Savings on EVERY service call</span>
                             </div>
                             <div className="flex items-center gap-2 text-sm">
                               <Star className="w-4 h-4 text-primary flex-shrink-0" />
@@ -774,14 +774,14 @@ export default function CustomerPortal() {
                       </CardHeader>
                       <CardContent className="space-y-4">
                         <p className="text-sm text-muted-foreground">
-                          Join our VIP Membership program and save 15% on every service call, plus enjoy priority same-day service, no trip charges, and more!
+                          Join our VIP Membership program and save on every service call, plus enjoy priority same-day service, no trip charges, and more!
                         </p>
 
                         {/* Member Benefits Preview */}
                         <div className="grid gap-2">
                           <div className="flex items-center gap-2 text-sm">
                             <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">15% off all service calls</span>
+                            <span className="text-muted-foreground">Savings on EVERY service call</span>
                           </div>
                           <div className="flex items-center gap-2 text-sm">
                             <Star className="w-4 h-4 text-primary flex-shrink-0" />
