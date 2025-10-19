@@ -9,19 +9,19 @@ export function securityHeadersMiddleware(req: Request, res: Response, next: Nex
   // Prevents XSS attacks by controlling which resources can be loaded
   const cspDirectives = [
     "default-src 'self'",
-    // Script sources: Stripe (js.stripe.com + m.stripe.network for telemetry), analytics, etc.
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.network https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    // Script sources: Stripe (js.stripe.com + m.stripe.network for telemetry), analytics, NiceJob widget, etc.
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://m.stripe.network https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.nicejob.co",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.nicejob.co",
     "font-src 'self' https://fonts.gstatic.com data:",
     // Images: Allow all HTTPS for external logos, Stripe assets, etc.
     "img-src 'self' data: https: blob:",
-    // Connect sources: Stripe API + telemetry, analytics APIs
-    "connect-src 'self' https://api.stripe.com https://m.stripe.network https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://graph.facebook.com https://www.clarity.ms https://c.clarity.ms",
-    // Frames: Stripe checkout/Elements iframes
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    // Connect sources: Stripe API + telemetry, analytics APIs, NiceJob API
+    "connect-src 'self' https://api.stripe.com https://m.stripe.network https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://graph.facebook.com https://www.clarity.ms https://c.clarity.ms https://cdn.nicejob.co https://api.nicejob.co https://app.nicejob.com",
+    // Frames: Stripe checkout/Elements iframes, NiceJob widget iframes
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://app.nicejob.com https://cdn.nicejob.co",
     "object-src 'none'",
     "base-uri 'self'",
-    "form-action 'self' https://js.stripe.com",
+    "form-action 'self' https://js.stripe.com https://app.nicejob.com",
     "frame-ancestors 'none'",
     "upgrade-insecure-requests"
   ];
