@@ -90,12 +90,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/water-heater-guide88b9d760': '/water-heater-guide',
     
     // Service URL aliases - redirect to canonical versions
-    '/drain-cleaning-services': '/drain-cleaning',
-    '/drain-cleaning-services/': '/drain-cleaning',
-    '/backflow-testing': '/backflow',
-    '/backflow-testing/': '/backflow',
-    '/gas-services': '/gas-line-services',
-    '/gas-services/': '/gas-line-services',
+    // Removed: allowing both URLs to work for content coverage
     
     // Old service URLs
     '/water-heater-experts-in-austin': '/water-heater-services',
