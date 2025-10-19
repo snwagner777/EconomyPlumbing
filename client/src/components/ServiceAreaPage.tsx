@@ -151,7 +151,7 @@ export default function ServiceAreaPage({
                 asChild
                 data-testid="button-call-hero"
               >
-                <a href={`tel:${phoneLink}`} className="flex items-center gap-2">
+                <a href={phoneLink} className="flex items-center gap-2">
                   <Phone className="w-5 h-5" />
                   Call Now: {phone}
                 </a>
@@ -237,7 +237,7 @@ export default function ServiceAreaPage({
                 <div>
                   <p className="text-sm text-muted-foreground mb-2">Call us today</p>
                   <a 
-                    href={`tel:${phoneLink}`}
+                    href={phoneLink}
                     className="flex items-center gap-2 text-foreground font-poppins font-bold text-2xl hover-elevate px-2 py-1 rounded-md w-fit"
                     data-testid="link-phone-contact"
                   >
@@ -306,7 +306,7 @@ export default function ServiceAreaPage({
               asChild
               data-testid="button-call-cta"
             >
-              <a href={`tel:${phoneLink}`} className="flex items-center gap-2">
+              <a href={phoneLink} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
                 Call: {phone}
               </a>
