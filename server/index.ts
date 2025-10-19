@@ -94,8 +94,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     '/drain-cleaning-services/': '/drain-cleaning',
     '/backflow-testing': '/backflow',
     '/backflow-testing/': '/backflow',
-    '/commercial-services': '/commercial-plumbing',
-    '/commercial-services/': '/commercial-plumbing',
     '/gas-services': '/gas-line-services',
     '/gas-services/': '/gas-line-services',
     
