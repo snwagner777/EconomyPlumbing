@@ -305,6 +305,31 @@ export const serviceTitanMemberships = pgTable("service_titan_memberships", {
   productIdIdx: index("st_memberships_product_id_idx").on(table.productId),
 }));
 
+// ServiceTitan Customers Cache - synced from ServiceTitan API for fast local search
+export const serviceTitanCustomers = pgTable("service_titan_customers", {
+  id: integer("id").primaryKey(), // ServiceTitan customer ID (not UUID, this is the actual ST ID)
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'Residential' or 'Commercial'
+  email: text("email"), // Extracted from contacts
+  phone: text("phone"), // Extracted from contacts
+  mobilePhone: text("mobile_phone"), // Extracted from contacts
+  street: text("street"),
+  city: text("city"),
+  state: text("state"),
+  zip: text("zip"),
+  active: boolean("active").notNull().default(true),
+  balance: text("balance"), // Stored as text (ServiceTitan format)
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  // Critical indexes for fast phone/email search
+  emailIdx: index("st_customers_email_idx").on(table.email),
+  phoneIdx: index("st_customers_phone_idx").on(table.phone),
+  mobilePhoneIdx: index("st_customers_mobile_phone_idx").on(table.mobilePhone),
+  activeIdx: index("st_customers_active_idx").on(table.active),
+  typeIdx: index("st_customers_type_idx").on(table.type),
+  lastSyncedIdx: index("st_customers_last_synced_idx").on(table.lastSyncedAt),
+}));
+
 export const trackingNumbers = pgTable("tracking_numbers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   channelKey: text("channel_key").notNull().unique(), // e.g., 'google', 'facebook', 'yelp'
@@ -546,6 +571,10 @@ export const insertPageMetadataSchema = createInsertSchema(pageMetadata).omit({
   updatedAt: true,
 });
 
+export const insertServiceTitanCustomerSchema = createInsertSchema(serviceTitanCustomers).omit({
+  lastSyncedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -582,6 +611,8 @@ export type CommercialCustomer = typeof commercialCustomers.$inferSelect;
 export type InsertCommercialCustomer = z.infer<typeof insertCommercialCustomerSchema>;
 export type PageMetadata = typeof pageMetadata.$inferSelect;
 export type InsertPageMetadata = z.infer<typeof insertPageMetadataSchema>;
+export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
+export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type OAuthUser = typeof oauthUsers.$inferSelect;
 export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
 export type AdminWhitelist = typeof adminWhitelist.$inferSelect;
