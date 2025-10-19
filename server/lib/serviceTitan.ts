@@ -548,32 +548,59 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Get customer appointments
+   * Get customer appointments (actual scheduled visits)
    */
   async getCustomerAppointments(customerId: number): Promise<any[]> {
     try {
-      // Use jpm (jobs, projects, memberships) API for appointments
+      // First, get all jobs for this customer
       const jpmUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/jobs?customerId=${customerId}&pageSize=50`;
-      const result = await this.request<{ data: any[] }>(jpmUrl, {}, true);
+      const jobsResult = await this.request<{ data: any[] }>(jpmUrl, {}, true);
       
-      console.log('[ServiceTitan] Jobs response structure:', JSON.stringify(result, null, 2).substring(0, 500));
+      const jobs = jobsResult.data || [];
       
-      // Map jobs to appointment format based on actual ServiceTitan response
-      const jobs = result.data || [];
-      return jobs.map((job: any) => ({
-        id: job.id,
-        start: job.createdOn || null,
-        end: job.completedOn || null,
-        status: job.jobStatus || 'Unknown',
-        arrivalWindowStart: null,
-        arrivalWindowEnd: null,
-        jobType: 'Service Call',
-        jobNumber: job.jobNumber || job.id?.toString(),
-        summary: job.summary || `Job #${job.jobNumber || job.id}`,
-      }));
+      // Then fetch appointments for each job
+      const appointmentPromises = jobs.map(async (job: any) => {
+        try {
+          if (!job.firstAppointmentId && !job.lastAppointmentId) {
+            return [];
+          }
+          
+          // Try to fetch appointments from the appointments API
+          const appointmentsUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}/appointments?jobId=${job.id}&pageSize=50`;
+          const appointmentsResult = await this.request<{ data: any[] }>(appointmentsUrl, {}, true);
+          
+          return (appointmentsResult.data || []).map((apt: any) => ({
+            id: apt.id,
+            start: apt.start || apt.scheduledOn || apt.arrivalWindowStart,
+            end: apt.end || apt.arrivalWindowEnd,
+            status: apt.appointmentStatus || apt.status || 'Scheduled',
+            arrivalWindowStart: apt.arrivalWindowStart,
+            arrivalWindowEnd: apt.arrivalWindowEnd,
+            jobType: job.jobType || 'Service Call',
+            jobNumber: job.jobNumber,
+            summary: job.summary || apt.summary || `Appointment for Job #${job.jobNumber}`,
+          }));
+        } catch (error) {
+          // If appointments API fails, fall back to job data
+          console.log(`[ServiceTitan] Could not fetch appointments for job ${job.id}, using job data`);
+          return [{
+            id: job.id,
+            start: job.createdOn,
+            end: job.completedOn,
+            status: job.jobStatus || 'Unknown',
+            arrivalWindowStart: null,
+            arrivalWindowEnd: null,
+            jobType: 'Service Call',
+            jobNumber: job.jobNumber,
+            summary: job.summary || `Job #${job.jobNumber}`,
+          }];
+        }
+      });
+      
+      const allAppointments = await Promise.all(appointmentPromises);
+      return allAppointments.flat();
     } catch (error) {
       console.error('[ServiceTitan] Get customer appointments error:', error);
-      // Return empty array on error rather than throwing
       return [];
     }
   }
