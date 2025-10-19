@@ -426,15 +426,41 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get customer contacts (phone/email)
+   */
+  async getCustomerContacts(customerId: number): Promise<any[]> {
+    try {
+      const result = await this.request<{ data: any[] }>(
+        `/customers/${customerId}/contacts`
+      );
+      return result.data || [];
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer contacts error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Get customer by ID
    */
   async getCustomer(customerId: number): Promise<ServiceTitanCustomer> {
     try {
       // Customer endpoint returns object directly, not wrapped in {data: ...}
-      const result = await this.request<ServiceTitanCustomer>(
+      const customerData: any = await this.request<any>(
         `/customers/${customerId}`
       );
-      return result;
+      
+      // Fetch customer contacts to get phone/email
+      const contacts = await this.getCustomerContacts(customerId);
+      
+      // Extract primary phone and email from contacts
+      const primaryContact = contacts.find((c: any) => c.type === 'Primary') || contacts[0];
+      
+      return {
+        ...customerData,
+        email: primaryContact?.email || '',
+        phoneNumber: primaryContact?.phoneNumber || primaryContact?.phone || '',
+      };
     } catch (error) {
       console.error('[ServiceTitan] Get customer error:', error);
       throw error;
