@@ -13,6 +13,7 @@ import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { 
   User,
+  Users,
   Calendar,
   FileText,
   DollarSign,
@@ -99,6 +100,12 @@ export default function CustomerPortal() {
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
+    enabled: !!customerId,
+  });
+
+  // Fetch referrals for this customer
+  const { data: referralsData } = useQuery<{ referrals: any[] }>({
+    queryKey: ['/api/referrals/customer', customerId],
     enabled: !!customerId,
   });
 
@@ -802,6 +809,85 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
+                  {/* Referral Tracking - Your Referrals */}
+                  {referralsData && referralsData.referrals.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Users className="w-6 h-6 text-primary" />
+                          <CardTitle>Your Referrals</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Track the status of your referrals and earned credits
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {referralsData.referrals.map((referral: any) => {
+                          const isReferrer = referral.referrerCustomerId === parseInt(customerId!);
+                          const statusColors: Record<string, string> = {
+                            pending: 'bg-gray-100 text-gray-800',
+                            contacted: 'bg-blue-100 text-blue-800',
+                            job_completed: 'bg-green-100 text-green-800',
+                            credited: 'bg-primary/10 text-primary'
+                          };
+                          
+                          return (
+                            <div key={referral.id} className="p-4 bg-background rounded-lg border">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <p className="font-medium">
+                                      {isReferrer ? `Referred: ${referral.refereeName}` : `Referred by: ${referral.referrerName}`}
+                                    </p>
+                                    <Badge className={statusColors[referral.status] || 'bg-gray-100 text-gray-800'} data-testid={`badge-referral-status-${referral.id}`}>
+                                      {referral.status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                    </Badge>
+                                  </div>
+                                  
+                                  <div className="space-y-1 text-sm text-muted-foreground">
+                                    <p>Phone: {isReferrer ? referral.refereePhone : referral.referrerPhone}</p>
+                                    <p>Submitted: {new Date(referral.submittedAt).toLocaleDateString()}</p>
+                                    
+                                    {referral.status === 'job_completed' && referral.firstJobDate && (
+                                      <p className="text-green-600 font-medium">
+                                        Job Completed: {new Date(referral.firstJobDate).toLocaleDateString()}
+                                      </p>
+                                    )}
+                                    
+                                    {referral.status === 'credited' && isReferrer && (
+                                      <p className="text-primary font-medium">
+                                        <DollarSign className="w-4 h-4 inline mr-1" />
+                                        Credit Earned: ${(referral.creditAmount / 100).toFixed(2)}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                                
+                                {referral.status === 'credited' && isReferrer && (
+                                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                        
+                        <div className="pt-2 border-t">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="w-full"
+                            data-testid="button-refer-more"
+                          >
+                            <a href="/refer-a-friend">
+                              <Gift className="w-4 h-4 mr-2" />
+                              Refer Another Friend
+                            </a>
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
                   {/* Referral Program */}
                   <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
                     <CardHeader>
@@ -847,9 +933,6 @@ export default function CustomerPortal() {
                         </Button>
                       </div>
 
-                      <p className="text-xs text-center text-muted-foreground">
-                        Powered by NiceJob - Track your referrals and rewards
-                      </p>
                     </CardContent>
                   </Card>
                 </>

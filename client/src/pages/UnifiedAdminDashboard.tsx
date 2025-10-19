@@ -64,7 +64,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -163,6 +163,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Phone,
       section: 'tracking-numbers' as AdminSection,
       description: "Phone number tracking"
+    },
+    {
+      title: "Referral Tracking",
+      icon: Users,
+      section: 'referrals' as AdminSection,
+      description: "Manage customer referrals"
     },
   ];
 

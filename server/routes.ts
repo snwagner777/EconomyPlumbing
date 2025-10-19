@@ -1053,8 +1053,13 @@ ${rssItems}
   });
 
   // Get all referrals (Admin Dashboard)
-  app.get("/api/admin/referrals", isAuthenticated, async (req, res) => {
+  app.get("/api/admin/referrals", async (req, res) => {
     try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const { referrals } = await import('@shared/schema');
       
       const allReferrals = await db
@@ -1071,8 +1076,13 @@ ${rssItems}
   });
 
   // Update referral status (Admin Dashboard)
-  app.patch("/api/admin/referrals/:referralId", isAuthenticated, async (req, res) => {
+  app.patch("/api/admin/referrals/:referralId", async (req, res) => {
     try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const { referralId } = req.params;
       const { status, creditNotes } = req.body;
       
@@ -1115,8 +1125,13 @@ ${rssItems}
   });
 
   // Manually issue credit for a referral (Admin Dashboard)
-  app.post("/api/admin/referrals/:referralId/issue-credit", isAuthenticated, async (req, res) => {
+  app.post("/api/admin/referrals/:referralId/issue-credit", async (req, res) => {
     try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const { referralId } = req.params;
       const { amount, memo } = req.body;
       
@@ -1173,8 +1188,13 @@ ${rssItems}
   });
 
   // Get referral statistics (Admin Dashboard)
-  app.get("/api/admin/referral-stats", isAuthenticated, async (req, res) => {
+  app.get("/api/admin/referral-stats", async (req, res) => {
     try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
       const { referrals } = await import('@shared/schema');
       
       const stats = await db
