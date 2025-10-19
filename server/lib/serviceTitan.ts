@@ -121,13 +121,18 @@ class ServiceTitanAPI {
       // Handle empty responses (204 No Content, etc.)
       const contentLength = response.headers.get('content-length');
       if (!contentLength || contentLength === '0') {
+        console.log('[ServiceTitan] Empty response - content-length is 0 or missing');
         return {} as T;
       }
 
-      const jsonData = await response.json();
-      console.log('[ServiceTitan] API Success - Response structure:', Object.keys(jsonData));
-      console.log('[ServiceTitan] API Success - Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'N/A');
-      console.log('[ServiceTitan] API Success - Full response:', JSON.stringify(jsonData).substring(0, 500));
+      const responseText = await response.text();
+      console.log('[ServiceTitan] Raw response text (first 1000 chars):', responseText.substring(0, 1000));
+      
+      const jsonData = responseText ? JSON.parse(responseText) : {};
+      console.log('[ServiceTitan] Parsed JSON keys:', Object.keys(jsonData));
+      console.log('[ServiceTitan] Has data property:', 'data' in jsonData);
+      console.log('[ServiceTitan] Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'not an array');
+      
       return jsonData;
     } catch (error) {
       console.error('[ServiceTitan] API request error:', error);
