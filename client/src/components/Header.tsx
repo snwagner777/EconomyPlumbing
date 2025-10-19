@@ -15,12 +15,14 @@ declare global {
 
 export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [serviceAreasOpen, setServiceAreasOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
   
   // Mobile menu collapsible sections
+  const [mobileContactOpen, setMobileContactOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileAreasOpen, setMobileAreasOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
@@ -103,13 +105,49 @@ export default function Header() {
               Home
             </Link>
             
-            <Link 
-              href="/contact" 
-              className="text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
-              data-testid="link-contact"
-            >
-              Contact Us
-            </Link>
+            <div className="relative">
+              <button
+                onMouseEnter={() => setContactOpen(true)}
+                onMouseLeave={() => setContactOpen(false)}
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                data-testid="button-contact-menu"
+              >
+                Contact Us
+                <ChevronDown className="w-4 h-4" />
+              </button>
+              
+              {contactOpen && (
+                <div
+                  onMouseEnter={() => setContactOpen(true)}
+                  onMouseLeave={() => setContactOpen(false)}
+                  className="absolute top-full left-0 pt-2 w-56"
+                >
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
+                    <Link
+                      href="/contact"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-contact"
+                    >
+                      Contact Form
+                    </Link>
+                    <Link
+                      href="/schedule-appointment"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-schedule"
+                    >
+                      Schedule Appointment
+                    </Link>
+                    <Link
+                      href="/faq"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-faq-contact"
+                    >
+                      FAQ
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
 
             <div className="relative">
               <button
@@ -149,13 +187,6 @@ export default function Header() {
                       data-testid="link-blog"
                     >
                       Blog
-                    </Link>
-                    <Link
-                      href="/faq"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-faq"
-                    >
-                      FAQ
                     </Link>
                     <Link
                       href="/membership-benefits"
@@ -361,14 +392,29 @@ export default function Header() {
               Home
             </Link>
 
-            <Link 
-              href="/contact" 
-              className="block py-3 text-sm font-medium border-b border-border" 
-              data-testid="mobile-link-contact"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Contact Us
-            </Link>
+            <div className="border-b border-border">
+              <button
+                onClick={() => setMobileContactOpen(!mobileContactOpen)}
+                className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                data-testid="mobile-button-contact"
+              >
+                Contact Us
+                <ChevronDown className={`w-4 h-4 transition-transform ${mobileContactOpen ? 'rotate-180' : ''}`} />
+              </button>
+              {mobileContactOpen && (
+                <div className="pb-2 space-y-1">
+                  <Link href="/contact" className="block py-2 pl-4 text-sm" data-testid="mobile-link-contact" onClick={() => setMobileMenuOpen(false)}>
+                    Contact Form
+                  </Link>
+                  <Link href="/schedule-appointment" className="block py-2 pl-4 text-sm" data-testid="mobile-link-schedule" onClick={() => setMobileMenuOpen(false)}>
+                    Schedule Appointment
+                  </Link>
+                  <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq" onClick={() => setMobileMenuOpen(false)}>
+                    FAQ
+                  </Link>
+                </div>
+              )}
+            </div>
             
             <div className="border-b border-border">
               <button
@@ -389,9 +435,6 @@ export default function Header() {
                   </Link>
                   <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog" onClick={() => setMobileMenuOpen(false)}>
                     Blog
-                  </Link>
-                  <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq" onClick={() => setMobileMenuOpen(false)}>
-                    FAQ
                   </Link>
                   <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
                     Membership Benefits

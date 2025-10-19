@@ -149,6 +149,7 @@ export const referrals = pgTable("referrals", {
   creditedAt: timestamp("credited_at"), // When credit was applied to referrer's account
   creditedBy: varchar("credited_by"), // Admin user who applied the credit
   creditNotes: text("credit_notes"), // Notes about credit application
+  expiresAt: timestamp("expires_at"), // When credit expires (creditedAt + 180 days)
   
   // Timestamps
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),

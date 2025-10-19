@@ -195,14 +195,19 @@ export class ReferralProcessor {
 
         console.log(`[Referral Processor] ✅ Issued $25 credit to customer ${referral.referrerCustomerId} for referring ${referral.refereeName}`);
 
-        // Update referral status
+        // Update referral status with 180-day expiration
+        const creditDate = new Date();
+        const expirationDate = new Date(creditDate);
+        expirationDate.setDate(expirationDate.getDate() + 180); // 180 days from now
+        
         await db
           .update(referrals)
           .set({
             status: 'credited',
-            creditedAt: new Date(),
+            creditedAt: creditDate,
+            expiresAt: expirationDate,
             creditedBy: 'auto',
-            creditNotes: `ServiceTitan credit adjustment #${credit.id}`,
+            creditNotes: `ServiceTitan credit adjustment #${credit.id}. Expires ${expirationDate.toLocaleDateString()}.`,
             updatedAt: new Date()
           })
           .where(eq(referrals.id, referral.id));

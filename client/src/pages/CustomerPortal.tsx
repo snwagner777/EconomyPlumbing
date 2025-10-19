@@ -1103,7 +1103,7 @@ export default function CustomerPortal() {
                                     Request PDF Copy
                                   </Button>
                                   <p className="text-xs text-muted-foreground">
-                                    Questions about this estimate? Call us at <a href={`tel:${phoneConfig.displayNumber}`} className="text-primary hover:underline">{phoneConfig.displayNumber}</a>
+                                    Questions about this estimate? Call us at <a href={`tel:${phoneConfig.tel}`} className="text-primary hover:underline">{phoneConfig.display}</a>
                                   </p>
                                 </div>
                               </div>
@@ -1337,10 +1337,26 @@ export default function CustomerPortal() {
                                     )}
                                     
                                     {referral.status === 'credited' && isReferrer && (
-                                      <p className="text-primary font-medium">
-                                        <DollarSign className="w-4 h-4 inline mr-1" />
-                                        Credit Earned: ${(referral.creditAmount / 100).toFixed(2)}
-                                      </p>
+                                      <>
+                                        <p className="text-primary font-medium">
+                                          <DollarSign className="w-4 h-4 inline mr-1" />
+                                          Credit Earned: ${(referral.creditAmount / 100).toFixed(2)}
+                                        </p>
+                                        {referral.expiresAt && (() => {
+                                          const expiryDate = new Date(referral.expiresAt);
+                                          const daysUntilExpiry = Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                                          const isExpiringSoon = daysUntilExpiry <= 30 && daysUntilExpiry > 0;
+                                          const isExpired = daysUntilExpiry <= 0;
+                                          
+                                          return (
+                                            <p className={`text-sm ${isExpired ? 'text-destructive font-medium' : isExpiringSoon ? 'text-orange-600 font-medium' : 'text-muted-foreground'}`}>
+                                              <Clock className="w-3 h-3 inline mr-1" />
+                                              {isExpired ? 'Expired' : 'Expires'}: {expiryDate.toLocaleDateString()}
+                                              {isExpiringSoon && !isExpired && ` (${daysUntilExpiry} days left)`}
+                                            </p>
+                                          );
+                                        })()}
+                                      </>
                                     )}
                                   </div>
                                 </div>
@@ -1386,7 +1402,7 @@ export default function CustomerPortal() {
                           <div>
                             <p className="font-medium mb-1">$25 Service Credit Per Referral</p>
                             <p className="text-sm text-muted-foreground">
-                              When your friend completes a service call of $200 or more, you automatically earn a $25 credit toward future services!
+                              When your friend completes a service call of $200 or more, you automatically earn a $25 credit toward future services! Credits expire 180 days after being issued, so use them soon!
                             </p>
                           </div>
                         </div>
