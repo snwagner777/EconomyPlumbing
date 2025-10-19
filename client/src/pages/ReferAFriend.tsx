@@ -64,7 +64,7 @@ export default function ReferAFriend() {
             Compete & Earn Rewards
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-8">
-            Refer friends, climb the leaderboard, and earn $25 for every completed referral
+            Refer friends, climb the leaderboard, and earn $25 in service credits for every completed referral
           </p>
 
           <Button
@@ -119,7 +119,7 @@ export default function ReferAFriend() {
                 </div>
                 <h3 className="font-bold text-lg mb-2">3. Earn & Climb</h3>
                 <p className="text-sm text-muted-foreground">
-                  Get $25 credit for each completed referral and watch your rank rise on the leaderboard
+                  Get $25 service credit for each completed referral. Credits valid for 6 months.
                 </p>
               </CardContent>
             </Card>
@@ -224,16 +224,16 @@ export default function ReferAFriend() {
                   <div>
                     <p className="font-medium">$25 per completed referral</p>
                     <p className="text-sm text-muted-foreground">
-                      No limit on how many friends you can refer
+                      No limit on referrals. Service credit only, no cash value.
                     </p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">
                   <TrendingUp className="w-5 h-5 text-primary mt-0.5" />
                   <div>
-                    <p className="font-medium">Credits never expire</p>
+                    <p className="font-medium">Credits valid for 6 months</p>
                     <p className="text-sm text-muted-foreground">
-                      Stack credits for bigger jobs or save for later
+                      Use your rewards within 180 days of earning them
                     </p>
                   </div>
                 </div>
@@ -297,6 +297,9 @@ export default function ReferAFriend() {
           </Button>
           <p className="text-sm text-muted-foreground mt-4">
             New customer? Call us first to set up your account, then access the portal to get your referral link
+          </p>
+          <p className="text-xs text-muted-foreground mt-3 max-w-2xl mx-auto">
+            * Credits are valid for 6 months from issue date and have no cash value. Credits apply to service calls only and cannot be redeemed for cash or transferred.
           </p>
         </div>
       </section>

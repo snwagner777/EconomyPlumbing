@@ -1402,7 +1402,7 @@ export default function CustomerPortal() {
                           <div>
                             <p className="font-medium mb-1">$25 Service Credit Per Referral</p>
                             <p className="text-sm text-muted-foreground">
-                              When your friend completes a service call of $200 or more, you automatically earn a $25 credit toward future services! Credits expire 180 days after being issued, so use them soon!
+                              When your friend completes a service call of $200 or more, you automatically earn a $25 service credit! Credits expire 6 months (180 days) after being issued and have no cash value.
                             </p>
                           </div>
                         </div>
