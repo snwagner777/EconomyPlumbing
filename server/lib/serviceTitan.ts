@@ -430,10 +430,11 @@ class ServiceTitanAPI {
    */
   async getCustomer(customerId: number): Promise<ServiceTitanCustomer> {
     try {
-      const result = await this.request<{ data: ServiceTitanCustomer }>(
+      // Customer endpoint returns object directly, not wrapped in {data: ...}
+      const result = await this.request<ServiceTitanCustomer>(
         `/customers/${customerId}`
       );
-      return result.data;
+      return result;
     } catch (error) {
       console.error('[ServiceTitan] Get customer error:', error);
       throw error;
