@@ -118,22 +118,29 @@ class ServiceTitanAPI {
         throw new Error(`ServiceTitan API error: ${response.status} - ${errorText}`);
       }
 
-      // Handle empty responses (204 No Content, etc.)
-      const contentLength = response.headers.get('content-length');
-      if (!contentLength || contentLength === '0') {
-        console.log('[ServiceTitan] Empty response - content-length is 0 or missing');
+      // Read the response body (ServiceTitan uses chunked encoding, so no content-length header)
+      const responseText = await response.text();
+      
+      // Handle empty responses
+      if (!responseText || responseText.trim() === '') {
+        console.log('[ServiceTitan] Empty response body');
         return {} as T;
       }
 
-      const responseText = await response.text();
       console.log('[ServiceTitan] Raw response text (first 1000 chars):', responseText.substring(0, 1000));
       
-      const jsonData = responseText ? JSON.parse(responseText) : {};
-      console.log('[ServiceTitan] Parsed JSON keys:', Object.keys(jsonData));
-      console.log('[ServiceTitan] Has data property:', 'data' in jsonData);
-      console.log('[ServiceTitan] Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'not an array');
-      
-      return jsonData;
+      try {
+        const jsonData = JSON.parse(responseText);
+        console.log('[ServiceTitan] Parsed JSON keys:', Object.keys(jsonData));
+        console.log('[ServiceTitan] Has data property:', 'data' in jsonData);
+        console.log('[ServiceTitan] Data length:', Array.isArray(jsonData?.data) ? jsonData.data.length : 'not an array');
+        
+        return jsonData;
+      } catch (parseError) {
+        console.error('[ServiceTitan] JSON parse error:', parseError);
+        console.error('[ServiceTitan] Response text was:', responseText);
+        throw new Error(`Failed to parse ServiceTitan response: ${parseError}`);
+      }
     } catch (error) {
       console.error('[ServiceTitan] API request error:', error);
       throw error;
