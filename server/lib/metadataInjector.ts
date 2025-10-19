@@ -66,6 +66,32 @@ function injectMetadata(html: string, title: string, description: string, canoni
     );
   }
   
+  // Replace OpenGraph URL to match canonical URL
+  if (html.includes('<meta property="og:url"')) {
+    html = html.replace(
+      /<meta property="og:url"[^>]*>/i,
+      `<meta property="og:url" content="${safeCanonical}" />`
+    );
+  } else {
+    html = html.replace(
+      '</head>',
+      `  <meta property="og:url" content="${safeCanonical}" />\n  </head>`
+    );
+  }
+  
+  // Replace Twitter URL to match canonical URL
+  if (html.includes('<meta name="twitter:url"')) {
+    html = html.replace(
+      /<meta name="twitter:url"[^>]*>/i,
+      `<meta name="twitter:url" content="${safeCanonical}" />`
+    );
+  } else {
+    html = html.replace(
+      '</head>',
+      `  <meta name="twitter:url" content="${safeCanonical}" />\n  </head>`
+    );
+  }
+  
   // Inject H1 tag server-side for crawlers (if provided)
   // This ensures crawlers see H1 tags even without JavaScript execution
   if (h1) {
@@ -110,7 +136,8 @@ export function createMetadataInjector(storage: IStorage) {
           title: dbMetadata.title,
           description: dbMetadata.description,
           canonical: dbMetadata.canonicalUrl || undefined,
-          h1: dbMetadata.h1 || undefined, // Include H1 from database if available
+          // Note: H1 tags are dynamically generated for service areas and blog posts
+          // The page_metadata table doesn't store H1s
         };
       }
     } catch (error) {
