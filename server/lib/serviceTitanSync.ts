@@ -62,11 +62,12 @@ export async function syncServiceTitanCustomers(): Promise<void> {
 }
 
 /**
- * Start the ServiceTitan customer sync scheduler (runs daily at 3am)
- * Also runs an initial sync on startup if database is empty
+ * Start the ServiceTitan customer sync scheduler
+ * - Full sync every 6 hours (for complete data integrity)
+ * - Runs initial sync on startup
  */
 export async function startServiceTitanSync(): Promise<void> {
-  console.log('[ServiceTitan Sync] Scheduler started - will sync customers daily at 3am');
+  console.log('[ServiceTitan Sync] Scheduler started - will sync customers every 6 hours');
   
   // Run initial full sync on startup (no threshold - always sync all customers)
   try {
@@ -88,16 +89,11 @@ export async function startServiceTitanSync(): Promise<void> {
     console.error('[ServiceTitan Sync] Failed to check customer count:', error);
   }
   
-  // Check every hour if it's time to run
-  setInterval(checkAndSync, 60 * 60 * 1000); // 1 hour
-}
-
-async function checkAndSync(): Promise<void> {
-  const now = new Date();
-  const hour = now.getHours();
-  
-  // Run at 3am every day
-  if (hour === 3) {
-    await syncServiceTitanCustomers();
-  }
+  // Run full sync every 6 hours to keep cache fresh
+  setInterval(() => {
+    console.log('[ServiceTitan Sync] 🔄 Starting scheduled 6-hour sync...');
+    syncServiceTitanCustomers().catch(error => {
+      console.error('[ServiceTitan Sync] Scheduled sync failed:', error);
+    });
+  }, 6 * 60 * 60 * 1000); // 6 hours
 }

@@ -1055,14 +1055,24 @@ ${rssItems}
       }
 
       // CRITICAL: Check if referee is ALREADY a customer (ineligible for referral)
+      // Use REAL-TIME API check (not cache) for accuracy
       let refereeCustomerId: number | null = null;
       let isExistingCustomer = false;
       
       try {
-        // Search by phone first, then email
-        refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
+        // First check local cache (fast)
+        refereeCustomerId = await serviceTitan.searchLocalCustomer(refereePhone);
         if (!refereeCustomerId && refereeEmail) {
-          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
+          refereeCustomerId = await serviceTitan.searchLocalCustomer(refereeEmail);
+        }
+        
+        // If not in cache, check ServiceTitan API directly (real-time)
+        if (!refereeCustomerId) {
+          console.log(`[Referral] Cache miss - checking ServiceTitan API directly for referee...`);
+          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
+          if (!refereeCustomerId && refereeEmail) {
+            refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
+          }
         }
         
         if (refereeCustomerId) {
