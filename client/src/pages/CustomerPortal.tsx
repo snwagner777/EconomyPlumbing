@@ -901,11 +901,12 @@ export default function CustomerPortal() {
                             />
                             <Button
                               onClick={copyReferralLink}
-                              variant="outline"
+                              variant={copied ? "default" : "outline"}
                               size="icon"
+                              className={copied ? "bg-green-600 hover:bg-green-700" : ""}
                               data-testid="button-copy-link"
                             >
-                              {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />}
+                              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                             </Button>
                           </div>
                         </div>

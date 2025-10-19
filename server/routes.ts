@@ -1156,7 +1156,12 @@ ${rssItems}
       };
 
       const code = generateCode(customerData.name || `CUSTOMER-${customerId}`);
-      const referralUrl = `https://www.plumbersthatcare.com/ref/${code}`;
+      
+      // Use localhost in development, production domain otherwise
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://www.plumbersthatcare.com'
+        : 'http://localhost:5000';
+      const referralUrl = `${baseUrl}/ref/${code}`;
 
       // Get link stats
       const clicksResult = await db.execute(sql`

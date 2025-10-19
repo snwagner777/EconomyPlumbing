@@ -68,6 +68,7 @@ export default function ReferAFriend() {
       toast({
         title: "Referral Submitted!",
         description: "We'll reach out to your friend soon. You'll get $25 credit when they complete their first service.",
+        duration: 5000,
       });
       setFormData({
         referrerName: '',
@@ -77,7 +78,8 @@ export default function ReferAFriend() {
         refereePhone: '',
         refereeEmail: '',
       });
-      setOpen(false);
+      // Delay closing modal so success toast is visible
+      setTimeout(() => setOpen(false), 1500);
       trackEvent('Referral Form', 'Submitted', 'Success');
     },
     onError: (error: any) => {
