@@ -122,28 +122,49 @@ class ServiceTitanAPI {
    */
   async searchCustomer(email: string, phone: string): Promise<ServiceTitanCustomer | null> {
     try {
-      // Search by email first
-      const emailResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-        `/customers?email=${encodeURIComponent(email)}`
-      );
+      console.log(`[ServiceTitan] Searching for customer - email: "${email}", phone: "${phone}"`);
+      
+      // Search by email if provided
+      if (email && email.trim()) {
+        console.log('[ServiceTitan] Searching by email...');
+        try {
+          const emailResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+            `/customers?email=${encodeURIComponent(email.trim())}`
+          );
 
-      if (emailResults.data && emailResults.data.length > 0) {
-        return emailResults.data[0];
+          if (emailResults.data && emailResults.data.length > 0) {
+            console.log(`[ServiceTitan] Found customer by email: ${emailResults.data[0].id}`);
+            return emailResults.data[0];
+          }
+          console.log('[ServiceTitan] No customer found by email');
+        } catch (error: any) {
+          console.error('[ServiceTitan] Email search error:', error.message);
+        }
       }
 
       // If not found by email, search by phone
-      const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
-        `/customers?phoneNumber=${encodeURIComponent(phone)}`
-      );
+      if (phone && phone.trim()) {
+        console.log('[ServiceTitan] Searching by phone...');
+        try {
+          const phoneResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+            `/customers?phoneNumber=${encodeURIComponent(phone.trim())}`
+          );
 
-      if (phoneResults.data && phoneResults.data.length > 0) {
-        return phoneResults.data[0];
+          if (phoneResults.data && phoneResults.data.length > 0) {
+            console.log(`[ServiceTitan] Found customer by phone: ${phoneResults.data[0].id}`);
+            return phoneResults.data[0];
+          }
+          console.log('[ServiceTitan] No customer found by phone');
+        } catch (error: any) {
+          console.error('[ServiceTitan] Phone search error:', error.message);
+        }
       }
 
+      console.log('[ServiceTitan] Customer not found by email or phone');
       return null;
-    } catch (error) {
-      console.error('[ServiceTitan] Search customer error:', error);
-      return null;
+    } catch (error: any) {
+      console.error('[ServiceTitan] Search customer error:', error.message || error);
+      throw error; // Re-throw to see the actual error
     }
   }
 
