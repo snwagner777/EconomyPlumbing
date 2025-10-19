@@ -179,6 +179,20 @@ export default function CustomerPortal() {
     queryKey: ['/api/servicetitan/arrival-windows'],
   });
 
+  // Fetch customer leaderboard
+  const { data: leaderboardData } = useQuery<{
+    leaderboard: Array<{
+      id: number;
+      name: string;
+      type: string;
+      totalServices: number;
+      isVIPMember: boolean;
+      rank: number;
+    }>;
+  }>({
+    queryKey: ['/api/customer-leaderboard'],
+  });
+
   const timeWindows = arrivalWindowsData?.windows || [];
 
   // Separate upcoming and completed appointments
@@ -194,7 +208,7 @@ export default function CustomerPortal() {
     return isPast || isCompleted;
   }) || [];
 
-  // Check for magic link token on page load
+  // Check for magic link token OR server session on page load
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -202,8 +216,27 @@ export default function CustomerPortal() {
     if (token) {
       // Auto-verify email magic link
       handleMagicLinkVerification(token);
+    } else {
+      // Check if server has an active session
+      checkExistingSession();
     }
   }, []);
+  
+  const checkExistingSession = async () => {
+    try {
+      const response = await fetch('/api/portal/session');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.customerId) {
+          console.log('[Portal] Found active session, auto-logging in...');
+          setCustomerId(data.customerId.toString());
+          setVerificationStep('authenticated');
+        }
+      }
+    } catch (error) {
+      console.log('[Portal] No active session found');
+    }
+  };
 
   const handleMagicLinkVerification = async (token: string) => {
     setIsVerifying(true);
@@ -222,8 +255,11 @@ export default function CustomerPortal() {
       }
 
       const result = await response.json();
-      setCustomerId(result.customerId.toString());
+      const customerIdStr = result.customerId.toString();
+      setCustomerId(customerIdStr);
       setVerificationStep('authenticated');
+      
+      // Session is now stored server-side via httpOnly cookie
       
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -319,16 +355,23 @@ export default function CustomerPortal() {
         });
       } else if (result.customers && result.customers.length === 1) {
         // Single account - auto-select it
-        setCustomerId(result.customers[0].id.toString());
+        const customerIdStr = result.customers[0].id.toString();
+        setCustomerId(customerIdStr);
         setVerificationStep('authenticated');
+        
+        // Session is now stored server-side via httpOnly cookie
+        
         toast({
           title: "Access granted",
           description: "Welcome to your customer portal!",
         });
       } else if (result.customerId) {
         // Backward compatibility for old response format
-        setCustomerId(result.customerId.toString());
+        const customerIdStr = result.customerId.toString();
+        setCustomerId(customerIdStr);
         setVerificationStep('authenticated');
+        
+        // Session is now stored server-side via httpOnly cookie
         toast({
           title: "Access granted",
           description: "Welcome to your customer portal!",
@@ -855,7 +898,12 @@ export default function CustomerPortal() {
                         </Button>
                         <Button
                           variant="outline"
-                          onClick={() => setCustomerId(null)}
+                          onClick={async () => {
+                            // Clear server-side session
+                            await fetch('/api/portal/logout', { method: 'POST' });
+                            setCustomerId(null);
+                            setVerificationStep('lookup');
+                          }}
                           data-testid="button-logout"
                         >
                           Switch Account
@@ -883,6 +931,98 @@ export default function CustomerPortal() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Savings Calculator - Show value to members and missed savings to non-members */}
+                  {(() => {
+                    // Calculate total from paid invoices
+                    const paidInvoices = customerData.invoices.filter(inv => 
+                      inv.status.toLowerCase().includes('paid') || inv.status.toLowerCase().includes('complete')
+                    );
+                    const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
+                    
+                    // VIP members typically get 15% off
+                    const memberSavingsRate = 0.15;
+                    const estimatedSavings = totalPaid * memberSavingsRate;
+                    
+                    const isVIPMember = customerData.memberships && customerData.memberships.length > 0;
+                    
+                    // Only show if there's meaningful data
+                    if (totalPaid < 100) return null;
+                    
+                    return (
+                      <Card className={`border-2 ${isVIPMember ? 'border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-background' : 'border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-amber-500/5 to-background'}`}>
+                        <CardHeader>
+                          <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isVIPMember ? 'bg-primary/20' : 'bg-amber-500/20'}`}>
+                                <TrendingUp className={`w-6 h-6 ${isVIPMember ? 'text-primary' : 'text-amber-600 dark:text-amber-500'}`} />
+                              </div>
+                              <div>
+                                <CardTitle className="text-2xl">
+                                  {isVIPMember ? (
+                                    <span className="text-primary">You've Saved {formatCurrency(estimatedSavings)}</span>
+                                  ) : (
+                                    <span className="text-amber-600 dark:text-amber-500">Save {formatCurrency(estimatedSavings)}</span>
+                                  )}
+                                </CardTitle>
+                                <CardDescription className="mt-1">
+                                  {isVIPMember ? 'with your VIP membership' : 'by becoming a VIP member'}
+                                </CardDescription>
+                              </div>
+                            </div>
+                            {!isVIPMember && (
+                              <Badge variant="outline" className="text-amber-600 border-amber-500/50 dark:text-amber-500">
+                                Opportunity
+                              </Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div className="flex items-center justify-between p-4 bg-background/50 rounded-lg border">
+                            <div>
+                              <p className="text-sm text-muted-foreground">Total Services</p>
+                              <p className="text-2xl font-bold" data-testid="text-total-paid">{formatCurrency(totalPaid)}</p>
+                            </div>
+                            <DollarSign className="w-8 h-8 text-muted-foreground/30" />
+                          </div>
+                          
+                          {isVIPMember ? (
+                            <div className="space-y-3">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                As a VIP member, you've enjoyed <strong className="text-primary">member-only discounts</strong> on every service call, plus priority scheduling, no trip charges, and waived diagnostic fees.
+                              </p>
+                              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg border border-primary/20">
+                                <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+                                <p className="text-sm font-medium">
+                                  Your membership is saving you money on every visit!
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="space-y-3">
+                              <p className="text-sm text-muted-foreground leading-relaxed">
+                                Based on your service history, you could save approximately <strong className="text-amber-600 dark:text-amber-500">{formatCurrency(estimatedSavings)}</strong> per year as a VIP member, plus enjoy priority scheduling, no trip charges, and waived diagnostic fees.
+                              </p>
+                              <p className="text-xs text-muted-foreground italic">
+                                *Estimated savings based on typical 15% member discount applied to your historical spending
+                              </p>
+                              <Button
+                                asChild
+                                className="w-full bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
+                                size="lg"
+                                data-testid="button-join-vip-savings"
+                              >
+                                <a href="/membership-benefits">
+                                  <Crown className="w-4 h-4 mr-2" />
+                                  Start Saving with VIP Membership
+                                </a>
+                              </Button>
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
 
                   {/* VIP Membership Status - Shows real data from ServiceTitan */}
                   {customerData.memberships && customerData.memberships.length > 0 ? (
@@ -1068,6 +1208,83 @@ export default function CustomerPortal() {
                         <p className="text-xs text-muted-foreground mt-3 text-center">
                           Need to update your service address? Call us at (512) 396-7811
                         </p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Customer Leaderboard */}
+                  {leaderboardData && leaderboardData.leaderboard.length > 0 && (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Star className="w-6 h-6 text-primary" />
+                          <div>
+                            <CardTitle>Top Customers</CardTitle>
+                            <CardDescription>
+                              Our most loyal customers by total services
+                            </CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {leaderboardData.leaderboard.map((customer) => {
+                            const isCurrentCustomer = customer.id.toString() === customerId;
+                            
+                            return (
+                              <div
+                                key={customer.id}
+                                className={`flex items-center gap-4 p-3 rounded-lg border ${
+                                  isCurrentCustomer 
+                                    ? 'bg-primary/10 border-primary/30' 
+                                    : 'bg-background/50'
+                                }`}
+                                data-testid={`leaderboard-item-${customer.rank}`}
+                              >
+                                {/* Rank Badge */}
+                                <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold ${
+                                  customer.rank === 1 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-500' :
+                                  customer.rank === 2 ? 'bg-slate-500/20 text-slate-600 dark:text-slate-400' :
+                                  customer.rank === 3 ? 'bg-orange-500/20 text-orange-600 dark:text-orange-500' :
+                                  'bg-muted text-muted-foreground'
+                                }`}>
+                                  {customer.rank === 1 ? '🥇' : customer.rank === 2 ? '🥈' : customer.rank === 3 ? '🥉' : `#${customer.rank}`}
+                                </div>
+
+                                {/* Customer Info */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <p className={`font-medium truncate ${isCurrentCustomer ? 'text-primary' : ''}`}>
+                                      {isCurrentCustomer ? 'You!' : customer.name}
+                                    </p>
+                                    {customer.isVIPMember && (
+                                      <Crown className="w-4 h-4 text-primary flex-shrink-0" />
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-muted-foreground">
+                                    {customer.totalServices} {customer.totalServices === 1 ? 'service' : 'services'}
+                                  </p>
+                                </div>
+
+                                {/* You Badge */}
+                                {isCurrentCustomer && (
+                                  <Badge variant="default" className="bg-primary">
+                                    You
+                                  </Badge>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {/* Not in Top 10 Message */}
+                        {customerId && !leaderboardData.leaderboard.some(c => c.id.toString() === customerId) && (
+                          <div className="mt-4 p-4 bg-muted/30 rounded-lg border text-center">
+                            <p className="text-sm text-muted-foreground">
+                              Keep using our services to climb the leaderboard! 🚀
+                            </p>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   )}

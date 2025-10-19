@@ -96,10 +96,10 @@ export default function Header() {
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-2 xl:gap-4">
             <Link 
               href="/" 
-              className={`text-sm font-medium hover-elevate px-3 py-2 rounded-md ${location === "/" ? "bg-accent text-accent-foreground" : "text-foreground"}`}
+              className={`text-sm font-medium hover-elevate px-2 py-2 rounded-md ${location === "/" ? "bg-accent text-accent-foreground" : "text-foreground"}`}
               data-testid="link-home"
             >
               Home
@@ -109,10 +109,10 @@ export default function Header() {
               <button
                 onMouseEnter={() => setContactOpen(true)}
                 onMouseLeave={() => setContactOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-contact-menu"
               >
-                Contact Us
+                Contact
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -153,10 +153,10 @@ export default function Header() {
               <button
                 onMouseEnter={() => setAboutOpen(true)}
                 onMouseLeave={() => setAboutOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-about-menu"
               >
-                About Us
+                About
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -204,7 +204,7 @@ export default function Header() {
               <button
                 onMouseEnter={() => setServicesOpen(true)}
                 onMouseLeave={() => setServicesOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-services-menu"
               >
                 Services
@@ -240,10 +240,10 @@ export default function Header() {
               <button
                 onMouseEnter={() => setServiceAreasOpen(true)}
                 onMouseLeave={() => setServiceAreasOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-service-areas-menu"
               >
-                Service Area
+                Areas
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -273,10 +273,10 @@ export default function Header() {
               <button
                 onMouseEnter={() => setStoreOpen(true)}
                 onMouseLeave={() => setStoreOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-3 py-2 rounded-md"
+                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-store-menu"
               >
-                Customer Portal
+                Portal
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -350,21 +350,24 @@ export default function Header() {
             </div>
           </nav>
 
-          <div className="hidden lg:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-2 xl:gap-3">
             <a 
               href={phoneConfig.tel} 
-              className="flex items-center gap-2 text-foreground font-poppins font-bold text-lg hover-elevate px-2 py-1 rounded-md"
+              className="flex items-center gap-1.5 text-foreground font-poppins font-bold text-base xl:text-lg hover-elevate px-2 py-1 rounded-md whitespace-nowrap"
               data-testid="link-phone-austin"
             >
-              <Phone className="w-5 h-5" />
-              {phoneConfig.display}
+              <Phone className="w-4 h-4 xl:w-5 xl:h-5" />
+              <span className="hidden xl:inline">{phoneConfig.display}</span>
+              <span className="xl:hidden">{phoneConfig.display.replace(/\s/g, '')}</span>
             </a>
             <Button 
               onClick={openScheduler}
-              className="bg-primary text-primary-foreground"
+              className="bg-primary text-primary-foreground whitespace-nowrap"
+              size="sm"
               data-testid="button-schedule-header"
             >
-              Schedule Service
+              <span className="hidden xl:inline">Schedule Service</span>
+              <span className="xl:hidden">Schedule</span>
             </Button>
           </div>
 

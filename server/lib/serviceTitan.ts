@@ -534,13 +534,15 @@ class ServiceTitanAPI {
       // Fetch customer contacts to get phone/email
       const contacts = await this.getCustomerContacts(customerId);
       
-      // Extract primary phone and email from contacts
-      const primaryContact = contacts.find((c: any) => c.type === 'Primary') || contacts[0];
+      // ServiceTitan returns contacts with type 'Email', 'Phone', 'MobilePhone', etc.
+      // Each contact has a 'value' field with the actual data
+      const emailContact = contacts.find((c: any) => c.type === 'Email');
+      const phoneContact = contacts.find((c: any) => c.type === 'Phone' || c.type === 'MobilePhone') || contacts.find((c: any) => c.phoneSettings);
       
       return {
         ...customerData,
-        email: primaryContact?.email || '',
-        phoneNumber: primaryContact?.phoneNumber || primaryContact?.phone || '',
+        email: emailContact?.value || '',
+        phoneNumber: phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || '',
       };
     } catch (error) {
       console.error('[ServiceTitan] Get customer error:', error);

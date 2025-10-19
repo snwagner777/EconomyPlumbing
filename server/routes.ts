@@ -5565,6 +5565,31 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Customer Portal Session - Check existing session
+  app.get("/api/portal/session", (req, res) => {
+    // Check if user has an active portal session
+    if (req.session && req.session.portalCustomerId) {
+      res.json({ customerId: req.session.portalCustomerId });
+    } else {
+      res.status(401).json({ error: "No active session" });
+    }
+  });
+
+  // Customer Portal Session - Logout
+  app.post("/api/portal/logout", (req, res) => {
+    if (req.session) {
+      req.session.portalCustomerId = undefined;
+      req.session.save((err) => {
+        if (err) {
+          console.error("[Portal] Session save error during logout:", err);
+        }
+        res.json({ success: true });
+      });
+    } else {
+      res.json({ success: true });
+    }
+  });
+
   // Send verification code (SMS or email magic link)
   app.post("/api/portal/auth/send-code", async (req, res) => {
     try {
@@ -5795,6 +5820,18 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       if (matchingCustomers.length === 0) {
         console.warn("[Portal Auth] Verified but no customers found in cache");
+        
+        // Save session for fallback case
+        if (verification.customerId && req.session) {
+          req.session.portalCustomerId = verification.customerId;
+          await new Promise<void>((resolve, reject) => {
+            req.session!.save((err) => {
+              if (err) reject(err);
+              else resolve();
+            });
+          });
+        }
+        
         // Fallback to single customer ID from verification
         return res.json({ 
           success: true,
@@ -5809,6 +5846,18 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       }
 
       console.log(`[Portal Auth] Found ${matchingCustomers.length} matching customer account(s)`);
+
+      // Save session for persistent login
+      if (matchingCustomers.length === 1 && req.session) {
+        req.session.portalCustomerId = matchingCustomers[0].id;
+        await new Promise<void>((resolve, reject) => {
+          req.session!.save((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+        console.log(`[Portal Auth] Session saved for customer ${matchingCustomers[0].id}`);
+      }
 
       return res.json({ 
         success: true,
@@ -6151,6 +6200,36 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error("[Admin] Trigger sync error:", error);
       res.status(500).json({ error: "Failed to start sync" });
+    }
+  });
+
+  // Customer Leaderboard - Top customers by service usage
+  app.get("/api/customer-leaderboard", async (req, res) => {
+    try {
+      const { serviceTitanCustomers } = await import("@shared/schema");
+      
+      // Get top 10 customers by total services (appointment count)
+      const topCustomers = await db.select({
+        id: serviceTitanCustomers.id,
+        name: serviceTitanCustomers.name,
+        type: serviceTitanCustomers.type,
+        totalServices: sql<number>`COALESCE(${serviceTitanCustomers.customFields}->>'totalServicesCount', '0')::integer`,
+        isVIPMember: sql<boolean>`CASE WHEN ${serviceTitanCustomers.customFields}->>'hasActiveMembership' = 'true' THEN true ELSE false END`,
+      })
+        .from(serviceTitanCustomers)
+        .orderBy(sql`COALESCE(${serviceTitanCustomers.customFields}->>'totalServicesCount', '0')::integer DESC`)
+        .limit(10);
+      
+      // Add ranks
+      const leaderboard = topCustomers.map((customer, index) => ({
+        ...customer,
+        rank: index + 1,
+      }));
+      
+      res.json({ leaderboard });
+    } catch (error: any) {
+      console.error("[Leaderboard] Error:", error);
+      res.status(500).json({ error: "Failed to fetch leaderboard" });
     }
   });
 
