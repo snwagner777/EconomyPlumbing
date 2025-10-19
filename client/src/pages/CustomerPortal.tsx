@@ -1541,20 +1541,33 @@ export default function CustomerPortal() {
                   </Card>
 
                   {/* Open Estimates */}
-                  {customerData.estimates && customerData.estimates.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-6 h-6 text-primary" />
-                          <CardTitle>Open Estimates</CardTitle>
-                        </div>
-                        <CardDescription>
-                          Pending quotes and proposals for your review
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {customerData.estimates.map((estimate) => (
+                  {(() => {
+                    // Filter to show only open/pending estimates (exclude approved, declined, expired, closed)
+                    const openEstimates = customerData.estimates?.filter(estimate => {
+                      const status = estimate.status.toLowerCase();
+                      return !status.includes('approved') && 
+                             !status.includes('declined') && 
+                             !status.includes('expired') && 
+                             !status.includes('closed') &&
+                             !status.includes('sold');
+                    }) || [];
+
+                    if (openEstimates.length === 0) return null;
+
+                    return (
+                      <Card>
+                        <CardHeader>
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-6 h-6 text-primary" />
+                            <CardTitle>Open Estimates</CardTitle>
+                          </div>
+                          <CardDescription>
+                            Pending quotes and proposals for your review
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {openEstimates.map((estimate) => (
                             <div
                               key={estimate.id}
                               className="flex items-start gap-4 p-4 border rounded-lg bg-primary/5"
@@ -1610,7 +1623,8 @@ export default function CustomerPortal() {
                         </div>
                       </CardContent>
                     </Card>
-                  )}
+                    );
+                  })()}
 
                   {/* Leave a Review (show if they have completed appointments) */}
                   {completedAppointments.length > 0 && (
