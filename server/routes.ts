@@ -5534,7 +5534,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         try {
           const { sendSMS } = await import("./lib/sms");
           const message = `Your Economy Plumbing verification code is: ${code}\n\nThis code expires in 10 minutes.`;
-          await sendSMS(contactValue, message);
+          await sendSMS({ to: contactValue, message });
           console.log("[Portal Auth] SMS sent successfully");
           
           return res.json({ 

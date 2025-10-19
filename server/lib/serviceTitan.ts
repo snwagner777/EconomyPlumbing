@@ -894,7 +894,14 @@ class ServiceTitanAPI {
 
     // Fallback to live API search (slower)
     console.log('[ServiceTitan] 🔄 Not in cache, searching live API...');
-    const liveCustomer = await this.searchCustomer(phoneOrEmail, phoneOrEmail);
+    
+    // Detect if input is email or phone and pass correct parameters
+    const isEmail = phoneOrEmail.includes('@');
+    const email = isEmail ? phoneOrEmail : '';
+    const phone = isEmail ? '' : phoneOrEmail;
+    
+    console.log(`[ServiceTitan] Searching with ${isEmail ? 'email' : 'phone'}: "${phoneOrEmail}"`);
+    const liveCustomer = await this.searchCustomer(email, phone);
     
     if (liveCustomer) {
       console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API, caching...`);
