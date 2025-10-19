@@ -24,8 +24,29 @@ export default function ReferAFriend() {
   const phoneConfig = usePhoneConfig();
 
   useEffect(() => {
+    // Load NiceJob SDK
+    const script = document.createElement('script');
+    script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
+    script.async = true;
+    document.body.appendChild(script);
+    
     trackEvent('Page View', 'Referral Page', 'Loaded');
+
+    return () => {
+      if (script.parentNode) {
+        document.body.removeChild(script);
+      }
+    };
   }, []);
+
+  const handleOpenReferralForm = () => {
+    // @ts-ignore - NiceJob SDK
+    if (window.NiceJob) {
+      // @ts-ignore
+      window.NiceJob.openRecommendation();
+      trackEvent('Refer a Friend CTA', 'Referral Page', 'Open Form');
+    }
+  };
 
   const handlePhoneClick = () => {
     trackEvent('Refer a Friend CTA', 'Referral Page', 'Phone Call');
@@ -106,14 +127,29 @@ export default function ReferAFriend() {
               </div>
 
               {/* NiceJob Referral Widget - Prominent placement */}
-              <Card className="border-primary/20" data-testid="card-referral-form">
-                <CardContent className="pt-6">
-                  <iframe 
-                    src="https://app.nicejob.com/widgets/recommendation/af0b88b8-5c68-4702-83f4-085ac673376f"
-                    data-testid="nicejob-referral-widget"
-                    className="w-full border-0 min-h-[500px]"
-                    title="Referral Form"
-                  />
+              <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background" data-testid="card-referral-form">
+                <CardContent className="pt-8 pb-8 text-center">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                      <Gift className="w-8 h-8 text-primary" />
+                    </div>
+                    <h3 className="text-2xl font-bold mb-2">Ready to Refer?</h3>
+                    <p className="text-muted-foreground">
+                      Click below to open the referral form and send your friend's info
+                    </p>
+                  </div>
+                  <Button 
+                    size="lg" 
+                    className="w-full text-lg h-14"
+                    onClick={handleOpenReferralForm}
+                    data-testid="button-open-referral-form"
+                  >
+                    <MessageCircle className="w-5 h-5 mr-2" />
+                    Send a Referral Now
+                  </Button>
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Quick and easy - takes less than 30 seconds
+                  </p>
                 </CardContent>
               </Card>
 
