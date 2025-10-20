@@ -702,6 +702,24 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get ALL locations for a customer (not just primary)
+   */
+  async getAllCustomerLocations(customerId: number): Promise<any[]> {
+    try {
+      const locationsUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/locations?customerId=${customerId}`;
+      const result = await this.request<{ data: any[] }>(locationsUrl, {}, true);
+      
+      console.log(`[ServiceTitan] Found ${result.data?.length || 0} locations for customer ${customerId}`);
+      
+      // Return all locations
+      return result.data || [];
+    } catch (error) {
+      console.error('[ServiceTitan] Get all customer locations error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get available arrival windows from ServiceTitan
    * This fetches recent appointments and extracts unique arrival windows
    */
