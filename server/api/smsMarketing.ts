@@ -626,6 +626,112 @@ export function registerSMSMarketingRoutes(app: Express) {
   });
 
   // ==========================================
+  /**
+   * POST /api/sms/send-referral-requests
+   * Send referral request SMS to happy customers (5-star reviews)
+   * PROTECTED: Admin only
+   */
+  app.post("/api/sms/send-referral-requests", requireAuth, async (req, res) => {
+    try {
+      // Validate request body
+      const { z } = await import('zod');
+      const requestSchema = z.object({
+        minRating: z.number().min(1).max(5).optional().default(5),
+        limit: z.number().min(1).max(200).optional().default(50)
+      });
+
+      const validated = requestSchema.parse(req.body);
+      const { minRating, limit } = validated;
+
+      // Import reviews table
+      const { reviews } = await import("@shared/schema");
+      
+      // Find customers who left high-rating reviews and have phone numbers
+      const highRatingReviews = await db
+        .select()
+        .from(reviews as any)
+        .where(
+          and(
+            gte(reviews.rating, minRating),
+            sql`${reviews.phone} IS NOT NULL AND ${reviews.phone} != ''`,
+            eq(reviews.status, 'approved')
+          )
+        )
+        .orderBy(desc(reviews.submittedAt))
+        .limit(limit);
+
+      console.log(`[SMS Referral] Found ${highRatingReviews.length} eligible customers for referral requests`);
+
+      // Check which customers are already subscribed to SMS
+      const subscribedPhones = await db
+        .select()
+        .from(smsMarketingPreferences)
+        .where(
+          and(
+            eq(smsMarketingPreferences.optedIn, true),
+            inArray(
+              smsMarketingPreferences.phoneNumber, 
+              highRatingReviews.map(r => r.phone!).filter(Boolean)
+            )
+          )
+        );
+
+      const subscribedPhoneSet = new Set(subscribedPhones.map(p => p.phoneNumber));
+
+      // Get base URL from environment
+      const baseUrl = process.env.BASE_URL || process.env.REPLIT_DEV_DOMAIN || 'http://localhost:5000';
+
+      // Generate referral message (no emojis per guidelines)
+      const referralMessage = `Hi {customerName}! Thank you for your 5-star review! Would you refer us to friends/family? You'll both get $25 when they complete a job. Share now: ${baseUrl}/refer-a-friend
+
+Reply STOP to opt out.`;
+
+      // Send SMS only to subscribed customers
+      let sentCount = 0;
+      const errors: string[] = [];
+
+      for (const review of highRatingReviews) {
+        if (!review.phone || !subscribedPhoneSet.has(review.phone)) {
+          continue; // Skip if not subscribed
+        }
+
+        try {
+          const personalizedMessage = referralMessage.replace('{customerName}', review.customerName.split(' ')[0]);
+          
+          const { sendSMS } = await import('../lib/sms');
+          await sendSMS({
+            to: review.phone,
+            message: personalizedMessage,
+            campaignId: null, // One-off message, not part of a campaign
+          });
+
+          sentCount++;
+          console.log(`[SMS Referral] Sent referral request to ${review.customerName}`);
+        } catch (error: any) {
+          console.error(`[SMS Referral] Failed to send to ${review.phone}:`, error);
+          errors.push(`${review.customerName}: ${error.message}`);
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Sent ${sentCount} referral request SMS messages`,
+        details: {
+          eligible: highRatingReviews.length,
+          subscribed: subscribedPhones.length,
+          sent: sentCount,
+          errors: errors.length > 0 ? errors : undefined
+        }
+      });
+    } catch (error) {
+      console.error('[SMS API] Error sending referral requests:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to send referral requests'
+      });
+    }
+  });
+
   // SMS ANALYTICS
   // ==========================================
 

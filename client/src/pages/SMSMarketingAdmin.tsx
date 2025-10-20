@@ -272,6 +272,27 @@ function CampaignsTab({ campaigns, loadingCampaigns, suggestions, loadingSuggest
   const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
   const { toast } = useToast();
 
+  // Mutation for sending referral requests
+  const sendReferralMutation = useMutation({
+    mutationFn: async (data: { minRating: number; limit: number }) => {
+      return await apiRequest('POST', '/api/sms/send-referral-requests', data);
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Referral requests sent!",
+        description: `${data.details.sent} SMS messages sent to happy customers. ${data.details.eligible} eligible, ${data.details.subscribed} subscribed.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/sms/analytics/dashboard'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to send referral requests",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
   return (
     <div className="space-y-6">
       {/* Header with Create Button */}
@@ -290,6 +311,46 @@ function CampaignsTab({ campaigns, loadingCampaigns, suggestions, loadingSuggest
           New Campaign
         </Button>
       </div>
+
+      {/* Quick Action: Send Referral Requests */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-primary" />
+                SMS Referral Requests
+              </CardTitle>
+              <CardDescription>
+                Send SMS asking happy customers (5-star reviews) to refer friends
+              </CardDescription>
+            </div>
+            <Button
+              onClick={() => {
+                if (confirm('Send referral request SMS to all customers who left 5-star reviews?')) {
+                  sendReferralMutation.mutate({ minRating: 5, limit: 100 });
+                }
+              }}
+              disabled={sendReferralMutation.isPending}
+              data-testid="button-send-referral-sms"
+            >
+              <Send className="w-4 h-4 mr-2" />
+              {sendReferralMutation.isPending ? 'Sending...' : 'Send Referral SMS'}
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="bg-background/80 rounded-lg p-4 border">
+            <p className="text-sm mb-2"><strong>How it works:</strong></p>
+            <ul className="text-sm text-muted-foreground space-y-1 ml-4 list-disc">
+              <li>Finds customers who left 5-star reviews</li>
+              <li>Only sends to subscribers (TCPA compliant)</li>
+              <li>Personalizes message with customer name</li>
+              <li>Includes link to refer-a-friend page with $25 incentive</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* AI Suggestions */}
       <Card>

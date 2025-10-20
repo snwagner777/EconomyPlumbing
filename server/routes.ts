@@ -1091,7 +1091,7 @@ ${rssItems}
         
         if (smsAlertsEnabled && alertPhone) {
           const { sendSMS } = await import('./lib/sms');
-          const message = `🚨 NEGATIVE REVIEW ALERT\n\n${review.customerName} left a ${review.rating}-star review.\n\nReview: "${review.text.substring(0, 100)}${review.text.length > 100 ? '...' : ''}"\n\nRespond immediately to prevent damage. View in admin dashboard.`;
+          const message = `NEGATIVE REVIEW ALERT: ${review.customerName} left a ${review.rating}-star review.\n\nReview: "${review.text.substring(0, 100)}${review.text.length > 100 ? '...' : ''}"\n\nRespond immediately to prevent damage. View in admin dashboard.`;
           
           sendSMS({
             to: alertPhone,
