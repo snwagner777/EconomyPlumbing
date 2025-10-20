@@ -4,6 +4,7 @@ import { createServer, type Server } from "http";
 import crypto from "crypto";
 import { storage } from "./storage";
 import { getServiceTitanAPI } from "./lib/serviceTitan";
+import { processSegmentAutoEntry, processSegmentAutoExit, refreshAllSegments } from "./lib/audienceManager";
 
 // Declare global types for SSR cache invalidation
 declare global {
@@ -7358,6 +7359,99 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error("[Admin] Update segment error:", error);
       res.status(500).json({ error: "Failed to update segment" });
+    }
+  });
+
+  // Get segment members
+  app.get("/api/admin/segments/:id/members", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { id } = req.params;
+      const { activeOnly, limit, offset } = req.query;
+
+      const members = await storage.getSegmentMembers(id, {
+        activeOnly: activeOnly === 'true',
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+
+      res.json(members);
+    } catch (error: any) {
+      console.error('[API] Error fetching segment members:', error);
+      res.status(500).json({ error: "Failed to fetch segment members" });
+    }
+  });
+
+  // Manual segment refresh (auto-entry + auto-exit)
+  app.post("/api/admin/segments/:id/refresh", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { id } = req.params;
+
+      const entryResults = await processSegmentAutoEntry(id);
+      const exitResults = await processSegmentAutoExit(id);
+
+      res.json({
+        success: true,
+        results: {
+          entered: entryResults.entered,
+          skipped: entryResults.skipped,
+          exited: exitResults.exited,
+          retained: exitResults.retained,
+        },
+      });
+    } catch (error: any) {
+      console.error('[API] Error refreshing segment:', error);
+      res.status(500).json({ error: "Failed to refresh segment" });
+    }
+  });
+
+  // Refresh all segments
+  app.post("/api/admin/segments/refresh-all", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const results = await refreshAllSegments();
+
+      res.json({
+        success: true,
+        results,
+      });
+    } catch (error: any) {
+      console.error('[API] Error refreshing all segments:', error);
+      res.status(500).json({ error: "Failed to refresh all segments" });
+    }
+  });
+
+  // Get audience movement logs
+  app.get("/api/admin/audience-logs", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { segmentId, customerId, action, limit, offset } = req.query;
+
+      const logs = await storage.getAudienceMovementLogs({
+        segmentId: segmentId as string,
+        customerId: customerId ? parseInt(customerId as string) : undefined,
+        action: action as 'entered' | 'exited' | undefined,
+        limit: limit ? parseInt(limit as string) : 100,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+
+      res.json(logs);
+    } catch (error: any) {
+      console.error('[API] Error fetching audience logs:', error);
+      res.status(500).json({ error: "Failed to fetch audience logs" });
     }
   });
 

@@ -82,11 +82,14 @@ import {
   emailSuppressionList,
   emailSendLog,
   emailCampaigns,
-  customerSegments
+  customerSegments,
+  segmentMembership,
+  audienceMovementLogs,
+  serviceTitanCustomers
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and, isNull } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -263,6 +266,14 @@ export interface IStorage {
   getCustomerSegments(options?: { status?: string; segmentType?: string }): Promise<CustomerSegment[]>;
   getCustomerSegmentById(id: string): Promise<CustomerSegment | undefined>;
   updateCustomerSegment(id: string, updates: Partial<Omit<InsertCustomerSegment, 'id' | 'createdAt'>>): Promise<CustomerSegment>;
+  
+  // Segment Membership - Audience Management
+  getSegmentMembers(segmentId: string, options?: { activeOnly?: boolean; limit?: number; offset?: number }): Promise<any[]>;
+  getCustomerSegmentMemberships(customerId: number, options?: { activeOnly?: boolean }): Promise<any[]>;
+  getSegmentMemberCount(segmentId: string, activeOnly?: boolean): Promise<number>;
+  
+  // Audience Movement Logs
+  getAudienceMovementLogs(options?: { segmentId?: string; customerId?: number; action?: 'entered' | 'exited'; limit?: number; offset?: number }): Promise<any[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -3786,6 +3797,126 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result;
+  }
+
+  // Segment Membership - Audience Management
+  async getSegmentMembers(segmentId: string, options?: { activeOnly?: boolean; limit?: number; offset?: number }): Promise<any[]> {
+    
+    let query = db
+      .select({
+        id: segmentMembership.id,
+        customerId: segmentMembership.serviceTitanCustomerId,
+        customerName: segmentMembership.customerName,
+        customerEmail: segmentMembership.customerEmail,
+        customerPhone: segmentMembership.customerPhone,
+        enteredAt: segmentMembership.enteredAt,
+        exitedAt: segmentMembership.exitedAt,
+        entryReason: segmentMembership.entryReason,
+        exitReason: segmentMembership.exitReason,
+        emailsSent: segmentMembership.emailsSent,
+        emailsOpened: segmentMembership.emailsOpened,
+        emailsClicked: segmentMembership.emailsClicked,
+        callsMade: segmentMembership.callsMade,
+        jobsBooked: segmentMembership.jobsBooked,
+        revenueGenerated: segmentMembership.revenueGenerated,
+      })
+      .from(segmentMembership)
+      .where(eq(segmentMembership.segmentId, segmentId));
+
+    if (options?.activeOnly) {
+      query = query.where(and(
+        eq(segmentMembership.segmentId, segmentId),
+        isNull(segmentMembership.exitedAt)
+      ));
+    }
+
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    if (options?.offset) {
+      query = query.offset(options.offset);
+    }
+
+    return await query.orderBy(desc(segmentMembership.enteredAt));
+  }
+
+  async getCustomerSegmentMemberships(customerId: number, options?: { activeOnly?: boolean }): Promise<any[]> {
+    
+    let query = db
+      .select({
+        membershipId: segmentMembership.id,
+        segmentId: segmentMembership.segmentId,
+        segmentName: customerSegments.name,
+        segmentDescription: customerSegments.description,
+        enteredAt: segmentMembership.enteredAt,
+        exitedAt: segmentMembership.exitedAt,
+        entryReason: segmentMembership.entryReason,
+        exitReason: segmentMembership.exitReason,
+      })
+      .from(segmentMembership)
+      .leftJoin(customerSegments, eq(segmentMembership.segmentId, customerSegments.id))
+      .where(eq(segmentMembership.serviceTitanCustomerId, customerId));
+
+    if (options?.activeOnly) {
+      query = query.where(and(
+        eq(segmentMembership.serviceTitanCustomerId, customerId),
+        isNull(segmentMembership.exitedAt)
+      ));
+    }
+
+    return await query.orderBy(desc(segmentMembership.enteredAt));
+  }
+
+  async getSegmentMemberCount(segmentId: string, activeOnly: boolean = true): Promise<number> {
+    
+    let query = db
+      .select({ count: sql`count(*)` })
+      .from(segmentMembership)
+      .where(eq(segmentMembership.segmentId, segmentId));
+
+    if (activeOnly) {
+      query = query.where(and(
+        eq(segmentMembership.segmentId, segmentId),
+        isNull(segmentMembership.exitedAt)
+      ));
+    }
+
+    const result = await query;
+    return Number(result[0]?.count || 0);
+  }
+
+  // Audience Movement Logs
+  async getAudienceMovementLogs(options?: { segmentId?: string; customerId?: number; action?: 'entered' | 'exited'; limit?: number; offset?: number }): Promise<any[]> {
+    
+    let query = db
+      .select()
+      .from(audienceMovementLogs);
+
+    const conditions = [];
+    if (options?.segmentId) {
+      conditions.push(eq(audienceMovementLogs.segmentId, options.segmentId));
+    }
+    if (options?.customerId) {
+      conditions.push(eq(audienceMovementLogs.serviceTitanCustomerId, options.customerId));
+    }
+    if (options?.action) {
+      conditions.push(eq(audienceMovementLogs.action, options.action));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
+    }
+
+    if (options?.limit) {
+      query = query.limit(options.limit);
+    }
+
+    if (options?.offset) {
+      query = query.offset(options.offset);
+    }
+
+    return await query.orderBy(desc(audienceMovementLogs.occurredAt));
   }
 }
 

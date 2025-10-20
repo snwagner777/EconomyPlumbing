@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean, index, bigint, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index, uniqueIndex, bigint, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -1000,6 +1000,10 @@ export const customerSegments = pgTable("customer_segments", {
   aiPrompt: text("ai_prompt"), // The prompt used to generate this segment
   aiReasoning: text("ai_reasoning"), // Why AI suggested this segment
   
+  // Auto-management settings
+  autoEntryEnabled: boolean("auto_entry_enabled").notNull().default(true), // Auto-add customers who meet criteria
+  autoExitEnabled: boolean("auto_exit_enabled").notNull().default(true), // Auto-remove customers who no longer qualify
+  
   // Status
   status: text("status").notNull().default('active'), // 'active', 'paused', 'archived'
   memberCount: integer("member_count").notNull().default(0), // Cached count for performance
@@ -1047,6 +1051,8 @@ export const segmentMembership = pgTable("segment_membership", {
   customerIdIdx: index("segment_membership_customer_id_idx").on(table.serviceTitanCustomerId),
   exitedAtIdx: index("segment_membership_exited_at_idx").on(table.exitedAt), // Query active members (exitedAt IS NULL)
   enteredAtIdx: index("segment_membership_entered_at_idx").on(table.enteredAt),
+  // Prevent duplicate active memberships
+  uniqueActiveMembership: uniqueIndex("segment_membership_unique_active_idx").on(table.segmentId, table.serviceTitanCustomerId).where(sql`${table.exitedAt} IS NULL`),
 }));
 
 // Email Campaigns - Campaign definitions (evergreen or one-time)
