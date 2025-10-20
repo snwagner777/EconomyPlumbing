@@ -3,6 +3,9 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business. It provides service information, covered areas, and blog content, alongside an Ecwid-powered online store for maintenance memberships and drop-shipped products. The project aims to improve local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
 
+## Recent Changes (October 20, 2025)
+- **Self-Service Customer Data Updates:** Implemented full self-service data update capabilities allowing customers to update their contact information (phone/email) and service address directly through the Customer Portal. Updates are synced to ServiceTitan via official API endpoints (PUT /customers/{id}/contacts/{contactId} for contacts, PUT /locations/{id} for addresses). Features inline "Edit" buttons on customer info card, modal dialogs with pre-filled forms, real-time validation, loading states, toast notifications, and auto-refresh after successful updates. Enhances customer autonomy and reduces call volume.
+
 ## Recent Changes (October 19, 2025)
 - **Estimate Expiration Alerts:** Customer Portal estimates section now includes 30-day expiration policy notice, section-level amber alert for any expiring estimates (≤7 days), and individual estimate urgency treatments including amber styling, countdown badges, "⚠️ Expiring Soon!" warnings, and dual "Schedule Now"/"Call Us" CTAs for estimates expiring within 7 days.
 - **Customer Portal Referral Promotion:** Added prominent referral program card with dual $25 reward messaging, real-time stats (clicks, conversions), and "Start Referring & Earning" CTA linking to /refer-a-friend page.
