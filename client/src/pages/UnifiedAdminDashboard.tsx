@@ -3636,6 +3636,8 @@ export default function UnifiedAdminDashboard() {
         return <TrackingNumbersSection />;
       case 'products':
         return <ProductsSection />;
+      case 'review-platforms':
+        return <ReviewPlatformsSection />;
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
       default:
@@ -3649,6 +3651,7 @@ export default function UnifiedAdminDashboard() {
       'photos': 'Photo Management',
       'success-stories': 'Success Stories',
       'reviews': 'Reviews',
+      'review-platforms': 'Review Platforms',
       'commercial-customers': 'Commercial Customers',
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',

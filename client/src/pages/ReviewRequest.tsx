@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SiYelp } from "react-icons/si";
-import SEOHead from "@/components/SEO/SEOHead";
+import { SEOHead } from "@/components/SEO/SEOHead";
 
 interface ReviewPlatform {
   id: string;
@@ -57,7 +57,7 @@ export default function ReviewRequest() {
       <SEOHead
         title="Leave a Review | Economy Plumbing Services"
         description="Share your experience with Economy Plumbing Services. Your review helps our business grow and helps other customers make informed decisions."
-        canonicalUrl="/request-review"
+        canonical="/request-review"
       />
 
       <div className="container max-w-4xl mx-auto px-4 py-16 space-y-8">

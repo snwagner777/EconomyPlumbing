@@ -1936,7 +1936,7 @@ export default function CustomerPortal() {
                     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
                       <CardHeader>
                         <div className="flex items-center gap-2">
-                          <Star className="w-6 h-6 text-primary" />
+                          <Star className="w-6 h-6 text-primary fill-primary" />
                           <CardTitle>Love Our Service?</CardTitle>
                         </div>
                         <CardDescription>
@@ -1954,39 +1954,20 @@ export default function CustomerPortal() {
                           </div>
                         </div>
                         
-                        <div className="flex flex-col sm:flex-row gap-3">
-                          <Button
-                            asChild
-                            className="flex-1"
-                            data-testid="button-leave-google-review"
-                          >
-                            <a 
-                              href="https://g.page/r/CV-sfCZq8cAzEBM/review"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Star className="w-4 h-4 mr-2" />
-                              Leave Google Review
-                            </a>
-                          </Button>
-                          <Button
-                            asChild
-                            variant="outline"
-                            className="flex-1"
-                            data-testid="button-leave-facebook-review"
-                          >
-                            <a 
-                              href="https://www.facebook.com/economyplumbingservices/reviews"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              Review on Facebook
-                            </a>
-                          </Button>
-                        </div>
+                        <Button
+                          asChild
+                          className="w-full"
+                          size="lg"
+                          data-testid="button-leave-review"
+                        >
+                          <a href="/request-review">
+                            <Star className="w-4 h-4 mr-2" />
+                            Leave a Review
+                          </a>
+                        </Button>
 
                         <p className="text-xs text-center text-muted-foreground">
-                          Takes less than 2 minutes - makes a huge difference!
+                          Choose from Google, Facebook, BBB, or Yelp - takes just 2 minutes!
                         </p>
                       </CardContent>
                     </Card>
