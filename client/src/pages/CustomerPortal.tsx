@@ -221,6 +221,22 @@ export default function CustomerPortal() {
     enabled: !!customerId,
   });
 
+  // Fetch email communication history
+  const { data: emailHistoryData } = useQuery<{
+    emails: Array<{
+      id: string;
+      subject: string | null;
+      campaignName: string | null;
+      sentAt: string;
+      openedAt: string | null;
+      clickedAt: string | null;
+      status: string | null;
+    }>;
+  }>({
+    queryKey: ['/api/portal/customer', customerId, 'emails'],
+    enabled: !!customerId,
+  });
+
   const timeWindows = arrivalWindowsData?.windows || [];
   const customerLocations = locationsData?.locations || [];
 

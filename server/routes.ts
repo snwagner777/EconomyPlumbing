@@ -6901,6 +6901,66 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get customer email communication history
+  app.get("/api/portal/customer/:customerId/emails", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+      
+      // Check if user has valid portal session
+      if (!req.session.portalCustomerId || req.session.portalCustomerId.toString() !== customerId) {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+      
+      const customerIdNum = parseInt(customerId);
+      
+      // Fetch email marketing history from email_send_log
+      const emailHistory = await db
+        .select({
+          id: emailSendLog.id,
+          subject: campaignEmails.subject,
+          campaignName: emailCampaigns.name,
+          sentAt: emailSendLog.sentAt,
+          openedAt: emailSendLog.openedAt,
+          clickedAt: emailSendLog.clickedAt,
+          status: emailSendLog.resendStatus,
+        })
+        .from(emailSendLog)
+        .leftJoin(campaignEmails, eq(emailSendLog.campaignEmailId, campaignEmails.id))
+        .leftJoin(emailCampaigns, eq(emailSendLog.campaignId, emailCampaigns.id))
+        .where(eq(emailSendLog.serviceTitanCustomerId, customerIdNum))
+        .orderBy(desc(emailSendLog.sentAt))
+        .limit(50);
+      
+      // Fetch review request emails from review_request_send_log
+      const reviewEmails = await db
+        .select({
+          id: reviewRequestSendLog.id,
+          subject: reviewDripEmails.subject,
+          campaignName: reviewRequestCampaigns.name,
+          sentAt: reviewRequestSendLog.sentAt,
+          openedAt: reviewRequestSendLog.openedAt,
+          clickedAt: reviewRequestSendLog.clickedAt,
+          status: reviewRequestSendLog.resendStatus,
+        })
+        .from(reviewRequestSendLog)
+        .leftJoin(reviewDripEmails, eq(reviewRequestSendLog.dripEmailId, reviewDripEmails.id))
+        .leftJoin(reviewRequestCampaigns, eq(reviewRequestSendLog.campaignId, reviewRequestCampaigns.id))
+        .where(eq(reviewRequestSendLog.serviceTitanCustomerId, customerIdNum))
+        .orderBy(desc(reviewRequestSendLog.sentAt))
+        .limit(50);
+      
+      // Combine and sort by sent date
+      const allEmails = [...emailHistory, ...reviewEmails].sort((a, b) => 
+        new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
+      );
+      
+      res.json({ emails: allEmails });
+    } catch (error: any) {
+      console.error("[Portal] Email history error:", error);
+      res.status(500).json({ error: "Failed to fetch email history" });
+    }
+  });
+
   // ServiceTitan Customer Sync (Admin only - manual trigger)
   app.post("/api/servicetitan/sync-customers", async (req, res) => {
     try {
