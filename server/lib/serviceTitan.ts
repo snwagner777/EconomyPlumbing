@@ -1384,6 +1384,249 @@ class ServiceTitanAPI {
       throw error;
     }
   }
+
+  /**
+   * Fetch jobs with incremental sync support using modifiedOnOrAfter watermark
+   * Returns jobs in batches for efficient processing
+   */
+  async fetchJobsIncremental(modifiedOnOrAfter?: Date, batchSize: number = 250): Promise<{
+    jobs: any[];
+    hasMore: boolean;
+    highestModifiedOn: Date | null;
+  }> {
+    try {
+      const jobsBaseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}`;
+      let endpoint = `${jobsBaseUrl}/jobs?pageSize=${batchSize}`;
+      
+      // Add incremental sync filter
+      if (modifiedOnOrAfter) {
+        const dateStr = modifiedOnOrAfter.toISOString();
+        endpoint += `&modifiedOnOrAfter=${dateStr}`;
+        console.log('[ServiceTitan Jobs Sync] 📥 Fetching jobs modified after:', dateStr);
+      } else {
+        console.log('[ServiceTitan Jobs Sync] 📥 Fetching ALL jobs (initial sync)');
+      }
+
+      const response = await this.request<{
+        data: Array<{
+          id: number;
+          jobNumber: string;
+          customerId: number;
+          jobType?: string;
+          businessUnitId?: number;
+          jobStatus: string;
+          completedOn?: string;
+          total: number;
+          invoice?: number;
+          createdOn: string;
+          modifiedOn: string;
+        }>;
+        hasMore: boolean;
+      }>(endpoint, {}, true);
+
+      // Track highest modifiedOn for next watermark
+      let highestModifiedOn: Date | null = null;
+      if (response.data && response.data.length > 0) {
+        const modifiedDates = response.data.map(j => new Date(j.modifiedOn));
+        highestModifiedOn = new Date(Math.max(...modifiedDates.map(d => d.getTime())));
+      }
+
+      console.log('[ServiceTitan Jobs Sync] ✅ Fetched', response.data?.length || 0, 'jobs');
+      
+      return {
+        jobs: response.data || [],
+        hasMore: response.hasMore || false,
+        highestModifiedOn
+      };
+    } catch (error) {
+      console.error('[ServiceTitan Jobs Sync] ❌ Error fetching jobs:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Sync all jobs to database with staging → normalized table pattern
+   * Uses watermarks for incremental sync
+   */
+  async syncAllJobs(): Promise<{
+    jobsCount: number;
+    customersUpdated: number;
+    duration: number;
+  }> {
+    const startTime = Date.now();
+    const { serviceTitanJobsStaging, serviceTitanJobs, serviceTitanCustomers, syncWatermarks } = await import('@shared/schema');
+    const { eq, sql } = await import('drizzle-orm');
+
+    try {
+      console.log('[ServiceTitan Jobs Sync] 🚀 Starting incremental job sync...');
+
+      // Get last watermark
+      const watermark = await db
+        .select()
+        .from(syncWatermarks)
+        .where(eq(syncWatermarks.syncType, 'jobs'))
+        .limit(1);
+
+      const lastModifiedOn = watermark[0]?.lastModifiedOnFetched || null;
+      let totalJobsFetched = 0;
+      let hasMore = true;
+      let currentWatermark = lastModifiedOn;
+
+      // Fetch jobs in batches
+      while (hasMore) {
+        const { jobs, hasMore: more, highestModifiedOn } = await this.fetchJobsIncremental(
+          currentWatermark || undefined,
+          250
+        );
+
+        if (jobs.length === 0) {
+          break;
+        }
+
+        // Stage raw jobs (idempotent - upsert based on jobId)
+        for (const job of jobs) {
+          await db
+            .insert(serviceTitanJobsStaging)
+            .values({
+              jobId: job.id,
+              rawData: job,
+              fetchedAt: new Date(),
+            })
+            .onConflictDoUpdate({
+              target: serviceTitanJobsStaging.jobId,
+              set: {
+                rawData: job,
+                fetchedAt: new Date(),
+              },
+            });
+        }
+
+        // Normalize staged jobs to serviceTitanJobs table
+        const stagedJobs = await db
+          .select()
+          .from(serviceTitanJobsStaging)
+          .where(eq(serviceTitanJobsStaging.processedAt, null as any));
+
+        for (const staged of stagedJobs) {
+          try {
+            const job = staged.rawData as any;
+            
+            // Upsert to normalized jobs table
+            await db
+              .insert(serviceTitanJobs)
+              .values({
+                id: job.id,
+                jobNumber: job.jobNumber,
+                customerId: job.customerId,
+                jobType: job.jobType || null,
+                businessUnitId: job.businessUnitId || null,
+                jobStatus: job.jobStatus,
+                completedOn: job.completedOn ? new Date(job.completedOn) : null,
+                total: Math.round((job.total || 0) * 100), // Convert to cents
+                invoice: Math.round((job.invoice || 0) * 100),
+                createdOn: new Date(job.createdOn),
+                modifiedOn: new Date(job.modifiedOn),
+                lastSyncedAt: new Date(),
+              })
+              .onConflictDoUpdate({
+                target: serviceTitanJobs.id,
+                set: {
+                  jobNumber: job.jobNumber,
+                  jobType: job.jobType || null,
+                  jobStatus: job.jobStatus,
+                  completedOn: job.completedOn ? new Date(job.completedOn) : null,
+                  total: Math.round((job.total || 0) * 100),
+                  invoice: Math.round((job.invoice || 0) * 100),
+                  modifiedOn: new Date(job.modifiedOn),
+                  lastSyncedAt: new Date(),
+                },
+              });
+
+            // Mark as processed
+            await db
+              .update(serviceTitanJobsStaging)
+              .set({ processedAt: new Date() })
+              .where(eq(serviceTitanJobsStaging.id, staged.id));
+
+          } catch (error) {
+            console.error('[ServiceTitan Jobs Sync] ❌ Error processing job:', error);
+            // Mark error but continue
+            await db
+              .update(serviceTitanJobsStaging)
+              .set({ processingError: (error as Error).message })
+              .where(eq(serviceTitanJobsStaging.id, staged.id));
+          }
+        }
+
+        totalJobsFetched += jobs.length;
+        
+        // Update watermark for next batch
+        if (highestModifiedOn) {
+          currentWatermark = highestModifiedOn;
+        }
+
+        hasMore = more;
+      }
+
+      // Update customer job counts (aggregate from completed jobs)
+      console.log('[ServiceTitan Jobs Sync] 📊 Updating customer job counts...');
+      await db.execute(sql`
+        UPDATE service_titan_customers c
+        SET job_count = (
+          SELECT COUNT(*)
+          FROM service_titan_jobs j
+          WHERE j.customer_id = c.id
+            AND j.job_status = 'Completed'
+            AND j.completed_on IS NOT NULL
+        )
+      `);
+
+      const customersUpdatedResult = await db.execute(sql`
+        SELECT COUNT(*) as count 
+        FROM service_titan_customers 
+        WHERE job_count > 0
+      `);
+      const customersUpdated = customersUpdatedResult.rows[0]?.count || 0;
+
+      // Update watermark
+      await db
+        .update(syncWatermarks)
+        .set({
+          lastSuccessfulSyncAt: new Date(),
+          lastModifiedOnFetched: currentWatermark,
+          recordsProcessed: totalJobsFetched,
+          syncDuration: Date.now() - startTime,
+          updatedAt: new Date(),
+        })
+        .where(eq(syncWatermarks.syncType, 'jobs'));
+
+      const duration = Date.now() - startTime;
+      console.log('[ServiceTitan Jobs Sync] ✅ Sync complete!');
+      console.log(`  - Jobs synced: ${totalJobsFetched}`);
+      console.log(`  - Customers with jobs: ${customersUpdated}`);
+      console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
+
+      return {
+        jobsCount: totalJobsFetched,
+        customersUpdated: Number(customersUpdated),
+        duration,
+      };
+    } catch (error) {
+      const { eq } = await import('drizzle-orm');
+      
+      // Log error to watermark
+      await db
+        .update(syncWatermarks)
+        .set({
+          lastError: (error as Error).message,
+          lastErrorAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(syncWatermarks.syncType, 'jobs'));
+
+      throw error;
+    }
+  }
 }
 
 // Singleton instance
