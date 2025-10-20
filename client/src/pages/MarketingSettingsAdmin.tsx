@@ -40,7 +40,7 @@ export default function MarketingSettingsAdmin() {
   // Save settings mutation
   const saveMutation = useMutation({
     mutationFn: async (newSettings: Partial<MarketingSettings>) => {
-      return apiRequest('/api/admin/marketing-settings', 'PUT', newSettings);
+      return apiRequest('PUT', '/api/admin/marketing-settings', newSettings);
     },
     onSuccess: () => {
       toast({
