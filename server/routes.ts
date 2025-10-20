@@ -3709,8 +3709,8 @@ ${rssItems}
   // ZOOM OAUTH ENDPOINTS
   // ============================================
 
-  // Check Zoom OAuth status
-  app.get("/api/zoom/oauth/status", requireAdmin, async (req, res) => {
+  // Check Zoom OAuth status (no auth required - just returns boolean)
+  app.get("/api/zoom/oauth/status", async (req, res) => {
     try {
       const { isZoomOAuthConfigured } = await import('./lib/zoomOAuth');
       const token = await storage.getZoomOAuthToken();
@@ -3718,7 +3718,7 @@ ${rssItems}
       res.json({
         configured: isZoomOAuthConfigured(),
         hasToken: !!token,
-        tokenExpiry: token?.expiresAt,
+        expiresAt: token?.expiresAt,
       });
     } catch (error: any) {
       console.error('[Zoom OAuth] Status check error:', error);
