@@ -385,6 +385,7 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   zip: text("zip"),
   active: boolean("active").notNull().default(true),
   balance: text("balance"), // Stored as text (ServiceTitan format)
+  jobCount: integer("job_count").notNull().default(0), // Total completed jobs for leaderboard
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
 }, (table) => ({
   activeIdx: index("st_customers_active_idx").on(table.active),
@@ -392,6 +393,7 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   phoneIdx: index("st_customers_phone_idx").on(table.phone),
   mobilePhoneIdx: index("st_customers_mobile_phone_idx").on(table.mobilePhone),
   typeIdx: index("st_customers_type_idx").on(table.type),
+  jobCountIdx: index("st_customers_job_count_idx").on(table.jobCount),
   lastSyncedIdx: index("st_customers_last_synced_idx").on(table.lastSyncedAt),
 }));
 
@@ -826,6 +828,63 @@ export const reviewRequests = pgTable("review_requests", {
   createdAtIdx: index("review_requests_created_at_idx").on(table.createdAt),
 }));
 
+// ServiceTitan Jobs Staging - Raw API responses for safe processing
+export const serviceTitanJobsStaging = pgTable("service_titan_jobs_staging", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: bigint("job_id", { mode: 'number' }).notNull(), // ServiceTitan job ID
+  rawData: jsonb("raw_data").notNull(), // Complete job object from API
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
+  processedAt: timestamp("processed_at"), // When it was normalized to serviceTitanJobs
+  processingError: text("processing_error"),
+}, (table) => ({
+  jobIdIdx: index("st_jobs_staging_job_id_idx").on(table.jobId),
+  fetchedAtIdx: index("st_jobs_staging_fetched_at_idx").on(table.fetchedAt),
+  processedAtIdx: index("st_jobs_staging_processed_at_idx").on(table.processedAt),
+}));
+
+// ServiceTitan Jobs - Normalized job data for fast queries
+export const serviceTitanJobs = pgTable("service_titan_jobs", {
+  id: bigint("id", { mode: 'number' }).primaryKey(), // ServiceTitan job ID
+  jobNumber: varchar("job_number").notNull(),
+  customerId: integer("customer_id").notNull(), // References serviceTitanCustomers.id
+  jobType: varchar("job_type"),
+  businessUnitId: bigint("business_unit_id", { mode: 'number' }),
+  
+  // Job status
+  jobStatus: varchar("job_status").notNull(), // 'Completed', 'Canceled', 'InProgress', etc.
+  completedOn: timestamp("completed_on"),
+  
+  // Financial data
+  total: integer("total").notNull().default(0), // Total amount in cents
+  invoice: integer("invoice").notNull().default(0), // Invoice amount in cents
+  
+  // Timestamps
+  createdOn: timestamp("created_on").notNull(),
+  modifiedOn: timestamp("modified_on").notNull(),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("st_jobs_customer_id_idx").on(table.customerId),
+  jobStatusIdx: index("st_jobs_job_status_idx").on(table.jobStatus),
+  completedOnIdx: index("st_jobs_completed_on_idx").on(table.completedOn),
+  modifiedOnIdx: index("st_jobs_modified_on_idx").on(table.modifiedOn),
+  jobNumberIdx: index("st_jobs_job_number_idx").on(table.jobNumber),
+}));
+
+// Sync Watermarks - Track incremental sync progress
+export const syncWatermarks = pgTable("sync_watermarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  syncType: varchar("sync_type").notNull().unique(), // 'customers', 'jobs', 'invoices'
+  lastSuccessfulSyncAt: timestamp("last_successful_sync_at"), // Last successful sync completion
+  lastModifiedOnFetched: timestamp("last_modified_on_fetched"), // Highest modifiedOn from last fetch (for incremental sync)
+  recordsProcessed: integer("records_processed").notNull().default(0),
+  syncDuration: integer("sync_duration"), // Duration in milliseconds
+  lastError: text("last_error"),
+  lastErrorAt: timestamp("last_error_at"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  syncTypeIdx: index("sync_watermarks_sync_type_idx").on(table.syncType),
+}));
+
 export const insertCustomReviewSchema = createInsertSchema(customReviews).omit({
   id: true,
   submittedAt: true,
@@ -900,3 +959,6 @@ export type ReviewRequest = typeof reviewRequests.$inferSelect;
 export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
 export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
 export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
+export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
+export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect;
+export type SyncWatermark = typeof syncWatermarks.$inferSelect;
