@@ -7272,6 +7272,95 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  /**
+   * AI Customer Segmentation - GPT-4o Analysis
+   */
+
+  // Trigger AI segmentation analysis
+  app.post("/api/admin/ai-segmentation/analyze", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { runAISegmentation } = await import("./lib/aiSegmentation");
+      
+      const result = await runAISegmentation(storage);
+      
+      res.json({
+        success: true,
+        message: `Created ${result.segmentIds.length} customer segments`,
+        segmentIds: result.segmentIds,
+        analysis: {
+          opportunitiesFound: result.analysis.opportunities.length,
+          totalCustomersAnalyzed: result.analysis.totalCustomersAnalyzed,
+          analysisDate: result.analysis.analysisDate,
+        },
+      });
+    } catch (error: any) {
+      console.error("[Admin] AI segmentation error:", error);
+      res.status(500).json({ 
+        error: "Failed to run AI segmentation",
+        details: error.message 
+      });
+    }
+  });
+
+  // Get all customer segments
+  app.get("/api/admin/segments", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { status, segmentType } = req.query;
+      const segments = await storage.getCustomerSegments({
+        status: status as string,
+        segmentType: segmentType as string,
+      });
+      
+      res.json(segments);
+    } catch (error: any) {
+      console.error("[Admin] Get segments error:", error);
+      res.status(500).json({ error: "Failed to fetch segments" });
+    }
+  });
+
+  // Get specific segment
+  app.get("/api/admin/segments/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const segment = await storage.getCustomerSegmentById(req.params.id);
+      
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+      
+      res.json(segment);
+    } catch (error: any) {
+      console.error("[Admin] Get segment error:", error);
+      res.status(500).json({ error: "Failed to fetch segment" });
+    }
+  });
+
+  // Update segment (e.g., change status)
+  app.patch("/api/admin/segments/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const updated = await storage.updateCustomerSegment(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("[Admin] Update segment error:", error);
+      res.status(500).json({ error: "Failed to update segment" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

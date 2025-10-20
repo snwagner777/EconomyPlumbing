@@ -53,6 +53,8 @@ import {
   type InsertEmailSendLog,
   type EmailCampaign,
   type InsertEmailCampaign,
+  type CustomerSegment,
+  type InsertCustomerSegment,
   users,
   blogPosts,
   products,
@@ -79,7 +81,8 @@ import {
   emailPreferences,
   emailSuppressionList,
   emailSendLog,
-  emailCampaigns
+  emailCampaigns,
+  customerSegments
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -254,6 +257,12 @@ export interface IStorage {
   getEmailCampaignById(id: string): Promise<EmailCampaign | undefined>;
   updateEmailCampaign(id: string, updates: Partial<Omit<InsertEmailCampaign, 'id' | 'createdAt'>>): Promise<EmailCampaign>;
   syncCampaignToServiceTitan(campaignId: string, serviceTitanCampaignId: number, serviceTitanCampaignName: string): Promise<EmailCampaign>;
+  
+  // Customer Segments - AI Segmentation
+  createCustomerSegment(segment: Omit<InsertCustomerSegment, 'id' | 'createdAt' | 'updatedAt' | 'lastRefreshedAt'>): Promise<CustomerSegment>;
+  getCustomerSegments(options?: { status?: string; segmentType?: string }): Promise<CustomerSegment[]>;
+  getCustomerSegmentById(id: string): Promise<CustomerSegment | undefined>;
+  updateCustomerSegment(id: string, updates: Partial<Omit<InsertCustomerSegment, 'id' | 'createdAt'>>): Promise<CustomerSegment>;
 }
 
 export class MemStorage implements IStorage {
@@ -3721,6 +3730,59 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(emailCampaigns.id, campaignId))
+      .returning();
+    
+    return result;
+  }
+
+  /**
+   * Customer Segment Management - AI Segmentation
+   */
+
+  async createCustomerSegment(segment: Omit<InsertCustomerSegment, 'id' | 'createdAt' | 'updatedAt' | 'lastRefreshedAt'>): Promise<CustomerSegment> {
+    const [result] = await db
+      .insert(customerSegments)
+      .values(segment)
+      .returning();
+    
+    return result;
+  }
+
+  async getCustomerSegments(options?: { status?: string; segmentType?: string }): Promise<CustomerSegment[]> {
+    let query = db.select().from(customerSegments);
+    
+    // Apply filters if provided
+    if (options?.status || options?.segmentType) {
+      const conditions = [];
+      if (options.status) {
+        conditions.push(eq(customerSegments.status, options.status));
+      }
+      if (options.segmentType) {
+        conditions.push(eq(customerSegments.segmentType, options.segmentType));
+      }
+      query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
+    }
+    
+    return await query.orderBy(desc(customerSegments.createdAt));
+  }
+
+  async getCustomerSegmentById(id: string): Promise<CustomerSegment | undefined> {
+    const [result] = await db
+      .select()
+      .from(customerSegments)
+      .where(eq(customerSegments.id, id));
+    
+    return result;
+  }
+
+  async updateCustomerSegment(id: string, updates: Partial<Omit<InsertCustomerSegment, 'id' | 'createdAt'>>): Promise<CustomerSegment> {
+    const [result] = await db
+      .update(customerSegments)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(customerSegments.id, id))
       .returning();
     
     return result;
