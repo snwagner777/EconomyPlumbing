@@ -6973,6 +6973,165 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // ===== EMAIL PREFERENCES & SUPPRESSION =====
+
+  // Get email preferences for a customer
+  app.get("/api/email-preferences/:email", async (req, res) => {
+    try {
+      const { email } = req.params;
+      const preferences = await storage.getEmailPreferencesByEmail(email);
+      
+      if (!preferences) {
+        // Return default preferences if none exist
+        return res.json({
+          email,
+          unsubscribedMarketing: false,
+          unsubscribedReviews: false,
+          unsubscribedServiceReminders: false,
+          unsubscribedReferrals: false,
+          unsubscribedAll: false
+        });
+      }
+      
+      res.json(preferences);
+    } catch (error: any) {
+      console.error("[Email Preferences] Get error:", error);
+      res.status(500).json({ error: "Failed to fetch email preferences" });
+    }
+  });
+
+  // Update email preferences
+  app.put("/api/email-preferences", async (req, res) => {
+    try {
+      const { email, ...preferences } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email address required" });
+      }
+      
+      const updated = await storage.upsertEmailPreferences({ email, ...preferences });
+      res.json(updated);
+    } catch (error: any) {
+      console.error("[Email Preferences] Update error:", error);
+      res.status(500).json({ error: "Failed to update email preferences" });
+    }
+  });
+
+  // Unsubscribe from specific category (public endpoint for one-click unsubscribe)
+  app.post("/api/unsubscribe/:category", async (req, res) => {
+    try {
+      const { category } = req.params;
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email address required" });
+      }
+      
+      if (!['marketing', 'reviews', 'serviceReminders', 'referrals'].includes(category)) {
+        return res.status(400).json({ error: "Invalid category" });
+      }
+      
+      const updated = await storage.unsubscribeFromCategory(email, category as any);
+      res.json({ 
+        success: true, 
+        message: `Successfully unsubscribed from ${category} emails`,
+        preferences: updated
+      });
+    } catch (error: any) {
+      console.error("[Email Preferences] Unsubscribe category error:", error);
+      res.status(500).json({ error: "Failed to unsubscribe" });
+    }
+  });
+
+  // Unsubscribe from all emails (public endpoint for one-click unsubscribe)
+  app.post("/api/unsubscribe-all", async (req, res) => {
+    try {
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: "Email address required" });
+      }
+      
+      const updated = await storage.unsubscribeFromAll(email);
+      res.json({ 
+        success: true, 
+        message: "Successfully unsubscribed from all emails",
+        preferences: updated
+      });
+    } catch (error: any) {
+      console.error("[Email Preferences] Unsubscribe all error:", error);
+      res.status(500).json({ error: "Failed to unsubscribe" });
+    }
+  });
+
+  // Admin: Get suppression list
+  app.get("/api/admin/suppression-list", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { limit, offset } = req.query;
+      const suppressions = await storage.getSuppressionList({
+        limit: limit ? parseInt(limit as string) : 100,
+        offset: offset ? parseInt(offset as string) : 0
+      });
+      
+      const stats = await storage.getSuppressionStats();
+      
+      res.json({ suppressions, stats });
+    } catch (error: any) {
+      console.error("[Admin] Get suppression list error:", error);
+      res.status(500).json({ error: "Failed to fetch suppression list" });
+    }
+  });
+
+  // Admin: Add email to suppression list
+  app.post("/api/admin/suppression-list", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { email, reason, reasonDetails } = req.body;
+      
+      if (!email || !reason) {
+        return res.status(400).json({ error: "Email and reason required" });
+      }
+      
+      const suppression = await storage.addToSuppressionList({
+        email,
+        reason,
+        reasonDetails: reasonDetails || null,
+        resendEmailId: null,
+        campaignId: null,
+        lastAttemptedAt: null
+      });
+      
+      res.json(suppression);
+    } catch (error: any) {
+      console.error("[Admin] Add to suppression list error:", error);
+      res.status(500).json({ error: "Failed to add to suppression list" });
+    }
+  });
+
+  // Admin: Remove email from suppression list
+  app.delete("/api/admin/suppression-list/:email", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { email } = req.params;
+      await storage.removeFromSuppressionList(email);
+      
+      res.json({ success: true, message: "Email removed from suppression list" });
+    } catch (error: any) {
+      console.error("[Admin] Remove from suppression list error:", error);
+      res.status(500).json({ error: "Failed to remove from suppression list" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

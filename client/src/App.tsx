@@ -92,6 +92,7 @@ const LeaveReview = lazy(() => import("@/pages/LeaveReview"));
 const ReviewRequest = lazy(() => import("@/pages/ReviewRequest"));
 const ReviewsAdmin = lazy(() => import("@/pages/ReviewsAdmin"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
+const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -200,6 +201,7 @@ function Router() {
       <Route path="/leave-review" component={LeaveReview} />
       <Route path="/leave-review/:token" component={LeaveReview} />
       <Route path="/request-review" component={ReviewRequest} />
+      <Route path="/unsubscribe" component={Unsubscribe} />
       <Route path="/faq" component={FAQ} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />

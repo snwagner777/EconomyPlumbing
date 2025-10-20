@@ -45,6 +45,10 @@ import {
   type InsertReviewRequest,
   type ReviewPlatform,
   type InsertReviewPlatform,
+  type EmailPreferences,
+  type InsertEmailPreferences,
+  type EmailSuppression,
+  type InsertEmailSuppression,
   users,
   blogPosts,
   products,
@@ -67,7 +71,9 @@ import {
   adminWhitelist,
   customReviews,
   reviewRequests,
-  reviewPlatforms
+  reviewPlatforms,
+  emailPreferences,
+  emailSuppressionList
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -218,6 +224,20 @@ export interface IStorage {
   getEnabledReviewPlatforms(): Promise<ReviewPlatform[]>;
   getAllReviewPlatforms(): Promise<ReviewPlatform[]>;
   updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
+  
+  // Email Preferences
+  getEmailPreferencesByEmail(email: string): Promise<EmailPreferences | undefined>;
+  getEmailPreferencesByCustomerId(customerId: number): Promise<EmailPreferences | undefined>;
+  upsertEmailPreferences(prefs: Partial<InsertEmailPreferences> & { email: string }): Promise<EmailPreferences>;
+  unsubscribeFromCategory(email: string, category: 'marketing' | 'reviews' | 'serviceReminders' | 'referrals'): Promise<EmailPreferences>;
+  unsubscribeFromAll(email: string): Promise<EmailPreferences>;
+  
+  // Email Suppression List
+  isEmailSuppressed(email: string): Promise<boolean>;
+  addToSuppressionList(suppression: Omit<InsertEmailSuppression, 'id' | 'addedAt'>): Promise<EmailSuppression>;
+  removeFromSuppressionList(email: string): Promise<void>;
+  getSuppressionList(options?: { limit?: number; offset?: number }): Promise<EmailSuppression[]>;
+  getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }>;
 }
 
 export class MemStorage implements IStorage {
@@ -3452,6 +3472,152 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviewPlatforms.id, id))
       .returning();
     return result;
+  }
+
+  // Email Preferences
+  async getEmailPreferencesByEmail(email: string): Promise<EmailPreferences | undefined> {
+    const [result] = await db
+      .select()
+      .from(emailPreferences)
+      .where(eq(emailPreferences.email, email));
+    return result;
+  }
+
+  async getEmailPreferencesByCustomerId(customerId: number): Promise<EmailPreferences | undefined> {
+    const [result] = await db
+      .select()
+      .from(emailPreferences)
+      .where(eq(emailPreferences.serviceTitanCustomerId, customerId));
+    return result;
+  }
+
+  async upsertEmailPreferences(prefs: Partial<InsertEmailPreferences> & { email: string }): Promise<EmailPreferences> {
+    const [result] = await db
+      .insert(emailPreferences)
+      .values({
+        email: prefs.email,
+        serviceTitanCustomerId: prefs.serviceTitanCustomerId,
+        unsubscribedMarketing: prefs.unsubscribedMarketing ?? false,
+        unsubscribedReviews: prefs.unsubscribedReviews ?? false,
+        unsubscribedServiceReminders: prefs.unsubscribedServiceReminders ?? false,
+        unsubscribedReferrals: prefs.unsubscribedReferrals ?? false,
+        unsubscribedAll: prefs.unsubscribedAll ?? false
+      })
+      .onConflictDoUpdate({
+        target: emailPreferences.email,
+        set: {
+          ...prefs,
+          lastUpdatedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async unsubscribeFromCategory(email: string, category: 'marketing' | 'reviews' | 'serviceReminders' | 'referrals'): Promise<EmailPreferences> {
+    const categoryMap = {
+      marketing: 'unsubscribedMarketing',
+      reviews: 'unsubscribedReviews',
+      serviceReminders: 'unsubscribedServiceReminders',
+      referrals: 'unsubscribedReferrals'
+    };
+
+    const [result] = await db
+      .insert(emailPreferences)
+      .values({
+        email,
+        [categoryMap[category]]: true
+      })
+      .onConflictDoUpdate({
+        target: emailPreferences.email,
+        set: {
+          [categoryMap[category]]: true,
+          lastUpdatedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async unsubscribeFromAll(email: string): Promise<EmailPreferences> {
+    const [result] = await db
+      .insert(emailPreferences)
+      .values({
+        email,
+        unsubscribedAll: true,
+        unsubscribedMarketing: true,
+        unsubscribedReviews: true,
+        unsubscribedServiceReminders: true,
+        unsubscribedReferrals: true
+      })
+      .onConflictDoUpdate({
+        target: emailPreferences.email,
+        set: {
+          unsubscribedAll: true,
+          unsubscribedMarketing: true,
+          unsubscribedReviews: true,
+          unsubscribedServiceReminders: true,
+          unsubscribedReferrals: true,
+          lastUpdatedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  // Email Suppression List
+  async isEmailSuppressed(email: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(emailSuppressionList)
+      .where(eq(emailSuppressionList.email, email));
+    return !!result;
+  }
+
+  async addToSuppressionList(suppression: Omit<InsertEmailSuppression, 'id' | 'addedAt'>): Promise<EmailSuppression> {
+    const [result] = await db
+      .insert(emailSuppressionList)
+      .values(suppression)
+      .onConflictDoUpdate({
+        target: emailSuppressionList.email,
+        set: {
+          reason: suppression.reason,
+          reasonDetails: suppression.reasonDetails,
+          resendEmailId: suppression.resendEmailId,
+          campaignId: suppression.campaignId,
+          lastAttemptedAt: new Date()
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async removeFromSuppressionList(email: string): Promise<void> {
+    await db
+      .delete(emailSuppressionList)
+      .where(eq(emailSuppressionList.email, email));
+  }
+
+  async getSuppressionList(options?: { limit?: number; offset?: number }): Promise<EmailSuppression[]> {
+    return await db
+      .select()
+      .from(emailSuppressionList)
+      .orderBy(desc(emailSuppressionList.addedAt))
+      .limit(options?.limit ?? 100)
+      .offset(options?.offset ?? 0);
+  }
+
+  async getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }> {
+    const all = await db
+      .select()
+      .from(emailSuppressionList);
+    
+    return {
+      total: all.length,
+      hardBounces: all.filter(s => s.reason === 'hard_bounce').length,
+      spamComplaints: all.filter(s => s.reason === 'spam_complaint').length,
+      manual: all.filter(s => s.reason === 'manual_suppression').length
+    };
   }
 }
 
