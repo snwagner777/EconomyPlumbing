@@ -282,6 +282,53 @@ interface PortalStats {
   }[];
 }
 
+function MarketingAutomationMetrics() {
+  const { data: segmentsData } = useQuery<{ segments: any[] }>({
+    queryKey: ['/api/admin/segments'],
+  });
+
+  const { data: campaignsData } = useQuery<{ campaigns: any[] }>({
+    queryKey: ['/api/admin/campaigns'],
+  });
+
+  const { data: settings } = useQuery<{ masterSendEnabled: boolean }>({
+    queryKey: ['/api/admin/marketing-settings'],
+  });
+
+  const segments = segmentsData?.segments || [];
+  const campaigns = campaignsData?.campaigns || [];
+  const activeSegments = segments.filter(s => s.status === 'active');
+  const pendingCampaigns = campaigns.filter(c => c.status === 'pending_approval');
+  const masterSendEnabled = settings?.masterSendEnabled || false;
+
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <p className="text-sm text-muted-foreground">Active Segments</p>
+          <p className="text-2xl font-bold">{activeSegments.length}</p>
+        </div>
+        <div>
+          <p className="text-sm text-muted-foreground">Pending Campaigns</p>
+          <p className="text-2xl font-bold">{pendingCampaigns.length}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between pt-2 border-t">
+        <div className="flex items-center gap-2">
+          <div className={`h-2 w-2 rounded-full ${masterSendEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className="text-sm text-muted-foreground">
+            Master Send: {masterSendEnabled ? 'ON' : 'OFF'}
+          </span>
+        </div>
+        <Badge variant={masterSendEnabled ? "default" : "secondary"}>
+          {masterSendEnabled ? 'Active' : 'Disabled'}
+        </Badge>
+      </div>
+    </>
+  );
+}
+
 function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
   const { toast } = useToast();
   const unusedPhotos = photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl);
@@ -448,6 +495,16 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 </div>
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Marketing Automation</CardTitle>
+            <CardDescription>AI-powered email campaigns</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <MarketingAutomationMetrics />
           </CardContent>
         </Card>
       </div>

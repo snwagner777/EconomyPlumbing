@@ -7527,6 +7527,47 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get marketing system settings
+  app.get("/api/admin/marketing-settings", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const settings = await storage.getMarketingSystemSettings();
+      res.json({
+        masterSendEnabled: settings?.masterSendEnabled || false,
+        dailyEmailLimit: settings?.dailyEmailLimit || 500,
+        testModeEnabled: settings?.testModeEnabled || true,
+      });
+    } catch (error: any) {
+      console.error('[API] Error fetching marketing settings:', error);
+      res.status(500).json({ error: "Failed to fetch marketing settings" });
+    }
+  });
+
+  // Update marketing system settings
+  app.put("/api/admin/marketing-settings", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { masterSendEnabled, dailyEmailLimit, testModeEnabled } = req.body;
+
+      const updated = await storage.updateMarketingSystemSettings({
+        masterSendEnabled,
+        dailyEmailLimit,
+        testModeEnabled,
+      });
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error('[API] Error updating marketing settings:', error);
+      res.status(500).json({ error: "Failed to update marketing settings" });
+    }
+  });
+
   // Get audience movement logs
   app.get("/api/admin/audience-logs", async (req, res) => {
     try {
