@@ -1,19 +1,20 @@
 import twilio from 'twilio';
+import { getValidAccessToken, isZoomOAuthConfigured } from './zoomOAuth';
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-const zoomApiKey = process.env.ZOOM_PHONE_API_KEY;
 const zoomPhoneNumber = process.env.ZOOM_PHONE_NUMBER;
+const zoomUserId = process.env.ZOOM_USER_ID;
 
 const isTwilioConfigured = !!(accountSid && authToken && twilioPhoneNumber);
-const isZoomConfigured = !!(zoomApiKey && zoomPhoneNumber);
+const isZoomConfigured = isZoomOAuthConfigured() && !!zoomPhoneNumber && !!zoomUserId;
 
 if (!isZoomConfigured && !isTwilioConfigured) {
   console.warn('[SMS] No SMS provider configured. SMS functionality will be disabled.');
 } else if (isZoomConfigured) {
-  console.log('[SMS] Using Zoom Phone for SMS delivery');
+  console.log('[SMS] Using Zoom Phone for SMS delivery (OAuth)');
 } else {
   console.log('[SMS] Using Twilio for SMS delivery');
 }
@@ -26,20 +27,23 @@ export interface SendSMSOptions {
 }
 
 async function sendViaZoom({ to, message }: SendSMSOptions): Promise<void> {
-  console.log('[Zoom Phone] Sending SMS:');
-  console.log('  From:', zoomPhoneNumber);
+  console.log('[Zoom Phone] Sending SMS via OAuth:');
+  console.log('  User ID:', zoomUserId);
   console.log('  To:', to);
   
   try {
-    const response = await fetch('https://api.zoom.us/v2/phone/sms', {
+    // Get valid OAuth access token (auto-refreshes if expired)
+    const accessToken = await getValidAccessToken();
+    
+    // Use user-specific SMS endpoint
+    const response = await fetch(`https://api.zoom.us/v2/phone/users/${zoomUserId}/sms`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${zoomApiKey}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         to: to,
-        from: zoomPhoneNumber,
         message: message,
       }),
     });

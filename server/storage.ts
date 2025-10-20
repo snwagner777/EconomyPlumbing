@@ -15,6 +15,8 @@ import {
   type InsertGoogleReview,
   type GoogleOAuthToken,
   type InsertGoogleOAuthToken,
+  type ZoomOAuthToken,
+  type InsertZoomOAuthToken,
   type PendingPurchase,
   type InsertPendingPurchase,
   type ServiceTitanMembership,
@@ -49,6 +51,7 @@ import {
   serviceAreas,
   googleReviews,
   googleOAuthTokens,
+  zoomOAuthTokens,
   pendingPurchases,
   serviceTitanMemberships,
   companyCamPhotos,
@@ -113,6 +116,11 @@ export interface IStorage {
   getGoogleOAuthToken(service?: string): Promise<GoogleOAuthToken | undefined>;
   saveGoogleOAuthToken(token: InsertGoogleOAuthToken): Promise<GoogleOAuthToken>;
   updateGoogleOAuthToken(id: string, token: Partial<InsertGoogleOAuthToken>): Promise<GoogleOAuthToken>;
+  
+  // Zoom OAuth tokens
+  getZoomOAuthToken(): Promise<ZoomOAuthToken | undefined>;
+  saveZoomOAuthToken(token: InsertZoomOAuthToken): Promise<ZoomOAuthToken>;
+  updateZoomOAuthToken(id: string, token: Partial<InsertZoomOAuthToken>): Promise<ZoomOAuthToken>;
   
   // ServiceTitan memberships
   createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership>;
@@ -2213,6 +2221,21 @@ Call (512) 368-9159 or schedule service online.`,
     throw new Error('OAuth not supported in MemStorage');
   }
 
+  async getZoomOAuthToken(): Promise<ZoomOAuthToken | undefined> {
+    // MemStorage stub - not used in production
+    return undefined;
+  }
+
+  async saveZoomOAuthToken(token: InsertZoomOAuthToken): Promise<ZoomOAuthToken> {
+    // MemStorage stub - not used in production
+    throw new Error('Zoom OAuth not supported in MemStorage');
+  }
+
+  async updateZoomOAuthToken(id: string, token: Partial<InsertZoomOAuthToken>): Promise<ZoomOAuthToken> {
+    // MemStorage stub - not used in production
+    throw new Error('Zoom OAuth not supported in MemStorage');
+  }
+
   async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
     const id = randomUUID();
     const newMembership: ServiceTitanMembership = {
@@ -2621,6 +2644,32 @@ export class DatabaseStorage implements IStorage {
       .update(googleOAuthTokens)
       .set({ ...tokenUpdate, updatedAt: new Date() })
       .where(eq(googleOAuthTokens.id, id))
+      .returning();
+    return updatedToken;
+  }
+
+  async getZoomOAuthToken(): Promise<ZoomOAuthToken | undefined> {
+    const [token] = await db
+      .select()
+      .from(zoomOAuthTokens)
+      .orderBy(desc(zoomOAuthTokens.createdAt))
+      .limit(1);
+    return token;
+  }
+
+  async saveZoomOAuthToken(token: InsertZoomOAuthToken): Promise<ZoomOAuthToken> {
+    const [savedToken] = await db
+      .insert(zoomOAuthTokens)
+      .values(token)
+      .returning();
+    return savedToken;
+  }
+
+  async updateZoomOAuthToken(id: string, tokenUpdate: Partial<InsertZoomOAuthToken>): Promise<ZoomOAuthToken> {
+    const [updatedToken] = await db
+      .update(zoomOAuthTokens)
+      .set({ ...tokenUpdate, updatedAt: new Date() })
+      .where(eq(zoomOAuthTokens.id, id))
       .returning();
     return updatedToken;
   }

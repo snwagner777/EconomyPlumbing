@@ -262,6 +262,17 @@ export const googleOAuthTokens = pgTable("google_oauth_tokens", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const zoomOAuthTokens = pgTable("zoom_oauth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  scope: text("scope"),
+  tokenType: text("token_type").notNull().default('bearer'),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const pendingPurchases = pgTable("pending_purchases", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   paymentIntentId: text("payment_intent_id").notNull().unique(),
@@ -437,6 +448,12 @@ export const insertGoogleReviewSchema = createInsertSchema(googleReviews).omit({
 
 export const insertGoogleOAuthTokenSchema = createInsertSchema(googleOAuthTokens).omit({
   id: true,
+  updatedAt: true,
+});
+
+export const insertZoomOAuthTokenSchema = createInsertSchema(zoomOAuthTokens).omit({
+  id: true,
+  createdAt: true,
   updatedAt: true,
 });
 
@@ -829,6 +846,8 @@ export type GoogleReview = typeof googleReviews.$inferSelect;
 export type InsertGoogleReview = z.infer<typeof insertGoogleReviewSchema>;
 export type GoogleOAuthToken = typeof googleOAuthTokens.$inferSelect;
 export type InsertGoogleOAuthToken = z.infer<typeof insertGoogleOAuthTokenSchema>;
+export type ZoomOAuthToken = typeof zoomOAuthTokens.$inferSelect;
+export type InsertZoomOAuthToken = z.infer<typeof insertZoomOAuthTokenSchema>;
 export type PendingPurchase = typeof pendingPurchases.$inferSelect;
 export type InsertPendingPurchase = z.infer<typeof insertPendingPurchaseSchema>;
 export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect;
