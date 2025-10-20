@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Trophy, Star } from "lucide-react";
+import { Trophy, Star, Award } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -43,10 +43,10 @@ export function CustomerWallOfFame() {
     return "w-14 h-14 text-base"; // Rest
   };
 
-  const getMedalIcon = (index: number) => {
-    if (index === 0) return "🥇";
-    if (index === 1) return "🥈";
-    if (index === 2) return "🥉";
+  const getMedalColor = (index: number) => {
+    if (index === 0) return "text-amber-400 fill-amber-400"; // Gold
+    if (index === 1) return "text-slate-300 fill-slate-300"; // Silver
+    if (index === 2) return "text-amber-700 fill-amber-700"; // Bronze
     return null;
   };
 
@@ -56,6 +56,13 @@ export function CustomerWallOfFame() {
       return `${parts[0][0]}${parts[parts.length - 1][0]}`;
     }
     return parts[0]?.substring(0, 2).toUpperCase() || '??';
+  };
+
+  const getDisplayName = (name: string): string => {
+    const parts = name.trim().split(' ');
+    const firstName = parts[0];
+    const lastInitial = parts.length > 1 ? parts[parts.length - 1][0] + '.' : '';
+    return `${firstName} ${lastInitial}`.trim();
   };
 
   return (
@@ -79,7 +86,8 @@ export function CustomerWallOfFame() {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 justify-items-center">
           {leaderboard.map((customer, index) => {
             const sizeClass = getSizeClass(index);
-            const medal = getMedalIcon(index);
+            const medalColor = getMedalColor(index);
+            const displayName = getDisplayName(customer.name);
             
             return (
               <div
@@ -93,9 +101,9 @@ export function CustomerWallOfFame() {
                 data-testid={`customer-hall-${index}`}
               >
                 {/* Medal Badge (Top 3) */}
-                {medal && (
-                  <div className="absolute -top-2 -right-2 text-3xl z-10 animate-bounce" style={{ animationDuration: '2s' }}>
-                    {medal}
+                {medalColor && (
+                  <div className="absolute -top-2 -right-2 z-10">
+                    <Award className={`w-8 h-8 ${medalColor} drop-shadow-md`} />
                   </div>
                 )}
 
@@ -136,10 +144,10 @@ export function CustomerWallOfFame() {
 
                 {/* Customer Info */}
                 <div className="flex flex-col items-center gap-1 min-w-0">
-                  <p className="text-sm font-semibold text-center truncate w-full px-2">
-                    {customer.name}
+                  <p className="text-sm font-semibold text-center truncate w-full px-2" data-testid={`text-customer-name-${index}`}>
+                    {displayName}
                   </p>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-xs" data-testid={`badge-job-count-${index}`}>
                     {customer.jobCount} {customer.jobCount === 1 ? 'Service' : 'Services'}
                   </Badge>
                 </div>
@@ -153,7 +161,7 @@ export function CustomerWallOfFame() {
                   z-20
                 ">
                   <div className="bg-popover text-popover-foreground px-3 py-2 rounded-lg shadow-lg border text-xs whitespace-nowrap">
-                    <p className="font-semibold">{customer.name}</p>
+                    <p className="font-semibold">{displayName}</p>
                     <p className="text-muted-foreground">
                       {customer.jobCount} completed service{customer.jobCount !== 1 ? 's' : ''}
                     </p>
