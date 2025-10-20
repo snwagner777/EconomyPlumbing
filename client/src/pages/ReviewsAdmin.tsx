@@ -73,6 +73,119 @@ type ReputationSetting = {
   updatedAt: string;
 };
 
+type CustomerEngagement = {
+  customerId: number;
+  customerName: string;
+  events: Array<{
+    type: 'email' | 'sms';
+    subject?: string;
+    campaignName?: string;
+    sentAt: string;
+    openedAt?: string;
+    clickedAt?: string;
+    status: string;
+  }>;
+  totalEmails: number;
+  totalSMS: number;
+  emailOpenRate: number;
+  smsDeliveryRate: number;
+};
+
+function CustomerEngagementTimeline() {
+  const { data: engagementData, isLoading } = useQuery<{ customers: CustomerEngagement[] }>({
+    queryKey: ['/api/admin/customer-engagement'],
+  });
+
+  if (isLoading) {
+    return <Skeleton className="h-96 w-full" />;
+  }
+
+  const customers = engagementData?.customers || [];
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Customer Engagement Timeline</CardTitle>
+        <CardDescription>Recent email and SMS interactions across all campaigns</CardDescription>
+      </CardHeader>
+      <CardContent>
+        {customers.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">No engagement data yet</p>
+        ) : (
+          <div className="space-y-6">
+            {customers.slice(0, 10).map((customer) => (
+              <div key={customer.customerId} className="border rounded-lg p-4">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-base">{customer.customerName}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {customer.totalEmails} emails • {customer.totalSMS} SMS messages
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Badge variant="outline" className="gap-1">
+                      <Mail className="w-3 h-3" />
+                      {(customer.emailOpenRate * 100).toFixed(0)}% open
+                    </Badge>
+                    <Badge variant="outline" className="gap-1">
+                      <MessageSquare className="w-3 h-3" />
+                      {(customer.smsDeliveryRate * 100).toFixed(0)}% delivered
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {customer.events.slice(0, 5).map((event, idx) => (
+                    <div key={idx} className="flex items-start gap-3 text-sm">
+                      <div className="mt-1">
+                        {event.type === 'email' ? (
+                          <Mail className="w-4 h-4 text-blue-500" />
+                        ) : (
+                          <MessageSquare className="w-4 h-4 text-green-500" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">
+                          {event.subject || event.campaignName || `${event.type === 'email' ? 'Email' : 'SMS'} sent`}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
+                          <span>{format(new Date(event.sentAt), 'MMM d, yyyy h:mm a')}</span>
+                          {event.openedAt && (
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-3 h-3" />
+                              Opened
+                            </span>
+                          )}
+                          {event.clickedAt && (
+                            <span className="flex items-center gap-1">
+                              <MousePointer className="w-3 h-3" />
+                              Clicked
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {customer.events.length > 5 && (
+                    <p className="text-xs text-muted-foreground text-center pt-2">
+                      +{customer.events.length - 5} more interactions
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+            {customers.length > 10 && (
+              <p className="text-sm text-muted-foreground text-center pt-4">
+                Showing 10 of {customers.length} customers with recent activity
+              </p>
+            )}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function ReviewsAdmin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -277,6 +390,8 @@ export default function ReviewsAdmin() {
                 </CardContent>
               </Card>
             </div>
+
+            <CustomerEngagementTimeline />
 
             <Card>
               <CardHeader>
