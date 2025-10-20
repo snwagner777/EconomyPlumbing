@@ -1636,74 +1636,32 @@ ${rssItems}
     }
   });
 
-  // Get top customers leaderboard (by service call count from ServiceTitan)
-  // Cached in-memory to avoid excessive API calls
-  let customersLeaderboardCache: { leaderboard: any[], cachedAt: number } | null = null;
-  const LEADERBOARD_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
-
+  // Get top customers leaderboard (by completed job count from database)
+  // ⚡ Fast database-driven query - no API calls! Updated by job sync.
   app.get("/api/customers/leaderboard", async (req, res) => {
     try {
-      // Return cached data if available and fresh
-      if (customersLeaderboardCache && (Date.now() - customersLeaderboardCache.cachedAt) < LEADERBOARD_CACHE_TTL) {
-        console.log('[Customers Leaderboard] Returning cached data');
-        return res.json({ leaderboard: customersLeaderboardCache.leaderboard });
-      }
-
-      console.log('[Customers Leaderboard] Cache miss - fetching fresh data');
       const { serviceTitanCustomers } = await import('@shared/schema');
-      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
-      const serviceTitan = getServiceTitanAPI();
+      const { desc } = await import('drizzle-orm');
       
-      // Get top 20 customers by job count (reduced from 50 to minimize API calls)
+      console.log('[Customers Leaderboard] Fetching top customers from database...');
+      
+      // Get top 30 customers by job count (show more for diversity)
       const topCustomers = await db
         .select({
-          id: serviceTitanCustomers.id,
           name: serviceTitanCustomers.name,
+          jobCount: serviceTitanCustomers.jobCount,
         })
         .from(serviceTitanCustomers)
-        .where(sql`${serviceTitanCustomers.name} IS NOT NULL`)
-        .orderBy(sql`RANDOM()`) // Randomize to get a diverse sample
-        .limit(20);
+        .where(sql`${serviceTitanCustomers.jobCount} > 0`)
+        .orderBy(desc(serviceTitanCustomers.jobCount))
+        .limit(30);
 
       if (!topCustomers.length) {
-        // Cache empty result too
-        customersLeaderboardCache = { leaderboard: [], cachedAt: Date.now() };
         return res.json({ leaderboard: [] });
       }
 
-      // For each customer, get their actual job count from ServiceTitan
-      const customerJobCounts = await Promise.all(
-        topCustomers.map(async (customer) => {
-          try {
-            const jobs = await serviceTitan.getCustomerJobs(customer.id);
-            // Count only completed jobs
-            const completedJobs = jobs.filter((job: any) => 
-              job.status === 'Completed' || 
-              job.completedOn !== null
-            );
-            
-            return {
-              name: customer.name,
-              jobCount: completedJobs.length,
-            };
-          } catch (error) {
-            console.error(`[Leaderboard] Error fetching jobs for customer ${customer.id}:`, error);
-            return {
-              name: customer.name,
-              jobCount: 0,
-            };
-          }
-        })
-      );
-
-      // Sort by job count and take top 10
-      const topByJobCount = customerJobCounts
-        .filter(c => c.jobCount > 0)
-        .sort((a, b) => b.jobCount - a.jobCount)
-        .slice(0, 10);
-
       // Anonymize names (First name + Last initial)
-      const anonymizedLeaderboard = topByJobCount.map(entry => {
+      const anonymizedLeaderboard = topCustomers.map(entry => {
         const nameParts = entry.name.trim().split(' ');
         const firstName = nameParts[0];
         const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] + '.' : '';
@@ -1713,21 +1671,35 @@ ${rssItems}
         };
       });
 
-      // Update cache
-      customersLeaderboardCache = {
-        leaderboard: anonymizedLeaderboard,
-        cachedAt: Date.now()
-      };
-
+      console.log(`[Customers Leaderboard] ✅ Returning ${anonymizedLeaderboard.length} customers`);
       res.json({ leaderboard: anonymizedLeaderboard });
     } catch (error: any) {
       console.error('[Customers] Error fetching leaderboard:', error);
-      // Return cached data if available even if expired, as fallback
-      if (customersLeaderboardCache) {
-        console.log('[Customers Leaderboard] Returning stale cache due to error');
-        return res.json({ leaderboard: customersLeaderboardCache.leaderboard });
-      }
       res.status(500).json({ message: "Error fetching customer leaderboard" });
+    }
+  });
+
+  // Trigger ServiceTitan jobs sync (Admin only)
+  app.post("/api/admin/servicetitan/sync-jobs", async (req, res) => {
+    try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      console.log('[Admin] Triggering ServiceTitan jobs sync...');
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      
+      const result = await serviceTitan.syncAllJobs();
+      
+      res.json({
+        message: "Jobs sync completed successfully",
+        ...result
+      });
+    } catch (error: any) {
+      console.error('[Admin] Error syncing jobs:', error);
+      res.status(500).json({ message: "Error syncing jobs", error: error.message });
     }
   });
 

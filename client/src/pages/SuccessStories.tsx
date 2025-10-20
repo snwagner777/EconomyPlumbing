@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SuccessStoryForm from "@/components/SuccessStoryForm";
+import { CustomerWallOfFame } from "@/components/CustomerWallOfFame";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { SEOHead } from "@/components/SEO/SEOHead";
@@ -152,8 +153,13 @@ export default function SuccessStories() {
           </div>
         </div>
 
-        {/* Gallery */}
+        {/* Customer Hall of Fame */}
         <div className="container mx-auto max-w-6xl px-4 py-12">
+          <CustomerWallOfFame />
+        </div>
+
+        {/* Gallery */}
+        <div className="container mx-auto max-w-6xl px-4 py-12 pt-0">
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
