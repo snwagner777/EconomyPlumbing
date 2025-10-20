@@ -6371,6 +6371,34 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get ALL customer locations (for multi-location display)
+  app.get("/api/portal/customer-locations/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      // Check session authentication
+      if (!req.session?.portalCustomerId) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      console.log(`[Portal] Fetching all locations for customer ${customerId}...`);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      const locations = await serviceTitan.getAllCustomerLocations(parseInt(customerId));
+
+      res.json({ locations });
+    } catch (error: any) {
+      console.error("[Portal] Get all locations error:", error);
+      res.status(500).json({ error: "Failed to fetch customer locations" });
+    }
+  });
+
   // Customer Leaderboard - Top customers by service usage
   // TODO: Re-implement for refer-a-friend page using actual ServiceTitan job/appointment data
   app.get("/api/customer-leaderboard", async (req, res) => {
