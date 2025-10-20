@@ -9,10 +9,10 @@ Economy Plumbing Services is a full-stack web application designed to enhance th
 - **Self-Service Customer Data Updates:** Implemented full self-service data update capabilities allowing customers to update their contact information (phone/email) and service address directly through the Customer Portal. Updates are synced to ServiceTitan via official API endpoints (PUT /customers/{id}/contacts/{contactId} for contacts, PUT /locations/{id} for addresses). Features inline "Edit" buttons on customer info card, modal dialogs with pre-filled forms, real-time validation, loading states, toast notifications, and auto-refresh after successful updates. Enhances customer autonomy and reduces call volume.
 
 ## Recent Changes (October 19, 2025)
+- **Custom Review System:** Fully implemented custom review/testimonial submission system to replace NiceJob. Features include: public submission form at `/leave-review`, admin moderation UI in unified admin dashboard, status management (pending/approved/rejected), unified `/api/reviews` endpoint merging Google reviews + custom reviews with proper filtering/sorting, and approved reviews display on website pages.
 - **Estimate Expiration Alerts:** Customer Portal estimates section now includes 30-day expiration policy notice, section-level amber alert for any expiring estimates (≤7 days), and individual estimate urgency treatments including amber styling, countdown badges, "⚠️ Expiring Soon!" warnings, and dual "Schedule Now"/"Call Us" CTAs for estimates expiring within 7 days.
 - **Customer Portal Referral Promotion:** Added prominent referral program card with dual $25 reward messaging, real-time stats (clicks, conversions), and "Start Referring & Earning" CTA linking to /refer-a-friend page.
 - **Estimates Filtering:** Customer Portal now filters estimates to show only open/pending ones - excludes approved, declined, expired, closed, and sold estimates. Section auto-hides when no open estimates exist.
-- **Zoom Phone SMS Integration:** Replaced Twilio with Zoom Phone for SMS messaging. Test endpoint confirmed working (200 status). Credentials configured: ZOOM_PHONE_API_KEY, ZOOM_PHONE_NUMBER.
 - **ServiceTitan Customer Data Schema:** Synchronized schema with database - added email, phone, mobilePhone columns to serviceTitanCustomers table with proper indexes for fast lookups.
 - **Customer Portal Email Display:** Fixed email display bug by updating searchAllMatchingCustomers function to return email, phone, and mobilePhone fields in customer data responses.
 - **Session Management:** Implemented server-side session storage for persistent login - portalCustomerId now saved to session on successful verification for seamless multi-page navigation.
@@ -71,7 +71,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend.
-- **SMS Integration:** Zoom Phone API for SMS messaging (replaced Twilio).
+- **SMS Integration:** Twilio (pending approval for production use). NiceJob integration active for customer reviews and testimonials.
 - **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, success story focal point detection, and customer support chatbot (GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations.
 - **Google Services:** Google Places API, Google Maps.
