@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import CustomerSegmentsAdmin from "./CustomerSegmentsAdmin";
 import EmailCampaignsAdmin from "./EmailCampaignsAdmin";
 import AudienceLogsAdmin from "./AudienceLogsAdmin";
+import MarketingSettingsAdmin from "./MarketingSettingsAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Sidebar, 
@@ -68,7 +69,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -203,6 +204,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Activity,
       section: 'audience-logs' as AdminSection,
       description: "Segment entry/exit tracking"
+    },
+    {
+      title: "Marketing Settings",
+      icon: Settings,
+      section: 'marketing-settings' as AdminSection,
+      description: "Master send switch & config"
     },
   ];
 
@@ -3724,6 +3731,8 @@ export default function UnifiedAdminDashboard() {
         return <EmailCampaignsAdmin />;
       case 'audience-logs':
         return <AudienceLogsAdmin />;
+      case 'marketing-settings':
+        return <MarketingSettingsAdmin />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3744,6 +3753,7 @@ export default function UnifiedAdminDashboard() {
       'segments': 'Customer Segments',
       'campaigns': 'Email Campaigns',
       'audience-logs': 'Audience Logs',
+      'marketing-settings': 'Marketing Settings',
     };
     return titles[activeSection];
   };
