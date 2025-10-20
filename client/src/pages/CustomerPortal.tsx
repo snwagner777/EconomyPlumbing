@@ -39,7 +39,8 @@ import {
   Copy,
   Check,
   TrendingUp,
-  CalendarClock
+  CalendarClock,
+  Edit2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { SiFacebook, SiX } from "react-icons/si";
@@ -203,7 +204,25 @@ export default function CustomerPortal() {
     enabled: !!customerId,
   });
 
+  // Fetch ALL locations for this customer (multi-location support)
+  const { data: locationsData } = useQuery<{
+    locations: Array<{
+      id: number;
+      name?: string;
+      address: {
+        street: string;
+        city: string;
+        state: string;
+        zip: string;
+      };
+    }>;
+  }>({
+    queryKey: ['/api/portal/customer-locations', customerId],
+    enabled: !!customerId,
+  });
+
   const timeWindows = arrivalWindowsData?.windows || [];
+  const customerLocations = locationsData?.locations || [];
 
   // Separate upcoming and completed appointments
   const upcomingAppointments = customerData?.appointments.filter(apt => {
@@ -1083,27 +1102,6 @@ export default function CustomerPortal() {
                             <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
                           </div>
                         </div>
-                        
-                        {customerData.customer.address && (
-                          <>
-                            <div className="flex items-center justify-between mt-4 mb-2">
-                              <h3 className="text-sm font-semibold">Service Address</h3>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleEditAddress}
-                                data-testid="button-edit-address"
-                              >
-                                Edit
-                              </Button>
-                            </div>
-                            <div>
-                              <p className="font-medium" data-testid="text-customer-address">
-                                {customerData.customer.address.street}, {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
-                              </p>
-                            </div>
-                          </>
-                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1436,32 +1434,65 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
-                  {/* Service Address */}
-                  {customerData.customer.address && (
+                  {/* Service Locations */}
+                  {customerLocations.length > 0 && (
                     <Card>
                       <CardHeader>
                         <div className="flex items-center gap-2">
                           <MapPin className="w-6 h-6 text-primary" />
-                          <CardTitle>Service Address</CardTitle>
+                          <CardTitle>Service Locations ({customerLocations.length})</CardTitle>
                         </div>
                         <CardDescription>
-                          Primary location for service calls
+                          {customerLocations.length === 1 
+                            ? "Your service address" 
+                            : "All your service addresses"}
                         </CardDescription>
                       </CardHeader>
-                      <CardContent>
-                        <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
-                          <Home className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <div className="flex-1">
-                            <p className="font-medium" data-testid="text-service-address">
-                              {customerData.customer.address.street}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
-                            </p>
+                      <CardContent className="space-y-3">
+                        {customerLocations.map((location, index) => (
+                          <div
+                            key={location.id}
+                            className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border"
+                            data-testid={`location-card-${location.id}`}
+                          >
+                            <Home className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                            <div className="flex-1">
+                              {location.name && (
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  {location.name}
+                                </p>
+                              )}
+                              <p className="font-medium" data-testid={`text-location-street-${location.id}`}>
+                                {location.address.street}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {location.address.city}, {location.address.state} {location.address.zip}
+                              </p>
+                              {index === 0 && customerLocations.length > 1 && (
+                                <Badge variant="secondary" className="mt-2 text-xs">
+                                  Primary
+                                </Badge>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setLocationId(location.id);
+                                setEditStreet(location.address.street || '');
+                                setEditCity(location.address.city || '');
+                                setEditState(location.address.state || '');
+                                setEditZip(location.address.zip || '');
+                                setEditAddressOpen(true);
+                              }}
+                              data-testid={`button-edit-location-${location.id}`}
+                            >
+                              <Edit2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-3 text-center">
-                          Need to update your service address? Call us at (512) 396-7811
+                        ))}
+                        <p className="text-xs text-muted-foreground text-center pt-2">
+                          Click the edit button to update any service address
                         </p>
                       </CardContent>
                     </Card>
