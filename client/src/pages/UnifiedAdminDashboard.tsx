@@ -3386,8 +3386,6 @@ function TrackingNumbersSection() {
 }
 
 function SettingsSection() {
-  const { toast } = useToast();
-
   // Query Zoom OAuth status
   const { data: zoomOAuthStatus, isLoading } = useQuery<{ hasToken: boolean; expiresAt?: string }>({
     queryKey: ['/api/zoom/oauth/status'],
