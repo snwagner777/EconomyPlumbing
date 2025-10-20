@@ -88,6 +88,7 @@ const ReferAFriend = lazy(() => import("@/pages/ReferAFriend"));
 const ReferralLanding = lazy(() => import("@/pages/ReferralLanding"));
 const ReferralOffer = lazy(() => import("@/pages/ReferralOffer"));
 const CustomerPortal = lazy(() => import("@/pages/CustomerPortal"));
+const LeaveReview = lazy(() => import("@/pages/LeaveReview"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 
 // Simple loading fallback
@@ -194,6 +195,8 @@ function Router() {
       <Route path="/contact" component={Contact} />
       <Route path="/refer-a-friend" component={ReferAFriend} />
       <Route path="/customer-portal" component={CustomerPortal} />
+      <Route path="/leave-review" component={LeaveReview} />
+      <Route path="/leave-review/:token" component={LeaveReview} />
       <Route path="/faq" component={FAQ} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />
       <Route path="/refund_returns" component={RefundReturns} />

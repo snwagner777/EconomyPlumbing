@@ -1107,6 +1107,8 @@ ${rssItems}
       // Return sanitized data (don't expose internal fields)
       res.json({
         customerName: request.customerName,
+        email: request.email || undefined,
+        phone: request.phone || undefined,
         serviceTitanCustomerId: request.serviceTitanCustomerId,
         serviceTitanJobId: request.serviceTitanJobId,
         requestId: request.id,
