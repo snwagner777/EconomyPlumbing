@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import CustomerSegmentsAdmin from "./CustomerSegmentsAdmin";
+import EmailCampaignsAdmin from "./EmailCampaignsAdmin";
+import AudienceLogsAdmin from "./AudienceLogsAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Sidebar, 
@@ -65,7 +68,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -182,6 +185,24 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Users,
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
+    },
+    {
+      title: "Customer Segments",
+      icon: Users,
+      section: 'segments' as AdminSection,
+      description: "AI-generated customer groups"
+    },
+    {
+      title: "Email Campaigns",
+      icon: Mail,
+      section: 'campaigns' as AdminSection,
+      description: "Marketing automation campaigns"
+    },
+    {
+      title: "Audience Logs",
+      icon: Activity,
+      section: 'audience-logs' as AdminSection,
+      description: "Segment entry/exit tracking"
     },
   ];
 
@@ -3640,6 +3661,12 @@ export default function UnifiedAdminDashboard() {
         return <ReviewPlatformsSection />;
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
+      case 'segments':
+        return <CustomerSegmentsAdmin />;
+      case 'campaigns':
+        return <EmailCampaignsAdmin />;
+      case 'audience-logs':
+        return <AudienceLogsAdmin />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3657,6 +3684,9 @@ export default function UnifiedAdminDashboard() {
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral Tracking',
+      'segments': 'Customer Segments',
+      'campaigns': 'Email Campaigns',
+      'audience-logs': 'Audience Logs',
     };
     return titles[activeSection];
   };

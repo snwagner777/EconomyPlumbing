@@ -7488,6 +7488,45 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Add tracking number to campaign
+  app.post("/api/admin/campaigns/:id/tracking-number", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { id } = req.params;
+      const { trackingNumber } = req.body;
+
+      if (!trackingNumber) {
+        return res.status(400).json({ error: "Tracking number is required" });
+      }
+
+      // Update campaign with tracking number and change status to ready_to_send
+      const [updatedCampaign] = await db
+        .update(emailCampaigns)
+        .set({
+          trackingPhoneNumber: trackingNumber,
+          status: 'ready_to_send',
+          updatedAt: new Date(),
+        })
+        .where(eq(emailCampaigns.id, id))
+        .returning();
+
+      if (!updatedCampaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      res.json({
+        success: true,
+        campaign: updatedCampaign,
+      });
+    } catch (error: any) {
+      console.error('[API] Error adding tracking number:', error);
+      res.status(500).json({ error: error.message || "Failed to add tracking number" });
+    }
+  });
+
   // Get audience movement logs
   app.get("/api/admin/audience-logs", async (req, res) => {
     try {
