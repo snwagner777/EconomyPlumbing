@@ -1485,13 +1485,24 @@ ${rssItems}
   });
 
   // Get top customers leaderboard (by service call count from ServiceTitan)
+  // Cached in-memory to avoid excessive API calls
+  let customersLeaderboardCache: { leaderboard: any[], cachedAt: number } | null = null;
+  const LEADERBOARD_CACHE_TTL = 60 * 60 * 1000; // 1 hour cache
+
   app.get("/api/customers/leaderboard", async (req, res) => {
     try {
+      // Return cached data if available and fresh
+      if (customersLeaderboardCache && (Date.now() - customersLeaderboardCache.cachedAt) < LEADERBOARD_CACHE_TTL) {
+        console.log('[Customers Leaderboard] Returning cached data');
+        return res.json({ leaderboard: customersLeaderboardCache.leaderboard });
+      }
+
+      console.log('[Customers Leaderboard] Cache miss - fetching fresh data');
       const { serviceTitanCustomers } = await import('@shared/schema');
       const { getServiceTitanAPI } = await import('./lib/serviceTitan');
       const serviceTitan = getServiceTitanAPI();
       
-      // Get top 50 customers by job count (we'll filter to top 10 after getting real job counts)
+      // Get top 20 customers by job count (reduced from 50 to minimize API calls)
       const topCustomers = await db
         .select({
           id: serviceTitanCustomers.id,
@@ -1500,9 +1511,11 @@ ${rssItems}
         .from(serviceTitanCustomers)
         .where(sql`${serviceTitanCustomers.name} IS NOT NULL`)
         .orderBy(sql`RANDOM()`) // Randomize to get a diverse sample
-        .limit(50);
+        .limit(20);
 
       if (!topCustomers.length) {
+        // Cache empty result too
+        customersLeaderboardCache = { leaderboard: [], cachedAt: Date.now() };
         return res.json({ leaderboard: [] });
       }
 
@@ -1548,9 +1561,20 @@ ${rssItems}
         };
       });
 
+      // Update cache
+      customersLeaderboardCache = {
+        leaderboard: anonymizedLeaderboard,
+        cachedAt: Date.now()
+      };
+
       res.json({ leaderboard: anonymizedLeaderboard });
     } catch (error: any) {
       console.error('[Customers] Error fetching leaderboard:', error);
+      // Return cached data if available even if expired, as fallback
+      if (customersLeaderboardCache) {
+        console.log('[Customers Leaderboard] Returning stale cache due to error');
+        return res.json({ leaderboard: customersLeaderboardCache.leaderboard });
+      }
       res.status(500).json({ message: "Error fetching customer leaderboard" });
     }
   });
