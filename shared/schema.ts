@@ -711,6 +711,106 @@ export const insertOtpVerificationSchema = createInsertSchema(otpVerifications).
   createdAt: true,
 });
 
+// Custom review submissions (direct from website, not Google/Facebook)
+export const customReviews = pgTable("custom_reviews", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  customerName: text("customer_name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  serviceTitanCustomerId: integer("service_titan_customer_id"), // Link to ServiceTitan if available
+  
+  // Review content
+  rating: integer("rating").notNull(), // 1-5 stars
+  title: text("title"), // Optional review title/headline
+  text: text("text").notNull(),
+  serviceType: text("service_type"), // What service they received
+  jobDate: timestamp("job_date"), // When was the service performed
+  
+  // Photos (optional - customers can upload photos)
+  photoUrls: text("photo_urls").array().default(sql`ARRAY[]::text[]`),
+  
+  // Moderation workflow
+  status: text("status").notNull().default('pending'), // 'pending', 'approved', 'rejected', 'spam'
+  moderatedBy: varchar("moderated_by"), // Admin user ID who approved/rejected
+  moderatedAt: timestamp("moderated_at"),
+  moderationNotes: text("moderation_notes"), // Internal notes from moderator
+  
+  // Display settings
+  featured: boolean("featured").notNull().default(false), // Highlight on homepage
+  displayOnWebsite: boolean("display_on_website").notNull().default(true), // Show publicly
+  
+  // Metadata
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+  ipAddress: text("ip_address"), // For spam prevention
+  userAgent: text("user_agent"), // For analytics
+  source: text("source").notNull().default('website'), // 'website', 'email_link', 'sms_link'
+  requestId: varchar("request_id"), // Links to review_requests table
+}, (table) => ({
+  statusIdx: index("custom_reviews_status_idx").on(table.status),
+  ratingIdx: index("custom_reviews_rating_idx").on(table.rating),
+  submittedAtIdx: index("custom_reviews_submitted_at_idx").on(table.submittedAt),
+  featuredIdx: index("custom_reviews_featured_idx").on(table.featured),
+  customerIdIdx: index("custom_reviews_customer_id_idx").on(table.serviceTitanCustomerId),
+}));
+
+// Review requests sent to customers
+export const reviewRequests = pgTable("review_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  customerName: text("customer_name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  serviceTitanCustomerId: integer("service_titan_customer_id"),
+  serviceTitanJobId: integer("service_titan_job_id"), // The job that triggered this request
+  
+  // Request details
+  method: text("method").notNull(), // 'email', 'sms', 'both'
+  status: text("status").notNull().default('pending'), // 'pending', 'sent', 'failed', 'clicked', 'completed'
+  uniqueToken: text("unique_token").notNull().unique(), // UUID for personalized review link
+  
+  // Tracking
+  sentAt: timestamp("sent_at"),
+  clickedAt: timestamp("clicked_at"), // When they clicked the review link
+  completedAt: timestamp("completed_at"), // When they submitted the review
+  reviewId: varchar("review_id"), // Links to customReviews table
+  
+  // Content sent
+  emailSubject: text("email_subject"),
+  emailBody: text("email_body"),
+  smsBody: text("sms_body"),
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").notNull().default(0),
+  
+  // Metadata
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  automatedSend: boolean("automated_send").notNull().default(false), // Auto-sent after job vs manual
+}, (table) => ({
+  statusIdx: index("review_requests_status_idx").on(table.status),
+  tokenIdx: index("review_requests_token_idx").on(table.uniqueToken),
+  customerIdIdx: index("review_requests_customer_id_idx").on(table.serviceTitanCustomerId),
+  createdAtIdx: index("review_requests_created_at_idx").on(table.createdAt),
+}));
+
+export const insertCustomReviewSchema = createInsertSchema(customReviews).omit({
+  id: true,
+  submittedAt: true,
+  moderatedAt: true,
+  moderatedBy: true,
+});
+
+export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  clickedAt: true,
+  completedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -757,3 +857,7 @@ export type AdminWhitelist = typeof adminWhitelist.$inferSelect;
 export type InsertAdminWhitelist = typeof adminWhitelist.$inferInsert;
 export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertOtpVerification = z.infer<typeof insertOtpVerificationSchema>;
+export type CustomReview = typeof customReviews.$inferSelect;
+export type InsertCustomReview = z.infer<typeof insertCustomReviewSchema>;
+export type ReviewRequest = typeof reviewRequests.$inferSelect;
+export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
