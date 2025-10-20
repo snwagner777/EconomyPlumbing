@@ -4162,6 +4162,43 @@ ${rssItems}
     }
   });
 
+  // Admin: Get customer engagement tracking data
+  app.get("/api/admin/customer-engagement", requireAdmin, async (req, res) => {
+    try {
+      const { limit = 50, customerId } = req.query;
+      
+      // Get engagement data for review campaigns
+      const engagementData = await db
+        .select()
+        .from(reviewBehaviorTracking)
+        .orderBy(desc(reviewBehaviorTracking.lastActivityAt))
+        .limit(Number(limit));
+      
+      // Get email engagement for recent review requests
+      const emailEngagement = await db
+        .select()
+        .from(reviewRequestSendLog)
+        .orderBy(desc(reviewRequestSendLog.sentAt))
+        .limit(Number(limit));
+      
+      // Get SMS engagement from sms_send_log
+      const smsEngagement = await db
+        .select()
+        .from(smsSendLog)
+        .orderBy(desc(smsSendLog.sentAt))
+        .limit(Number(limit));
+      
+      res.json({
+        engagement: engagementData,
+        emailActivity: emailEngagement,
+        smsActivity: smsEngagement
+      });
+    } catch (error: any) {
+      console.error('[Customer Engagement] Error fetching engagement data:', error);
+      res.status(500).json({ message: "Error fetching engagement data" });
+    }
+  });
+
   // Admin: Get AI review responses
   app.get("/api/admin/ai-review-responses", requireAdmin, async (req, res) => {
     try {
