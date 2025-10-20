@@ -539,11 +539,20 @@ class ServiceTitanAPI {
       const emailContact = contacts.find((c: any) => c.type === 'Email');
       const phoneContact = contacts.find((c: any) => c.type === 'Phone' || c.type === 'MobilePhone') || contacts.find((c: any) => c.phoneSettings);
       
-      return {
+      console.log(`[Portal Debug] Customer ${customerId} - Found ${contacts.length} contacts`);
+      console.log(`[Portal Debug] Email contact:`, emailContact?.value || 'NONE');
+      console.log(`[Portal Debug] Phone contact:`, phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || 'NONE');
+      
+      const result = {
         ...customerData,
         email: emailContact?.value || '',
         phoneNumber: phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || '',
       };
+      
+      console.log(`[Portal Debug] Final email field:`, result.email || 'EMPTY STRING');
+      console.log(`[Portal Debug] Final phoneNumber field:`, result.phoneNumber || 'EMPTY STRING');
+      
+      return result;
     } catch (error) {
       console.error('[ServiceTitan] Get customer error:', error);
       throw error;
