@@ -49,6 +49,8 @@ import {
   type InsertEmailPreferences,
   type EmailSuppression,
   type InsertEmailSuppression,
+  type EmailSendLog,
+  type InsertEmailSendLog,
   users,
   blogPosts,
   products,
@@ -73,7 +75,8 @@ import {
   reviewRequests,
   reviewPlatforms,
   emailPreferences,
-  emailSuppressionList
+  emailSuppressionList,
+  emailSendLog
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -238,6 +241,9 @@ export interface IStorage {
   removeFromSuppressionList(email: string): Promise<void>;
   getSuppressionList(options?: { limit?: number; offset?: number }): Promise<EmailSuppression[]>;
   getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }>;
+  
+  // Email Send Log
+  logEmailSend(params: Omit<InsertEmailSendLog, 'id' | 'sentAt'>): Promise<EmailSendLog | null>;
 }
 
 export class MemStorage implements IStorage {
@@ -3618,6 +3624,25 @@ export class DatabaseStorage implements IStorage {
       spamComplaints: all.filter(s => s.reason === 'spam_complaint').length,
       manual: all.filter(s => s.reason === 'manual_suppression').length
     };
+  }
+
+  async logEmailSend(params: Omit<InsertEmailSendLog, 'id' | 'sentAt'>): Promise<EmailSendLog | null> {
+    // Guard: Validate required fields exist (campaign/email IDs are required by schema)
+    if (!params.campaignId || !params.campaignEmailId || !params.serviceTitanCustomerId) {
+      console.log('[Email Send Log] Skipping log - missing required campaign/drip IDs (will be available in Tasks 7/12)');
+      return null;
+    }
+
+    // Insert email send log with full tracking metadata
+    const [result] = await db
+      .insert(emailSendLog)
+      .values({
+        ...params,
+        sentAt: new Date(),
+      })
+      .returning();
+    
+    return result;
   }
 }
 
