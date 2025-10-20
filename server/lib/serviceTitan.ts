@@ -1914,6 +1914,124 @@ class ServiceTitanAPI {
 
     return null;
   }
+
+  /**
+   * Marketing API Methods
+   * NOTE: These methods use inferred API schemas based on ServiceTitan documentation patterns.
+   * Adjust request/response structures as needed once exact schemas are confirmed.
+   */
+
+  /**
+   * Get all marketing campaigns
+   */
+  async getCampaigns(): Promise<any[]> {
+    try {
+      const marketingUrl = `https://api.servicetitan.io/marketing/v2/tenant/${this.config.tenantId}/campaigns`;
+      
+      const response = await this.request<any>(marketingUrl, {}, true);
+      
+      // ServiceTitan typically returns { data: [...] }
+      return response.data || response || [];
+    } catch (error) {
+      console.error('[ServiceTitan] Get campaigns error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get a specific marketing campaign by ID
+   */
+  async getCampaign(campaignId: number): Promise<any> {
+    try {
+      const marketingUrl = `https://api.servicetitan.io/marketing/v2/tenant/${this.config.tenantId}/campaigns/${campaignId}`;
+      
+      return await this.request<any>(marketingUrl, {}, true);
+    } catch (error) {
+      console.error('[ServiceTitan] Get campaign error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new marketing campaign in ServiceTitan
+   * @param campaignData - Campaign creation data
+   * @returns The created campaign with ServiceTitan ID
+   */
+  async createCampaign(campaignData: {
+    name: string;
+    categoryId?: number;
+    active?: boolean;
+    businessUnitId?: number;
+    phoneNumber?: string;
+  }): Promise<{ id: number; name: string }> {
+    try {
+      const marketingUrl = `https://api.servicetitan.io/marketing/v2/tenant/${this.config.tenantId}/campaigns`;
+      
+      // Build request body based on ServiceTitan patterns
+      const requestBody = {
+        name: campaignData.name,
+        active: campaignData.active ?? true,
+        ...(campaignData.categoryId && { categoryId: campaignData.categoryId }),
+        ...(campaignData.businessUnitId && { businessUnitId: campaignData.businessUnitId }),
+        ...(campaignData.phoneNumber && { phoneNumber: campaignData.phoneNumber }),
+      };
+
+      console.log('[ServiceTitan] Creating campaign:', requestBody);
+
+      const response = await this.request<any>(marketingUrl, {
+        method: 'POST',
+        body: JSON.stringify(requestBody),
+      }, true);
+
+      console.log('[ServiceTitan] Campaign created:', response);
+
+      return {
+        id: response.id || response.data?.id,
+        name: response.name || response.data?.name || campaignData.name,
+      };
+    } catch (error) {
+      console.error('[ServiceTitan] Create campaign error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get campaign categories for organizing campaigns
+   */
+  async getCampaignCategories(): Promise<any[]> {
+    try {
+      const marketingUrl = `https://api.servicetitan.io/marketing/v2/tenant/${this.config.tenantId}/campaign-categories`;
+      
+      const response = await this.request<any>(marketingUrl, {}, true);
+      
+      return response.data || response || [];
+    } catch (error) {
+      console.error('[ServiceTitan] Get campaign categories error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update campaign costs for ROI tracking
+   */
+  async updateCampaignCost(campaignId: number, cost: {
+    month: string; // Format: "YYYY-MM"
+    amount: number;
+  }): Promise<void> {
+    try {
+      const marketingUrl = `https://api.servicetitan.io/marketing/v2/tenant/${this.config.tenantId}/campaigns/${campaignId}/costs`;
+      
+      await this.request<any>(marketingUrl, {
+        method: 'POST',
+        body: JSON.stringify(cost),
+      }, true);
+
+      console.log('[ServiceTitan] Campaign cost updated');
+    } catch (error) {
+      console.error('[ServiceTitan] Update campaign cost error:', error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance

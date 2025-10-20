@@ -3,6 +3,7 @@ import express from "express";
 import { createServer, type Server } from "http";
 import crypto from "crypto";
 import { storage } from "./storage";
+import { getServiceTitanAPI } from "./lib/serviceTitan";
 
 // Declare global types for SSR cache invalidation
 declare global {
@@ -7129,6 +7130,145 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error("[Admin] Remove from suppression list error:", error);
       res.status(500).json({ error: "Failed to remove from suppression list" });
+    }
+  });
+
+  /**
+   * Email Campaign Management - ServiceTitan Integration
+   */
+
+  // Get all email campaigns
+  app.get("/api/admin/campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { status, isEvergreen } = req.query;
+      const campaigns = await storage.getEmailCampaigns({
+        status: status as string,
+        isEvergreen: isEvergreen === 'true' ? true : isEvergreen === 'false' ? false : undefined
+      });
+      
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error("[Admin] Get campaigns error:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
+    }
+  });
+
+  // Get specific campaign
+  app.get("/api/admin/campaigns/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const campaign = await storage.getEmailCampaignById(req.params.id);
+      
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("[Admin] Get campaign error:", error);
+      res.status(500).json({ error: "Failed to fetch campaign" });
+    }
+  });
+
+  // Create a new campaign (stored locally, awaiting ServiceTitan sync)
+  app.post("/api/admin/campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const campaign = await storage.createEmailCampaign(req.body);
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("[Admin] Create campaign error:", error);
+      res.status(500).json({ error: "Failed to create campaign" });
+    }
+  });
+
+  // Update campaign (e.g., add tracking phone number)
+  app.patch("/api/admin/campaigns/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const updated = await storage.updateEmailCampaign(req.params.id, req.body);
+      res.json(updated);
+    } catch (error: any) {
+      console.error("[Admin] Update campaign error:", error);
+      res.status(500).json({ error: "Failed to update campaign" });
+    }
+  });
+
+  // Create campaign in ServiceTitan and sync
+  app.post("/api/admin/campaigns/:id/sync-to-servicetitan", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const campaignId = req.params.id;
+      const campaign = await storage.getEmailCampaignById(campaignId);
+      
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+      
+      // Create campaign in ServiceTitan
+      const serviceTitanAPI = getServiceTitanAPI();
+      const { phoneNumber } = req.body; // Optional: admin can provide tracking phone number
+      
+      const stCampaign = await serviceTitanAPI.createCampaign({
+        name: campaign.name,
+        phoneNumber: phoneNumber || campaign.trackingPhoneNumber || undefined,
+      });
+      
+      // Sync ServiceTitan campaign ID back to local campaign
+      const synced = await storage.syncCampaignToServiceTitan(
+        campaignId,
+        stCampaign.id,
+        stCampaign.name
+      );
+      
+      res.json({
+        success: true,
+        message: "Campaign created in ServiceTitan and synced",
+        campaign: synced,
+        serviceTitanCampaignId: stCampaign.id
+      });
+    } catch (error: any) {
+      console.error("[Admin] Sync to ServiceTitan error:", error);
+      res.status(500).json({ 
+        error: "Failed to sync to ServiceTitan",
+        details: error.message 
+      });
+    }
+  });
+
+  // Get ServiceTitan campaigns (for reference/comparison)
+  app.get("/api/admin/servicetitan/campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const serviceTitanAPI = getServiceTitanAPI();
+      const stCampaigns = await serviceTitanAPI.getCampaigns();
+      
+      res.json(stCampaigns);
+    } catch (error: any) {
+      console.error("[Admin] Get ServiceTitan campaigns error:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch ServiceTitan campaigns",
+        details: error.message 
+      });
     }
   });
 

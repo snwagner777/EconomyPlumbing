@@ -51,6 +51,8 @@ import {
   type InsertEmailSuppression,
   type EmailSendLog,
   type InsertEmailSendLog,
+  type EmailCampaign,
+  type InsertEmailCampaign,
   users,
   blogPosts,
   products,
@@ -76,7 +78,8 @@ import {
   reviewPlatforms,
   emailPreferences,
   emailSuppressionList,
-  emailSendLog
+  emailSendLog,
+  emailCampaigns
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -244,6 +247,13 @@ export interface IStorage {
   
   // Email Send Log
   logEmailSend(params: Omit<InsertEmailSendLog, 'id' | 'sentAt'>): Promise<EmailSendLog | null>;
+  
+  // Email Campaigns - ServiceTitan Integration
+  createEmailCampaign(campaign: Omit<InsertEmailCampaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmailCampaign>;
+  getEmailCampaigns(options?: { status?: string; isEvergreen?: boolean }): Promise<EmailCampaign[]>;
+  getEmailCampaignById(id: string): Promise<EmailCampaign | undefined>;
+  updateEmailCampaign(id: string, updates: Partial<Omit<InsertEmailCampaign, 'id' | 'createdAt'>>): Promise<EmailCampaign>;
+  syncCampaignToServiceTitan(campaignId: string, serviceTitanCampaignId: number, serviceTitanCampaignName: string): Promise<EmailCampaign>;
 }
 
 export class MemStorage implements IStorage {
@@ -3640,6 +3650,77 @@ export class DatabaseStorage implements IStorage {
         ...params,
         sentAt: new Date(),
       })
+      .returning();
+    
+    return result;
+  }
+
+  /**
+   * Email Campaign Management - ServiceTitan Integration
+   */
+
+  async createEmailCampaign(campaign: Omit<InsertEmailCampaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmailCampaign> {
+    const [result] = await db
+      .insert(emailCampaigns)
+      .values(campaign)
+      .returning();
+    
+    return result;
+  }
+
+  async getEmailCampaigns(options?: { status?: string; isEvergreen?: boolean }): Promise<EmailCampaign[]> {
+    let query = db.select().from(emailCampaigns);
+    
+    // Apply filters if provided
+    if (options?.status || options?.isEvergreen !== undefined) {
+      const conditions = [];
+      if (options.status) {
+        conditions.push(eq(emailCampaigns.status, options.status));
+      }
+      if (options.isEvergreen !== undefined) {
+        conditions.push(eq(emailCampaigns.isEvergreen, options.isEvergreen));
+      }
+      query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
+    }
+    
+    return await query.orderBy(desc(emailCampaigns.createdAt));
+  }
+
+  async getEmailCampaignById(id: string): Promise<EmailCampaign | undefined> {
+    const [result] = await db
+      .select()
+      .from(emailCampaigns)
+      .where(eq(emailCampaigns.id, id));
+    
+    return result;
+  }
+
+  async updateEmailCampaign(id: string, updates: Partial<Omit<InsertEmailCampaign, 'id' | 'createdAt'>>): Promise<EmailCampaign> {
+    const [result] = await db
+      .update(emailCampaigns)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(emailCampaigns.id, id))
+      .returning();
+    
+    return result;
+  }
+
+  async syncCampaignToServiceTitan(
+    campaignId: string, 
+    serviceTitanCampaignId: number, 
+    serviceTitanCampaignName: string
+  ): Promise<EmailCampaign> {
+    const [result] = await db
+      .update(emailCampaigns)
+      .set({
+        serviceTitanCampaignId,
+        serviceTitanCampaignName,
+        updatedAt: new Date(),
+      })
+      .where(eq(emailCampaigns.id, campaignId))
       .returning();
     
     return result;
