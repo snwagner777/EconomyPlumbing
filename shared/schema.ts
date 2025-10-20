@@ -1701,6 +1701,274 @@ export const reputationSystemSettings = pgTable("reputation_system_settings", {
   updatedBy: varchar("updated_by"),
 });
 
+// =====================================================
+// SMS MARKETING SYSTEM (5 TABLES)
+// Complete SMS infrastructure for marketing, promotions, and review requests
+// TCPA-compliant with explicit opt-in/opt-out management
+// =====================================================
+
+// SMS Marketing Preferences - TCPA-compliant opt-in/opt-out tracking
+export const smsMarketingPreferences = pgTable("sms_marketing_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer identification
+  phoneNumber: text("phone_number").notNull().unique(), // Normalized: +1XXXXXXXXXX
+  customerId: integer("customer_id"), // ServiceTitan customer ID (null if not yet a customer)
+  customerName: text("customer_name"),
+  email: text("email"),
+  
+  // Opt-in/opt-out status
+  optedIn: boolean("opted_in").notNull().default(false),
+  optInSource: text("opt_in_source"), // 'web_form', 'in_person', 'phone_call', 'customer_portal'
+  optInDate: timestamp("opt_in_date"),
+  optInIpAddress: text("opt_in_ip_address"), // For TCPA compliance
+  
+  optedOut: boolean("opted_out").notNull().default(false),
+  optOutDate: timestamp("opt_out_date"),
+  optOutMethod: text("opt_out_method"), // 'STOP_keyword', 'web_form', 'customer_support'
+  
+  // Preferences
+  allowPromotional: boolean("allow_promotional").notNull().default(true), // Marketing/promotions
+  allowTransactional: boolean("allow_transactional").notNull().default(true), // Appointment reminders, etc.
+  allowReviewRequests: boolean("allow_review_requests").notNull().default(true), // Review request SMS
+  
+  // Carrier info (for deliverability)
+  carrierName: text("carrier_name"), // AT&T, Verizon, T-Mobile, etc.
+  phoneType: text("phone_type"), // 'mobile', 'landline', 'voip'
+  
+  // Activity tracking
+  lastMessageSentAt: timestamp("last_message_sent_at"),
+  totalMessagesSent: integer("total_messages_sent").notNull().default(0),
+  totalMessagesDelivered: integer("total_messages_delivered").notNull().default(0),
+  totalMessagesFailed: integer("total_messages_failed").notNull().default(0),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastUpdatedAt: timestamp("last_updated_at").notNull().defaultNow(),
+}, (table) => ({
+  phoneNumberIdx: index("sms_prefs_phone_idx").on(table.phoneNumber),
+  customerIdIdx: index("sms_prefs_customer_idx").on(table.customerId),
+  optedInIdx: index("sms_prefs_opted_in_idx").on(table.optedIn),
+  optedOutIdx: index("sms_prefs_opted_out_idx").on(table.optedOut),
+}));
+
+// SMS Campaigns - Marketing and promotional campaigns
+export const smsCampaigns = pgTable("sms_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign basics
+  campaignName: text("campaign_name").notNull(),
+  campaignType: text("campaign_type").notNull(), // 'promotional', 'referral', 'seasonal', 'announcement', 'review_request'
+  description: text("description"),
+  
+  // Targeting
+  targetAudience: text("target_audience"), // 'all_opted_in', 'vip_members', 'recent_customers', 'segment:ID'
+  segmentId: varchar("segment_id"), // Links to customerSegments if using specific segment
+  
+  // Scheduling
+  status: text("status").notNull().default('draft'), // 'draft', 'scheduled', 'sending', 'completed', 'paused', 'cancelled'
+  scheduledFor: timestamp("scheduled_for"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  
+  // Campaign settings
+  isDripSequence: boolean("is_drip_sequence").notNull().default(false), // Multi-message sequence
+  sendWindow: jsonb("send_window"), // { start: '09:00', end: '20:00', timezone: 'America/Chicago' }
+  
+  // Offer/CTA tracking
+  hasOffer: boolean("has_offer").notNull().default(false),
+  offerDetails: jsonb("offer_details"), // { discount: '20%', code: 'SAVE20', expiresAt: '...' }
+  trackingUrl: text("tracking_url"), // Shortened URL for click tracking
+  
+  // Performance metrics
+  targetCount: integer("target_count").notNull().default(0), // Total recipients
+  sentCount: integer("sent_count").notNull().default(0),
+  deliveredCount: integer("delivered_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  clickCount: integer("click_count").notNull().default(0),
+  conversionCount: integer("conversion_count").notNull().default(0), // Bookings/purchases
+  optOutCount: integer("opt_out_count").notNull().default(0),
+  
+  // Cost tracking
+  estimatedCost: integer("estimated_cost"), // In cents
+  actualCost: integer("actual_cost"), // In cents
+  
+  // Attribution
+  revenue: integer("revenue").notNull().default(0), // In cents
+  roi: integer("roi"), // Percentage (revenue / cost * 100)
+  
+  // AI metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiModel: text("ai_model"), // 'gpt-4o', 'manual'
+  aiPrompt: text("ai_prompt"),
+  
+  // Master switch
+  sendEnabled: boolean("send_enabled").notNull().default(false), // Safety switch
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdBy: varchar("created_by"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("sms_campaigns_status_idx").on(table.status),
+  typeIdx: index("sms_campaigns_type_idx").on(table.campaignType),
+  scheduledIdx: index("sms_campaigns_scheduled_idx").on(table.scheduledFor),
+  segmentIdIdx: index("sms_campaigns_segment_idx").on(table.segmentId),
+  sendEnabledIdx: index("sms_campaigns_enabled_idx").on(table.sendEnabled),
+}));
+
+// SMS Campaign Messages - Individual messages in campaigns (drip sequences)
+export const smsCampaignMessages = pgTable("sms_campaign_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign linkage
+  campaignId: varchar("campaign_id").notNull(), // Links to smsCampaigns
+  
+  // Message details
+  sequenceNumber: integer("sequence_number").notNull().default(1), // 1, 2, 3 for drip sequences
+  messageBody: text("message_body").notNull(), // 160 chars recommended
+  characterCount: integer("character_count").notNull(),
+  segmentCount: integer("segment_count").notNull().default(1), // SMS segments (160 chars each)
+  
+  // Timing (for drip campaigns)
+  delayDays: integer("delay_days").notNull().default(0), // Days after previous message
+  sendWindow: jsonb("send_window"), // Override campaign send window
+  
+  // Personalization
+  usesPersonalization: boolean("uses_personalization").notNull().default(false),
+  personalizationFields: text("personalization_fields").array(), // ['firstName', 'serviceName', etc.]
+  
+  // Links and CTAs
+  includesLink: boolean("includes_link").notNull().default(false),
+  linkUrl: text("link_url"),
+  shortenedUrl: text("shortened_url"), // Bit.ly or custom short link
+  callToAction: text("call_to_action"), // 'Book Now', 'Claim Offer', 'Leave Review', etc.
+  
+  // A/B Testing
+  isVariant: boolean("is_variant").notNull().default(false),
+  variantGroup: text("variant_group"), // 'A', 'B', 'C'
+  variantPercentage: integer("variant_percentage"), // % of audience to receive this variant
+  
+  // Performance metrics (aggregated from sms_send_log)
+  sentCount: integer("sent_count").notNull().default(0),
+  deliveredCount: integer("delivered_count").notNull().default(0),
+  clickCount: integer("click_count").notNull().default(0),
+  conversionCount: integer("conversion_count").notNull().default(0),
+  
+  // AI metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiTone: text("ai_tone"), // 'friendly', 'urgent', 'professional', 'casual'
+  aiObjective: text("ai_objective"), // 'engagement', 'conversion', 'awareness'
+  
+  // Status
+  status: text("status").notNull().default('active'), // 'active', 'paused', 'archived'
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignIdIdx: index("sms_messages_campaign_idx").on(table.campaignId),
+  sequenceIdx: index("sms_messages_sequence_idx").on(table.campaignId, table.sequenceNumber),
+  variantIdx: index("sms_messages_variant_idx").on(table.variantGroup),
+  statusIdx: index("sms_messages_status_idx").on(table.status),
+}));
+
+// SMS Send Log - Complete history of all SMS messages sent
+export const smsSendLog = pgTable("sms_send_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign/message linkage
+  campaignId: varchar("campaign_id"), // Links to smsCampaigns (null for transactional)
+  messageId: varchar("message_id"), // Links to smsCampaignMessages (null for transactional)
+  
+  // Message type
+  messageType: text("message_type").notNull(), // 'marketing', 'review_request', 'appointment_reminder', 'referral', 'transactional'
+  
+  // Recipient
+  phoneNumber: text("phone_number").notNull(),
+  customerId: integer("customer_id"), // ServiceTitan customer ID
+  customerName: text("customer_name"),
+  
+  // Message content (stored for audit trail)
+  messageBody: text("message_body").notNull(),
+  characterCount: integer("character_count").notNull(),
+  segmentCount: integer("segment_count").notNull(),
+  
+  // Twilio details
+  twilioSid: text("twilio_sid").unique(), // Twilio message SID for tracking
+  twilioStatus: text("twilio_status"), // 'queued', 'sent', 'delivered', 'undelivered', 'failed'
+  twilioErrorCode: text("twilio_error_code"),
+  twilioErrorMessage: text("twilio_error_message"),
+  
+  // Delivery tracking
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  failedAt: timestamp("failed_at"),
+  
+  // Engagement tracking
+  linkClicked: boolean("link_clicked").notNull().default(false),
+  clickedAt: timestamp("clicked_at"),
+  clickCount: integer("click_count").notNull().default(0),
+  
+  // Conversion tracking
+  converted: boolean("converted").notNull().default(false), // Booked/purchased
+  conversionValue: integer("conversion_value"), // In cents
+  conversionDate: timestamp("conversion_date"),
+  
+  // Opt-out tracking
+  optedOut: boolean("opted_out").notNull().default(false),
+  optOutKeyword: text("opt_out_keyword"), // 'STOP', 'UNSUBSCRIBE', etc.
+  optedOutAt: timestamp("opted_out_at"),
+  
+  // Cost tracking
+  cost: integer("cost"), // In cents (Twilio charges ~$0.0075 per SMS)
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignIdIdx: index("sms_log_campaign_idx").on(table.campaignId),
+  phoneNumberIdx: index("sms_log_phone_idx").on(table.phoneNumber),
+  customerIdIdx: index("sms_log_customer_idx").on(table.customerId),
+  sentAtIdx: index("sms_log_sent_idx").on(table.sentAt),
+  messageTypeIdx: index("sms_log_type_idx").on(table.messageType),
+  twilioSidIdx: index("sms_log_twilio_sid_idx").on(table.twilioSid),
+  deliveredIdx: index("sms_log_delivered_idx").on(table.deliveredAt),
+  convertedIdx: index("sms_log_converted_idx").on(table.converted),
+}));
+
+// SMS Keywords - Auto-response keywords (STOP, START, HELP, custom keywords)
+export const smsKeywords = pgTable("sms_keywords", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Keyword
+  keyword: text("keyword").notNull().unique(), // 'STOP', 'START', 'HELP', 'INFO', 'DEALS', etc.
+  keywordType: text("keyword_type").notNull(), // 'opt_out', 'opt_in', 'help', 'custom'
+  
+  // Auto-response
+  responseMessage: text("response_message").notNull(),
+  
+  // Behavior
+  action: text("action"), // 'opt_out', 'opt_in', 'send_info', 'trigger_campaign'
+  actionMetadata: jsonb("action_metadata"), // Additional action data
+  
+  // Tracking
+  usageCount: integer("usage_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
+  
+  // Status
+  isActive: boolean("is_active").notNull().default(true),
+  isSystem: boolean("is_system").notNull().default(false), // System keywords (STOP/START) vs custom
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdBy: varchar("created_by"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  keywordIdx: index("sms_keywords_keyword_idx").on(table.keyword),
+  typeIdx: index("sms_keywords_type_idx").on(table.keywordType),
+  activeIdx: index("sms_keywords_active_idx").on(table.isActive),
+}));
+
 // Insert schemas
 export const insertReviewEmailPreferencesSchema = createInsertSchema(reviewEmailPreferences).omit({
   id: true,
@@ -1764,6 +2032,43 @@ export const insertReputationSystemSettingSchema = createInsertSchema(reputation
   updatedAt: true,
 });
 
+// SMS Marketing insert schemas
+export const insertSMSMarketingPreferencesSchema = createInsertSchema(smsMarketingPreferences).omit({
+  id: true,
+  createdAt: true,
+  lastUpdatedAt: true,
+});
+
+export const insertSMSCampaignSchema = createInsertSchema(smsCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSMSCampaignMessageSchema = createInsertSchema(smsCampaignMessages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSMSSendLogSchema = createInsertSchema(smsSendLog).omit({
+  id: true,
+  sentAt: true,
+  deliveredAt: true,
+  failedAt: true,
+  clickedAt: true,
+  conversionDate: true,
+  optedOutAt: true,
+  createdAt: true,
+});
+
+export const insertSMSKeywordSchema = createInsertSchema(smsKeywords).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastUsedAt: true,
+});
+
 // Export types
 export type CustomerSegment = typeof customerSegments.$inferSelect;
 export type InsertCustomerSegment = z.infer<typeof insertCustomerSegmentSchema>;
@@ -1803,3 +2108,13 @@ export type NegativeReviewAlert = typeof negativeReviewAlerts.$inferSelect;
 export type InsertNegativeReviewAlert = z.infer<typeof insertNegativeReviewAlertSchema>;
 export type ReputationSystemSetting = typeof reputationSystemSettings.$inferSelect;
 export type InsertReputationSystemSetting = z.infer<typeof insertReputationSystemSettingSchema>;
+export type SMSMarketingPreferences = typeof smsMarketingPreferences.$inferSelect;
+export type InsertSMSMarketingPreferences = z.infer<typeof insertSMSMarketingPreferencesSchema>;
+export type SMSCampaign = typeof smsCampaigns.$inferSelect;
+export type InsertSMSCampaign = z.infer<typeof insertSMSCampaignSchema>;
+export type SMSCampaignMessage = typeof smsCampaignMessages.$inferSelect;
+export type InsertSMSCampaignMessage = z.infer<typeof insertSMSCampaignMessageSchema>;
+export type SMSSendLog = typeof smsSendLog.$inferSelect;
+export type InsertSMSSendLog = z.infer<typeof insertSMSSendLogSchema>;
+export type SMSKeyword = typeof smsKeywords.$inferSelect;
+export type InsertSMSKeyword = z.infer<typeof insertSMSKeywordSchema>;
