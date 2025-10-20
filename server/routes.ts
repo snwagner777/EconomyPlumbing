@@ -3705,68 +3705,6 @@ ${rssItems}
     }
   });
 
-  // ============================================
-  // ZOOM OAUTH ENDPOINTS
-  // ============================================
-
-  // Check Zoom OAuth status (no auth required - just returns boolean)
-  app.get("/api/zoom/oauth/status", async (req, res) => {
-    try {
-      const { isZoomOAuthConfigured } = await import('./lib/zoomOAuth');
-      const token = await storage.getZoomOAuthToken();
-      
-      res.json({
-        configured: isZoomOAuthConfigured(),
-        hasToken: !!token,
-        expiresAt: token?.expiresAt,
-      });
-    } catch (error: any) {
-      console.error('[Zoom OAuth] Status check error:', error);
-      res.status(500).json({ error: "Failed to check OAuth status" });
-    }
-  });
-
-  // Start OAuth authorization flow
-  app.get("/api/zoom/oauth/authorize", requireAdmin, async (req, res) => {
-    try {
-      const { getAuthorizationUrl } = await import('./lib/zoomOAuth');
-      const authUrl = getAuthorizationUrl();
-      
-      console.log('[Zoom OAuth] Redirecting to authorization URL');
-      res.redirect(authUrl);
-    } catch (error: any) {
-      console.error('[Zoom OAuth] Authorization error:', error);
-      res.status(500).json({ error: "Failed to start authorization" });
-    }
-  });
-
-  // OAuth callback - receives authorization code
-  app.get("/api/zoom/oauth/callback", async (req, res) => {
-    try {
-      const { code, error, error_description } = req.query;
-
-      if (error) {
-        console.error('[Zoom OAuth] Authorization error:', error, error_description);
-        return res.redirect('/admin?zoom_oauth_error=' + encodeURIComponent(error_description as string || error as string));
-      }
-
-      if (!code || typeof code !== 'string') {
-        return res.status(400).json({ error: "Missing authorization code" });
-      }
-
-      const { exchangeCodeForToken } = await import('./lib/zoomOAuth');
-      const token = await exchangeCodeForToken(code);
-      
-      console.log('[Zoom OAuth] Authorization successful, token saved');
-      
-      // Redirect to admin page with success message
-      res.redirect('/admin?zoom_oauth_success=true');
-    } catch (error: any) {
-      console.error('[Zoom OAuth] Callback error:', error);
-      res.redirect('/admin?zoom_oauth_error=' + encodeURIComponent(error.message));
-    }
-  });
-
   // Check admin auth status
   app.get("/api/admin/check", (req, res) => {
     const session = (req as any).session;

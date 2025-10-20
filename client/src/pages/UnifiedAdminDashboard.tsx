@@ -65,7 +65,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'settings';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -176,12 +176,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Users,
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
-    },
-    {
-      title: "Settings & Integrations",
-      icon: Settings,
-      section: 'settings' as AdminSection,
-      description: "Zoom Phone, ServiceTitan & more"
     },
   ];
 
@@ -3385,132 +3379,6 @@ function TrackingNumbersSection() {
   );
 }
 
-function SettingsSection() {
-  // Query Zoom OAuth status
-  const { data: zoomOAuthStatus, isLoading } = useQuery<{ hasToken: boolean; expiresAt?: string }>({
-    queryKey: ['/api/zoom/oauth/status'],
-  });
-
-  const handleAuthorizeZoom = () => {
-    // Redirect to authorization endpoint
-    window.location.href = "/api/zoom/oauth/authorize";
-  };
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold">Settings & Integrations</h2>
-        <p className="text-muted-foreground">Manage external integrations and system settings</p>
-      </div>
-
-      {/* Zoom Phone OAuth */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Phone className="h-5 w-5" />
-            Zoom Phone SMS Integration
-          </CardTitle>
-          <CardDescription>
-            Authorize Zoom Phone to send SMS messages from your business phone number
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isLoading ? (
-            <Skeleton className="h-20 w-full" />
-          ) : (
-            <>
-              {zoomOAuthStatus?.hasToken ? (
-                <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-950 p-4">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-green-900 dark:text-green-100">
-                        ✅ Zoom Phone Authorized
-                      </h4>
-                      <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                        Your app is connected to Zoom Phone. SMS messaging is active and tokens will auto-refresh indefinitely.
-                      </p>
-                      {zoomOAuthStatus.expiresAt && (
-                        <p className="text-xs text-green-600 dark:text-green-400 mt-2">
-                          Current token expires: {new Date(zoomOAuthStatus.expiresAt).toLocaleString()}
-                          <br />
-                          <span className="italic">(Will auto-refresh automatically)</span>
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950 p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-amber-900 dark:text-amber-100">
-                          Authorization Required
-                        </h4>
-                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                          Zoom Phone is not authorized yet. Click the button below to authorize one time. After authorization, tokens will auto-refresh forever.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <Button 
-                    onClick={handleAuthorizeZoom}
-                    size="lg"
-                    className="w-full"
-                    data-testid="button-authorize-zoom"
-                  >
-                    <Phone className="mr-2 h-5 w-5" />
-                    Authorize Zoom Phone (One-Time Setup)
-                  </Button>
-
-                  <div className="text-sm text-muted-foreground space-y-2">
-                    <p className="font-semibold">What happens when you authorize:</p>
-                    <ol className="list-decimal list-inside space-y-1 ml-2">
-                      <li>You'll be redirected to Zoom's authorization page</li>
-                      <li>Review and approve the permissions (send SMS, read SMS history)</li>
-                      <li>Get redirected back to this admin panel</li>
-                      <li>Done! SMS works forever with auto-refreshing tokens</li>
-                    </ol>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* ServiceTitan Integration Info */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Database className="h-5 w-5" />
-            ServiceTitan Integration
-          </CardTitle>
-          <CardDescription>
-            Customer data sync, appointments, invoices, and VIP memberships
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-lg border bg-muted p-4">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
-              <div>
-                <p className="font-semibold">ServiceTitan Connected</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  API credentials configured. Customer Portal and referral system are operational.
-                </p>
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
-
 export default function UnifiedAdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
   const [, setLocation] = useLocation();
@@ -3585,8 +3453,6 @@ export default function UnifiedAdminDashboard() {
         return <ProductsSection />;
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
-      case 'settings':
-        return <SettingsSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3603,7 +3469,6 @@ export default function UnifiedAdminDashboard() {
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral Tracking',
-      'settings': 'Settings & Integrations',
     };
     return titles[activeSection];
   };
