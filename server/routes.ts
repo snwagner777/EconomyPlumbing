@@ -1075,14 +1075,58 @@ ${rssItems}
     }
   });
 
-  // Public: Get approved reviews for display
+  // Public: Get approved reviews for display (merges Google reviews + custom reviews)
   app.get("/api/reviews", async (req, res) => {
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
       const featured = req.query.featured === 'true';
+      const category = req.query.category as string | undefined;
+      const minRating = req.query.minRating ? parseInt(req.query.minRating as string) : undefined;
       
-      const reviews = await storage.getApprovedReviews({ limit, featured });
-      res.json(reviews);
+      // Get both Google reviews and custom reviews
+      const [googleReviews, customReviews] = await Promise.all([
+        storage.getGoogleReviews(),
+        storage.getApprovedReviews({ limit: undefined, featured })
+      ]);
+      
+      // Map custom reviews to GoogleReview format for unified display
+      const mappedCustomReviews = customReviews.map((review) => ({
+        id: review.id,
+        authorName: review.customerName,
+        authorUrl: null,
+        profilePhotoUrl: review.photoUrl || null,
+        rating: review.rating,
+        text: review.text,
+        relativeTime: `${Math.floor((Date.now() - new Date(review.submittedAt).getTime()) / (1000 * 60 * 60 * 24))} days ago`,
+        timestamp: Math.floor(new Date(review.submittedAt).getTime() / 1000),
+        categories: review.serviceCategory ? [review.serviceCategory] : [],
+        source: 'custom_review',
+        reviewId: review.id,
+      }));
+      
+      // Merge and sort all reviews by timestamp (newest first)
+      let allReviews = [...googleReviews, ...mappedCustomReviews].sort(
+        (a, b) => b.timestamp - a.timestamp
+      );
+      
+      // Apply category filter if provided
+      if (category) {
+        allReviews = allReviews.filter(review => 
+          review.categories?.includes(category)
+        );
+      }
+      
+      // Apply minimum rating filter if provided
+      if (minRating) {
+        allReviews = allReviews.filter(review => review.rating >= minRating);
+      }
+      
+      // Apply limit if provided
+      if (limit) {
+        allReviews = allReviews.slice(0, limit);
+      }
+      
+      res.json(allReviews);
     } catch (error: any) {
       console.error('[Review] Error fetching reviews:', error);
       res.status(500).json({ message: "Error fetching reviews" });

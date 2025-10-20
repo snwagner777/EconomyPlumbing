@@ -33,7 +33,7 @@ export default function InlineReviewCard({
   }
 
   const getPlatformInfo = (source: string) => {
-    if (source.includes('places_api') || source.includes('dataforseo')) {
+    if (source.includes('places_api') || source.includes('dataforseo') || source.includes('gmb_api')) {
       return {
         name: 'Google',
         icon: SiGoogle,
@@ -55,6 +55,14 @@ export default function InlineReviewCard({
         icon: SiYelp,
         bgColor: 'bg-red-50 dark:bg-red-950/20',
         color: 'text-red-600 dark:text-red-400',
+      };
+    }
+    if (source === 'custom_review' || source === 'email_link' || source === 'website') {
+      return {
+        name: 'Verified Customer',
+        icon: Star,
+        bgColor: 'bg-primary/10',
+        color: 'text-primary',
       };
     }
     return {

@@ -42,6 +42,15 @@ function getPlatformInfo(source: string) {
         color: 'text-red-600',
         bgColor: 'bg-red-50 dark:bg-red-950/30'
       };
+    case 'custom_review':
+    case 'email_link':
+    case 'website':
+      return {
+        icon: Star,
+        name: 'Verified Customer',
+        color: 'text-primary',
+        bgColor: 'bg-primary/10'
+      };
     default:
       return {
         icon: Star,
