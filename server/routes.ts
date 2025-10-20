@@ -7431,6 +7431,59 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Approve campaign (creates in ServiceTitan Marketing API)
+  app.post("/api/admin/campaigns/:id/approve", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { id } = req.params;
+      const campaign = await storage.getEmailCampaignById(id);
+
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      if (campaign.status !== 'pending_approval') {
+        return res.status(400).json({ error: "Campaign is not pending approval" });
+      }
+
+      // Get segment details
+      const segment = await storage.getCustomerSegmentById(campaign.segmentId);
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+
+      // Create campaign in ServiceTitan Marketing API
+      const serviceTitan = getServiceTitanAPI();
+      const stCampaign = await serviceTitan.createMarketingCampaign({
+        name: campaign.name,
+        description: segment.description,
+        category: segment.segmentType === 'evergreen' ? 'Retention' : 'Promotional',
+        isActive: false, // Start inactive until phone number is added
+      });
+
+      // Update campaign with ServiceTitan details
+      const updatedCampaign = await storage.updateEmailCampaign(id, {
+        serviceTitanCampaignId: stCampaign.id,
+        serviceTitanCampaignName: stCampaign.name,
+        status: 'awaiting_phone_number',
+        approvedBy: req.user?.id || 'admin',
+        approvedAt: new Date(),
+      });
+
+      res.json({
+        success: true,
+        campaign: updatedCampaign,
+        serviceTitanCampaign: stCampaign,
+      });
+    } catch (error: any) {
+      console.error('[API] Error approving campaign:', error);
+      res.status(500).json({ error: error.message || "Failed to approve campaign" });
+    }
+  });
+
   // Get audience movement logs
   app.get("/api/admin/audience-logs", async (req, res) => {
     try {

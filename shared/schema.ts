@@ -1071,7 +1071,7 @@ export const emailCampaigns = pgTable("email_campaigns", {
   trackingPhoneNumber: text("tracking_phone_number"), // FREE ServiceTitan tracking number
   
   // Status & approval
-  status: text("status").notNull().default('awaiting_phone_number'), // 'awaiting_phone_number', 'ready_to_send', 'active', 'paused', 'completed'
+  status: text("status").notNull().default('pending_approval'), // 'pending_approval', 'awaiting_phone_number', 'ready_to_send', 'active', 'paused', 'completed'
   approvedBy: varchar("approved_by"), // Admin user who approved
   approvedAt: timestamp("approved_at"),
   
