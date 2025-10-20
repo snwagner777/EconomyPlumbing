@@ -55,6 +55,22 @@ import {
   type InsertEmailCampaign,
   type CustomerSegment,
   type InsertCustomerSegment,
+  type ReviewEmailPreferences,
+  type InsertReviewEmailPreferences,
+  type ReviewRequestCampaign,
+  type InsertReviewRequestCampaign,
+  type ReviewDripEmail,
+  type InsertReviewDripEmail,
+  type ReviewRequestSendLog,
+  type InsertReviewRequestSendLog,
+  type ReviewBehaviorTracking,
+  type InsertReviewBehaviorTracking,
+  type AIReviewResponse,
+  type InsertAIReviewResponse,
+  type NegativeReviewAlert,
+  type InsertNegativeReviewAlert,
+  type ReputationSystemSetting,
+  type InsertReputationSystemSetting,
   users,
   blogPosts,
   products,
@@ -85,7 +101,15 @@ import {
   customerSegments,
   segmentMembership,
   audienceMovementLogs,
-  serviceTitanCustomers
+  serviceTitanCustomers,
+  reviewEmailPreferences,
+  reviewRequestCampaigns,
+  reviewDripEmails,
+  reviewRequestSendLog,
+  reviewBehaviorTracking,
+  aiReviewResponses,
+  negativeReviewAlerts,
+  reputationSystemSettings
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -236,6 +260,20 @@ export interface IStorage {
   getEnabledReviewPlatforms(): Promise<ReviewPlatform[]>;
   getAllReviewPlatforms(): Promise<ReviewPlatform[]>;
   updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
+  
+  // Reputation / Review Management System
+  getAllReviewCampaigns(): Promise<ReviewRequestCampaign[]>;
+  createReviewCampaign(campaign: Partial<InsertReviewRequestCampaign>): Promise<ReviewRequestCampaign>;
+  updateReviewCampaign(id: string, updates: Partial<InsertReviewRequestCampaign>): Promise<ReviewRequestCampaign>;
+  getReviewDripEmails(campaignId: string): Promise<ReviewDripEmail[]>;
+  createReviewDripEmail(email: Partial<InsertReviewDripEmail>): Promise<ReviewDripEmail>;
+  getReputationSettings(): Promise<ReputationSystemSetting[]>;
+  updateReputationSetting(key: string, value: string): Promise<ReputationSystemSetting>;
+  getAllAIReviewResponses(): Promise<AIReviewResponse[]>;
+  createAIReviewResponse(response: Partial<InsertAIReviewResponse>): Promise<AIReviewResponse>;
+  approveAIReviewResponse(id: string, moderatorId: string, editedResponse?: string): Promise<void>;
+  getNegativeReviewAlerts(): Promise<NegativeReviewAlert[]>;
+  acknowledgeNegativeReviewAlert(id: string, moderatorId: string): Promise<void>;
   
   // Email Preferences
   getEmailPreferencesByEmail(email: string): Promise<EmailPreferences | undefined>;
@@ -3508,6 +3546,162 @@ export class DatabaseStorage implements IStorage {
       .where(eq(reviewPlatforms.id, id))
       .returning();
     return result;
+  }
+
+  // Reputation / Review Management System
+  async getAllReviewCampaigns(): Promise<ReviewRequestCampaign[]> {
+    return await db
+      .select()
+      .from(reviewRequestCampaigns)
+      .orderBy(desc(reviewRequestCampaigns.createdAt));
+  }
+
+  async createReviewCampaign(campaign: Partial<InsertReviewRequestCampaign>): Promise<ReviewRequestCampaign> {
+    const [result] = await db
+      .insert(reviewRequestCampaigns)
+      .values({
+        name: campaign.name!,
+        description: campaign.description,
+        isActive: campaign.isActive ?? true,
+        isDefault: campaign.isDefault ?? false,
+        generatedByAI: campaign.generatedByAI ?? false,
+        aiTimingStrategy: campaign.aiTimingStrategy,
+        triggerEvent: campaign.triggerEvent,
+        delayHours: campaign.delayHours,
+        behaviorTrackingEnabled: campaign.behaviorTrackingEnabled ?? true,
+        clickedButNotReviewedBranch: campaign.clickedButNotReviewedBranch ?? true,
+        totalSent: campaign.totalSent ?? 0,
+        totalClicks: campaign.totalClicks ?? 0,
+        totalReviewsCompleted: campaign.totalReviewsCompleted ?? 0,
+        conversionRate: campaign.conversionRate ?? 0,
+      })
+      .returning();
+    return result;
+  }
+
+  async updateReviewCampaign(id: string, updates: Partial<InsertReviewRequestCampaign>): Promise<ReviewRequestCampaign> {
+    const [result] = await db
+      .update(reviewRequestCampaigns)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(reviewRequestCampaigns.id, id))
+      .returning();
+    return result;
+  }
+
+  async getReviewDripEmails(campaignId: string): Promise<ReviewDripEmail[]> {
+    return await db
+      .select()
+      .from(reviewDripEmails)
+      .where(eq(reviewDripEmails.campaignId, campaignId))
+      .orderBy(reviewDripEmails.sequenceNumber);
+  }
+
+  async createReviewDripEmail(email: Partial<InsertReviewDripEmail>): Promise<ReviewDripEmail> {
+    const [result] = await db
+      .insert(reviewDripEmails)
+      .values({
+        campaignId: email.campaignId!,
+        sequenceNumber: email.sequenceNumber!,
+        dayOffset: email.dayOffset ?? 0,
+        behaviorCondition: email.behaviorCondition,
+        subject: email.subject!,
+        preheader: email.preheader,
+        htmlContent: email.htmlContent,
+        textContent: email.textContent,
+        generatedByAI: email.generatedByAI ?? false,
+        aiPrompt: email.aiPrompt,
+        aiVersion: email.aiVersion,
+        messagingTactic: email.messagingTactic,
+        totalSent: email.totalSent ?? 0,
+        totalOpened: email.totalOpened ?? 0,
+        totalClicked: email.totalClicked ?? 0,
+        totalReviewed: email.totalReviewed ?? 0,
+        enabled: email.enabled ?? true,
+      })
+      .returning();
+    return result;
+  }
+
+  async getReputationSettings(): Promise<ReputationSystemSetting[]> {
+    return await db
+      .select()
+      .from(reputationSystemSettings)
+      .orderBy(reputationSystemSettings.settingKey);
+  }
+
+  async updateReputationSetting(key: string, value: string): Promise<ReputationSystemSetting> {
+    const [result] = await db
+      .insert(reputationSystemSettings)
+      .values({
+        settingKey: key,
+        settingValue: value,
+      })
+      .onConflictDoUpdate({
+        target: reputationSystemSettings.settingKey,
+        set: {
+          settingValue: value,
+          updatedAt: new Date(),
+        }
+      })
+      .returning();
+    return result;
+  }
+
+  async getAllAIReviewResponses(): Promise<AIReviewResponse[]> {
+    return await db
+      .select()
+      .from(aiReviewResponses)
+      .orderBy(desc(aiReviewResponses.createdAt));
+  }
+
+  async createAIReviewResponse(response: Partial<InsertAIReviewResponse>): Promise<AIReviewResponse> {
+    const [result] = await db
+      .insert(aiReviewResponses)
+      .values({
+        reviewType: response.reviewType!,
+        reviewId: response.reviewId!,
+        customerName: response.customerName!,
+        rating: response.rating!,
+        reviewText: response.reviewText!,
+        generatedResponse: response.generatedResponse!,
+        aiPrompt: response.aiPrompt!,
+        aiModel: response.aiModel!,
+        sentiment: response.sentiment!,
+        tone: response.tone!,
+        status: response.status ?? 'pending',
+        regenerationCount: response.regenerationCount ?? 0,
+      })
+      .returning();
+    return result;
+  }
+
+  async approveAIReviewResponse(id: string, moderatorId: string, editedResponse?: string): Promise<void> {
+    await db
+      .update(aiReviewResponses)
+      .set({
+        status: 'approved',
+        approvedBy: moderatorId,
+        approvedAt: new Date(),
+        editedResponse: editedResponse || undefined,
+      })
+      .where(eq(aiReviewResponses.id, id));
+  }
+
+  async getNegativeReviewAlerts(): Promise<NegativeReviewAlert[]> {
+    return await db
+      .select()
+      .from(negativeReviewAlerts)
+      .orderBy(desc(negativeReviewAlerts.createdAt));
+  }
+
+  async acknowledgeNegativeReviewAlert(id: string, moderatorId: string): Promise<void> {
+    await db
+      .update(negativeReviewAlerts)
+      .set({
+        acknowledgedBy: moderatorId,
+        acknowledgedAt: new Date(),
+      })
+      .where(eq(negativeReviewAlerts.id, id));
   }
 
   // Email Preferences

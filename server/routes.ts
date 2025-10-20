@@ -4035,6 +4035,254 @@ ${rssItems}
     }
   });
 
+  // ============================================
+  // REPUTATION / REVIEW MANAGEMENT SYSTEM
+  // ============================================
+
+  // Admin: Get all review request campaigns
+  app.get("/api/admin/review-campaigns", requireAdmin, async (req, res) => {
+    try {
+      const campaigns = await storage.getAllReviewCampaigns();
+      res.json({ campaigns });
+    } catch (error: any) {
+      console.error('[Review Campaigns] Error fetching campaigns:', error);
+      res.status(500).json({ message: "Error fetching campaigns" });
+    }
+  });
+
+  // Admin: Create review request campaign with AI
+  app.post("/api/admin/review-campaigns", requireAdmin, async (req, res) => {
+    try {
+      const { generateDripCampaignStrategy, generateDripEmailContent } = await import('./lib/aiReviewDrip');
+      
+      // Generate AI-optimized drip strategy
+      console.log('[Review Campaigns] Generating AI drip strategy...');
+      const strategy = await generateDripCampaignStrategy();
+      
+      // Create campaign in database
+      const campaign = await storage.createReviewCampaign({
+        name: strategy.campaignName,
+        description: strategy.description,
+        isActive: true,
+        isDefault: false,
+        generatedByAI: true,
+        aiTimingStrategy: strategy as any,
+        triggerEvent: 'job_completed',
+        delayHours: 0,
+        behaviorTrackingEnabled: true,
+        clickedButNotReviewedBranch: true,
+        totalSent: 0,
+        totalClicks: 0,
+        totalReviewsCompleted: 0,
+        conversionRate: strategy.expectedConversionRate || 0,
+      });
+      
+      // Generate AI email content for each drip timing
+      console.log('[Review Campaigns] Generating email content...');
+      const emailContent = await generateDripEmailContent(strategy.dripSchedule);
+      
+      // Create drip emails
+      for (const email of emailContent.emails) {
+        await storage.createReviewDripEmail({
+          campaignId: campaign.id,
+          sequenceNumber: email.sequenceNumber,
+          dayOffset: email.dayOffset,
+          behaviorCondition: email.behaviorCondition,
+          subject: email.subject,
+          preheader: email.preheader,
+          htmlContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
+          textContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
+          generatedByAI: true,
+          aiPrompt: emailContent.aiPrompt,
+          aiVersion: 1,
+          messagingTactic: email.messagingTactic,
+          totalSent: 0,
+          totalOpened: 0,
+          totalClicked: 0,
+          totalReviewed: 0,
+          enabled: true,
+        });
+      }
+      
+      console.log('[Review Campaigns] Campaign created successfully:', campaign.id);
+      res.json({ success: true, campaign });
+    } catch (error: any) {
+      console.error('[Review Campaigns] Error creating campaign:', error);
+      res.status(500).json({ message: "Error creating campaign: " + error.message });
+    }
+  });
+
+  // Admin: Get drip emails for a campaign
+  app.get("/api/admin/review-campaigns/:id/emails", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const emails = await storage.getReviewDripEmails(id);
+      res.json({ emails });
+    } catch (error: any) {
+      console.error('[Review Campaigns] Error fetching drip emails:', error);
+      res.status(500).json({ message: "Error fetching drip emails" });
+    }
+  });
+
+  // Admin: Update review campaign
+  app.patch("/api/admin/review-campaigns/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const campaign = await storage.updateReviewCampaign(id, updates);
+      console.log(`[Review Campaigns] Updated campaign ${id}`);
+      res.json({ success: true, campaign });
+    } catch (error: any) {
+      console.error('[Review Campaigns] Error updating campaign:', error);
+      res.status(500).json({ message: "Error updating campaign" });
+    }
+  });
+
+  // Admin: Get reputation system settings
+  app.get("/api/admin/reputation-settings", requireAdmin, async (req, res) => {
+    try {
+      const settings = await storage.getReputationSettings();
+      res.json(settings);
+    } catch (error: any) {
+      console.error('[Reputation Settings] Error fetching settings:', error);
+      res.status(500).json({ message: "Error fetching settings" });
+    }
+  });
+
+  // Admin: Update reputation system settings
+  app.put("/api/admin/reputation-settings", requireAdmin, async (req, res) => {
+    try {
+      const { settingKey, settingValue } = req.body;
+      const setting = await storage.updateReputationSetting(settingKey, settingValue);
+      console.log(`[Reputation Settings] Updated ${settingKey}`);
+      res.json({ success: true, setting });
+    } catch (error: any) {
+      console.error('[Reputation Settings] Error updating settings:', error);
+      res.status(500).json({ message: "Error updating settings" });
+    }
+  });
+
+  // Admin: Get AI review responses
+  app.get("/api/admin/ai-review-responses", requireAdmin, async (req, res) => {
+    try {
+      const responses = await storage.getAllAIReviewResponses();
+      res.json({ responses });
+    } catch (error: any) {
+      console.error('[AI Review Responses] Error fetching responses:', error);
+      res.status(500).json({ message: "Error fetching AI responses" });
+    }
+  });
+
+  // Admin: Generate AI response for a review
+  app.post("/api/admin/ai-review-responses/generate", requireAdmin, async (req, res) => {
+    try {
+      const { reviewType, reviewId, customerName, rating, reviewText } = req.body;
+      
+      // Call OpenAI to generate response
+      const { OpenAI } = await import('openai');
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const sentiment = rating >= 4 ? 'positive' : rating === 3 ? 'neutral' : 'negative';
+      const tone = 'professional_friendly';
+      
+      const aiPrompt = `Generate a ${tone} response to this ${sentiment} customer review:
+
+Customer: ${customerName}
+Rating: ${rating}/5 stars
+Review: "${reviewText}"
+
+Write a professional, authentic response that:
+- Thanks the customer by name
+- Addresses their specific feedback
+- Maintains Economy Plumbing's friendly, approachable brand voice
+- ${sentiment === 'negative' ? 'Apologizes and offers to make it right' : 'Expresses gratitude and reinforces quality service'}
+- Keeps it concise (2-3 sentences)
+
+Response:`;
+
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional customer service representative for Economy Plumbing Services. Write authentic, warm responses to customer reviews.',
+          },
+          {
+            role: 'user',
+            content: aiPrompt,
+          },
+        ],
+        temperature: 0.7,
+      });
+
+      const generatedResponse = response.choices[0].message.content || '';
+      
+      // Save AI response to database
+      const aiResponse = await storage.createAIReviewResponse({
+        reviewType,
+        reviewId,
+        customerName,
+        rating,
+        reviewText,
+        generatedResponse,
+        aiPrompt,
+        aiModel: 'gpt-4o',
+        sentiment,
+        tone,
+        status: 'pending',
+        regenerationCount: 0,
+      });
+      
+      console.log('[AI Review Responses] Generated response for review:', reviewId);
+      res.json({ success: true, response: aiResponse });
+    } catch (error: any) {
+      console.error('[AI Review Responses] Error generating response:', error);
+      res.status(500).json({ message: "Error generating AI response: " + error.message });
+    }
+  });
+
+  // Admin: Approve AI review response
+  app.post("/api/admin/ai-review-responses/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { editedResponse } = req.body;
+      const moderatorId = (req.user as any)?.id || 'admin';
+      
+      await storage.approveAIReviewResponse(id, moderatorId, editedResponse);
+      console.log(`[AI Review Responses] Approved response ${id}`);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[AI Review Responses] Error approving response:', error);
+      res.status(500).json({ message: "Error approving response" });
+    }
+  });
+
+  // Admin: Get negative review alerts
+  app.get("/api/admin/negative-review-alerts", requireAdmin, async (req, res) => {
+    try {
+      const alerts = await storage.getNegativeReviewAlerts();
+      res.json({ alerts });
+    } catch (error: any) {
+      console.error('[Negative Review Alerts] Error fetching alerts:', error);
+      res.status(500).json({ message: "Error fetching alerts" });
+    }
+  });
+
+  // Admin: Acknowledge negative review alert
+  app.post("/api/admin/negative-review-alerts/:id/acknowledge", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const moderatorId = (req.user as any)?.id || 'admin';
+      
+      await storage.acknowledgeNegativeReviewAlert(id, moderatorId);
+      console.log(`[Negative Review Alerts] Acknowledged alert ${id}`);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[Negative Review Alerts] Error acknowledging alert:', error);
+      res.status(500).json({ message: "Error acknowledging alert" });
+    }
+  });
+
   // Manually trigger ServiceTitan customer sync (admin only)
   app.post("/api/admin/sync-servicetitan", requireAdmin, async (req, res) => {
     try {

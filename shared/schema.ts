@@ -1416,6 +1416,354 @@ export const insertMarketingSystemSettingSchema = createInsertSchema(marketingSy
   updatedAt: true,
 });
 
+// ============================================================================
+// REPUTATION / REVIEW MANAGEMENT SYSTEM
+// ============================================================================
+
+// Review Email Preferences - SEPARATE from marketing preferences (transactional)
+export const reviewEmailPreferences = pgTable("review_email_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceTitanCustomerId: integer("service_titan_customer_id").unique(),
+  email: text("email").notNull(),
+  
+  // Review request opt-out (separate from marketing)
+  unsubscribedReviewRequests: boolean("unsubscribed_review_requests").notNull().default(false),
+  
+  // Preference metadata
+  lastUpdatedAt: timestamp("last_updated_at").notNull().defaultNow(),
+  source: text("source"), // 'one_click_unsubscribe', 'preference_center', 'manual'
+  unsubscribeReason: text("unsubscribe_reason"), // Optional feedback
+}, (table) => ({
+  emailIdx: index("review_email_preferences_email_idx").on(table.email),
+  customerIdIdx: index("review_email_preferences_customer_id_idx").on(table.serviceTitanCustomerId),
+}));
+
+// Review Request Campaigns - AI-driven drip campaign configurations
+export const reviewRequestCampaigns = pgTable("review_request_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // "Standard Review Request Drip"
+  description: text("description").notNull(),
+  
+  // Campaign behavior
+  isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false), // Default campaign for new jobs
+  
+  // AI-generated drip timing
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiTimingStrategy: jsonb("ai_timing_strategy").notNull(), // AI-optimized send schedule
+  
+  // Trigger configuration
+  triggerEvent: text("trigger_event").notNull().default('job_completed'), // 'job_completed', 'manual'
+  delayHours: integer("delay_hours").notNull().default(0), // Hours after job completion to send first email
+  
+  // Behavior-based branching
+  behaviorTrackingEnabled: boolean("behavior_tracking_enabled").notNull().default(true),
+  clickedButNotReviewedBranch: boolean("clicked_but_not_reviewed_branch").notNull().default(true),
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalClicks: integer("total_clicks").notNull().default(0),
+  totalReviewsCompleted: integer("total_reviews_completed").notNull().default(0),
+  conversionRate: integer("conversion_rate").notNull().default(0), // Percentage (e.g., 2500 = 25.00%)
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  isActiveIdx: index("review_request_campaigns_active_idx").on(table.isActive),
+  isDefaultIdx: index("review_request_campaigns_default_idx").on(table.isDefault),
+}));
+
+// Review Drip Emails - Individual emails in review request sequences
+export const reviewDripEmails = pgTable("review_drip_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull().references(() => reviewRequestCampaigns.id, { onDelete: 'cascade' }),
+  
+  // Email sequence
+  sequenceNumber: integer("sequence_number").notNull(), // 1, 2, 3, 4, 5, 6, 7
+  dayOffset: integer("day_offset").notNull(), // 0, 3, 7, 10, 14, 21, 28 (AI-optimized)
+  
+  // Behavioral branching
+  behaviorCondition: text("behavior_condition"), // null (send to all), 'clicked_not_reviewed', 'not_opened'
+  
+  // Email content (with merge tags)
+  subject: text("subject").notNull(), // "Thanks {firstName}! How was your experience?"
+  preheader: text("preheader"), // Preview text
+  htmlContent: text("html_content").notNull(), // HTML email body with {mergeTags}
+  textContent: text("text_content").notNull(), // Plain text fallback
+  
+  // AI-generated content
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"),
+  aiVersion: integer("ai_version").notNull().default(1), // Track content refresh versions
+  messagingTactic: text("messaging_tactic"), // 'initial_request', 'gentle_reminder', 'clicked_followup', 'final_ask'
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalOpened: integer("total_opened").notNull().default(0),
+  totalClicked: integer("total_clicked").notNull().default(0),
+  totalReviewed: integer("total_reviewed").notNull().default(0),
+  
+  // Status
+  enabled: boolean("enabled").notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignSequenceIdx: index("review_drip_emails_campaign_sequence_idx").on(table.campaignId, table.sequenceNumber),
+  behaviorConditionIdx: index("review_drip_emails_behavior_idx").on(table.behaviorCondition),
+}));
+
+// Review Request Send Log - Complete history of every review request email sent
+export const reviewRequestSendLog = pgTable("review_request_send_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull().references(() => reviewRequestCampaigns.id),
+  dripEmailId: varchar("drip_email_id").notNull().references(() => reviewDripEmails.id),
+  
+  // Customer info
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  serviceTitanJobId: bigint("service_titan_job_id", { mode: 'number' }).notNull(),
+  recipientEmail: text("recipient_email").notNull(),
+  recipientName: text("recipient_name").notNull(),
+  
+  // Personalization data used
+  mergeTagData: jsonb("merge_tag_data").notNull(), // {firstName, jobType, technicianName, ...}
+  
+  // Email provider details
+  resendEmailId: text("resend_email_id"), // Resend's email ID for tracking
+  resendStatus: text("resend_status"), // 'queued', 'sent', 'delivered', 'bounced', 'complained'
+  
+  // Tracking events
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  bouncedAt: timestamp("bounced_at"),
+  complainedAt: timestamp("complained_at"),
+  
+  // Conversion tracking
+  reviewCompletedAt: timestamp("review_completed_at"),
+  reviewId: varchar("review_id"), // Links to customReviews when they submit
+  platform: text("platform"), // 'google', 'facebook', 'yelp', 'website'
+  rating: integer("rating"), // 1-5 stars (if completed)
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+}, (table) => ({
+  campaignCustomerIdx: index("review_send_log_campaign_customer_idx").on(table.campaignId, table.serviceTitanCustomerId),
+  jobIdIdx: index("review_send_log_job_id_idx").on(table.serviceTitanJobId),
+  sentAtIdx: index("review_send_log_sent_at_idx").on(table.sentAt),
+  resendEmailIdIdx: index("review_send_log_resend_id_idx").on(table.resendEmailId),
+}));
+
+// Review Behavior Tracking - Enhanced behavioral insights beyond basic clicks
+export const reviewBehaviorTracking = pgTable("review_behavior_tracking", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  serviceTitanJobId: bigint("service_titan_job_id", { mode: 'number' }).notNull(),
+  campaignId: varchar("campaign_id").notNull().references(() => reviewRequestCampaigns.id),
+  
+  // Behavioral data
+  totalEmailsSent: integer("total_emails_sent").notNull().default(0),
+  totalOpens: integer("total_opens").notNull().default(0),
+  totalClicks: integer("total_clicks").notNull().default(0),
+  firstOpenedAt: timestamp("first_opened_at"),
+  firstClickedAt: timestamp("first_clicked_at"),
+  lastEmailSentAt: timestamp("last_email_sent_at"),
+  
+  // Platform engagement
+  platformsClicked: text("platforms_clicked").array().default(sql`ARRAY[]::text[]`), // ['google', 'facebook']
+  clickCount: jsonb("click_count").notNull().default('{}'), // {google: 3, facebook: 1}
+  
+  // Conversion status
+  conversionStatus: text("conversion_status").notNull().default('pending'), // 'pending', 'clicked_no_review', 'reviewed', 'abandoned'
+  reviewCompletedAt: timestamp("review_completed_at"),
+  reviewId: varchar("review_id"), // Links to customReviews
+  finalPlatform: text("final_platform"), // Where they actually reviewed
+  finalRating: integer("final_rating"), // 1-5 stars
+  
+  // Behavioral branch tracking
+  currentBranch: text("current_branch").notNull().default('standard'), // 'standard', 'clicked_followup', 'abandoned'
+  branchSwitchedAt: timestamp("branch_switched_at"),
+  
+  // Timestamps
+  journeyStartedAt: timestamp("journey_started_at").notNull().defaultNow(),
+  lastActivityAt: timestamp("last_activity_at").notNull().defaultNow(),
+}, (table) => ({
+  customerJobIdx: index("review_behavior_customer_job_idx").on(table.serviceTitanCustomerId, table.serviceTitanJobId),
+  campaignIdx: index("review_behavior_campaign_idx").on(table.campaignId),
+  conversionStatusIdx: index("review_behavior_conversion_idx").on(table.conversionStatus),
+  currentBranchIdx: index("review_behavior_branch_idx").on(table.currentBranch),
+}));
+
+// AI Review Responses - AI-generated responses to customer reviews
+export const aiReviewResponses = pgTable("ai_review_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Review reference
+  reviewType: text("review_type").notNull(), // 'google', 'facebook', 'yelp', 'website'
+  reviewId: varchar("review_id").notNull(), // Links to googleReviews or customReviews
+  
+  // Review metadata (denormalized for AI context)
+  customerName: text("customer_name").notNull(),
+  rating: integer("rating").notNull(), // 1-5 stars
+  reviewText: text("review_text").notNull(),
+  
+  // AI-generated response
+  generatedResponse: text("generated_response").notNull(),
+  aiPrompt: text("ai_prompt"), // Prompt used to generate response
+  aiModel: text("ai_model").notNull().default('gpt-4o'), // Model version
+  sentiment: text("sentiment").notNull(), // 'positive', 'neutral', 'negative'
+  tone: text("tone").notNull().default('professional_friendly'), // Tone setting used
+  
+  // Response management
+  status: text("status").notNull().default('pending'), // 'pending', 'approved', 'edited', 'posted', 'rejected'
+  editedResponse: text("edited_response"), // Admin-edited version
+  approvedBy: varchar("approved_by"), // Admin user who approved
+  approvedAt: timestamp("approved_at"),
+  postedAt: timestamp("posted_at"), // When it was actually posted to platform
+  
+  // Quality metrics
+  regenerationCount: integer("regeneration_count").notNull().default(0), // How many times regenerated
+  adminFeedback: text("admin_feedback"), // Why it was rejected/edited
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  reviewTypeIdIdx: index("ai_review_responses_review_type_id_idx").on(table.reviewType, table.reviewId),
+  statusIdx: index("ai_review_responses_status_idx").on(table.status),
+  sentimentIdx: index("ai_review_responses_sentiment_idx").on(table.sentiment),
+  ratingIdx: index("ai_review_responses_rating_idx").on(table.rating),
+}));
+
+// Negative Review Alerts - Automated alerts for low-rated reviews
+export const negativeReviewAlerts = pgTable("negative_review_alerts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Review reference
+  reviewType: text("review_type").notNull(), // 'google', 'facebook', 'yelp', 'website'
+  reviewId: varchar("review_id").notNull(), // Links to googleReviews or customReviews
+  
+  // Review metadata
+  platform: text("platform").notNull(), // 'Google', 'Facebook', 'Yelp', 'Website'
+  customerName: text("customer_name").notNull(),
+  rating: integer("rating").notNull(), // 1-3 stars
+  reviewText: text("review_text").notNull(),
+  reviewUrl: text("review_url"), // Direct link to review on platform
+  
+  // Alert details
+  severity: text("severity").notNull(), // 'critical' (1-2 stars), 'moderate' (3 stars)
+  aiSentimentScore: integer("ai_sentiment_score"), // 0-100 (lower = more negative)
+  aiKeyIssues: text("ai_key_issues").array(), // AI-extracted issues: ['pricing', 'wait_time', 'quality']
+  
+  // Alert status
+  status: text("status").notNull().default('pending'), // 'pending', 'acknowledged', 'responded', 'escalated', 'resolved'
+  acknowledgedBy: varchar("acknowledged_by"), // Admin who acknowledged
+  acknowledgedAt: timestamp("acknowledged_at"),
+  
+  // Notification tracking
+  emailSent: boolean("email_sent").notNull().default(false),
+  emailSentAt: timestamp("email_sent_at"),
+  smsSent: boolean("sms_sent").notNull().default(false),
+  smsSentAt: timestamp("sms_sent_at"),
+  
+  // Response deadline
+  responseDeadline: timestamp("response_deadline"), // Target response time (24-48 hours)
+  respondedAt: timestamp("responded_at"),
+  responseTime: integer("response_time"), // Minutes from alert to response
+  
+  // Internal notes
+  internalNotes: text("internal_notes"),
+  resolutionNotes: text("resolution_notes"), // How it was resolved
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  reviewTypeIdIdx: index("negative_review_alerts_review_type_id_idx").on(table.reviewType, table.reviewId),
+  statusIdx: index("negative_review_alerts_status_idx").on(table.status),
+  severityIdx: index("negative_review_alerts_severity_idx").on(table.severity),
+  createdAtIdx: index("negative_review_alerts_created_at_idx").on(table.createdAt),
+  responseDeadlineIdx: index("negative_review_alerts_deadline_idx").on(table.responseDeadline),
+}));
+
+// Reputation System Settings - Master switch, thresholds, SMS toggle
+export const reputationSystemSettings = pgTable("reputation_system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  settingKey: text("setting_key").notNull().unique(),
+  settingValue: jsonb("setting_value").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedBy: varchar("updated_by"),
+});
+
+// Insert schemas
+export const insertReviewEmailPreferencesSchema = createInsertSchema(reviewEmailPreferences).omit({
+  id: true,
+  lastUpdatedAt: true,
+});
+
+export const insertReviewRequestCampaignSchema = createInsertSchema(reviewRequestCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReviewDripEmailSchema = createInsertSchema(reviewDripEmails).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertReviewRequestSendLogSchema = createInsertSchema(reviewRequestSendLog).omit({
+  id: true,
+  sentAt: true,
+  deliveredAt: true,
+  openedAt: true,
+  clickedAt: true,
+  bouncedAt: true,
+  complainedAt: true,
+  reviewCompletedAt: true,
+});
+
+export const insertReviewBehaviorTrackingSchema = createInsertSchema(reviewBehaviorTracking).omit({
+  id: true,
+  journeyStartedAt: true,
+  lastActivityAt: true,
+  firstOpenedAt: true,
+  firstClickedAt: true,
+  lastEmailSentAt: true,
+  reviewCompletedAt: true,
+  branchSwitchedAt: true,
+});
+
+export const insertAIReviewResponseSchema = createInsertSchema(aiReviewResponses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+  postedAt: true,
+});
+
+export const insertNegativeReviewAlertSchema = createInsertSchema(negativeReviewAlerts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  acknowledgedAt: true,
+  emailSentAt: true,
+  smsSentAt: true,
+  respondedAt: true,
+});
+
+export const insertReputationSystemSettingSchema = createInsertSchema(reputationSystemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
 // Export types
 export type CustomerSegment = typeof customerSegments.$inferSelect;
 export type InsertCustomerSegment = z.infer<typeof insertCustomerSegmentSchema>;
@@ -1439,3 +1787,19 @@ export type AudienceMovementLog = typeof audienceMovementLogs.$inferSelect;
 export type InsertAudienceMovementLog = z.infer<typeof insertAudienceMovementLogSchema>;
 export type MarketingSystemSetting = typeof marketingSystemSettings.$inferSelect;
 export type InsertMarketingSystemSetting = z.infer<typeof insertMarketingSystemSettingSchema>;
+export type ReviewEmailPreferences = typeof reviewEmailPreferences.$inferSelect;
+export type InsertReviewEmailPreferences = z.infer<typeof insertReviewEmailPreferencesSchema>;
+export type ReviewRequestCampaign = typeof reviewRequestCampaigns.$inferSelect;
+export type InsertReviewRequestCampaign = z.infer<typeof insertReviewRequestCampaignSchema>;
+export type ReviewDripEmail = typeof reviewDripEmails.$inferSelect;
+export type InsertReviewDripEmail = z.infer<typeof insertReviewDripEmailSchema>;
+export type ReviewRequestSendLog = typeof reviewRequestSendLog.$inferSelect;
+export type InsertReviewRequestSendLog = z.infer<typeof insertReviewRequestSendLogSchema>;
+export type ReviewBehaviorTracking = typeof reviewBehaviorTracking.$inferSelect;
+export type InsertReviewBehaviorTracking = z.infer<typeof insertReviewBehaviorTrackingSchema>;
+export type AIReviewResponse = typeof aiReviewResponses.$inferSelect;
+export type InsertAIReviewResponse = z.infer<typeof insertAIReviewResponseSchema>;
+export type NegativeReviewAlert = typeof negativeReviewAlerts.$inferSelect;
+export type InsertNegativeReviewAlert = z.infer<typeof insertNegativeReviewAlertSchema>;
+export type ReputationSystemSetting = typeof reputationSystemSettings.$inferSelect;
+export type InsertReputationSystemSetting = z.infer<typeof insertReputationSystemSettingSchema>;
