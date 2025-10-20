@@ -1627,6 +1627,293 @@ class ServiceTitanAPI {
       throw error;
     }
   }
+
+  /**
+   * Fetch job forms for a specific job
+   * Uses Forms API: GET /forms/v2/tenant/{tenantId}/jobs/{jobId}/forms
+   */
+  async getJobForms(jobId: number): Promise<any[]> {
+    try {
+      const formsUrl = `https://api.servicetitan.io/forms/v2/tenant/${this.config.tenantId}/jobs/${jobId}/forms`;
+      
+      const response = await this.request<{ data: any[] }>(
+        formsUrl,
+        {},
+        true // Use full URL
+      );
+
+      return response.data || [];
+    } catch (error) {
+      console.error(`[ServiceTitan Forms] Error fetching forms for job ${jobId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Sync job forms for recently modified jobs
+   * Extracts technician notes, customer concerns, and recommendations
+   */
+  async syncJobForms(options: {
+    sinceDate?: Date;
+    jobIds?: number[];
+    batchSize?: number;
+  } = {}): Promise<{
+    formsCount: number;
+    jobsProcessed: number;
+    duration: number;
+  }> {
+    const startTime = Date.now();
+    const { serviceTitanJobForms, serviceTitanJobs } = await import('@shared/schema');
+    const { eq, sql, inArray } = await import('drizzle-orm');
+    
+    try {
+      console.log('[ServiceTitan Forms Sync] 🔄 Starting forms sync...');
+      
+      let jobsToSync: any[] = [];
+      
+      // Strategy 1: Sync specific job IDs (if provided)
+      if (options.jobIds && options.jobIds.length > 0) {
+        console.log(`[ServiceTitan Forms Sync] Syncing ${options.jobIds.length} specific jobs`);
+        jobsToSync = await db
+          .select()
+          .from(serviceTitanJobs)
+          .where(inArray(serviceTitanJobs.id, options.jobIds))
+          .limit(options.batchSize || 100);
+      }
+      // Strategy 2: Sync recently modified jobs (default: last 30 days)
+      else {
+        const sinceDate = options.sinceDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        console.log(`[ServiceTitan Forms Sync] Syncing jobs modified since ${sinceDate.toISOString()}`);
+        
+        jobsToSync = await db
+          .select()
+          .from(serviceTitanJobs)
+          .where(sql`${serviceTitanJobs.modifiedOn} >= ${sinceDate}`)
+          .orderBy(sql`${serviceTitanJobs.modifiedOn} DESC`)
+          .limit(options.batchSize || 100);
+      }
+
+      console.log(`[ServiceTitan Forms Sync] 📊 Processing ${jobsToSync.length} jobs...`);
+      
+      let totalFormsSynced = 0;
+      let jobsProcessed = 0;
+
+      // Process jobs in batches of 10 to avoid rate limiting
+      const BATCH_SIZE = 10;
+      for (let i = 0; i < jobsToSync.length; i += BATCH_SIZE) {
+        const batch = jobsToSync.slice(i, i + BATCH_SIZE);
+        
+        await Promise.all(batch.map(async (job) => {
+          try {
+            const forms = await this.getJobForms(job.id);
+            
+            if (forms.length === 0) {
+              return;
+            }
+
+            // Process each form
+            for (const form of forms) {
+              try {
+                // Parse form data to extract key fields
+                const parsedFields = this.parseFormFields(form);
+                const technicianNotes = this.extractTechnicianNotes(parsedFields);
+                const customerConcerns = this.extractCustomerConcerns(parsedFields);
+                const recommendationsMade = this.extractRecommendations(parsedFields);
+                const equipmentCondition = this.extractEquipmentCondition(parsedFields);
+
+                // Upsert to database
+                await db
+                  .insert(serviceTitanJobForms)
+                  .values({
+                    formId: form.id,
+                    jobId: job.id,
+                    customerId: job.customerId,
+                    formTemplateId: form.formTemplate?.id || null,
+                    formTemplateName: form.formTemplate?.name || null,
+                    rawFormData: form,
+                    parsedFields,
+                    technicianNotes,
+                    customerConcerns,
+                    recommendationsMade,
+                    equipmentCondition,
+                    submittedOn: form.submittedOn ? new Date(form.submittedOn) : new Date(),
+                    submittedBy: form.submittedBy?.name || null,
+                    lastSyncedAt: new Date(),
+                  })
+                  .onConflictDoUpdate({
+                    target: serviceTitanJobForms.formId,
+                    set: {
+                      rawFormData: form,
+                      parsedFields,
+                      technicianNotes,
+                      customerConcerns,
+                      recommendationsMade,
+                      equipmentCondition,
+                      lastSyncedAt: new Date(),
+                    },
+                  });
+
+                totalFormsSynced++;
+              } catch (error) {
+                console.error(`[ServiceTitan Forms Sync] Error processing form ${form.id}:`, error);
+              }
+            }
+
+            jobsProcessed++;
+            
+            if (jobsProcessed % 20 === 0) {
+              console.log(`[ServiceTitan Forms Sync] Progress: ${jobsProcessed}/${jobsToSync.length} jobs processed`);
+            }
+          } catch (error) {
+            console.error(`[ServiceTitan Forms Sync] Error syncing forms for job ${job.id}:`, error);
+          }
+        }));
+      }
+
+      const duration = Date.now() - startTime;
+      console.log('[ServiceTitan Forms Sync] ✅ Sync complete!');
+      console.log(`  - Jobs processed: ${jobsProcessed}`);
+      console.log(`  - Forms synced: ${totalFormsSynced}`);
+      console.log(`  - Duration: ${(duration / 1000).toFixed(1)}s`);
+
+      return {
+        formsCount: totalFormsSynced,
+        jobsProcessed,
+        duration,
+      };
+    } catch (error) {
+      console.error('[ServiceTitan Forms Sync] ❌ Sync failed:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Parse form fields into key-value pairs
+   */
+  private parseFormFields(form: any): Record<string, any> {
+    const parsed: Record<string, any> = {};
+    
+    if (!form.fields || !Array.isArray(form.fields)) {
+      return parsed;
+    }
+
+    for (const field of form.fields) {
+      const key = field.name || field.label || `field_${field.id}`;
+      parsed[key] = field.value || field.text || field.selectedOption || null;
+    }
+
+    return parsed;
+  }
+
+  /**
+   * Extract technician notes from form fields
+   */
+  private extractTechnicianNotes(fields: Record<string, any>): string | null {
+    // Common field names for technician notes
+    const noteFields = [
+      'technician_notes',
+      'notes',
+      'tech_notes',
+      'comments',
+      'observations',
+      'findings',
+      'service_notes',
+      'job_notes',
+    ];
+
+    const notes: string[] = [];
+    
+    for (const [key, value] of Object.entries(fields)) {
+      const lowerKey = key.toLowerCase().replace(/[^a-z]/g, '');
+      
+      if (noteFields.some(f => lowerKey.includes(f.replace(/_/g, ''))) && value) {
+        notes.push(String(value));
+      }
+    }
+
+    return notes.length > 0 ? notes.join('\n\n') : null;
+  }
+
+  /**
+   * Extract customer concerns from form fields
+   */
+  private extractCustomerConcerns(fields: Record<string, any>): string[] {
+    const concerns: string[] = [];
+    const concernKeywords = [
+      'concern',
+      'issue',
+      'problem',
+      'complaint',
+      'worry',
+    ];
+
+    for (const [key, value] of Object.entries(fields)) {
+      const lowerKey = key.toLowerCase();
+      
+      if (concernKeywords.some(k => lowerKey.includes(k)) && value) {
+        concerns.push(String(value));
+      }
+    }
+
+    return concerns;
+  }
+
+  /**
+   * Extract recommendations from form fields
+   */
+  private extractRecommendations(fields: Record<string, any>): string[] {
+    const recommendations: string[] = [];
+    const recommendationKeywords = [
+      'recommend',
+      'suggestion',
+      'should replace',
+      'needs replacement',
+      'should consider',
+      'advise',
+    ];
+
+    for (const [key, value] of Object.entries(fields)) {
+      const lowerKey = key.toLowerCase();
+      const lowerValue = String(value || '').toLowerCase();
+      
+      if (recommendationKeywords.some(k => lowerKey.includes(k) || lowerValue.includes(k)) && value) {
+        recommendations.push(String(value));
+      }
+    }
+
+    return recommendations;
+  }
+
+  /**
+   * Extract equipment condition assessment
+   */
+  private extractEquipmentCondition(fields: Record<string, any>): string | null {
+    const conditionKeywords = [
+      'condition',
+      'status',
+      'quality',
+      'state',
+    ];
+
+    for (const [key, value] of Object.entries(fields)) {
+      const lowerKey = key.toLowerCase();
+      
+      if (conditionKeywords.some(k => lowerKey.includes(k)) && value) {
+        const lowerValue = String(value).toLowerCase();
+        
+        // Match common condition values
+        if (lowerValue.includes('critical') || lowerValue.includes('failure')) return 'Critical';
+        if (lowerValue.includes('poor') || lowerValue.includes('bad')) return 'Poor';
+        if (lowerValue.includes('fair') || lowerValue.includes('okay')) return 'Fair';
+        if (lowerValue.includes('good')) return 'Good';
+        if (lowerValue.includes('excellent') || lowerValue.includes('great')) return 'Excellent';
+        
+        return String(value);
+      }
+    }
+
+    return null;
+  }
 }
 
 // Singleton instance

@@ -386,6 +386,14 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   active: boolean("active").notNull().default(true),
   balance: text("balance"), // Stored as text (ServiceTitan format)
   jobCount: integer("job_count").notNull().default(0), // Total completed jobs for leaderboard
+  
+  // Marketing automation personalization fields
+  lastServiceDate: timestamp("last_service_date"), // Most recent completed job date
+  lastServiceType: text("last_service_type"), // Most recent service category
+  lifetimeValue: integer("lifetime_value").notNull().default(0), // Total revenue in cents
+  customerTags: text("customer_tags").array(), // ['VIP', 'Commercial', 'Seasonal']
+  preferredContactMethod: text("preferred_contact_method"), // 'email', 'sms', 'phone'
+  
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
 }, (table) => ({
   activeIdx: index("st_customers_active_idx").on(table.active),
@@ -395,6 +403,9 @@ export const serviceTitanCustomers = pgTable("service_titan_customers", {
   typeIdx: index("st_customers_type_idx").on(table.type),
   jobCountIdx: index("st_customers_job_count_idx").on(table.jobCount),
   lastSyncedIdx: index("st_customers_last_synced_idx").on(table.lastSyncedAt),
+  lastServiceDateIdx: index("st_customers_last_service_date_idx").on(table.lastServiceDate),
+  lifetimeValueIdx: index("st_customers_lifetime_value_idx").on(table.lifetimeValue),
+  preferredContactIdx: index("st_customers_preferred_contact_idx").on(table.preferredContactMethod),
 }));
 
 // ServiceTitan Customer Contacts - stores all contact methods with normalization
@@ -858,6 +869,12 @@ export const serviceTitanJobs = pgTable("service_titan_jobs", {
   total: integer("total").notNull().default(0), // Total amount in cents
   invoice: integer("invoice").notNull().default(0), // Invoice amount in cents
   
+  // Marketing automation personalization fields
+  serviceCategory: varchar("service_category"), // 'Plumbing', 'Water Heater', 'Drain Cleaning', etc.
+  equipmentInstalled: text("equipment_installed").array(), // ['Tankless Water Heater', 'Water Softener']
+  customerSatisfaction: integer("customer_satisfaction"), // 1-5 rating
+  campaignId: varchar("campaign_id"), // Links to email_campaigns for attribution
+  
   // Timestamps
   createdOn: timestamp("created_on").notNull(),
   modifiedOn: timestamp("modified_on").notNull(),
@@ -868,6 +885,9 @@ export const serviceTitanJobs = pgTable("service_titan_jobs", {
   completedOnIdx: index("st_jobs_completed_on_idx").on(table.completedOn),
   modifiedOnIdx: index("st_jobs_modified_on_idx").on(table.modifiedOn),
   jobNumberIdx: index("st_jobs_job_number_idx").on(table.jobNumber),
+  serviceCategoryIdx: index("st_jobs_service_category_idx").on(table.serviceCategory),
+  customerSatisfactionIdx: index("st_jobs_customer_satisfaction_idx").on(table.customerSatisfaction),
+  campaignIdIdx: index("st_jobs_campaign_id_idx").on(table.campaignId),
 }));
 
 // Sync Watermarks - Track incremental sync progress
@@ -962,3 +982,454 @@ export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
 export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
 export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect;
 export type SyncWatermark = typeof syncWatermarks.$inferSelect;
+
+// ============================================================================
+// MARKETING AUTOMATION SYSTEM
+// ============================================================================
+
+// Customer Segments - AI-generated customer groups for targeted campaigns
+export const customerSegments = pgTable("customer_segments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(), // "Unsold Water Heater Estimates", "Win-Back: 12+ Months"
+  description: text("description").notNull(), // Detailed segment criteria
+  segmentType: text("segment_type").notNull(), // 'evergreen' (runs forever) or 'one_time' (temporary)
+  targetCriteria: jsonb("target_criteria").notNull(), // JSON criteria for auto-entry (e.g., {estimateAge: ">30 days", serviceType: "water heater"})
+  
+  // AI-generated metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"), // The prompt used to generate this segment
+  aiReasoning: text("ai_reasoning"), // Why AI suggested this segment
+  
+  // Status
+  status: text("status").notNull().default('active'), // 'active', 'paused', 'archived'
+  memberCount: integer("member_count").notNull().default(0), // Cached count for performance
+  
+  // Performance metrics
+  totalRevenue: integer("total_revenue").notNull().default(0), // Total revenue attributed to this segment (cents)
+  totalJobsBooked: integer("total_jobs_booked").notNull().default(0),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  lastRefreshedAt: timestamp("last_refreshed_at"), // Last time AI refreshed content for evergreen segments
+}, (table) => ({
+  segmentTypeIdx: index("customer_segments_type_idx").on(table.segmentType),
+  statusIdx: index("customer_segments_status_idx").on(table.status),
+  generatedByAIIdx: index("customer_segments_ai_idx").on(table.generatedByAI),
+}));
+
+// Segment Membership - Tracks which customers belong to which segments
+export const segmentMembership = pgTable("segment_membership", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }),
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  
+  // Customer snapshot (denormalized for performance)
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  
+  // Entry/Exit tracking
+  enteredAt: timestamp("entered_at").notNull().defaultNow(),
+  exitedAt: timestamp("exited_at"), // null if still in segment
+  entryReason: text("entry_reason"), // "New unsold estimate created", "12 months since last service"
+  exitReason: text("exit_reason"), // "Job booked", "Estimate sold", "Manual removal"
+  
+  // Campaign tracking
+  emailsSent: integer("emails_sent").notNull().default(0),
+  emailsOpened: integer("emails_opened").notNull().default(0),
+  emailsClicked: integer("emails_clicked").notNull().default(0),
+  callsMade: integer("calls_made").notNull().default(0), // Tracked via phone number
+  jobsBooked: integer("jobs_booked").notNull().default(0),
+  revenueGenerated: integer("revenue_generated").notNull().default(0), // In cents
+}, (table) => ({
+  segmentCustomerIdx: index("segment_membership_segment_customer_idx").on(table.segmentId, table.serviceTitanCustomerId),
+  customerIdIdx: index("segment_membership_customer_id_idx").on(table.serviceTitanCustomerId),
+  exitedAtIdx: index("segment_membership_exited_at_idx").on(table.exitedAt), // Query active members (exitedAt IS NULL)
+  enteredAtIdx: index("segment_membership_entered_at_idx").on(table.enteredAt),
+}));
+
+// Email Campaigns - Campaign definitions (evergreen or one-time)
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull().unique(),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }),
+  
+  // Campaign type
+  campaignType: text("campaign_type").notNull(), // 'drip' (multi-email sequence), 'one_time' (single blast)
+  isEvergreen: boolean("is_evergreen").notNull().default(false), // Runs forever vs one-time
+  
+  // ServiceTitan integration
+  serviceTitanCampaignId: bigint("service_titan_campaign_id", { mode: 'number' }), // Created via Marketing API
+  serviceTitanCampaignName: text("service_titan_campaign_name"),
+  trackingPhoneNumber: text("tracking_phone_number"), // FREE ServiceTitan tracking number
+  
+  // Status & approval
+  status: text("status").notNull().default('awaiting_phone_number'), // 'awaiting_phone_number', 'ready_to_send', 'active', 'paused', 'completed'
+  approvedBy: varchar("approved_by"), // Admin user who approved
+  approvedAt: timestamp("approved_at"),
+  
+  // AI-generated metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"),
+  hasOffer: boolean("has_offer").notNull().default(false), // Flags campaigns with discounts for approval
+  offerDetails: jsonb("offer_details"), // {type: "percentage", value: 10, description: "$200 off water heaters"}
+  offerApproved: boolean("offer_approved").default(false),
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalOpened: integer("total_opened").notNull().default(0),
+  totalClicked: integer("total_clicked").notNull().default(0),
+  totalCalls: integer("total_calls").notNull().default(0),
+  totalJobsBooked: integer("total_jobs_booked").notNull().default(0),
+  totalRevenue: integer("total_revenue").notNull().default(0), // In cents
+  
+  // Send limits & safety
+  dailySendLimit: integer("daily_send_limit").notNull().default(500),
+  sendEnabled: boolean("send_enabled").notNull().default(false), // MASTER SWITCH per campaign
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"), // When campaign went live
+  completedAt: timestamp("completed_at"), // For one-time campaigns
+}, (table) => ({
+  segmentIdIdx: index("email_campaigns_segment_id_idx").on(table.segmentId),
+  statusIdx: index("email_campaigns_status_idx").on(table.status),
+  isEvergreenIdx: index("email_campaigns_evergreen_idx").on(table.isEvergreen),
+  hasOfferIdx: index("email_campaigns_has_offer_idx").on(table.hasOffer),
+  sendEnabledIdx: index("email_campaigns_send_enabled_idx").on(table.sendEnabled),
+}));
+
+// Campaign Emails - Individual emails in drip sequences
+export const campaignEmails = pgTable("campaign_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull().references(() => emailCampaigns.id, { onDelete: 'cascade' }),
+  
+  // Email sequence
+  sequenceNumber: integer("sequence_number").notNull(), // 1, 2, 3 (Day 0, Day 3, Day 7)
+  dayOffset: integer("day_offset").notNull(), // 0, 3, 7, 14 (days after customer enters segment)
+  
+  // Email content (with merge tags)
+  subject: text("subject").notNull(), // "{firstName}, still thinking about that water heater?"
+  preheader: text("preheader"), // Preview text
+  htmlContent: text("html_content").notNull(), // HTML email body with {mergeTags}
+  textContent: text("text_content").notNull(), // Plain text fallback
+  
+  // AI-generated metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"),
+  aiVersion: integer("ai_version").notNull().default(1), // Track content refresh versions for evergreen
+  
+  // A/B testing
+  isVariant: boolean("is_variant").notNull().default(false), // true if this is an A/B test variant
+  variantOf: varchar("variant_of"), // ID of original email
+  testPercentage: integer("test_percentage"), // 50 = send to 50% of audience
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalOpened: integer("total_opened").notNull().default(0),
+  totalClicked: integer("total_clicked").notNull().default(0),
+  totalUnsubscribed: integer("total_unsubscribed").notNull().default(0),
+  totalBounced: integer("total_bounced").notNull().default(0),
+  
+  // Status
+  enabled: boolean("enabled").notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignSequenceIdx: index("campaign_emails_campaign_sequence_idx").on(table.campaignId, table.sequenceNumber),
+  variantOfIdx: index("campaign_emails_variant_of_idx").on(table.variantOf),
+}));
+
+// Email Send Log - Complete history of every email sent
+export const emailSendLog = pgTable("email_send_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull().references(() => emailCampaigns.id),
+  campaignEmailId: varchar("campaign_email_id").notNull().references(() => campaignEmails.id),
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  
+  // Recipient info (denormalized)
+  recipientEmail: text("recipient_email").notNull(),
+  recipientName: text("recipient_name").notNull(),
+  
+  // Personalization data used
+  mergeTagData: jsonb("merge_tag_data").notNull(), // {firstName: "Sarah", lastServiceDate: "2023-10-15", ...}
+  
+  // Email provider details
+  resendEmailId: text("resend_email_id"), // Resend's email ID for tracking
+  resendStatus: text("resend_status"), // 'queued', 'sent', 'delivered', 'bounced', 'complained'
+  
+  // Tracking events
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  bouncedAt: timestamp("bounced_at"),
+  complainedAt: timestamp("complained_at"), // Spam complaint
+  unsubscribedAt: timestamp("unsubscribed_at"),
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+  
+  // Attribution
+  leadToJobBooking: boolean("lead_to_job_booking").notNull().default(false), // Did this email result in a job?
+  jobId: bigint("job_id", { mode: 'number' }), // ServiceTitan job ID if booked
+  revenueAttributed: integer("revenue_attributed").notNull().default(0), // In cents
+}, (table) => ({
+  campaignCustomerIdx: index("email_send_log_campaign_customer_idx").on(table.campaignId, table.serviceTitanCustomerId),
+  sentAtIdx: index("email_send_log_sent_at_idx").on(table.sentAt),
+  resendEmailIdIdx: index("email_send_log_resend_id_idx").on(table.resendEmailId),
+}));
+
+// Email Preferences - Unsubscribe categories per customer
+export const emailPreferences = pgTable("email_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceTitanCustomerId: integer("service_titan_customer_id").unique(),
+  email: text("email").notNull(),
+  
+  // Unsubscribe categories (granular control)
+  unsubscribedMarketing: boolean("unsubscribed_marketing").notNull().default(false), // Promotional emails
+  unsubscribedReviews: boolean("unsubscribed_reviews").notNull().default(false), // Review requests
+  unsubscribedServiceReminders: boolean("unsubscribed_service_reminders").notNull().default(false), // Annual maintenance reminders
+  unsubscribedReferrals: boolean("unsubscribed_referrals").notNull().default(false), // Referral program emails
+  
+  // Global unsubscribe
+  unsubscribedAll: boolean("unsubscribed_all").notNull().default(false), // Opted out of everything
+  
+  // Preference metadata
+  preferredContactMethod: text("preferred_contact_method"), // 'email', 'sms', 'phone'
+  languagePreference: text("language_preference").default('en'), // 'en', 'es'
+  
+  // Tracking
+  lastUpdatedAt: timestamp("last_updated_at").notNull().defaultNow(),
+  source: text("source"), // 'preference_center', 'one_click_unsubscribe', 'complaint'
+}, (table) => ({
+  emailIdx: index("email_preferences_email_idx").on(table.email),
+  customerIdIdx: index("email_preferences_customer_id_idx").on(table.serviceTitanCustomerId),
+}));
+
+// Email Suppression List - Hard bounces, spam complaints (NEVER email these)
+export const emailSuppressionList = pgTable("email_suppression_list", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  
+  // Suppression reason
+  reason: text("reason").notNull(), // 'hard_bounce', 'spam_complaint', 'manual_suppression', 'invalid_email'
+  reasonDetails: text("reason_details"), // Additional context
+  
+  // Source tracking
+  resendEmailId: text("resend_email_id"), // Email that triggered suppression
+  campaignId: varchar("campaign_id"), // Campaign that triggered suppression
+  
+  // Timestamps
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+  lastAttemptedAt: timestamp("last_attempted_at"), // Last time we tried to email (for debugging)
+}, (table) => ({
+  emailIdx: index("email_suppression_list_email_idx").on(table.email),
+  reasonIdx: index("email_suppression_list_reason_idx").on(table.reason),
+}));
+
+// Review Link Clicks - Track every review button click for remarketing
+export const reviewLinkClicks = pgTable("review_link_clicks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  serviceTitanCustomerId: integer("service_titan_customer_id"),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  
+  // Click details
+  platformClicked: text("platform_clicked").notNull(), // 'google', 'facebook', 'yelp', 'bbb'
+  sourcePage: text("source_page").notNull(), // '/request-review' or '/customer-portal'
+  
+  // Conversion tracking
+  conversionStatus: text("conversion_status").notNull().default('pending'), // 'pending', 'reviewed', 'expired'
+  matchedReviewId: varchar("matched_review_id"), // Link to customReviews when they submit
+  reviewedAt: timestamp("reviewed_at"),
+  
+  // Remarketing tracking
+  remarketingEmailsSent: integer("remarketing_emails_sent").notNull().default(0),
+  lastRemarketingEmailAt: timestamp("last_remarketing_email_at"),
+  
+  // Analytics
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  
+  // Timestamps
+  clickedAt: timestamp("clicked_at").notNull().defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("review_link_clicks_customer_id_idx").on(table.serviceTitanCustomerId),
+  platformIdx: index("review_link_clicks_platform_idx").on(table.platformClicked),
+  conversionStatusIdx: index("review_link_clicks_conversion_idx").on(table.conversionStatus),
+  clickedAtIdx: index("review_link_clicks_clicked_at_idx").on(table.clickedAt),
+}));
+
+// ServiceTitan Job Forms - Technician notes and recommendations for AI analysis
+export const serviceTitanJobForms = pgTable("service_titan_job_forms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  formId: bigint("form_id", { mode: 'number' }).notNull().unique(), // ServiceTitan form ID
+  jobId: bigint("job_id", { mode: 'number' }).notNull(),
+  customerId: integer("customer_id").notNull(),
+  
+  // Form metadata
+  formTemplateId: bigint("form_template_id", { mode: 'number' }),
+  formTemplateName: text("form_template_name"),
+  
+  // Form data (raw + parsed)
+  rawFormData: jsonb("raw_form_data").notNull(), // Complete form object from API
+  parsedFields: jsonb("parsed_fields").notNull(), // {fieldName: value} for easy querying
+  
+  // Key extracted fields (for fast querying without parsing JSON)
+  technicianNotes: text("technician_notes"), // Combined notes from all fields
+  customerConcerns: text("customer_concerns").array(), // ["water heater aging", "low water pressure"]
+  recommendationsMade: text("recommendations_made").array(), // ["Replace water heater within 1 year", "Consider water softener"]
+  equipmentCondition: text("equipment_condition"), // "Good", "Fair", "Poor", "Critical"
+  
+  // Timestamps
+  submittedOn: timestamp("submitted_on").notNull(),
+  submittedBy: text("submitted_by"), // Technician name
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  jobIdIdx: index("st_job_forms_job_id_idx").on(table.jobId),
+  customerIdIdx: index("st_job_forms_customer_id_idx").on(table.customerId),
+  formIdIdx: index("st_job_forms_form_id_idx").on(table.formId),
+  equipmentConditionIdx: index("st_job_forms_equipment_condition_idx").on(table.equipmentCondition),
+}));
+
+// Audience Movement Logs - Complete audit trail of segment entry/exit
+export const audienceMovementLogs = pgTable("audience_movement_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id),
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  
+  // Customer snapshot (denormalized)
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  
+  // Movement details
+  action: text("action").notNull(), // 'entered', 'exited'
+  reason: text("reason").notNull(), // "New unsold estimate created", "Job booked", "Manual addition"
+  triggeringEvent: text("triggering_event"), // "estimate_created", "job_completed", "manual"
+  eventData: jsonb("event_data"), // Additional context {estimateId: 123, jobId: 456}
+  
+  // Attribution
+  campaignId: varchar("campaign_id"), // Campaign that triggered this (if applicable)
+  
+  // Timestamp
+  occurredAt: timestamp("occurred_at").notNull().defaultNow(),
+}, (table) => ({
+  segmentCustomerIdx: index("audience_movement_logs_segment_customer_idx").on(table.segmentId, table.serviceTitanCustomerId),
+  occurredAtIdx: index("audience_movement_logs_occurred_at_idx").on(table.occurredAt),
+  actionIdx: index("audience_movement_logs_action_idx").on(table.action),
+}));
+
+// System Settings for Marketing Automation
+export const marketingSystemSettings = pgTable("marketing_system_settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  settingKey: text("setting_key").notNull().unique(),
+  settingValue: jsonb("setting_value").notNull(),
+  description: text("description"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  updatedBy: varchar("updated_by"),
+});
+
+// Insert schemas and types
+export const insertCustomerSegmentSchema = createInsertSchema(customerSegments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastRefreshedAt: true,
+});
+
+export const insertSegmentMembershipSchema = createInsertSchema(segmentMembership).omit({
+  id: true,
+  enteredAt: true,
+  exitedAt: true,
+});
+
+export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  approvedAt: true,
+  startedAt: true,
+  completedAt: true,
+});
+
+export const insertCampaignEmailSchema = createInsertSchema(campaignEmails).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEmailSendLogSchema = createInsertSchema(emailSendLog).omit({
+  id: true,
+  sentAt: true,
+  deliveredAt: true,
+  openedAt: true,
+  clickedAt: true,
+  bouncedAt: true,
+  complainedAt: true,
+  unsubscribedAt: true,
+});
+
+export const insertEmailPreferencesSchema = createInsertSchema(emailPreferences).omit({
+  id: true,
+  lastUpdatedAt: true,
+});
+
+export const insertEmailSuppressionSchema = createInsertSchema(emailSuppressionList).omit({
+  id: true,
+  addedAt: true,
+  lastAttemptedAt: true,
+});
+
+export const insertReviewLinkClickSchema = createInsertSchema(reviewLinkClicks).omit({
+  id: true,
+  clickedAt: true,
+  reviewedAt: true,
+  lastRemarketingEmailAt: true,
+});
+
+export const insertServiceTitanJobFormSchema = createInsertSchema(serviceTitanJobForms).omit({
+  id: true,
+  lastSyncedAt: true,
+});
+
+export const insertAudienceMovementLogSchema = createInsertSchema(audienceMovementLogs).omit({
+  id: true,
+  occurredAt: true,
+});
+
+export const insertMarketingSystemSettingSchema = createInsertSchema(marketingSystemSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+// Export types
+export type CustomerSegment = typeof customerSegments.$inferSelect;
+export type InsertCustomerSegment = z.infer<typeof insertCustomerSegmentSchema>;
+export type SegmentMembership = typeof segmentMembership.$inferSelect;
+export type InsertSegmentMembership = z.infer<typeof insertSegmentMembershipSchema>;
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
+export type CampaignEmail = typeof campaignEmails.$inferSelect;
+export type InsertCampaignEmail = z.infer<typeof insertCampaignEmailSchema>;
+export type EmailSendLog = typeof emailSendLog.$inferSelect;
+export type InsertEmailSendLog = z.infer<typeof insertEmailSendLogSchema>;
+export type EmailPreferences = typeof emailPreferences.$inferSelect;
+export type InsertEmailPreferences = z.infer<typeof insertEmailPreferencesSchema>;
+export type EmailSuppression = typeof emailSuppressionList.$inferSelect;
+export type InsertEmailSuppression = z.infer<typeof insertEmailSuppressionSchema>;
+export type ReviewLinkClick = typeof reviewLinkClicks.$inferSelect;
+export type InsertReviewLinkClick = z.infer<typeof insertReviewLinkClickSchema>;
+export type ServiceTitanJobForm = typeof serviceTitanJobForms.$inferSelect;
+export type InsertServiceTitanJobForm = z.infer<typeof insertServiceTitanJobFormSchema>;
+export type AudienceMovementLog = typeof audienceMovementLogs.$inferSelect;
+export type InsertAudienceMovementLog = z.infer<typeof insertAudienceMovementLogSchema>;
+export type MarketingSystemSetting = typeof marketingSystemSettings.$inferSelect;
+export type InsertMarketingSystemSetting = z.infer<typeof insertMarketingSystemSettingSchema>;

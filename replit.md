@@ -1,25 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business. It provides service information, covered areas, and blog content, alongside an Ecwid-powered online store for maintenance memberships and drop-shipped products. The project aims to improve local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO.
-
-## Recent Changes (October 20, 2025)
-- **🎯 Bulletproof ServiceTitan Job Sync System:** Implemented production-ready incremental job sync with staging → normalized table pattern. Features: `modifiedOnOrAfter` watermark-based incremental sync (tracks last successful sync timestamp), staging table (`service_titan_jobs_staging`) for deduplication before normalization, batch processing (250 jobs per batch) to handle large datasets, automatic customer job count aggregation using SQL window functions, error tracking in watermarks table with retry support, idempotent upserts safe to re-run, and comprehensive logging. Database schema includes `service_titan_jobs` (normalized), `service_titan_jobs_staging` (temporary), `sync_watermarks` (sync state tracking), and `job_count` column on `service_titan_customers` for fast leaderboard queries.
-- **⚡ Fast Database-Driven Customer Leaderboard:** Replaced slow API-based leaderboard (20+ API calls per request) with instant database-driven endpoint using pre-computed `job_count` column. Returns top 30 customers in <50ms vs. previous 10+ second load times. Eliminates API rate throttling concerns.
-- **🏆 Customer Hall of Fame Component:** Built stunning visual leaderboard for Success Stories page featuring circular avatar design with size-based ranking (champion/top 3/top 10), lucide-react Award icons for top 3 (gold/silver/bronze), VIP badges for top 10, smooth staggered animations, anonymized names (First + Last initial), hover tooltips with service counts, and responsive grid layout. Integrated seamlessly into Success Stories page below filters.
-- **Admin Job Sync Trigger:** Added `/api/admin/servicetitan/sync-jobs` endpoint for manual job sync triggering from admin panel with proper authentication and error handling.
-- **Multi-Location Service Address Management:** Enhanced Customer Portal to display and manage ALL customer service locations (homes, vacation properties, rental units). Features include: backend API method `getAllCustomerLocations()` that fetches complete location array from ServiceTitan, new API endpoint `/api/portal/customer-locations/:customerId`, multi-location display with individual cards per location showing "Primary" badges on first location, per-location edit buttons with location-specific data routing, and dynamic UI messaging (single vs. multiple locations). Each location independently editable with proper locationId routing to ServiceTitan PUT /locations/{id} endpoint.
-- **Self-Service Customer Data Updates:** Implemented full self-service data update capabilities allowing customers to update their contact information (phone/email) and service address directly through the Customer Portal. Updates are synced to ServiceTitan via official API endpoints (PUT /customers/{id}/contacts/{contactId} for contacts, PUT /locations/{id} for addresses). Features inline "Edit" buttons on customer info card, modal dialogs with pre-filled forms, real-time validation, loading states, toast notifications, and auto-refresh after successful updates. Enhances customer autonomy and reduces call volume.
-
-## Recent Changes (October 19, 2025)
-- **Custom Review System:** Fully implemented custom review/testimonial submission system to replace NiceJob. Features include: public submission form at `/leave-review`, admin moderation UI in unified admin dashboard, status management (pending/approved/rejected), unified `/api/reviews` endpoint merging Google reviews + custom reviews with proper filtering/sorting, and approved reviews display on website pages.
-- **Estimate Expiration Alerts:** Customer Portal estimates section now includes 30-day expiration policy notice, section-level amber alert for any expiring estimates (≤7 days), and individual estimate urgency treatments including amber styling, countdown badges, "⚠️ Expiring Soon!" warnings, and dual "Schedule Now"/"Call Us" CTAs for estimates expiring within 7 days.
-- **Customer Portal Referral Promotion:** Added prominent referral program card with dual $25 reward messaging, real-time stats (clicks, conversions), and "Start Referring & Earning" CTA linking to /refer-a-friend page.
-- **Estimates Filtering:** Customer Portal now filters estimates to show only open/pending ones - excludes approved, declined, expired, closed, and sold estimates. Section auto-hides when no open estimates exist.
-- **ServiceTitan Customer Data Schema:** Synchronized schema with database - added email, phone, mobilePhone columns to serviceTitanCustomers table with proper indexes for fast lookups.
-- **Customer Portal Email Display:** Fixed email display bug by updating searchAllMatchingCustomers function to return email, phone, and mobilePhone fields in customer data responses.
-- **Session Management:** Implemented server-side session storage for persistent login - portalCustomerId now saved to session on successful verification for seamless multi-page navigation.
-- **Leaderboard Endpoint:** Temporarily disabled broken leaderboard endpoint (was accessing non-existent customFields) - returns empty array as placeholder until proper implementation with ServiceTitan job data.
+Economy Plumbing Services is a full-stack web application designed to enhance the online presence of a plumbing business. It provides service information, covered areas, and blog content, alongside an Ecwid-powered online store for maintenance memberships and drop-shipped products. The project aims to improve local SEO, user engagement, and conversion rates, featuring an AI-powered blog generation system and comprehensive SEO tools for optimal visibility and performance. The business vision is to expand market reach, improve customer engagement through an intuitive online platform, and leverage AI for content generation and SEO. The project is also building an AI-powered marketing automation system to replace ServiceTitan Marketing Pro, focusing on hyper-personalized email campaigns and robust attribution tracking.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -28,45 +10,40 @@ Preferred communication style: Simple, everyday language.
 
 ### Frontend
 - **Framework & UI:** React 18 with TypeScript, Vite, Wouter for routing, and TanStack Query for server state. UI is built using Radix UI, Shadcn UI, Tailwind CSS, and Class Variance Authority (CVA).
-- **Design System:** Features a primary blue and secondary teal color scheme, charcoal text, and silver accents, with Inter and Poppins typography. Supports light/dark modes.
-- **SEO & Performance:** Utilizes a centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, and auto-generated canonical URLs. Default OpenGraph and Twitter Card tags are server-rendered with page-specific overrides. JSON-LD structured data is enriched with `@id` references, blog `wordCount`, and detailed `serviceAreaServed` arrays. 301 redirects are implemented for duplicate URL aliases. Includes performance optimizations like resource preconnect, image lazy loading, font optimization, aggressive code splitting, and universal WebP image conversion. Dynamic sitemap auto-updates with all service areas.
-- **Accessibility:** WCAG AA Compliant with focus on contrast ratios, descriptive link text, and proper OpenGraph image handling.
-- **Pages:** Includes Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Ecwid Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership benefits, Water Heater Size Calculator (interactive tool), Plumbing Cost Estimator, Seasonal Landing Pages (Winter/Summer), Commercial Industry Pages (Restaurant/Retail/Office/Property Management), Refer-a-Friend (Call/Text CTAs), Customer Portal (ServiceTitan account lookup), and conversion-optimized SEO landing pages.
-- **Interactive Tools:** Water Heater Size Calculator provides instant recommendations based on household size, bathrooms, and usage patterns. Captures qualified leads with integrated quote request forms.
-- **AI Chatbot:** Floating chatbot available site-wide powered by OpenAI GPT-4o-mini. Answers common plumbing questions, provides pricing estimates, and intelligently hands off to SMS/phone when customer needs human assistance. Integrates with dynamic phone tracking system.
-- **RSS Feeds:** Blog RSS feed (`/rss.xml`) and Success Stories RSS feed (`/api/success-stories/rss.xml`) use pre-generated JPEG images for maximum compatibility.
-- **Admin Panels:** Unified admin panel at `/admin` with ServiceTitan sync monitoring, Customer Portal analytics, photo management, metadata management, success stories admin with collage editor and AI focal point detection, and products admin for VIP membership SKUs and ServiceTitan integration fields. ServiceTitan dashboard shows real-time sync status, customer/contact counts, progress tracking, and manual sync trigger.
+- **Design System:** Primary blue and secondary teal color scheme, charcoal text, silver accents, Inter and Poppins typography. Supports light/dark modes.
+- **SEO & Performance:** Centralized `SEOHead` component for meta tags, OpenGraph, Twitter Cards, and auto-generated canonical URLs. JSON-LD structured data with `@id` references, blog `wordCount`, and `serviceAreaServed`. Includes 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, and dynamic sitemap generation.
+- **Accessibility:** WCAG AA Compliant.
+- **Key Pages:** Home, About, Contact, Service pages, Service Area pages, Blog (with RSS feed), Ecwid Store, FAQ, Privacy Policy, Refund/Returns, VIP Membership, Water Heater Size Calculator, Plumbing Cost Estimator, Seasonal Landing Pages, Commercial Industry Pages, Refer-a-Friend, Customer Portal (ServiceTitan integration), and conversion-optimized SEO landing pages.
+- **Interactive Tools:** Water Heater Size Calculator for lead generation.
+- **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot for plumbing questions, pricing estimates, and human handoff.
+- **Admin Panels:** Unified admin panel for ServiceTitan sync monitoring, Customer Portal analytics, photo management, metadata management, success stories, and products. Includes a ServiceTitan dashboard with real-time sync status and manual sync trigger.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
-- **Data Models:** Users, Blog Posts, Products (reference only), Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
-- **E-commerce:** Ecwid platform handles all product management, checkout, payment processing, and inventory, integrated with Printful and Spocket for automated order fulfillment.
-- **AI Blog Generation System:** Uses OpenAI GPT-4o to analyze photos and generate SEO-optimized blog posts with smart topic suggestions, automated weekly creation, future-dated scheduling, and seasonal awareness.
-- **Dynamic Phone Number Tracking:** 100% database-driven system via admin panel. Zero hardcoded phone numbers in interactive elements. All components use `usePhoneConfig()` and `useMarbleFallsPhone()` hooks. Window globals (`__PHONE_CONFIG__`, `__MARBLE_FALLS_PHONE_CONFIG__`) initialized early for non-React code (scheduler). Proper tel/display alignment throughout. Cookie persistence for traffic source detection.
-- **Security & Type Safety (A+ Status):**
-  - **Authentication:** OAuth-only authentication for admin panel with single-email whitelist, rate limiting, httpOnly/secure session cookies, and sameSite CSRF protection
-  - **SSRF Protection:** URL validation with domain whitelisting for photo endpoints, HTTPS-only enforcement, private IP blocking
-  - **CSP Headers:** Comprehensive Content Security Policy with Stripe domain coverage (js.stripe.com, m.stripe.network, api.stripe.com), analytics whitelisting, and XSS prevention
-  - **Security Headers:** HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy
-  - **TypeScript:** 100% type-safe with custom type definitions for Express sessions, Resend connector, and third-party libraries. Zero `any` usage in production code
-  - **Payment Security:** Stripe PaymentIntents configured without shipping field to prevent key-type conflicts
+- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
+- **E-commerce:** Ecwid platform handles product management, checkout, payment, and inventory, integrated with Printful and Spocket.
+- **AI Blog Generation System:** OpenAI GPT-4o for SEO-optimized blog posts, smart topic suggestions, automated weekly creation, and seasonal awareness.
+- **Dynamic Phone Number Tracking:** 100% database-driven system via admin panel, zero hardcoded numbers.
+- **Security & Type Safety:** OAuth-only admin authentication, rate limiting, httpOnly/secure session cookies, sameSite CSRF protection, SSRF protection, comprehensive CSP headers, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy. 100% type-safe TypeScript. Stripe PaymentIntents for payment security.
+- **ServiceTitan Integration:** Incremental job sync system using `modifiedOnOrAfter` watermark, staging tables for deduplication, batch processing, and error tracking. Database-driven customer leaderboard. Admin job sync trigger. Multi-location service address management and self-service customer data updates synchronized with ServiceTitan APIs. Custom review system with admin moderation. Estimate expiration alerts and filtering in Customer Portal.
+- **Marketing Automation (Future Roadmap - In Progress):** AI-powered email marketing system to replace ServiceTitan Marketing Pro. Features include a comprehensive database schema for customer segments, campaigns, and email logs; ServiceTitan data enrichment (forms API, extended job sync); email preference management; beautiful email templates using React Email + Resend with dynamic merge tags; and a master email send switch for safety.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
 - **Form Handling:** React Hook Form with Zod validation.
 
 ### Analytics & Third-Party Script Management
-- **Multi-Platform Tracking:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity.
-- **Performance-Optimized Loading:** All analytics scripts use aggressive deferral patterns, loading on first user interaction or after 3 seconds.
-- **Conversion Tracking:** Comprehensive tracking for contact forms, phone clicks, scheduler opens, memberships, and user-generated content.
-- **Privacy Compliant:** Cookie consent integration.
+- **Tracking:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity.
+- **Optimization:** Aggressive deferral for script loading.
+- **Conversion Tracking:** Comprehensive tracking for forms, phone clicks, scheduler opens, and memberships.
+- **Privacy:** Cookie consent integration.
 
 ### Development Standards
-- **Client-Side Rendering (CSR) with Server-Side Metadata Injection:** Uses React SPA with client-side rendering and server-side middleware to inject unique SEO metadata.
-- **URL Normalization:** All trailing-slash URLs automatically 301 redirect to non-trailing-slash versions.
-- **Source File Security:** `/src/*` files are blocked with 403 Forbidden.
-- **Curated Content for Crawlers:** Random content (reviews, blog posts) displays curated, consistent content to crawlers.
+- **Rendering:** Client-Side Rendering (CSR) with server-side metadata injection.
+- **URL Normalization:** 301 redirects for trailing-slash URLs.
+- **Security:** `/src/*` files blocked with 403 Forbidden.
+- **Content:** Curated content for crawlers.
 
 ## External Dependencies
 
@@ -74,12 +51,103 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend.
-- **SMS Integration:** Twilio (pending approval for production use). NiceJob integration active for customer reviews and testimonials.
-- **AI Services:** OpenAI (GPT-4o Vision) for blog generation, photo analysis, success story focal point detection, and customer support chatbot (GPT-4o-mini).
-- **Photo Management:** CompanyCam, Google Drive, and ServiceTitan integrations.
+- **SMS Integration:** Twilio (pending approval), NiceJob (reviews/testimonials).
+- **AI Services:** OpenAI (GPT-4o Vision for blog generation, photo analysis, success story focal point detection, GPT-4o-mini for chatbot).
+- **Photo Management:** CompanyCam, Google Drive, ServiceTitan.
 - **Google Services:** Google Places API, Google Maps.
 - **SEO Data:** DataForSEO API.
 - **Social Media:** Meta Graph API.
 - **UI Libraries:** Radix UI, Lucide React, date-fns, cmdk, class-variance-authority, clsx.
 - **Session Management:** `connect-pg-simple`.
-- **Image Processing:** Sharp library for dual-format image generation (WebP and JPEG).
+- **Image Processing:** Sharp library.
+## AI-Powered Marketing Automation Roadmap
+
+### Vision
+Replace ServiceTitan Marketing Pro ($200-500/month) with a superior custom AI-powered email marketing automation system (~$30/month) that analyzes customer data to create hyper-personalized, revenue-driving campaigns with perfect attribution tracking.
+
+### Phase 1: Foundation Infrastructure (IN PROGRESS)
+**Goal:** Core email marketing infrastructure with safety controls (emails disabled by default)
+
+**Database Schema (11 Tables):**
+- customer_segments: AI-generated customer groups
+- segment_membership: Customer tracking with entry/exit
+- email_campaigns: Campaign definitions (evergreen + one-time)
+- campaign_emails: Drip sequence emails
+- email_send_log: Complete send history
+- email_preferences: Granular unsubscribe categories
+- email_suppression_list: Hard bounces, spam complaints
+- review_link_clicks: Review remarketing tracking
+- service_titan_job_forms: Technician notes for AI
+- audience_movement_logs: Audit trail
+- marketing_system_settings: Configuration
+
+**ServiceTitan Data Enrichment:**
+- Forms API: Technician notes ("water heater 12 years old - recommend replacement")
+- Extended Jobs Sync: job_type, service_category, equipment_installed, customer_satisfaction
+- Customer Enhancement: last_service_date, last_service_type, lifetime_value, customer_tags
+
+**MASTER EMAIL SEND SWITCH:** Default OFF - no emails until manually enabled
+
+### Phase 2: ServiceTitan Marketing Integration
+**Campaign Creation API:** Auto-create campaigns in ServiceTitan
+**Phone Tracking Workflow:** Admin creates FREE tracking numbers → campaign-level attribution
+**Call Attribution:** Customer calls → ServiceTitan links → job → revenue tracking
+
+### Phase 3: AI Customer Segmentation
+**Daily Analysis Engine (GPT-4o):**
+- Unsold Estimates (47 customers)
+- Win-Back: 12+ Months Since Service (234 customers)
+- High-Value VIP (89 customers, >$5K lifetime)
+- Technician Noted Concerns (156 customers)
+- Anniversary Reminders (67 customers)
+
+**Segment Types:** Evergreen (run forever) vs One-time (seasonal/limited)
+
+### Phase 4: AI Content Generation
+**Hyper-Personalized Emails:** "Hi Sarah, still thinking about that $3,500 tankless water heater? Winter's here - don't risk a freeze! Your tech noted your current unit is 14 years old."
+
+**AI Learning:** Tracks open/click/conversion rates, A/B tests subject lines, optimizes messaging
+
+**Discount Approval:** AI suggests offers → admin approves/modifies before launch
+
+### Phase 5: Smart Audience Management
+**Auto-Entry:** New estimate → add to segment
+**Auto-Exit:** Job booked → remove from "Unsold Estimates"
+**Full Audit Trail:** Every segment move logged with reason and timestamp
+
+### Phase 6: Review Click Tracking & Remarketing
+**Track Every Click:** Google/Facebook/Yelp review button clicks
+**Automated Remarketing:** Day 3: "We noticed you started leaving a review..."
+**Conversion Matching:** Cross-reference clicks with actual reviews submitted
+
+### Phase 7: Admin Control Center
+**Active Segments:** Live counts, performance metrics
+**Pending Campaigns:** AI-generated campaigns awaiting phone numbers
+**Safety Controls:** Master switch, test mode, daily limits, deliverability monitoring
+**Analytics Dashboard:** Opens, clicks, calls, jobs, revenue, ROI
+
+### Phase 8: Campaign Execution Workflow
+**Nightly AI Process:**
+1. Analyze customer data
+2. Identify 2-3 campaign opportunities
+3. Generate email content
+4. Auto-create in ServiceTitan
+5. Set status: AWAITING_PHONE_NUMBER
+
+**Morning Admin Workflow:**
+1. Review campaign previews
+2. Create FREE tracking number (2 min)
+3. Click "Approve & Launch"
+
+**Ongoing:** Evergreen campaigns auto-refresh weekly, AI learns and improves
+
+### Cost Savings Analysis
+**ServiceTitan Marketing Pro:** ~$300/month
+**Custom Solution:**
+- Resend (50k emails): $20/month
+- OpenAI API: ~$10/month
+- ServiceTitan tracking numbers: FREE
+**Total: ~$30/month | Annual Savings: $3,240/year**
+
+### Implementation Status
+🏗️ Phase 1-8: IN PROGRESS - Building complete infrastructure with MASTER SEND SWITCH OFF. System fully functional for testing, zero emails send until enabled.
