@@ -13,6 +13,7 @@ declare global {
 import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
+import { emailCampaigns } from "@shared/schema";
 import Stripe from "stripe";
 import multer from "multer";
 import { sendContactFormEmail, sendReferralEmail, sendSuccessStoryNotificationEmail } from "./email";
@@ -7457,21 +7458,24 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       // Create campaign in ServiceTitan Marketing API
       const serviceTitan = getServiceTitanAPI();
-      const stCampaign = await serviceTitan.createMarketingCampaign({
+      const stCampaign = await serviceTitan.createCampaign({
         name: campaign.name,
-        description: segment.description,
-        category: segment.segmentType === 'evergreen' ? 'Retention' : 'Promotional',
-        isActive: false, // Start inactive until phone number is added
+        active: false, // Start inactive until phone number is added
       });
 
-      // Update campaign with ServiceTitan details
-      const updatedCampaign = await storage.updateEmailCampaign(id, {
-        serviceTitanCampaignId: stCampaign.id,
-        serviceTitanCampaignName: stCampaign.name,
-        status: 'awaiting_phone_number',
-        approvedBy: req.user?.id || 'admin',
-        approvedAt: new Date(),
-      });
+      // Update campaign with ServiceTitan details and set approvedAt manually
+      const [updatedCampaign] = await db
+        .update(emailCampaigns)
+        .set({
+          serviceTitanCampaignId: stCampaign.id,
+          serviceTitanCampaignName: stCampaign.name,
+          status: 'awaiting_phone_number',
+          approvedBy: req.user?.id || 'admin',
+          approvedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(emailCampaigns.id, id))
+        .returning();
 
       res.json({
         success: true,
