@@ -3705,6 +3705,46 @@ ${rssItems}
     }
   });
 
+  // ============================================
+  // REVIEW PLATFORMS ENDPOINTS
+  // ============================================
+
+  // Public: Get enabled review platforms
+  app.get("/api/review-platforms", async (req, res) => {
+    try {
+      const platforms = await storage.getEnabledReviewPlatforms();
+      res.json(platforms);
+    } catch (error: any) {
+      console.error('[Review Platforms] Error fetching platforms:', error);
+      res.status(500).json({ message: "Error fetching review platforms" });
+    }
+  });
+
+  // Admin: Get all review platforms
+  app.get("/api/admin/review-platforms", requireAdmin, async (req, res) => {
+    try {
+      const platforms = await storage.getAllReviewPlatforms();
+      res.json(platforms);
+    } catch (error: any) {
+      console.error('[Admin Review Platforms] Error fetching platforms:', error);
+      res.status(500).json({ message: "Error fetching review platforms" });
+    }
+  });
+
+  // Admin: Update a review platform
+  app.patch("/api/admin/review-platforms/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const platform = await storage.updateReviewPlatform(id, updates);
+      console.log(`[Admin Review Platforms] Updated platform ${id}`);
+      res.json({ success: true, platform });
+    } catch (error: any) {
+      console.error('[Admin Review Platforms] Error updating platform:', error);
+      res.status(500).json({ message: "Error updating review platform" });
+    }
+  });
+
   // Check admin auth status
   app.get("/api/admin/check", (req, res) => {
     const session = (req as any).session;

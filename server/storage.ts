@@ -43,6 +43,8 @@ import {
   type InsertCustomReview,
   type ReviewRequest,
   type InsertReviewRequest,
+  type ReviewPlatform,
+  type InsertReviewPlatform,
   users,
   blogPosts,
   products,
@@ -64,7 +66,8 @@ import {
   oauthUsers,
   adminWhitelist,
   customReviews,
-  reviewRequests
+  reviewRequests,
+  reviewPlatforms
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -210,6 +213,11 @@ export interface IStorage {
   markReviewRequestFailed(id: string, errorMessage: string): Promise<ReviewRequest>;
   markReviewRequestClicked(token: string): Promise<ReviewRequest>;
   completeReviewRequest(requestId: string, reviewId: string): Promise<ReviewRequest>;
+  
+  // Review Platforms
+  getEnabledReviewPlatforms(): Promise<ReviewPlatform[]>;
+  getAllReviewPlatforms(): Promise<ReviewPlatform[]>;
+  updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
 }
 
 export class MemStorage implements IStorage {
@@ -3417,6 +3425,31 @@ export class DatabaseStorage implements IStorage {
         reviewId
       })
       .where(eq(reviewRequests.id, requestId))
+      .returning();
+    return result;
+  }
+
+  // Review Platforms
+  async getEnabledReviewPlatforms(): Promise<ReviewPlatform[]> {
+    return await db
+      .select()
+      .from(reviewPlatforms)
+      .where(eq(reviewPlatforms.enabled, true))
+      .orderBy(reviewPlatforms.sortOrder);
+  }
+
+  async getAllReviewPlatforms(): Promise<ReviewPlatform[]> {
+    return await db
+      .select()
+      .from(reviewPlatforms)
+      .orderBy(reviewPlatforms.sortOrder);
+  }
+
+  async updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform> {
+    const [result] = await db
+      .update(reviewPlatforms)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(reviewPlatforms.id, id))
       .returning();
     return result;
   }
