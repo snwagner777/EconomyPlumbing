@@ -23,9 +23,18 @@ interface LeaderboardEntry {
   referralCount: number;
 }
 
+interface CustomerLeaderboardEntry {
+  name: string;
+  jobCount: number;
+}
+
 export default function ReferAFriend() {
   const { data: leaderboardData } = useQuery<{ leaderboard: LeaderboardEntry[] }>({
     queryKey: ['/api/referrals/leaderboard'],
+  });
+
+  const { data: customersLeaderboardData } = useQuery<{ leaderboard: CustomerLeaderboardEntry[] }>({
+    queryKey: ['/api/customers/leaderboard'],
   });
 
   useEffect(() => {
@@ -202,8 +211,74 @@ export default function ReferAFriend() {
         </div>
       </section>
 
-      {/* Benefits Section */}
+      {/* Top Customers Leaderboard */}
       <section className="py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              Most Loyal Customers
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Our amazing customers who trust us most with their plumbing needs!
+            </p>
+          </div>
+
+          {customersLeaderboardData && customersLeaderboardData.leaderboard.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {customersLeaderboardData.leaderboard.map((entry, index) => (
+                <Card 
+                  key={index}
+                  className={`${
+                    index === 0 
+                      ? 'border-yellow-500/50 bg-gradient-to-br from-yellow-500/10 to-background md:col-span-2 lg:col-span-1' 
+                      : index === 1 
+                      ? 'border-gray-400/50 bg-gradient-to-br from-gray-400/10 to-background'
+                      : index === 2
+                      ? 'border-amber-600/50 bg-gradient-to-br from-amber-600/10 to-background'
+                      : ''
+                  }`}
+                  data-testid={`customer-leaderboard-entry-${index}`}
+                >
+                  <CardContent className="py-6">
+                    <div className="text-center space-y-3">
+                      <div className="w-16 h-16 flex items-center justify-center mx-auto">
+                        {getMedalIcon(index)}
+                      </div>
+                      <div>
+                        <p className="font-bold text-xl mb-1" data-testid={`customer-name-${index}`}>
+                          {entry.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {entry.jobCount} service {entry.jobCount === 1 ? 'call' : 'calls'}
+                        </p>
+                      </div>
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center justify-center">
+                          <Star className="w-6 h-6 text-yellow-500 fill-yellow-500" />
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">VIP Customer</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <h3 className="text-xl font-bold mb-2">Building Our Community</h3>
+                <p className="text-muted-foreground">
+                  Our loyal customers leaderboard is being built. Check back soon!
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </section>
+
+      {/* Benefits Section */}
+      <section className="py-12 px-4 bg-muted/30">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8">
             <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">

@@ -1484,6 +1484,77 @@ ${rssItems}
     }
   });
 
+  // Get top customers leaderboard (by service call count from ServiceTitan)
+  app.get("/api/customers/leaderboard", async (req, res) => {
+    try {
+      const { serviceTitanCustomers } = await import('@shared/schema');
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      
+      // Get top 50 customers by job count (we'll filter to top 10 after getting real job counts)
+      const topCustomers = await db
+        .select({
+          id: serviceTitanCustomers.id,
+          name: serviceTitanCustomers.name,
+        })
+        .from(serviceTitanCustomers)
+        .where(sql`${serviceTitanCustomers.name} IS NOT NULL`)
+        .orderBy(sql`RANDOM()`) // Randomize to get a diverse sample
+        .limit(50);
+
+      if (!topCustomers.length) {
+        return res.json({ leaderboard: [] });
+      }
+
+      // For each customer, get their actual job count from ServiceTitan
+      const customerJobCounts = await Promise.all(
+        topCustomers.map(async (customer) => {
+          try {
+            const jobs = await serviceTitan.getCustomerJobs(customer.id);
+            // Count only completed jobs
+            const completedJobs = jobs.filter((job: any) => 
+              job.status === 'Completed' || 
+              job.completedOn !== null
+            );
+            
+            return {
+              name: customer.name,
+              jobCount: completedJobs.length,
+            };
+          } catch (error) {
+            console.error(`[Leaderboard] Error fetching jobs for customer ${customer.id}:`, error);
+            return {
+              name: customer.name,
+              jobCount: 0,
+            };
+          }
+        })
+      );
+
+      // Sort by job count and take top 10
+      const topByJobCount = customerJobCounts
+        .filter(c => c.jobCount > 0)
+        .sort((a, b) => b.jobCount - a.jobCount)
+        .slice(0, 10);
+
+      // Anonymize names (First name + Last initial)
+      const anonymizedLeaderboard = topByJobCount.map(entry => {
+        const nameParts = entry.name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastInitial = nameParts.length > 1 ? nameParts[nameParts.length - 1][0] + '.' : '';
+        return {
+          name: `${firstName} ${lastInitial}`.trim(),
+          jobCount: entry.jobCount,
+        };
+      });
+
+      res.json({ leaderboard: anonymizedLeaderboard });
+    } catch (error: any) {
+      console.error('[Customers] Error fetching leaderboard:', error);
+      res.status(500).json({ message: "Error fetching customer leaderboard" });
+    }
+  });
+
   // Get all referrals (Admin Dashboard)
   app.get("/api/admin/referrals", async (req, res) => {
     try {
