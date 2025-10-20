@@ -15,9 +15,9 @@ import {
 } from "@shared/schema";
 import { eq, and, desc, gte, sql } from "drizzle-orm";
 import { smsService } from "./smsService";
-import { sendEmail } from "./resend";
-import { ReviewRequestEmail } from "../emails/review-request";
-import { ReviewReminderEmail } from "../emails/review-reminder";
+import { sendEmail } from "../lib/email";
+import ReviewRequestEmail from "../emails/review-request";
+import ReviewReminderEmail from "../emails/review-reminder";
 import { render } from "@react-email/render";
 
 interface ChannelPreference {
@@ -51,7 +51,7 @@ export class MultiChannelReviewDrip {
         .from(reviewRequestSendLog)
         .where(
           and(
-            eq(reviewRequestSendLog.customerId, customerId),
+            eq(reviewRequestSendLog.serviceTitanCustomerId, customerId),
             gte(reviewRequestSendLog.sentAt, sql`now() - interval '365 days'`)
           )
         )
@@ -72,9 +72,9 @@ export class MultiChannelReviewDrip {
 
       // Calculate email engagement score
       const emailSent = emailHistory.length;
-      const emailOpened = emailHistory.filter(e => e.opened).length;
-      const emailClicked = emailHistory.filter(e => e.clicked).length;
-      const emailReviewed = emailHistory.filter(e => e.reviewCompleted).length;
+      const emailOpened = emailHistory.filter(e => !!e.openedAt).length;
+      const emailClicked = emailHistory.filter(e => !!e.clickedAt).length;
+      const emailReviewed = emailHistory.filter(e => !!e.reviewCompletedAt).length;
 
       const emailEngagement = emailSent > 0
         ? ((emailOpened * 0.3 + emailClicked * 0.5 + emailReviewed * 1.0) / emailSent) * 100
@@ -345,7 +345,7 @@ export class MultiChannelReviewDrip {
     const [tracking] = await db
       .select()
       .from(reviewBehaviorTracking)
-      .where(eq(reviewBehaviorTracking.customerId, customerId))
+      .where(eq(reviewBehaviorTracking.serviceTitanCustomerId, customerId))
       .orderBy(desc(reviewBehaviorTracking.journeyStartedAt))
       .limit(1);
 
@@ -354,7 +354,7 @@ export class MultiChannelReviewDrip {
     }
 
     // Don't send secondary if they already completed review
-    if (tracking.reviewCompleted) {
+    if (tracking.reviewCompletedAt) {
       console.log(`[Multi-Channel] Secondary channel skipped - review already completed`);
       return false;
     }
@@ -387,7 +387,7 @@ export class MultiChannelReviewDrip {
     const emailHistory = await db
       .select()
       .from(reviewRequestSendLog)
-      .where(eq(reviewRequestSendLog.customerId, customerId))
+      .where(eq(reviewRequestSendLog.serviceTitanCustomerId, customerId))
       .orderBy(desc(reviewRequestSendLog.sentAt))
       .limit(10);
 
@@ -406,9 +406,9 @@ export class MultiChannelReviewDrip {
     return {
       email: {
         total: emailHistory.length,
-        opened: emailHistory.filter(e => e.opened).length,
-        clicked: emailHistory.filter(e => e.clicked).length,
-        reviewed: emailHistory.filter(e => e.reviewCompleted).length,
+        opened: emailHistory.filter(e => !!e.openedAt).length,
+        clicked: emailHistory.filter(e => !!e.clickedAt).length,
+        reviewed: emailHistory.filter(e => !!e.reviewCompletedAt).length,
         lastSent: emailHistory[0]?.sentAt
       },
       sms: {
@@ -422,9 +422,9 @@ export class MultiChannelReviewDrip {
         ...emailHistory.map(e => ({
           channel: 'email' as const,
           sentAt: e.sentAt,
-          opened: e.opened,
-          clicked: e.clicked,
-          completed: e.reviewCompleted
+          opened: !!e.openedAt,
+          clicked: !!e.clickedAt,
+          completed: !!e.reviewCompletedAt
         })),
         ...smsHistory.map(s => ({
           channel: 'sms' as const,

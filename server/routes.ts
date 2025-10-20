@@ -7840,6 +7840,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Register SMS Marketing routes
+  const { registerSMSMarketingRoutes } = await import("./api/smsMarketing");
+  registerSMSMarketingRoutes(app);
+
   const httpServer = createServer(app);
 
   return httpServer;
