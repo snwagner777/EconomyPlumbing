@@ -597,3 +597,96 @@ export async function sendMembershipPurchaseNotification(data: {
     return null;
   }
 }
+
+export async function sendNegativeReviewAlert(data: {
+  customerName: string;
+  rating: number;
+  reviewText: string;
+  email?: string | null;
+  phone?: string | null;
+  serviceDate?: string | null;
+  reviewId: string;
+}) {
+  console.log(`[Email] Sending negative review alert for ${data.customerName} (${data.rating} stars)`);
+  
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    const contactEmail = process.env.CONTACT_EMAIL;
+
+    if (!contactEmail) {
+      console.error('[Email Error] CONTACT_EMAIL not configured for negative review alerts');
+      throw new Error('CONTACT_EMAIL not configured');
+    }
+
+    const stars = '⭐'.repeat(data.rating) + '☆'.repeat(5 - data.rating);
+    const urgencyColor = data.rating === 1 ? '#dc2626' : '#f59e0b';
+
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background-color: ${urgencyColor}; color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+          <h2 style="margin: 0; color: white;">🚨 Negative Review Alert</h2>
+        </div>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb;">
+          <p style="font-size: 16px; margin-top: 0;">
+            <strong>A customer just submitted a ${data.rating}-star review.</strong> Immediate attention recommended.
+          </p>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid ${urgencyColor};">
+            <h3 style="margin-top: 0; color: ${urgencyColor};">Rating: ${stars}</h3>
+            <p style="font-size: 18px; margin: 0;"><strong>${data.rating} out of 5 stars</strong></p>
+          </div>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Customer Information</h3>
+            <p><strong>Name:</strong> ${data.customerName}</p>
+            ${data.phone ? `<p><strong>Phone:</strong> <a href="tel:${data.phone}">${data.phone}</a></p>` : ''}
+            ${data.email ? `<p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>` : ''}
+            ${data.serviceDate ? `<p><strong>Service Date:</strong> ${new Date(data.serviceDate).toLocaleDateString()}</p>` : ''}
+          </div>
+
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h3 style="margin-top: 0;">Review Text</h3>
+            <p style="font-style: italic; color: #374151; line-height: 1.6;">"${data.reviewText}"</p>
+          </div>
+
+          <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b;">
+            <p style="margin: 0;"><strong>⚡ Recommended Actions:</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+              <li>Contact the customer immediately to resolve their concerns</li>
+              <li>Document the issue in your CRM system</li>
+              <li>Prepare a thoughtful response before the review goes public</li>
+              <li>Review internal processes to prevent similar issues</li>
+            </ul>
+          </div>
+
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.REPLIT_DEV_DOMAIN || process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPLIT_CLUSTER}.repl.co` : 'http://localhost:5000'}/admin/reviews" 
+               style="display: inline-block; background-color: #0ea5e9; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+              View in Admin Dashboard
+            </a>
+          </div>
+        </div>
+
+        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 0 0 8px 8px; text-align: center;">
+          <p style="color: #6b7280; font-size: 14px; margin: 0;">
+            Review ID: ${data.reviewId}
+          </p>
+        </div>
+      </div>
+    `;
+
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: contactEmail,
+      subject: `🚨 ${data.rating}-Star Review Alert: ${data.customerName}`,
+      html: emailHtml,
+    });
+
+    console.log('[Email] ✓ Negative review alert sent successfully');
+    return result;
+  } catch (error) {
+    console.error('[Email Error] ✗ Failed to send negative review alert:', error);
+    throw error;
+  }
+}

@@ -6,6 +6,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { ArrowLeft, Check, X, Star, Calendar, Mail, Phone, MessageSquare, Zap, Settings as SettingsIcon, BarChart3, Send, Eye, MousePointer } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -270,6 +272,10 @@ export default function ReviewsAdmin() {
   const settings = settingsData || [];
 
   const masterEmailSwitch = settings.find(s => s.settingKey === 'master_email_switch_enabled')?.settingValue === 'true';
+  const negativeReviewAlertsEnabled = settings.find(s => s.settingKey === 'negative_review_alerts_enabled')?.settingValue === 'true';
+  const negativeReviewThreshold = parseInt(settings.find(s => s.settingKey === 'negative_review_threshold')?.settingValue || '2');
+  const negativeReviewSMSAlerts = settings.find(s => s.settingKey === 'negative_review_sms_alerts')?.settingValue === 'true';
+  const negativeReviewAlertPhone = settings.find(s => s.settingKey === 'negative_review_alert_phone')?.settingValue || '';
 
   const renderStars = (rating: number) => {
     return (
@@ -654,6 +660,111 @@ export default function ReviewsAdmin() {
                     }}
                     data-testid="switch-master-email"
                   />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Negative Review Alerts</CardTitle>
+                <CardDescription>Get instant email and SMS notifications for low-rating reviews</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-md">
+                  <div className="flex-1">
+                    <Label htmlFor="negative-alerts" className="text-base font-medium cursor-pointer">
+                      Enable Negative Review Alerts
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {negativeReviewAlertsEnabled 
+                        ? 'You will receive instant email alerts for low-rating reviews' 
+                        : 'Negative review alerts are disabled'}
+                    </p>
+                  </div>
+                  <Switch
+                    id="negative-alerts"
+                    checked={negativeReviewAlertsEnabled}
+                    onCheckedChange={(checked) => {
+                      updateSettingMutation.mutate({
+                        key: 'negative_review_alerts_enabled',
+                        value: checked.toString(),
+                      });
+                    }}
+                    data-testid="switch-negative-alerts"
+                  />
+                </div>
+
+                <div className="space-y-2 p-4 border rounded-md">
+                  <Label htmlFor="negative-threshold">Rating Threshold</Label>
+                  <Select
+                    value={negativeReviewThreshold.toString()}
+                    onValueChange={(value) => {
+                      updateSettingMutation.mutate({
+                        key: 'negative_review_threshold',
+                        value: value,
+                      });
+                    }}
+                    disabled={!negativeReviewAlertsEnabled}
+                  >
+                    <SelectTrigger id="negative-threshold" data-testid="select-negative-threshold">
+                      <SelectValue placeholder="Select threshold" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 star or less</SelectItem>
+                      <SelectItem value="2">2 stars or less</SelectItem>
+                      <SelectItem value="3">3 stars or less</SelectItem>
+                      <SelectItem value="4">4 stars or less</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Send alerts for reviews with this rating or lower
+                  </p>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-md">
+                  <div className="flex-1">
+                    <Label htmlFor="sms-alerts" className="text-base font-medium cursor-pointer">
+                      Enable SMS Alerts
+                    </Label>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {negativeReviewSMSAlerts 
+                        ? 'SMS alerts will be sent for negative reviews' 
+                        : 'SMS alerts are disabled'}
+                    </p>
+                  </div>
+                  <Switch
+                    id="sms-alerts"
+                    checked={negativeReviewSMSAlerts}
+                    onCheckedChange={(checked) => {
+                      updateSettingMutation.mutate({
+                        key: 'negative_review_sms_alerts',
+                        value: checked.toString(),
+                      });
+                    }}
+                    disabled={!negativeReviewAlertsEnabled}
+                    data-testid="switch-sms-alerts"
+                  />
+                </div>
+
+                <div className="space-y-2 p-4 border rounded-md">
+                  <Label htmlFor="alert-phone">Alert Phone Number</Label>
+                  <Input
+                    id="alert-phone"
+                    type="tel"
+                    placeholder="e.g., +15123689159"
+                    value={negativeReviewAlertPhone}
+                    onChange={(e) => {
+                      updateSettingMutation.mutate({
+                        key: 'negative_review_alert_phone',
+                        value: e.target.value,
+                      });
+                    }}
+                    disabled={!negativeReviewAlertsEnabled || !negativeReviewSMSAlerts}
+                    data-testid="input-alert-phone"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Include country code (e.g., +1 for US)
+                  </p>
                 </div>
               </CardContent>
             </Card>
