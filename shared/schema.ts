@@ -772,6 +772,19 @@ export const customReviews = pgTable("custom_reviews", {
   customerIdIdx: index("custom_reviews_customer_id_idx").on(table.serviceTitanCustomerId),
 }));
 
+// Review platform links (Google, Facebook, BBB, Yelp)
+export const reviewPlatforms = pgTable("review_platforms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  platform: text("platform").notNull().unique(), // 'google', 'facebook', 'bbb', 'yelp'
+  displayName: text("display_name").notNull(), // 'Google', 'Facebook', 'Better Business Bureau', 'Yelp'
+  url: text("url").notNull(), // Direct link to review page
+  enabled: boolean("enabled").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0), // Display order
+  icon: text("icon"), // Icon name or emoji
+  description: text("description"), // Optional description
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 // Review requests sent to customers
 export const reviewRequests = pgTable("review_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -828,6 +841,11 @@ export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit
   completedAt: true,
 });
 
+export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).omit({
+  id: true,
+  updatedAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type ImportedPhoto = typeof importedPhotos.$inferSelect;
 export type InsertImportedPhoto = z.infer<typeof insertImportedPhotoSchema>;
@@ -880,3 +898,5 @@ export type CustomReview = typeof customReviews.$inferSelect;
 export type InsertCustomReview = z.infer<typeof insertCustomReviewSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
 export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
+export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
+export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
