@@ -147,6 +147,21 @@ export default function CustomerPortal() {
   const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
   
+  // Edit contact info state
+  const [editContactsOpen, setEditContactsOpen] = useState(false);
+  const [editEmail, setEditEmail] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [isUpdatingContacts, setIsUpdatingContacts] = useState(false);
+  
+  // Edit address state
+  const [editAddressOpen, setEditAddressOpen] = useState(false);
+  const [editStreet, setEditStreet] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editState, setEditState] = useState("");
+  const [editZip, setEditZip] = useState("");
+  const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
+  const [locationId, setLocationId] = useState<number | null>(null);
+  
   const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
 
@@ -600,6 +615,146 @@ export default function CustomerPortal() {
     }
   };
 
+  // Fetch customer location when needed
+  const fetchCustomerLocation = async () => {
+    if (!customerId) return;
+    
+    try {
+      const response = await fetch(`/api/portal/customer-location/${customerId}`);
+      if (!response.ok) throw new Error('Failed to fetch location');
+      
+      const data = await response.json();
+      if (data.location) {
+        setLocationId(data.location.id);
+        setEditStreet(data.location.address?.street || '');
+        setEditCity(data.location.address?.city || '');
+        setEditState(data.location.address?.state || '');
+        setEditZip(data.location.address?.zip || '');
+      }
+    } catch (error) {
+      console.error('Error fetching location:', error);
+    }
+  };
+
+  const handleEditContacts = () => {
+    if (!customerData) return;
+    setEditEmail(customerData.customer.email || '');
+    setEditPhone(customerData.customer.phoneNumber || '');
+    setEditContactsOpen(true);
+  };
+
+  const handleUpdateContacts = async () => {
+    if (!customerId) return;
+    
+    setIsUpdatingContacts(true);
+    try {
+      const response = await fetch('/api/portal/update-contacts', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: parseInt(customerId),
+          email: editEmail,
+          phone: editPhone,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update contacts');
+      }
+
+      toast({
+        title: "Contact Information Updated!",
+        description: "Your phone and email have been updated successfully.",
+      });
+
+      setEditContactsOpen(false);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Update contacts error:', error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Unable to update contact information. Please try again.",
+      });
+    } finally {
+      setIsUpdatingContacts(false);
+    }
+  };
+
+  const handleEditAddress = async () => {
+    if (!customerData) return;
+    
+    // Fetch location first
+    await fetchCustomerLocation();
+    
+    // Pre-fill with current address if available
+    if (customerData.customer.address) {
+      setEditStreet(customerData.customer.address.street || '');
+      setEditCity(customerData.customer.address.city || '');
+      setEditState(customerData.customer.address.state || '');
+      setEditZip(customerData.customer.address.zip || '');
+    }
+    
+    setEditAddressOpen(true);
+  };
+
+  const handleUpdateAddress = async () => {
+    if (!customerId || !locationId) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Location ID not found. Please try again.",
+      });
+      return;
+    }
+    
+    if (!editStreet || !editCity || !editState || !editZip) {
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please fill in all address fields.",
+      });
+      return;
+    }
+    
+    setIsUpdatingAddress(true);
+    try {
+      const response = await fetch('/api/portal/update-address', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: parseInt(customerId),
+          locationId,
+          street: editStreet,
+          city: editCity,
+          state: editState,
+          zip: editZip,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update address');
+      }
+
+      toast({
+        title: "Service Address Updated!",
+        description: "Your service address has been updated successfully.",
+      });
+
+      setEditAddressOpen(false);
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Update address error:', error);
+      toast({
+        variant: "destructive",
+        title: "Update Failed",
+        description: error.message || "Unable to update service address. Please try again.",
+      });
+    } finally {
+      setIsUpdatingAddress(false);
+    }
+  };
+
   const formatTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString('en-US', {
       hour: 'numeric',
@@ -906,22 +1061,48 @@ export default function CustomerPortal() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-1">Phone</p>
-                          <p className="font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber}</p>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <h3 className="text-sm font-semibold">Contact Information</h3>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleEditContacts}
+                            data-testid="button-edit-contacts"
+                          >
+                            Edit
+                          </Button>
                         </div>
-                        <div>
-                          <p className="text-sm text-muted-foreground mb-1">Email</p>
-                          <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
-                        </div>
-                        {customerData.customer.address && (
-                          <div className="md:col-span-2">
-                            <p className="text-sm text-muted-foreground mb-1">Service Address</p>
-                            <p className="font-medium" data-testid="text-customer-address">
-                              {customerData.customer.address.street}, {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
-                            </p>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Phone</p>
+                            <p className="font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber}</p>
                           </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground mb-1">Email</p>
+                            <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
+                          </div>
+                        </div>
+                        
+                        {customerData.customer.address && (
+                          <>
+                            <div className="flex items-center justify-between mt-4 mb-2">
+                              <h3 className="text-sm font-semibold">Service Address</h3>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleEditAddress}
+                                data-testid="button-edit-address"
+                              >
+                                Edit
+                              </Button>
+                            </div>
+                            <div>
+                              <p className="font-medium" data-testid="text-customer-address">
+                                {customerData.customer.address.street}, {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
+                              </p>
+                            </div>
+                          </>
                         )}
                       </div>
                     </CardContent>
@@ -2154,6 +2335,150 @@ export default function CustomerPortal() {
               data-testid="button-confirm-reschedule"
             >
               {isRescheduling ? "Rescheduling..." : "Confirm Reschedule"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Contacts Dialog */}
+      <Dialog open={editContactsOpen} onOpenChange={setEditContactsOpen}>
+        <DialogContent data-testid="dialog-edit-contacts">
+          <DialogHeader>
+            <DialogTitle>Update Contact Information</DialogTitle>
+            <DialogDescription>
+              Update your phone number and email address. This will be reflected in our system.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-phone">Phone Number</Label>
+              <Input
+                id="edit-phone"
+                type="tel"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                placeholder="(512) 123-4567"
+                data-testid="input-edit-phone"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-email">Email Address</Label>
+              <Input
+                id="edit-email"
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                placeholder="you@example.com"
+                data-testid="input-edit-email"
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Note: Changes will update your contact information across all our systems.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditContactsOpen(false)}
+              disabled={isUpdatingContacts}
+              data-testid="button-cancel-edit-contacts"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateContacts}
+              disabled={isUpdatingContacts || (!editPhone && !editEmail)}
+              data-testid="button-save-contacts"
+            >
+              {isUpdatingContacts ? "Updating..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Address Dialog */}
+      <Dialog open={editAddressOpen} onOpenChange={setEditAddressOpen}>
+        <DialogContent data-testid="dialog-edit-address">
+          <DialogHeader>
+            <DialogTitle>Update Service Address</DialogTitle>
+            <DialogDescription>
+              Update your service address where we provide plumbing services.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-street">Street Address</Label>
+              <Input
+                id="edit-street"
+                type="text"
+                value={editStreet}
+                onChange={(e) => setEditStreet(e.target.value)}
+                placeholder="123 Main Street"
+                data-testid="input-edit-street"
+              />
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-city">City</Label>
+                <Input
+                  id="edit-city"
+                  type="text"
+                  value={editCity}
+                  onChange={(e) => setEditCity(e.target.value)}
+                  placeholder="Austin"
+                  data-testid="input-edit-city"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-state">State</Label>
+                <Input
+                  id="edit-state"
+                  type="text"
+                  value={editState}
+                  onChange={(e) => setEditState(e.target.value)}
+                  placeholder="TX"
+                  maxLength={2}
+                  data-testid="input-edit-state"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-zip">ZIP Code</Label>
+              <Input
+                id="edit-zip"
+                type="text"
+                value={editZip}
+                onChange={(e) => setEditZip(e.target.value)}
+                placeholder="78701"
+                maxLength={5}
+                data-testid="input-edit-zip"
+              />
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Note: This updates your primary service address in our system.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditAddressOpen(false)}
+              disabled={isUpdatingAddress}
+              data-testid="button-cancel-edit-address"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateAddress}
+              disabled={isUpdatingAddress || !editStreet || !editCity || !editState || !editZip}
+              data-testid="button-save-address"
+            >
+              {isUpdatingAddress ? "Updating..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
