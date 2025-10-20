@@ -55,7 +55,8 @@ import {
   BarChart3,
   Mail,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  MessageCircle
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -64,7 +65,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -139,6 +140,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Star,
       section: 'success-stories' as AdminSection,
       description: "Review & approve stories"
+    },
+    {
+      title: "Reviews",
+      icon: MessageCircle,
+      section: 'reviews' as AdminSection,
+      description: "Moderate customer reviews"
     },
     {
       title: "Products & Memberships",
@@ -3417,6 +3424,13 @@ export default function UnifiedAdminDashboard() {
     "--sidebar-width": "280px",
   };
 
+  // Handle navigation to dedicated reviews page
+  useEffect(() => {
+    if (activeSection === 'reviews') {
+      setLocation('/admin/reviews');
+    }
+  }, [activeSection, setLocation]);
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
@@ -3425,6 +3439,9 @@ export default function UnifiedAdminDashboard() {
         return <PhotoManagement />;
       case 'success-stories':
         return <SuccessStoriesSection />;
+      case 'reviews':
+        // Navigation handled by useEffect above
+        return null;
       case 'commercial-customers':
         return <CommercialCustomersSection />;
       case 'page-metadata':
@@ -3445,6 +3462,7 @@ export default function UnifiedAdminDashboard() {
       'dashboard': 'Dashboard',
       'photos': 'Photo Management',
       'success-stories': 'Success Stories',
+      'reviews': 'Reviews',
       'commercial-customers': 'Commercial Customers',
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',

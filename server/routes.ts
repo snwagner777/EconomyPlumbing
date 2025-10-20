@@ -1119,6 +1119,60 @@ ${rssItems}
     }
   });
 
+  // ============================================
+  // ADMIN REVIEW MANAGEMENT ENDPOINTS
+  // ============================================
+
+  // Admin: Get all reviews (all statuses)
+  app.get("/api/admin/reviews", requireAdmin, async (req, res) => {
+    try {
+      const reviews = await storage.getAllReviews();
+      res.json({ reviews });
+    } catch (error: any) {
+      console.error('[Admin Reviews] Error fetching reviews:', error);
+      res.status(500).json({ message: "Error fetching reviews" });
+    }
+  });
+
+  // Admin: Approve a review
+  app.post("/api/admin/reviews/:id/approve", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const review = await storage.approveReview(id);
+      console.log(`[Admin Reviews] Approved review ${id}`);
+      res.json({ success: true, review });
+    } catch (error: any) {
+      console.error('[Admin Reviews] Error approving review:', error);
+      res.status(500).json({ message: "Error approving review" });
+    }
+  });
+
+  // Admin: Reject a review
+  app.post("/api/admin/reviews/:id/reject", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const review = await storage.rejectReview(id);
+      console.log(`[Admin Reviews] Rejected review ${id}`);
+      res.json({ success: true, review });
+    } catch (error: any) {
+      console.error('[Admin Reviews] Error rejecting review:', error);
+      res.status(500).json({ message: "Error rejecting review" });
+    }
+  });
+
+  // Admin: Delete a review permanently
+  app.delete("/api/admin/reviews/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteReview(id);
+      console.log(`[Admin Reviews] Deleted review ${id}`);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[Admin Reviews] Error deleting review:', error);
+      res.status(500).json({ message: "Error deleting review" });
+    }
+  });
+
   // Referral submission endpoint
   app.post("/api/referrals/submit", async (req, res) => {
     try {

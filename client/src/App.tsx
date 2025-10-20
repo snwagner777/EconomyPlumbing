@@ -89,6 +89,7 @@ const ReferralLanding = lazy(() => import("@/pages/ReferralLanding"));
 const ReferralOffer = lazy(() => import("@/pages/ReferralOffer"));
 const CustomerPortal = lazy(() => import("@/pages/CustomerPortal"));
 const LeaveReview = lazy(() => import("@/pages/LeaveReview"));
+const ReviewsAdmin = lazy(() => import("@/pages/ReviewsAdmin"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 
 // Simple loading fallback
@@ -240,6 +241,7 @@ function Router() {
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />
       <Route path="/admin/page-metadata" component={PageMetadataAdmin} />
       <Route path="/admin/products" component={ProductsAdmin} />
+      <Route path="/admin/reviews" component={ReviewsAdmin} />
       <Route path="/admin" component={UnifiedAdminDashboard} />
       
       {/* Blog posts - must be last to avoid conflicts with other routes */}
