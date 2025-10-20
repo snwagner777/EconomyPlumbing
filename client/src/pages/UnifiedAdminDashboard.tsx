@@ -3545,6 +3545,14 @@ export default function UnifiedAdminDashboard() {
     },
   });
 
+  // Handle navigation to dedicated reviews page
+  useEffect(() => {
+    if (activeSection === 'reviews') {
+      setLocation('/admin/reviews');
+    }
+  }, [activeSection, setLocation]);
+
+  // Show nothing while checking auth or if not admin (redirect happens via useEffect above)
   if (!authData?.isAdmin) {
     return null;
   }
@@ -3555,13 +3563,6 @@ export default function UnifiedAdminDashboard() {
   const sidebarStyle = {
     "--sidebar-width": "280px",
   };
-
-  // Handle navigation to dedicated reviews page
-  useEffect(() => {
-    if (activeSection === 'reviews') {
-      setLocation('/admin/reviews');
-    }
-  }, [activeSection, setLocation]);
 
   const renderContent = () => {
     switch (activeSection) {
