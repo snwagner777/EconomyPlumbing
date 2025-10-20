@@ -37,6 +37,10 @@ import {
   type UpsertOAuthUser,
   type AdminWhitelist,
   type InsertAdminWhitelist,
+  type CustomReview,
+  type InsertCustomReview,
+  type ReviewRequest,
+  type InsertReviewRequest,
   users,
   blogPosts,
   products,
@@ -55,7 +59,9 @@ import {
   commercialCustomers,
   pageMetadata,
   oauthUsers,
-  adminWhitelist
+  adminWhitelist,
+  customReviews,
+  reviewRequests
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -178,6 +184,24 @@ export interface IStorage {
   addToWhitelist(data: InsertAdminWhitelist): Promise<AdminWhitelist>;
   removeFromWhitelist(email: string): Promise<void>;
   getAllWhitelistedEmails(): Promise<AdminWhitelist[]>;
+  
+  // Custom Reviews
+  createCustomReview(review: Partial<InsertCustomReview>): Promise<CustomReview>;
+  getApprovedReviews(options?: { limit?: number; featured?: boolean }): Promise<CustomReview[]>;
+  getAllReviews(status?: string): Promise<CustomReview[]>;
+  moderateReview(id: string, updates: { status: string; moderatedBy: string; moderationNotes?: string; featured?: boolean; displayOnWebsite?: boolean }): Promise<CustomReview>;
+  deleteReview(id: string): Promise<void>;
+  getReviewStats(): Promise<{ total: number; pending: number; approved: number; rejected: number; spam: number; averageRating: number }>;
+  
+  // Review Requests
+  createReviewRequest(request: Partial<InsertReviewRequest>): Promise<ReviewRequest>;
+  getAllReviewRequests(status?: string): Promise<ReviewRequest[]>;
+  getReviewRequestById(id: string): Promise<ReviewRequest | undefined>;
+  getReviewRequestByToken(token: string): Promise<ReviewRequest | undefined>;
+  markReviewRequestSent(id: string): Promise<ReviewRequest>;
+  markReviewRequestFailed(id: string, errorMessage: string): Promise<ReviewRequest>;
+  markReviewRequestClicked(token: string): Promise<ReviewRequest>;
+  completeReviewRequest(requestId: string, reviewId: string): Promise<ReviewRequest>;
 }
 
 export class MemStorage implements IStorage {
@@ -3166,6 +3190,186 @@ export class DatabaseStorage implements IStorage {
       .from(adminWhitelist)
       .orderBy(adminWhitelist.addedAt);
     return results;
+  }
+
+  // Custom Reviews
+  async createCustomReview(review: Partial<InsertCustomReview>): Promise<CustomReview> {
+    const [result] = await db
+      .insert(customReviews)
+      .values(review as InsertCustomReview)
+      .returning();
+    return result;
+  }
+
+  async getApprovedReviews(options?: { limit?: number; featured?: boolean }): Promise<CustomReview[]> {
+    let whereClause = sql`${customReviews.status} = 'approved' AND ${customReviews.displayOnWebsite} = true`;
+    
+    if (options?.featured) {
+      whereClause = sql`${customReviews.status} = 'approved' AND ${customReviews.featured} = true AND ${customReviews.displayOnWebsite} = true`;
+    }
+    
+    let query = db
+      .select()
+      .from(customReviews)
+      .where(whereClause)
+      .orderBy(desc(customReviews.submittedAt));
+    
+    if (options?.limit) {
+      return await query.limit(options.limit);
+    }
+    
+    return await query;
+  }
+
+  async getAllReviews(status?: string): Promise<CustomReview[]> {
+    if (status) {
+      return await db
+        .select()
+        .from(customReviews)
+        .where(eq(customReviews.status, status))
+        .orderBy(desc(customReviews.submittedAt));
+    }
+    
+    return await db
+      .select()
+      .from(customReviews)
+      .orderBy(desc(customReviews.submittedAt));
+  }
+
+  async moderateReview(id: string, updates: { status: string; moderatedBy: string; moderationNotes?: string; featured?: boolean; displayOnWebsite?: boolean }): Promise<CustomReview> {
+    const updateData: any = {
+      status: updates.status,
+      moderatedBy: updates.moderatedBy,
+      moderatedAt: new Date(),
+    };
+    
+    if (updates.moderationNotes !== undefined) {
+      updateData.moderationNotes = updates.moderationNotes;
+    }
+    if (updates.featured !== undefined) {
+      updateData.featured = updates.featured;
+    }
+    if (updates.displayOnWebsite !== undefined) {
+      updateData.displayOnWebsite = updates.displayOnWebsite;
+    }
+    
+    const [result] = await db
+      .update(customReviews)
+      .set(updateData)
+      .where(eq(customReviews.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteReview(id: string): Promise<void> {
+    await db
+      .delete(customReviews)
+      .where(eq(customReviews.id, id));
+  }
+
+  async getReviewStats(): Promise<{ total: number; pending: number; approved: number; rejected: number; spam: number; averageRating: number }> {
+    const allReviews = await db.select().from(customReviews);
+    const stats = {
+      total: allReviews.length,
+      pending: allReviews.filter(r => r.status === 'pending').length,
+      approved: allReviews.filter(r => r.status === 'approved').length,
+      rejected: allReviews.filter(r => r.status === 'rejected').length,
+      spam: allReviews.filter(r => r.status === 'spam').length,
+      averageRating: allReviews.length > 0 
+        ? allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length 
+        : 0
+    };
+    return stats;
+  }
+
+  // Review Requests
+  async createReviewRequest(request: Partial<InsertReviewRequest>): Promise<ReviewRequest> {
+    const [result] = await db
+      .insert(reviewRequests)
+      .values(request as InsertReviewRequest)
+      .returning();
+    return result;
+  }
+
+  async getAllReviewRequests(status?: string): Promise<ReviewRequest[]> {
+    if (status) {
+      return await db
+        .select()
+        .from(reviewRequests)
+        .where(eq(reviewRequests.status, status))
+        .orderBy(desc(reviewRequests.createdAt));
+    }
+    
+    return await db
+      .select()
+      .from(reviewRequests)
+      .orderBy(desc(reviewRequests.createdAt));
+  }
+
+  async getReviewRequestById(id: string): Promise<ReviewRequest | undefined> {
+    const [result] = await db
+      .select()
+      .from(reviewRequests)
+      .where(eq(reviewRequests.id, id));
+    return result;
+  }
+
+  async getReviewRequestByToken(token: string): Promise<ReviewRequest | undefined> {
+    const [result] = await db
+      .select()
+      .from(reviewRequests)
+      .where(eq(reviewRequests.uniqueToken, token));
+    return result;
+  }
+
+  async markReviewRequestSent(id: string): Promise<ReviewRequest> {
+    const [result] = await db
+      .update(reviewRequests)
+      .set({ 
+        status: 'sent',
+        sentAt: new Date()
+      })
+      .where(eq(reviewRequests.id, id))
+      .returning();
+    return result;
+  }
+
+  async markReviewRequestFailed(id: string, errorMessage: string): Promise<ReviewRequest> {
+    const [result] = await db
+      .update(reviewRequests)
+      .set({ 
+        status: 'failed',
+        errorMessage,
+        retryCount: sql`${reviewRequests.retryCount} + 1`
+      })
+      .where(eq(reviewRequests.id, id))
+      .returning();
+    return result;
+  }
+
+  async markReviewRequestClicked(token: string): Promise<ReviewRequest> {
+    const [result] = await db
+      .update(reviewRequests)
+      .set({ 
+        status: 'clicked',
+        clickedAt: new Date()
+      })
+      .where(eq(reviewRequests.uniqueToken, token))
+      .returning();
+    return result;
+  }
+
+  async completeReviewRequest(requestId: string, reviewId: string): Promise<ReviewRequest> {
+    const [result] = await db
+      .update(reviewRequests)
+      .set({ 
+        status: 'completed',
+        completedAt: new Date(),
+        reviewId
+      })
+      .where(eq(reviewRequests.id, requestId))
+      .returning();
+    return result;
   }
 }
 

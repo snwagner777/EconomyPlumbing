@@ -1011,6 +1011,112 @@ ${rssItems}
     }
   });
 
+  // ============================================
+  // CUSTOM REVIEW SYSTEM ENDPOINTS
+  // ============================================
+
+  // Public: Submit a review (with spam protection)
+  app.post("/api/reviews/submit", async (req, res) => {
+    try {
+      const clientIp = req.ip || req.socket.remoteAddress || 'unknown';
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      const now = Date.now();
+      
+      // Spam protection: Rate limiting per IP
+      const lastSubmission = submissionRateLimit.get(clientIp);
+      if (lastSubmission && (now - lastSubmission) < RATE_LIMIT_WINDOW) {
+        console.log('[Spam] Rate limit exceeded for review from IP:', clientIp);
+        return res.status(429).json({ 
+          message: "Too many submissions. Please wait a moment before trying again." 
+        });
+      }
+      
+      // Honeypot check
+      if (req.body.website || req.body.url) {
+        console.log('[Spam] Honeypot triggered for review from IP:', clientIp);
+        return res.status(400).json({ message: "Invalid form submission" });
+      }
+      
+      // Remove spam fields and validate
+      const { website, url, ...reviewData } = req.body;
+      
+      // Validate required fields
+      if (!reviewData.customerName || !reviewData.rating || !reviewData.text) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Insert review into database
+      const review = await storage.createCustomReview({
+        ...reviewData,
+        ipAddress: clientIp,
+        userAgent: userAgent,
+        status: 'pending', // All reviews start as pending moderation
+        source: reviewData.requestId ? 'email_link' : 'website',
+      });
+      
+      // Update rate limit tracking
+      submissionRateLimit.set(clientIp, now);
+      
+      // If this was from a review request, update the request status
+      if (reviewData.requestId) {
+        await storage.completeReviewRequest(reviewData.requestId, review.id);
+      }
+      
+      console.log(`[Review] New submission from ${reviewData.customerName} (${review.rating} stars)`);
+      
+      res.json({ 
+        success: true, 
+        message: "Thank you for your review! It will be published after moderation.",
+        reviewId: review.id 
+      });
+    } catch (error: any) {
+      console.error('[Review] Submission error:', error);
+      res.status(400).json({ message: "Error submitting review: " + error.message });
+    }
+  });
+
+  // Public: Get approved reviews for display
+  app.get("/api/reviews", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const featured = req.query.featured === 'true';
+      
+      const reviews = await storage.getApprovedReviews({ limit, featured });
+      res.json(reviews);
+    } catch (error: any) {
+      console.error('[Review] Error fetching reviews:', error);
+      res.status(500).json({ message: "Error fetching reviews" });
+    }
+  });
+
+  // Public: Get review request by token (for review submission page)
+  app.get("/api/review-request/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const request = await storage.getReviewRequestByToken(token);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Review request not found or expired" });
+      }
+      
+      // Mark as clicked if not already
+      if (!request.clickedAt) {
+        await storage.markReviewRequestClicked(token);
+      }
+      
+      // Return sanitized data (don't expose internal fields)
+      res.json({
+        customerName: request.customerName,
+        serviceTitanCustomerId: request.serviceTitanCustomerId,
+        serviceTitanJobId: request.serviceTitanJobId,
+        requestId: request.id,
+      });
+    } catch (error: any) {
+      console.error('[Review Request] Token lookup error:', error);
+      res.status(500).json({ message: "Error loading review request" });
+    }
+  });
+
   // Referral submission endpoint
   app.post("/api/referrals/submit", async (req, res) => {
     try {
@@ -3626,6 +3732,191 @@ ${rssItems}
     } catch (error: any) {
       console.error("[Admin] Error fetching stats:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============================================
+  // ADMIN REVIEW SYSTEM ENDPOINTS
+  // ============================================
+
+  // Admin: Get all reviews (pending, approved, rejected)
+  app.get("/api/admin/reviews", requireAdmin, async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const reviews = await storage.getAllReviews(status);
+      res.json(reviews);
+    } catch (error: any) {
+      console.error('[Review Admin] Error fetching reviews:', error);
+      res.status(500).json({ message: "Error fetching reviews" });
+    }
+  });
+
+  // Admin: Moderate a review (approve/reject/spam)
+  app.patch("/api/admin/reviews/:id/moderate", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status, moderationNotes, featured, displayOnWebsite } = req.body;
+      
+      if (!['approved', 'rejected', 'spam'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+      
+      const moderatorId = (req.user as any)?.id || 'admin';
+      
+      const review = await storage.moderateReview(id, {
+        status,
+        moderatedBy: moderatorId,
+        moderationNotes,
+        featured: featured !== undefined ? featured : undefined,
+        displayOnWebsite: displayOnWebsite !== undefined ? displayOnWebsite : undefined,
+      });
+      
+      console.log(`[Review Admin] Review ${id} ${status} by ${moderatorId}`);
+      res.json(review);
+    } catch (error: any) {
+      console.error('[Review Admin] Moderation error:', error);
+      res.status(400).json({ message: "Error moderating review: " + error.message });
+    }
+  });
+
+  // Admin: Delete a review
+  app.delete("/api/admin/reviews/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteReview(id);
+      console.log(`[Review Admin] Review ${id} deleted`);
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error('[Review Admin] Delete error:', error);
+      res.status(400).json({ message: "Error deleting review: " + error.message });
+    }
+  });
+
+  // Admin: Get review statistics
+  app.get("/api/admin/reviews/stats", requireAdmin, async (req, res) => {
+    try {
+      const stats = await storage.getReviewStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error('[Review Admin] Stats error:', error);
+      res.status(500).json({ message: "Error fetching review stats" });
+    }
+  });
+
+  // Admin: Create review request
+  app.post("/api/admin/review-requests", requireAdmin, async (req, res) => {
+    try {
+      const { customerName, email, phone, serviceTitanCustomerId, serviceTitanJobId, method } = req.body;
+      
+      if (!customerName || !method || (!email && !phone)) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+      
+      // Generate unique token for personalized link
+      const uniqueToken = crypto.randomUUID();
+      const reviewUrl = `https://www.plumbersthatcare.com/leave-review/${uniqueToken}`;
+      
+      // Create email/SMS content
+      const emailSubject = `How was your service from Economy Plumbing?`;
+      const emailBody = `Hi ${customerName},\n\nThank you for choosing Economy Plumbing Services! We'd love to hear about your experience.\n\nPlease take a moment to leave us a review:\n${reviewUrl}\n\nYour feedback helps us improve and helps other customers make informed decisions.\n\nThank you!\nEconomy Plumbing Services`;
+      
+      const smsBody = `Hi ${customerName}! Thanks for choosing Economy Plumbing. We'd love your feedback: ${reviewUrl}`;
+      
+      // Create request in database
+      const request = await storage.createReviewRequest({
+        customerName,
+        email: email || null,
+        phone: phone || null,
+        serviceTitanCustomerId: serviceTitanCustomerId || null,
+        serviceTitanJobId: serviceTitanJobId || null,
+        method,
+        uniqueToken,
+        emailSubject,
+        emailBody,
+        smsBody,
+        status: 'pending',
+        automatedSend: false,
+      });
+      
+      console.log(`[Review Request] Created for ${customerName} (${method})`);
+      res.json({ 
+        success: true, 
+        request,
+        reviewUrl 
+      });
+    } catch (error: any) {
+      console.error('[Review Request] Creation error:', error);
+      res.status(400).json({ message: "Error creating review request: " + error.message });
+    }
+  });
+
+  // Admin: Get all review requests
+  app.get("/api/admin/review-requests", requireAdmin, async (req, res) => {
+    try {
+      const status = req.query.status as string | undefined;
+      const requests = await storage.getAllReviewRequests(status);
+      res.json(requests);
+    } catch (error: any) {
+      console.error('[Review Request Admin] Error fetching requests:', error);
+      res.status(500).json({ message: "Error fetching review requests" });
+    }
+  });
+
+  // Admin: Send review request (email/SMS)
+  app.post("/api/admin/review-requests/:id/send", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const request = await storage.getReviewRequestById(id);
+      
+      if (!request) {
+        return res.status(404).json({ message: "Review request not found" });
+      }
+      
+      const errors: string[] = [];
+      
+      // Send email if requested
+      if ((request.method === 'email' || request.method === 'both') && request.email) {
+        try {
+          const { sendReviewRequestEmail } = await import('./email');
+          await sendReviewRequestEmail({
+            to: request.email,
+            customerName: request.customerName,
+            subject: request.emailSubject!,
+            body: request.emailBody!,
+          });
+          console.log(`[Review Request] Email sent to ${request.email}`);
+        } catch (emailError: any) {
+          console.error('[Review Request] Email error:', emailError);
+          errors.push(`Email: ${emailError.message}`);
+        }
+      }
+      
+      // Send SMS if requested
+      if ((request.method === 'sms' || request.method === 'both') && request.phone) {
+        try {
+          const { sendSMS } = await import('./lib/sms');
+          await sendSMS({
+            to: request.phone,
+            message: request.smsBody!,
+          });
+          console.log(`[Review Request] SMS sent to ${request.phone}`);
+        } catch (smsError: any) {
+          console.error('[Review Request] SMS error:', smsError);
+          errors.push(`SMS: ${smsError.message}`);
+        }
+      }
+      
+      // Update request status
+      if (errors.length === 0) {
+        await storage.markReviewRequestSent(id);
+        res.json({ success: true, message: "Review request sent successfully" });
+      } else {
+        await storage.markReviewRequestFailed(id, errors.join('; '));
+        res.status(500).json({ success: false, message: "Failed to send review request", errors });
+      }
+    } catch (error: any) {
+      console.error('[Review Request] Send error:', error);
+      res.status(400).json({ message: "Error sending review request: " + error.message });
     }
   });
 

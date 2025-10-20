@@ -238,6 +238,45 @@ export async function sendReferralEmail(data: {
   }
 }
 
+export async function sendReviewRequestEmail(data: {
+  to: string;
+  customerName: string;
+  subject: string;
+  body: string;
+}) {
+  console.log('[Email] Sending review request to:', data.to);
+  
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <h2 style="color: #0ea5e9;">How was your service?</h2>
+        <div style="white-space: pre-wrap; line-height: 1.6;">
+          ${data.body.replace(/\n/g, '<br>')}
+        </div>
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+        <p style="color: #6b7280; font-size: 14px;">
+          This message was sent from Economy Plumbing Services.
+        </p>
+      </div>
+    `;
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: data.to,
+      subject: data.subject,
+      html: emailHtml,
+    });
+    
+    console.log('[Email] Review request email sent successfully');
+    return result;
+  } catch (error) {
+    console.error('[Email] Failed to send review request email:', error);
+    throw error;
+  }
+}
+
 export async function sendSalesNotificationEmail(data: {
   productName: string;
   productPrice: number;
