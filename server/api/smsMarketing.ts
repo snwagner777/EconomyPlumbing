@@ -22,6 +22,17 @@ import { eq, and, desc, gte, sql, inArray } from "drizzle-orm";
 import { aiSMSCampaignGenerator } from "../lib/aiSMSCampaign";
 import { smsService } from "../lib/smsService";
 
+// Authentication middleware - ensures only authenticated admins can access
+function requireAuth(req: any, res: any, next: any) {
+  if (!req.isAuthenticated?.()) {
+    return res.status(401).json({
+      success: false,
+      error: 'Authentication required'
+    });
+  }
+  next();
+}
+
 export function registerSMSMarketingRoutes(app: Express) {
   // ==========================================
   // AI CAMPAIGN SUGGESTIONS
@@ -30,8 +41,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/campaigns/suggestions
    * Get AI-generated SMS campaign suggestions
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/campaigns/suggestions", async (req, res) => {
+  app.get("/api/sms/campaigns/suggestions", requireAuth, async (req, res) => {
     try {
       const {
         goal = 'conversion',
@@ -73,8 +85,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/campaigns/seasonal
    * Get seasonal SMS campaign recommendations
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/campaigns/seasonal", async (req, res) => {
+  app.get("/api/sms/campaigns/seasonal", requireAuth, async (req, res) => {
     try {
       const campaigns = await aiSMSCampaignGenerator.getSeasonalCampaigns();
 
@@ -94,8 +107,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/campaigns/generate-copy
    * Generate AI-optimized SMS copy
+   * PROTECTED: Admin only
    */
-  app.post("/api/sms/campaigns/generate-copy", async (req, res) => {
+  app.post("/api/sms/campaigns/generate-copy", requireAuth, async (req, res) => {
     try {
       const { campaignType, targetAudience, offerDetails, tone, maxLength } = req.body;
 
@@ -125,8 +139,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/campaigns/multi-channel-strategy
    * Get multi-channel strategy (email + SMS coordination)
+   * PROTECTED: Admin only
    */
-  app.post("/api/sms/campaigns/multi-channel-strategy", async (req, res) => {
+  app.post("/api/sms/campaigns/multi-channel-strategy", requireAuth, async (req, res) => {
     try {
       const { campaignGoal, segmentId, offerType } = req.body;
 
@@ -166,8 +181,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/campaigns
    * Get all SMS campaigns
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/campaigns", async (req, res) => {
+  app.get("/api/sms/campaigns", requireAuth, async (req, res) => {
     try {
       const { status, type, limit = 50 } = req.query;
 
@@ -200,8 +216,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/campaigns/:id
    * Get single SMS campaign with messages
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/campaigns/:id", async (req, res) => {
+  app.get("/api/sms/campaigns/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
 
@@ -246,8 +263,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/campaigns
    * Create new SMS campaign
+   * PROTECTED: Admin only
    */
-  app.post("/api/sms/campaigns", async (req, res) => {
+  app.post("/api/sms/campaigns", requireAuth, async (req, res) => {
     try {
       const campaignData: InsertSMSCampaign = req.body;
 
@@ -277,8 +295,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * PATCH /api/sms/campaigns/:id
    * Update SMS campaign
+   * PROTECTED: Admin only
    */
-  app.patch("/api/sms/campaigns/:id", async (req, res) => {
+  app.patch("/api/sms/campaigns/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -315,8 +334,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/campaigns/:id/messages
    * Add message to campaign
+   * PROTECTED: Admin only
    */
-  app.post("/api/sms/campaigns/:id/messages", async (req, res) => {
+  app.post("/api/sms/campaigns/:id/messages", requireAuth, async (req, res) => {
     try {
       const { id: campaignId } = req.params;
       const messageData: InsertSMSCampaignMessage = req.body;
@@ -352,8 +372,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * DELETE /api/sms/campaigns/:id
    * Delete SMS campaign
+   * PROTECTED: Admin only
    */
-  app.delete("/api/sms/campaigns/:id", async (req, res) => {
+  app.delete("/api/sms/campaigns/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
 
@@ -386,8 +407,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/subscribers
    * Get all SMS subscribers
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/subscribers", async (req, res) => {
+  app.get("/api/sms/subscribers", requireAuth, async (req, res) => {
     try {
       const { optedIn, optedOut, limit = 100 } = req.query;
 
@@ -427,8 +449,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/subscribers/:phoneNumber
    * Get subscriber by phone number
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/subscribers/:phoneNumber", async (req, res) => {
+  app.get("/api/sms/subscribers/:phoneNumber", requireAuth, async (req, res) => {
     try {
       const { phoneNumber } = req.params;
 
@@ -461,6 +484,7 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/opt-in
    * Opt-in a phone number for SMS marketing
+   * PUBLIC: Required for public opt-in forms
    */
   app.post("/api/sms/opt-in", async (req, res) => {
     try {
@@ -469,8 +493,7 @@ export function registerSMSMarketingRoutes(app: Express) {
         customerName,
         email,
         customerId,
-        source = 'web_form',
-        ipAddress
+        source = 'web_form'
       } = req.body;
 
       if (!phoneNumber) {
@@ -480,13 +503,22 @@ export function registerSMSMarketingRoutes(app: Express) {
         });
       }
 
+      // Capture real client IP address for TCPA compliance audit trail
+      const clientIP = req.headers['x-forwarded-for']?.toString().split(',')[0]?.trim() 
+        || req.headers['x-real-ip']?.toString()
+        || req.connection?.remoteAddress 
+        || req.socket?.remoteAddress
+        || 'unknown';
+
+      console.log(`[SMS Opt-In] Phone: ${phoneNumber}, IP: ${clientIP}, Source: ${source}`);
+
       await smsService.optIn(
         phoneNumber,
         source,
         customerId,
         customerName,
         email,
-        ipAddress
+        clientIP
       );
 
       res.json({
@@ -505,6 +537,7 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/opt-out
    * Opt-out a phone number from SMS marketing
+   * PUBLIC: Required for public opt-out requests
    */
   app.post("/api/sms/opt-out", async (req, res) => {
     try {
@@ -539,8 +572,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/keywords
    * Get all SMS keywords
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/keywords", async (req, res) => {
+  app.get("/api/sms/keywords", requireAuth, async (req, res) => {
     try {
       const keywords = await db
         .select()
@@ -563,8 +597,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * POST /api/sms/keywords
    * Create new SMS keyword
+   * PROTECTED: Admin only
    */
-  app.post("/api/sms/keywords", async (req, res) => {
+  app.post("/api/sms/keywords", requireAuth, async (req, res) => {
     try {
       const keywordData: InsertSMSKeyword = req.body;
 
@@ -597,8 +632,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/analytics/dashboard
    * Get SMS marketing dashboard analytics
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/analytics/dashboard", async (req, res) => {
+  app.get("/api/sms/analytics/dashboard", requireAuth, async (req, res) => {
     try {
       const { days = 30 } = req.query;
       const daysAgo = parseInt(days as string);
@@ -652,8 +688,9 @@ export function registerSMSMarketingRoutes(app: Express) {
   /**
    * GET /api/sms/analytics/send-time
    * Get optimal send time analysis
+   * PROTECTED: Admin only
    */
-  app.get("/api/sms/analytics/send-time", async (req, res) => {
+  app.get("/api/sms/analytics/send-time", requireAuth, async (req, res) => {
     try {
       const { segmentId } = req.query;
 
