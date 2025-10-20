@@ -551,6 +551,157 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Update customer contact information
+   */
+  async updateCustomerContacts(
+    customerId: number,
+    data: {
+      email?: string;
+      phone?: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Updating customer ${customerId} contacts...`);
+      
+      // Get existing contacts
+      const existingContacts = await this.getCustomerContacts(customerId);
+      
+      // Update or add email contact
+      if (data.email) {
+        const emailContact = existingContacts.find((c: any) => c.type === 'Email');
+        if (emailContact) {
+          // Update existing email
+          await this.request(
+            `/customers/${customerId}/contacts/${emailContact.id}`,
+            {
+              method: 'PUT',
+              body: JSON.stringify({
+                type: 'Email',
+                value: data.email,
+                memo: 'email'
+              }),
+            }
+          );
+        } else {
+          // Create new email contact
+          await this.request(
+            `/customers/${customerId}/contacts`,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                type: 'Email',
+                value: data.email,
+                memo: 'email'
+              }),
+            }
+          );
+        }
+      }
+      
+      // Update or add phone contact
+      if (data.phone) {
+        const phoneContact = existingContacts.find((c: any) => c.type === 'Phone' || c.type === 'MobilePhone');
+        if (phoneContact) {
+          // Update existing phone
+          await this.request(
+            `/customers/${customerId}/contacts/${phoneContact.id}`,
+            {
+              method: 'PUT',
+              body: JSON.stringify({
+                type: phoneContact.type,
+                value: data.phone,
+                memo: phoneContact.memo || 'Phone',
+                phoneSettings: {
+                  phoneNumber: data.phone,
+                  doNotText: phoneContact.phoneSettings?.doNotText || false
+                }
+              }),
+            }
+          );
+        } else {
+          // Create new phone contact
+          await this.request(
+            `/customers/${customerId}/contacts`,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                type: 'Phone',
+                value: data.phone,
+                memo: 'Phone',
+                phoneSettings: {
+                  phoneNumber: data.phone,
+                  doNotText: false
+                }
+              }),
+            }
+          );
+        }
+      }
+      
+      console.log('[ServiceTitan] Customer contacts updated successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Update customer contacts error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update location address
+   */
+  async updateLocation(
+    locationId: number,
+    data: {
+      street: string;
+      city: string;
+      state: string;
+      zip: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Updating location ${locationId}...`);
+      
+      const address = {
+        street: data.street,
+        city: data.city,
+        state: data.state,
+        zip: data.zip,
+        country: 'USA',
+      };
+      
+      await this.request(
+        `/locations/${locationId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            address: address
+          }),
+        }
+      );
+      
+      console.log('[ServiceTitan] Location updated successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Update location error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get customer's primary location
+   */
+  async getCustomerPrimaryLocation(customerId: number): Promise<any> {
+    try {
+      const locationsUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/locations?customerId=${customerId}`;
+      const result = await this.request<{ data: any[] }>(locationsUrl, {}, true);
+      
+      // Return first location (primary)
+      return result.data && result.data.length > 0 ? result.data[0] : null;
+    } catch (error) {
+      console.error('[ServiceTitan] Get customer primary location error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get available arrival windows from ServiceTitan
    * This fetches recent appointments and extracts unique arrival windows
    */

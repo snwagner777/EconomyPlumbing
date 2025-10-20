@@ -6286,6 +6286,91 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Update customer contact information
+  app.put("/api/portal/update-contacts", async (req, res) => {
+    try {
+      const { customerId, email, phone } = req.body;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      console.log(`[Portal] Updating contacts for customer ${customerId}...`);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      await serviceTitan.updateCustomerContacts(parseInt(customerId), {
+        email,
+        phone
+      });
+
+      res.json({ success: true, message: "Contact information updated successfully" });
+    } catch (error: any) {
+      console.error("[Portal] Update contacts error:", error);
+      res.status(500).json({ error: error.message || "Failed to update contact information" });
+    }
+  });
+
+  // Update service address (location)
+  app.put("/api/portal/update-address", async (req, res) => {
+    try {
+      const { customerId, locationId, street, city, state, zip } = req.body;
+
+      if (!customerId || !locationId) {
+        return res.status(400).json({ error: "Customer ID and Location ID required" });
+      }
+
+      if (!street || !city || !state || !zip) {
+        return res.status(400).json({ error: "All address fields are required" });
+      }
+
+      console.log(`[Portal] Updating address for location ${locationId}...`);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      await serviceTitan.updateLocation(parseInt(locationId), {
+        street,
+        city,
+        state,
+        zip
+      });
+
+      res.json({ success: true, message: "Service address updated successfully" });
+    } catch (error: any) {
+      console.error("[Portal] Update address error:", error);
+      res.status(500).json({ error: error.message || "Failed to update service address" });
+    }
+  });
+
+  // Get customer's primary location
+  app.get("/api/portal/customer-location/:customerId", async (req, res) => {
+    try {
+      const { customerId } = req.params;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      console.log(`[Portal] Fetching location for customer ${customerId}...`);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      const location = await serviceTitan.getCustomerPrimaryLocation(parseInt(customerId));
+
+      if (!location) {
+        return res.status(404).json({ error: "No location found for customer" });
+      }
+
+      res.json({ location });
+    } catch (error: any) {
+      console.error("[Portal] Get location error:", error);
+      res.status(500).json({ error: "Failed to fetch customer location" });
+    }
+  });
+
   // Customer Leaderboard - Top customers by service usage
   // TODO: Re-implement for refer-a-friend page using actual ServiceTitan job/appointment data
   app.get("/api/customer-leaderboard", async (req, res) => {
