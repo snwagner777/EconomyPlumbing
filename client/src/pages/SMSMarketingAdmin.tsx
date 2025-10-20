@@ -283,6 +283,7 @@ function CampaignsTab({ campaigns, loadingCampaigns, suggestions, loadingSuggest
         description: `${data.details.sent} SMS messages sent to happy customers. ${data.details.eligible} eligible, ${data.details.subscribed} subscribed.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/sms/analytics/dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/review-campaigns'] });
     },
     onError: (error: any) => {
       toast({
