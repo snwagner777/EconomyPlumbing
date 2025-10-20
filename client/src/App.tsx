@@ -94,6 +94,7 @@ const ReviewsAdmin = lazy(() => import("@/pages/ReviewsAdmin"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const SMSSignup = lazy(() => import("@/pages/SMSSignup"));
+const SMSMarketingAdmin = lazy(() => import("@/pages/SMSMarketingAdmin"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -248,6 +249,7 @@ function Router() {
       <Route path="/admin/page-metadata" component={PageMetadataAdmin} />
       <Route path="/admin/products" component={ProductsAdmin} />
       <Route path="/admin/reviews" component={ReviewsAdmin} />
+      <Route path="/admin/sms-marketing" component={SMSMarketingAdmin} />
       <Route path="/admin" component={UnifiedAdminDashboard} />
       
       {/* Blog posts - must be last to avoid conflicts with other routes */}

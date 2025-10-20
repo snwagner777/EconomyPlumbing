@@ -14,7 +14,7 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Centralized `SEOHead` component, JSON-LD structured data, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, and dynamic sitemap generation. WCAG AA Compliant.
 - **Key Pages:** Comprehensive set of pages including Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, various policy pages, VIP Membership, interactive calculators (Water Heater Size, Plumbing Cost Estimator), seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panels:** Unified admin panel for ServiceTitan sync monitoring, Customer Portal analytics, photo and metadata management, and a comprehensive Reputation Management admin at `/admin/reviews`.
+- **Admin Panels:** Unified admin panel for ServiceTitan sync monitoring, Customer Portal analytics, photo and metadata management, a comprehensive Reputation Management admin at `/admin/reviews`, and SMS Marketing admin at `/admin/sms-marketing` with AI-powered campaign management, subscriber tracking, and TCPA compliance monitoring.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, providing RESTful API endpoints.
@@ -25,8 +25,9 @@ Preferred communication style: Simple, everyday language.
 - **Dynamic Phone Number Tracking:** 100% database-driven system.
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy. 100% type-safe TypeScript. Stripe PaymentIntents for payment security.
 - **ServiceTitan Integration:** Incremental job sync system with staging tables, batch processing, error tracking, and a database-driven customer leaderboard. Includes multi-location service address management, self-service customer data updates, and a custom review system with admin moderation.
-- **Marketing Automation (In Progress):** AI-powered email marketing system with a comprehensive database schema, ServiceTitan data enrichment, email preference management, React Email + Resend templates, and a master email send switch.
-- **Reputation Management System:** AI-powered review request automation with an 8-table database schema, GPT-4o drip campaign engine with behavioral branching, React Email templates, 12+ API routes, a dedicated master email switch, and a 5-tab admin interface for campaign management and AI response generation.
+- **Marketing Automation:** AI-powered email marketing system with a comprehensive database schema, ServiceTitan data enrichment, email preference management, React Email + Resend templates, and a master email send switch.
+- **SMS Marketing System (NEW - ServiceTitan Marketing Pro Replacement):** Complete SMS marketing platform with 5-table database schema (preferences, campaigns, messages, send log, keywords), AI-powered campaign generation (GPT-4o), TCPA-compliant opt-in/opt-out management, multi-channel coordination with email, behavioral intelligence, Twilio/Zoom Phone integration, 15+ API endpoints with authentication, public opt-in form at `/sms-signup`, and comprehensive 4-tab admin dashboard at `/admin/sms-marketing` (Dashboard, Campaigns, Subscribers, Settings). Master SMS switch defaults to OFF for safety.
+- **Reputation Management System:** AI-powered review request automation with an 8-table database schema, GPT-4o drip campaign engine with behavioral branching, React Email templates, 12+ API routes, a dedicated master email switch, and a 5-tab admin interface for campaign management and AI response generation. Enhanced with multi-channel review requests (email + SMS) using intelligent channel selection based on customer engagement history.
 
 ### State Management
 - **Client-Side:** TanStack Query for server state; React hooks for local component state.
@@ -49,6 +50,7 @@ Preferred communication style: Simple, everyday language.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend.
+- **SMS Providers:** Twilio (primary), Zoom Phone (OAuth-configured).
 - **AI Services:** OpenAI (GPT-4o Vision for blog generation, photo analysis, success story focal point detection; GPT-4o-mini for chatbot).
 - **Photo Management:** CompanyCam, Google Drive, ServiceTitan.
 - **Google Services:** Google Places API, Google Maps.
