@@ -8028,13 +8028,13 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // RESEND EMAIL WEBHOOK - Track email engagement events
-  app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), async (req, res) => {
+  app.post("/api/webhooks/resend", express.json(), async (req, res) => {
     try {
-      const event = JSON.parse(req.body.toString());
+      const event = req.body;
       
       console.log('[Resend Webhook] Received event:', event.type);
       
-      // Extract email ID from the event
+      // Extract email ID from the event (Resend uses 'email_id' in their webhooks)
       const emailId = event.data?.email_id;
       if (!emailId) {
         console.warn('[Resend Webhook] No email_id in event:', event);

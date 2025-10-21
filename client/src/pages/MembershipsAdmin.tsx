@@ -67,6 +67,23 @@ export default function MembershipsAdmin() {
 
   const { data: memberships, isLoading, isError, refetch } = useQuery<Membership[]>({
     queryKey: ['/api/admin/memberships', filters.status, filters.membershipType, filters.year],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.status) params.set('status', filters.status);
+      if (filters.membershipType) params.set('membershipType', filters.membershipType);
+      if (filters.year) params.set('year', filters.year);
+      
+      const url = `/api/admin/memberships${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await fetch(url, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch memberships');
+      }
+      
+      return response.json();
+    },
   });
 
   const bulkExpireMutation = useMutation({

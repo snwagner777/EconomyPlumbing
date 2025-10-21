@@ -100,6 +100,20 @@ export async function sendCampaignEmail(params: {
   console.log('[Email] Sending campaign email to:', params.recipientEmail);
   
   try {
+    // Check suppression list first
+    const { db } = await import('./db');
+    const { emailSuppressionList, emailSendLog, campaignEmails } = await import('@shared/schema');
+    const { eq, sql } = await import('drizzle-orm');
+    
+    const suppressedEmail = await db.query.emailSuppressionList.findFirst({
+      where: eq(emailSuppressionList.email, params.recipientEmail),
+    });
+    
+    if (suppressedEmail) {
+      console.warn('[Email] Email suppressed:', params.recipientEmail, 'Reason:', suppressedEmail.reason);
+      throw new Error(`Email address is suppressed: ${suppressedEmail.reason}`);
+    }
+    
     const { client, fromEmail } = await getUncachableResendClient();
     
     // Send email with campaign tags for tracking
@@ -120,9 +134,6 @@ export async function sendCampaignEmail(params: {
     }
     
     // Log the email send to database
-    const { db } = await import('./db');
-    const { emailSendLog, campaignEmails } = await import('@shared/schema');
-    const { sql } = await import('drizzle-orm');
     
     await db.insert(emailSendLog).values({
       campaignId: params.campaignId,
