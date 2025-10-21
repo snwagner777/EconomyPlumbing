@@ -60,7 +60,8 @@ import {
   Mail,
   Calendar,
   AlertCircle,
-  MessageCircle
+  MessageCircle,
+  CreditCard
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -162,6 +163,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Package,
       section: 'products' as AdminSection,
       description: "SKUs & ServiceTitan setup"
+    },
+    {
+      title: "Membership Management",
+      icon: CreditCard,
+      onClick: () => setLocation('/admin/memberships'),
+      description: "View & expire memberships"
     },
     {
       title: "Commercial Customers",
