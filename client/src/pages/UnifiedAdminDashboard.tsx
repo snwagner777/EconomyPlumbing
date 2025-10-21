@@ -70,7 +70,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings' | 'memberships' | 'sms-marketing' | 'marketing-overview';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -167,8 +167,23 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
     {
       title: "Membership Management",
       icon: CreditCard,
+      section: 'memberships' as AdminSection,
       onClick: () => setLocation('/admin/memberships'),
       description: "View & expire memberships"
+    },
+    {
+      title: "SMS Marketing",
+      icon: MessageCircle,
+      section: 'sms-marketing' as AdminSection,
+      onClick: () => setLocation('/admin/sms-marketing'),
+      description: "AI-powered SMS campaigns"
+    },
+    {
+      title: "Marketing Overview",
+      icon: BarChart3,
+      section: 'marketing-overview' as AdminSection,
+      onClick: () => setLocation('/admin/marketing-overview'),
+      description: "Cross-channel analytics"
     },
     {
       title: "Commercial Customers",
@@ -247,7 +262,13 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    onClick={() => setActiveSection(item.section)}
+                    onClick={() => {
+                      if (item.onClick) {
+                        item.onClick();
+                      } else if (item.section) {
+                        setActiveSection(item.section);
+                      }
+                    }}
                     isActive={activeSection === item.section}
                     data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
@@ -3761,6 +3782,9 @@ export default function UnifiedAdminDashboard() {
       'campaigns': 'Email Campaigns',
       'audience-logs': 'Audience Logs',
       'marketing-settings': 'Marketing Settings',
+      'memberships': 'Membership Management',
+      'sms-marketing': 'SMS Marketing',
+      'marketing-overview': 'Marketing Overview',
     };
     return titles[activeSection];
   };
