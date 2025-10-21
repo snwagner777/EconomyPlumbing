@@ -7562,6 +7562,29 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Get campaign emails (drip sequence)
+  app.get("/api/admin/campaigns/:id/emails", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+      
+      const { campaignEmails } = await import("@shared/schema");
+      const { eq, asc } = await import("drizzle-orm");
+      
+      const emails = await db
+        .select()
+        .from(campaignEmails)
+        .where(eq(campaignEmails.campaignId, req.params.id))
+        .orderBy(asc(campaignEmails.sequenceNumber));
+      
+      res.json({ emails });
+    } catch (error: any) {
+      console.error("[Admin] Get campaign emails error:", error);
+      res.status(500).json({ error: "Failed to fetch campaign emails" });
+    }
+  });
+
   // Create a new campaign (stored locally, awaiting ServiceTitan sync)
   app.post("/api/admin/campaigns", async (req, res) => {
     try {

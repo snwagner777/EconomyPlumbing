@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,7 @@ interface Message {
 }
 
 export default function AIChatbot() {
+  const [location] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -40,6 +42,11 @@ export default function AIChatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const phoneConfig = usePhoneConfig();
   const isMobile = useIsMobile();
+
+  // Don't render chatbot on admin pages
+  if (location.startsWith('/admin')) {
+    return null;
+  }
 
   // Guard against missing phoneConfig
   if (!phoneConfig || !phoneConfig.tel || !phoneConfig.display) {

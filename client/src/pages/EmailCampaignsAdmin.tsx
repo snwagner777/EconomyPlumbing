@@ -8,11 +8,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users } from "lucide-react";
+import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import type { EmailCampaign } from "@shared/schema";
+
+type CampaignEmail = {
+  id: string;
+  campaignId: string;
+  sequenceNumber: number;
+  dayOffset: number;
+  subject: string;
+  preheader: string | null;
+  htmlContent: string;
+  textContent: string;
+  generatedByAI: boolean;
+  totalSent: number;
+  totalOpened: number;
+  totalClicked: number;
+};
 
 type CampaignWithDetails = EmailCampaign & {
   segmentName?: string;
@@ -21,6 +37,7 @@ type CampaignWithDetails = EmailCampaign & {
 
 export default function EmailCampaignsAdmin() {
   const { toast } = useToast();
+  const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
   const [trackingNumberDialog, setTrackingNumberDialog] = useState<{ open: boolean; campaign: CampaignWithDetails | null }>({
     open: false,
     campaign: null,
@@ -144,91 +161,191 @@ export default function EmailCampaignsAdmin() {
     });
   };
 
-  const renderCampaignCard = (campaign: CampaignWithDetails) => (
-    <Card key={campaign.id} className="mb-4">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              <CardTitle className="text-lg" data-testid={`text-campaign-name-${campaign.id}`}>
-                {campaign.name}
-              </CardTitle>
-              <Badge
-                variant={getStatusColor(campaign.status)}
-                data-testid={`badge-status-${campaign.id}`}
-                className="flex items-center gap-1"
-              >
-                {getStatusIcon(campaign.status)}
-                {campaign.status.replace('_', ' ')}
-              </Badge>
-            </div>
-            <div className="flex flex-wrap gap-4 text-sm">
-              {campaign.segmentName && (
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-muted-foreground" />
-                  <span data-testid={`text-segment-name-${campaign.id}`}>
-                    {campaign.segmentName}
-                  </span>
-                  {campaign.memberCount !== undefined && (
-                    <span className="text-muted-foreground">
-                      ({campaign.memberCount} members)
-                    </span>
+  // Fetch campaign emails when expanded
+  const { data: campaignEmailsData } = useQuery<{ emails: CampaignEmail[] }>({
+    queryKey: ['/api/admin/campaigns', expandedCampaign, 'emails'],
+    enabled: !!expandedCampaign,
+  });
+
+  const renderCampaignCard = (campaign: CampaignWithDetails) => {
+    const isExpanded = expandedCampaign === campaign.id;
+    const emails = isExpanded ? (campaignEmailsData?.emails || []) : [];
+
+    return (
+      <Card key={campaign.id} className="mb-4">
+        <Collapsible open={isExpanded} onOpenChange={(open) => setExpandedCampaign(open ? campaign.id : null)}>
+          <CardHeader>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <CardTitle className="text-lg" data-testid={`text-campaign-name-${campaign.id}`}>
+                    {campaign.name}
+                  </CardTitle>
+                  <Badge
+                    variant={getStatusColor(campaign.status)}
+                    data-testid={`badge-status-${campaign.id}`}
+                    className="flex items-center gap-1"
+                  >
+                    {getStatusIcon(campaign.status)}
+                    {campaign.status.replace('_', ' ')}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {campaign.segmentName && (
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4 text-muted-foreground" />
+                      <span data-testid={`text-segment-name-${campaign.id}`}>
+                        {campaign.segmentName}
+                      </span>
+                      {campaign.memberCount !== undefined && (
+                        <span className="text-muted-foreground">
+                          ({campaign.memberCount} members)
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {campaign.serviceTitanCampaignId && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Sparkles className="w-4 h-4" />
+                      <span data-testid={`text-st-campaign-id-${campaign.id}`}>
+                        ST Campaign ID: {campaign.serviceTitanCampaignId}
+                      </span>
+                    </div>
+                  )}
+                  {campaign.trackingPhoneNumber && (
+                    <div className="flex items-center gap-2 text-primary">
+                      <Phone className="w-4 h-4" />
+                      <span data-testid={`text-tracking-number-${campaign.id}`}>
+                        {campaign.trackingPhoneNumber}
+                      </span>
+                    </div>
+                  )}
+                  {campaign.approvedAt && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Calendar className="w-4 h-4" />
+                      <span data-testid={`text-approved-at-${campaign.id}`}>
+                        Approved: {format(new Date(campaign.approvedAt), 'MMM d, yyyy')}
+                      </span>
+                    </div>
                   )}
                 </div>
-              )}
-              {campaign.serviceTitanCampaignId && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Sparkles className="w-4 h-4" />
-                  <span data-testid={`text-st-campaign-id-${campaign.id}`}>
-                    ST Campaign ID: {campaign.serviceTitanCampaignId}
-                  </span>
-                </div>
-              )}
-              {campaign.trackingPhoneNumber && (
-                <div className="flex items-center gap-2 text-primary">
-                  <Phone className="w-4 h-4" />
-                  <span data-testid={`text-tracking-number-${campaign.id}`}>
-                    {campaign.trackingPhoneNumber}
-                  </span>
-                </div>
-              )}
-              {campaign.approvedAt && (
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <Calendar className="w-4 h-4" />
-                  <span data-testid={`text-approved-at-${campaign.id}`}>
-                    Approved: {format(new Date(campaign.approvedAt), 'MMM d, yyyy')}
-                  </span>
-                </div>
-              )}
+              </div>
+              <div className="flex gap-2">
+                {campaign.status === 'pending_approval' && (
+                  <Button
+                    size="sm"
+                    onClick={() => approveMutation.mutate(campaign.id)}
+                    disabled={approveMutation.isPending}
+                    data-testid={`button-approve-${campaign.id}`}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-1" />
+                    Approve
+                  </Button>
+                )}
+                {campaign.status === 'awaiting_phone_number' && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleAddTrackingNumber(campaign)}
+                    data-testid={`button-add-tracking-${campaign.id}`}
+                  >
+                    <Phone className="w-4 h-4 mr-1" />
+                    Add Tracking Number
+                  </Button>
+                )}
+                <CollapsibleTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    data-testid={`button-toggle-details-${campaign.id}`}
+                  >
+                    {isExpanded ? (
+                      <>
+                        <ChevronUp className="w-4 h-4 mr-1" />
+                        Hide Details
+                      </>
+                    ) : (
+                      <>
+                        <ChevronDown className="w-4 h-4 mr-1" />
+                        View Details
+                      </>
+                    )}
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
             </div>
-          </div>
-          <div className="flex gap-2">
-            {campaign.status === 'pending_approval' && (
-              <Button
-                size="sm"
-                onClick={() => approveMutation.mutate(campaign.id)}
-                disabled={approveMutation.isPending}
-                data-testid={`button-approve-${campaign.id}`}
-              >
-                <CheckCircle className="w-4 h-4 mr-1" />
-                Approve
-              </Button>
-            )}
-            {campaign.status === 'awaiting_phone_number' && (
-              <Button
-                size="sm"
-                onClick={() => handleAddTrackingNumber(campaign)}
-                data-testid={`button-add-tracking-${campaign.id}`}
-              >
-                <Phone className="w-4 h-4 mr-1" />
-                Add Tracking Number
-              </Button>
-            )}
-          </div>
-        </div>
-      </CardHeader>
-    </Card>
-  );
+          </CardHeader>
+
+          <CollapsibleContent>
+            <CardContent className="pt-0">
+              {emails.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>No emails in this campaign</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide">
+                    Email Sequence ({emails.length} email{emails.length !== 1 ? 's' : ''})
+                  </h4>
+                  {emails.map((email, idx) => (
+                    <Card key={email.id} className="bg-muted/30">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Badge variant="outline" data-testid={`badge-sequence-${email.id}`}>
+                                Email #{email.sequenceNumber}
+                              </Badge>
+                              <Badge variant="secondary" data-testid={`badge-day-offset-${email.id}`}>
+                                Day {email.dayOffset}
+                              </Badge>
+                              {email.generatedByAI && (
+                                <Badge variant="default" className="bg-purple-500">
+                                  <Sparkles className="w-3 h-3 mr-1" />
+                                  AI Generated
+                                </Badge>
+                              )}
+                            </div>
+                            <CardTitle className="text-base mt-2" data-testid={`text-email-subject-${email.id}`}>
+                              {email.subject}
+                            </CardTitle>
+                            {email.preheader && (
+                              <CardDescription className="mt-1" data-testid={`text-email-preheader-${email.id}`}>
+                                Preview: {email.preheader}
+                              </CardDescription>
+                            )}
+                          </div>
+                          <div className="text-xs text-muted-foreground text-right">
+                            <div>Sent: {email.totalSent}</div>
+                            <div>Opened: {email.totalOpened}</div>
+                            <div>Clicked: {email.totalClicked}</div>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div>
+                          <Label className="text-xs font-semibold text-muted-foreground">Plain Text Content</Label>
+                          <div className="mt-1 p-3 bg-background rounded-md border text-sm whitespace-pre-wrap" data-testid={`text-email-text-content-${email.id}`}>
+                            {email.textContent}
+                          </div>
+                        </div>
+                        <div>
+                          <Label className="text-xs font-semibold text-muted-foreground">HTML Content</Label>
+                          <div className="mt-1 p-3 bg-background rounded-md border text-xs font-mono overflow-x-auto max-h-60 overflow-y-auto" data-testid={`text-email-html-content-${email.id}`}>
+                            <pre>{email.htmlContent}</pre>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </CollapsibleContent>
+        </Collapsible>
+      </Card>
+    );
+  };
 
   if (isLoading) {
     return (
