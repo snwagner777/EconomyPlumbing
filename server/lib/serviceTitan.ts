@@ -2067,6 +2067,11 @@ class ServiceTitanAPI {
 
       console.log(`[ServiceTitan Memberships] Fetched ${allMemberships.length} total memberships`);
       
+      // Debug: Log first membership to see what data we're getting
+      if (allMemberships.length > 0) {
+        console.log('[ServiceTitan Memberships] Sample membership data:', JSON.stringify(allMemberships[0], null, 2));
+      }
+      
       return allMemberships.map((m: any) => ({
         id: m.id,
         customerId: m.customerId,
