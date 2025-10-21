@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { storage } from "./storage";
 import { getServiceTitanAPI } from "./lib/serviceTitan";
 import { processSegmentAutoEntry, processSegmentAutoExit, refreshAllSegments } from "./lib/audienceManager";
+import { getAllServiceHealth, getSystemHealth } from "./lib/healthMonitor";
 
 // Declare global types for SSR cache invalidation
 declare global {
@@ -3782,6 +3783,39 @@ ${rssItems}
         res.json({ success: true, message: "Session cleared successfully. Please close this tab and try logging in again." });
       });
     });
+  });
+
+  // Get system health status (admin only)
+  app.get("/api/admin/system-health", requireAdmin, async (req, res) => {
+    try {
+      const [allServices, systemHealth] = await Promise.all([
+        getAllServiceHealth(),
+        getSystemHealth()
+      ]);
+
+      res.json({
+        systemHealth,
+        services: allServices.map((service: any) => ({
+          serviceName: service.serviceName,
+          serviceType: service.serviceType,
+          status: service.status,
+          statusMessage: service.statusMessage,
+          lastSuccessfulRunAt: service.lastSuccessfulRunAt,
+          lastFailedRunAt: service.lastFailedRunAt,
+          consecutiveFailures: service.consecutiveFailures,
+          totalRuns: service.totalRuns,
+          totalFailures: service.totalFailures,
+          lastDurationMs: service.lastDurationMs,
+          avgDurationMs: service.avgDurationMs,
+          lastError: service.lastError,
+          lastErrorAt: service.lastErrorAt,
+          lastCheckedAt: service.lastCheckedAt,
+        }))
+      });
+    } catch (error: any) {
+      console.error('[Admin] Error fetching system health:', error);
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // Get all photos (admin only)

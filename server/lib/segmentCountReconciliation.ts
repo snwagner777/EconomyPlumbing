@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { customerSegments, segmentMembership } from '@shared/schema';
 import { eq, and, isNull, sql } from 'drizzle-orm';
+import { recordSuccess, recordFailure } from './healthMonitor';
 
 /**
  * Segment Count Reconciliation Job
@@ -137,6 +138,15 @@ async function performCountReconciliation(): Promise<void> {
         `${allSegments.length} segments checked, all counts accurate`
       );
     }
+
+    // Record successful reconciliation in health monitor
+    await recordSuccess('segment_count_reconciliation', 'scheduler', {
+      statusMessage: segmentsWithDrift > 0
+        ? `${segmentsWithDrift}/${allSegments.length} segments had drift (max: ${maxDrift})`
+        : `All ${allSegments.length} segments accurate`,
+      executionTimeMs: duration,
+      recordsProcessed: allSegments.length
+    });
   } catch (error) {
     const duration = Date.now() - startTime.getTime();
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -153,6 +163,12 @@ async function performCountReconciliation(): Promise<void> {
       maxDrift: 0,
       error: errorMessage,
     };
+
+    // Record failure in health monitor
+    await recordFailure('segment_count_reconciliation', 'scheduler', error as Error, {
+      statusMessage: 'Count reconciliation failed',
+      executionTimeMs: duration
+    });
   } finally {
     isReconciling = false;
   }

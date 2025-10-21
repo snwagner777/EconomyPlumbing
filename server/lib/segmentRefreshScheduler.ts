@@ -1,4 +1,5 @@
 import { refreshAllSegments } from './audienceManager';
+import { recordSuccess, recordFailure } from './healthMonitor';
 
 /**
  * Segment Refresh Scheduler
@@ -53,6 +54,13 @@ async function performSegmentRefresh(): Promise<void> {
       `${result.totalEntered} customers entered, ` +
       `${result.totalExited} customers exited`
     );
+
+    // Record successful run in health monitor
+    await recordSuccess('segment_refresh', 'scheduler', {
+      statusMessage: `Processed ${result.totalSegments} segments successfully`,
+      executionTimeMs: duration,
+      recordsProcessed: result.totalSegments
+    });
   } catch (error) {
     const duration = Date.now() - startTime.getTime();
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -68,6 +76,12 @@ async function performSegmentRefresh(): Promise<void> {
       totalExited: 0,
       error: errorMessage,
     };
+
+    // Record failure in health monitor
+    await recordFailure('segment_refresh', 'scheduler', error as Error, {
+      statusMessage: 'Segment refresh failed',
+      executionTimeMs: duration
+    });
   } finally {
     isRefreshing = false;
   }

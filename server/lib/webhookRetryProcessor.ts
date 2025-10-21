@@ -1,6 +1,7 @@
 import { db } from '../db';
 import { webhookFailureQueue, type InsertWebhookFailureQueue } from '@shared/schema';
 import { eq, and, lte, or, isNull } from 'drizzle-orm';
+import { recordSuccess, recordFailure } from './healthMonitor';
 
 /**
  * Webhook Retry Processor
@@ -207,6 +208,7 @@ async function processRetryQueue(): Promise<void> {
   }
   
   isProcessing = true;
+  const startTime = Date.now();
   
   try {
     const now = new Date();
@@ -230,6 +232,12 @@ async function processRetryQueue(): Promise<void> {
       .limit(50); // Process up to 50 webhooks at a time
     
     if (pendingWebhooks.length === 0) {
+      // Record success with no webhooks to process
+      await recordSuccess('webhook_retry_processor', 'processor', {
+        statusMessage: 'No webhooks pending',
+        executionTimeMs: Date.now() - startTime,
+        recordsProcessed: 0
+      });
       return;
     }
     
@@ -296,8 +304,21 @@ async function processRetryQueue(): Promise<void> {
     }
     
     console.log('[Webhook Retry] ✓ Retry queue processing complete');
+
+    // Record successful processing run
+    await recordSuccess('webhook_retry_processor', 'processor', {
+      statusMessage: `Processed ${pendingWebhooks.length} webhooks`,
+      executionTimeMs: Date.now() - startTime,
+      recordsProcessed: pendingWebhooks.length
+    });
   } catch (error) {
     console.error('[Webhook Retry] ✗ Error processing retry queue:', error);
+
+    // Record failure
+    await recordFailure('webhook_retry_processor', 'processor', error as Error, {
+      statusMessage: 'Webhook retry queue processing failed',
+      executionTimeMs: Date.now() - startTime
+    });
   } finally {
     isProcessing = false;
   }
