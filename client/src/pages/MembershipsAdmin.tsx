@@ -94,13 +94,10 @@ export default function MembershipsAdmin() {
         expirationDate: new Date().toISOString()
       }));
 
-      return apiRequest('/api/admin/memberships/bulk-update', {
-        method: 'POST',
-        body: JSON.stringify({ updates }),
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await apiRequest('POST', '/api/admin/memberships/bulk-update', { updates });
+      return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       toast({
         title: "Memberships Updated",
         description: `Successfully expired ${data.success} memberships. ${data.failed > 0 ? `${data.failed} failed.` : ''}`,
