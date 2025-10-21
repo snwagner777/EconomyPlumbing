@@ -7974,6 +7974,59 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // EMAIL CAMPAIGN ANALYTICS
+  app.get("/api/email/analytics/dashboard", requireAdmin, async (req, res) => {
+    try {
+      const { emailSendLog, campaignEmails } = await import("@shared/schema");
+      const { db } = await import("./db");
+      const { sql, and, gte } = await import("drizzle-orm");
+      
+      // Get stats for last 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      // Get aggregate metrics
+      const [metrics] = await db
+        .select({
+          totalSent: sql<number>`COUNT(*)`,
+          totalDelivered: sql<number>`COUNT(CASE WHEN ${emailSendLog.deliveredAt} IS NOT NULL THEN 1 END)`,
+          totalOpened: sql<number>`COUNT(CASE WHEN ${emailSendLog.openedAt} IS NOT NULL THEN 1 END)`,
+          totalClicked: sql<number>`COUNT(CASE WHEN ${emailSendLog.clickedAt} IS NOT NULL THEN 1 END)`,
+          totalBounced: sql<number>`COUNT(CASE WHEN ${emailSendLog.bouncedAt} IS NOT NULL THEN 1 END)`,
+          totalComplained: sql<number>`COUNT(CASE WHEN ${emailSendLog.complainedAt} IS NOT NULL THEN 1 END)`,
+        })
+        .from(emailSendLog)
+        .where(gte(emailSendLog.sentAt, thirtyDaysAgo));
+      
+      // Calculate rates
+      const deliveryRate = metrics.totalSent > 0 
+        ? Math.round((metrics.totalDelivered / metrics.totalSent) * 100) 
+        : 0;
+      const openRate = metrics.totalDelivered > 0 
+        ? Math.round((metrics.totalOpened / metrics.totalDelivered) * 100) 
+        : 0;
+      const clickRate = metrics.totalOpened > 0 
+        ? Math.round((metrics.totalClicked / metrics.totalOpened) * 100) 
+        : 0;
+      const bounceRate = metrics.totalSent > 0 
+        ? Math.round((metrics.totalBounced / metrics.totalSent) * 100) 
+        : 0;
+      
+      res.json({
+        stats: {
+          ...metrics,
+          deliveryRate,
+          openRate,
+          clickRate,
+          bounceRate,
+        },
+      });
+    } catch (error: any) {
+      console.error('[API] Error fetching email analytics:', error);
+      res.status(500).json({ error: error.message || "Failed to fetch email analytics" });
+    }
+  });
+
   // RESEND EMAIL WEBHOOK - Track email engagement events
   app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), async (req, res) => {
     try {

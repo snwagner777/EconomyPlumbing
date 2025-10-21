@@ -31,8 +31,14 @@ export default function MarketingOverview() {
     queryKey: ['/api/admin/review-campaigns'],
   });
 
+  // Fetch email analytics
+  const { data: emailAnalytics, isLoading: loadingEmail } = useQuery<any>({
+    queryKey: ['/api/email/analytics/dashboard'],
+  });
+
   // Calculate totals
   const smsStats: any = smsAnalytics?.stats || {};
+  const emailStats: any = emailAnalytics?.stats || {};
   
   // Aggregate review campaign stats
   const reviewCampaigns = reviewCampaignsData?.campaigns || [];
@@ -42,8 +48,8 @@ export default function MarketingOverview() {
     totalReviewsCompleted: reviewCampaigns.reduce((sum: number, c: any) => sum + (c.totalReviewsCompleted || 0), 0),
   };
 
-  const totalReachLast30Days = (smsStats.messagesSent || 0) + (reviewStats.totalSent || 0);
-  const totalEngagement = (smsStats.clicks || 0) + (reviewStats.totalClicks || 0);
+  const totalReachLast30Days = (smsStats.messagesSent || 0) + (reviewStats.totalSent || 0) + (emailStats.totalSent || 0);
+  const totalEngagement = (smsStats.clicks || 0) + (reviewStats.totalClicks || 0) + (emailStats.totalClicked || 0);
   const totalConversions = (smsStats.conversions || 0) + (reviewStats.totalReviewsCompleted || 0);
 
   // Calculate ROI savings (compared to ServiceTitan Marketing Pro + NiceJob)
@@ -106,7 +112,7 @@ export default function MarketingOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold" data-testid="text-total-reach">
-                  {loadingSMS || loadingReviews ? '...' : totalReachLast30Days.toLocaleString()}
+                  {loadingSMS || loadingReviews || loadingEmail ? '...' : totalReachLast30Days.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">Last 30 days</p>
               </CardContent>
@@ -121,7 +127,7 @@ export default function MarketingOverview() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold" data-testid="text-total-engagement">
-                  {loadingSMS || loadingReviews ? '...' : totalEngagement.toLocaleString()}
+                  {loadingSMS || loadingReviews || loadingEmail ? '...' : totalEngagement.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {totalReachLast30Days > 0 
@@ -167,7 +173,7 @@ export default function MarketingOverview() {
           </div>
 
           {/* System Breakdown */}
-          <div className="grid gap-6 md:grid-cols-2 mb-6">
+          <div className="grid gap-6 md:grid-cols-3 mb-6">
             {/* SMS Marketing */}
             <Card>
               <CardHeader>
@@ -253,6 +259,48 @@ export default function MarketingOverview() {
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </Link>
+              </CardContent>
+            </Card>
+
+            {/* Email Campaigns */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-blue-500" />
+                      Email Campaigns
+                    </CardTitle>
+                    <CardDescription>Automated customer outreach</CardDescription>
+                  </div>
+                  <Badge variant="default">Active</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Emails Sent</span>
+                  <span className="font-semibold" data-testid="text-emails-sent">
+                    {loadingEmail ? '...' : (emailStats.totalSent || 0).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Open Rate</span>
+                  <span className="font-semibold">
+                    {loadingEmail ? '...' : `${(emailStats.openRate || 0)}%`}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Click Rate</span>
+                  <span className="font-semibold">
+                    {loadingEmail ? '...' : `${(emailStats.clickRate || 0)}%`}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Bounce Rate</span>
+                  <span className="font-semibold">
+                    {loadingEmail ? '...' : `${(emailStats.bounceRate || 0)}%`}
+                  </span>
+                </div>
               </CardContent>
             </Card>
           </div>
