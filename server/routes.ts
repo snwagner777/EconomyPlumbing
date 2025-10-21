@@ -10,7 +10,7 @@ import { processSegmentAutoEntry, processSegmentAutoExit, refreshAllSegments } f
 declare global {
   var invalidateSSRCache: (() => void) | undefined;
 }
-import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, reviewRequestCampaigns, reviewDripEmails } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql } from "drizzle-orm";
 import { emailCampaigns } from "@shared/schema";
@@ -4097,52 +4097,58 @@ ${rssItems}
       console.log('[Review Campaigns] Generating AI drip strategy...');
       const strategy = await generateDripCampaignStrategy();
       
-      // Create campaign in database
-      const campaign = await storage.createReviewCampaign({
-        name: strategy.campaignName,
-        description: strategy.description,
-        isActive: true,
-        isDefault: false,
-        generatedByAI: true,
-        aiTimingStrategy: strategy as any,
-        triggerEvent: 'job_completed',
-        delayHours: 0,
-        behaviorTrackingEnabled: true,
-        clickedButNotReviewedBranch: true,
-        totalSent: 0,
-        totalClicks: 0,
-        totalReviewsCompleted: 0,
-        conversionRate: strategy.expectedConversionRate || 0,
-      });
-      
       // Generate AI email content for each drip timing
       console.log('[Review Campaigns] Generating email content...');
       const emailContent = await generateDripEmailContent(strategy.dripSchedule);
       
-      // Create drip emails
-      for (const email of emailContent.emails) {
-        await storage.createReviewDripEmail({
-          campaignId: campaign.id,
-          sequenceNumber: email.sequenceNumber,
-          dayOffset: email.dayOffset,
-          behaviorCondition: email.behaviorCondition,
-          subject: email.subject,
-          preheader: email.preheader,
-          htmlContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
-          textContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
+      // Wrap campaign + drip emails creation in database transaction
+      // This ensures atomicity: either all succeed or all fail (no partial state)
+      const campaign = await db.transaction(async (tx) => {
+        // Create campaign in database
+        const [newCampaign] = await tx.insert(reviewRequestCampaigns).values({
+          name: strategy.campaignName,
+          description: strategy.description,
+          isActive: true,
+          isDefault: false,
           generatedByAI: true,
-          aiPrompt: emailContent.aiPrompt,
-          aiVersion: 1,
-          messagingTactic: email.messagingTactic,
+          aiTimingStrategy: strategy as any,
+          triggerEvent: 'job_completed',
+          delayHours: 0,
+          behaviorTrackingEnabled: true,
+          clickedButNotReviewedBranch: true,
           totalSent: 0,
-          totalOpened: 0,
-          totalClicked: 0,
-          totalReviewed: 0,
-          enabled: true,
-        });
-      }
+          totalClicks: 0,
+          totalReviewsCompleted: 0,
+          conversionRate: strategy.expectedConversionRate || 0,
+        }).returning();
+        
+        // Create drip emails - all in same transaction
+        for (const email of emailContent.emails) {
+          await tx.insert(reviewDripEmails).values({
+            campaignId: newCampaign.id,
+            sequenceNumber: email.sequenceNumber,
+            dayOffset: email.dayOffset,
+            behaviorCondition: email.behaviorCondition,
+            subject: email.subject,
+            preheader: email.preheader,
+            htmlContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
+            textContent: email.bodyStructure.opening + '\n\n' + email.bodyStructure.mainMessage + '\n\n' + email.bodyStructure.callToAction + '\n\n' + email.bodyStructure.closing,
+            generatedByAI: true,
+            aiPrompt: emailContent.aiPrompt,
+            aiVersion: 1,
+            messagingTactic: email.messagingTactic,
+            totalSent: 0,
+            totalOpened: 0,
+            totalClicked: 0,
+            totalReviewed: 0,
+            enabled: true,
+          });
+        }
+        
+        return newCampaign;
+      });
       
-      console.log('[Review Campaigns] Campaign created successfully:', campaign.id);
+      console.log('[Review Campaigns] Campaign + drip emails created successfully (transactional):', campaign.id);
       res.json({ success: true, campaign });
     } catch (error: any) {
       console.error('[Review Campaigns] Error creating campaign:', error);
@@ -8054,7 +8060,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   // RESEND EMAIL WEBHOOK - Track email engagement events
   app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), async (req, res) => {
     try {
-      // Verify webhook signature using raw body
+      // Verify webhook signature using Svix
       const signature = req.headers['svix-signature'] as string;
       const timestamp = req.headers['svix-timestamp'] as string;
       const svixId = req.headers['svix-id'] as string;
@@ -8064,11 +8070,43 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.status(401).json({ error: "Missing signature headers" });
       }
       
-      // Note: In production, you would verify the signature here using Svix library
-      // For now, we'll parse and process the event
-      // TODO: Add Svix signature verification
+      // Get webhook signing secret from environment
+      const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
       
-      const event = JSON.parse(req.body.toString());
+      if (!webhookSecret) {
+        console.error('[Resend Webhook] RESEND_WEBHOOK_SECRET not configured');
+        // In development, we can continue without verification (with warning)
+        // In production, this should fail
+        if (process.env.NODE_ENV === 'production') {
+          return res.status(500).json({ error: "Webhook secret not configured" });
+        }
+        console.warn('[Resend Webhook] ⚠️ WARNING: Processing webhook without verification (development mode)');
+      }
+      
+      let event: any;
+      
+      // Verify signature if webhook secret is configured
+      if (webhookSecret) {
+        try {
+          const { Webhook } = await import('svix');
+          const wh = new Webhook(webhookSecret);
+          
+          // Verify the webhook signature
+          event = wh.verify(req.body.toString(), {
+            'svix-signature': signature,
+            'svix-timestamp': timestamp,
+            'svix-id': svixId,
+          }) as any;
+          
+          console.log('[Resend Webhook] ✓ Signature verified successfully');
+        } catch (err) {
+          console.error('[Resend Webhook] ✗ Signature verification failed:', err);
+          return res.status(401).json({ error: "Invalid webhook signature" });
+        }
+      } else {
+        // Parse without verification (development only)
+        event = JSON.parse(req.body.toString());
+      }
       
       console.log('[Resend Webhook] Received event:', event.type);
       

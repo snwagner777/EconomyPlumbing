@@ -2032,6 +2032,114 @@ export const insertReputationSystemSettingSchema = createInsertSchema(reputation
   updatedAt: true,
 });
 
+// ============================================================================
+// SYSTEM RELIABILITY & MONITORING
+// ============================================================================
+
+// Webhook Failure Queue - Stores failed webhook events for retry
+export const webhookFailureQueue = pgTable("webhook_failure_queue", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Webhook details
+  webhookType: text("webhook_type").notNull(), // 'resend', 'stripe', 'twilio', etc.
+  webhookEvent: text("webhook_event").notNull(), // 'email.delivered', 'email.bounced', etc.
+  rawPayload: jsonb("raw_payload").notNull(), // Complete webhook payload
+  
+  // HTTP request details
+  headers: jsonb("headers").notNull(), // Webhook headers for verification
+  signature: text("signature"), // Original signature for retry verification
+  
+  // Retry tracking
+  attemptCount: integer("attempt_count").notNull().default(0),
+  maxAttempts: integer("max_attempts").notNull().default(5),
+  nextRetryAt: timestamp("next_retry_at"), // When to retry next
+  lastAttemptAt: timestamp("last_attempt_at"),
+  lastError: text("last_error"), // Error message from last attempt
+  
+  // Status
+  status: text("status").notNull().default('pending'), // 'pending', 'retrying', 'succeeded', 'dead_letter'
+  processedAt: timestamp("processed_at"), // When successfully processed
+  movedToDeadLetterAt: timestamp("moved_to_dead_letter_at"), // When moved to dead letter queue
+  
+  // Timestamps
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("webhook_failure_queue_status_idx").on(table.status),
+  nextRetryAtIdx: index("webhook_failure_queue_next_retry_at_idx").on(table.nextRetryAt),
+  webhookTypeIdx: index("webhook_failure_queue_type_idx").on(table.webhookType),
+}));
+
+// Campaign Send Idempotency - Prevents duplicate email/SMS sends
+export const campaignSendIdempotency = pgTable("campaign_send_idempotency", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Idempotency key (unique per send attempt)
+  idempotencyKey: text("idempotency_key").notNull().unique(), // Format: "campaign:{campaignId}:customer:{customerId}:email:{emailId}"
+  
+  // Campaign details
+  campaignType: text("campaign_type").notNull(), // 'email_campaign', 'review_request', 'sms_campaign'
+  campaignId: varchar("campaign_id").notNull(),
+  campaignEmailId: varchar("campaign_email_id"), // For email campaigns
+  serviceTitanCustomerId: integer("service_titan_customer_id").notNull(),
+  
+  // Send tracking
+  sendStatus: text("send_status").notNull(), // 'pending', 'sent', 'failed', 'duplicate_prevented'
+  providerMessageId: text("provider_message_id"), // Resend email ID or Twilio message SID
+  sentAt: timestamp("sent_at"),
+  errorMessage: text("error_message"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at").notNull().default(sql`NOW() + INTERVAL '7 days'`), // Auto-expire after 7 days
+}, (table) => ({
+  idempotencyKeyIdx: index("campaign_send_idempotency_key_idx").on(table.idempotencyKey),
+  campaignCustomerIdx: index("campaign_send_idempotency_campaign_customer_idx").on(table.campaignId, table.serviceTitanCustomerId),
+  expiresAtIdx: index("campaign_send_idempotency_expires_at_idx").on(table.expiresAt),
+}));
+
+// System Health Checks - Monitors critical background jobs and system health
+export const systemHealthChecks = pgTable("system_health_checks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Service identification
+  serviceName: text("service_name").notNull(), // 'segment_refresh', 'servicetitan_sync', 'webhook_processor', etc.
+  serviceType: text("service_type").notNull(), // 'scheduler', 'sync', 'processor', 'monitor'
+  
+  // Health status
+  status: text("status").notNull(), // 'healthy', 'degraded', 'unhealthy', 'critical'
+  statusMessage: text("status_message"), // Human-readable status description
+  
+  // Metrics
+  lastSuccessfulRunAt: timestamp("last_successful_run_at"),
+  lastFailedRunAt: timestamp("last_failed_run_at"),
+  consecutiveFailures: integer("consecutive_failures").notNull().default(0),
+  totalRuns: integer("total_runs").notNull().default(0),
+  totalFailures: integer("total_failures").notNull().default(0),
+  
+  // Performance metrics
+  avgDurationMs: integer("avg_duration_ms"), // Average execution time
+  lastDurationMs: integer("last_duration_ms"), // Last execution duration
+  
+  // Error tracking
+  lastError: text("last_error"),
+  lastErrorAt: timestamp("last_error_at"),
+  
+  // Alerting
+  alertSent: boolean("alert_sent").notNull().default(false), // Has alert been sent for current issue?
+  alertSentAt: timestamp("alert_sent_at"),
+  alertAcknowledgedAt: timestamp("alert_acknowledged_at"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  lastCheckedAt: timestamp("last_checked_at").notNull().defaultNow(),
+}, (table) => ({
+  serviceNameIdx: uniqueIndex("system_health_checks_service_name_idx").on(table.serviceName), // One row per service
+  statusIdx: index("system_health_checks_status_idx").on(table.status),
+  lastCheckedAtIdx: index("system_health_checks_last_checked_at_idx").on(table.lastCheckedAt),
+}));
+
 // SMS Marketing insert schemas
 export const insertSMSMarketingPreferencesSchema = createInsertSchema(smsMarketingPreferences).omit({
   id: true,
@@ -2067,6 +2175,34 @@ export const insertSMSKeywordSchema = createInsertSchema(smsKeywords).omit({
   createdAt: true,
   updatedAt: true,
   lastUsedAt: true,
+});
+
+// System Reliability & Monitoring insert schemas
+export const insertWebhookFailureQueueSchema = createInsertSchema(webhookFailureQueue).omit({
+  id: true,
+  receivedAt: true,
+  createdAt: true,
+  processedAt: true,
+  movedToDeadLetterAt: true,
+  lastAttemptAt: true,
+});
+
+export const insertCampaignSendIdempotencySchema = createInsertSchema(campaignSendIdempotency).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+});
+
+export const insertSystemHealthCheckSchema = createInsertSchema(systemHealthChecks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastCheckedAt: true,
+  lastSuccessfulRunAt: true,
+  lastFailedRunAt: true,
+  lastErrorAt: true,
+  alertSentAt: true,
+  alertAcknowledgedAt: true,
 });
 
 // Export types
@@ -2118,3 +2254,9 @@ export type SMSSendLog = typeof smsSendLog.$inferSelect;
 export type InsertSMSSendLog = z.infer<typeof insertSMSSendLogSchema>;
 export type SMSKeyword = typeof smsKeywords.$inferSelect;
 export type InsertSMSKeyword = z.infer<typeof insertSMSKeywordSchema>;
+export type WebhookFailureQueue = typeof webhookFailureQueue.$inferSelect;
+export type InsertWebhookFailureQueue = z.infer<typeof insertWebhookFailureQueueSchema>;
+export type CampaignSendIdempotency = typeof campaignSendIdempotency.$inferSelect;
+export type InsertCampaignSendIdempotency = z.infer<typeof insertCampaignSendIdempotencySchema>;
+export type SystemHealthCheck = typeof systemHealthChecks.$inferSelect;
+export type InsertSystemHealthCheck = z.infer<typeof insertSystemHealthCheckSchema>;

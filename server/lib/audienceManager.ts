@@ -34,133 +34,141 @@ interface ExitContext {
 
 /**
  * Add a customer to a segment with audit logging
+ * Wrapped in transaction to ensure atomicity: membership + log + count update all succeed or all fail
  */
 export async function enterCustomerIntoSegment(context: EntryContext): Promise<void> {
   const { segmentId, customerId, customerName, customerEmail, reason, triggeringEvent, eventData, campaignId } = context;
 
-  // Check if already in segment
-  const existingMembership = await db
-    .select()
-    .from(segmentMembership)
-    .where(
-      and(
-        eq(segmentMembership.segmentId, segmentId),
-        eq(segmentMembership.serviceTitanCustomerId, customerId),
-        isNull(segmentMembership.exitedAt)
+  // Wrap all operations in a transaction
+  await db.transaction(async (tx) => {
+    // Check if already in segment
+    const existingMembership = await tx
+      .select()
+      .from(segmentMembership)
+      .where(
+        and(
+          eq(segmentMembership.segmentId, segmentId),
+          eq(segmentMembership.serviceTitanCustomerId, customerId),
+          isNull(segmentMembership.exitedAt)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (existingMembership.length > 0) {
-    console.log(`[Audience Manager] Customer ${customerId} already in segment ${segmentId}`);
-    return;
-  }
+    if (existingMembership.length > 0) {
+      console.log(`[Audience Manager] Customer ${customerId} already in segment ${segmentId}`);
+      return;
+    }
 
-  // Add to segment
-  await db.insert(segmentMembership).values({
-    segmentId,
-    serviceTitanCustomerId: customerId,
-    customerName,
-    customerEmail: customerEmail || '',
-    entryReason: reason,
+    // Add to segment
+    await tx.insert(segmentMembership).values({
+      segmentId,
+      serviceTitanCustomerId: customerId,
+      customerName,
+      customerEmail: customerEmail || '',
+      entryReason: reason,
+    });
+
+    // Log the entry
+    await tx.insert(audienceMovementLogs).values({
+      segmentId,
+      serviceTitanCustomerId: customerId,
+      customerName,
+      customerEmail,
+      action: 'entered',
+      reason,
+      triggeringEvent,
+      eventData,
+      campaignId,
+    });
+
+    // Recalculate member count from actual membership rows (atomic)
+    const count = await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(segmentMembership)
+      .where(and(
+        eq(segmentMembership.segmentId, segmentId),
+        isNull(segmentMembership.exitedAt)
+      ));
+
+    await tx
+      .update(customerSegments)
+      .set({ 
+        memberCount: count[0]?.count || 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(customerSegments.id, segmentId));
+
+    console.log(`[Audience Manager] Customer ${customerId} (${customerName}) entered segment ${segmentId}: ${reason}`);
   });
-
-  // Log the entry
-  await db.insert(audienceMovementLogs).values({
-    segmentId,
-    serviceTitanCustomerId: customerId,
-    customerName,
-    customerEmail,
-    action: 'entered',
-    reason,
-    triggeringEvent,
-    eventData,
-    campaignId,
-  });
-
-  // Recalculate member count from actual membership rows (atomic)
-  const count = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(segmentMembership)
-    .where(and(
-      eq(segmentMembership.segmentId, segmentId),
-      isNull(segmentMembership.exitedAt)
-    ));
-
-  await db
-    .update(customerSegments)
-    .set({ 
-      memberCount: count[0]?.count || 0,
-      updatedAt: new Date(),
-    })
-    .where(eq(customerSegments.id, segmentId));
-
-  console.log(`[Audience Manager] Customer ${customerId} (${customerName}) entered segment ${segmentId}: ${reason}`);
 }
 
 /**
  * Remove a customer from a segment with audit logging
+ * Wrapped in transaction to ensure atomicity: membership update + log + count update all succeed or all fail
  */
 export async function exitCustomerFromSegment(context: ExitContext): Promise<void> {
   const { segmentId, customerId, customerName, customerEmail, reason, triggeringEvent, eventData } = context;
 
-  // Find active membership
-  const activeMembership = await db
-    .select()
-    .from(segmentMembership)
-    .where(
-      and(
-        eq(segmentMembership.segmentId, segmentId),
-        eq(segmentMembership.serviceTitanCustomerId, customerId),
-        isNull(segmentMembership.exitedAt)
+  // Wrap all operations in a transaction
+  await db.transaction(async (tx) => {
+    // Find active membership
+    const activeMembership = await tx
+      .select()
+      .from(segmentMembership)
+      .where(
+        and(
+          eq(segmentMembership.segmentId, segmentId),
+          eq(segmentMembership.serviceTitanCustomerId, customerId),
+          isNull(segmentMembership.exitedAt)
+        )
       )
-    )
-    .limit(1);
+      .limit(1);
 
-  if (activeMembership.length === 0) {
-    console.log(`[Audience Manager] Customer ${customerId} not in segment ${segmentId}, skipping exit`);
-    return;
-  }
+    if (activeMembership.length === 0) {
+      console.log(`[Audience Manager] Customer ${customerId} not in segment ${segmentId}, skipping exit`);
+      return;
+    }
 
-  // Mark as exited
-  await db
-    .update(segmentMembership)
-    .set({
-      exitedAt: new Date(),
-      exitReason: reason,
-    })
-    .where(eq(segmentMembership.id, activeMembership[0].id));
+    // Mark as exited
+    await tx
+      .update(segmentMembership)
+      .set({
+        exitedAt: new Date(),
+        exitReason: reason,
+      })
+      .where(eq(segmentMembership.id, activeMembership[0].id));
 
-  // Log the exit
-  await db.insert(audienceMovementLogs).values({
-    segmentId,
-    serviceTitanCustomerId: customerId,
-    customerName,
-    customerEmail,
-    action: 'exited',
-    reason,
-    triggeringEvent,
-    eventData,
+    // Log the exit
+    await tx.insert(audienceMovementLogs).values({
+      segmentId,
+      serviceTitanCustomerId: customerId,
+      customerName,
+      customerEmail,
+      action: 'exited',
+      reason,
+      triggeringEvent,
+      eventData,
+    });
+
+    // Recalculate member count from actual membership rows (atomic)
+    const count = await tx
+      .select({ count: sql<number>`count(*)::int` })
+      .from(segmentMembership)
+      .where(and(
+        eq(segmentMembership.segmentId, segmentId),
+        isNull(segmentMembership.exitedAt)
+      ));
+
+    await tx
+      .update(customerSegments)
+      .set({ 
+        memberCount: count[0]?.count || 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(customerSegments.id, segmentId));
+
+    console.log(`[Audience Manager] Customer ${customerId} (${customerName}) exited segment ${segmentId}: ${reason}`);
   });
-
-  // Recalculate member count from actual membership rows (atomic)
-  const count = await db
-    .select({ count: sql<number>`count(*)::int` })
-    .from(segmentMembership)
-    .where(and(
-      eq(segmentMembership.segmentId, segmentId),
-      isNull(segmentMembership.exitedAt)
-    ));
-
-  await db
-    .update(customerSegments)
-    .set({ 
-      memberCount: count[0]?.count || 0,
-      updatedAt: new Date(),
-    })
-    .where(eq(customerSegments.id, segmentId));
-
-  console.log(`[Audience Manager] Customer ${customerId} (${customerName}) exited segment ${segmentId}: ${reason}`);
 }
 
 /**
