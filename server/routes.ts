@@ -6685,37 +6685,22 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         })
         .where(eq(portalVerifications.id, verification.id));
 
-      console.log("[Portal Auth] Verification successful, searching for all matching accounts...");
+      console.log("[Portal Auth] Verification successful, looking up customer...");
 
-      // Normalize the contact value for database lookup
-      const normalizeValue = (value: string): string => {
-        if (value.includes('@')) {
-          return value.toLowerCase().trim();
-        }
-        // Phone: remove all non-digits, strip leading 1
-        const digits = value.replace(/\D/g, '');
-        return digits.length === 11 && digits.startsWith('1') ? digits.substring(1) : digits;
-      };
+      // Use the customer ID that was stored during verification
+      // This is more reliable than re-looking up via contacts table
+      const customerId = verification.customerId;
+      console.log(`[Portal Auth] Using stored customer ID: ${customerId}`);
 
-      const normalizedContact = normalizeValue(verification.contactValue);
-      console.log(`[Portal Auth] Looking up customers with normalized contact: ${normalizedContact}`);
-
-      // Query normalized contacts table for ALL matching customer IDs
-      const matchingContacts = await db
-        .select({ customerId: serviceTitanContacts.customerId })
-        .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalizedContact));
-
-      const customerIds = Array.from(new Set(matchingContacts.map(c => c.customerId)));
-      console.log(`[Portal Auth] Found ${customerIds.length} customer ID(s) in cache: ${customerIds.join(', ')}`);
-
-      if (customerIds.length === 0) {
-        console.warn("[Portal Auth] No customers found in cache - account may not be synced yet");
-        return res.status(404).json({ 
-          error: "Account not found. Please contact support if you believe this is an error.",
-          code: "ACCOUNT_NOT_FOUND"
+      if (!customerId) {
+        console.error("[Portal Auth] No customer ID in verification record");
+        return res.status(500).json({ 
+          error: "Verification record is missing customer information. Please try again.",
+          code: "MISSING_CUSTOMER_ID"
         });
       }
+
+      const customerIds = [customerId];
 
       // Fetch complete customer data with ALL contacts for each customer
       const customersData = await db

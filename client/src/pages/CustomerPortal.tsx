@@ -42,7 +42,6 @@ import {
   CalendarClock,
   Edit2
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { SiFacebook, SiX } from "react-icons/si";
 
 interface ServiceTitanCustomer {
@@ -127,6 +126,7 @@ export default function CustomerPortal() {
   const [lookupType, setLookupType] = useState<"phone" | "email">("email");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
+  const [lookupSuccess, setLookupSuccess] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [copied, setCopied] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
@@ -164,7 +164,6 @@ export default function CustomerPortal() {
   const [locationId, setLocationId] = useState<number | null>(null);
   
   const phoneConfig = usePhoneConfig();
-  const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -303,23 +302,20 @@ export default function CustomerPortal() {
       const customerIdStr = result.customerId.toString();
       setCustomerId(customerIdStr);
       setVerificationStep('authenticated');
+      setLookupSuccess("Welcome to your customer portal!");
+      setLookupError(null);
       
       // Session is now stored server-side via httpOnly cookie
       
       // Clean up URL
       window.history.replaceState({}, document.title, window.location.pathname);
-      
-      toast({
-        title: "Access granted",
-        description: "Welcome to your customer portal!",
-      });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Magic link verification failed:', error);
-      toast({
-        title: "Verification failed",
-        description: "The magic link is invalid or has expired. Please try again.",
-        variant: "destructive",
-      });
+      
+      // Parse the error response
+      const errorMessage = error.message || "The magic link is invalid or has expired. Please try again.";
+      setLookupError(errorMessage);
+      setLookupSuccess(null);
     } finally {
       setIsVerifying(false);
     }
@@ -329,6 +325,7 @@ export default function CustomerPortal() {
     if (!lookupValue.trim()) return;
     
     setLookupError(null);
+    setLookupSuccess(null);
     setIsSearching(true);
 
     try {
@@ -354,14 +351,10 @@ export default function CustomerPortal() {
       // Move to verification step
       setVerificationStep('verify-code');
       setVerificationMessage(result.message);
-      
-      toast({
-        title: "Verification sent",
-        description: result.message,
-      });
+      setLookupSuccess(result.message);
     } catch (err: any) {
       console.error('Customer lookup failed:', err);
-      setLookupError(err.message || 'We couldn\'t find an account with that email address. Please verify your email and try again.');
+      setLookupError(err.message || 'We couldn\'t find an account with that information. Please verify and try again.');
     } finally {
       setIsSearching(false);
     }
@@ -371,6 +364,7 @@ export default function CustomerPortal() {
     if (!verificationCode.trim()) return;
     
     setLookupError(null);
+    setLookupSuccess(null);
     setIsVerifying(true);
 
     try {
@@ -394,33 +388,23 @@ export default function CustomerPortal() {
       if (result.customers && result.customers.length > 1) {
         setAvailableAccounts(result.customers);
         setVerificationStep('select-account');
-        toast({
-          title: "Multiple accounts found",
-          description: "Please select which account you'd like to access",
-        });
+        setLookupSuccess("Please select which account you'd like to access");
       } else if (result.customers && result.customers.length === 1) {
         // Single account - auto-select it
         const customerIdStr = result.customers[0].id.toString();
         setCustomerId(customerIdStr);
         setVerificationStep('authenticated');
+        setLookupSuccess("Welcome to your customer portal!");
         
         // Session is now stored server-side via httpOnly cookie
-        
-        toast({
-          title: "Access granted",
-          description: "Welcome to your customer portal!",
-        });
       } else if (result.customerId) {
         // Backward compatibility for old response format
         const customerIdStr = result.customerId.toString();
         setCustomerId(customerIdStr);
         setVerificationStep('authenticated');
+        setLookupSuccess("Welcome to your customer portal!");
         
         // Session is now stored server-side via httpOnly cookie
-        toast({
-          title: "Access granted",
-          description: "Welcome to your customer portal!",
-        });
       } else {
         throw new Error('No customer data returned');
       }
@@ -865,12 +849,24 @@ export default function CustomerPortal() {
                     {isSearching ? 'Searching...' : 'Access My Account'}
                   </Button>
 
+                  {lookupSuccess && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-green-700 dark:text-green-400">
+                          <p className="font-medium mb-1">Success</p>
+                          <p>{lookupSuccess}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {lookupError && (
                     <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                         <div className="text-destructive">
-                          <p className="font-medium mb-1">Account Not Found</p>
+                          <p className="font-medium mb-1">Error</p>
                           <p>{lookupError}</p>
                         </div>
                       </div>
@@ -943,12 +939,24 @@ export default function CustomerPortal() {
                     Try Another Method
                   </Button>
 
+                  {lookupSuccess && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-green-700 dark:text-green-400">
+                          <p className="font-medium mb-1">Success</p>
+                          <p>{lookupSuccess}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   {lookupError && (
                     <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
                       <div className="flex items-start gap-3">
                         <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
                         <div className="text-destructive">
-                          <p className="font-medium mb-1">Verification Failed</p>
+                          <p className="font-medium mb-1">Error</p>
                           <p>{lookupError}</p>
                         </div>
                       </div>
