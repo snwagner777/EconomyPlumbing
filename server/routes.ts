@@ -3663,48 +3663,6 @@ ${rssItems}
     next();
   };
 
-  // Simple session-based admin authentication middleware - for ServiceTitan API-based endpoints
-  const requireBasicAdmin = (req: express.Request, res: express.Response, next: express.NextFunction) => {
-    const session = (req as any).session;
-    
-    if (!session || !session.isBasicAdmin) {
-      return res.status(401).json({ error: "Authentication required" });
-    }
-    
-    next();
-  };
-
-  // Admin login endpoint (simple username/password)
-  app.post("/api/admin/login", express.json(), async (req, res) => {
-    const { username, password } = req.body;
-    
-    const adminUsername = process.env.ADMIN_USERNAME;
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    
-    if (!adminUsername || !adminPassword) {
-      console.error('[Admin Auth] ADMIN_USERNAME or ADMIN_PASSWORD not set');
-      return res.status(500).json({ error: "Server configuration error" });
-    }
-    
-    if (username === adminUsername && password === adminPassword) {
-      (req as any).session.isBasicAdmin = true;
-      res.json({ success: true });
-    } else {
-      res.status(401).json({ error: "Invalid credentials" });
-    }
-  });
-
-  // Admin logout endpoint
-  app.post("/api/admin/logout", express.json(), async (req, res) => {
-    (req as any).session.isBasicAdmin = false;
-    res.json({ success: true });
-  });
-
-  // Check admin session status
-  app.get("/api/admin/status", async (req, res) => {
-    const session = (req as any).session;
-    res.json({ isAuthenticated: !!session?.isBasicAdmin });
-  });
 
   // ============================================
   // ADMIN REVIEW MANAGEMENT ENDPOINTS
@@ -8206,7 +8164,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   // MEMBERSHIP MANAGEMENT ROUTES
   
   // Get all memberships from ServiceTitan with filtering
-  app.get("/api/admin/memberships", requireBasicAdmin, async (req, res) => {
+  app.get("/api/admin/memberships", requireAdmin, async (req, res) => {
     try {
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitanAPI = getServiceTitanAPI();
@@ -8245,7 +8203,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // Bulk update membership status (expire/cancel)
-  app.post("/api/admin/memberships/bulk-update", requireBasicAdmin, async (req, res) => {
+  app.post("/api/admin/memberships/bulk-update", requireAdmin, async (req, res) => {
     try {
       const { z } = await import("zod");
       
@@ -8281,7 +8239,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // Update single membership status
-  app.patch("/api/admin/memberships/:id", requireBasicAdmin, async (req, res) => {
+  app.patch("/api/admin/memberships/:id", requireAdmin, async (req, res) => {
     try {
       const { z } = await import("zod");
       

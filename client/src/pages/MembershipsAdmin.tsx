@@ -64,39 +64,6 @@ export default function MembershipsAdmin() {
   
   const [selectedMemberships, setSelectedMemberships] = useState<Set<number>>(new Set());
   const [showBulkExpireDialog, setShowBulkExpireDialog] = useState(false);
-  
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loginError, setLoginError] = useState("");
-
-  // Check authentication status
-  const { data: authStatus, isLoading: authLoading } = useQuery({
-    queryKey: ['/api/admin/status'],
-    queryFn: async () => {
-      const response = await fetch('/api/admin/status', { credentials: 'include' });
-      return response.json();
-    }
-  });
-
-  const loginMutation = useMutation({
-    mutationFn: async (credentials: { username: string; password: string }) => {
-      const response = await apiRequest('POST', '/api/admin/login', credentials);
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/status'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/memberships'] });
-      setLoginError("");
-    },
-    onError: () => {
-      setLoginError("Invalid credentials");
-    }
-  });
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    loginMutation.mutate({ username, password });
-  };
 
   const { data: memberships, isLoading, isError, refetch } = useQuery<Membership[]>({
     queryKey: ['/api/admin/memberships', filters.status, filters.membershipType, filters.year],
@@ -239,78 +206,6 @@ export default function MembershipsAdmin() {
     }
     return <Badge variant="outline" data-testid={`badge-status-${status}`}>{status}</Badge>;
   };
-
-  // Show loading while checking auth
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  // Show login form if not authenticated
-  if (!authStatus?.isAuthenticated) {
-    return (
-      <>
-        <SEOHead
-          title="Admin Login - Economy Plumbing"
-          description="Admin login for membership management"
-        />
-        <div className="min-h-screen bg-background flex items-center justify-center p-4">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle className="text-2xl flex items-center gap-2">
-                <CreditCard className="w-6 h-6" />
-                Admin Login
-              </CardTitle>
-              <CardDescription>
-                Enter your credentials to access membership management
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    data-testid="input-username"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    data-testid="input-password"
-                  />
-                </div>
-                {loginError && (
-                  <p className="text-sm text-destructive">{loginError}</p>
-                )}
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={loginMutation.isPending}
-                  data-testid="button-login"
-                >
-                  {loginMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Login
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
-  }
 
   if (isError) {
     return (
