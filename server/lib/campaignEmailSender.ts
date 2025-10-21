@@ -5,6 +5,9 @@ import {
   type CampaignEmailData,
 } from '../emails';
 import type { IStorage } from '../storage';
+import { db } from '../db';
+import { campaignSendIdempotency } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface SendCampaignEmailParams {
   to: string;
@@ -49,6 +52,28 @@ export class CampaignEmailSender {
         return { success: false, error: 'User opted out of marketing' };
       }
 
+      // Idempotency check: prevent duplicate sends
+      if (campaignId && serviceTitanCustomerId) {
+        const idempotencyKey = `campaign:${campaignId}:customer:${serviceTitanCustomerId}:type:email`;
+        
+        const existingSend = await db
+          .select()
+          .from(campaignSendIdempotency)
+          .where(eq(campaignSendIdempotency.idempotencyKey, idempotencyKey))
+          .limit(1);
+
+        if (existingSend.length > 0) {
+          console.log(
+            `[Campaign Email] Duplicate send prevented (idempotency): campaign=${campaignId}, customer=${serviceTitanCustomerId}, email=${to}`
+          );
+          return { 
+            success: true, 
+            messageId: existingSend[0].providerMessageId || undefined,
+            error: 'Already sent (idempotent)' 
+          };
+        }
+      }
+
       // Render email HTML from React template
       const html = await renderCampaignEmail(campaignData);
       const subject = getCampaignSubject(campaignData);
@@ -83,6 +108,19 @@ export class CampaignEmailSender {
           resendEmailId: result.data?.id || null,
           resendStatus: 'sent',
           errorMessage: null,
+        });
+
+        // Record in idempotency table to prevent future duplicates
+        const idempotencyKey = `campaign:${campaignId}:customer:${serviceTitanCustomerId}:type:email`;
+        await db.insert(campaignSendIdempotency).values({
+          idempotencyKey,
+          campaignType: 'email_campaign',
+          campaignId,
+          campaignEmailId: campaignEmailId || null,
+          serviceTitanCustomerId,
+          sendStatus: 'sent',
+          providerMessageId: result.data?.id || null,
+          sentAt: new Date(),
         });
       }
 

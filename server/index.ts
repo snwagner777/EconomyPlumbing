@@ -16,6 +16,7 @@ import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { getReferralProcessor } from "./lib/referralProcessor";
 import { startSegmentRefreshScheduler } from "./lib/segmentRefreshScheduler";
 import { startWebhookRetryProcessor } from "./lib/webhookRetryProcessor";
+import { startCountReconciliationScheduler } from "./lib/segmentCountReconciliation";
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
 import { securityHeadersMiddleware } from "./middleware/securityHeaders";
@@ -436,6 +437,9 @@ async function refreshReviewsPeriodically() {
   
   // Start webhook retry processor (handles failed webhooks with exponential backoff)
   startWebhookRetryProcessor();
+  
+  // Start segment count reconciliation scheduler (runs every 24 hours to verify and fix count drift)
+  startCountReconciliationScheduler();
   
   // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
   const referralProcessor = getReferralProcessor();

@@ -10,6 +10,7 @@ import {
   smsSendLog,
   smsKeywords,
   reputationSystemSettings,
+  campaignSendIdempotency,
   type InsertSMSSendLog,
   type SMSMarketingPreferences,
   type SMSKeyword
@@ -269,6 +270,29 @@ export class SMSService {
         }
       }
 
+      // Idempotency check: prevent duplicate campaign sends
+      if (campaignId && customerId) {
+        const idempotencyKey = `campaign:${campaignId}:customer:${customerId}:type:sms`;
+        
+        const existingSend = await db
+          .select()
+          .from(campaignSendIdempotency)
+          .where(eq(campaignSendIdempotency.idempotencyKey, idempotencyKey))
+          .limit(1);
+
+        if (existingSend.length > 0) {
+          console.log(
+            `[SMSService] Duplicate send prevented (idempotency): campaign=${campaignId}, customer=${customerId}, phone=${normalizedPhone}`
+          );
+          return {
+            success: true,
+            messageSid: existingSend[0].providerMessageId || undefined,
+            blocked: false,
+            cost: 0
+          };
+        }
+      }
+
       // Calculate segments and cost
       const characterCount = messageBody.length;
       const segmentCount = this.calculateSegmentCount(messageBody);
@@ -299,6 +323,20 @@ export class SMSService {
         twilioStatus: 'sent',
         cost
       });
+
+      // Record in idempotency table to prevent future duplicates
+      if (campaignId && customerId) {
+        const idempotencyKey = `campaign:${campaignId}:customer:${customerId}:type:sms`;
+        await db.insert(campaignSendIdempotency).values({
+          idempotencyKey,
+          campaignType: messageType === 'review_request' ? 'review_request' : 'sms_campaign',
+          campaignId,
+          serviceTitanCustomerId: customerId,
+          sendStatus: 'sent',
+          providerMessageId: twilioSid,
+          sentAt: new Date(),
+        });
+      }
 
       // Update SMS preferences activity
       if (checkOptIn) {
