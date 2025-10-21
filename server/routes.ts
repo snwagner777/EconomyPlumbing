@@ -6628,7 +6628,31 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const { portalVerifications } = await import("@shared/schema");
       const { eq, and, or } = await import("drizzle-orm");
 
-      // Find verification record - search by code alone for magic links, or code + contact for SMS
+      // First, check if the code exists at all (regardless of verified status)
+      const allVerificationsWithCode = await db
+        .select()
+        .from(portalVerifications)
+        .where(eq(portalVerifications.code, code))
+        .limit(1);
+
+      if (allVerificationsWithCode.length === 0) {
+        console.log("[Portal Auth] Code not found in database");
+        return res.status(401).json({ 
+          error: "This link is invalid. Please request a new one." 
+        });
+      }
+
+      const existingVerification = allVerificationsWithCode[0];
+
+      // Check if already verified
+      if (existingVerification.verified) {
+        console.log("[Portal Auth] Code already used");
+        return res.status(401).json({ 
+          error: "This link has already been used. Please request a new one if you need to sign in again." 
+        });
+      }
+
+      // Find unverified verification record
       const whereClause = contactValue
         ? and(
             eq(portalVerifications.contactValue, contactValue),
@@ -6648,7 +6672,9 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       if (verifications.length === 0) {
         console.log("[Portal Auth] Invalid code");
-        return res.status(401).json({ error: "Invalid verification code" });
+        return res.status(401).json({ 
+          error: "Invalid verification code. Please check and try again." 
+        });
       }
 
       const verification = verifications[0];

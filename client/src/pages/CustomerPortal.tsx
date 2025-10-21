@@ -295,7 +295,8 @@ export default function CustomerPortal() {
       });
 
       if (!response.ok) {
-        throw new Error('Invalid or expired magic link');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Invalid or expired magic link');
       }
 
       const result = await response.json();
