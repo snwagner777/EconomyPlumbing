@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -59,14 +59,16 @@ export default function SMSMarketingAdmin() {
     queryKey: ['/api/sms/keywords']
   });
 
-  // Show error toasts for failed queries
-  if (errorAnalytics || errorCampaigns || errorSubscribers || errorSuggestions || errorKeywords) {
-    toast({
-      title: "Error loading data",
-      description: "Some data failed to load. Please refresh the page.",
-      variant: "destructive"
-    });
-  }
+  // Show error toasts for failed queries (moved to useEffect to prevent infinite loop)
+  useEffect(() => {
+    if (errorAnalytics || errorCampaigns || errorSubscribers || errorSuggestions || errorKeywords) {
+      toast({
+        title: "Error loading data",
+        description: "Some data failed to load. Please refresh the page.",
+        variant: "destructive"
+      });
+    }
+  }, [errorAnalytics, errorCampaigns, errorSubscribers, errorSuggestions, errorKeywords, toast]);
 
   return (
     <>
