@@ -2041,6 +2041,133 @@ class ServiceTitanAPI {
       throw error;
     }
   }
+
+  /**
+   * Get all customer memberships from ServiceTitan
+   * Returns all recurring service events (memberships) for all customers
+   */
+  async getAllMemberships(): Promise<any[]> {
+    try {
+      console.log('[ServiceTitan Memberships] Fetching all customer memberships...');
+      
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?pageSize=500`;
+      const result = await this.request<{ data: any[]; hasMore: boolean }>(membershipsUrl, {}, true);
+      
+      let allMemberships = result.data || [];
+      let page = 1;
+      let hasMore = result.hasMore || false;
+
+      while (hasMore && page < 10) {
+        page++;
+        const nextPageUrl = `${membershipsUrl}&page=${page}`;
+        const nextResult = await this.request<{ data: any[]; hasMore: boolean }>(nextPageUrl, {}, true);
+        allMemberships = [...allMemberships, ...(nextResult.data || [])];
+        hasMore = nextResult.hasMore || false;
+      }
+
+      console.log(`[ServiceTitan Memberships] Fetched ${allMemberships.length} total memberships`);
+      
+      return allMemberships.map((m: any) => ({
+        id: m.id,
+        customerId: m.customerId,
+        customerName: m.customerName || 'Unknown Customer',
+        membershipId: m.membershipId,
+        membershipName: m.membershipName || m.locationRecurringServiceName || 'VIP Membership',
+        status: m.status || 'Unknown',
+        startDate: m.from || m.createdOn,
+        expirationDate: m.to || m.expirationDate,
+        renewalDate: m.date || m.nextScheduledDate,
+        balance: parseFloat(m.balance || '0'),
+        totalValue: parseFloat(m.total || '0'),
+        description: m.memo || m.description || '',
+        createdOn: m.createdOn,
+        modifiedOn: m.modifiedOn,
+        rawData: m,
+      }));
+    } catch (error) {
+      console.error('[ServiceTitan Memberships] Error fetching all memberships:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a customer membership status (expire/cancel/suspend)
+   * Uses PATCH endpoint to edit customer membership
+   */
+  async updateMembershipStatus(membershipId: number, updates: {
+    status?: string;
+    expirationDate?: string;
+    cancellationDate?: string;
+  }): Promise<any> {
+    try {
+      console.log(`[ServiceTitan Memberships] Updating membership ${membershipId}:`, updates);
+      
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/customer-memberships/${membershipId}`;
+      
+      const requestBody: any = {};
+      
+      if (updates.status) {
+        requestBody.status = updates.status;
+      }
+      
+      if (updates.expirationDate) {
+        requestBody.to = updates.expirationDate;
+      }
+      
+      if (updates.cancellationDate) {
+        requestBody.cancellationDate = updates.cancellationDate;
+      }
+
+      const response = await this.request<any>(membershipsUrl, {
+        method: 'PATCH',
+        body: JSON.stringify(requestBody),
+      }, true);
+
+      console.log(`[ServiceTitan Memberships] Membership ${membershipId} updated successfully`);
+      
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan Memberships] Error updating membership ${membershipId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Bulk update multiple memberships (for expiring old memberships)
+   */
+  async bulkUpdateMemberships(updates: Array<{
+    membershipId: number;
+    status?: string;
+    expirationDate?: string;
+    cancellationDate?: string;
+  }>): Promise<{ success: number; failed: number; errors: any[] }> {
+    console.log(`[ServiceTitan Memberships] Bulk updating ${updates.length} memberships...`);
+    
+    let success = 0;
+    let failed = 0;
+    const errors: any[] = [];
+
+    for (const update of updates) {
+      try {
+        await this.updateMembershipStatus(update.membershipId, {
+          status: update.status,
+          expirationDate: update.expirationDate,
+          cancellationDate: update.cancellationDate,
+        });
+        success++;
+      } catch (error) {
+        failed++;
+        errors.push({
+          membershipId: update.membershipId,
+          error: error instanceof Error ? error.message : 'Unknown error',
+        });
+      }
+    }
+
+    console.log(`[ServiceTitan Memberships] Bulk update complete: ${success} succeeded, ${failed} failed`);
+    
+    return { success, failed, errors };
+  }
 }
 
 // Singleton instance

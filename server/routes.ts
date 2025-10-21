@@ -7974,6 +7974,90 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // MEMBERSHIP MANAGEMENT ROUTES
+  
+  // Get all memberships from ServiceTitan with filtering
+  app.get("/api/admin/memberships", requireAdmin, async (req, res) => {
+    try {
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitanAPI = getServiceTitanAPI();
+      
+      const memberships = await serviceTitanAPI.getAllMemberships();
+      
+      // Apply filters if provided
+      let filtered = memberships;
+      
+      if (req.query.status) {
+        const statusFilter = req.query.status as string;
+        filtered = filtered.filter(m => m.status.toLowerCase() === statusFilter.toLowerCase());
+      }
+      
+      if (req.query.membershipType) {
+        const typeFilter = req.query.membershipType as string;
+        filtered = filtered.filter(m => 
+          m.membershipName.toLowerCase().includes(typeFilter.toLowerCase())
+        );
+      }
+      
+      if (req.query.year) {
+        const yearFilter = parseInt(req.query.year as string);
+        filtered = filtered.filter(m => {
+          if (!m.createdOn) return false;
+          const year = new Date(m.createdOn).getFullYear();
+          return year === yearFilter;
+        });
+      }
+
+      res.json(filtered);
+    } catch (error: any) {
+      console.error('[API] Error fetching memberships:', error);
+      res.status(500).json({ error: error.message || "Failed to fetch memberships" });
+    }
+  });
+
+  // Bulk update membership status (expire/cancel)
+  app.post("/api/admin/memberships/bulk-update", requireAdmin, async (req, res) => {
+    try {
+      const { updates } = req.body;
+      
+      if (!Array.isArray(updates) || updates.length === 0) {
+        return res.status(400).json({ error: "Updates array is required" });
+      }
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitanAPI = getServiceTitanAPI();
+      
+      const result = await serviceTitanAPI.bulkUpdateMemberships(updates);
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error('[API] Error bulk updating memberships:', error);
+      res.status(500).json({ error: error.message || "Failed to update memberships" });
+    }
+  });
+
+  // Update single membership status
+  app.patch("/api/admin/memberships/:id", requireAdmin, async (req, res) => {
+    try {
+      const membershipId = parseInt(req.params.id);
+      const { status, expirationDate, cancellationDate } = req.body;
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitanAPI = getServiceTitanAPI();
+      
+      const result = await serviceTitanAPI.updateMembershipStatus(membershipId, {
+        status,
+        expirationDate,
+        cancellationDate,
+      });
+      
+      res.json(result);
+    } catch (error: any) {
+      console.error('[API] Error updating membership:', error);
+      res.status(500).json({ error: error.message || "Failed to update membership" });
+    }
+  });
+
   // Register SMS Marketing routes
   const { registerSMSMarketingRoutes } = await import("./api/smsMarketing");
   registerSMSMarketingRoutes(app);
