@@ -14,6 +14,7 @@
 import { db } from "../db";
 import { systemHealthChecks } from "@shared/schema";
 import { eq, and, desc } from "drizzle-orm";
+import { resetHealthAlertIfHealthy } from "./healthAlerter";
 
 /**
  * Health status thresholds
@@ -157,6 +158,11 @@ export async function recordServiceRun(options: RecordRunOptions): Promise<void>
       console.log(
         `[HealthMonitor] Updated ${serviceName}: ${status} (${consecutiveFailures} consecutive failures)`
       );
+
+      // Reset alert status if service has recovered to healthy
+      if (status === 'healthy' && existing.alertSent) {
+        await resetHealthAlertIfHealthy(serviceName, serviceType);
+      }
     } else {
       // Create new record
       const { status, message } = calculateHealthStatus(
