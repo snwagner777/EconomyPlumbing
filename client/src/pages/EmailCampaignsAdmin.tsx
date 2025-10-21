@@ -163,7 +163,7 @@ export default function EmailCampaignsAdmin() {
 
   // Fetch campaign emails when expanded
   const { data: campaignEmailsData } = useQuery<{ emails: CampaignEmail[] }>({
-    queryKey: ['/api/admin/campaigns', expandedCampaign, 'emails'],
+    queryKey: expandedCampaign ? [`/api/admin/campaigns/${expandedCampaign}/emails`] : [],
     enabled: !!expandedCampaign,
   });
 
