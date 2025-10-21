@@ -63,6 +63,7 @@ export async function sendEmail(params: {
   to: string;
   subject: string;
   html: string;
+  tags?: { name: string; value: string }[];
 }) {
   console.log('[Email] Sending generic email to:', params.to);
   
@@ -73,13 +74,77 @@ export async function sendEmail(params: {
       from: fromEmail,
       to: params.to,
       subject: params.subject,
-      html: params.html
+      html: params.html,
+      tags: params.tags
     });
     
-    console.log('[Email] Email sent successfully');
+    console.log('[Email] Email sent successfully with ID:', result.data?.id);
     return result;
   } catch (error) {
     console.error('[Email] Failed to send email:', error);
+    throw error;
+  }
+}
+
+// Send a tracked campaign email and log it to the database
+export async function sendCampaignEmail(params: {
+  campaignId: string;
+  campaignEmailId: string;
+  serviceTitanCustomerId: number;
+  recipientEmail: string;
+  recipientName: string;
+  subject: string;
+  html: string;
+  mergeTagData: Record<string, any>;
+}) {
+  console.log('[Email] Sending campaign email to:', params.recipientEmail);
+  
+  try {
+    const { client, fromEmail } = await getUncachableResendClient();
+    
+    // Send email with campaign tags for tracking
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: params.recipientEmail,
+      subject: params.subject,
+      html: params.html,
+      tags: [
+        { name: 'campaign_id', value: params.campaignId },
+        { name: 'campaign_email_id', value: params.campaignEmailId },
+        { name: 'customer_id', value: params.serviceTitanCustomerId.toString() }
+      ]
+    });
+    
+    if (!result.data?.id) {
+      throw new Error('No email ID returned from Resend');
+    }
+    
+    // Log the email send to database
+    const { db } = await import('./db');
+    const { emailSendLog, campaignEmails } = await import('@shared/schema');
+    const { sql } = await import('drizzle-orm');
+    
+    await db.insert(emailSendLog).values({
+      campaignId: params.campaignId,
+      campaignEmailId: params.campaignEmailId,
+      serviceTitanCustomerId: params.serviceTitanCustomerId,
+      recipientEmail: params.recipientEmail,
+      recipientName: params.recipientName,
+      mergeTagData: params.mergeTagData,
+      resendEmailId: result.data.id,
+      resendStatus: 'queued',
+      sentAt: new Date(),
+    });
+    
+    // Update campaign email sent count
+    await db.update(campaignEmails)
+      .set({ totalSent: sql`${campaignEmails.totalSent} + 1` })
+      .where(sql`${campaignEmails.id} = ${params.campaignEmailId}`);
+    
+    console.log('[Email] Campaign email sent and logged with ID:', result.data.id);
+    return result;
+  } catch (error) {
+    console.error('[Email] Failed to send campaign email:', error);
     throw error;
   }
 }
