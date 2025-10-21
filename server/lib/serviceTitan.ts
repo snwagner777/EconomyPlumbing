@@ -542,11 +542,14 @@ class ServiceTitanAPI {
       console.log(`[Portal Debug] Customer ${customerId} - Found ${contacts.length} contacts`);
       console.log(`[Portal Debug] Email contact:`, emailContact?.value || 'NONE');
       console.log(`[Portal Debug] Phone contact:`, phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || 'NONE');
+      console.log(`[Portal Debug] Customer record email:`, customerData.email || 'NONE');
+      console.log(`[Portal Debug] Customer record phoneNumber:`, customerData.phoneNumber || 'NONE');
       
+      // Use contacts first, fall back to customer record fields if contacts are empty
       const result = {
         ...customerData,
-        email: emailContact?.value || '',
-        phoneNumber: phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || '',
+        email: emailContact?.value || customerData.email || '',
+        phoneNumber: phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || customerData.phoneNumber || '',
       };
       
       console.log(`[Portal Debug] Final email field:`, result.email || 'EMPTY STRING');
@@ -1241,11 +1244,13 @@ class ServiceTitanAPI {
       try {
         const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
         
-        // Store customer
+        // Store customer WITH email and phone from the customer record
         await db.insert(serviceTitanCustomers).values({
           id: liveCustomer.id,
           name: liveCustomer.name || 'Unknown',
           type: (liveCustomer as any).type || 'Residential',
+          email: liveCustomer.email || null,
+          phone: liveCustomer.phoneNumber || null,
           street: liveCustomer.address?.street || null,
           city: liveCustomer.address?.city || null,
           state: liveCustomer.address?.state || null,
@@ -1254,10 +1259,14 @@ class ServiceTitanAPI {
           balance: '0.00',
         }).onConflictDoUpdate({
           target: serviceTitanCustomers.id,
-          set: { lastSyncedAt: new Date() },
+          set: { 
+            email: liveCustomer.email || null,
+            phone: liveCustomer.phoneNumber || null,
+            lastSyncedAt: new Date() 
+          },
         });
 
-        // Store contacts
+        // Store contacts from ServiceTitan contacts API
         const contacts = await this.getCustomerContacts(liveCustomer.id);
         for (const contact of contacts) {
           const contactType = contact.type || 'Unknown';
@@ -1285,7 +1294,35 @@ class ServiceTitanAPI {
           }
         }
         
-        console.log(`[ServiceTitan] ✅ Cached customer ${liveCustomer.id} for future searches`);
+        // ALSO store email/phone from customer record as contacts for searchability
+        // This handles customers who have email/phone on the customer record but no contacts list
+        if (liveCustomer.email) {
+          const emailNormalized = normalizeEmail(liveCustomer.email);
+          if (emailNormalized) {
+            await db.insert(serviceTitanContacts).values({
+              customerId: liveCustomer.id,
+              contactType: 'Email',
+              value: liveCustomer.email,
+              normalizedValue: emailNormalized,
+              isPrimary: true,
+            }).onConflictDoNothing();
+          }
+        }
+        
+        if (liveCustomer.phoneNumber) {
+          const phoneNormalized = normalizePhone(liveCustomer.phoneNumber);
+          if (phoneNormalized) {
+            await db.insert(serviceTitanContacts).values({
+              customerId: liveCustomer.id,
+              contactType: 'Phone',
+              value: liveCustomer.phoneNumber,
+              normalizedValue: phoneNormalized,
+              isPrimary: true,
+            }).onConflictDoNothing();
+          }
+        }
+        
+        console.log(`[ServiceTitan] ✅ Cached customer ${liveCustomer.id} with ${contacts.length} contacts from API + customer record email/phone`);
       } catch (error) {
         console.error('[ServiceTitan] Failed to cache customer:', error);
         // Non-fatal, customer was still found
