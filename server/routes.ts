@@ -7974,6 +7974,125 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // RESEND EMAIL WEBHOOK - Track email engagement events
+  app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), async (req, res) => {
+    try {
+      const event = JSON.parse(req.body.toString());
+      
+      console.log('[Resend Webhook] Received event:', event.type);
+      
+      // Extract email ID from the event
+      const emailId = event.data?.email_id;
+      if (!emailId) {
+        console.warn('[Resend Webhook] No email_id in event:', event);
+        return res.status(200).json({ received: true });
+      }
+
+      // Find the email send log entry
+      const { emailSendLog } = await import("@shared/schema");
+      const { db } = await import("./db");
+      const { eq } = await import("drizzle-orm");
+      
+      const sendLog = await db.query.emailSendLog.findFirst({
+        where: eq(emailSendLog.resendEmailId, emailId),
+      });
+
+      if (!sendLog) {
+        console.warn('[Resend Webhook] No send log found for email_id:', emailId);
+        return res.status(200).json({ received: true });
+      }
+
+      // Update the send log based on event type
+      const updates: any = {};
+      
+      switch (event.type) {
+        case 'email.delivered':
+          updates.deliveredAt = new Date(event.created_at);
+          updates.resendStatus = 'delivered';
+          break;
+          
+        case 'email.opened':
+          updates.openedAt = new Date(event.created_at);
+          break;
+          
+        case 'email.clicked':
+          updates.clickedAt = new Date(event.created_at);
+          break;
+          
+        case 'email.bounced':
+          updates.bouncedAt = new Date(event.created_at);
+          updates.resendStatus = 'bounced';
+          
+          // Add to suppression list for hard bounces
+          if (event.data?.bounce_type === 'hard') {
+            const { emailSuppressionList } = await import("@shared/schema");
+            await db.insert(emailSuppressionList).values({
+              email: sendLog.recipientEmail,
+              reason: 'hard_bounce',
+              reasonDetails: event.data?.bounce_reason || 'Hard bounce from Resend',
+              resendEmailId: emailId,
+              campaignId: sendLog.campaignId,
+            }).onConflictDoNothing();
+          }
+          break;
+          
+        case 'email.complained':
+          updates.complainedAt = new Date(event.created_at);
+          updates.resendStatus = 'complained';
+          
+          // Add to suppression list for spam complaints
+          const { emailSuppressionList } = await import("@shared/schema");
+          await db.insert(emailSuppressionList).values({
+            email: sendLog.recipientEmail,
+            reason: 'spam_complaint',
+            reasonDetails: 'Spam complaint from Resend',
+            resendEmailId: emailId,
+            campaignId: sendLog.campaignId,
+          }).onConflictDoNothing();
+          break;
+          
+        default:
+          console.log('[Resend Webhook] Unhandled event type:', event.type);
+      }
+
+      // Update the send log if we have updates
+      if (Object.keys(updates).length > 0) {
+        await db.update(emailSendLog)
+          .set(updates)
+          .where(eq(emailSendLog.id, sendLog.id));
+        
+        // Also update campaign email metrics
+        const { campaignEmails } = await import("@shared/schema");
+        const { sql } = await import("drizzle-orm");
+        
+        if (updates.openedAt) {
+          await db.update(campaignEmails)
+            .set({ totalOpened: sql`${campaignEmails.totalOpened} + 1` })
+            .where(eq(campaignEmails.id, sendLog.campaignEmailId));
+        }
+        
+        if (updates.clickedAt) {
+          await db.update(campaignEmails)
+            .set({ totalClicked: sql`${campaignEmails.totalClicked} + 1` })
+            .where(eq(campaignEmails.id, sendLog.campaignEmailId));
+        }
+        
+        if (updates.bouncedAt) {
+          await db.update(campaignEmails)
+            .set({ totalBounced: sql`${campaignEmails.totalBounced} + 1` })
+            .where(eq(campaignEmails.id, sendLog.campaignEmailId));
+        }
+        
+        console.log('[Resend Webhook] Updated send log:', sendLog.id, 'with:', updates);
+      }
+
+      res.status(200).json({ received: true });
+    } catch (error: any) {
+      console.error('[Resend Webhook] Error processing webhook:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // MEMBERSHIP MANAGEMENT ROUTES
   
   // Get all memberships from ServiceTitan with filtering
