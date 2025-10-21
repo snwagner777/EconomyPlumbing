@@ -2056,7 +2056,7 @@ class ServiceTitanAPI {
       let hasMore = true;
 
       while (hasMore && page < 100) { // Max 50,000 customers
-        const customersUrl = `${this.baseUrl}/customers?page=${page}&pageSize=${PAGE_SIZE}`;
+        const customersUrl = `/customers?page=${page}&pageSize=${PAGE_SIZE}`;
         const result = await this.request<{ data: any[]; hasMore: boolean }>(customersUrl, {}, false);
         
         const customers = result.data || [];
