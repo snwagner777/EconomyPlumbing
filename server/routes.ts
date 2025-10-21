@@ -6653,8 +6653,19 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       const verification = verifications[0];
 
-      // Check if expired
-      if (new Date() > new Date(verification.expiresAt)) {
+      // Check if expired - with detailed logging
+      const now = new Date();
+      const expiresAt = new Date(verification.expiresAt);
+      console.log("[Portal Auth] Expiration check:", {
+        now: now.toISOString(),
+        expiresAt: expiresAt.toISOString(),
+        nowTimestamp: now.getTime(),
+        expiresAtTimestamp: expiresAt.getTime(),
+        isExpired: now > expiresAt,
+        minutesUntilExpiry: (expiresAt.getTime() - now.getTime()) / (1000 * 60)
+      });
+      
+      if (now > expiresAt) {
         console.log("[Portal Auth] Code expired");
         return res.status(401).json({ error: "Verification code expired. Please request a new one." });
       }
