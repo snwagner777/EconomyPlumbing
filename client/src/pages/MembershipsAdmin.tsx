@@ -423,8 +423,15 @@ export default function MembershipsAdmin() {
                           <td className="py-3 px-2 font-mono text-sm" data-testid={`text-id-${membership.id}`}>{membership.id}</td>
                           <td className="py-3 px-2">
                             <div>
-                              <div className="font-medium" data-testid={`text-customer-${membership.id}`}>{membership.customerName}</div>
-                              <div className="text-xs text-muted-foreground">Customer ID: {membership.customerId}</div>
+                              <div className="font-medium" data-testid={`text-customer-${membership.id}`}>
+                                {membership.customerName}
+                                {membership.customerName === 'Unknown Customer' && (
+                                  <Badge variant="destructive" className="ml-2 text-xs">Missing Data</Badge>
+                                )}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Customer ID: {membership.customerId || <span className="text-destructive italic">Not linked</span>}
+                              </div>
                             </div>
                           </td>
                           <td className="py-3 px-2" data-testid={`text-type-${membership.id}`}>{membership.membershipName}</td>
