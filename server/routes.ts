@@ -8028,9 +8028,23 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // RESEND EMAIL WEBHOOK - Track email engagement events
-  app.post("/api/webhooks/resend", express.json(), async (req, res) => {
+  app.post("/api/webhooks/resend", express.raw({ type: "application/json" }), async (req, res) => {
     try {
-      const event = req.body;
+      // Verify webhook signature using raw body
+      const signature = req.headers['svix-signature'] as string;
+      const timestamp = req.headers['svix-timestamp'] as string;
+      const svixId = req.headers['svix-id'] as string;
+      
+      if (!signature || !timestamp || !svixId) {
+        console.warn('[Resend Webhook] Missing signature headers');
+        return res.status(401).json({ error: "Missing signature headers" });
+      }
+      
+      // Note: In production, you would verify the signature here using Svix library
+      // For now, we'll parse and process the event
+      // TODO: Add Svix signature verification
+      
+      const event = JSON.parse(req.body.toString());
       
       console.log('[Resend Webhook] Received event:', event.type);
       
@@ -8190,11 +8204,26 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   // Bulk update membership status (expire/cancel)
   app.post("/api/admin/memberships/bulk-update", requireAdmin, async (req, res) => {
     try {
-      const { updates } = req.body;
+      const { z } = await import("zod");
       
-      if (!Array.isArray(updates) || updates.length === 0) {
-        return res.status(400).json({ error: "Updates array is required" });
+      const bulkUpdateSchema = z.object({
+        updates: z.array(z.object({
+          membershipId: z.number().int().positive(),
+          status: z.enum(["Active", "Expired", "Cancelled"]),
+          expirationDate: z.string().datetime().optional(),
+          cancellationDate: z.string().datetime().optional(),
+        })).min(1)
+      });
+      
+      const validation = bulkUpdateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: "Invalid request data", 
+          details: validation.error.errors 
+        });
       }
+      
+      const { updates } = validation.data;
 
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitanAPI = getServiceTitanAPI();
@@ -8211,8 +8240,28 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   // Update single membership status
   app.patch("/api/admin/memberships/:id", requireAdmin, async (req, res) => {
     try {
+      const { z } = await import("zod");
+      
       const membershipId = parseInt(req.params.id);
-      const { status, expirationDate, cancellationDate } = req.body;
+      if (isNaN(membershipId) || membershipId <= 0) {
+        return res.status(400).json({ error: "Invalid membership ID" });
+      }
+      
+      const updateSchema = z.object({
+        status: z.enum(["Active", "Expired", "Cancelled"]).optional(),
+        expirationDate: z.string().datetime().optional(),
+        cancellationDate: z.string().datetime().optional(),
+      });
+      
+      const validation = updateSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          error: "Invalid request data", 
+          details: validation.error.errors 
+        });
+      }
+      
+      const { status, expirationDate, cancellationDate } = validation.data;
 
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitanAPI = getServiceTitanAPI();
