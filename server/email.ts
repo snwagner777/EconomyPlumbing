@@ -4,6 +4,9 @@ import type { ResendConnectionSettings, ResendCredentials } from './types/resend
 let connectionSettings: ResendConnectionSettings | undefined;
 
 async function getCredentials(): Promise<ResendCredentials> {
+  console.log('[Email Debug] Getting Resend credentials...');
+  
+  // Try Replit Connector first
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
@@ -11,43 +14,64 @@ async function getCredentials(): Promise<ResendCredentials> {
     ? 'depl ' + process.env.WEB_REPL_RENEWAL 
     : null;
 
-  console.log('[Email Debug] Getting Resend credentials...');
-  console.log('[Email Debug] Hostname:', hostname ? 'set' : 'NOT SET');
+  console.log('[Email Debug] Connector hostname:', hostname ? 'set' : 'NOT SET');
   console.log('[Email Debug] REPL_IDENTITY:', process.env.REPL_IDENTITY ? 'set' : 'NOT SET');
   console.log('[Email Debug] WEB_REPL_RENEWAL:', process.env.WEB_REPL_RENEWAL ? 'set' : 'NOT SET');
 
-  if (!xReplitToken) {
-    console.error('[Email Error] X_REPLIT_TOKEN not found for repl/depl');
-    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
-  }
+  // Try connector if available
+  if (xReplitToken && hostname) {
+    try {
+      const response = await fetch(
+        'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+        {
+          headers: {
+            'Accept': 'application/json',
+            'X_REPLIT_TOKEN': xReplitToken
+          }
+        }
+      );
+      
+      const data: ResendConnectionSettings = await response.json();
+      connectionSettings = data;
 
-  const response = await fetch(
-    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
-    {
-      headers: {
-        'Accept': 'application/json',
-        'X_REPLIT_TOKEN': xReplitToken
+      const settings = data.items?.[0]?.settings;
+      
+      console.log('[Email Debug] Connector settings retrieved:', settings ? 'yes' : 'NO');
+      console.log('[Email Debug] Connector API key exists:', settings?.api_key ? 'yes' : 'NO');
+      console.log('[Email Debug] Connector from email:', settings?.from_email || 'NOT SET');
+
+      if (settings?.api_key && settings?.from_email) {
+        console.log('[Email] Using Replit Connector credentials');
+        return {
+          apiKey: settings.api_key, 
+          fromEmail: settings.from_email
+        };
+      } else {
+        console.warn('[Email] Connector available but not configured, falling back to environment secrets');
       }
+    } catch (error) {
+      console.warn('[Email] Connector fetch failed, falling back to environment secrets:', error);
     }
-  );
-  
-  const data: ResendConnectionSettings = await response.json();
-  connectionSettings = data;
+  } else {
+    console.log('[Email Debug] Connector not available, using environment secrets');
+  }
 
-  const settings = data.items?.[0]?.settings;
+  // Fallback to environment secrets
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL;
   
-  console.log('[Email Debug] Connection settings retrieved:', settings ? 'yes' : 'NO');
-  console.log('[Email Debug] API key exists:', settings?.api_key ? 'yes' : 'NO');
-  console.log('[Email Debug] From email:', settings?.from_email || 'NOT SET');
+  console.log('[Email Debug] Env RESEND_API_KEY:', apiKey ? 'set' : 'NOT SET');
+  console.log('[Email Debug] Env RESEND_FROM_EMAIL:', fromEmail || 'NOT SET');
 
-  if (!settings?.api_key || !settings?.from_email) {
-    console.error('[Email Error] Resend not connected properly');
-    throw new Error('Resend not connected');
+  if (!apiKey || !fromEmail) {
+    console.error('[Email Error] Neither Replit Connector nor environment secrets are configured');
+    throw new Error('Resend not configured: Please set up Resend connector or provide RESEND_API_KEY and RESEND_FROM_EMAIL environment secrets');
   }
   
+  console.log('[Email] Using environment secret credentials');
   return {
-    apiKey: settings.api_key, 
-    fromEmail: settings.from_email
+    apiKey, 
+    fromEmail
   };
 }
 
