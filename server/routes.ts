@@ -6674,54 +6674,76 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         })
         .where(eq(portalVerifications.id, verification.id));
 
-      console.log("[Portal Auth] Verification successful, searching ServiceTitan for all matching accounts...");
+      console.log("[Portal Auth] Verification successful, searching for all matching accounts...");
 
-      // Fetch all matching customer accounts for multi-account support using LIVE API
-      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
-      const serviceTitan = getServiceTitanAPI();
-      
-      // Search live ServiceTitan API for ALL matching customers
-      const liveCustomers = await serviceTitan.searchAllCustomersLive(verification.contactValue);
-      console.log(`[Portal Auth] Found ${liveCustomers.length} customer(s) via live API`);
-      
-      // Convert to expected format
-      const matchingCustomers = liveCustomers.map((c: any) => ({
-        id: c.id,
-        name: c.name || 'Unknown',
-        type: c.type || 'Residential',
-        email: c.email || '',
-        phone: c.phoneNumber || '',
-        address: [c.address?.street, c.address?.city, c.address?.state, c.address?.zip].filter(Boolean).join(', ')
-      }));
-
-      if (matchingCustomers.length === 0) {
-        console.warn("[Portal Auth] Verified but no customers found via live API");
-        
-        // Save session for fallback case
-        if (verification.customerId && req.session) {
-          req.session.portalCustomerId = verification.customerId;
-          await new Promise<void>((resolve, reject) => {
-            req.session!.save((err) => {
-              if (err) reject(err);
-              else resolve();
-            });
-          });
+      // Normalize the contact value for database lookup
+      const normalizeValue = (value: string): string => {
+        if (value.includes('@')) {
+          return value.toLowerCase().trim();
         }
-        
-        // Fallback to single customer ID from verification
-        return res.json({ 
-          success: true,
-          customerId: verification.customerId,
-          customers: verification.customerId ? [{
-            id: verification.customerId,
-            name: 'Your Account',
-            type: 'Residential',
-            address: ''
-          }] : []
+        // Phone: remove all non-digits, strip leading 1
+        const digits = value.replace(/\D/g, '');
+        return digits.length === 11 && digits.startsWith('1') ? digits.substring(1) : digits;
+      };
+
+      const normalizedContact = normalizeValue(verification.contactValue);
+      console.log(`[Portal Auth] Looking up customers with normalized contact: ${normalizedContact}`);
+
+      // Query normalized contacts table for ALL matching customer IDs
+      const matchingContacts = await db
+        .select({ customerId: serviceTitanContacts.customerId })
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalizedContact));
+
+      const customerIds = Array.from(new Set(matchingContacts.map(c => c.customerId)));
+      console.log(`[Portal Auth] Found ${customerIds.length} customer ID(s) in cache: ${customerIds.join(', ')}`);
+
+      if (customerIds.length === 0) {
+        console.warn("[Portal Auth] No customers found in cache - account may not be synced yet");
+        return res.status(404).json({ 
+          error: "Account not found. Please contact support if you believe this is an error.",
+          code: "ACCOUNT_NOT_FOUND"
         });
       }
 
-      console.log(`[Portal Auth] Found ${matchingCustomers.length} matching customer account(s)`);
+      // Fetch complete customer data with ALL contacts for each customer
+      const customersData = await db
+        .select()
+        .from(serviceTitanCustomers)
+        .where(sql`${serviceTitanCustomers.id} = ANY(${customerIds})`);
+
+      // Fetch ALL contacts for these customers
+      const allContacts = await db
+        .select()
+        .from(serviceTitanContacts)
+        .where(sql`${serviceTitanContacts.customerId} = ANY(${customerIds})`);
+
+      // Group contacts by customer ID
+      const contactsByCustomer = allContacts.reduce((acc, contact) => {
+        if (!acc[contact.customerId]) acc[contact.customerId] = [];
+        acc[contact.customerId].push(contact);
+        return acc;
+      }, {} as Record<number, any[]>);
+
+      // Build complete customer objects with ALL contact methods
+      const matchingCustomers = customersData.map(customer => {
+        const customerContacts = contactsByCustomer[customer.id] || [];
+        const emails = customerContacts.filter(c => c.contactType === 'Email').map(c => c.value);
+        const phones = customerContacts.filter(c => c.contactType.includes('Phone')).map(c => c.value);
+        
+        return {
+          id: customer.id,
+          name: customer.name,
+          type: customer.type,
+          emails, // ALL emails
+          phones, // ALL phones
+          primaryEmail: emails[0] || customer.email || '',
+          primaryPhone: phones[0] || customer.phone || '',
+          address: [customer.street, customer.city, customer.state, customer.zip].filter(Boolean).join(', ')
+        };
+      });
+
+      console.log(`[Portal Auth] Found ${matchingCustomers.length} matching customer account(s) with complete contact info`);
 
       // Save session for persistent login
       if (matchingCustomers.length === 1 && req.session) {
