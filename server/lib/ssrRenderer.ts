@@ -80,7 +80,7 @@ export const ssrPages: SSRPageConfig[] = [
     title: 'Contact Us | Economy Plumbing Services',
     description: 'Contact Economy Plumbing for service in Austin & Marble Falls, TX. Call (512) 368-9159 for same-day service. Licensed plumbers ready to help 24/7!',
     h1: 'Contact Economy Plumbing',
-    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Contact Economy Plumbing</h1><p class="text-xl mb-8">Get in touch for professional plumbing services across Central Texas.</p><p class="text-2xl font-bold mb-4">Call us: <a href="tel:5123689159" class="text-primary">(512) 368-9159</a></p></div></div>`
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Contact Economy Plumbing</h1><p class="text-xl mb-8">Get in touch for professional plumbing services across Central Texas.</p><p class="text-2xl font-bold mb-4">Call us: <a href="tel:+15123689159" class="text-primary">(512) 368-9159</a></p></div></div>`
   },
   
   // FAQ page
@@ -242,7 +242,7 @@ export const ssrPages: SSRPageConfig[] = [
             <div class="text-center mb-12">
               <h2 class="text-3xl font-bold mb-4">Call Us Today</h2>
               <p class="text-xl mb-6">Expert water heater service across Austin & Marble Falls</p>
-              <a href="tel:5123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
+              <a href="tel:+15123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
             </div>
             
             <div class="mt-12">
@@ -314,7 +314,7 @@ export const ssrPages: SSRPageConfig[] = [
             <div class="text-center mb-12">
               <h2 class="text-3xl font-bold mb-4">Need Drain Cleaning?</h2>
               <p class="text-xl mb-6">Fast, professional service across Central Texas</p>
-              <a href="tel:5123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
+              <a href="tel:+15123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
             </div>
           </div>
         </div>
@@ -368,7 +368,7 @@ export const ssrPages: SSRPageConfig[] = [
             <div class="text-center mb-12">
               <h2 class="text-3xl font-bold mb-4">Have a Leak?</h2>
               <p class="text-xl mb-6">Fast leak detection and repair across Central Texas</p>
-              <a href="tel:5123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
+              <a href="tel:+15123689159" class="text-2xl font-bold text-primary">(512) 368-9159</a>
             </div>
           </div>
         </div>
@@ -422,7 +422,7 @@ export const ssrPages: SSRPageConfig[] = [
             <div class="text-center mb-12 p-8 bg-primary/10 rounded-lg">
               <h2 class="text-3xl font-bold mb-4">Need Emergency Plumbing NOW?</h2>
               <p class="text-xl mb-6">We're available 24/7 across Austin & Marble Falls</p>
-              <a href="tel:5123689159" class="text-3xl font-bold text-primary">(512) 368-9159</a>
+              <a href="tel:+15123689159" class="text-3xl font-bold text-primary">(512) 368-9159</a>
               <p class="mt-4 text-lg">Licensed & Insured • Fast Response • Professional Service</p>
             </div>
           </div>
@@ -479,7 +479,7 @@ export const ssrPages: SSRPageConfig[] = [
     title: 'Contact Us | Economy Plumbing Services',
     description: 'Contact Economy Plumbing for service in Austin & Marble Falls, TX. Schedule online or call (512) 368-9159. Same-day appointments available. Licensed & insured plumbers!',
     h1: 'Contact Us',
-    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Contact Economy Plumbing</h1><p class="text-xl mb-8">Get in touch for professional plumbing services across Central Texas.</p><p class="text-2xl font-bold mb-4">Call us: <a href="tel:5123689159" class="text-primary">(512) 368-9159</a></p></div></div>`
+    content: `<div class="py-16"><div class="container mx-auto px-4"><h1 class="text-4xl font-bold mb-6">Contact Economy Plumbing</h1><p class="text-xl mb-8">Get in touch for professional plumbing services across Central Texas.</p><p class="text-2xl font-bold mb-4">Call us: <a href="tel:+15123689159" class="text-primary">(512) 368-9159</a></p></div></div>`
   },
   {
     path: '/faq',

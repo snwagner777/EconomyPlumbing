@@ -9,6 +9,24 @@ interface ServiceAreaCardProps {
   cities: string[];
 }
 
+// Normalize phone to E.164 format (tel:+1...)
+function normalizePhoneLink(phone: string): string {
+  const digitsOnly = phone.replace(/\D/g, '');
+  
+  // If 11 digits starting with "1", it already has country code
+  if (digitsOnly.length === 11 && digitsOnly.startsWith('1')) {
+    return `tel:+${digitsOnly}`;
+  }
+  
+  // If 10 digits, add country code
+  if (digitsOnly.length === 10) {
+    return `tel:+1${digitsOnly}`;
+  }
+  
+  // Fallback: just return what we have
+  return `tel:+${digitsOnly}`;
+}
+
 export default function ServiceAreaCard({ title, address, phone, cities }: ServiceAreaCardProps) {
   return (
     <Card className="p-6 bg-primary/5 border border-card-border">
@@ -29,7 +47,7 @@ export default function ServiceAreaCard({ title, address, phone, cities }: Servi
         ))}
       </div>
       <a 
-        href={`tel:${phone.replace(/\D/g, '')}`}
+        href={normalizePhoneLink(phone)}
         className="flex items-center gap-2 text-foreground font-poppins font-bold text-xl hover-elevate px-2 py-1 rounded-md w-fit"
         data-testid={`phone-${title.toLowerCase().replace(/\s+/g, '-')}`}
       >

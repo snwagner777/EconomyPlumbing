@@ -740,7 +740,15 @@ export async function sendNegativeReviewAlert(data: {
           <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="margin-top: 0;">Customer Information</h3>
             <p><strong>Name:</strong> ${data.customerName}</p>
-            ${data.phone ? `<p><strong>Phone:</strong> <a href="tel:${data.phone}">${data.phone}</a></p>` : ''}
+            ${data.phone ? `<p><strong>Phone:</strong> <a href="${(() => {
+              const digits = data.phone.replace(/\D/g, '');
+              // If 11 digits starting with 1, already has country code
+              if (digits.length === 11 && digits.startsWith('1')) return `tel:+${digits}`;
+              // If 10 digits, add country code
+              if (digits.length === 10) return `tel:+1${digits}`;
+              // Fallback
+              return `tel:+${digits}`;
+            })()}">${data.phone}</a></p>` : ''}
             ${data.email ? `<p><strong>Email:</strong> <a href="mailto:${data.email}">${data.email}</a></p>` : ''}
             ${data.serviceDate ? `<p><strong>Service Date:</strong> ${new Date(data.serviceDate).toLocaleDateString()}</p>` : ''}
           </div>
