@@ -681,14 +681,14 @@ export const portalVerifications = pgTable("portal_verifications", {
   
   // Verification status
   verified: boolean("verified").notNull().default(false),
-  verifiedAt: timestamp("verified_at"),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
   
   // Security & expiry
-  expiresAt: timestamp("expires_at").notNull(), // 10 min for SMS, 1 hour for email
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(), // 10 min for SMS, 1 hour for email
   attempts: integer("attempts").notNull().default(0), // Track failed attempts
   
   // Timestamps
-  createdAt: timestamp("created_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => ({
   codeIdx: index("portal_verifications_code_idx").on(table.code),
   contactIdx: index("portal_verifications_contact_idx").on(table.contactValue),
