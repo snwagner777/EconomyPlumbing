@@ -162,7 +162,77 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Search for ALL customers by email or phone via live API (for multi-account support)
+   * Returns array of all matching customers, not just the first one
+   */
+  async searchAllCustomersLive(emailOrPhone: string): Promise<ServiceTitanCustomer[]> {
+    try {
+      const isEmail = emailOrPhone.includes('@');
+      console.log(`[ServiceTitan] Live API search for ALL customers with ${isEmail ? 'email' : 'phone'}: "${emailOrPhone}"`);
+      
+      if (isEmail) {
+        // Email search - returns all customers with this email
+        const emailResults = await this.request<{ data: ServiceTitanCustomer[] }>(
+          `/customers?email=${encodeURIComponent(emailOrPhone.trim())}`
+        );
+
+        if (emailResults.data && emailResults.data.length > 0) {
+          console.log(`[ServiceTitan] Found ${emailResults.data.length} customer(s) with email ${emailOrPhone}`);
+          return emailResults.data;
+        }
+      } else {
+        // Phone search - use contacts search API
+        const normalizedPhone = this.normalizePhone(emailOrPhone);
+        console.log(`[ServiceTitan] Searching for phone: ${normalizedPhone}`);
+        
+        try {
+          const contactsSearchUrl = `https://api.servicetitan.io/crm/v2/tenant/${this.config.tenantId}/contacts/search`;
+          const searchResults = await this.request<{ data: any[] }>(
+            contactsSearchUrl,
+            {
+              method: 'POST',
+              body: JSON.stringify({
+                value: normalizedPhone,
+                page: 1,
+                pageSize: 50 // Get up to 50 matching contacts
+              })
+            },
+            true
+          );
+
+          if (searchResults.data && searchResults.data.length > 0) {
+            // Get unique customer IDs
+            const customerIds = Array.from(new Set(searchResults.data.map((c: any) => c.customerId)));
+            console.log(`[ServiceTitan] Found ${customerIds.length} customer(s) with phone ${emailOrPhone}`);
+            
+            // Fetch full customer details for each ID
+            const customers: ServiceTitanCustomer[] = [];
+            for (const customerId of customerIds) {
+              try {
+                const customer = await this.request<ServiceTitanCustomer>(`/customers/${customerId}`);
+                customers.push(customer);
+              } catch (error) {
+                console.error(`[ServiceTitan] Failed to fetch customer ${customerId}:`, error);
+              }
+            }
+            return customers;
+          }
+        } catch (error: any) {
+          console.error('[ServiceTitan] Contacts search error:', error);
+        }
+      }
+      
+      console.log('[ServiceTitan] No customers found via live API');
+      return [];
+    } catch (error) {
+      console.error('[ServiceTitan] Live API search error:', error);
+      return [];
+    }
+  }
+
+  /**
    * Search for customer by email or phone (trying multiple approaches)
+   * Returns FIRST matching customer only
    */
   async searchCustomer(email: string, phone: string): Promise<ServiceTitanCustomer | null> {
     try {

@@ -6674,16 +6674,28 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         })
         .where(eq(portalVerifications.id, verification.id));
 
-      console.log("[Portal Auth] Verification successful, searching for all matching customers...");
+      console.log("[Portal Auth] Verification successful, searching ServiceTitan for all matching accounts...");
 
-      // Fetch all matching customer accounts for multi-account support
+      // Fetch all matching customer accounts for multi-account support using LIVE API
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitan = getServiceTitanAPI();
       
-      const matchingCustomers = await serviceTitan.searchAllMatchingCustomers(verification.contactValue);
+      // Search live ServiceTitan API for ALL matching customers
+      const liveCustomers = await serviceTitan.searchAllCustomersLive(verification.contactValue);
+      console.log(`[Portal Auth] Found ${liveCustomers.length} customer(s) via live API`);
+      
+      // Convert to expected format
+      const matchingCustomers = liveCustomers.map((c: any) => ({
+        id: c.id,
+        name: c.name || 'Unknown',
+        type: c.type || 'Residential',
+        email: c.email || '',
+        phone: c.phoneNumber || '',
+        address: [c.address?.street, c.address?.city, c.address?.state, c.address?.zip].filter(Boolean).join(', ')
+      }));
 
       if (matchingCustomers.length === 0) {
-        console.warn("[Portal Auth] Verified but no customers found in cache");
+        console.warn("[Portal Auth] Verified but no customers found via live API");
         
         // Save session for fallback case
         if (verification.customerId && req.session) {
