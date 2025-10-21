@@ -70,7 +70,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings' | 'memberships' | 'sms-marketing' | 'marketing-overview';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings' | 'sms-marketing' | 'marketing-overview';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -163,13 +163,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Package,
       section: 'products' as AdminSection,
       description: "SKUs & ServiceTitan setup"
-    },
-    {
-      title: "Membership Management",
-      icon: CreditCard,
-      section: 'memberships' as AdminSection,
-      onClick: () => setLocation('/admin/memberships'),
-      description: "View & expire memberships"
     },
     {
       title: "SMS Marketing",
@@ -3782,7 +3775,6 @@ export default function UnifiedAdminDashboard() {
       'campaigns': 'Email Campaigns',
       'audience-logs': 'Audience Logs',
       'marketing-settings': 'Marketing Settings',
-      'memberships': 'Membership Management',
       'sms-marketing': 'SMS Marketing',
       'marketing-overview': 'Marketing Overview',
     };

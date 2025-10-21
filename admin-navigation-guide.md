@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Admin Panel Navigation Guide
 
 ## Overview
-The admin panel consists of 16 sections organized across multiple navigation patterns:
+The admin panel consists of 15 sections organized across multiple navigation patterns:
 - **Unified Dashboard Navigation**: State-based tab navigation within UnifiedAdminDashboard
 - **Separate Route Navigation**: Dedicated routes with full-page components
 - **Hybrid Navigation**: Combination of both patterns for complex workflows
@@ -65,16 +65,7 @@ The admin panel consists of 16 sections organized across multiple navigation pat
      - Engagement metrics (sent, opened, clicked)
 
 #### Customer Management Routes:
-4. **Memberships** - `/admin/memberships`
-   - Component: `MembershipsAdmin.tsx`
-   - Features: Membership management, bulk operations, ServiceTitan sync
-   - Key Functions:
-     - Bulk status updates (active/expired/cancelled)
-     - Individual membership editing
-     - Renewal tracking
-     - ServiceTitan integration
-
-5. **Reviews** - `/admin/reviews`
+4. **Reviews** - `/admin/reviews`
    - Component: `ReviewsAdmin.tsx`
    - Features: Review campaign management, response tracking
    - Key Functions: Send review requests, monitor responses
@@ -103,7 +94,6 @@ The admin panel consists of 16 sections organized across multiple navigation pat
 ├─ /admin/sms-marketing ................... SMS Campaign Manager
 ├─ /admin/marketing-overview .............. Marketing Analytics Hub
 │  └─ Nested: Email Campaigns ............. Campaign Details View
-├─ /admin/memberships ..................... Membership Management
 ├─ /admin/reviews ......................... Review Campaign Manager
 │
 ├─ /admin/success-stories ................. Direct Route (legacy)
@@ -147,15 +137,6 @@ The admin panel consists of 16 sections organized across multiple navigation pat
   - AI-generated content indicators
 - Campaign status tracking (draft, pending approval, active, completed)
 - Segment targeting with member counts
-
-### Memberships (`/admin/memberships`)
-- Bulk operations (expire, activate, cancel)
-- Individual membership editing
-- ServiceTitan customer sync
-- Membership tier management
-- Renewal tracking and automation
-- Payment status monitoring
-- Customer communication history
 
 ### Reviews (`/admin/reviews`)
 - Automated review request campaigns
@@ -212,15 +193,6 @@ The admin panel consists of 16 sections organized across multiple navigation pat
 5. Schedule or send immediately
 6. Monitor delivery and engagement in real-time
 7. Track responses and conversions
-
-#### Bulk Membership Updates
-1. Navigate to Memberships (`/admin/memberships`)
-2. Select memberships via checkboxes
-3. Choose bulk action (expire, activate, cancel)
-4. Confirm action in dialog
-5. System processes in parallel
-6. Success/failure notifications displayed
-7. Table updates automatically
 
 ---
 
