@@ -2043,12 +2043,59 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Get all customers in bulk (for creating lookup maps)
+   * Returns customer ID -> customer name mapping
+   */
+  async getAllCustomersMap(): Promise<Map<number, string>> {
+    try {
+      console.log('[ServiceTitan] Fetching all customers for lookup map...');
+      
+      const customerMap = new Map<number, string>();
+      const PAGE_SIZE = 500;
+      let page = 1;
+      let hasMore = true;
+
+      while (hasMore && page < 100) { // Max 50,000 customers
+        const customersUrl = `${this.baseUrl}/customers?page=${page}&pageSize=${PAGE_SIZE}`;
+        const result = await this.request<{ data: any[]; hasMore: boolean }>(customersUrl, {}, false);
+        
+        const customers = result.data || [];
+        console.log(`[ServiceTitan] Page ${page}: Fetched ${customers.length} customers`);
+        
+        // Add to map
+        customers.forEach((customer: any) => {
+          const name = customer.name || customer.companyName || `Customer #${customer.id}`;
+          customerMap.set(customer.id, name);
+        });
+        
+        hasMore = result.hasMore || false;
+        page++;
+        
+        // Stop if we got less than a full page
+        if (customers.length < PAGE_SIZE) {
+          break;
+        }
+      }
+
+      console.log(`[ServiceTitan] Created customer lookup map with ${customerMap.size} customers`);
+      return customerMap;
+    } catch (error) {
+      console.error('[ServiceTitan] Error fetching customer map:', error);
+      // Return empty map on error rather than failing
+      return new Map();
+    }
+  }
+
+  /**
    * Get all customer memberships from ServiceTitan
    * Returns all recurring service events (memberships) for all customers
    */
   async getAllMemberships(): Promise<any[]> {
     try {
       console.log('[ServiceTitan Memberships] Fetching all customer memberships...');
+      
+      // First, fetch all customers to create a lookup map
+      const customerMap = await this.getAllCustomersMap();
       
       const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?pageSize=500`;
       const result = await this.request<{ data: any[]; hasMore: boolean }>(membershipsUrl, {}, true);
@@ -2070,7 +2117,7 @@ class ServiceTitanAPI {
       return allMemberships.map((m: any) => ({
         id: m.id,
         customerId: m.customerId,
-        customerName: m.customerName || 'Unknown Customer',
+        customerName: customerMap.get(m.customerId) || m.customerName || 'Unknown Customer',
         membershipId: m.membershipId,
         membershipName: m.membershipName || m.locationRecurringServiceName || 'VIP Membership',
         status: m.status || 'Unknown',
