@@ -307,12 +307,12 @@ export default function MembershipsAdmin() {
 
                 <div>
                   <Label htmlFor="status">Status</Label>
-                  <Select value={filters.status} onValueChange={(v) => setFilters({ ...filters, status: v })}>
+                  <Select value={filters.status || "all"} onValueChange={(v) => setFilters({ ...filters, status: v === "all" ? "" : v })}>
                     <SelectTrigger id="status" data-testid="select-status">
                       <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Statuses</SelectItem>
+                      <SelectItem value="all">All Statuses</SelectItem>
                       <SelectItem value="won">Active</SelectItem>
                       <SelectItem value="expired">Expired</SelectItem>
                       <SelectItem value="suspended">Suspended</SelectItem>
@@ -323,12 +323,12 @@ export default function MembershipsAdmin() {
 
                 <div>
                   <Label htmlFor="membershipType">Membership Type</Label>
-                  <Select value={filters.membershipType} onValueChange={(v) => setFilters({ ...filters, membershipType: v })}>
+                  <Select value={filters.membershipType || "all"} onValueChange={(v) => setFilters({ ...filters, membershipType: v === "all" ? "" : v })}>
                     <SelectTrigger id="membershipType" data-testid="select-type">
                       <SelectValue placeholder="All Types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Types</SelectItem>
+                      <SelectItem value="all">All Types</SelectItem>
                       {uniqueMembershipTypes.map(type => (
                         <SelectItem key={type} value={type}>{type}</SelectItem>
                       ))}
@@ -338,12 +338,12 @@ export default function MembershipsAdmin() {
 
                 <div>
                   <Label htmlFor="year">Year Purchased</Label>
-                  <Select value={filters.year} onValueChange={(v) => setFilters({ ...filters, year: v })}>
+                  <Select value={filters.year || "all"} onValueChange={(v) => setFilters({ ...filters, year: v === "all" ? "" : v })}>
                     <SelectTrigger id="year" data-testid="select-year">
                       <SelectValue placeholder="All Years" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Years</SelectItem>
+                      <SelectItem value="all">All Years</SelectItem>
                       {uniqueYears.map(year => (
                         <SelectItem key={year} value={year.toString()}>{year}</SelectItem>
                       ))}
