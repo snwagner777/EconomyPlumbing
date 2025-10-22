@@ -32,6 +32,7 @@ import {
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
+import { openScheduler } from "@/lib/scheduler";
 
 // Hook to detect mobile screen size
 function useIsMobile() {
@@ -323,6 +324,24 @@ export default function AIChatbot() {
       // Check if AI determined a handoff is needed
       if (data.needsHandoff) {
         setShowHandoff(true);
+      }
+
+      // Check if AI wants to open ServiceTitan scheduler
+      if (data.openScheduler) {
+        // Open the ServiceTitan scheduler
+        const schedulerOpened = await openScheduler();
+        
+        if (!schedulerOpened) {
+          // If scheduler didn't open, add a fallback message
+          const fallbackMessage: Message = {
+            id: `msg_${Date.now() + 1}`,
+            role: "assistant",
+            content: "I'm having trouble opening the scheduler right now. Please call us at " + phoneConfig.display + " to book your appointment, or you can try refreshing the page and clicking the 'Schedule Service' button.",
+            timestamp: Date.now()
+          };
+          setMessages([...newMessages, assistantMessage, fallbackMessage]);
+          return;
+        }
       }
 
       setMessages([...newMessages, assistantMessage]);

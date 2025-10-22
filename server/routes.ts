@@ -6422,16 +6422,19 @@ Common DIY tips (always emphasize safety):
 - Low water pressure: Check aerators for buildup
 - Frozen pipes: Never use open flame, use hair dryer or space heater
 
+Appointment Booking:
+- When customer asks to schedule or book an appointment, respond with: "I'll open our scheduling system for you now! Select a service and pick a time that works best for you. Our online scheduler will show you available appointment slots."
+- The system will automatically open the ServiceTitan scheduler when you mention scheduling
+
 When to hand off to human via SMS/Call:
 - Customer wants specific pricing for their situation
-- Customer wants to schedule an appointment
 - Customer has an emergency (burst pipe, major leak, no hot water)
 - Customer asks complex technical questions beyond general info
 - Customer explicitly asks to speak with someone
 - Customer mentions ServiceTitan account or specific job history
 - You're unsure or don't have enough information
 
-If handoff is needed, respond with: "I'd be happy to connect you with our team! They can provide personalized pricing and schedule your service. Would you prefer to text or call us?"
+If handoff is needed, respond with: "I'd be happy to connect you with our team! They can provide personalized pricing and immediate assistance. Would you prefer to text or call us?"
 
 Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer is on a specific page (pageContext: ${pageContext || 'unknown'}), tailor your response to be contextually relevant.`;
 
@@ -6455,14 +6458,26 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         content: aiResponse,
       });
 
-      // Detect if handoff keywords are present
+      // Detect if scheduling keywords are present
+      const schedulingKeywords = [
+        "scheduling system",
+        "online scheduler",
+        "appointment slots",
+        "open our scheduling",
+        "select a service and pick a time"
+      ];
+
+      const openScheduler = schedulingKeywords.some(keyword => 
+        aiResponse.toLowerCase().includes(keyword.toLowerCase())
+      );
+
+      // Detect if handoff keywords are present (excluding scheduling)
       const handoffKeywords = [
         "connect you with",
         "speak with",
         "talk to",
         "text or call",
         "contact our team",
-        "schedule",
         "pricing for your",
         "emergency",
       ];
@@ -6482,6 +6497,17 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
           .where(eq(chatbotConversations.id, conversation.id));
       }
 
+      // Update conversation if scheduler was opened
+      if (openScheduler) {
+        await db
+          .update(chatbotConversations)
+          .set({ 
+            handoffRequested: true,
+            handoffReason: 'Customer directed to ServiceTitan scheduler',
+          })
+          .where(eq(chatbotConversations.id, conversation.id));
+      }
+
       // Get quick responses for the current context
       const quickResponses = await db
         .select()
@@ -6492,6 +6518,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       res.json({
         message: aiResponse,
         needsHandoff,
+        openScheduler, // Add this flag to trigger ServiceTitan scheduler
         conversationId: conversation.id,
         quickResponses: quickResponses.map(qr => ({
           id: qr.id,
