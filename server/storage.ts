@@ -53,6 +53,8 @@ import {
   type InsertEmailSendLog,
   type EmailCampaign,
   type InsertEmailCampaign,
+  type EmailTemplate,
+  type InsertEmailTemplate,
   type CustomerSegment,
   type InsertCustomerSegment,
   type ReviewEmailPreferences,
@@ -98,6 +100,7 @@ import {
   emailSuppressionList,
   emailSendLog,
   emailCampaigns,
+  emailTemplates,
   customerSegments,
   segmentMembership,
   audienceMovementLogs,
@@ -291,6 +294,14 @@ export interface IStorage {
   
   // Email Send Log
   logEmailSend(params: Omit<InsertEmailSendLog, 'id' | 'sentAt'>): Promise<EmailSendLog | null>;
+  
+  // Email Templates
+  getEmailTemplates(options?: { category?: string; isActive?: boolean }): Promise<EmailTemplate[]>;
+  getEmailTemplateById(id: string): Promise<EmailTemplate | undefined>;
+  createEmailTemplate(template: Omit<InsertEmailTemplate, 'id'>): Promise<EmailTemplate>;
+  updateEmailTemplate(id: string, updates: Partial<Omit<InsertEmailTemplate, 'id'>>): Promise<EmailTemplate>;
+  deleteEmailTemplate(id: string): Promise<void>;
+  trackTemplateUsage(id: string): Promise<void>;
   
   // Email Campaigns - ServiceTitan Integration
   createEmailCampaign(campaign: Omit<InsertEmailCampaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmailCampaign>;
@@ -2498,6 +2509,102 @@ Call (512) 368-9159 or schedule service online.`,
     // MemStorage stub - not used in production
     throw new Error("Not implemented in MemStorage");
   }
+
+  // Missing email-related methods
+  async getEmailPreferencesByEmail(email: string): Promise<EmailPreferences | undefined> {
+    return undefined;
+  }
+  async getEmailPreferencesByCustomerId(customerId: number): Promise<EmailPreferences | undefined> {
+    return undefined;
+  }
+  async upsertEmailPreferences(prefs: Partial<InsertEmailPreferences> & { email: string }): Promise<EmailPreferences> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async unsubscribeFromCategory(email: string, category: 'marketing' | 'reviews' | 'serviceReminders' | 'referrals'): Promise<EmailPreferences> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async unsubscribeFromAll(email: string): Promise<EmailPreferences> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async isEmailSuppressed(email: string): Promise<boolean> {
+    return false;
+  }
+  async addToSuppressionList(suppression: Omit<InsertEmailSuppression, 'id' | 'addedAt'>): Promise<EmailSuppression> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async removeFromSuppressionList(email: string): Promise<void> {}
+  async getSuppressionList(options?: { limit?: number; offset?: number }): Promise<EmailSuppression[]> {
+    return [];
+  }
+  async getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }> {
+    return { total: 0, hardBounces: 0, spamComplaints: 0, manual: 0 };
+  }
+  async logEmailSend(params: Omit<InsertEmailSendLog, 'id' | 'sentAt'>): Promise<EmailSendLog | null> {
+    return null;
+  }
+  
+  // Email Templates
+  async getEmailTemplates(options?: { category?: string; isActive?: boolean }): Promise<EmailTemplate[]> {
+    return [];
+  }
+  async getEmailTemplateById(id: string): Promise<EmailTemplate | undefined> {
+    return undefined;
+  }
+  async createEmailTemplate(template: Omit<InsertEmailTemplate, 'id'>): Promise<EmailTemplate> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async updateEmailTemplate(id: string, updates: Partial<Omit<InsertEmailTemplate, 'id'>>): Promise<EmailTemplate> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async deleteEmailTemplate(id: string): Promise<void> {}
+  async trackTemplateUsage(id: string): Promise<void> {}
+  
+  // Email Campaigns
+  async createEmailCampaign(campaign: Omit<InsertEmailCampaign, 'id' | 'createdAt' | 'updatedAt'>): Promise<EmailCampaign> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getEmailCampaigns(options?: { status?: string; isEvergreen?: boolean }): Promise<EmailCampaign[]> {
+    return [];
+  }
+  async getEmailCampaignById(id: string): Promise<EmailCampaign | undefined> {
+    return undefined;
+  }
+  async updateEmailCampaign(id: string, updates: Partial<Omit<InsertEmailCampaign, 'id' | 'createdAt'>>): Promise<EmailCampaign> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async syncCampaignToServiceTitan(campaignId: string, serviceTitanCampaignId: number, serviceTitanCampaignName: string): Promise<EmailCampaign> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  
+  // Customer Segments
+  async createCustomerSegment(segment: Omit<InsertCustomerSegment, 'id' | 'createdAt' | 'updatedAt' | 'lastRefreshedAt'>): Promise<CustomerSegment> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  async getCustomerSegments(options?: { status?: string; segmentType?: string }): Promise<CustomerSegment[]> {
+    return [];
+  }
+  async getCustomerSegmentById(id: string): Promise<CustomerSegment | undefined> {
+    return undefined;
+  }
+  async updateCustomerSegment(id: string, updates: Partial<Omit<InsertCustomerSegment, 'id' | 'createdAt'>>): Promise<CustomerSegment> {
+    throw new Error("Not implemented in MemStorage");
+  }
+  
+  // Segment Membership
+  async getSegmentMembers(segmentId: string, options?: { activeOnly?: boolean; limit?: number; offset?: number }): Promise<any[]> {
+    return [];
+  }
+  async getCustomerSegmentMemberships(customerId: number, options?: { activeOnly?: boolean }): Promise<any[]> {
+    return [];
+  }
+  async getSegmentMemberCount(segmentId: string, activeOnly?: boolean): Promise<number> {
+    return 0;
+  }
+  
+  // Audience Movement Logs
+  async getAudienceMovementLogs(options?: { segmentId?: string; customerId?: number; action?: 'entered' | 'exited'; limit?: number; offset?: number }): Promise<any[]> {
+    return [];
+  }
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3938,6 +4045,75 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return result;
+  }
+
+  /**
+   * Email Templates Management
+   */
+  
+  async getEmailTemplates(options?: { category?: string; isActive?: boolean }): Promise<EmailTemplate[]> {
+    let query = db.select().from(emailTemplates);
+    
+    // Apply filters if provided
+    if (options?.category || options?.isActive !== undefined) {
+      const conditions = [];
+      if (options.category) {
+        conditions.push(eq(emailTemplates.category, options.category));
+      }
+      if (options.isActive !== undefined) {
+        conditions.push(eq(emailTemplates.isActive, options.isActive));
+      }
+      query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
+    }
+    
+    return await query.orderBy(desc(emailTemplates.createdAt));
+  }
+
+  async getEmailTemplateById(id: string): Promise<EmailTemplate | undefined> {
+    const [result] = await db
+      .select()
+      .from(emailTemplates)
+      .where(eq(emailTemplates.id, id));
+    
+    return result;
+  }
+
+  async createEmailTemplate(template: Omit<InsertEmailTemplate, 'id'>): Promise<EmailTemplate> {
+    const [result] = await db
+      .insert(emailTemplates)
+      .values(template)
+      .returning();
+    
+    return result;
+  }
+
+  async updateEmailTemplate(id: string, updates: Partial<Omit<InsertEmailTemplate, 'id'>>): Promise<EmailTemplate> {
+    const [result] = await db
+      .update(emailTemplates)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(emailTemplates.id, id))
+      .returning();
+    
+    return result;
+  }
+
+  async deleteEmailTemplate(id: string): Promise<void> {
+    await db
+      .delete(emailTemplates)
+      .where(eq(emailTemplates.id, id));
+  }
+
+  async trackTemplateUsage(id: string): Promise<void> {
+    await db
+      .update(emailTemplates)
+      .set({
+        timesUsed: sql`${emailTemplates.timesUsed} + 1`,
+        lastUsedAt: new Date(),
+      })
+      .where(eq(emailTemplates.id, id));
   }
 
   /**

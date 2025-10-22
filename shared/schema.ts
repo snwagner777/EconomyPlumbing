@@ -1190,6 +1190,47 @@ export const emailSendLog = pgTable("email_send_log", {
   resendEmailIdIdx: index("email_send_log_resend_id_idx").on(table.resendEmailId),
 }));
 
+// Email Templates - Reusable templates for common campaigns
+export const emailTemplates = pgTable("email_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Template identification
+  name: text("name").notNull().unique(),
+  category: text("category").notNull(), // 'promotional', 'service_reminder', 'review_request', 'seasonal', 'retention', 'win_back'
+  description: text("description"),
+  
+  // Template content with merge variables
+  subject: text("subject").notNull(), // "{firstName}, it's time for your annual plumbing inspection"
+  preheader: text("preheader"), // Preview text
+  htmlContent: text("html_content").notNull(), // Full HTML template with {variables}
+  textContent: text("text_content"), // Plain text version
+  
+  // Required merge variables
+  requiredVariables: jsonb("required_variables").notNull().default('[]'), // ['firstName', 'lastServiceDate', 'technicianName']
+  
+  // AI generation
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"),
+  
+  // Performance tracking
+  timesUsed: integer("times_used").notNull().default(0),
+  avgOpenRate: integer("avg_open_rate"), // 45 = 45%
+  avgClickRate: integer("avg_click_rate"), // 12 = 12%
+  
+  // Status
+  isActive: boolean("is_active").notNull().default(true),
+  isDefault: boolean("is_default").notNull().default(false), // Default template for category
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at"),
+}, (table) => ({
+  categoryIdx: index("email_templates_category_idx").on(table.category),
+  isActiveIdx: index("email_templates_is_active_idx").on(table.isActive),
+  isDefaultIdx: index("email_templates_is_default_idx").on(table.isDefault),
+}));
+
 // Email Preferences - Unsubscribe categories per customer
 export const emailPreferences = pgTable("email_preferences", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2140,6 +2181,17 @@ export const systemHealthChecks = pgTable("system_health_checks", {
   lastCheckedAtIdx: index("system_health_checks_last_checked_at_idx").on(table.lastCheckedAt),
 }));
 
+// Email Templates insert schema
+export const insertEmailTemplateSchema = createInsertSchema(emailTemplates).omit({
+  id: true,
+  timesUsed: true,
+  avgOpenRate: true,
+  avgClickRate: true,
+  createdAt: true,
+  updatedAt: true,
+  lastUsedAt: true,
+});
+
 // SMS Marketing insert schemas
 export const insertSMSMarketingPreferencesSchema = createInsertSchema(smsMarketingPreferences).omit({
   id: true,
@@ -2220,6 +2272,8 @@ export type EmailPreferences = typeof emailPreferences.$inferSelect;
 export type InsertEmailPreferences = z.infer<typeof insertEmailPreferencesSchema>;
 export type EmailSuppression = typeof emailSuppressionList.$inferSelect;
 export type InsertEmailSuppression = z.infer<typeof insertEmailSuppressionSchema>;
+export type EmailTemplate = typeof emailTemplates.$inferSelect;
+export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
 export type ReviewLinkClick = typeof reviewLinkClicks.$inferSelect;
 export type InsertReviewLinkClick = z.infer<typeof insertReviewLinkClickSchema>;
 export type ServiceTitanJobForm = typeof serviceTitanJobForms.$inferSelect;
