@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,10 +7,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText } from "lucide-react";
+import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText, Eye, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import type { EmailCampaign } from "@shared/schema";
@@ -35,6 +37,225 @@ type CampaignWithDetails = EmailCampaign & {
   memberCount?: number;
 };
 
+// Email Preview Dialog Component
+function EmailPreviewDialog({ 
+  open, 
+  onOpenChange, 
+  email, 
+  campaign,
+  onApprove,
+  onReject 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+  email: CampaignEmail | null;
+  campaign: CampaignWithDetails | null;
+  onApprove?: () => void;
+  onReject?: () => void;
+}) {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedContent, setEditedContent] = useState({ subject: '', htmlContent: '' });
+
+  useEffect(() => {
+    if (email) {
+      setEditedContent({ subject: email.subject, htmlContent: email.htmlContent });
+    }
+  }, [email]);
+
+  useEffect(() => {
+    // Safely render HTML in iframe
+    if (iframeRef.current && email && open) {
+      const iframeDoc = iframeRef.current.contentDocument;
+      if (iframeDoc) {
+        iframeDoc.open();
+        iframeDoc.write(isEditMode ? editedContent.htmlContent : email.htmlContent);
+        iframeDoc.close();
+      }
+    }
+  }, [email, open, isEditMode, editedContent.htmlContent]);
+
+  if (!email || !campaign) return null;
+
+  const needsApproval = campaign.status === 'pending_approval' && email.generatedByAI;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <Eye className="w-5 h-5" />
+              Email Preview
+              {email.generatedByAI && (
+                <Badge className="bg-purple-500">
+                  <Sparkles className="w-3 h-3 mr-1" />
+                  AI Generated
+                </Badge>
+              )}
+            </span>
+            {!isEditMode && needsApproval && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditMode(true)}
+                data-testid="button-edit-email"
+              >
+                Edit Content
+              </Button>
+            )}
+          </DialogTitle>
+          <DialogDescription>
+            Review the email content before approval
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-auto">
+          <Tabs defaultValue="preview" className="h-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="preview" data-testid="tab-email-preview">Visual Preview</TabsTrigger>
+              <TabsTrigger value="html" data-testid="tab-email-html">HTML Source</TabsTrigger>
+              <TabsTrigger value="text" data-testid="tab-email-text">Plain Text</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="preview" className="mt-4 h-full">
+              <div className="space-y-4">
+                <div>
+                  <Label>Subject Line</Label>
+                  {isEditMode ? (
+                    <Input
+                      value={editedContent.subject}
+                      onChange={(e) => setEditedContent({ ...editedContent, subject: e.target.value })}
+                      className="mt-1"
+                      data-testid="input-email-subject"
+                    />
+                  ) : (
+                    <p className="mt-1 font-medium" data-testid={`text-preview-subject-${email.id}`}>
+                      {email.subject}
+                    </p>
+                  )}
+                </div>
+                
+                {email.preheader && (
+                  <div>
+                    <Label>Preview Text</Label>
+                    <p className="mt-1 text-sm text-muted-foreground" data-testid={`text-preview-preheader-${email.id}`}>
+                      {email.preheader}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <Label>Email Content</Label>
+                  <div className="mt-2 border rounded-lg overflow-hidden bg-white">
+                    {isEditMode ? (
+                      <Textarea
+                        value={editedContent.htmlContent}
+                        onChange={(e) => setEditedContent({ ...editedContent, htmlContent: e.target.value })}
+                        className="min-h-[400px] font-mono text-xs"
+                        data-testid="textarea-email-html"
+                      />
+                    ) : (
+                      <iframe
+                        ref={iframeRef}
+                        title="Email Preview"
+                        className="w-full h-[400px]"
+                        sandbox="allow-same-origin"
+                        data-testid="iframe-email-preview"
+                      />
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <span>Email #{email.sequenceNumber}</span>
+                  <span>Day {email.dayOffset}</span>
+                  {email.totalSent > 0 && (
+                    <>
+                      <span>Sent: {email.totalSent}</span>
+                      <span>Opened: {email.totalOpened}</span>
+                      <span>Clicked: {email.totalClicked}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="html" className="mt-4">
+              <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+                <pre className="text-xs font-mono" data-testid={`text-html-source-${email.id}`}>
+                  <code>{isEditMode ? editedContent.htmlContent : email.htmlContent}</code>
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+
+            <TabsContent value="text" className="mt-4">
+              <ScrollArea className="h-[500px] w-full rounded-md border p-4">
+                <pre className="whitespace-pre-wrap text-sm" data-testid={`text-plain-content-${email.id}`}>
+                  {email.textContent}
+                </pre>
+              </ScrollArea>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {needsApproval && (
+          <DialogFooter className="gap-2">
+            {isEditMode ? (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsEditMode(false)}
+                  data-testid="button-cancel-edit"
+                >
+                  Cancel Edit
+                </Button>
+                <Button
+                  onClick={() => {
+                    // Save edited content and approve
+                    if (onApprove) {
+                      onApprove();
+                      setIsEditMode(false);
+                    }
+                  }}
+                  data-testid="button-save-approve"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Save & Approve
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    if (onReject) onReject();
+                    onOpenChange(false);
+                  }}
+                  data-testid="button-reject-email"
+                >
+                  <X className="w-4 h-4 mr-2" />
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (onApprove) onApprove();
+                    onOpenChange(false);
+                  }}
+                  data-testid="button-approve-email"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Approve & Send
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function EmailCampaignsAdmin() {
   const { toast } = useToast();
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
@@ -43,6 +264,15 @@ export default function EmailCampaignsAdmin() {
     campaign: null,
   });
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [previewDialog, setPreviewDialog] = useState<{ 
+    open: boolean; 
+    email: CampaignEmail | null; 
+    campaign: CampaignWithDetails | null;
+  }>({
+    open: false,
+    email: null,
+    campaign: null,
+  });
 
   // Fetch all campaigns
   const { data: campaignsData, isLoading } = useQuery<{ campaigns: CampaignWithDetails[] }>({
@@ -323,16 +553,28 @@ export default function EmailCampaignsAdmin() {
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setPreviewDialog({ open: true, email, campaign })}
+                            data-testid={`button-preview-email-${email.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            Preview Email
+                          </Button>
+                          {email.generatedByAI && campaign.status === 'pending_approval' && (
+                            <Badge variant="secondary" className="gap-1">
+                              <Clock className="w-3 h-3" />
+                              Needs Review
+                            </Badge>
+                          )}
+                        </div>
+                        
                         <div>
                           <Label className="text-xs font-semibold text-muted-foreground">Plain Text Content</Label>
-                          <div className="mt-1 p-3 bg-background rounded-md border text-sm whitespace-pre-wrap" data-testid={`text-email-text-content-${email.id}`}>
+                          <div className="mt-1 p-3 bg-background rounded-md border text-sm whitespace-pre-wrap line-clamp-3" data-testid={`text-email-text-content-${email.id}`}>
                             {email.textContent}
-                          </div>
-                        </div>
-                        <div>
-                          <Label className="text-xs font-semibold text-muted-foreground">HTML Content</Label>
-                          <div className="mt-1 p-3 bg-background rounded-md border text-xs font-mono overflow-x-auto max-h-60 overflow-y-auto" data-testid={`text-email-html-content-${email.id}`}>
-                            <pre>{email.htmlContent}</pre>
                           </div>
                         </div>
                       </CardContent>
@@ -557,6 +799,29 @@ export default function EmailCampaignsAdmin() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Email Preview Dialog */}
+      <EmailPreviewDialog
+        open={previewDialog.open}
+        onOpenChange={(open) => setPreviewDialog({ open, email: null, campaign: null })}
+        email={previewDialog.email}
+        campaign={previewDialog.campaign}
+        onApprove={() => {
+          if (previewDialog.campaign) {
+            approveMutation.mutate(previewDialog.campaign.id);
+            setPreviewDialog({ open: false, email: null, campaign: null });
+          }
+        }}
+        onReject={() => {
+          // Handle rejection (could add a rejection API endpoint)
+          toast({
+            title: "Campaign rejected",
+            description: "The AI-generated content has been rejected. Please regenerate or edit manually.",
+            variant: "destructive",
+          });
+          setPreviewDialog({ open: false, email: null, campaign: null });
+        }}
+      />
     </div>
   );
 }
