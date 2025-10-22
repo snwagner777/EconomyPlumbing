@@ -928,10 +928,94 @@ export default function CustomerPortal() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Customer Portal
+              {verificationStep === 'authenticated' && customerData ? (() => {
+                const hour = new Date().getHours();
+                const day = new Date().getDay();
+                const month = new Date().getMonth();
+                const serviceCount = customerStats?.serviceCount || 0;
+                const firstName = customerData.customer.name?.split(' ')[0] || 'there';
+                
+                // Build a pool of possible greetings
+                const greetings: string[] = [];
+                
+                // Time-based greetings
+                if (hour < 12) {
+                  greetings.push(`Good morning, ${firstName}!`);
+                  greetings.push(`Rise and shine, ${firstName}!`);
+                  greetings.push(`Morning, ${firstName}! Ready to tackle the day?`);
+                } else if (hour < 17) {
+                  greetings.push(`Good afternoon, ${firstName}!`);
+                  greetings.push(`Hey ${firstName}, hope your day is going well!`);
+                  greetings.push(`Afternoon, ${firstName}!`);
+                } else {
+                  greetings.push(`Good evening, ${firstName}!`);
+                  greetings.push(`Evening, ${firstName}!`);
+                  greetings.push(`Hey ${firstName}, winding down for the day?`);
+                }
+                
+                // Day-specific greetings
+                if (day === 1) {
+                  greetings.push(`Happy Monday, ${firstName}!`);
+                  greetings.push(`Monday motivation, ${firstName}!`);
+                } else if (day === 5) {
+                  greetings.push(`TGIF, ${firstName}!`);
+                  greetings.push(`Happy Friday, ${firstName}!`);
+                } else if (day === 0 || day === 6) {
+                  greetings.push(`Happy weekend, ${firstName}!`);
+                  greetings.push(`Enjoying your weekend, ${firstName}?`);
+                }
+                
+                // Loyalty-based greetings
+                if (serviceCount > 20) {
+                  greetings.push(`Welcome back, ${firstName}! You're practically family!`);
+                  greetings.push(`Hey ${firstName}, our VIP customer!`);
+                  greetings.push(`${firstName}, always great to see you!`);
+                } else if (serviceCount > 10) {
+                  greetings.push(`Welcome back, ${firstName}! Thanks for your loyalty!`);
+                  greetings.push(`Great to see you again, ${firstName}!`);
+                } else if (serviceCount > 5) {
+                  greetings.push(`Welcome back, ${firstName}!`);
+                  greetings.push(`Good to see you, ${firstName}!`);
+                } else if (serviceCount === 0) {
+                  greetings.push(`Welcome, ${firstName}! Excited to serve you!`);
+                  greetings.push(`Hello ${firstName}! Let's get started!`);
+                } else {
+                  greetings.push(`Welcome back, ${firstName}!`);
+                  greetings.push(`Hello again, ${firstName}!`);
+                }
+                
+                // Seasonal greetings
+                if (month === 11) {
+                  greetings.push(`Happy holidays, ${firstName}!`);
+                  greetings.push(`Season's greetings, ${firstName}!`);
+                } else if (month === 0) {
+                  greetings.push(`Happy New Year, ${firstName}!`);
+                } else if (month === 6 || month === 7) {
+                  greetings.push(`Enjoying the summer, ${firstName}?`);
+                  greetings.push(`Stay cool, ${firstName}!`);
+                } else if (month === 2 || month === 3) {
+                  greetings.push(`Happy spring, ${firstName}!`);
+                } else if (month === 9 || month === 10) {
+                  greetings.push(`Happy fall, ${firstName}!`);
+                }
+                
+                // General encouraging greetings
+                greetings.push(`Hey ${firstName}! How can we help today?`);
+                greetings.push(`${firstName}, great to have you here!`);
+                greetings.push(`Welcome, ${firstName}!`);
+                greetings.push(`Hello ${firstName}! What brings you here today?`);
+                greetings.push(`${firstName}, we're here to help!`);
+                
+                // Pick a random greeting from the pool
+                const randomIndex = Math.floor(Math.random() * greetings.length);
+                return greetings[randomIndex];
+              })() : 'Customer Portal'}
             </h1>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Access your service history, appointments, and invoices
+              {verificationStep === 'authenticated' ? 
+                'Your service history, appointments, and account details' :
+                'Access your service history, appointments, and invoices'
+              }
             </p>
           </div>
 
