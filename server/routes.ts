@@ -6433,7 +6433,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   app.get("/api/portal/session", (req, res) => {
     // Check if user has an active portal session
     if (req.session && req.session.portalCustomerId) {
-      res.json({ customerId: req.session.portalCustomerId });
+      res.json({ 
+        customerId: req.session.portalCustomerId,
+        availableCustomerIds: req.session.portalAvailableCustomerIds || [req.session.portalCustomerId]
+      });
     } else {
       res.status(401).json({ error: "No active session" });
     }
@@ -6773,15 +6776,22 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       console.log(`[Portal Auth] Found ${matchingCustomers.length} matching customer account(s) with complete contact info`);
 
       // Save session for persistent login
-      if (matchingCustomers.length === 1 && req.session) {
-        req.session.portalCustomerId = matchingCustomers[0].id;
+      if (req.session) {
+        // Store all available customer IDs for account switching
+        req.session.portalAvailableCustomerIds = matchingCustomers.map(c => c.id);
+        
+        // Auto-select if only one account
+        if (matchingCustomers.length === 1) {
+          req.session.portalCustomerId = matchingCustomers[0].id;
+        }
+        
         await new Promise<void>((resolve, reject) => {
           req.session!.save((err) => {
             if (err) reject(err);
             else resolve();
           });
         });
-        console.log(`[Portal Auth] Session saved for customer ${matchingCustomers[0].id}`);
+        console.log(`[Portal Auth] Session saved - available accounts: ${matchingCustomers.length}`);
       }
 
       return res.json({ 
@@ -6795,6 +6805,52 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       res.status(500).json({ 
         error: error.message || "Failed to verify code",
         details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
+    }
+  });
+
+  // Switch between multiple customer accounts
+  app.post("/api/portal/switch-account", async (req, res) => {
+    try {
+      const { customerId } = req.body;
+
+      if (!customerId) {
+        return res.status(400).json({ error: "Customer ID required" });
+      }
+
+      // Check if user has an active session
+      if (!req.session || !req.session.portalAvailableCustomerIds) {
+        return res.status(401).json({ error: "Not authenticated" });
+      }
+
+      const targetCustomerId = parseInt(customerId);
+
+      // Validate that user has access to this account
+      if (!req.session.portalAvailableCustomerIds.includes(targetCustomerId)) {
+        console.log(`[Portal] Account switch denied - Customer ${targetCustomerId} not in available accounts:`, req.session.portalAvailableCustomerIds);
+        return res.status(403).json({ error: "Access denied to this account" });
+      }
+
+      // Switch to the new account
+      req.session.portalCustomerId = targetCustomerId;
+      
+      await new Promise<void>((resolve, reject) => {
+        req.session!.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
+      console.log(`[Portal] Account switched to customer ${targetCustomerId}`);
+
+      return res.json({ 
+        success: true,
+        customerId: targetCustomerId
+      });
+    } catch (error: any) {
+      console.error("[Portal] Switch account error:", error);
+      res.status(500).json({ 
+        error: error.message || "Failed to switch account"
       });
     }
   });

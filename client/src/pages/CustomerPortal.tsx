@@ -44,11 +44,23 @@ import {
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 
+interface ServiceTitanContact {
+  id: number;
+  type: string;
+  value: string;
+  memo?: string;
+  phoneSettings?: {
+    phoneNumber: string;
+    doNotText: boolean;
+  };
+}
+
 interface ServiceTitanCustomer {
   id: number;
   name: string;
   email: string;
   phoneNumber: string;
+  contacts?: ServiceTitanContact[];
   address?: {
     street: string;
     city: string;
@@ -133,6 +145,7 @@ export default function CustomerPortal() {
   
   // Multi-account support
   const [availableAccounts, setAvailableAccounts] = useState<CustomerAccount[]>([]);
+  const [availableCustomerIds, setAvailableCustomerIds] = useState<number[]>([]);
   const [showAccountSelection, setShowAccountSelection] = useState(false);
   
   // Verification state
@@ -274,6 +287,7 @@ export default function CustomerPortal() {
         if (data.customerId) {
           console.log('[Portal] Found active session, auto-logging in...');
           setCustomerId(data.customerId.toString());
+          setAvailableCustomerIds(data.availableCustomerIds || [data.customerId]);
           setVerificationStep('authenticated');
         }
       }
@@ -304,18 +318,21 @@ export default function CustomerPortal() {
       // Check if multiple accounts exist
       if (result.customers && result.customers.length > 1) {
         setAvailableAccounts(result.customers);
+        setAvailableCustomerIds(result.customers.map((c: any) => c.id));
         setVerificationStep('select-account');
         setLookupSuccess("Please select which account you'd like to access");
       } else if (result.customers && result.customers.length === 1) {
         // Single account - auto-select it
         const customerIdStr = result.customers[0].id.toString();
         setCustomerId(customerIdStr);
+        setAvailableCustomerIds([result.customers[0].id]);
         setVerificationStep('authenticated');
         setLookupSuccess("Welcome to your customer portal!");
       } else if (result.customerId) {
         // Backward compatibility for old response format
         const customerIdStr = result.customerId.toString();
         setCustomerId(customerIdStr);
+        setAvailableCustomerIds([result.customerId]);
         setVerificationStep('authenticated');
         setLookupSuccess("Welcome to your customer portal!");
       } else {
@@ -406,12 +423,14 @@ export default function CustomerPortal() {
       // Check if multiple accounts exist
       if (result.customers && result.customers.length > 1) {
         setAvailableAccounts(result.customers);
+        setAvailableCustomerIds(result.customers.map((c: any) => c.id));
         setVerificationStep('select-account');
         setLookupSuccess("Please select which account you'd like to access");
       } else if (result.customers && result.customers.length === 1) {
         // Single account - auto-select it
         const customerIdStr = result.customers[0].id.toString();
         setCustomerId(customerIdStr);
+        setAvailableCustomerIds([result.customers[0].id]);
         setVerificationStep('authenticated');
         setLookupSuccess("Welcome to your customer portal!");
         
@@ -420,6 +439,7 @@ export default function CustomerPortal() {
         // Backward compatibility for old response format
         const customerIdStr = result.customerId.toString();
         setCustomerId(customerIdStr);
+        setAvailableCustomerIds([result.customerId]);
         setVerificationStep('authenticated');
         setLookupSuccess("Welcome to your customer portal!");
         
@@ -435,18 +455,62 @@ export default function CustomerPortal() {
     }
   };
 
-  const handleSelectAccount = (accountId: number) => {
-    setCustomerId(accountId.toString());
-    setVerificationStep('authenticated');
-    setShowAccountSelection(false);
-    
-    // Store selected account for future reference
-    localStorage.setItem('selectedAccountId', accountId.toString());
+  const handleSelectAccount = async (accountId: number) => {
+    try {
+      // If we're in the select-account step (initial auth), just set the customer ID
+      if (verificationStep === 'select-account') {
+        setCustomerId(accountId.toString());
+        setVerificationStep('authenticated');
+        setShowAccountSelection(false);
+      } else {
+        // We're switching accounts - call the API
+        const response = await fetch('/api/portal/switch-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerId: accountId }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to switch account');
+        }
+
+        setCustomerId(accountId.toString());
+        setShowAccountSelection(false);
+        
+        // Invalidate and refetch customer data
+        queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer'] });
+      }
+    } catch (error: any) {
+      console.error('Account switch error:', error);
+      setLookupError('Failed to switch account. Please try again.');
+    }
   };
 
-  const handleSwitchAccount = () => {
-    if (availableAccounts.length > 1) {
-      setShowAccountSelection(true);
+  const handleSwitchAccount = async () => {
+    // If we have multiple accounts stored in availableCustomerIds, fetch their details
+    if (availableCustomerIds.length > 1) {
+      try {
+        // Fetch account details for all available customer IDs
+        const accountPromises = availableCustomerIds.map(async (id) => {
+          const response = await fetch(`/api/servicetitan/customer/${id}`);
+          const data = await response.json();
+          return {
+            id: data.customer.id,
+            name: data.customer.name,
+            type: 'Residential', // We don't have type in the customer data yet
+            address: data.customer.address ? 
+              [data.customer.address.street, data.customer.address.city, data.customer.address.state].filter(Boolean).join(', ') : 
+              undefined
+          };
+        });
+
+        const accounts = await Promise.all(accountPromises);
+        setAvailableAccounts(accounts);
+        setShowAccountSelection(true);
+      } catch (error) {
+        console.error('Failed to load account details:', error);
+        setLookupError('Failed to load account details');
+      }
     }
   };
 
@@ -1041,18 +1105,16 @@ export default function CustomerPortal() {
                             Contact Us
                           </a>
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={async () => {
-                            // Clear server-side session
-                            await fetch('/api/portal/logout', { method: 'POST' });
-                            setCustomerId(null);
-                            setVerificationStep('lookup');
-                          }}
-                          data-testid="button-logout"
-                        >
-                          Switch Account
-                        </Button>
+                        {availableCustomerIds.length > 1 && (
+                          <Button
+                            variant="outline"
+                            onClick={handleSwitchAccount}
+                            data-testid="button-switch-account"
+                          >
+                            <Users className="w-4 h-4 mr-2" />
+                            Switch Account
+                          </Button>
+                        )}
                       </div>
                     </CardHeader>
                     <CardContent>
@@ -1068,16 +1130,51 @@ export default function CustomerPortal() {
                             Edit
                           </Button>
                         </div>
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Phone</p>
-                            <p className="font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber}</p>
+                        
+                        {customerData.customer.contacts && customerData.customer.contacts.length > 0 ? (
+                          <div className="space-y-3">
+                            {customerData.customer.contacts.map((contact, index) => {
+                              const isEmail = contact.type === 'Email';
+                              const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
+                              
+                              if (!isEmail && !isPhone) return null;
+                              
+                              return (
+                                <div key={contact.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
+                                  {isEmail ? (
+                                    <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                  ) : (
+                                    <PhoneIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                                  )}
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-xs text-muted-foreground mb-0.5">
+                                      {contact.type === 'MobilePhone' ? 'Mobile' : contact.type}
+                                    </p>
+                                    <p className="font-medium break-all" data-testid={`contact-${contact.type.toLowerCase()}-${index}`}>
+                                      {contact.value}
+                                    </p>
+                                    {contact.memo && contact.memo !== 'email' && contact.memo !== 'Phone' && contact.memo !== 'mobile' && (
+                                      <p className="text-xs text-muted-foreground mt-0.5">
+                                        {contact.memo}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div>
-                            <p className="text-sm text-muted-foreground mb-1">Email</p>
-                            <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
+                        ) : (
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-1">Phone</p>
+                              <p className="font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber || 'Not provided'}</p>
+                            </div>
+                            <div>
+                              <p className="text-sm text-muted-foreground mb-1">Email</p>
+                              <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -2467,6 +2564,63 @@ export default function CustomerPortal() {
               data-testid="button-save-address"
             >
               {isUpdatingAddress ? "Updating..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Account Switcher Dialog */}
+      <Dialog open={showAccountSelection && verificationStep === 'authenticated'} onOpenChange={setShowAccountSelection}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-switch-account">
+          <DialogHeader>
+            <DialogTitle>Switch Account</DialogTitle>
+            <DialogDescription>
+              Select which account you'd like to view. You have access to multiple accounts.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-4">
+            {availableAccounts.map((account) => (
+              <Card
+                key={account.id}
+                className="hover-elevate active-elevate-2 cursor-pointer"
+                onClick={() => handleSelectAccount(account.id)}
+                data-testid={`switch-account-option-${account.id}`}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    {account.type === 'Commercial' ? (
+                      <Users className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <Home className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold">{account.name}</p>
+                        <Badge variant="secondary" className="text-xs">
+                          {account.type}
+                        </Badge>
+                      </div>
+                      {account.address && (
+                        <p className="text-sm text-muted-foreground flex items-start gap-1">
+                          <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                          {account.address}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowAccountSelection(false)}
+              data-testid="button-cancel-switch"
+            >
+              Cancel
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -8,11 +8,23 @@ interface ServiceTitanConfig {
   appKey: string;
 }
 
+interface ServiceTitanContact {
+  id: number;
+  type: string;
+  value: string;
+  memo?: string;
+  phoneSettings?: {
+    phoneNumber: string;
+    doNotText: boolean;
+  };
+}
+
 interface ServiceTitanCustomer {
   id: number;
   name?: string;
   email?: string;
   phoneNumber?: string;
+  contacts?: ServiceTitanContact[];
   address?: {
     street: string;
     city: string;
@@ -620,10 +632,18 @@ class ServiceTitanAPI {
         ...customerData,
         email: emailContact?.value || customerData.email || '',
         phoneNumber: phoneContact?.value || phoneContact?.phoneSettings?.phoneNumber || customerData.phoneNumber || '',
+        contacts: contacts.map((c: any) => ({
+          id: c.id,
+          type: c.type,
+          value: c.value || c.phoneSettings?.phoneNumber || '',
+          memo: c.memo,
+          phoneSettings: c.phoneSettings
+        }))
       };
       
       console.log(`[Portal Debug] Final email field:`, result.email || 'EMPTY STRING');
       console.log(`[Portal Debug] Final phoneNumber field:`, result.phoneNumber || 'EMPTY STRING');
+      console.log(`[Portal Debug] Returning ${result.contacts.length} contacts`);
       
       return result;
     } catch (error) {
