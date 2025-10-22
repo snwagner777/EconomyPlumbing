@@ -1387,8 +1387,35 @@ export default function CustomerPortal() {
                     {customerStats && (
                       <AspectRatio ratio={1 / 1}>
                         {(() => {
+                          // Handle 0 services case first
+                          if (customerStats.serviceCount === 0 || customerStats.topPercentile === null) {
+                            return (
+                              <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
+                                const element = document.getElementById('job-history-section');
+                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}>
+                                <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
+                                  <Home className="w-8 h-8 text-primary mb-2" />
+                                  <div className="text-base font-bold mb-1">
+                                    Welcome!
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    New to Economy Plumbing
+                                  </p>
+                                  <Badge variant="secondary" className="text-xs mb-1">
+                                    🎉 First Time Customer
+                                  </Badge>
+                                  <p className="text-xs text-muted-foreground mt-1 px-2 line-clamp-3">
+                                    We're excited to serve you! Schedule your first service or call us at (512) 259-7222 for any plumbing needs.
+                                  </p>
+                                  <p className="text-xs text-primary mt-2 absolute bottom-2">Get Started →</p>
+                                </CardContent>
+                              </Card>
+                            );
+                          }
+                          
                           // Flip the percentile: show how many they're BETTER than (not how many are better than them)
-                          const betterThanPercentile = 100 - customerStats.topPercentile;
+                          const betterThanPercentile = Math.min(99, 100 - customerStats.topPercentile); // Cap at 99%
                           
                           // Determine message tier and styling based on performance
                           let message = '';

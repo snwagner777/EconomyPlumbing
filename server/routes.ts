@@ -7248,7 +7248,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // Get customer stats (service count and percentile ranking)
-  // ⚡ Ultra-fast database-driven query - no API calls!
+  // Uses LIVE API call for accurate job count, database for percentile ranking
   app.get("/api/portal/customer-stats/:customerId", async (req, res) => {
     try {
       const { customerId } = req.params;
@@ -7259,32 +7259,32 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       console.log("[Portal] Fetching customer stats for:", customerId);
 
-      const { serviceTitanCustomers } = await import('@shared/schema');
-      const { gt, count, sql } = await import('drizzle-orm');
+      // Get LIVE job count from ServiceTitan API
+      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
       
-      // Get this customer's job count from database
-      const [customer] = await db
-        .select({ 
-          jobCount: serviceTitanCustomers.jobCount 
-        })
-        .from(serviceTitanCustomers)
-        .where(sql`${serviceTitanCustomers.id} = ${parseInt(customerId)}`)
-        .limit(1);
+      // Fetch all jobs for this customer from API
+      const jobs = await serviceTitan.getCustomerJobs(parseInt(customerId));
+      
+      // Count only COMPLETED jobs to match what the sync does
+      const completedJobs = jobs.filter(job => 
+        job.status === 'Completed' && job.completedOn !== null
+      );
+      const serviceCount = completedJobs.length;
+      
+      console.log(`[Portal] Customer ${customerId}: Found ${jobs.length} total jobs, ${serviceCount} completed`);
 
-      if (!customer) {
-        console.log(`[Portal] Customer ${customerId} not found in database`);
-        return res.status(404).json({ error: "Customer not found" });
-      }
-
-      const serviceCount = customer.jobCount || 0;
-
-      // Don't show stats if customer has 0 services
+      // Don't show stats if customer has 0 completed services
       if (serviceCount === 0) {
-        console.log(`[Portal] Customer ${customerId} has 0 services - not returning stats`);
+        console.log(`[Portal] Customer ${customerId} has 0 completed services`);
         return res.json({ serviceCount: 0, topPercentile: null });
       }
 
-      // Calculate percentile ranking using database
+      // Calculate percentile ranking using database for performance
+      // (Can't make 11,000+ API calls for comparison)
+      const { serviceTitanCustomers } = await import('@shared/schema');
+      const { gt, count } = await import('drizzle-orm');
+      
       // Count how many customers have MORE services than this customer
       const [result] = await db
         .select({ 
@@ -7308,10 +7308,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       // Calculate percentile (inverted - lower number = better rank)
       // If 4 out of 100 customers have more services, you're in the top 4%
       const topPercentile = totalCustomersWithService > 0
-        ? Math.round((customersWithMore / totalCustomersWithService) * 100)
+        ? Math.min(99, Math.round((customersWithMore / totalCustomersWithService) * 100)) // Cap at 99% to prevent "Better than 100%"
         : 50;
 
-      console.log(`[Portal] Customer ${customerId}: ${serviceCount} services, ${customersWithMore}/${totalCustomersWithService} customers have more → Top ${topPercentile}%`);
+      console.log(`[Portal] Customer ${customerId}: ${serviceCount} completed services, ${customersWithMore}/${totalCustomersWithService} customers have more → Top ${topPercentile}%`);
 
       res.json({
         serviceCount,
