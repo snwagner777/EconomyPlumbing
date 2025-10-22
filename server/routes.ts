@@ -6854,6 +6854,202 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
   
+  // Admin: Email conversation to admin
+  app.post("/api/admin/chatbot/conversation/:id/email", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch conversation with messages
+      const [conversation] = await db
+        .select()
+        .from(chatbotConversations)
+        .where(eq(chatbotConversations.id, id));
+        
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      const messages = await db
+        .select()
+        .from(chatbotMessages)
+        .where(eq(chatbotMessages.conversationId, id))
+        .orderBy(chatbotMessages.createdAt);
+      
+      // Get admin email from environment
+      const adminEmail = process.env.ADMIN_EMAIL || process.env.CONTACT_EMAIL;
+      
+      if (!adminEmail) {
+        console.error("[Chatbot] ADMIN_EMAIL or CONTACT_EMAIL not configured");
+        return res.status(500).json({ error: "Admin email not configured" });
+      }
+      
+      // Format conversation for email
+      const formatTime = (date: Date) => {
+        return new Date(date).toLocaleString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        });
+      };
+      
+      // Build conversation HTML
+      let conversationHtml = messages.map((msg) => {
+        const time = formatTime(msg.createdAt);
+        const roleStyle = msg.role === 'user' 
+          ? 'background-color: #e0f2fe; border-left: 3px solid #0284c7;'
+          : 'background-color: #f3f4f6; border-left: 3px solid #6b7280;';
+        
+        let messageHtml = `
+          <div style="${roleStyle} padding: 15px; margin: 10px 0; border-radius: 5px;">
+            <div style="margin-bottom: 5px;">
+              <strong style="color: ${msg.role === 'user' ? '#0284c7' : '#374151'};">
+                ${msg.role === 'user' ? '👤 Customer' : '🤖 Assistant'}
+              </strong>
+              <span style="color: #6b7280; font-size: 12px; margin-left: 10px;">${time}</span>
+            </div>
+        `;
+        
+        // Add image if present
+        if (msg.imageUrl) {
+          messageHtml += `
+            <div style="margin: 10px 0;">
+              <a href="${msg.imageUrl}" style="color: #0284c7;">📷 View Attached Image</a>
+            </div>
+          `;
+        }
+        
+        // Add message content
+        messageHtml += `
+            <div style="white-space: pre-wrap; color: #374151;">${msg.content}</div>
+        `;
+        
+        // Add feedback if present
+        if (msg.feedback) {
+          const feedbackIcon = msg.feedback === 'positive' ? '👍' : '👎';
+          const feedbackColor = msg.feedback === 'positive' ? '#10b981' : '#ef4444';
+          messageHtml += `
+            <div style="margin-top: 10px;">
+              <span style="color: ${feedbackColor}; font-size: 14px;">
+                ${feedbackIcon} Customer feedback: ${msg.feedback}
+              </span>
+            </div>
+          `;
+        }
+        
+        messageHtml += `</div>`;
+        return messageHtml;
+      }).join('');
+      
+      // Build complete email HTML
+      const emailHtml = `
+        <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+          <div style="background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 28px;">💬 AI Chatbot Conversation Log</h1>
+          </div>
+          
+          <div style="background-color: #f9fafb; padding: 20px; border: 1px solid #e5e7eb;">
+            <h2 style="color: #111827; margin-top: 0;">Conversation Details</h2>
+            
+            <div style="background-color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Session ID:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${conversation.sessionId}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Started:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${formatTime(conversation.startedAt)}</td>
+                </tr>
+                ${conversation.endedAt ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Ended:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${formatTime(conversation.endedAt)}</td>
+                </tr>
+                ` : ''}
+                ${conversation.rating ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Customer Rating:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${'⭐'.repeat(conversation.rating)} (${conversation.rating}/5)</td>
+                </tr>
+                ` : ''}
+                ${conversation.pageContext ? `
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Page Context:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${conversation.pageContext}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Total Messages:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">${messages.length}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; color: #6b7280;"><strong>Status:</strong></td>
+                  <td style="padding: 8px 0; color: #374151;">
+                    ${conversation.archived ? '<span style="color: #6b7280;">📁 Archived</span>' : 
+                      conversation.endedAt ? '<span style="color: #059669;">✅ Completed</span>' : 
+                      '<span style="color: #0284c7;">🔄 Active</span>'}
+                  </td>
+                </tr>
+              </table>
+              
+              ${conversation.notes ? `
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e5e7eb;">
+                <strong style="color: #6b7280;">Admin Notes:</strong>
+                <p style="color: #374151; margin: 5px 0;">${conversation.notes}</p>
+              </div>
+              ` : ''}
+            </div>
+            
+            <h3 style="color: #111827; margin-bottom: 15px;">Conversation Transcript</h3>
+            <div style="background-color: white; padding: 20px; border-radius: 8px;">
+              ${conversationHtml}
+            </div>
+            
+            <div style="margin-top: 30px; padding: 20px; background-color: #f0f9ff; border-radius: 8px; text-align: center;">
+              <p style="color: #0369a1; margin: 0;">
+                <strong>View in Admin Panel:</strong><br>
+                <a href="${process.env.NODE_ENV === 'production' ? 'https://www.plumbersthatcare.com' : 'http://localhost:5000'}/admin/chatbot" 
+                   style="color: #0284c7; text-decoration: none; font-weight: bold;">
+                  Open Chatbot Management Dashboard →
+                </a>
+              </p>
+            </div>
+          </div>
+          
+          <div style="background-color: #374151; padding: 20px; text-align: center; border-radius: 0 0 10px 10px;">
+            <p style="color: #d1d5db; margin: 0; font-size: 14px;">
+              This email was generated from the Economy Plumbing Services AI Chatbot System<br>
+              © ${new Date().getFullYear()} Economy Plumbing Services. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `;
+      
+      // Send email using Resend
+      const { sendEmail } = await import('./email');
+      
+      await sendEmail({
+        to: adminEmail,
+        subject: `Chatbot Conversation Log - ${formatTime(conversation.startedAt)}`,
+        html: emailHtml,
+        tags: [
+          { name: 'type', value: 'chatbot-conversation' },
+          { name: 'conversation_id', value: conversation.id }
+        ]
+      });
+      
+      res.json({ success: true, message: "Conversation emailed successfully" });
+      console.log(`[Chatbot] Conversation ${id} emailed to ${adminEmail}`);
+      
+    } catch (error) {
+      console.error("Error emailing conversation:", error);
+      res.status(500).json({ error: "Failed to email conversation" });
+    }
+  });
+  
   // Admin: Get analytics
   app.get("/api/admin/chatbot/analytics", requireAdmin, async (req, res) => {
     try {
