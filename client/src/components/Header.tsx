@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, ChevronDown } from "lucide-react";
+import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
@@ -13,7 +13,12 @@ declare global {
   }
 }
 
-export default function Header() {
+interface HeaderProps {
+  isPortalAuthenticated?: boolean;
+  onPortalLogout?: () => void;
+}
+
+export default function Header({ isPortalAuthenticated = false, onPortalLogout }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -360,6 +365,19 @@ export default function Header() {
               <span className="hidden xl:inline">{phoneConfig.display}</span>
               <span className="xl:hidden">{phoneConfig.display.replace(/\s/g, '')}</span>
             </a>
+            {isPortalAuthenticated && location === "/customer-portal" && (
+              <Button 
+                onClick={onPortalLogout}
+                variant="outline"
+                size="sm"
+                className="whitespace-nowrap"
+                data-testid="button-logout"
+              >
+                <LogOut className="w-4 h-4 mr-1.5" />
+                <span className="hidden xl:inline">Sign Out</span>
+                <span className="xl:hidden">Exit</span>
+              </Button>
+            )}
             <Button 
               onClick={openScheduler}
               className="bg-primary text-primary-foreground whitespace-nowrap"
@@ -558,6 +576,17 @@ export default function Header() {
               <Button onClick={() => { openScheduler(); setMobileMenuOpen(false); }} className="w-full bg-primary" data-testid="mobile-button-schedule">
                 Schedule Service
               </Button>
+              {isPortalAuthenticated && location === "/customer-portal" && (
+                <Button 
+                  onClick={() => { onPortalLogout?.(); setMobileMenuOpen(false); }}
+                  variant="outline"
+                  className="w-full"
+                  data-testid="mobile-button-logout"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </Button>
+              )}
             </div>
           </div>
         </div>

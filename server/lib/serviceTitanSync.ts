@@ -95,8 +95,8 @@ export async function syncServiceTitanData(): Promise<void> {
     const jobResult = await serviceTitan.syncAllJobs();
     
     console.log(`[ServiceTitan Sync] ✅ Job sync completed!`);
-    console.log(`[ServiceTitan Sync] - Jobs fetched: ${jobResult.jobsFetched}`);
-    console.log(`[ServiceTitan Sync] - Jobs processed: ${jobResult.jobsProcessed}`);
+    console.log(`[ServiceTitan Sync] - Jobs synced: ${jobResult.jobsCount}`);
+    console.log(`[ServiceTitan Sync] - Customers updated: ${jobResult.customersUpdated}`);
     console.log(`[ServiceTitan Sync] - Job sync duration: ${(jobResult.duration / 1000).toFixed(1)}s`);
     
     const totalDuration = (Date.now() - startTime) / 1000;

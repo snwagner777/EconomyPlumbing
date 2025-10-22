@@ -759,6 +759,40 @@ export default function CustomerPortal() {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const response = await fetch('/api/portal/logout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to logout');
+      }
+
+      // Clear state and redirect to portal home
+      setCustomerId(null);
+      setAvailableCustomerIds([]);
+      setVerificationStep('lookup');
+      setLookupType('phone');
+      setLookupValue('');
+      setVerificationCode('');
+      
+      // Show success message
+      toast({
+        title: "Signed out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDeleteContact = async () => {
     if (!customerId || !contactToDelete) return;
     
@@ -885,7 +919,10 @@ export default function CustomerPortal() {
         title="Customer Portal - Economy Plumbing Services"
         description="Access your service history, appointments, and invoices. View your Economy Plumbing Services account information and upcoming appointments."
       />
-      <Header />
+      <Header 
+        isPortalAuthenticated={verificationStep === 'authenticated'} 
+        onPortalLogout={handleLogout} 
+      />
 
       <main className="min-h-screen py-12 px-4">
         <div className="max-w-6xl mx-auto">
