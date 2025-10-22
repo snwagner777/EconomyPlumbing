@@ -1232,16 +1232,16 @@ export default function EmailCampaignsAdmin() {
 
       {/* Add Tracking Number Dialog */}
       <Dialog open={trackingNumberDialog.open} onOpenChange={(open) => setTrackingNumberDialog({ open, campaign: null })}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Add Tracking Number</DialogTitle>
+            <DialogTitle>Configure Campaign Phone Number</DialogTitle>
             <DialogDescription>
-              Add a ServiceTitan tracking number to {trackingNumberDialog.campaign?.name}
+              Add a tracking phone number to {trackingNumberDialog.campaign?.name}. This will automatically create a tracking entry with UTM parameters for attribution.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="tracking-number">Tracking Number</Label>
+              <Label htmlFor="tracking-number">Campaign Phone Number</Label>
               <Input
                 id="tracking-number"
                 placeholder="(512) 555-1234"
@@ -1250,8 +1250,27 @@ export default function EmailCampaignsAdmin() {
                 data-testid="input-tracking-number"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Enter the FREE ServiceTitan tracking number for this campaign
+                Enter the phone number for this email campaign. The system will automatically:
               </p>
+              <ul className="text-xs text-muted-foreground mt-2 ml-4 list-disc space-y-1">
+                <li>Create a tracking number entry</li>
+                <li>Add UTM parameters (utm_source=email, utm_campaign={trackingNumberDialog.campaign?.name?.toLowerCase().replace(/\s+/g, '-')})</li>
+                <li>Setup attribution tracking</li>
+              </ul>
+            </div>
+            <div className="bg-muted/50 rounded-lg p-3">
+              <p className="text-xs font-medium mb-1">Auto-generated tracking details:</p>
+              <div className="text-xs space-y-1">
+                <div>
+                  <span className="font-medium">Channel Key:</span> email-{trackingNumberDialog.campaign?.name?.toLowerCase().replace(/\s+/g, '-')}
+                </div>
+                <div>
+                  <span className="font-medium">UTM Source:</span> email
+                </div>
+                <div>
+                  <span className="font-medium">UTM Campaign:</span> {trackingNumberDialog.campaign?.name?.toLowerCase().replace(/\s+/g, '-')}
+                </div>
+              </div>
             </div>
             <div className="flex gap-2 justify-end">
               <Button
@@ -1266,7 +1285,7 @@ export default function EmailCampaignsAdmin() {
                 disabled={addTrackingNumberMutation.isPending || !trackingNumber.trim()}
                 data-testid="button-submit-tracking"
               >
-                {addTrackingNumberMutation.isPending ? "Adding..." : "Add Number"}
+                {addTrackingNumberMutation.isPending ? "Adding..." : "Add & Configure"}
               </Button>
             </div>
           </div>

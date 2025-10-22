@@ -8145,7 +8145,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
-  // Add tracking number to campaign
+  // Add tracking number to campaign (with auto-creation of tracking entry)
   app.post("/api/admin/campaigns/:id/tracking-number", async (req, res) => {
     try {
       if (!req.isAuthenticated?.()) {
@@ -8159,6 +8159,97 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.status(400).json({ error: "Tracking number is required" });
       }
 
+      // Fetch the campaign to get its details
+      const [campaign] = await db
+        .select()
+        .from(emailCampaigns)
+        .where(eq(emailCampaigns.id, id))
+        .limit(1);
+
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      // Format the phone number for display and tel link
+      const cleanNumber = trackingNumber.replace(/\D/g, '');
+      
+      // Determine if number already has country code
+      let normalizedNumber = cleanNumber;
+      let displayNumber = trackingNumber;
+      
+      if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+        // Number already includes US country code
+        normalizedNumber = cleanNumber.slice(1); // Remove leading 1 for display formatting
+        displayNumber = `(${normalizedNumber.slice(0, 3)}) ${normalizedNumber.slice(3, 6)}-${normalizedNumber.slice(6)}`;
+      } else if (cleanNumber.length === 10) {
+        // Standard 10-digit US number
+        normalizedNumber = cleanNumber;
+        displayNumber = `(${normalizedNumber.slice(0, 3)}) ${normalizedNumber.slice(3, 6)}-${normalizedNumber.slice(6)}`;
+      }
+      // Otherwise keep the original format (for international numbers or non-standard formats)
+      
+      // Create tel link - add +1 only if not already present
+      const telLink = cleanNumber.length === 10 
+        ? `tel:+1${cleanNumber}`
+        : cleanNumber.length === 11 && cleanNumber.startsWith('1')
+        ? `tel:+${cleanNumber}`
+        : `tel:${cleanNumber}`;
+      
+      // Create channel key and UTM parameters based on campaign
+      const campaignSlug = campaign.name.toLowerCase().replace(/\s+/g, '-');
+      const channelKey = `email-${campaignSlug}`;
+      const channelName = `Email Campaign: ${campaign.name}`;
+      
+      // Create detection rules with UTM parameters
+      const detectionRules = {
+        urlParams: {
+          utm_source: ['email'],
+          utm_campaign: [campaignSlug],
+          utm_medium: ['email', 'campaign']
+        },
+        referrerIncludes: [],
+        userAgentIncludes: []
+      };
+
+      // Check if tracking number entry already exists for this channel
+      const existingTracking = await db
+        .select()
+        .from(trackingNumbers)
+        .where(eq(trackingNumbers.channelKey, channelKey))
+        .limit(1);
+
+      if (existingTracking.length > 0) {
+        // Update existing tracking number
+        await db
+          .update(trackingNumbers)
+          .set({
+            displayNumber,
+            rawNumber: cleanNumber,
+            telLink,
+            detectionRules: JSON.stringify(detectionRules),
+            isActive: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(trackingNumbers.channelKey, channelKey));
+        
+        console.log(`[API] Updated existing tracking number for channel: ${channelKey}`);
+      } else {
+        // Create new tracking number entry
+        await db.insert(trackingNumbers).values({
+          channelKey,
+          channelName,
+          displayNumber,
+          rawNumber: cleanNumber,
+          telLink,
+          detectionRules: JSON.stringify(detectionRules),
+          isActive: true,
+          isDefault: false,
+          sortOrder: 100, // Give email campaigns a higher sort order
+        });
+        
+        console.log(`[API] Created new tracking number for channel: ${channelKey}`);
+      }
+
       // Update campaign with tracking number and change status to ready_to_send
       const [updatedCampaign] = await db
         .update(emailCampaigns)
@@ -8170,13 +8261,18 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         .where(eq(emailCampaigns.id, id))
         .returning();
 
-      if (!updatedCampaign) {
-        return res.status(404).json({ error: "Campaign not found" });
-      }
+      // Invalidate SSR cache (tracking numbers changed)
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
 
       res.json({
         success: true,
         campaign: updatedCampaign,
+        trackingEntry: {
+          channelKey,
+          channelName,
+          displayNumber,
+          detectionRules
+        }
       });
     } catch (error: any) {
       console.error('[API] Error adding tracking number:', error);

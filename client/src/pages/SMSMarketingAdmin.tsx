@@ -833,6 +833,7 @@ function NewCampaignDialog({ onClose, initialData }: { onClose: () => void; init
   const [campaignName, setCampaignName] = useState(initialData?.name || '');
   const [campaignType, setCampaignType] = useState(initialData?.campaignType || 'promotional');
   const [message, setMessage] = useState(initialData?.sampleMessage || '');
+  const [trackingNumber, setTrackingNumber] = useState('');
 
   const createMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -873,7 +874,8 @@ function NewCampaignDialog({ onClose, initialData }: { onClose: () => void; init
       name: campaignName,
       campaignType,
       status: 'draft',
-      targetSegment: null
+      targetSegment: null,
+      trackingNumber: trackingNumber.trim() || null
     });
   };
 
@@ -927,6 +929,27 @@ function NewCampaignDialog({ onClose, initialData }: { onClose: () => void; init
               <p className="text-xs text-muted-foreground mt-1">
                 {message.length} / 160 characters
               </p>
+            </div>
+
+            <div>
+              <Label htmlFor="tracking-number">Campaign Phone Number (Optional)</Label>
+              <Input
+                id="tracking-number"
+                value={trackingNumber}
+                onChange={(e) => setTrackingNumber(e.target.value)}
+                placeholder="(512) 555-1234"
+                data-testid="input-sms-tracking-number"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Add a tracking phone number to automatically create attribution tracking with UTM parameters
+              </p>
+              {trackingNumber && (
+                <div className="mt-2 p-2 bg-muted/50 rounded text-xs space-y-1">
+                  <div><span className="font-medium">Channel:</span> sms-{campaignName.toLowerCase().replace(/\s+/g, '-')}</div>
+                  <div><span className="font-medium">UTM Source:</span> sms</div>
+                  <div><span className="font-medium">UTM Campaign:</span> {campaignName.toLowerCase().replace(/\s+/g, '-')}</div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-2 pt-4">

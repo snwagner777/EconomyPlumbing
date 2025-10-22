@@ -267,7 +267,7 @@ export function registerSMSMarketingRoutes(app: Express) {
    */
   app.post("/api/sms/campaigns", requireAuth, async (req, res) => {
     try {
-      const campaignData: InsertSMSCampaign = req.body;
+      const { trackingNumber, ...campaignData }: InsertSMSCampaign & { trackingNumber?: string } = req.body;
 
       const [campaign] = await db
         .insert(smsCampaigns)
@@ -278,6 +278,88 @@ export function registerSMSMarketingRoutes(app: Express) {
           updatedAt: new Date()
         })
         .returning();
+
+      // If tracking number is provided, create a tracking entry with UTM parameters
+      if (trackingNumber) {
+        const cleanNumber = trackingNumber.replace(/\D/g, '');
+        
+        // Determine if number already has country code
+        let normalizedNumber = cleanNumber;
+        let displayNumber = trackingNumber;
+        
+        if (cleanNumber.length === 11 && cleanNumber.startsWith('1')) {
+          // Number already includes US country code
+          normalizedNumber = cleanNumber.slice(1); // Remove leading 1 for display formatting
+          displayNumber = `(${normalizedNumber.slice(0, 3)}) ${normalizedNumber.slice(3, 6)}-${normalizedNumber.slice(6)}`;
+        } else if (cleanNumber.length === 10) {
+          // Standard 10-digit US number
+          normalizedNumber = cleanNumber;
+          displayNumber = `(${normalizedNumber.slice(0, 3)}) ${normalizedNumber.slice(3, 6)}-${normalizedNumber.slice(6)}`;
+        }
+        // Otherwise keep the original format (for international numbers or non-standard formats)
+        
+        // Create tel link - add +1 only if not already present
+        const telLink = cleanNumber.length === 10 
+          ? `tel:+1${cleanNumber}`
+          : cleanNumber.length === 11 && cleanNumber.startsWith('1')
+          ? `tel:+${cleanNumber}`
+          : `tel:${cleanNumber}`;
+        
+        // Create channel key and UTM parameters based on campaign
+        const campaignSlug = campaign.name.toLowerCase().replace(/\s+/g, '-');
+        const channelKey = `sms-${campaignSlug}`;
+        const channelName = `SMS Campaign: ${campaign.name}`;
+        
+        // Create detection rules with UTM parameters
+        const detectionRules = {
+          urlParams: {
+            utm_source: ['sms'],
+            utm_campaign: [campaignSlug],
+            utm_medium: ['sms', 'text']
+          },
+          referrerIncludes: [],
+          userAgentIncludes: []
+        };
+
+        // Check if tracking number entry already exists for this channel
+        const existingTracking = await db
+          .select()
+          .from(trackingNumbers)
+          .where(eq(trackingNumbers.channelKey, channelKey))
+          .limit(1);
+
+        if (existingTracking.length > 0) {
+          // Update existing tracking number
+          await db
+            .update(trackingNumbers)
+            .set({
+              displayNumber,
+              rawNumber: cleanNumber,
+              telLink,
+              detectionRules: JSON.stringify(detectionRules),
+              isActive: true,
+              updatedAt: new Date(),
+            })
+            .where(eq(trackingNumbers.channelKey, channelKey));
+          
+          console.log(`[SMS API] Updated existing tracking number for channel: ${channelKey}`);
+        } else {
+          // Create new tracking number entry
+          await db.insert(trackingNumbers).values({
+            channelKey,
+            channelName,
+            displayNumber,
+            rawNumber: cleanNumber,
+            telLink,
+            detectionRules: JSON.stringify(detectionRules),
+            isActive: true,
+            isDefault: false,
+            sortOrder: 200, // Give SMS campaigns a higher sort order than email
+          });
+          
+          console.log(`[SMS API] Created new tracking number for channel: ${channelKey}`);
+        }
+      }
 
       res.json({
         success: true,

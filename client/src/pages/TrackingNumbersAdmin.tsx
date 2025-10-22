@@ -249,7 +249,19 @@ export default function TrackingNumbersAdmin() {
                     <div className="flex items-center gap-3">
                       <Phone className="w-5 h-5 text-primary" />
                       <div>
-                        <CardTitle className="text-lg">{number.channelName}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          {number.channelName}
+                          {number.channelKey.startsWith('email-') && (
+                            <Badge variant="secondary" className="text-xs">
+                              ✉️ Email Campaign
+                            </Badge>
+                          )}
+                          {number.channelKey.startsWith('sms-') && (
+                            <Badge variant="secondary" className="text-xs">
+                              📱 SMS Campaign
+                            </Badge>
+                          )}
+                        </CardTitle>
                         <CardDescription className="mt-1">
                           Channel Key: {number.channelKey}
                         </CardDescription>

@@ -22,12 +22,27 @@ Preferred communication style: Simple, everyday language.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **E-commerce:** Ecwid platform integrated with Printful and Spocket.
 - **AI Blog Generation System:** OpenAI GPT-4o for SEO-optimized, automated, and seasonally aware blog posts.
-- **Dynamic Phone Number Tracking:** 100% database-driven system.
+- **Dynamic Phone Number Tracking:** 100% database-driven system with automatic UTM parameter generation for marketing campaigns. When phone numbers are entered in email/SMS campaigns, the system automatically creates tracking number entries with campaign-specific UTM parameters (utm_source, utm_medium, utm_campaign) and detection rules.
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy. 100% type-safe TypeScript. Stripe PaymentIntents for payment security.
 - **ServiceTitan Integration:** Incremental job sync system with staging tables, batch processing, error tracking, and a database-driven customer leaderboard. Includes multi-location service address management, self-service customer data updates, and a custom review system with admin moderation.
-- **Marketing Automation:** AI-powered email marketing system with a comprehensive database schema, ServiceTitan data enrichment, email preference management, React Email + Resend templates, and a master email send switch.
-- **SMS Marketing System (NEW - ServiceTitan Marketing Pro Replacement):** Complete SMS marketing platform with 5-table database schema (preferences, campaigns, messages, send log, keywords), AI-powered campaign generation (GPT-4o), TCPA-compliant opt-in/opt-out management, multi-channel coordination with email, behavioral intelligence, Twilio/Zoom Phone integration, 15+ API endpoints with authentication, public opt-in form at `/sms-signup`, and comprehensive 4-tab admin dashboard at `/admin/sms-marketing` (Dashboard, Campaigns, Subscribers, Settings). Master SMS switch defaults to OFF for safety.
-- **Reputation Management System:** AI-powered review request automation with an 8-table database schema, GPT-4o drip campaign engine with behavioral branching, React Email templates, 12+ API routes, a dedicated master email switch, and a 5-tab admin interface for campaign management and AI response generation. Enhanced with multi-channel review requests (email + SMS) using intelligent channel selection based on customer engagement history.
+- **Marketing Automation (Enhanced Dec 2024):** AI-powered email marketing system with comprehensive features:
+  - **Email Campaign Admin (`/admin/email-campaigns`):** Visual HTML preview/approval workflow for AI-generated campaigns, manual email blast functionality with customer segmentation, comprehensive template library with CRUD operations, categories, and usage tracking. Features 3-tab preview (Visual/HTML/Plain Text) with inline editing before approval.
+  - **Database Schema:** ServiceTitan data enrichment, email preference management, React Email + Resend templates, master email send switch for safety.
+  - **Template Library:** Full management UI with create/edit/copy/delete operations, categorization (promotional, transactional, newsletter, etc.), active/inactive status, usage analytics tracking.
+  - **Manual Campaign Sending:** Dialog with customer segment selection, test mode, scheduling, and live preview before sending.
+- **SMS Marketing System (ServiceTitan Marketing Pro Replacement):** Complete SMS marketing platform with:
+  - **Infrastructure:** 5-table database schema (preferences, campaigns, messages, send log, keywords)
+  - **AI Features:** GPT-4o campaign generation, behavioral intelligence for targeting
+  - **Compliance:** TCPA-compliant opt-in/opt-out management, public opt-in form at `/sms-signup`
+  - **SMS Opt-In Widgets:** Deployed on homepage (inline variant) and customer portal (card variant with elevated styling)
+  - **Integration:** Multi-channel coordination with email, Twilio/Zoom Phone integration
+  - **Admin Dashboard (`/admin/sms-marketing`):** 4-tab interface (Dashboard, Campaigns, Subscribers, Settings), 15+ API endpoints with OAuth authentication, Master SMS switch defaults to OFF for safety.
+- **Reputation Management System (NiceJob Replacement):** AI-powered review request automation with:
+  - **Infrastructure:** 8-table database schema, GPT-4o drip campaign engine with behavioral branching
+  - **Drip Email Workflow:** Preview/edit/approve interface for entire email sequences, navigation between emails with Previous/Next buttons, ability to approve individual emails or entire campaigns
+  - **Admin Interface (`/admin/reviews`):** 5-tab interface for campaign management and AI response generation, visual preview of drip emails with subject lines and messaging tactics
+  - **Multi-Channel:** Email + SMS review requests with intelligent channel selection based on customer engagement history
+  - **Integration:** React Email templates, 12+ API routes, dedicated master email switch for safety.
 - **Production-Hardening Infrastructure (COMPLETE):** Comprehensive production-ready infrastructure including automated schedulers (segment refresh every 12h, webhook retry processor with exponential backoff, count reconciliation, health alerter), database transactions for all critical operations, idempotency protection for campaign sends, health monitoring with system_health_checks table tracking all services, admin alerting via email with retry logic, and webhook signature verification using Svix. All 16 production-hardening features fully implemented and code-reviewed. Services confirmed operational: segment_refresh and webhook_retry_processor both running healthy with 0 consecutive failures. Note: Comprehensive e2e testing blocked by OAuth authentication requirement (mandatory security constraint).
 
 ### State Management
