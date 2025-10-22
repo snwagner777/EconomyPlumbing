@@ -676,8 +676,8 @@ export const portalVerifications = pgTable("portal_verifications", {
   // Code/token
   code: text("code").notNull(), // 6-digit code for SMS, UUID token for email
   
-  // Customer info
-  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  // Customer info (array to support multiple accounts with shared email/phone)
+  customerIds: integer("customer_ids").array().notNull(), // ServiceTitan customer IDs
   
   // Verification status
   verified: boolean("verified").notNull().default(false),

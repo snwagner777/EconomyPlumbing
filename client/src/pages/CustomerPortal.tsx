@@ -300,10 +300,28 @@ export default function CustomerPortal() {
       }
 
       const result = await response.json();
-      const customerIdStr = result.customerId.toString();
-      setCustomerId(customerIdStr);
-      setVerificationStep('authenticated');
-      setLookupSuccess("Welcome to your customer portal!");
+      
+      // Check if multiple accounts exist
+      if (result.customers && result.customers.length > 1) {
+        setAvailableAccounts(result.customers);
+        setVerificationStep('select-account');
+        setLookupSuccess("Please select which account you'd like to access");
+      } else if (result.customers && result.customers.length === 1) {
+        // Single account - auto-select it
+        const customerIdStr = result.customers[0].id.toString();
+        setCustomerId(customerIdStr);
+        setVerificationStep('authenticated');
+        setLookupSuccess("Welcome to your customer portal!");
+      } else if (result.customerId) {
+        // Backward compatibility for old response format
+        const customerIdStr = result.customerId.toString();
+        setCustomerId(customerIdStr);
+        setVerificationStep('authenticated');
+        setLookupSuccess("Welcome to your customer portal!");
+      } else {
+        throw new Error('No customer data returned');
+      }
+      
       setLookupError(null);
       
       // Session is now stored server-side via httpOnly cookie

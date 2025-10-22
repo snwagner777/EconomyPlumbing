@@ -6484,9 +6484,9 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       // Search ONLY in local synced cache - DO NOT create customers on-demand
       const searchValue = contactValue;
-      const customerId = await serviceTitan.searchLocalCustomer(searchValue);
+      const customerIds = await serviceTitan.searchLocalCustomer(searchValue);
 
-      if (!customerId) {
+      if (customerIds.length === 0) {
         console.log("[Portal Auth] No customer found in synced database");
         return res.status(404).json({ 
           error: "We couldn't find an account with that email or phone number. Please verify your information or contact us at (512) 396-7811 for assistance.",
@@ -6494,7 +6494,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         });
       }
 
-      console.log("[Portal Auth] Customer found in cache:", customerId);
+      console.log(`[Portal Auth] Found ${customerIds.length} customer account(s) in cache:`, customerIds);
 
       // Generate verification code or token
       const code = verificationType === 'sms' 
@@ -6511,7 +6511,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         verificationType,
         contactValue,
         code,
-        customerId,
+        customerIds, // Now storing array of customer IDs
         expiresAt,
       });
 
@@ -6714,38 +6714,36 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         })
         .where(eq(portalVerifications.id, verification.id));
 
-      console.log("[Portal Auth] Verification successful, looking up customer...");
+      console.log("[Portal Auth] Verification successful, looking up customer accounts...");
 
-      // Use the customer ID that was stored during verification
+      // Use the customer IDs that were stored during verification
       // This is more reliable than re-looking up via contacts table
-      const customerId = verification.customerId;
-      console.log(`[Portal Auth] Using stored customer ID: ${customerId}`);
+      const customerIds = verification.customerIds;
+      console.log(`[Portal Auth] Using stored customer IDs:`, customerIds);
 
-      if (!customerId) {
-        console.error("[Portal Auth] No customer ID in verification record");
+      if (!customerIds || customerIds.length === 0) {
+        console.error("[Portal Auth] No customer IDs in verification record");
         return res.status(500).json({ 
           error: "Verification record is missing customer information. Please try again.",
-          code: "MISSING_CUSTOMER_ID"
+          code: "MISSING_CUSTOMER_IDS"
         });
       }
 
-      const customerIds = [customerId];
-
       // Import schemas
       const { serviceTitanCustomers, serviceTitanContacts } = await import("@shared/schema");
-      const { sql } = await import("drizzle-orm");
+      const { inArray } = await import("drizzle-orm");
 
       // Fetch complete customer data with ALL contacts for each customer
       const customersData = await db
         .select()
         .from(serviceTitanCustomers)
-        .where(sql`${serviceTitanCustomers.id} = ANY(${customerIds})`);
+        .where(inArray(serviceTitanCustomers.id, customerIds));
 
       // Fetch ALL contacts for these customers
       const allContacts = await db
         .select()
         .from(serviceTitanContacts)
-        .where(sql`${serviceTitanContacts.customerId} = ANY(${customerIds})`);
+        .where(inArray(serviceTitanContacts.customerId, customerIds));
 
       // Group contacts by customer ID
       const contactsByCustomer = allContacts.reduce((acc, contact) => {

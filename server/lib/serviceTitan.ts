@@ -1195,10 +1195,10 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Search for customer by phone or email in local cache
-   * Returns customer ID if found
+   * Search for ALL customer IDs by phone or email in local cache
+   * Returns array of customer IDs (supports multiple accounts per email/phone)
    */
-  async searchLocalCustomer(phoneOrEmail: string): Promise<number | null> {
+  async searchLocalCustomer(phoneOrEmail: string): Promise<number[]> {
     try {
       const { serviceTitanContacts } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
@@ -1208,19 +1208,20 @@ class ServiceTitanAPI {
         ? normalizeEmail(phoneOrEmail)
         : normalizePhone(phoneOrEmail);
       
-      if (!normalized) return null;
+      if (!normalized) return [];
 
-      // Search in contacts
+      // Search in contacts - get ALL matching customer IDs
       const results = await db
         .select({ customerId: serviceTitanContacts.customerId })
         .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalized))
-        .limit(1);
+        .where(eq(serviceTitanContacts.normalizedValue, normalized));
 
-      return results.length > 0 ? results[0].customerId : null;
+      // Return unique customer IDs
+      const uniqueCustomerIds = Array.from(new Set(results.map(r => r.customerId)));
+      return uniqueCustomerIds;
     } catch (error) {
       console.error('[ServiceTitan] Local search error:', error);
-      return null;
+      return [];
     }
   }
 
@@ -1287,13 +1288,14 @@ class ServiceTitanAPI {
   /**
    * Search with fallback: Try local cache first, then live API
    * Caches result on-demand if found via live API
+   * Returns first matching customer ID (for backwards compatibility)
    */
   async searchCustomerWithFallback(phoneOrEmail: string): Promise<number | null> {
     // Try local cache first (instant)
-    const cachedCustomerId = await this.searchLocalCustomer(phoneOrEmail);
-    if (cachedCustomerId) {
-      console.log(`[ServiceTitan] ✅ Found customer ${cachedCustomerId} in local cache`);
-      return cachedCustomerId;
+    const cachedCustomerIds = await this.searchLocalCustomer(phoneOrEmail);
+    if (cachedCustomerIds.length > 0) {
+      console.log(`[ServiceTitan] ✅ Found ${cachedCustomerIds.length} customer(s) in local cache, returning first`);
+      return cachedCustomerIds[0];
     }
 
     // Fallback to live API search (slower)
