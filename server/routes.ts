@@ -6482,19 +6482,19 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const { getServiceTitanAPI } = await import("./lib/serviceTitan");
       const serviceTitan = getServiceTitanAPI();
 
-      // Search for customer using the contact value
+      // Search ONLY in local synced cache - DO NOT create customers on-demand
       const searchValue = contactValue;
-      const customerId = await serviceTitan.searchCustomerWithFallback(searchValue);
+      const customerId = await serviceTitan.searchLocalCustomer(searchValue);
 
       if (!customerId) {
-        console.log("[Portal Auth] No customer found with provided contact");
+        console.log("[Portal Auth] No customer found in synced database");
         return res.status(404).json({ 
-          error: "No account found. Please check your information and try again.",
+          error: "We couldn't find an account with that email or phone number. Please verify your information or contact us at (512) 396-7811 for assistance.",
           found: false 
         });
       }
 
-      console.log("[Portal Auth] Customer found:", customerId);
+      console.log("[Portal Auth] Customer found in cache:", customerId);
 
       // Generate verification code or token
       const code = verificationType === 'sms' 
