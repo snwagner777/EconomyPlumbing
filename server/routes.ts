@@ -1116,6 +1116,51 @@ ${rssItems}
     }
   });
 
+  // Public: Submit private feedback (for negative ratings)
+  app.post("/api/reviews/private-feedback", async (req, res) => {
+    try {
+      const { customerId, rating, feedback, customerName, customerEmail } = req.body;
+
+      // Validate required fields
+      if (!rating || !feedback) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Log the private feedback (you can extend this to save to database if needed)
+      console.log('[Private Feedback] Received:', {
+        customerId,
+        customerName,
+        customerEmail,
+        rating,
+        feedback,
+        timestamp: new Date().toISOString()
+      });
+
+      // Send email notification to admin about the negative feedback
+      try {
+        const { sendContactFormEmail } = await import('./lib/email');
+        await sendContactFormEmail({
+          name: customerName || 'Customer',
+          email: customerEmail || 'no-email@provided.com',
+          phone: '',
+          subject: `Private Feedback - ${rating} Star Rating`,
+          message: feedback,
+          pageContext: 'Customer Portal Review Modal',
+        });
+      } catch (emailError) {
+        console.error('[Private Feedback] Email sending failed:', emailError);
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Thank you for your feedback. We'll review it and work to improve."
+      });
+    } catch (error: any) {
+      console.error('[Private Feedback] Error:', error);
+      res.status(400).json({ message: "Error submitting feedback: " + error.message });
+    }
+  });
+
   // Public: Get approved reviews for display (merges Google reviews + custom reviews)
   app.get("/api/reviews", async (req, res) => {
     try {

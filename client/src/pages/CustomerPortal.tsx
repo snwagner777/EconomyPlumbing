@@ -198,6 +198,12 @@ export default function CustomerPortal() {
   const [emailUsPhone, setEmailUsPhone] = useState("");
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewFeedback, setReviewFeedback] = useState("");
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  
   // Estimate detail modal state
   const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
@@ -2466,15 +2472,17 @@ export default function CustomerPortal() {
                         </div>
                         
                         <Button
-                          asChild
                           className="w-full"
                           size="lg"
                           data-testid="button-leave-review"
+                          onClick={() => {
+                            setReviewRating(0);
+                            setReviewFeedback("");
+                            setReviewModalOpen(true);
+                          }}
                         >
-                          <a href="/request-review">
-                            <Star className="w-4 h-4 mr-2" />
-                            Leave a Review
-                          </a>
+                          <Star className="w-4 h-4 mr-2" />
+                          Leave a Review
                         </Button>
 
                         <p className="text-xs text-center text-muted-foreground">
@@ -3040,6 +3048,214 @@ export default function CustomerPortal() {
               {isSendingEmail ? "Sending..." : "Send Message"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Review Collection Modal */}
+      <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>
+        <DialogContent className="sm:max-w-md" data-testid="dialog-review">
+          <DialogHeader>
+            <DialogTitle>
+              {reviewRating === 0 ? "How was your experience?" : 
+               reviewRating >= 4 ? "Thank you for your feedback!" : 
+               "We appreciate your feedback"}
+            </DialogTitle>
+            <DialogDescription>
+              {reviewRating === 0 ? "Please rate your recent service" : 
+               reviewRating >= 4 ? "Share your positive experience with others" : 
+               "Help us improve our service"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Star Rating */}
+            <div className="flex justify-center gap-2">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <button
+                  key={star}
+                  onClick={() => setReviewRating(star)}
+                  className="focus:outline-none transition-transform hover:scale-110"
+                  data-testid={`button-star-${star}`}
+                >
+                  <Star
+                    className={`w-10 h-10 ${
+                      star <= reviewRating 
+                        ? "fill-yellow-400 text-yellow-400" 
+                        : "text-gray-300 hover:text-yellow-400"
+                    }`}
+                  />
+                </button>
+              ))}
+            </div>
+
+            {/* Rating-based content */}
+            {reviewRating > 0 && (
+              <>
+                {reviewRating >= 4 ? (
+                  // Positive review - show platform links
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-muted-foreground">
+                      Please share your experience on one of these platforms:
+                    </p>
+                    
+                    <div className="grid gap-2">
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          window.open('https://g.page/r/CeBZvF4LQ-KNEAE/review', '_blank');
+                          setReviewModalOpen(false);
+                          toast({
+                            title: "Thank you!",
+                            description: "Opening Google Reviews...",
+                          });
+                        }}
+                        data-testid="button-google-review"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Google Reviews
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          window.open('https://www.facebook.com/EconomyPlumbingServices/reviews', '_blank');
+                          setReviewModalOpen(false);
+                          toast({
+                            title: "Thank you!",
+                            description: "Opening Facebook Reviews...",
+                          });
+                        }}
+                        data-testid="button-facebook-review"
+                      >
+                        <SiFacebook className="w-5 h-5 text-[#1877F2]" />
+                        Facebook Reviews
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          window.open('https://www.yelp.com/writeareview/biz/economy-plumbing-services-austin', '_blank');
+                          setReviewModalOpen(false);
+                          toast({
+                            title: "Thank you!",
+                            description: "Opening Yelp Reviews...",
+                          });
+                        }}
+                        data-testid="button-yelp-review"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#FF1A1A" d="M12.062 17.662c.038-.934-.008-.889.002-2.393.007-.9.527-.991.756-.635.052.081 1.518 2.368 1.541 2.449.156.557-.194.683-.774.619-.651-.072-1.245-.166-1.249-.166-.265-.049-.368-.146-.276-.51zm2.167-4.142c.011-.908.012-.908.021-1.823.011-1.103-.746-1.098-1.069-.501-.073.135-1.164 2.443-1.212 2.553-.175.408.254.578.663.556l1.27-.069c.17-.009.333-.065.327-.716zm-3.192.955c.901-.111.91-.148 1.75-.291.508-.087.546-.567.087-.752-.105-.042-2.634-.912-2.728-.951-.599-.247-.772.292-.548.867.251.646.497 1.222.497 1.227.103.224.256.215.585-.065zm-3.834 5.558c.347-.778.347-.801.651-1.479.365-.815-.397-1.139-.856-.595-.099.125-1.912 2.317-1.939 2.383-.231.576.271.876.687.803.682-.125 1.162-.239 1.166-.244.178-.108.24-.243.291-.868zm.901-2.701c.793-.448.808-.457 1.522-.874.86-.502.429-1.155-.342-1.176-.177-.005-3.057-.029-3.163-.036-.671-.043-.819.503-.438.929.427.478.823.912.827.917.163.175.36.14.698-.09z"/>
+                        </svg>
+                        Yelp Reviews
+                      </Button>
+                      
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start gap-3"
+                        onClick={() => {
+                          window.open('https://www.bbb.org/us/tx/austin/profile/plumber/economy-plumbing-services-0825-1000049576/customer-reviews', '_blank');
+                          setReviewModalOpen(false);
+                          toast({
+                            title: "Thank you!",
+                            description: "Opening BBB Reviews...",
+                          });
+                        }}
+                        data-testid="button-bbb-review"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24">
+                          <path fill="#003087" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                        </svg>
+                        BBB Reviews
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  // Negative review - collect private feedback
+                  <div className="space-y-3">
+                    <p className="text-center text-sm text-muted-foreground">
+                      We're sorry to hear about your experience. Please tell us how we can improve:
+                    </p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="feedback">Your Feedback</Label>
+                      <textarea
+                        id="feedback"
+                        className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        value={reviewFeedback}
+                        onChange={(e) => setReviewFeedback(e.target.value)}
+                        placeholder="Please share what went wrong and how we can do better..."
+                        data-testid="input-review-feedback"
+                      />
+                    </div>
+                    
+                    <Button
+                      className="w-full"
+                      onClick={async () => {
+                        setIsSubmittingReview(true);
+                        try {
+                          // Submit private feedback
+                          const response = await fetch("/api/reviews/private-feedback", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                              customerId: customerId,
+                              rating: reviewRating,
+                              feedback: reviewFeedback,
+                              customerName: customerData?.customer?.name || "Anonymous",
+                              customerEmail: customerData?.customer?.email || ""
+                            }),
+                          });
+
+                          if (response.ok) {
+                            toast({
+                              title: "Thank you for your feedback",
+                              description: "We'll review your comments and work to improve our service.",
+                            });
+                            setReviewModalOpen(false);
+                          } else {
+                            throw new Error("Failed to submit feedback");
+                          }
+                        } catch (error) {
+                          console.error("Error submitting feedback:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to submit feedback. Please try again.",
+                            variant: "destructive"
+                          });
+                        } finally {
+                          setIsSubmittingReview(false);
+                        }
+                      }}
+                      disabled={isSubmittingReview || !reviewFeedback.trim()}
+                      data-testid="button-submit-feedback"
+                    >
+                      {isSubmittingReview ? "Submitting..." : "Submit Feedback"}
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          {reviewRating === 0 && (
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setReviewModalOpen(false)}
+                data-testid="button-cancel-review"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
 
