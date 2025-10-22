@@ -13,10 +13,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText, Eye, Send, X } from "lucide-react";
+import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText, Eye, Send, X, Plus, Edit, Trash2, Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import type { EmailCampaign } from "@shared/schema";
+import type { EmailCampaign, EmailTemplate } from "@shared/schema";
 
 type CampaignEmail = {
   id: string;
@@ -500,10 +500,105 @@ export default function EmailCampaignsAdmin() {
     campaign: null,
   });
   const [manualBlastDialog, setManualBlastDialog] = useState(false);
+  const [templateDialog, setTemplateDialog] = useState<{
+    open: boolean;
+    mode: 'create' | 'edit' | 'preview';
+    template: EmailTemplate | null;
+  }>({ open: false, mode: 'create', template: null });
+  const [templateForm, setTemplateForm] = useState({
+    name: '',
+    category: '',
+    subject: '',
+    preheader: '',
+    htmlContent: '',
+    textContent: '',
+    mergeVariables: [] as string[],
+    isActive: true,
+  });
 
   // Fetch all campaigns
   const { data: campaignsData, isLoading } = useQuery<{ campaigns: CampaignWithDetails[] }>({
     queryKey: ['/api/admin/campaigns'],
+  });
+
+  // Fetch all templates
+  const { data: templatesData, isLoading: templatesLoading } = useQuery<EmailTemplate[]>({
+    queryKey: ['/api/admin/email-templates'],
+  });
+
+  // Create template mutation
+  const createTemplateMutation = useMutation({
+    mutationFn: async (template: typeof templateForm) => {
+      return await apiRequest("POST", "/api/admin/email-templates", template);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Template created successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      setTemplateDialog({ open: false, mode: 'create', template: null });
+      setTemplateForm({
+        name: '',
+        category: '',
+        subject: '',
+        preheader: '',
+        htmlContent: '',
+        textContent: '',
+        mergeVariables: [],
+        isActive: true,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create template",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Update template mutation
+  const updateTemplateMutation = useMutation({
+    mutationFn: async ({ id, ...template }: { id: string } & typeof templateForm) => {
+      return await apiRequest("PUT", `/api/admin/email-templates/${id}`, template);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Template updated successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+      setTemplateDialog({ open: false, mode: 'create', template: null });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update template",
+        variant: "destructive",
+      });
+    }
+  });
+
+  // Delete template mutation
+  const deleteTemplateMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest("DELETE", `/api/admin/email-templates/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Template deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/email-templates'] });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete template",
+        variant: "destructive",
+      });
+    }
   });
 
   // Approve campaign mutation
@@ -909,7 +1004,7 @@ export default function EmailCampaignsAdmin() {
 
       {/* Campaigns List */}
       <Tabs defaultValue="pending" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="pending" data-testid="tab-pending-campaigns">
             Pending ({pendingCampaigns.length})
           </TabsTrigger>
@@ -924,6 +1019,9 @@ export default function EmailCampaignsAdmin() {
           </TabsTrigger>
           <TabsTrigger value="completed" data-testid="tab-completed-campaigns">
             Completed ({completedCampaigns.length})
+          </TabsTrigger>
+          <TabsTrigger value="templates" data-testid="tab-templates">
+            Templates ({templatesData?.length || 0})
           </TabsTrigger>
         </TabsList>
 
@@ -990,6 +1088,145 @@ export default function EmailCampaignsAdmin() {
           ) : (
             completedCampaigns.map(renderCampaignCard)
           )}
+        </TabsContent>
+
+        <TabsContent value="templates" className="mt-6">
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-semibold">Email Templates Library</h3>
+              <Button
+                onClick={() => {
+                  setTemplateForm({
+                    name: '',
+                    category: '',
+                    subject: '',
+                    preheader: '',
+                    htmlContent: '',
+                    textContent: '',
+                    mergeVariables: [],
+                    isActive: true,
+                  });
+                  setTemplateDialog({ open: true, mode: 'create', template: null });
+                }}
+                data-testid="button-create-template"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Template
+              </Button>
+            </div>
+
+            {templatesLoading ? (
+              <div className="space-y-4">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            ) : templatesData && templatesData.length > 0 ? (
+              <div className="grid gap-4">
+                {templatesData.map((template) => (
+                  <Card key={template.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-1">
+                          <CardTitle className="text-lg">{template.name}</CardTitle>
+                          <CardDescription>{template.category}</CardDescription>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={template.isActive ? "default" : "secondary"}>
+                            {template.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                          {template.isDefault && (
+                            <Badge variant="outline">Default</Badge>
+                          )}
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Subject</Label>
+                        <p className="text-sm font-medium">{template.subject}</p>
+                      </div>
+                      {template.preheader && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Preheader</Label>
+                          <p className="text-sm">{template.preheader}</p>
+                        </div>
+                      )}
+                      <div className="flex justify-between items-center pt-2">
+                        <div className="text-xs text-muted-foreground">
+                          Created: {format(new Date(template.createdAt), 'MMM dd, yyyy')}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setTemplateDialog({ open: true, mode: 'preview', template });
+                            }}
+                            data-testid={`button-preview-template-${template.id}`}
+                          >
+                            <Eye className="w-4 h-4 mr-1" />
+                            Preview
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setTemplateForm({
+                                name: template.name,
+                                category: template.category,
+                                subject: template.subject,
+                                preheader: template.preheader || '',
+                                htmlContent: template.htmlContent,
+                                textContent: template.textContent,
+                                mergeVariables: template.mergeVariables || [],
+                                isActive: template.isActive,
+                              });
+                              setTemplateDialog({ open: true, mode: 'edit', template });
+                            }}
+                            data-testid={`button-edit-template-${template.id}`}
+                          >
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                            onClick={() => {
+                              if (confirm(`Are you sure you want to delete the template "${template.name}"?`)) {
+                                deleteTemplateMutation.mutate(template.id);
+                              }
+                            }}
+                            data-testid={`button-delete-template-${template.id}`}
+                          >
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <Card>
+                <CardContent className="flex flex-col items-center justify-center py-12">
+                  <FileText className="w-12 h-12 text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground mb-4">No email templates yet</p>
+                  <Button
+                    onClick={() => {
+                      setTemplateDialog({ open: true, mode: 'create', template: null });
+                    }}
+                    data-testid="button-create-first-template"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Your First Template
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 
@@ -1064,6 +1301,189 @@ export default function EmailCampaignsAdmin() {
         open={manualBlastDialog}
         onOpenChange={setManualBlastDialog}
       />
+
+      {/* Template Dialog */}
+      <Dialog open={templateDialog.open} onOpenChange={(open) => !open && setTemplateDialog({ open: false, mode: 'create', template: null })}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {templateDialog.mode === 'create' ? 'Create Email Template' : 
+               templateDialog.mode === 'edit' ? 'Edit Email Template' : 
+               'Preview Email Template'}
+            </DialogTitle>
+            <DialogDescription>
+              {templateDialog.mode === 'create' ? 'Create a reusable email template for campaigns' :
+               templateDialog.mode === 'edit' ? 'Update the template details and content' :
+               'Preview how this template will look'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-auto">
+            {templateDialog.mode === 'preview' && templateDialog.template ? (
+              <Tabs defaultValue="preview" className="h-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="preview">Visual Preview</TabsTrigger>
+                  <TabsTrigger value="html">HTML Source</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="preview" className="mt-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Subject</Label>
+                      <div className="p-3 bg-background rounded-md border">{templateDialog.template.subject}</div>
+                    </div>
+                    {templateDialog.template.preheader && (
+                      <div>
+                        <Label>Preheader</Label>
+                        <div className="p-3 bg-background rounded-md border">{templateDialog.template.preheader}</div>
+                      </div>
+                    )}
+                    <div>
+                      <Label>Email Content</Label>
+                      <div className="border rounded-md bg-white">
+                        <iframe
+                          srcDoc={templateDialog.template.htmlContent}
+                          className="w-full h-[400px]"
+                          title="Template Preview"
+                          sandbox="allow-same-origin"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="html" className="mt-4">
+                  <ScrollArea className="h-[500px] border rounded-md p-4">
+                    <pre className="text-xs">{templateDialog.template.htmlContent}</pre>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="template-name">Template Name</Label>
+                    <Input
+                      id="template-name"
+                      value={templateForm.name}
+                      onChange={(e) => setTemplateForm(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="e.g., Welcome Email"
+                      data-testid="input-template-name"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="template-category">Category</Label>
+                    <Select
+                      value={templateForm.category}
+                      onValueChange={(value) => setTemplateForm(prev => ({ ...prev, category: value }))}
+                    >
+                      <SelectTrigger id="template-category" data-testid="select-template-category">
+                        <SelectValue placeholder="Select a category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="welcome">Welcome</SelectItem>
+                        <SelectItem value="appointment_reminder">Appointment Reminder</SelectItem>
+                        <SelectItem value="follow_up">Follow Up</SelectItem>
+                        <SelectItem value="review_request">Review Request</SelectItem>
+                        <SelectItem value="promotional">Promotional</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                        <SelectItem value="seasonal">Seasonal</SelectItem>
+                        <SelectItem value="newsletter">Newsletter</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="template-subject">Subject Line</Label>
+                  <Input
+                    id="template-subject"
+                    value={templateForm.subject}
+                    onChange={(e) => setTemplateForm(prev => ({ ...prev, subject: e.target.value }))}
+                    placeholder="Email subject line with {variables}"
+                    data-testid="input-template-subject"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="template-preheader">Preheader (Optional)</Label>
+                  <Input
+                    id="template-preheader"
+                    value={templateForm.preheader}
+                    onChange={(e) => setTemplateForm(prev => ({ ...prev, preheader: e.target.value }))}
+                    placeholder="Preview text shown in inbox"
+                    data-testid="input-template-preheader"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="template-html">HTML Content</Label>
+                  <Textarea
+                    id="template-html"
+                    value={templateForm.htmlContent}
+                    onChange={(e) => setTemplateForm(prev => ({ ...prev, htmlContent: e.target.value }))}
+                    placeholder="HTML email content with {customerName}, {appointmentDate}, etc."
+                    className="min-h-[200px] font-mono text-sm"
+                    data-testid="textarea-template-html"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="template-text">Plain Text Content</Label>
+                  <Textarea
+                    id="template-text"
+                    value={templateForm.textContent}
+                    onChange={(e) => setTemplateForm(prev => ({ ...prev, textContent: e.target.value }))}
+                    placeholder="Plain text version of the email"
+                    className="min-h-[150px]"
+                    data-testid="textarea-template-text"
+                  />
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="template-active"
+                    checked={templateForm.isActive}
+                    onChange={(e) => setTemplateForm(prev => ({ ...prev, isActive: e.target.checked }))}
+                    className="rounded"
+                    data-testid="checkbox-template-active"
+                  />
+                  <Label htmlFor="template-active" className="cursor-pointer">
+                    Template is active and available for use
+                  </Label>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {templateDialog.mode !== 'preview' && (
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setTemplateDialog({ open: false, mode: 'create', template: null })}
+                data-testid="button-cancel-template"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (templateDialog.mode === 'create') {
+                    createTemplateMutation.mutate(templateForm);
+                  } else if (templateDialog.mode === 'edit' && templateDialog.template) {
+                    updateTemplateMutation.mutate({ id: templateDialog.template.id, ...templateForm });
+                  }
+                }}
+                disabled={createTemplateMutation.isPending || updateTemplateMutation.isPending || !templateForm.name || !templateForm.subject || !templateForm.htmlContent}
+                data-testid="button-save-template"
+              >
+                {createTemplateMutation.isPending || updateTemplateMutation.isPending ? 'Saving...' : 
+                 templateDialog.mode === 'create' ? 'Create Template' : 'Update Template'}
+              </Button>
+            </DialogFooter>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
