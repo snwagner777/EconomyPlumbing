@@ -6748,7 +6748,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
   
   // Admin: Get all conversations
-  app.get("/api/admin/chatbot/conversations", requireAuth, async (req, res) => {
+  app.get("/api/admin/chatbot/conversations", requireAdmin, async (req, res) => {
     try {
       const { page = 1, archived = 'false', handoff = 'all' } = req.query;
       const limit = 20;
@@ -6803,7 +6803,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
   
   // Admin: Get conversation details
-  app.get("/api/admin/chatbot/conversation/:id", requireAuth, async (req, res) => {
+  app.get("/api/admin/chatbot/conversation/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -6833,7 +6833,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
   
   // Admin: Update conversation (archive, notes)
-  app.patch("/api/admin/chatbot/conversation/:id", requireAuth, async (req, res) => {
+  app.patch("/api/admin/chatbot/conversation/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const { archived, notes } = req.body;
@@ -6855,7 +6855,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
   
   // Admin: Get analytics
-  app.get("/api/admin/chatbot/analytics", requireAuth, async (req, res) => {
+  app.get("/api/admin/chatbot/analytics", requireAdmin, async (req, res) => {
     try {
       // Get common questions
       const commonQuestions = await db
@@ -6896,7 +6896,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
   
   // Admin: Manage quick responses
-  app.get("/api/admin/chatbot/quick-responses", requireAuth, async (req, res) => {
+  app.get("/api/admin/chatbot/quick-responses", requireAdmin, async (req, res) => {
     try {
       const responses = await db
         .select()
@@ -6910,7 +6910,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
   
-  app.post("/api/admin/chatbot/quick-responses", requireAuth, async (req, res) => {
+  app.post("/api/admin/chatbot/quick-responses", requireAdmin, async (req, res) => {
     try {
       const { label, message, category, sortOrder, icon } = req.body;
       
@@ -6930,7 +6930,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
   
-  app.patch("/api/admin/chatbot/quick-responses/:id", requireAuth, async (req, res) => {
+  app.patch("/api/admin/chatbot/quick-responses/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -6947,7 +6947,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
   
-  app.delete("/api/admin/chatbot/quick-responses/:id", requireAuth, async (req, res) => {
+  app.delete("/api/admin/chatbot/quick-responses/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
       
