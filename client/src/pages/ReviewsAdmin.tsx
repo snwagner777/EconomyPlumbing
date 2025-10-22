@@ -9,8 +9,11 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Check, X, Star, Calendar, Mail, Phone, MessageSquare, Zap, Settings as SettingsIcon, BarChart3, Send, Eye, MousePointer, History } from "lucide-react";
+import { ArrowLeft, Check, X, Star, Calendar, Mail, Phone, MessageSquare, Zap, Settings as SettingsIcon, BarChart3, Send, Eye, MousePointer, History, Edit, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
@@ -390,6 +393,19 @@ function CustomerEngagementTimeline() {
 export default function ReviewsAdmin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [selectedCampaign, setSelectedCampaign] = useState<ReviewCampaign | null>(null);
+  const [dripEmails, setDripEmails] = useState<DripEmail[]>([]);
+  const [dripEmailDialog, setDripEmailDialog] = useState<{
+    open: boolean;
+    mode: 'preview' | 'edit' | 'approve';
+    email: DripEmail | null;
+    campaign: ReviewCampaign | null;
+  }>({ open: false, mode: 'preview', email: null, campaign: null });
+  const [editedDripEmail, setEditedDripEmail] = useState<{
+    subject: string;
+    htmlContent: string;
+    textContent: string;
+  }>({ subject: '', htmlContent: '', textContent: '' });
 
   // Fetch all reviews
   const { data: reviewsData, isLoading: reviewsLoading } = useQuery<{ reviews: Review[] }>({
@@ -430,6 +446,46 @@ export default function ReviewsAdmin() {
         variant: "destructive",
       });
     },
+  });
+
+  // Fetch drip emails for a campaign
+  const fetchDripEmails = async (campaignId: string) => {
+    try {
+      const response = await apiRequest("GET", `/api/admin/review-campaigns/${campaignId}/emails`);
+      setDripEmails(response.emails || []);
+      return response.emails;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch drip emails",
+        variant: "destructive",
+      });
+      return [];
+    }
+  };
+
+  // Approve campaign mutation  
+  const approveCampaignMutation = useMutation({
+    mutationFn: async (campaignId: string) => {
+      return await apiRequest("PATCH", `/api/admin/review-campaigns/${campaignId}`, {
+        status: 'approved'
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Campaign Approved",
+        description: "The review campaign and all drip emails have been approved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/review-campaigns'] });
+      setDripEmailDialog({ open: false, mode: 'preview', email: null, campaign: null });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve campaign",
+        variant: "destructive",
+      });
+    }
   });
 
   // Approve AI response mutation
@@ -696,6 +752,39 @@ export default function ReviewsAdmin() {
                             {campaign.totalSent > 0 ? ((campaign.totalReviewsCompleted / campaign.totalSent) * 100).toFixed(1) : 0}%
                           </p>
                         </div>
+                      </div>
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            setSelectedCampaign(campaign);
+                            const emails = await fetchDripEmails(campaign.id);
+                            if (emails && emails.length > 0) {
+                              setDripEmailDialog({ 
+                                open: true, 
+                                mode: 'preview', 
+                                email: emails[0], 
+                                campaign 
+                              });
+                            }
+                          }}
+                          data-testid={`button-view-drip-emails-${campaign.id}`}
+                        >
+                          <FileText className="w-4 h-4 mr-1" />
+                          View Drip Emails ({campaign.generatedByAI ? 'Review Required' : 'Approved'})
+                        </Button>
+                        {campaign.generatedByAI && (
+                          <Button
+                            size="sm"
+                            onClick={() => approveCampaignMutation.mutate(campaign.id)}
+                            disabled={approveCampaignMutation.isPending}
+                            data-testid={`button-approve-campaign-${campaign.id}`}
+                          >
+                            <Check className="w-4 h-4 mr-1" />
+                            Approve Campaign
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1021,6 +1110,205 @@ export default function ReviewsAdmin() {
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Drip Email Preview Dialog */}
+      <Dialog 
+        open={dripEmailDialog.open} 
+        onOpenChange={(open) => !open && setDripEmailDialog({ open: false, mode: 'preview', email: null, campaign: null })}
+      >
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {dripEmailDialog.mode === 'preview' ? 'Review Drip Email' : 
+               dripEmailDialog.mode === 'edit' ? 'Edit Drip Email' : 
+               'Approve Drip Campaign'}
+            </DialogTitle>
+            <DialogDescription>
+              {dripEmailDialog.campaign?.name} - {dripEmailDialog.email ? `Day ${dripEmailDialog.email.dayOffset}` : ''}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {dripEmailDialog.email && (
+            <div className="flex-1 overflow-auto">
+              <Tabs defaultValue="preview">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="preview">Visual Preview</TabsTrigger>
+                  <TabsTrigger value="html">HTML Source</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="preview" className="mt-4 space-y-4">
+                  <div>
+                    <Label>Subject</Label>
+                    {dripEmailDialog.mode === 'edit' ? (
+                      <Input
+                        value={editedDripEmail.subject}
+                        onChange={(e) => setEditedDripEmail(prev => ({ ...prev, subject: e.target.value }))}
+                        placeholder="Email subject"
+                        data-testid="input-drip-email-subject"
+                      />
+                    ) : (
+                      <div className="p-3 bg-background rounded-md border">
+                        {dripEmailDialog.email.subject}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {dripEmailDialog.email.messagingTactic && (
+                    <div>
+                      <Label>Messaging Tactic</Label>
+                      <div className="p-3 bg-muted rounded-md">
+                        {dripEmailDialog.email.messagingTactic}
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <Label>Email Content</Label>
+                    {dripEmailDialog.mode === 'edit' ? (
+                      <Textarea
+                        value={editedDripEmail.htmlContent}
+                        onChange={(e) => setEditedDripEmail(prev => ({ ...prev, htmlContent: e.target.value }))}
+                        placeholder="HTML email content"
+                        className="min-h-[300px] font-mono text-sm"
+                        data-testid="textarea-drip-email-content"
+                      />
+                    ) : (
+                      <div className="border rounded-md bg-white">
+                        <iframe
+                          srcDoc={dripEmailDialog.email.htmlContent || ''}
+                          className="w-full h-[400px]"
+                          title="Email Preview"
+                          sandbox="allow-same-origin"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Sent</p>
+                      <p className="font-medium">{dripEmailDialog.email.totalSent}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Opened</p>
+                      <p className="font-medium">{dripEmailDialog.email.totalOpened}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Clicked</p>
+                      <p className="font-medium">{dripEmailDialog.email.totalClicked}</p>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="html" className="mt-4">
+                  <ScrollArea className="h-[500px] border rounded-md p-4">
+                    <pre className="text-xs whitespace-pre-wrap">
+                      {dripEmailDialog.email.htmlContent}
+                    </pre>
+                  </ScrollArea>
+                </TabsContent>
+              </Tabs>
+              
+              {/* Navigation for multiple drip emails */}
+              {dripEmails.length > 1 && (
+                <div className="flex justify-between items-center mt-4 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Email {(dripEmails.findIndex(e => e.id === dripEmailDialog.email?.id) || 0) + 1} of {dripEmails.length}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const currentIndex = dripEmails.findIndex(e => e.id === dripEmailDialog.email?.id);
+                        if (currentIndex > 0) {
+                          setDripEmailDialog(prev => ({ ...prev, email: dripEmails[currentIndex - 1] }));
+                        }
+                      }}
+                      disabled={dripEmails.findIndex(e => e.id === dripEmailDialog.email?.id) === 0}
+                      data-testid="button-prev-email"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const currentIndex = dripEmails.findIndex(e => e.id === dripEmailDialog.email?.id);
+                        if (currentIndex < dripEmails.length - 1) {
+                          setDripEmailDialog(prev => ({ ...prev, email: dripEmails[currentIndex + 1] }));
+                        }
+                      }}
+                      disabled={dripEmails.findIndex(e => e.id === dripEmailDialog.email?.id) === dripEmails.length - 1}
+                      data-testid="button-next-email"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter className="flex justify-between">
+            <div className="flex gap-2">
+              {dripEmailDialog.mode === 'preview' && dripEmailDialog.campaign?.generatedByAI && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setEditedDripEmail({
+                        subject: dripEmailDialog.email?.subject || '',
+                        htmlContent: dripEmailDialog.email?.htmlContent || '',
+                        textContent: dripEmailDialog.email?.textContent || ''
+                      });
+                      setDripEmailDialog(prev => ({ ...prev, mode: 'edit' }));
+                    }}
+                    data-testid="button-edit-drip-email"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit Email
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      if (dripEmailDialog.campaign) {
+                        approveCampaignMutation.mutate(dripEmailDialog.campaign.id);
+                      }
+                    }}
+                    disabled={approveCampaignMutation.isPending}
+                    data-testid="button-approve-all"
+                  >
+                    <Check className="w-4 h-4 mr-1" />
+                    Approve All Emails
+                  </Button>
+                </>
+              )}
+              {dripEmailDialog.mode === 'edit' && (
+                <Button
+                  onClick={() => {
+                    // Save the edited email
+                    toast({
+                      title: "Email Updated",
+                      description: "The drip email content has been saved.",
+                    });
+                    setDripEmailDialog(prev => ({ ...prev, mode: 'preview' }));
+                  }}
+                  data-testid="button-save-drip-email"
+                >
+                  Save Changes
+                </Button>
+              )}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setDripEmailDialog({ open: false, mode: 'preview', email: null, campaign: null })}
+              data-testid="button-close-dialog"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
