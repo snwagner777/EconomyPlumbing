@@ -189,6 +189,15 @@ export default function CustomerPortal() {
   const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
   const [locationId, setLocationId] = useState<number | null>(null);
   
+  // Email Us modal state
+  const [emailUsOpen, setEmailUsOpen] = useState(false);
+  const [emailUsSubject, setEmailUsSubject] = useState("");
+  const [emailUsMessage, setEmailUsMessage] = useState("");
+  const [emailUsName, setEmailUsName] = useState("");
+  const [emailUsEmail, setEmailUsEmail] = useState("");
+  const [emailUsPhone, setEmailUsPhone] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  
   // Estimate detail modal state
   const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
@@ -1285,14 +1294,20 @@ export default function CustomerPortal() {
                           </a>
                         </Button>
                         <Button
-                          asChild
                           variant="outline"
-                          data-testid="button-contact-us"
+                          data-testid="button-email-us"
+                          onClick={() => {
+                            // Pre-fill form with customer data
+                            setEmailUsName(customerData?.customer?.name || "");
+                            setEmailUsEmail(customerData?.customer?.email || "");
+                            setEmailUsPhone(customerData?.customer?.phoneNumber || "");
+                            setEmailUsSubject("");
+                            setEmailUsMessage("");
+                            setEmailUsOpen(true);
+                          }}
                         >
-                          <a href="/contact">
-                            <Mail className="w-4 h-4 mr-2" />
-                            Contact Us
-                          </a>
+                          <Mail className="w-4 h-4 mr-2" />
+                          Email Us
                         </Button>
                         {availableCustomerIds.length > 1 && (
                           <Button
@@ -2895,6 +2910,148 @@ export default function CustomerPortal() {
               data-testid="button-save-address"
             >
               {isUpdatingAddress ? "Updating..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Email Us Dialog */}
+      <Dialog open={emailUsOpen} onOpenChange={setEmailUsOpen}>
+        <DialogContent data-testid="dialog-email-us">
+          <DialogHeader>
+            <DialogTitle>Email Us</DialogTitle>
+            <DialogDescription>
+              Send us a message and we'll get back to you as soon as possible.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="email-name">Name</Label>
+                <Input
+                  id="email-name"
+                  type="text"
+                  value={emailUsName}
+                  onChange={(e) => setEmailUsName(e.target.value)}
+                  placeholder="Your Name"
+                  data-testid="input-email-name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email-phone">Phone</Label>
+                <Input
+                  id="email-phone"
+                  type="tel"
+                  value={emailUsPhone}
+                  onChange={(e) => setEmailUsPhone(e.target.value)}
+                  placeholder="(512) 123-4567"
+                  data-testid="input-email-phone"
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email-address">Email Address</Label>
+              <Input
+                id="email-address"
+                type="email"
+                value={emailUsEmail}
+                onChange={(e) => setEmailUsEmail(e.target.value)}
+                placeholder="you@example.com"
+                data-testid="input-email-address"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email-subject">Subject</Label>
+              <Input
+                id="email-subject"
+                type="text"
+                value={emailUsSubject}
+                onChange={(e) => setEmailUsSubject(e.target.value)}
+                placeholder="How can we help?"
+                data-testid="input-email-subject"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="email-message">Message</Label>
+              <textarea
+                id="email-message"
+                className="flex min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={emailUsMessage}
+                onChange={(e) => setEmailUsMessage(e.target.value)}
+                placeholder="Tell us more about what you need..."
+                data-testid="input-email-message"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEmailUsOpen(false)}
+              disabled={isSendingEmail}
+              data-testid="button-cancel-email"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!emailUsName || !emailUsEmail || !emailUsMessage) {
+                  toast({
+                    title: "Missing Information",
+                    description: "Please fill in all required fields",
+                    variant: "destructive"
+                  });
+                  return;
+                }
+                
+                setIsSendingEmail(true);
+                try {
+                  const response = await fetch("/api/contact", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      name: emailUsName,
+                      email: emailUsEmail,
+                      phone: emailUsPhone,
+                      subject: emailUsSubject || "Customer Portal Inquiry",
+                      message: emailUsMessage,
+                      source: "customer_portal"
+                    }),
+                  });
+
+                  if (response.ok) {
+                    toast({
+                      title: "Message Sent!",
+                      description: "We've received your message and will respond soon.",
+                    });
+                    setEmailUsOpen(false);
+                    // Clear form
+                    setEmailUsSubject("");
+                    setEmailUsMessage("");
+                  } else {
+                    throw new Error("Failed to send message");
+                  }
+                } catch (error) {
+                  console.error("Error sending email:", error);
+                  toast({
+                    title: "Error",
+                    description: "Failed to send message. Please try again.",
+                    variant: "destructive"
+                  });
+                } finally {
+                  setIsSendingEmail(false);
+                }
+              }}
+              disabled={isSendingEmail || !emailUsName || !emailUsEmail || !emailUsMessage}
+              data-testid="button-send-email"
+            >
+              {isSendingEmail ? "Sending..." : "Send Message"}
             </Button>
           </DialogFooter>
         </DialogContent>
