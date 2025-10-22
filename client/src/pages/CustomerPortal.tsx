@@ -713,8 +713,18 @@ export default function CustomerPortal() {
       if (!response.ok) {
         throw new Error('Failed to send request');
       }
+
+      toast({
+        title: "PDF Request Sent",
+        description: `We've sent the ${type} PDF to ${customerInfo.customerEmail}. Check your email in a few minutes.`,
+      });
     } catch (error) {
       console.error('PDF request failed:', error);
+      toast({
+        title: "Request Failed",
+        description: `Unable to send the PDF request. Please try again or contact support.`,
+        variant: "destructive",
+      });
     }
   };
 
@@ -1240,10 +1250,94 @@ export default function CustomerPortal() {
           ) : (
             <div className="space-y-6">
               {isLoading ? (
-                <div className="space-y-6">
-                  <Skeleton className="h-32 w-full" />
-                  <Skeleton className="h-64 w-full" />
-                  <Skeleton className="h-64 w-full" />
+                <div className="relative">
+                  {/* Full-screen loading overlay */}
+                  <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+                    <div className="text-center space-y-4 p-8 max-w-md">
+                      <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto"></div>
+                      <div className="space-y-2">
+                        <h3 className="text-xl font-semibold">Loading Your Account</h3>
+                        <p className="text-muted-foreground">
+                          We're fetching your service history, appointments, and account details...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Background skeleton structure for visual reference */}
+                  <div className="space-y-6 opacity-30 pointer-events-none">
+                    <Card>
+                      <CardHeader className="flex flex-row items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <Skeleton className="h-8 w-8 rounded-full" />
+                          <div>
+                            <Skeleton className="h-6 w-32 mb-2" />
+                            <Skeleton className="h-4 w-24" />
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Skeleton className="h-10 w-32" />
+                          <Skeleton className="h-10 w-28" />
+                          <Skeleton className="h-10 w-24" />
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <Skeleton className="h-4 w-32" />
+                          <div className="grid md:grid-cols-2 gap-4">
+                            <Skeleton className="h-20" />
+                            <Skeleton className="h-20" />
+                          </div>
+                          <Skeleton className="h-4 w-32 mt-6" />
+                          <div className="space-y-2">
+                            <Skeleton className="h-20" />
+                            <Skeleton className="h-20" />
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <Card>
+                        <CardHeader>
+                          <Skeleton className="h-6 w-48" />
+                          <Skeleton className="h-4 w-32 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <Skeleton className="h-32" />
+                            <Skeleton className="h-32" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card>
+                        <CardHeader>
+                          <Skeleton className="h-6 w-40" />
+                          <Skeleton className="h-4 w-28 mt-2" />
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <Skeleton className="h-32" />
+                            <Skeleton className="h-32" />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    
+                    <Card>
+                      <CardHeader>
+                        <Skeleton className="h-6 w-36" />
+                        <Skeleton className="h-4 w-48 mt-2" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <Skeleton className="h-40" />
+                          <Skeleton className="h-40" />
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
                 </div>
               ) : error ? (
                 <Card>
