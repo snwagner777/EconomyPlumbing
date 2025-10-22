@@ -1081,7 +1081,13 @@ class ServiceTitanAPI {
           const expirationDate = membership.to || membership.expirationDate;
           
           // Determine membership status
-          const isExpired = expirationDate ? new Date(expirationDate) < new Date() : false;
+          // Check raw status first for definitive states
+          const rawStatus = (membership.status || '').toLowerCase();
+          const isDefinitelyInactive = ['expired', 'inactive', 'terminated', 'paused', 'suspended'].includes(rawStatus);
+          
+          // If no expiration date and status is not definitively inactive, consider it active
+          // If there is an expiration date, check if it's expired
+          const isExpired = isDefinitelyInactive || (expirationDate ? new Date(expirationDate) < new Date() : false);
           const status = isExpired ? 'Expired' : 'Active';
           
           // Extract membership type name for visual variants (Silver, Platinum, Rental, Commercial)
