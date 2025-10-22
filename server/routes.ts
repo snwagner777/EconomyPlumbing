@@ -8856,6 +8856,83 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
 
+  // Generate marketing campaign from segment
+  app.post("/api/admin/segments/generate-campaign", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { segmentId, channel } = req.body;
+      
+      if (!segmentId || !channel) {
+        return res.status(400).json({ error: "segmentId and channel are required" });
+      }
+
+      // Get segment details
+      const segment = await storage.getCustomerSegmentById(segmentId);
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+
+      // Generate content based on channel
+      let generatedCampaign;
+      const campaignId = crypto.randomUUID();
+      
+      if (channel === 'email') {
+        const { generateEmailCampaignContent } = await import("./lib/aiCampaignGenerator");
+        const content = await generateEmailCampaignContent(segment);
+        
+        generatedCampaign = {
+          id: campaignId,
+          segmentId,
+          channel: 'email',
+          subject: content.subject,
+          content: content.htmlContent,
+          status: 'pending_approval',
+          generatedAt: new Date().toISOString()
+        };
+      } else if (channel === 'sms') {
+        const { generateSMSCampaignContent } = await import("./lib/aiCampaignGenerator");
+        const content = await generateSMSCampaignContent(segment);
+        
+        generatedCampaign = {
+          id: campaignId,
+          segmentId,
+          channel: 'sms',
+          content: content.message,
+          status: 'pending_approval',
+          generatedAt: new Date().toISOString()
+        };
+      } else if (channel === 'newsletter') {
+        const { generateNewsletterContent } = await import("./lib/aiCampaignGenerator");
+        const content = await generateNewsletterContent(segment);
+        
+        generatedCampaign = {
+          id: campaignId,
+          segmentId,
+          channel: 'newsletter',
+          subject: content.subject,
+          content: content.htmlContent,
+          status: 'pending_approval',
+          generatedAt: new Date().toISOString()
+        };
+      } else {
+        return res.status(400).json({ error: "Invalid channel. Use 'email', 'sms', or 'newsletter'" });
+      }
+
+      // Store the generated campaign (you'd normally save this to database)
+      // For now, we'll just return it
+      res.json(generatedCampaign);
+    } catch (error: any) {
+      console.error("[Admin] Generate campaign error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate campaign",
+        details: error.message 
+      });
+    }
+  });
+
   // Manual segment refresh (auto-entry + auto-exit)
   app.post("/api/admin/segments/:id/refresh", async (req, res) => {
     try {
