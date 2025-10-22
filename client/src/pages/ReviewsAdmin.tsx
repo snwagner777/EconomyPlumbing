@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { ArrowLeft, Check, X, Star, Calendar, Mail, Phone, MessageSquare, Zap, Settings as SettingsIcon, BarChart3, Send, Eye, MousePointer } from "lucide-react";
+import { ArrowLeft, Check, X, Star, Calendar, Mail, Phone, MessageSquare, Zap, Settings as SettingsIcon, BarChart3, Send, Eye, MousePointer, History } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { format } from "date-fns";
@@ -92,6 +93,204 @@ type CustomerEngagement = {
   emailOpenRate: number;
   smsDeliveryRate: number;
 };
+
+// Email History Tab Component
+function EmailHistoryTab() {
+  const { toast } = useToast();
+  const [selectedEmail, setSelectedEmail] = useState<any>(null);
+  
+  // Fetch email send logs using proper apiRequest
+  const { data: emailHistory, isLoading, isError } = useQuery<{ emails: any[] }>({
+    queryKey: ['/api/admin/email-history'],
+  });
+
+  // Show error toast if query fails
+  useEffect(() => {
+    if (isError) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch email history. Please refresh and try again.",
+        variant: "destructive"
+      });
+    }
+  }, [isError, toast]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-96 w-full" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-destructive">Failed to load email history</p>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="mt-4"
+          onClick={() => queryClient.invalidateQueries({ queryKey: ['/api/admin/email-history'] })}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  const emails = emailHistory?.emails || [];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-semibold">Email History</h2>
+        <p className="text-sm text-muted-foreground">View all marketing and review request emails sent to customers</p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Emails</CardTitle>
+          <CardDescription>Last 100 marketing and review request emails sent</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {emails.length === 0 ? (
+            <p className="text-center text-muted-foreground py-8">No emails sent yet</p>
+          ) : (
+            <div className="space-y-2">
+              <div className="grid grid-cols-12 gap-4 pb-2 border-b text-sm font-medium">
+                <div className="col-span-3">Recipient</div>
+                <div className="col-span-3">Subject</div>
+                <div className="col-span-2">Campaign</div>
+                <div className="col-span-2">Sent At</div>
+                <div className="col-span-1">Status</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+              {emails.map((email: any) => (
+                <div key={email.id} className="grid grid-cols-12 gap-4 py-2 border-b items-center">
+                  <div className="col-span-3">
+                    <p className="font-medium">{email.recipientName}</p>
+                    <p className="text-xs text-muted-foreground">{email.recipientEmail}</p>
+                  </div>
+                  <div className="col-span-3">
+                    <p className="text-sm truncate">{email.subject || 'No subject'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Badge variant="outline" className="text-xs">
+                      {email.campaignName || 'Direct Send'}
+                    </Badge>
+                  </div>
+                  <div className="col-span-2 text-sm text-muted-foreground">
+                    {format(new Date(email.sentAt), 'MMM d, h:mm a')}
+                  </div>
+                  <div className="col-span-1">
+                    <Badge
+                      variant={
+                        email.deliveredAt ? 'default' :
+                        email.bouncedAt ? 'destructive' :
+                        email.complainedAt ? 'destructive' :
+                        'secondary'
+                      }
+                      className="text-xs"
+                    >
+                      {email.deliveredAt ? 'Delivered' :
+                       email.bouncedAt ? 'Bounced' :
+                       email.complainedAt ? 'Complained' :
+                       email.resendStatus || 'Sent'}
+                    </Badge>
+                  </div>
+                  <div className="col-span-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedEmail(email)}
+                      data-testid={`button-view-email-${email.id}`}
+                    >
+                      <Eye className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Email Preview Modal */}
+      {selectedEmail && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Email Preview</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedEmail(null)}
+                data-testid="button-close-preview"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Close
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">To:</p>
+              <p className="font-medium">{selectedEmail.recipientName} &lt;{selectedEmail.recipientEmail}&gt;</p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Subject:</p>
+              <p className="font-medium">{selectedEmail.subject || 'No subject'}</p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Campaign:</p>
+              <p className="font-medium">{selectedEmail.campaignName || 'Direct Send'}</p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Sent:</p>
+              <p className="font-medium">{format(new Date(selectedEmail.sentAt), 'MMMM d, yyyy h:mm a')}</p>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Tracking:</p>
+              <div className="flex gap-4 text-sm">
+                {selectedEmail.openedAt && (
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-3 h-3" />
+                    Opened {format(new Date(selectedEmail.openedAt), 'MMM d, h:mm a')}
+                  </span>
+                )}
+                {selectedEmail.clickedAt && (
+                  <span className="flex items-center gap-1">
+                    <MousePointer className="w-3 h-3" />
+                    Clicked {format(new Date(selectedEmail.clickedAt), 'MMM d, h:mm a')}
+                  </span>
+                )}
+                {!selectedEmail.openedAt && !selectedEmail.clickedAt && (
+                  <span className="text-muted-foreground">No interaction yet</span>
+                )}
+              </div>
+            </div>
+            {selectedEmail.htmlContent && (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">Email Content Preview:</p>
+                <div className="border rounded-md p-4 bg-background max-h-96 overflow-auto">
+                  <pre className="whitespace-pre-wrap text-sm font-mono">
+                    {/* Display HTML as plain text to avoid XSS */}
+                    {selectedEmail.htmlContent}
+                  </pre>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Note: HTML content is displayed as plain text for security
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
 
 function CustomerEngagementTimeline() {
   const { data: engagementData, isLoading } = useQuery<{ customers: CustomerEngagement[] }>({
@@ -328,7 +527,7 @@ export default function ReviewsAdmin() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="dashboard" data-testid="tab-dashboard">
               <BarChart3 className="w-4 h-4 mr-2" />
               Dashboard
@@ -344,6 +543,10 @@ export default function ReviewsAdmin() {
             <TabsTrigger value="ai-responses" data-testid="tab-ai-responses">
               <MessageSquare className="w-4 h-4 mr-2" />
               AI Responses
+            </TabsTrigger>
+            <TabsTrigger value="email-history" data-testid="tab-email-history">
+              <History className="w-4 h-4 mr-2" />
+              Email History
             </TabsTrigger>
             <TabsTrigger value="settings" data-testid="tab-settings">
               <SettingsIcon className="w-4 h-4 mr-2" />
@@ -623,6 +826,11 @@ export default function ReviewsAdmin() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Email History Tab */}
+          <TabsContent value="email-history" className="mt-6 space-y-6">
+            <EmailHistoryTab />
           </TabsContent>
 
           {/* Settings Tab */}

@@ -632,25 +632,56 @@ function SubscribersTab({ subscribers, isLoading }: any) {
 function SettingsTab({ keywords, isLoading }: any) {
   const { toast } = useToast();
   const [masterSwitchEnabled, setMasterSwitchEnabled] = useState(false);
+  const [loadingSwitch, setLoadingSwitch] = useState(true);
+
+  // Fetch master switch status on mount
+  useEffect(() => {
+    const fetchMasterSwitch = async () => {
+      try {
+        const response = await fetch('/api/sms/settings/master-switch');
+        const data = await response.json();
+        if (data.success) {
+          setMasterSwitchEnabled(data.enabled);
+        }
+      } catch (error) {
+        console.error('Failed to fetch master switch status:', error);
+      } finally {
+        setLoadingSwitch(false);
+      }
+    };
+    fetchMasterSwitch();
+  }, []);
 
   const handleMasterSwitchToggle = async (enabled: boolean) => {
     try {
-      // TODO: Implement master switch API endpoint
-      setMasterSwitchEnabled(enabled);
-      
-      toast({
-        title: enabled ? "SMS Marketing Enabled" : "SMS Marketing Disabled",
-        description: enabled 
-          ? "Campaigns can now send messages to opted-in subscribers"
-          : "All SMS campaigns are paused. No messages will be sent.",
-        variant: enabled ? "default" : "destructive"
+      const response = await fetch('/api/sms/settings/master-switch', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled })
       });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setMasterSwitchEnabled(enabled);
+        toast({
+          title: enabled ? "SMS Marketing Enabled" : "SMS Marketing Disabled",
+          description: enabled 
+            ? "Campaigns can now send messages to opted-in subscribers"
+            : "All SMS campaigns are paused. No messages will be sent.",
+          variant: enabled ? "default" : "destructive"
+        });
+      } else {
+        throw new Error(data.error || 'Failed to update master switch');
+      }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update master switch",
         variant: "destructive"
       });
+      // Revert the switch on error
+      setMasterSwitchEnabled(!enabled);
     }
   };
 

@@ -7182,6 +7182,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       
       const customerIdNum = parseInt(customerId);
       
+      // Import required tables and operators
+      const { emailSendLog, campaignEmails, emailCampaigns, reviewRequestSendLog, reviewDripEmails, reviewRequestCampaigns } = await import("@shared/schema");
+      const { desc, eq } = await import("drizzle-orm");
+      
       // Fetch email marketing history from email_send_log
       const emailHistory = await db
         .select({
@@ -8295,6 +8299,69 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     } catch (error: any) {
       console.error('[API] Error fetching email analytics:', error);
       res.status(500).json({ error: error.message || "Failed to fetch email analytics" });
+    }
+  });
+
+  // Admin: Get email history for viewing in admin panel
+  app.get("/api/admin/email-history", requireAdmin, async (req, res) => {
+    try {
+      const { emailSendLog, campaignEmails, emailCampaigns, reviewRequestSendLog, reviewDripEmails, reviewRequestCampaigns } = await import("@shared/schema");
+      const { db } = await import("./db");
+      const { desc, eq } = await import("drizzle-orm");
+      
+      // Fetch email marketing history from email_send_log
+      const emailHistory = await db
+        .select({
+          id: emailSendLog.id,
+          subject: campaignEmails.subject,
+          campaignName: emailCampaigns.name,
+          recipientEmail: emailSendLog.recipientEmail,
+          recipientName: emailSendLog.recipientName,
+          sentAt: emailSendLog.sentAt,
+          deliveredAt: emailSendLog.deliveredAt,
+          openedAt: emailSendLog.openedAt,
+          clickedAt: emailSendLog.clickedAt,
+          bouncedAt: emailSendLog.bouncedAt,
+          complainedAt: emailSendLog.complainedAt,
+          resendStatus: emailSendLog.resendStatus,
+          htmlContent: campaignEmails.htmlContent,
+        })
+        .from(emailSendLog)
+        .leftJoin(campaignEmails, eq(emailSendLog.campaignEmailId, campaignEmails.id))
+        .leftJoin(emailCampaigns, eq(emailSendLog.campaignId, emailCampaigns.id))
+        .orderBy(desc(emailSendLog.sentAt))
+        .limit(50);
+      
+      // Fetch review request emails from review_request_send_log
+      const reviewEmails = await db
+        .select({
+          id: reviewRequestSendLog.id,
+          subject: reviewDripEmails.subject,
+          campaignName: reviewRequestCampaigns.name,
+          recipientEmail: reviewRequestSendLog.recipientEmail,
+          recipientName: reviewRequestSendLog.recipientName,
+          sentAt: reviewRequestSendLog.sentAt,
+          openedAt: reviewRequestSendLog.openedAt,
+          clickedAt: reviewRequestSendLog.clickedAt,
+          reviewCompletedAt: reviewRequestSendLog.reviewCompletedAt,
+          resendStatus: reviewRequestSendLog.resendStatus,
+          htmlContent: reviewDripEmails.htmlContent,
+        })
+        .from(reviewRequestSendLog)
+        .leftJoin(reviewDripEmails, eq(reviewRequestSendLog.dripEmailId, reviewDripEmails.id))
+        .leftJoin(reviewRequestCampaigns, eq(reviewRequestSendLog.campaignId, reviewRequestCampaigns.id))
+        .orderBy(desc(reviewRequestSendLog.sentAt))
+        .limit(50);
+      
+      // Combine and sort by sent date, taking top 100
+      const allEmails = [...emailHistory, ...reviewEmails]
+        .sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+        .slice(0, 100);
+      
+      res.json({ emails: allEmails });
+    } catch (error: any) {
+      console.error('[Admin] Email history error:', error);
+      res.status(500).json({ error: "Failed to fetch email history" });
     }
   });
 

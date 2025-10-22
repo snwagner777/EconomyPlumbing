@@ -626,6 +626,88 @@ export function registerSMSMarketingRoutes(app: Express) {
   });
 
   // ==========================================
+  // SMS MASTER SWITCH
+  // ==========================================
+
+  /**
+   * GET /api/sms/settings/master-switch
+   * Get master SMS switch status
+   * PROTECTED: Admin only
+   */
+  app.get("/api/sms/settings/master-switch", requireAuth, async (req, res) => {
+    try {
+      const { marketingSystemSettings } = await import("@shared/schema");
+      
+      const [setting] = await db
+        .select()
+        .from(marketingSystemSettings)
+        .where(eq(marketingSystemSettings.settingKey, 'sms_master_switch_enabled'))
+        .limit(1);
+
+      res.json({
+        success: true,
+        enabled: setting?.settingValue === 'true' || false
+      });
+    } catch (error) {
+      console.error('[SMS API] Error fetching master switch:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch master switch status'
+      });
+    }
+  });
+
+  /**
+   * PUT /api/sms/settings/master-switch
+   * Update master SMS switch status
+   * PROTECTED: Admin only
+   */
+  app.put("/api/sms/settings/master-switch", requireAuth, async (req, res) => {
+    try {
+      const { enabled } = req.body;
+      
+      // Validate that enabled is a boolean
+      if (typeof enabled !== 'boolean') {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request: enabled must be a boolean value'
+        });
+      }
+      
+      const { marketingSystemSettings } = await import("@shared/schema");
+      
+      // Upsert the setting - store as 'true' or 'false' string
+      await db
+        .insert(marketingSystemSettings)
+        .values({
+          settingKey: 'sms_master_switch_enabled',
+          settingValue: enabled ? 'true' : 'false',
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: marketingSystemSettings.settingKey,
+          set: {
+            settingValue: enabled ? 'true' : 'false',
+            updatedAt: new Date()
+          }
+        });
+
+      console.log(`[SMS API] Master switch ${enabled ? 'enabled' : 'disabled'}`);
+
+      res.json({
+        success: true,
+        enabled: enabled
+      });
+    } catch (error) {
+      console.error('[SMS API] Error updating master switch:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to update master switch'
+      });
+    }
+  });
+
+  // ==========================================
   /**
    * POST /api/sms/send-referral-requests
    * Send referral request SMS to happy customers (5-star reviews)
