@@ -1195,7 +1195,10 @@ class ServiceTitanAPI {
             id: estimate.id,
             estimateNumber: estimate.number || estimate.estimateNumber || estimate.id?.toString(),
             total: parseFloat(estimate.total || estimate.subtotal || '0'),
-            status: estimate.status || 'Open',
+            // Status is an object with { id, name } - extract the name string
+            status: typeof estimate.status === 'object' && estimate.status?.name 
+              ? estimate.status.name 
+              : (estimate.status || 'Open'),
             createdOn: estimate.createdOn || estimate.createdDate,
             expiresOn: estimate.expiresOn || estimate.expirationDate,
             jobId: estimate.jobId,
