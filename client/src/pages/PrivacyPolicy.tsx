@@ -89,11 +89,52 @@ export default function PrivacyPolicy() {
             We implement appropriate technical and organizational security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction. However, no internet transmission is completely secure, and we cannot guarantee absolute security.
           </p>
 
+          <h2>SMS/Text Messaging Terms (TCPA Compliance)</h2>
+          <h3>Program Overview</h3>
+          <p>
+            Economy Plumbing Services offers SMS text messaging services for appointment reminders, service updates, 
+            promotional offers, and customer support. Message frequency varies. Message and data rates may apply.
+          </p>
+
+          <h3>Consent</h3>
+          <p>
+            By providing your mobile phone number and opting in, you expressly consent to receive recurring automated 
+            marketing and transactional text messages from Economy Plumbing Services. Consent is not a condition of purchase.
+          </p>
+
+          <h3>Opt-Out</h3>
+          <p>
+            Text STOP to any message to unsubscribe. You'll receive a confirmation of opt-out. For help, text HELP or 
+            call (512) 786-1771.
+          </p>
+
+          <h3>Message Types</h3>
+          <ul>
+            <li>Appointment confirmations and reminders</li>
+            <li>Service updates and arrival notifications</li>
+            <li>Promotional offers and discounts</li>
+            <li>Maintenance reminders</li>
+            <li>Customer satisfaction surveys</li>
+          </ul>
+
+          <h3>Privacy</h3>
+          <p>
+            We will not share your mobile number with third parties for their marketing purposes. Your information is used 
+            solely to provide the SMS service and in accordance with this Privacy Policy.
+          </p>
+
+          <h3>Supported Carriers</h3>
+          <p>
+            Compatible with major carriers including AT&T, Verizon, T-Mobile, Sprint, and others. Carriers are not liable 
+            for delayed or undelivered messages.
+          </p>
+
           <h2>Your Rights and Choices</h2>
           <p>You have the right to:</p>
           <ul>
             <li>Access, update, or delete your personal information</li>
             <li>Opt-out of receiving marketing communications from us</li>
+            <li>Text STOP to opt out of SMS messages at any time</li>
             <li>Request that we restrict the processing of your personal information</li>
             <li>Object to our processing of your personal information</li>
           </ul>
