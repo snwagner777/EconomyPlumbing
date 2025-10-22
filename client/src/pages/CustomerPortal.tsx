@@ -2234,7 +2234,10 @@ export default function CustomerPortal() {
                             <div>
                               <CardTitle>Referral Rewards Program</CardTitle>
                               <CardDescription className="mt-1">
-                                Earn $25 for every friend you refer!
+                                {referralsData?.referrals.length === 0 
+                                  ? "Start earning rewards today! Share your link below." 
+                                  : `You've referred ${referralsData?.referrals.length} ${referralsData?.referrals.length === 1 ? 'friend' : 'friends'} - thank you for spreading the word!`
+                                }
                               </CardDescription>
                             </div>
                           </div>
@@ -2298,7 +2301,7 @@ export default function CustomerPortal() {
                         </div>
 
                         {/* Your Referrals List */}
-                        {referralsData && referralsData.referrals.length > 0 && (
+                        {referralsData && referralsData.referrals.length > 0 ? (
                           <div className="space-y-3">
                             <h4 className="font-semibold">Your Referrals</h4>
                             {referralsData.referrals.slice(0, 5).map((referral: any) => {
@@ -2337,6 +2340,68 @@ export default function CustomerPortal() {
                               </p>
                             )}
                           </div>
+                        ) : (
+                          referralsData && (
+                            <div className="p-6 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg border border-primary/20 text-center space-y-4">
+                              <div className="flex justify-center">
+                                <Gift className="w-12 h-12 text-primary animate-pulse" />
+                              </div>
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-lg">Be the First to Start Earning!</h4>
+                                <p className="text-muted-foreground max-w-md mx-auto">
+                                  You haven't made any referrals yet, but there's great potential waiting! 
+                                  Share your unique link with friends and family to start earning $25 rewards.
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  It's simple: they save $25, you earn $25. Everyone wins!
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                                <Button 
+                                  onClick={() => {
+                                    const text = `Save $25 on your first plumbing service with Economy Plumbing! Use my referral link: ${referralLinkData.url}`;
+                                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                                    window.open(url, '_blank', 'width=600,height=400');
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  data-testid="button-share-twitter"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                  Share on X
+                                </Button>
+                                <Button 
+                                  onClick={() => {
+                                    const text = `Check out Economy Plumbing Services! Save $25 on your first service using my referral link: ${referralLinkData.url}`;
+                                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLinkData.url)}&quote=${encodeURIComponent(text)}`;
+                                    window.open(url, '_blank', 'width=600,height=400');
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  data-testid="button-share-facebook"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                  Share on Facebook
+                                </Button>
+                                <Button 
+                                  onClick={() => {
+                                    const text = `Hi! I wanted to share this with you - Economy Plumbing Services has been amazing for us. You can save $25 on your first service using my referral link: ${referralLinkData.url}`;
+                                    const url = `mailto:?subject=Save $25 on Plumbing Services&body=${encodeURIComponent(text)}`;
+                                    window.location.href = url;
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="gap-2"
+                                  data-testid="button-share-email"
+                                >
+                                  <Mail className="w-4 h-4" />
+                                  Share via Email
+                                </Button>
+                              </div>
+                            </div>
+                          )
                         )}
 
                         {/* How It Works */}
