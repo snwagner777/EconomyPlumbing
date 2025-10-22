@@ -7334,11 +7334,11 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.json({ serviceCount: 0, topPercentile: null });
       }
 
-      console.log(`[Portal] Customer ${customerId} is in top ${100 - percentile}% (${customersAboveCount}/${customersChecked} customers have more services)`);
+      console.log(`[Portal] Customer ${customerId} is in top ${percentile}% (${customersAboveCount}/${customersChecked} customers have more services)`);
 
       res.json({
         serviceCount,
-        topPercentile: 100 - percentile, // e.g., "top 15%" means 85th percentile
+        topPercentile: percentile, // e.g., "top 85%" means you're better than 85% of customers
       });
     } catch (error: any) {
       console.error("[Portal] Customer stats error:", error);
