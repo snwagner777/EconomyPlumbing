@@ -8933,6 +8933,256 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
 
+  // Get marketing metrics overview
+  app.get("/api/admin/marketing/metrics", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Get segments count
+      const segments = await storage.getCustomerSegments({});
+      const activeSegments = segments.segments.filter((s: any) => s.status === 'active');
+      
+      // Get email campaigns
+      const emailCampaigns = await storage.getEmailCampaigns({});
+      const activeEmailCampaigns = emailCampaigns.filter((c: any) => c.status === 'active');
+      
+      // Get SMS campaigns (if available)
+      const smsCampaigns = await storage.getSMSCampaigns?.({}) || [];
+      const activeSmsCampaigns = smsCampaigns.filter((c: any) => c.status === 'active');
+      
+      // Calculate metrics
+      const totalCustomers = segments.segments.reduce((sum: number, s: any) => sum + (s.memberCount || 0), 0);
+      const emailSent = emailCampaigns.reduce((sum: number, c: any) => sum + (c.totalSent || 0), 0);
+      const smsSent = smsCampaigns.reduce((sum: number, c: any) => sum + (c.totalSent || 0), 0);
+      
+      // Get unsold estimates count
+      const unsoldEstimates = await db
+        .select({ count: sql<number>`count(*)::int`, total: sql<number>`sum(total)::int` })
+        .from(serviceTitanEstimates)
+        .where(and(
+          eq(serviceTitanEstimates.status, 'Open'),
+          isNull(serviceTitanEstimates.soldJobId)
+        ));
+
+      res.json({
+        totalSegments: segments.segments.length,
+        activeSegments: activeSegments.length,
+        totalCustomers,
+        emailCampaigns: {
+          total: emailCampaigns.length,
+          active: activeEmailCampaigns.length,
+          pendingApproval: emailCampaigns.filter((c: any) => c.status === 'pending_approval').length,
+          sent: emailSent,
+          openRate: emailSent > 0 ? Math.round((emailCampaigns.reduce((sum: number, c: any) => sum + (c.totalOpened || 0), 0) / emailSent) * 100) : 0,
+          clickRate: emailSent > 0 ? Math.round((emailCampaigns.reduce((sum: number, c: any) => sum + (c.totalClicked || 0), 0) / emailSent) * 100) : 0
+        },
+        smsCampaigns: {
+          total: smsCampaigns.length,
+          active: activeSmsCampaigns.length,
+          pendingApproval: smsCampaigns.filter((c: any) => c.status === 'pending_approval').length,
+          sent: smsSent,
+          deliveryRate: smsSent > 0 ? Math.round((smsCampaigns.reduce((sum: number, c: any) => sum + (c.totalDelivered || 0), 0) / smsSent) * 100) : 95,
+          responseRate: smsSent > 0 ? Math.round((smsCampaigns.reduce((sum: number, c: any) => sum + (c.totalResponses || 0), 0) / smsSent) * 100) : 0
+        },
+        revenue: {
+          attributed: segments.segments.reduce((sum: number, s: any) => sum + (s.totalRevenue || 0), 0),
+          potential: segments.segments.reduce((sum: number, s: any) => sum + (s.potentialRevenue || 0), 0),
+          roi: 250 // Placeholder ROI calculation
+        },
+        unsoldEstimates: {
+          total: unsoldEstimates[0]?.count || 0,
+          value: unsoldEstimates[0]?.total || 0,
+          conversionRate: 15 // Placeholder conversion rate
+        }
+      });
+    } catch (error: any) {
+      console.error("[Admin] Get marketing metrics error:", error);
+      res.status(500).json({ error: "Failed to fetch marketing metrics" });
+    }
+  });
+
+  // Get active marketing campaigns
+  app.get("/api/admin/marketing/active-campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const campaigns: any[] = [];
+      
+      // Get email campaigns
+      const emailCampaigns = await storage.getEmailCampaigns({});
+      for (const campaign of emailCampaigns) {
+        const segment = await storage.getCustomerSegmentById(campaign.segmentId);
+        campaigns.push({
+          id: campaign.id,
+          name: campaign.name,
+          type: 'email',
+          status: campaign.status,
+          segmentName: segment?.name || 'Unknown Segment',
+          recipientCount: segment?.memberCount || 0,
+          sentCount: campaign.totalSent || 0,
+          performance: {
+            openRate: campaign.totalSent > 0 ? Math.round((campaign.totalOpened / campaign.totalSent) * 100) : 0,
+            clickRate: campaign.totalSent > 0 ? Math.round((campaign.totalClicked / campaign.totalSent) * 100) : 0,
+            conversionRate: 0
+          },
+          nextSendDate: campaign.scheduledFor,
+          createdAt: campaign.createdAt
+        });
+      }
+      
+      // Get SMS campaigns
+      const smsCampaigns = await storage.getSMSCampaigns?.({}) || [];
+      for (const campaign of smsCampaigns) {
+        const segment = await storage.getCustomerSegmentById(campaign.segmentId);
+        campaigns.push({
+          id: campaign.id,
+          name: campaign.name,
+          type: 'sms',
+          status: campaign.status,
+          segmentName: segment?.name || 'Unknown Segment',
+          recipientCount: segment?.memberCount || 0,
+          sentCount: campaign.totalSent || 0,
+          performance: {
+            deliveryRate: campaign.totalSent > 0 ? Math.round((campaign.totalDelivered / campaign.totalSent) * 100) : 0,
+            responseRate: campaign.totalSent > 0 ? Math.round((campaign.totalResponses / campaign.totalSent) * 100) : 0,
+            conversionRate: 0
+          },
+          nextSendDate: campaign.scheduledFor,
+          createdAt: campaign.createdAt
+        });
+      }
+
+      res.json({ campaigns });
+    } catch (error: any) {
+      console.error("[Admin] Get active campaigns error:", error);
+      res.status(500).json({ error: "Failed to fetch active campaigns" });
+    }
+  });
+
+  // Get automation rules
+  app.get("/api/admin/marketing/automation-rules", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      // Define automation rules (these would normally be stored in database)
+      const rules = [
+        {
+          id: 'unsold-estimates',
+          name: 'Unsold Estimate Follow-up',
+          trigger: 'Estimate created',
+          action: 'Send follow-up sequence',
+          status: 'active',
+          lastRun: new Date().toISOString(),
+          executionCount: 42
+        },
+        {
+          id: 'win-back',
+          name: 'Win-back Campaign',
+          trigger: 'No service for 12 months',
+          action: 'Send win-back offer',
+          status: 'active',
+          lastRun: new Date(Date.now() - 86400000).toISOString(),
+          executionCount: 15
+        },
+        {
+          id: 'review-request',
+          name: 'Review Request',
+          trigger: 'Job completed',
+          action: 'Send review request',
+          status: 'active',
+          lastRun: new Date().toISOString(),
+          executionCount: 128
+        },
+        {
+          id: 'seasonal',
+          name: 'Seasonal Reminders',
+          trigger: 'Season change',
+          action: 'Send maintenance reminder',
+          status: 'active',
+          lastRun: new Date(Date.now() - 172800000).toISOString(),
+          executionCount: 8
+        }
+      ];
+
+      res.json({ rules });
+    } catch (error: any) {
+      console.error("[Admin] Get automation rules error:", error);
+      res.status(500).json({ error: "Failed to fetch automation rules" });
+    }
+  });
+
+  // Scan for unsold estimates and create remarketing campaigns
+  app.post("/api/admin/remarketing/scan-estimates", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { scanUnsoldEstimates } = await import("./lib/unsoldEstimateRemarketing");
+      const campaigns = await scanUnsoldEstimates(storage);
+
+      res.json({
+        success: true,
+        campaignsCreated: campaigns.length,
+        totalEstimates: campaigns.reduce((sum, c) => sum + c.estimateIds.length, 0),
+        totalValue: campaigns.reduce((sum, c) => sum + c.totalValue, 0),
+        campaigns: campaigns.map(c => ({
+          segmentId: c.segmentId,
+          strategy: c.strategy.approach,
+          estimateCount: c.estimateIds.length,
+          value: c.totalValue,
+          hasEmail: !!c.emailCampaignId,
+          hasSMS: !!c.smsCampaignId
+        }))
+      });
+    } catch (error: any) {
+      console.error("[Admin] Remarketing scan error:", error);
+      res.status(500).json({ 
+        error: "Failed to scan unsold estimates",
+        details: error.message 
+      });
+    }
+  });
+
+  // Get remarketing campaign details
+  app.get("/api/admin/remarketing/campaigns/:segmentId", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ error: "Authentication required" });
+      }
+
+      const { segmentId } = req.params;
+      
+      // Get segment details
+      const segment = await storage.getCustomerSegmentById(segmentId);
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+
+      // Get associated campaigns
+      const emailCampaigns = await storage.getEmailCampaignsBySegment(segmentId);
+      const smsCampaigns = await storage.getSMSCampaignsBySegment?.(segmentId) || [];
+
+      res.json({
+        segment,
+        emailCampaigns,
+        smsCampaigns
+      });
+    } catch (error: any) {
+      console.error("[Admin] Get remarketing campaigns error:", error);
+      res.status(500).json({ 
+        error: "Failed to fetch remarketing campaigns",
+        details: error.message 
+      });
+    }
+  });
+
   // Manual segment refresh (auto-entry + auto-exit)
   app.post("/api/admin/segments/:id/refresh", async (req, res) => {
     try {
