@@ -7372,6 +7372,29 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
     }
   });
 
+  // Delete customer contact
+  app.delete("/api/portal/delete-contact", async (req, res) => {
+    try {
+      const { customerId, contactId } = req.body;
+
+      if (!customerId || !contactId) {
+        return res.status(400).json({ error: "Customer ID and Contact ID required" });
+      }
+
+      console.log(`[Portal] Deleting contact ${contactId} for customer ${customerId}...`);
+
+      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
+      const serviceTitan = getServiceTitanAPI();
+
+      await serviceTitan.deleteCustomerContact(parseInt(customerId), parseInt(contactId));
+
+      res.json({ success: true, message: "Contact deleted successfully" });
+    } catch (error: any) {
+      console.error("[Portal] Delete contact error:", error);
+      res.status(500).json({ error: error.message || "Failed to delete contact" });
+    }
+  });
+
   // Update service address (location)
   app.put("/api/portal/update-address", async (req, res) => {
     try {

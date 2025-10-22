@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -168,6 +170,11 @@ export default function CustomerPortal() {
   const [editPhone, setEditPhone] = useState("");
   const [isUpdatingContacts, setIsUpdatingContacts] = useState(false);
   
+  // Delete contact state
+  const [deleteContactDialogOpen, setDeleteContactDialogOpen] = useState(false);
+  const [contactToDelete, setContactToDelete] = useState<{ id: number; type: string; value: string } | null>(null);
+  const [isDeletingContact, setIsDeletingContact] = useState(false);
+  
   // Edit address state
   const [editAddressOpen, setEditAddressOpen] = useState(false);
   const [editStreet, setEditStreet] = useState("");
@@ -182,6 +189,7 @@ export default function CustomerPortal() {
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
   
   const phoneConfig = usePhoneConfig();
+  const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -746,6 +754,51 @@ export default function CustomerPortal() {
     }
   };
 
+  const handleDeleteContact = async () => {
+    if (!customerId || !contactToDelete) return;
+    
+    setIsDeletingContact(true);
+    try {
+      const response = await fetch('/api/portal/delete-contact', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: parseInt(customerId),
+          contactId: contactToDelete.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to delete contact' }));
+        throw new Error(errorData.error || 'Failed to delete contact');
+      }
+
+      // Show success toast
+      toast({
+        title: "Contact deleted",
+        description: `${contactToDelete.type} successfully removed from your account.`,
+      });
+
+      // Close dialog and reset state
+      setDeleteContactDialogOpen(false);
+      setContactToDelete(null);
+
+      // Invalidate customer data query to refresh the UI
+      queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', customerId] });
+    } catch (error: any) {
+      console.error('Delete contact error:', error);
+      
+      // Show error toast
+      toast({
+        title: "Error deleting contact",
+        description: error.message || "Failed to delete contact. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingContact(false);
+    }
+  };
+
   const handleEditAddress = async () => {
     if (!customerData) return;
     
@@ -1169,6 +1222,22 @@ export default function CustomerPortal() {
                                       </p>
                                     )}
                                   </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setContactToDelete({
+                                        id: contact.id,
+                                        type: contact.type,
+                                        value: contact.value
+                                      });
+                                      setDeleteContactDialogOpen(true);
+                                    }}
+                                    data-testid={`button-delete-contact-${contact.id}`}
+                                    className="flex-shrink-0 text-destructive hover:text-destructive"
+                                  >
+                                    Delete
+                                  </Button>
                                 </div>
                               );
                             })}
@@ -1242,7 +1311,7 @@ export default function CustomerPortal() {
                       </Card>
                     </AspectRatio>
 
-                    {/* Service History Card */}
+                    {/* Loyal Customer Card - Service History */}
                     {customerStats && (
                       <AspectRatio ratio={1 / 1}>
                         <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
@@ -1250,15 +1319,15 @@ export default function CustomerPortal() {
                           element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                         }}>
                           <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
-                            <Wrench className="w-8 h-8 text-primary mb-2" />
-                            <div className="text-2xl font-bold text-primary mb-1" data-testid="text-service-count">
-                              {customerStats.serviceCount}
+                            <Heart className="w-8 h-8 text-primary mb-2" />
+                            <div className="text-base font-bold mb-1">
+                              Thank You!
                             </div>
-                            <p className="text-xs text-muted-foreground mb-1">
-                              Total Services
+                            <p className="text-xs text-muted-foreground mb-2">
+                              {customerStats.serviceCount} service{customerStats.serviceCount === 1 ? '' : 's'} with us
                             </p>
-                            <Badge variant="secondary" className="text-xs">
-                              Top {customerStats.topPercentile}%
+                            <Badge variant="default" className="text-xs">
+                              Top {customerStats.topPercentile}% Customer
                             </Badge>
                             <p className="text-xs text-primary mt-2 absolute bottom-2">View History →</p>
                           </CardContent>
@@ -1654,34 +1723,35 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
-                  {/* Estimates Carousel */}
+                  {/* Estimates Carousel - Show ALL unsold estimates */}
                   {(() => {
-                    const openEstimates = customerData.estimates?.filter(estimate => {
+                    // Show ALL estimates that haven't been sold/converted - includes Open, Pending, Sent, Draft, Expired, etc.
+                    const unsoldEstimates = customerData.estimates?.filter(estimate => {
                       const status = estimate.status.toLowerCase();
-                      return !status.includes('approved') && 
+                      // Only filter out truly final states (sold, approved, declined, converted)
+                      return !status.includes('sold') && 
+                             !status.includes('approved') && 
                              !status.includes('declined') && 
-                             !status.includes('expired') && 
-                             !status.includes('closed') &&
-                             !status.includes('sold');
+                             !status.includes('converted');
                     }) || [];
 
-                    if (openEstimates.length === 0) return null;
+                    if (unsoldEstimates.length === 0) return null;
 
                     return (
                       <Card>
                         <CardHeader>
                           <div className="flex items-center gap-2">
                             <FileText className="w-6 h-6 text-primary" />
-                            <CardTitle>Open Estimates</CardTitle>
+                            <CardTitle>Your Estimates</CardTitle>
                           </div>
                           <CardDescription>
-                            Pending quotes and proposals for your review
+                            All estimates and quotes for your review
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="overflow-x-auto pb-2">
                             <div className="flex gap-4 min-w-max">
-                              {openEstimates.map((estimate) => (
+                              {unsoldEstimates.map((estimate) => (
                                 <Card
                                   key={estimate.id}
                                   className="w-80 flex-shrink-0 hover-elevate active-elevate-2 cursor-pointer"
@@ -2360,6 +2430,53 @@ export default function CustomerPortal() {
               data-testid="button-save-contacts"
             >
               {isUpdatingContacts ? "Updating..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Contact Confirmation Dialog */}
+      <Dialog open={deleteContactDialogOpen} onOpenChange={setDeleteContactDialogOpen}>
+        <DialogContent data-testid="dialog-delete-contact">
+          <DialogHeader>
+            <DialogTitle>Delete Contact?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contact information? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {contactToDelete && (
+            <div className="py-4">
+              <div className="bg-muted/50 p-4 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">
+                  {contactToDelete.type === 'MobilePhone' ? 'Mobile' : contactToDelete.type}
+                </p>
+                <p className="font-medium">
+                  {contactToDelete.value}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setDeleteContactDialogOpen(false);
+                setContactToDelete(null);
+              }}
+              disabled={isDeletingContact}
+              data-testid="button-cancel-delete-contact"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteContact}
+              disabled={isDeletingContact}
+              data-testid="button-confirm-delete-contact"
+            >
+              {isDeletingContact ? "Deleting..." : "Delete Contact"}
             </Button>
           </DialogFooter>
         </DialogContent>

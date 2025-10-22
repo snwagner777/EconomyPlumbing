@@ -748,6 +748,27 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Delete a customer contact by ID
+   */
+  async deleteCustomerContact(customerId: number, contactId: number): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Deleting contact ${contactId} for customer ${customerId}...`);
+      
+      await this.request(
+        `/customers/${customerId}/contacts/${contactId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      
+      console.log('[ServiceTitan] Contact deleted successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Delete contact error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Update location address
    */
   async updateLocation(
@@ -1010,15 +1031,50 @@ class ServiceTitanAPI {
       const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
       
-      console.log('[ServiceTitan] Memberships response:', JSON.stringify(result, null, 2).substring(0, 500));
+      console.log('[ServiceTitan] Memberships API response:', {
+        totalCount: result.data?.length || 0,
+        memberships: result.data?.map((m: any) => ({
+          id: m.id,
+          status: m.status,
+          membershipName: m.membershipName,
+          expirationDate: m.to || m.expirationDate,
+          canceledOn: m.canceledOn,
+          createdOn: m.createdOn
+        })) || []
+      });
       
       // Map memberships to display format
       const memberships = result.data || [];
       
-      // Filter for active/won memberships and get unique membership types
-      const activeMemberships = memberships.filter((m: any) => 
-        m.status === 'Won' || m.status === 'Completed' || m.membershipName
-      );
+      // Filter for ONLY truly active memberships - be strict to avoid false positives
+      const activeMemberships = memberships.filter((m: any) => {
+        // Skip if missing required fields
+        if (!m.membershipName && !m.locationRecurringServiceName) return false;
+        
+        // Skip if explicitly canceled
+        if (m.canceledOn) return false;
+        
+        // Skip if has expiration date AND it's in the past
+        const expirationDate = m.to || m.expirationDate;
+        if (expirationDate && new Date(expirationDate) < new Date()) return false;
+        
+        // Only include if status indicates active membership
+        // Common active statuses: 'Active', 'Won', 'Completed', 'In Progress'
+        const status = (m.status || '').toLowerCase();
+        if (status === 'canceled' || status === 'lost' || status === 'void') return false;
+        
+        return true;
+      });
+      
+      console.log('[ServiceTitan] Filtered active memberships:', {
+        inputCount: memberships.length,
+        activeCount: activeMemberships.length,
+        activeMemberships: activeMemberships.map((m: any) => ({
+          name: m.membershipName,
+          status: m.status,
+          expiresOn: m.to || m.expirationDate
+        }))
+      });
       
       // Group by membership to avoid duplicates
       const uniqueMemberships = new Map();
@@ -1064,22 +1120,24 @@ class ServiceTitanAPI {
       const salesUrl = `https://api.servicetitan.io/sales/v2/tenant/${this.config.tenantId}/estimates?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(salesUrl, {}, true);
       
-      console.log('[ServiceTitan] Estimates response:', JSON.stringify(result, null, 2).substring(0, 500));
+      console.log('[ServiceTitan] Estimates API response received:', {
+        totalCount: result.data?.length || 0,
+        statuses: result.data?.map((e: any) => ({ id: e.id, status: e.status, soldOn: e.soldOn })) || []
+      });
       
       // Map estimates to display format
       const estimates = result.data || [];
       
-      // Filter for open/pending estimates
-      const openEstimates = estimates.filter((est: any) => 
-        est.status === 'Open' || est.status === 'Pending' || (!est.status && !est.soldOn)
-      );
+      // NO BACKEND FILTERING - Return ALL estimates and let frontend decide what to show
+      // This allows customers to see all their unsold estimates (Open, Pending, Sent, Draft, Expired, etc.)
+      console.log('[ServiceTitan] Returning all estimates without backend filtering');
       
       // Create memoization cache for pricebook items to avoid duplicate API calls
       const pricebookCache = new Map<string, any>();
       
       // Enhance each estimate with pricebook item details
       const enhancedEstimates = await Promise.all(
-        openEstimates.map(async (estimate: any) => {
+        estimates.map(async (estimate: any) => {
           const items = estimate.items || [];
           
           // Fetch pricebook details for each item
