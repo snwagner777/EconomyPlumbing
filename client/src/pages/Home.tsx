@@ -6,6 +6,7 @@ import ServiceAreaCard from "@/components/ServiceAreaCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
 import Footer from "@/components/Footer";
+import SMSOptInWidget from "@/components/SMSOptInWidget";
 import { Link } from "wouter";
 import {
   Droplets,
@@ -260,6 +261,19 @@ export default function Home() {
       <div className="min-h-screen">
         <Header />
         <Hero />
+        
+        {/* SMS Opt-in Section */}
+        <section className="py-8 bg-primary/5 border-y">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <SMSOptInWidget 
+              variant="inline"
+              title="Get VIP Text Alerts"
+              description="Join our text list for exclusive discounts, maintenance reminders, and emergency priority service"
+              source="homepage"
+              showIncentive={true}
+            />
+          </div>
+        </section>
 
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
