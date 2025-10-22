@@ -7003,7 +7003,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       // Try to send email notification if configured
       try {
-        const adminEmail = process.env.ADMIN_EMAIL || 'info@plumbersthatcare.com';
+        const adminEmail = process.env.ADMIN_EMAIL || 'zoomtest@zoominternet.net';
         
         // Check if email service is configured
         const { sendEmail } = await import('./email');
