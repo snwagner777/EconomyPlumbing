@@ -121,6 +121,74 @@ export const referralCodes = pgTable("referral_codes", {
 }));
 
 // Referral tracking system
+// Chatbot conversations
+export const chatbotConversations = pgTable("chatbot_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull(), // Browser session ID
+  customerEmail: varchar("customer_email"),
+  customerPhone: varchar("customer_phone"),
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  endedAt: timestamp("ended_at"),
+  pageContext: varchar("page_context"), // Which page they started on
+  handoffRequested: boolean("handoff_requested").notNull().default(false),
+  handoffReason: text("handoff_reason"),
+  emailSent: boolean("email_sent").notNull().default(false),
+  archived: boolean("archived").notNull().default(false),
+  notes: text("notes"), // Admin notes
+  rating: integer("rating"), // 1-5 star rating
+  feedbackPositive: integer("feedback_positive").notNull().default(0), // Count of thumbs up
+  feedbackNegative: integer("feedback_negative").notNull().default(0), // Count of thumbs down
+}, (table) => ({
+  sessionIdIdx: index("chatbot_conversations_session_id_idx").on(table.sessionId),
+  startedAtIdx: index("chatbot_conversations_started_at_idx").on(table.startedAt),
+  handoffIdx: index("chatbot_conversations_handoff_idx").on(table.handoffRequested),
+  archivedIdx: index("chatbot_conversations_archived_idx").on(table.archived),
+}));
+
+// Individual messages within a conversation
+export const chatbotMessages = pgTable("chatbot_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull().references(() => chatbotConversations.id, { onDelete: "cascade" }),
+  role: varchar("role").notNull(), // 'user', 'assistant', 'system'
+  content: text("content").notNull(),
+  imageUrl: text("image_url"), // For uploaded images
+  feedback: varchar("feedback"), // 'positive' or 'negative'
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  conversationIdIdx: index("chatbot_messages_conversation_id_idx").on(table.conversationId),
+  createdAtIdx: index("chatbot_messages_created_at_idx").on(table.createdAt),
+}));
+
+// Chatbot analytics and common questions
+export const chatbotAnalytics = pgTable("chatbot_analytics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  question: text("question").notNull(),
+  category: varchar("category"), // 'pricing', 'emergency', 'scheduling', etc.
+  count: integer("count").notNull().default(1),
+  lastAsked: timestamp("last_asked").notNull().defaultNow(),
+  suggestedAnswer: text("suggested_answer"), // Admin-provided answer
+  isCommon: boolean("is_common").notNull().default(false),
+}, (table) => ({
+  categoryIdx: index("chatbot_analytics_category_idx").on(table.category),
+  countIdx: index("chatbot_analytics_count_idx").on(table.count),
+  isCommonIdx: index("chatbot_analytics_is_common_idx").on(table.isCommon),
+}));
+
+// Quick response templates for the chatbot
+export const chatbotQuickResponses = pgTable("chatbot_quick_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  label: varchar("label").notNull(), // Button text
+  message: text("message").notNull(), // What to send when clicked
+  category: varchar("category"), // 'greeting', 'emergency', 'pricing', etc.
+  sortOrder: integer("sort_order").notNull().default(0),
+  active: boolean("active").notNull().default(true),
+  icon: varchar("icon"), // Lucide icon name
+}, (table) => ({
+  categoryIdx: index("chatbot_quick_responses_category_idx").on(table.category),
+  activeIdx: index("chatbot_quick_responses_active_idx").on(table.active),
+  sortOrderIdx: index("chatbot_quick_responses_sort_order_idx").on(table.sortOrder),
+}));
+
 export const referrals = pgTable("referrals", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
@@ -2314,3 +2382,35 @@ export type CampaignSendIdempotency = typeof campaignSendIdempotency.$inferSelec
 export type InsertCampaignSendIdempotency = z.infer<typeof insertCampaignSendIdempotencySchema>;
 export type SystemHealthCheck = typeof systemHealthChecks.$inferSelect;
 export type InsertSystemHealthCheck = z.infer<typeof insertSystemHealthCheckSchema>;
+
+// Chatbot types and schemas
+export const insertChatbotConversationSchema = createInsertSchema(chatbotConversations).omit({
+  id: true,
+  startedAt: true,
+  feedbackPositive: true,
+  feedbackNegative: true,
+});
+
+export const insertChatbotMessageSchema = createInsertSchema(chatbotMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertChatbotAnalyticsSchema = createInsertSchema(chatbotAnalytics).omit({
+  id: true,
+  lastAsked: true,
+  count: true,
+});
+
+export const insertChatbotQuickResponseSchema = createInsertSchema(chatbotQuickResponses).omit({
+  id: true,
+});
+
+export type ChatbotConversation = typeof chatbotConversations.$inferSelect;
+export type InsertChatbotConversation = z.infer<typeof insertChatbotConversationSchema>;
+export type ChatbotMessage = typeof chatbotMessages.$inferSelect;
+export type InsertChatbotMessage = z.infer<typeof insertChatbotMessageSchema>;
+export type ChatbotAnalytics = typeof chatbotAnalytics.$inferSelect;
+export type InsertChatbotAnalytics = z.infer<typeof insertChatbotAnalyticsSchema>;
+export type ChatbotQuickResponse = typeof chatbotQuickResponses.$inferSelect;
+export type InsertChatbotQuickResponse = z.infer<typeof insertChatbotQuickResponseSchema>;
