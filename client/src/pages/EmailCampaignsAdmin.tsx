@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Mail, CheckCircle, Clock, Phone, AlertCircle, Sparkles, Calendar, Users, ChevronDown, ChevronUp, FileText, Eye, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -256,6 +257,231 @@ function EmailPreviewDialog({
   );
 }
 
+// Manual Email Blast Dialog Component
+function ManualEmailBlastDialog({ 
+  open, 
+  onOpenChange 
+}: { 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void; 
+}) {
+  const { toast } = useToast();
+  const [subject, setSubject] = useState("");
+  const [htmlContent, setHtmlContent] = useState("");
+  const [textContent, setTextContent] = useState("");
+  const [recipientType, setRecipientType] = useState<"all" | "segment" | "test">("test");
+  const [scheduledFor, setScheduledFor] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Preview HTML content in iframe
+  useEffect(() => {
+    if (iframeRef.current && htmlContent) {
+      const iframeDoc = iframeRef.current.contentDocument;
+      if (iframeDoc) {
+        iframeDoc.open();
+        iframeDoc.write(htmlContent);
+        iframeDoc.close();
+      }
+    }
+  }, [htmlContent]);
+
+  const sendCampaignMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest("POST", "/api/admin/email/send-campaign", data);
+    },
+    onSuccess: () => {
+      toast({
+        title: recipientType === "test" ? "Test email sent" : "Campaign sent",
+        description: recipientType === "test" 
+          ? "Test email has been sent to admin@plumbersthatcare.com"
+          : `Email campaign has been sent to ${recipientType === "all" ? "all customers" : "selected segment"}`,
+      });
+      onOpenChange(false);
+      // Reset form
+      setSubject("");
+      setHtmlContent("");
+      setTextContent("");
+      setRecipientType("test");
+      setScheduledFor("");
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/campaigns'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to send campaign",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSend = () => {
+    if (!subject || !htmlContent) {
+      toast({
+        title: "Missing required fields",
+        description: "Please provide a subject and email content",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    sendCampaignMutation.mutate({
+      subject,
+      htmlContent,
+      textContent: textContent || htmlContent.replace(/<[^>]*>/g, ''), // Strip HTML for plain text
+      recipientType,
+      segmentId: null, // Could add segment selection later
+      individualEmails: null,
+      scheduledFor: scheduledFor || null,
+      testMode: recipientType === "test",
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Send className="w-5 h-5" />
+            Send Manual Email Campaign
+          </DialogTitle>
+          <DialogDescription>
+            Create and send a one-time email blast to your customers
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="flex-1 overflow-auto">
+          <div className="grid grid-cols-2 gap-6">
+            {/* Left Column - Form */}
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="subject">Subject Line *</Label>
+                <Input
+                  id="subject"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  placeholder="Special offer from Economy Plumbing"
+                  className="mt-1"
+                  data-testid="input-manual-subject"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="recipients">Recipients *</Label>
+                <Select 
+                  value={recipientType} 
+                  onValueChange={(value: "all" | "segment" | "test") => setRecipientType(value)}
+                >
+                  <SelectTrigger className="mt-1" data-testid="select-recipient-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="test">Test (admin@plumbersthatcare.com)</SelectItem>
+                    <SelectItem value="all">All Customers</SelectItem>
+                    <SelectItem value="segment" disabled>Customer Segments (Coming Soon)</SelectItem>
+                  </SelectContent>
+                </Select>
+                {recipientType === "all" && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    <AlertCircle className="w-3 h-3 inline mr-1" />
+                    This will send to ALL customers with email addresses
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="schedule">Schedule (Optional)</Label>
+                <Input
+                  id="schedule"
+                  type="datetime-local"
+                  value={scheduledFor}
+                  onChange={(e) => setScheduledFor(e.target.value)}
+                  className="mt-1"
+                  data-testid="input-schedule"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Leave empty to send immediately
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="html">HTML Content *</Label>
+                <Textarea
+                  id="html"
+                  value={htmlContent}
+                  onChange={(e) => setHtmlContent(e.target.value)}
+                  placeholder="<html><body><h1>Your HTML email content here</h1></body></html>"
+                  className="mt-1 min-h-[200px] font-mono text-xs"
+                  data-testid="textarea-manual-html"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="text">Plain Text Content (Optional)</Label>
+                <Textarea
+                  id="text"
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  placeholder="Plain text version of your email (auto-generated if left empty)"
+                  className="mt-1 min-h-[100px]"
+                  data-testid="textarea-manual-text"
+                />
+              </div>
+            </div>
+
+            {/* Right Column - Preview */}
+            <div className="space-y-4">
+              <div>
+                <Label>Live Preview</Label>
+                <div className="mt-1 border rounded-lg overflow-hidden">
+                  <div className="bg-muted px-3 py-2 border-b">
+                    <p className="text-sm font-medium">Subject: {subject || "(No subject)"}</p>
+                    <p className="text-xs text-muted-foreground">
+                      To: {recipientType === "test" ? "admin@plumbersthatcare.com" : 
+                           recipientType === "all" ? "All Customers" : "Selected Segment"}
+                    </p>
+                  </div>
+                  <iframe
+                    ref={iframeRef}
+                    title="Email Preview"
+                    className="w-full h-[400px] bg-white"
+                    sandbox="allow-same-origin"
+                    data-testid="iframe-manual-preview"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter className="gap-2">
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+            data-testid="button-cancel-manual"
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSend}
+            disabled={sendCampaignMutation.isPending || !subject || !htmlContent}
+            data-testid="button-send-manual"
+          >
+            {sendCampaignMutation.isPending ? (
+              <>Sending...</>
+            ) : (
+              <>
+                <Send className="w-4 h-4 mr-2" />
+                {recipientType === "test" ? "Send Test" : 
+                 scheduledFor ? "Schedule Campaign" : "Send Campaign"}
+              </>
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function EmailCampaignsAdmin() {
   const { toast } = useToast();
   const [expandedCampaign, setExpandedCampaign] = useState<string | null>(null);
@@ -273,6 +499,7 @@ export default function EmailCampaignsAdmin() {
     email: null,
     campaign: null,
   });
+  const [manualBlastDialog, setManualBlastDialog] = useState(false);
 
   // Fetch all campaigns
   const { data: campaignsData, isLoading } = useQuery<{ campaigns: CampaignWithDetails[] }>({
@@ -601,11 +828,20 @@ export default function EmailCampaignsAdmin() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Email Campaigns</h2>
-        <p className="text-muted-foreground">
-          Manage email campaigns linked to ServiceTitan Marketing
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold mb-2">Email Campaigns</h2>
+          <p className="text-muted-foreground">
+            Manage email campaigns linked to ServiceTitan Marketing
+          </p>
+        </div>
+        <Button 
+          onClick={() => setManualBlastDialog(true)}
+          data-testid="button-manual-blast"
+        >
+          <Send className="w-4 h-4 mr-2" />
+          Send Manual Campaign
+        </Button>
       </div>
 
       {/* Summary Cards */}
@@ -821,6 +1057,12 @@ export default function EmailCampaignsAdmin() {
           });
           setPreviewDialog({ open: false, email: null, campaign: null });
         }}
+      />
+      
+      {/* Manual Email Blast Dialog */}
+      <ManualEmailBlastDialog 
+        open={manualBlastDialog}
+        onOpenChange={setManualBlastDialog}
       />
     </div>
   );
