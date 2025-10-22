@@ -1028,8 +1028,8 @@ class ServiceTitanAPI {
   async getCustomerMemberships(customerId: number): Promise<any[]> {
     try {
       // ServiceTitan memberships API endpoint (recurring service events)
-      // Use ?active=true to only get active memberships (API-level filtering)
-      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&active=true&pageSize=50`;
+      // Get ALL memberships (not just active) so we can show expired ones
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
       const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
       
       console.log('[ServiceTitan] Memberships API response:', {
@@ -1047,50 +1047,49 @@ class ServiceTitanAPI {
       // Map memberships to display format
       const memberships = result.data || [];
       
-      // Filter for ONLY truly active memberships - be strict to avoid false positives
-      const activeMemberships = memberships.filter((m: any) => {
+      // Filter OUT canceled memberships (but keep expired ones)
+      const displayableMemberships = memberships.filter((m: any) => {
         // Skip if missing required fields
         if (!m.membershipName && !m.locationRecurringServiceName) return false;
         
-        // Skip if explicitly canceled
+        // Skip if explicitly canceled (user doesn't want to see these)
         if (m.canceledOn) return false;
         
-        // Skip if has expiration date AND it's in the past
-        const expirationDate = m.to || m.expirationDate;
-        if (expirationDate && new Date(expirationDate) < new Date()) return false;
-        
-        // Only include if status indicates active membership
-        // Common active statuses: 'Active', 'Won', 'Completed', 'In Progress'
+        // Skip if status indicates canceled/lost/void
         const status = (m.status || '').toLowerCase();
         if (status === 'canceled' || status === 'lost' || status === 'void') return false;
         
         return true;
       });
       
-      console.log('[ServiceTitan] Filtered active memberships:', {
+      console.log('[ServiceTitan] Filtered memberships (excluding canceled):', {
         inputCount: memberships.length,
-        activeCount: activeMemberships.length,
-        activeMemberships: activeMemberships.map((m: any) => ({
+        displayableCount: displayableMemberships.length,
+        memberships: displayableMemberships.map((m: any) => ({
           name: m.membershipName,
           status: m.status,
-          expiresOn: m.to || m.expirationDate
+          expiresOn: m.to || m.expirationDate,
+          canceledOn: m.canceledOn
         }))
       });
       
       // Group by membership to avoid duplicates
       const uniqueMemberships = new Map();
-      activeMemberships.forEach((membership: any) => {
+      displayableMemberships.forEach((membership: any) => {
         const key = membership.membershipId || membership.membershipName;
         if (!uniqueMemberships.has(key) || new Date(membership.createdOn) > new Date(uniqueMemberships.get(key).startDate)) {
           const expirationDate = membership.to || membership.expirationDate;
           
-          // Check if membership has expired
+          // Determine membership status
           const isExpired = expirationDate ? new Date(expirationDate) < new Date() : false;
-          const status = isExpired ? 'Expired' : 'Active Member';
+          const status = isExpired ? 'Expired' : 'Active';
+          
+          // Extract membership type name for visual variants (Silver, Platinum, Rental, Commercial)
+          const membershipName = membership.membershipName || membership.locationRecurringServiceName || 'VIP Membership';
           
           uniqueMemberships.set(key, {
             id: membership.membershipId || membership.id,
-            membershipType: membership.membershipName || membership.locationRecurringServiceName || 'VIP Membership',
+            membershipType: membershipName,
             status,
             isExpired,
             startDate: membership.createdOn,

@@ -27,6 +27,7 @@ import {
   CheckCircle,
   AlertCircle,
   Phone as PhoneIcon,
+  Phone,
   Mail,
   Hash,
   Gift,
@@ -43,7 +44,9 @@ import {
   Check,
   TrendingUp,
   CalendarClock,
-  Edit2
+  Edit2,
+  Building2,
+  Briefcase
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 
@@ -82,6 +85,7 @@ interface ServiceTitanAppointment {
   jobType: string;
   jobNumber?: string;
   summary?: string;
+  businessUnitName?: string;
 }
 
 interface ServiceTitanInvoice {
@@ -100,6 +104,7 @@ interface ServiceTitanMembership {
   id: number;
   membershipType: string;
   status: string;
+  isExpired?: boolean;
   startDate: string;
   expirationDate?: string;
   renewalDate?: string;
@@ -1260,78 +1265,193 @@ export default function CustomerPortal() {
 
                   {/* 4 Dashboard Cards - Quick Stats */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* VIP Status Card - FIRST POSITION */}
+                    {/* VIP Status Card - FIRST POSITION with visual variants */}
                     <AspectRatio ratio={1 / 1}>
-                      <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-vip-status" onClick={() => {
-                        const element = document.getElementById('vip-membership-section');
-                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                      }}>
-                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
-                          <Crown className="w-8 h-8 text-primary mb-2" />
-                          {customerData.memberships && customerData.memberships.length > 0 && !customerData.memberships[0].isExpired ? (
-                            <>
-                              <div className="text-base font-bold mb-1">
-                                VIP Member
-                              </div>
-                              <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
-                                {customerData.memberships[0].membershipType}
-                              </p>
-                              {customerData.memberships[0].startDate && (
-                                <p className="text-xs text-muted-foreground truncate w-full px-2">
-                                  Member for {(() => {
-                                    const years = Math.floor((new Date().getTime() - new Date(customerData.memberships[0].startDate).getTime()) / (1000 * 60 * 60 * 24 * 365));
-                                    return years > 0 ? `${years}+ year${years > 1 ? 's' : ''}` : '< 1 year';
-                                  })()}
-                                </p>
+                      {(() => {
+                        const membership = customerData.memberships && customerData.memberships.length > 0 ? customerData.memberships[0] : null;
+                        const membershipTypeName = membership?.membershipType?.toLowerCase() || '';
+                        
+                        // Determine variant based on membership type
+                        let variant = {
+                          bgClass: 'bg-background',
+                          borderClass: 'border-primary/20',
+                          iconClass: 'text-primary',
+                          icon: Crown,
+                          name: 'VIP'
+                        };
+                        
+                        if (membershipTypeName.includes('platinum')) {
+                          variant = {
+                            bgClass: 'bg-gradient-to-br from-purple-50 to-slate-50 dark:from-purple-950/20 dark:to-slate-950/20',
+                            borderClass: 'border-purple-300/50 dark:border-purple-700/50',
+                            iconClass: 'text-purple-600 dark:text-purple-400',
+                            icon: Crown,
+                            name: 'Platinum'
+                          };
+                        } else if (membershipTypeName.includes('silver')) {
+                          variant = {
+                            bgClass: 'bg-gradient-to-br from-slate-50 to-gray-50 dark:from-slate-900/20 dark:to-gray-900/20',
+                            borderClass: 'border-slate-300/50 dark:border-slate-600/50',
+                            iconClass: 'text-slate-600 dark:text-slate-400',
+                            icon: Shield,
+                            name: 'Silver'
+                          };
+                        } else if (membershipTypeName.includes('rental')) {
+                          variant = {
+                            bgClass: 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20',
+                            borderClass: 'border-blue-300/50 dark:border-blue-700/50',
+                            iconClass: 'text-blue-600 dark:text-blue-400',
+                            icon: Building2,
+                            name: 'Rental'
+                          };
+                        } else if (membershipTypeName.includes('commercial')) {
+                          variant = {
+                            bgClass: 'bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-950 dark:to-slate-900',
+                            borderClass: 'border-amber-400/50 dark:border-amber-500/50',
+                            iconClass: 'text-amber-500 dark:text-amber-400',
+                            icon: Briefcase,
+                            name: 'Commercial'
+                          };
+                        }
+                        
+                        const IconComponent = variant.icon;
+                        const isExpired = membership?.isExpired || false;
+                        const isActive = membership && !isExpired;
+                        
+                        return (
+                          <Card className={`hover-elevate w-full h-full overflow-hidden cursor-pointer border-2 ${variant.borderClass} ${variant.bgClass}`} data-testid="card-vip-status" onClick={() => {
+                            const element = document.getElementById('vip-membership-section');
+                            element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}>
+                            <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
+                              <IconComponent className={`w-8 h-8 mb-2 ${variant.iconClass}`} />
+                              {isActive ? (
+                                <>
+                                  <div className="text-base font-bold mb-1">
+                                    {variant.name} Member
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
+                                    {membership.membershipType}
+                                  </p>
+                                  {membership.expirationDate && (
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      Until {new Date(membership.expirationDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                    </p>
+                                  )}
+                                  <Badge variant="default" className="text-xs mt-1">Active</Badge>
+                                </>
+                              ) : isExpired && membership ? (
+                                <>
+                                  <div className="text-base font-bold mb-1">
+                                    Membership Expired
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
+                                    {membership.membershipType}
+                                  </p>
+                                  {membership.expirationDate && (
+                                    <p className="text-xs text-muted-foreground mb-1">
+                                      Expired {new Date(membership.expirationDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                                    </p>
+                                  )}
+                                  <Button size="sm" variant="default" className="text-xs mt-1" onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open('/vip-membership', '_blank');
+                                  }}>
+                                    Renew Now
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="text-base font-bold mb-1">
+                                    Not a Member
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mb-2">
+                                    Join our VIP Program
+                                  </p>
+                                  <Button size="sm" variant="default" className="text-xs" onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open('/vip-membership', '_blank');
+                                  }}>
+                                    Start Membership
+                                  </Button>
+                                </>
                               )}
-                              <Badge variant="default" className="text-xs mt-1">Active</Badge>
-                            </>
-                          ) : customerData.memberships && customerData.memberships.length > 0 && customerData.memberships[0].isExpired ? (
-                            <>
-                              <div className="text-base font-bold mb-1">
-                                Expired
-                              </div>
-                              <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
-                                {customerData.memberships[0].membershipType}
-                              </p>
-                              <Badge variant="destructive" className="text-xs mt-1">Expired</Badge>
-                            </>
-                          ) : (
-                            <>
-                              <div className="text-base font-bold mb-1">
-                                Not a Member
-                              </div>
-                              <p className="text-xs text-muted-foreground">
-                                Join VIP Program
-                              </p>
-                            </>
-                          )}
-                          <p className="text-xs text-primary mt-2 absolute bottom-2">View Details →</p>
-                        </CardContent>
-                      </Card>
+                              <p className="text-xs text-primary mt-2 absolute bottom-2">View Details →</p>
+                            </CardContent>
+                          </Card>
+                        );
+                      })()}
                     </AspectRatio>
 
-                    {/* Loyal Customer Card - Service History */}
+                    {/* Loyal Customer Card - Service History with Enhanced Messaging */}
                     {customerStats && (
                       <AspectRatio ratio={1 / 1}>
-                        <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
-                          const element = document.getElementById('job-history-section');
-                          element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }}>
-                          <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
-                            <Heart className="w-8 h-8 text-primary mb-2" />
-                            <div className="text-base font-bold mb-1">
-                              Thank You!
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-2">
-                              {customerStats.serviceCount} service{customerStats.serviceCount === 1 ? '' : 's'} with us
-                            </p>
-                            <Badge variant="default" className="text-xs">
-                              Top {customerStats.topPercentile}% Customer
-                            </Badge>
-                            <p className="text-xs text-primary mt-2 absolute bottom-2">View History →</p>
-                          </CardContent>
-                        </Card>
+                        {(() => {
+                          // Flip the percentile: show how many they're BETTER than (not how many are better than them)
+                          const betterThanPercentile = 100 - customerStats.topPercentile;
+                          
+                          // Determine message tier and styling based on performance
+                          let message = '';
+                          let icon = Heart;
+                          let badgeVariant: "default" | "secondary" | "outline" = "default";
+                          let emoji = '⭐';
+                          
+                          if (customerStats.topPercentile <= 5) {
+                            // Elite tier - Top 5%
+                            message = `You're in our elite ${customerStats.topPercentile}%! You've had more services than ${betterThanPercentile}% of our customers. Thank you for being such a loyal customer!`;
+                            icon = Star;
+                            emoji = '🌟';
+                            badgeVariant = "default";
+                          } else if (customerStats.topPercentile <= 25) {
+                            // Great tier - Top 25%
+                            message = `You've had more services than ${betterThanPercentile}% of our customers. We really appreciate your business!`;
+                            icon = Heart;
+                            emoji = '⭐';
+                            badgeVariant = "default";
+                          } else if (customerStats.topPercentile <= 50) {
+                            // Good tier - Top 50%
+                            message = `Thank you for choosing us! You've had more services than ${betterThanPercentile}% of our customers.`;
+                            icon = Heart;
+                            emoji = '✓';
+                            badgeVariant = "secondary";
+                          } else {
+                            // Encourage more engagement
+                            message = `We're here when you need us! Remember, we offer maintenance plans, emergency services, and more. Give us a call anytime at (512) 259-7222!`;
+                            icon = Phone;
+                            emoji = '📞';
+                            badgeVariant = "outline";
+                          }
+                          
+                          const IconComponent = icon;
+                          
+                          return (
+                            <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
+                              const element = document.getElementById('job-history-section');
+                              element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}>
+                              <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
+                                <IconComponent className="w-8 h-8 text-primary mb-2" />
+                                <div className="text-base font-bold mb-1">
+                                  {customerStats.topPercentile <= 5 ? 'Elite Customer!' : 
+                                   customerStats.topPercentile <= 25 ? 'Valued Customer!' :
+                                   customerStats.topPercentile <= 50 ? 'Thank You!' : 'We Miss You!'}
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-2">
+                                  {customerStats.serviceCount} service{customerStats.serviceCount === 1 ? '' : 's'} with us
+                                </p>
+                                {customerStats.topPercentile <= 50 && (
+                                  <Badge variant={badgeVariant} className="text-xs mb-1">
+                                    {emoji} Better than {betterThanPercentile}%
+                                  </Badge>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-1 px-2 line-clamp-3">
+                                  {message}
+                                </p>
+                                <p className="text-xs text-primary mt-2 absolute bottom-2">View History →</p>
+                              </CardContent>
+                            </Card>
+                          );
+                        })()}
                       </AspectRatio>
                     )}
 
