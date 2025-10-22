@@ -424,11 +424,6 @@ export default function CustomerPortal() {
     
     // Store selected account for future reference
     localStorage.setItem('selectedAccountId', accountId.toString());
-    
-    toast({
-      title: "Account selected",
-      description: "Welcome to your customer portal!",
-    });
   };
 
   const handleSwitchAccount = () => {
@@ -478,11 +473,6 @@ export default function CustomerPortal() {
 
   const handleRescheduleAppointment = async () => {
     if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentWindow || !customerId) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please select both a date and time window for your appointment.",
-      });
       return;
     }
 
@@ -520,22 +510,12 @@ export default function CustomerPortal() {
         throw new Error(result.error || 'Failed to reschedule appointment');
       }
 
-      toast({
-        title: "Appointment Rescheduled!",
-        description: `Your appointment has been moved to ${newStartDateTime.toLocaleDateString()} (${selectedWindow.label}).`,
-      });
-
       // Refresh customer data
       window.location.reload();
       
       setRescheduleDialogOpen(false);
     } catch (error: any) {
       console.error('Reschedule error:', error);
-      toast({
-        variant: "destructive",
-        title: "Rescheduling Failed",
-        description: error.message || "Unable to reschedule appointment. Please try again or call us for assistance.",
-      });
     } finally {
       setIsRescheduling(false);
     }
@@ -562,17 +542,9 @@ export default function CustomerPortal() {
     try {
       await navigator.clipboard.writeText(referralLinkData.url);
       setCopied(true);
-      toast({
-        title: "Link copied!",
-        description: "Your referral link has been copied to clipboard",
-      });
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      toast({
-        title: "Copy failed",
-        description: "Please try again",
-        variant: "destructive"
-      });
+      console.error('Copy failed:', err);
     }
   };
 
@@ -621,17 +593,8 @@ export default function CustomerPortal() {
       if (!response.ok) {
         throw new Error('Failed to send request');
       }
-
-      toast({
-        title: "PDF Requested",
-        description: `We've received your request for ${type} #${number}. We'll email you the PDF shortly.`,
-      });
     } catch (error) {
-      toast({
-        title: "Request Failed",
-        description: "Unable to send PDF request. Please call us directly.",
-        variant: "destructive",
-      });
+      console.error('PDF request failed:', error);
     }
   };
 
@@ -682,20 +645,10 @@ export default function CustomerPortal() {
         throw new Error('Failed to update contacts');
       }
 
-      toast({
-        title: "Contact Information Updated!",
-        description: "Your phone and email have been updated successfully.",
-      });
-
       setEditContactsOpen(false);
       window.location.reload();
     } catch (error: any) {
       console.error('Update contacts error:', error);
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: error.message || "Unable to update contact information. Please try again.",
-      });
     } finally {
       setIsUpdatingContacts(false);
     }
@@ -720,20 +673,10 @@ export default function CustomerPortal() {
 
   const handleUpdateAddress = async () => {
     if (!customerId || !locationId) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Location ID not found. Please try again.",
-      });
       return;
     }
     
     if (!editStreet || !editCity || !editState || !editZip) {
-      toast({
-        variant: "destructive",
-        title: "Missing Information",
-        description: "Please fill in all address fields.",
-      });
       return;
     }
     
@@ -756,20 +699,10 @@ export default function CustomerPortal() {
         throw new Error('Failed to update address');
       }
 
-      toast({
-        title: "Service Address Updated!",
-        description: "Your service address has been updated successfully.",
-      });
-
       setEditAddressOpen(false);
       window.location.reload();
     } catch (error: any) {
       console.error('Update address error:', error);
-      toast({
-        variant: "destructive",
-        title: "Update Failed",
-        description: error.message || "Unable to update service address. Please try again.",
-      });
     } finally {
       setIsUpdatingAddress(false);
     }
