@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { ReferralModal } from "@/components/ReferralModal";
@@ -175,6 +176,10 @@ export default function CustomerPortal() {
   const [editZip, setEditZip] = useState("");
   const [isUpdatingAddress, setIsUpdatingAddress] = useState(false);
   const [locationId, setLocationId] = useState<number | null>(null);
+  
+  // Estimate detail modal state
+  const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
+  const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
   
   const phoneConfig = usePhoneConfig();
 
@@ -657,7 +662,12 @@ export default function CustomerPortal() {
     window.location.href = `sms:?&body=${text}`;
   };
 
-  const requestPDF = async (type: 'invoice' | 'estimate', number: string, id: number) => {
+  const handleRequestPDF = async (
+    type: 'invoice' | 'estimate', 
+    number: string, 
+    id: number, 
+    customerInfo: { customerId: number; customerName: string; customerEmail: string }
+  ) => {
     try {
       const response = await fetch('/api/portal/request-pdf', {
         method: 'POST',
@@ -666,9 +676,9 @@ export default function CustomerPortal() {
           type,
           number,
           id,
-          customerId,
-          customerName: customerData?.customer.name,
-          customerEmail: customerData?.customer.email,
+          customerId: customerInfo.customerId,
+          customerName: customerInfo.customerName,
+          customerEmail: customerInfo.customerEmail,
         }),
       });
 
@@ -1179,84 +1189,101 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* Referral Program Promotion */}
-                  <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
-                    <CardHeader>
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
-                            <Gift className="w-6 h-6 text-primary" />
-                          </div>
-                          <div>
-                            <CardTitle>Earn $25 Credit</CardTitle>
-                            <CardDescription className="mt-1">
-                              Refer friends and family to Economy Plumbing
-                            </CardDescription>
-                          </div>
-                        </div>
-                        <Badge variant="default" className="bg-primary">
-                          Referral Rewards
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid md:grid-cols-2 gap-3">
-                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                          <Gift className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">You Get $25</p>
-                            <p className="text-sm text-muted-foreground">
-                              When your referral completes a service of $200+
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                          <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">They Get $25</p>
-                            <p className="text-sm text-muted-foreground">
-                              Your friend saves on their first service call
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {referralLinkData && (
-                        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                          <div className="flex items-center justify-between gap-3 mb-2">
-                            <p className="text-sm font-medium">Your Referral Stats</p>
-                            <Share2 className="w-4 h-4 text-primary" />
-                          </div>
-                          <div className="grid grid-cols-2 gap-3 text-sm">
-                            <div>
-                              <p className="text-muted-foreground">Link Clicks</p>
-                              <p className="font-semibold text-lg" data-testid="text-referral-clicks">{referralLinkData.clicks}</p>
+                  {/* 4 Compact Square Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Service History Card */}
+                    {customerStats && (
+                      <AspectRatio ratio={1 / 1}>
+                        <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-service-history">
+                          <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                            <Wrench className="w-8 h-8 text-primary mb-2" />
+                            <div className="text-2xl font-bold text-primary mb-1" data-testid="text-service-count">
+                              {customerStats.serviceCount}
                             </div>
-                            <div>
-                              <p className="text-muted-foreground">Completed Referrals</p>
-                              <p className="font-semibold text-lg text-primary" data-testid="text-referral-conversions">{referralLinkData.conversions}</p>
-                            </div>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Total Services
+                            </p>
+                            <Badge variant="secondary" className="text-xs">
+                              Top {customerStats.topPercentile}%
+                            </Badge>
+                          </CardContent>
+                        </Card>
+                      </AspectRatio>
+                    )}
+
+                    {/* VIP Status Card */}
+                    <AspectRatio ratio={1 / 1}>
+                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-vip-status">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                          <Crown className="w-8 h-8 text-primary mb-2" />
+                          {customerData.memberships && customerData.memberships.length > 0 ? (
+                            <>
+                              <div className="text-base font-bold mb-1">
+                                VIP Member
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
+                                {customerData.memberships[0].membershipType}
+                              </p>
+                              {customerData.memberships[0].expirationDate && (
+                                <p className="text-xs text-muted-foreground truncate w-full px-2">
+                                  Expires {formatDate(customerData.memberships[0].expirationDate)}
+                                </p>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-base font-bold mb-1">
+                                Not a Member
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                Join VIP Program
+                              </p>
+                            </>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </AspectRatio>
+
+                    {/* Referrals Card */}
+                    <AspectRatio ratio={1 / 1}>
+                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-referrals">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                          <Share2 className="w-8 h-8 text-primary mb-2" />
+                          <div className="text-2xl font-bold text-primary mb-1" data-testid="text-total-referrals">
+                            {referralsData?.referrals.length || 0}
                           </div>
-                        </div>
-                      )}
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Total Referrals
+                          </p>
+                          {referralLinkData && (
+                            <p className="text-xs text-muted-foreground">
+                              {referralLinkData.conversions} Conversions
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </AspectRatio>
 
-                      <p className="text-sm text-muted-foreground text-center">
-                        Share your unique referral link with friends and family. When they complete a qualifying service, you both earn $25 credit!
-                      </p>
-
-                      <Button
-                        asChild
-                        className="w-full"
-                        size="lg"
-                        data-testid="button-start-referring"
-                      >
-                        <a href="/refer-a-friend">
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Start Referring & Earning
-                        </a>
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    {/* Upcoming Appointments Card */}
+                    <AspectRatio ratio={1 / 1}>
+                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-upcoming-appointments">
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                          <Calendar className="w-8 h-8 text-primary mb-2" />
+                          <div className="text-2xl font-bold text-primary mb-1" data-testid="text-upcoming-count">
+                            {upcomingAppointments.length}
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-1">
+                            Upcoming
+                          </p>
+                          {upcomingAppointments.length > 0 && (
+                            <p className="text-xs text-muted-foreground truncate w-full px-2">
+                              Next: {formatDate(upcomingAppointments[0].start)}
+                            </p>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </AspectRatio>
+                  </div>
 
                   {/* Savings Calculator - Show value to members and missed savings to non-members */}
                   {(() => {
@@ -1571,58 +1598,78 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
-                  {/* Customer Service Stats */}
-                  {customerStats && (
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Star className="w-6 h-6 text-primary" />
-                          <div>
-                            <CardTitle>Your Service History</CardTitle>
-                            <CardDescription>
-                              Track your loyalty and savings
-                            </CardDescription>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-2 gap-4">
-                          {/* Service Count */}
-                          <div className="p-4 bg-background rounded-lg border text-center">
-                            <div className="text-4xl font-bold text-primary mb-1" data-testid="text-service-count">
-                              {customerStats.serviceCount}
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Total Services
-                            </p>
-                          </div>
+                  {/* Estimates Carousel */}
+                  {(() => {
+                    const openEstimates = customerData.estimates?.filter(estimate => {
+                      const status = estimate.status.toLowerCase();
+                      return !status.includes('approved') && 
+                             !status.includes('declined') && 
+                             !status.includes('expired') && 
+                             !status.includes('closed') &&
+                             !status.includes('sold');
+                    }) || [];
 
-                          {/* Top Percentile */}
-                          <div className="p-4 bg-background rounded-lg border text-center">
-                            <div className="text-4xl font-bold text-primary mb-1" data-testid="text-top-percentile">
-                              Top {customerStats.topPercentile}%
-                            </div>
-                            <p className="text-sm text-muted-foreground">
-                              Customer Ranking
-                            </p>
-                          </div>
-                        </div>
+                    if (openEstimates.length === 0) return null;
 
-                        {/* Ranking Message */}
-                        <div className="mt-4 p-4 bg-primary/10 rounded-lg border border-primary/20 text-center">
-                          <p className="text-sm font-medium">
-                            {customerStats.topPercentile <= 10 
-                              ? "You're one of our most valued customers! Thank you for your loyalty." 
-                              : customerStats.topPercentile <= 25
-                              ? "You're a highly valued customer! Keep using our services for more savings."
-                              : customerStats.topPercentile <= 50
-                              ? "Thank you for choosing Economy Plumbing Services! Continue scheduling services to climb the rankings."
-                              : "Use our services more to climb the rankings and unlock VIP benefits!"}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                    return (
+                      <Card>
+                        <CardHeader>
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-6 h-6 text-primary" />
+                            <CardTitle>Open Estimates</CardTitle>
+                          </div>
+                          <CardDescription>
+                            Pending quotes and proposals for your review
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="overflow-x-auto pb-2">
+                            <div className="flex gap-4 min-w-max">
+                              {openEstimates.map((estimate) => (
+                                <Card
+                                  key={estimate.id}
+                                  className="w-80 flex-shrink-0 hover-elevate active-elevate-2 cursor-pointer"
+                                  onClick={() => {
+                                    setSelectedEstimate(estimate);
+                                    setEstimateDetailOpen(true);
+                                  }}
+                                  data-testid={`estimate-card-${estimate.id}`}
+                                >
+                                  <CardContent className="p-4">
+                                    <div className="flex items-start justify-between gap-2 mb-3">
+                                      <div>
+                                        <h4 className="font-semibold">Estimate #{estimate.estimateNumber}</h4>
+                                        {estimate.summary && (
+                                          <p className="text-sm text-muted-foreground line-clamp-1">{estimate.summary}</p>
+                                        )}
+                                      </div>
+                                      {getStatusBadge(estimate.status)}
+                                    </div>
+                                    <div className="space-y-2 text-sm">
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Total:</span>
+                                        <span className="font-semibold text-primary">{formatCurrency(estimate.total)}</span>
+                                      </div>
+                                      <div className="flex justify-between">
+                                        <span className="text-muted-foreground">Created:</span>
+                                        <span>{formatDate(estimate.createdOn)}</span>
+                                      </div>
+                                      {estimate.expiresOn && (
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">Expires:</span>
+                                          <span>{formatDate(estimate.expiresOn)}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })()}
 
                   {/* Upcoming Appointments */}
                   <Card>
@@ -1693,60 +1740,7 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* Service History (Completed Appointments) */}
-                  {completedAppointments.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-6 h-6 text-primary" />
-                          <CardTitle>Service History</CardTitle>
-                        </div>
-                        <CardDescription>
-                          Your completed service appointments
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {completedAppointments.slice(0, 5).map((appointment) => (
-                            <div
-                              key={appointment.id}
-                              className="flex items-start gap-4 p-4 border rounded-lg bg-muted/30"
-                              data-testid={`appointment-completed-${appointment.id}`}
-                            >
-                              <Clock className="w-5 h-5 text-muted-foreground mt-1" />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <div>
-                                    <h4 className="font-semibold">{appointment.jobType}</h4>
-                                    {appointment.summary && (
-                                      <p className="text-sm text-muted-foreground">{appointment.summary}</p>
-                                    )}
-                                  </div>
-                                  {getStatusBadge(appointment.status)}
-                                </div>
-                                <div className="text-sm space-y-1">
-                                  <p>
-                                    <strong>Date:</strong> {formatDate(appointment.start)}
-                                  </p>
-                                  {appointment.jobNumber && (
-                                    <p className="text-muted-foreground">
-                                      Job #{appointment.jobNumber}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                          {completedAppointments.length > 5 && (
-                            <p className="text-sm text-center text-muted-foreground">
-                              Showing 5 most recent service visits ({completedAppointments.length} total)
-                            </p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
+                  {/* Invoices */}
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1810,7 +1804,11 @@ export default function CustomerPortal() {
                                   <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => requestPDF('invoice', invoice.invoiceNumber, invoice.id)}
+                                    onClick={() => handleRequestPDF('invoice', invoice.invoiceNumber, invoice.id, {
+                                      customerId: customerData.customer.id,
+                                      customerName: customerData.customer.name,
+                                      customerEmail: customerData.customer.email
+                                    })}
                                     data-testid={`button-request-invoice-pdf-${invoice.id}`}
                                   >
                                     <FileText className="w-4 h-4 mr-2" />
@@ -1825,184 +1823,185 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* Open Estimates */}
-                  {(() => {
-                    // Filter to show only open/pending estimates (exclude approved, declined, expired, closed)
-                    const openEstimates = customerData.estimates?.filter(estimate => {
-                      const status = estimate.status.toLowerCase();
-                      return !status.includes('approved') && 
-                             !status.includes('declined') && 
-                             !status.includes('expired') && 
-                             !status.includes('closed') &&
-                             !status.includes('sold');
-                    }) || [];
-
-                    if (openEstimates.length === 0) return null;
-
-                    // Helper function to calculate days until expiration
-                    const getDaysUntilExpiration = (expiresOn: string) => {
-                      const now = new Date();
-                      const expirationDate = new Date(expiresOn);
-                      const diffTime = expirationDate.getTime() - now.getTime();
-                      return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                    };
-
-                    // Check if any estimates are expiring soon (within 7 days)
-                    const hasExpiringSoon = openEstimates.some(est => 
-                      est.expiresOn && getDaysUntilExpiration(est.expiresOn) <= 7 && getDaysUntilExpiration(est.expiresOn) > 0
-                    );
-
-                    return (
-                      <Card>
-                        <CardHeader>
+                  {/* Memberships */}
+                  {customerData.memberships && customerData.memberships.length > 0 && (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
                           <div className="flex items-center gap-2">
-                            <FileText className="w-6 h-6 text-primary" />
-                            <CardTitle>Open Estimates</CardTitle>
+                            <Crown className="w-6 h-6 text-primary" />
+                            <div>
+                              <CardTitle>VIP Membership</CardTitle>
+                              <CardDescription className="mt-1">
+                                {customerData.memberships[0].membershipType}
+                              </CardDescription>
+                            </div>
                           </div>
-                          <CardDescription>
-                            Pending quotes and proposals for your review
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          {/* Expiration Policy Notice */}
-                          <div className="mb-4 p-3 bg-muted/50 rounded-lg border">
-                            <div className="flex items-start gap-2">
-                              <Clock className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                          <Badge variant="default" className="text-xs bg-primary">
+                            {customerData.memberships[0].status}
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          View membership details and benefits in the VIP Status card above
+                        </p>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Consolidated Referral Section */}
+                  {referralLinkData && (
+                    <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+                      <CardHeader>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                              <Gift className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                              <CardTitle>Referral Rewards Program</CardTitle>
+                              <CardDescription className="mt-1">
+                                Earn $25 for every friend you refer!
+                              </CardDescription>
+                            </div>
+                          </div>
+                          <Badge variant="default" className="bg-primary">
+                            Active
+                          </Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-6">
+                        {/* Referral Code */}
+                        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20 text-center">
+                          <p className="text-sm font-medium text-muted-foreground mb-2">Your Referral Code</p>
+                          <p className="text-2xl font-bold text-primary tracking-wide" data-testid="text-referral-code">
+                            {referralLinkData.code}
+                          </p>
+                        </div>
+
+                        {/* Referral Link */}
+                        <div className="space-y-2">
+                          <Label htmlFor="referral-link">Your Unique Referral Link</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              id="referral-link"
+                              value={referralLinkData.url}
+                              readOnly
+                              className="font-mono text-sm"
+                              data-testid="input-referral-link"
+                            />
+                            <Button
+                              onClick={copyReferralLink}
+                              variant={copied ? "default" : "outline"}
+                              size="icon"
+                              className={copied ? "bg-green-600 hover:bg-green-700" : ""}
+                              data-testid="button-copy-link"
+                            >
+                              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div className="p-4 bg-background rounded-lg border text-center">
+                            <p className="text-sm text-muted-foreground mb-1">Total Referrals</p>
+                            <p className="text-2xl font-bold text-primary" data-testid="text-total-referrals-stat">
+                              {referralsData?.referrals.length || 0}
+                            </p>
+                          </div>
+                          <div className="p-4 bg-background rounded-lg border text-center">
+                            <p className="text-sm text-muted-foreground mb-1">Conversions</p>
+                            <p className="text-2xl font-bold text-primary" data-testid="text-conversions">
+                              {referralLinkData.conversions}
+                            </p>
+                          </div>
+                          <div className="p-4 bg-background rounded-lg border text-center">
+                            <p className="text-sm text-muted-foreground mb-1">Clicks</p>
+                            <p className="text-2xl font-bold" data-testid="text-clicks">
+                              {referralLinkData.clicks}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Your Referrals List */}
+                        {referralsData && referralsData.referrals.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="font-semibold">Your Referrals</h4>
+                            {referralsData.referrals.slice(0, 5).map((referral: any) => {
+                              const isReferrer = referral.referrerCustomerId === parseInt(customerId!);
+                              const statusColors: Record<string, string> = {
+                                pending: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100',
+                                contacted: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
+                                job_completed: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
+                                credited: 'bg-primary/10 text-primary'
+                              };
+                              
+                              return (
+                                <div key={referral.id} className="p-3 bg-background rounded-lg border">
+                                  <div className="flex items-center justify-between gap-2 mb-1">
+                                    <p className="font-medium text-sm">
+                                      {isReferrer ? referral.refereeName : referral.referrerName}
+                                    </p>
+                                    <Badge className={statusColors[referral.status] || 'bg-gray-100 text-gray-800'} data-testid={`badge-referral-status-${referral.id}`}>
+                                      {referral.status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
+                                    </Badge>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground">
+                                    Submitted: {new Date(referral.submittedAt).toLocaleDateString()}
+                                  </p>
+                                  {referral.status === 'credited' && referral.creditAmount && (
+                                    <p className="text-xs text-primary font-medium mt-1">
+                                      Credit: ${(referral.creditAmount / 100).toFixed(2)}
+                                    </p>
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {referralsData.referrals.length > 5 && (
+                              <p className="text-xs text-center text-muted-foreground">
+                                Showing 5 most recent ({referralsData.referrals.length} total)
+                              </p>
+                            )}
+                          </div>
+                        )}
+
+                        {/* How It Works */}
+                        <div className="grid md:grid-cols-2 gap-3">
+                          <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                            <Gift className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-medium mb-1">You Get $25</p>
                               <p className="text-sm text-muted-foreground">
-                                <strong>Expiration Policy:</strong> All estimates expire after 30 days. Material costs and availability may change after expiration.
+                                When your referral completes a service of $200+
                               </p>
                             </div>
                           </div>
-
-                          {/* Expiring Soon Alert */}
-                          {hasExpiringSoon && (
-                            <div className="mb-4 p-3 bg-amber-500/10 rounded-lg border border-amber-500/30">
-                              <div className="flex items-start gap-3">
-                                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-500 flex-shrink-0 mt-0.5" />
-                                <div>
-                                  <p className="font-medium text-amber-800 dark:text-amber-400 mb-1">Action Required</p>
-                                  <p className="text-sm text-amber-700 dark:text-amber-300 mb-2">
-                                    You have estimates expiring soon. Schedule your service now to lock in current pricing!
-                                  </p>
-                                  <Button
-                                    onClick={openScheduler}
-                                    size="sm"
-                                    className="bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
-                                    data-testid="button-schedule-expiring-estimate"
-                                  >
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    Schedule Service Now
-                                  </Button>
-                                </div>
-                              </div>
+                          <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
+                            <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                            <div>
+                              <p className="font-medium mb-1">They Get $25</p>
+                              <p className="text-sm text-muted-foreground">
+                                Your friend saves on their first service call
+                              </p>
                             </div>
-                          )}
-
-                          <div className="space-y-4">
-                            {openEstimates.map((estimate) => {
-                              const daysUntilExpiration = estimate.expiresOn ? getDaysUntilExpiration(estimate.expiresOn) : null;
-                              const isExpiringSoon = daysUntilExpiration !== null && daysUntilExpiration <= 7 && daysUntilExpiration > 0;
-                              const isExpired = daysUntilExpiration !== null && daysUntilExpiration <= 0;
-
-                              return (
-                            <div
-                              key={estimate.id}
-                              className={`flex items-start gap-4 p-4 border rounded-lg ${
-                                isExpiringSoon 
-                                  ? 'bg-amber-500/5 border-amber-500/30' 
-                                  : 'bg-primary/5'
-                              }`}
-                              data-testid={`estimate-${estimate.id}`}
-                            >
-                              <FileText className={`w-5 h-5 mt-1 ${isExpiringSoon ? 'text-amber-600 dark:text-amber-500' : 'text-primary'}`} />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                  <div>
-                                    <h4 className="font-semibold">Estimate #{estimate.estimateNumber}</h4>
-                                    {estimate.summary && (
-                                      <p className="text-sm text-muted-foreground">{estimate.summary}</p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    {isExpiringSoon && (
-                                      <Badge variant="outline" className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30">
-                                        <Clock className="w-3 h-3 mr-1" />
-                                        {daysUntilExpiration} {daysUntilExpiration === 1 ? 'day' : 'days'} left
-                                      </Badge>
-                                    )}
-                                    {getStatusBadge(estimate.status)}
-                                  </div>
-                                </div>
-                                <div className="text-sm space-y-1">
-                                  <div className="flex justify-between">
-                                    <span><strong>Total:</strong></span>
-                                    <span className="font-semibold text-primary">{formatCurrency(estimate.total)}</span>
-                                  </div>
-                                  <p className="text-muted-foreground">
-                                    Created: {formatDate(estimate.createdOn)}
-                                  </p>
-                                  {estimate.expiresOn && (
-                                    <p className={`${isExpiringSoon ? 'text-amber-700 dark:text-amber-400 font-medium' : 'text-muted-foreground'}`}>
-                                      Expires: {formatDate(estimate.expiresOn)}
-                                      {isExpiringSoon && (
-                                        <span className="ml-2 text-xs">⚠️ Expiring Soon!</span>
-                                      )}
-                                    </p>
-                                  )}
-                                  {estimate.jobNumber && (
-                                    <p className="text-muted-foreground">
-                                      Job #{estimate.jobNumber}
-                                    </p>
-                                  )}
-                                </div>
-                                <div className="mt-3 pt-3 border-t space-y-2">
-                                  {isExpiringSoon && (
-                                    <div className="flex gap-2 mb-2">
-                                      <Button
-                                        onClick={openScheduler}
-                                        size="sm"
-                                        className="flex-1 bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
-                                        data-testid={`button-schedule-estimate-${estimate.id}`}
-                                      >
-                                        <Calendar className="w-4 h-4 mr-2" />
-                                        Schedule Now
-                                      </Button>
-                                      <Button
-                                        asChild
-                                        variant="outline"
-                                        size="sm"
-                                        className="flex-1"
-                                        data-testid={`button-call-estimate-${estimate.id}`}
-                                      >
-                                        <a href={`tel:${phoneConfig.tel}`}>
-                                          <PhoneIcon className="w-4 h-4 mr-2" />
-                                          Call Us
-                                        </a>
-                                      </Button>
-                                    </div>
-                                  )}
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => requestPDF('estimate', estimate.estimateNumber, estimate.id)}
-                                    data-testid={`button-request-estimate-pdf-${estimate.id}`}
-                                  >
-                                    <FileText className="w-4 h-4 mr-2" />
-                                    Request PDF Copy
-                                  </Button>
-                                  <p className="text-xs text-muted-foreground">
-                                    Questions about this estimate? Call us at <a href={`tel:${phoneConfig.tel}`} className="text-primary hover:underline">{phoneConfig.display}</a>
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                              );
-                            })}
                           </div>
-                        </CardContent>
-                      </Card>
-                    );
-                  })()}
+                        </div>
+
+                        {/* Action Button */}
+                        <Button
+                          onClick={() => setShowReferralModal(true)}
+                          className="w-full"
+                          size="lg"
+                          data-testid="button-share-referral"
+                        >
+                          <Share2 className="w-4 h-4 mr-2" />
+                          Share Referral Link
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Leave a Review (show if they have completed appointments) */}
                   {completedAppointments.length > 0 && (
@@ -2045,279 +2044,6 @@ export default function CustomerPortal() {
                       </CardContent>
                     </Card>
                   )}
-
-                  {/* Referral Link Sharing */}
-                  {referralLinkData && (
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Share2 className="w-6 h-6 text-primary" />
-                          <CardTitle>Share Your Referral Link</CardTitle>
-                        </div>
-                        <CardDescription>
-                          Share your unique link with friends and family to earn rewards
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-6">
-                        {/* Referral Link with Copy Button */}
-                        <div className="space-y-2">
-                          <Label htmlFor="referral-link">Your Unique Referral Link</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              id="referral-link"
-                              value={referralLinkData.url}
-                              readOnly
-                              className="font-mono text-sm"
-                              data-testid="input-referral-link"
-                            />
-                            <Button
-                              onClick={copyReferralLink}
-                              variant={copied ? "default" : "outline"}
-                              size="icon"
-                              className={copied ? "bg-green-600 hover:bg-green-700" : ""}
-                              data-testid="button-copy-link"
-                            >
-                              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 bg-background rounded-lg border">
-                            <div className="flex items-center gap-2 mb-1">
-                              <TrendingUp className="w-4 h-4 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">Total Clicks</p>
-                            </div>
-                            <p className="text-2xl font-bold" data-testid="text-clicks">{referralLinkData.clicks}</p>
-                          </div>
-                          <div className="p-4 bg-background rounded-lg border">
-                            <div className="flex items-center gap-2 mb-1">
-                              <CheckCircle className="w-4 h-4 text-muted-foreground" />
-                              <p className="text-sm text-muted-foreground">Conversions</p>
-                            </div>
-                            <p className="text-2xl font-bold text-primary" data-testid="text-conversions">{referralLinkData.conversions}</p>
-                          </div>
-                        </div>
-
-                        {/* Send Referral Button */}
-                        <div className="pt-2">
-                          <Button
-                            onClick={() => setShowReferralModal(true)}
-                            className="w-full"
-                            size="lg"
-                            data-testid="button-send-referral"
-                          >
-                            <Gift className="w-5 h-5 mr-2" />
-                            Send a Referral Now
-                          </Button>
-                          <p className="text-xs text-center text-muted-foreground mt-2">
-                            Enter your friend's info and we'll send them your referral link via SMS and email
-                          </p>
-                        </div>
-
-                        {/* Social Sharing Buttons */}
-                        <div className="space-y-2">
-                          <Label>Or Share on Social Media</Label>
-                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <Button
-                              onClick={shareViaFacebook}
-                              variant="outline"
-                              className="gap-2"
-                              data-testid="button-share-facebook"
-                            >
-                              <SiFacebook className="w-4 h-4" />
-                              Facebook
-                            </Button>
-                            <Button
-                              onClick={shareViaX}
-                              variant="outline"
-                              className="gap-2"
-                              data-testid="button-share-x"
-                            >
-                              <SiX className="w-4 h-4" />
-                              X
-                            </Button>
-                            <Button
-                              onClick={shareViaEmail}
-                              variant="outline"
-                              className="gap-2"
-                              data-testid="button-share-email"
-                            >
-                              <Mail className="w-4 h-4" />
-                              Email
-                            </Button>
-                            <Button
-                              onClick={shareViaSMS}
-                              variant="outline"
-                              className="gap-2"
-                              data-testid="button-share-sms"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                              SMS
-                            </Button>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Referral Tracking - Your Referrals */}
-                  {referralsData && referralsData.referrals.length > 0 && (
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Users className="w-6 h-6 text-primary" />
-                          <CardTitle>Your Referrals</CardTitle>
-                        </div>
-                        <CardDescription>
-                          Track the status of your referrals and earned credits
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {referralsData.referrals.map((referral: any) => {
-                          const isReferrer = referral.referrerCustomerId === parseInt(customerId!);
-                          const statusColors: Record<string, string> = {
-                            pending: 'bg-gray-100 text-gray-800',
-                            contacted: 'bg-blue-100 text-blue-800',
-                            job_completed: 'bg-green-100 text-green-800',
-                            credited: 'bg-primary/10 text-primary'
-                          };
-                          
-                          return (
-                            <div key={referral.id} className="p-4 bg-background rounded-lg border">
-                              <div className="flex items-start justify-between gap-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <p className="font-medium">
-                                      {isReferrer ? `Referred: ${referral.refereeName}` : `Referred by: ${referral.referrerName}`}
-                                    </p>
-                                    <Badge className={statusColors[referral.status] || 'bg-gray-100 text-gray-800'} data-testid={`badge-referral-status-${referral.id}`}>
-                                      {referral.status.replace('_', ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}
-                                    </Badge>
-                                  </div>
-                                  
-                                  <div className="space-y-1 text-sm text-muted-foreground">
-                                    <p>Phone: {isReferrer ? referral.refereePhone : referral.referrerPhone}</p>
-                                    <p>Submitted: {new Date(referral.submittedAt).toLocaleDateString()}</p>
-                                    
-                                    {referral.status === 'job_completed' && referral.firstJobDate && (
-                                      <p className="text-green-600 font-medium">
-                                        Job Completed: {new Date(referral.firstJobDate).toLocaleDateString()}
-                                      </p>
-                                    )}
-                                    
-                                    {referral.status === 'credited' && isReferrer && (
-                                      <>
-                                        <p className="text-primary font-medium">
-                                          <DollarSign className="w-4 h-4 inline mr-1" />
-                                          Credit Earned: ${(referral.creditAmount / 100).toFixed(2)}
-                                        </p>
-                                        {referral.expiresAt && (() => {
-                                          const expiryDate = new Date(referral.expiresAt);
-                                          const daysUntilExpiry = Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                                          const isExpiringSoon = daysUntilExpiry <= 30 && daysUntilExpiry > 0;
-                                          const isExpired = daysUntilExpiry <= 0;
-                                          
-                                          return (
-                                            <p className={`text-sm ${isExpired ? 'text-destructive font-medium' : isExpiringSoon ? 'text-orange-600 font-medium' : 'text-muted-foreground'}`}>
-                                              <Clock className="w-3 h-3 inline mr-1" />
-                                              {isExpired ? 'Expired' : 'Expires'}: {expiryDate.toLocaleDateString()}
-                                              {isExpiringSoon && !isExpired && ` (${daysUntilExpiry} days left)`}
-                                            </p>
-                                          );
-                                        })()}
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                                
-                                {referral.status === 'credited' && isReferrer && (
-                                  <CheckCircle className="w-6 h-6 text-primary flex-shrink-0" />
-                                )}
-                              </div>
-                            </div>
-                          );
-                        })}
-                        
-                        <div className="pt-2 border-t">
-                          <Button
-                            variant="outline"
-                            className="w-full"
-                            onClick={() => setShowReferralModal(true)}
-                            data-testid="button-refer-more"
-                          >
-                            <Gift className="w-4 h-4 mr-2" />
-                            Refer Another Friend
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
-                  {/* Referral Program */}
-                  <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                    <CardHeader>
-                      <div className="flex items-center gap-2">
-                        <Gift className="w-6 h-6 text-primary" />
-                        <CardTitle>Earn $25 for Every Referral!</CardTitle>
-                      </div>
-                      <CardDescription>
-                        Our Referral Rewards Program makes it easy to earn credits
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-3">
-                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                          <DollarSign className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">$25 Service Credit Per Referral</p>
-                            <p className="text-sm text-muted-foreground">
-                              When your friend completes a service call of $200 or more, you automatically earn a $25 service credit! Credits expire 6 months (180 days) after being issued and have no cash value.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                          <TrendingUp className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">Climb the Leaderboard</p>
-                            <p className="text-sm text-muted-foreground">
-                              Compete with other customers for the top spot! Our referral leaderboard tracks successful referrals and showcases our top advocates.
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-4 bg-background rounded-lg border">
-                          <Heart className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">They Win Too</p>
-                            <p className="text-sm text-muted-foreground">
-                              Your friends get priority scheduling and join the Economy Plumbing family with the same quality service you love!
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col sm:flex-row gap-3">
-                        <Button
-                          className="flex-1"
-                          onClick={() => setShowReferralModal(true)}
-                          data-testid="button-refer-program"
-                        >
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share Your Link Now
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="flex-1"
-                          onClick={() => window.location.href = '/refer-a-friend'}
-                          data-testid="button-learn-rewards"
-                        >
-                          View Leaderboard
-                        </Button>
-                      </div>
-
-                    </CardContent>
-                  </Card>
                 </>
               ) : null}
             </div>
@@ -2338,6 +2064,126 @@ export default function CustomerPortal() {
           referralCode={referralLinkData.code}
         />
       )}
+
+      {/* Estimate Detail Modal */}
+      <Dialog open={estimateDetailOpen} onOpenChange={setEstimateDetailOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh]" data-testid="dialog-estimate-detail">
+          <DialogHeader>
+            <DialogTitle>Estimate Details</DialogTitle>
+            <DialogDescription>
+              Complete breakdown of your estimate
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedEstimate && (
+            <div className="space-y-4">
+              {/* Estimate Header */}
+              <div className="p-4 bg-muted/30 rounded-lg border">
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div>
+                    <h3 className="font-semibold text-lg">Estimate #{selectedEstimate.estimateNumber}</h3>
+                    {selectedEstimate.summary && (
+                      <p className="text-sm text-muted-foreground">{selectedEstimate.summary}</p>
+                    )}
+                  </div>
+                  {getStatusBadge(selectedEstimate.status)}
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Total:</p>
+                    <p className="font-semibold text-lg text-primary">{formatCurrency(selectedEstimate.total)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Created:</p>
+                    <p className="font-medium">{formatDate(selectedEstimate.createdOn)}</p>
+                  </div>
+                  {selectedEstimate.expiresOn && (
+                    <>
+                      <div>
+                        <p className="text-muted-foreground">Expires:</p>
+                        <p className="font-medium">{formatDate(selectedEstimate.expiresOn)}</p>
+                      </div>
+                    </>
+                  )}
+                  {selectedEstimate.jobNumber && (
+                    <div>
+                      <p className="text-muted-foreground">Job #:</p>
+                      <p className="font-medium">{selectedEstimate.jobNumber}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Estimate Items */}
+              <div className="space-y-3">
+                <h4 className="font-semibold">Items</h4>
+                <div className="max-h-96 overflow-y-auto space-y-3 pr-2">
+                  {selectedEstimate.items && selectedEstimate.items.length > 0 ? (
+                    selectedEstimate.items.map((item: any, index: number) => (
+                      <div key={index} className="p-3 bg-background rounded-lg border" data-testid={`estimate-item-${index}`}>
+                        <div className="flex gap-3">
+                          {item.pricebookDetails?.imageUrl && (
+                            <img 
+                              src={item.pricebookDetails.imageUrl} 
+                              alt={item.pricebookDetails.name || item.description}
+                              className="w-16 h-16 object-cover rounded"
+                            />
+                          )}
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {item.pricebookDetails?.name || item.description || 'Service Item'}
+                            </p>
+                            {item.description && item.pricebookDetails?.name && (
+                              <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                            )}
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-sm text-muted-foreground">
+                                Qty: {item.quantity || 1}
+                              </span>
+                              <span className="font-semibold text-primary">
+                                {formatCurrency(item.price || 0)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-muted-foreground py-8">No items found</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  className="flex-1"
+                  onClick={() => setEstimateDetailOpen(false)}
+                  data-testid="button-close-estimate-detail"
+                >
+                  Close
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={() => {
+                    handleRequestPDF('estimate', selectedEstimate.estimateNumber, selectedEstimate.id, {
+                      customerId: customerData!.customer.id,
+                      customerName: customerData!.customer.name,
+                      customerEmail: customerData!.customer.email
+                    });
+                    setEstimateDetailOpen(false);
+                  }}
+                  data-testid="button-request-estimate-pdf-modal"
+                >
+                  <FileText className="w-4 h-4 mr-2" />
+                  Request PDF Copy
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Reschedule Appointment Dialog */}
       <Dialog open={rescheduleDialogOpen} onOpenChange={setRescheduleDialogOpen}>
