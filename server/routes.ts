@@ -7248,6 +7248,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
   });
 
   // Get customer stats (service count and percentile ranking)
+  // ⚡ Ultra-fast database-driven query - no API calls!
   app.get("/api/portal/customer-stats/:customerId", async (req, res) => {
     try {
       const { customerId } = req.params;
@@ -7258,75 +7259,24 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       console.log("[Portal] Fetching customer stats for:", customerId);
 
-      const { getServiceTitanAPI } = await import("./lib/serviceTitan");
-      const serviceTitan = getServiceTitanAPI();
-
-      // Get all jobs for this customer
-      const customerJobs = await serviceTitan.getCustomerJobs(parseInt(customerId));
-      
-      // Count completed jobs - a job is completed if it has a completedOn date OR status indicates completion
-      const completedJobs = customerJobs.filter(job => {
-        if (job.completedOn) return true; // Has completion date = completed
-        
-        const status = job.status?.toLowerCase() || '';
-        // Check for exact completion status values (avoid matching "incomplete")
-        return status === 'complete' || 
-               status === 'completed' ||
-               status === 'closed' || 
-               status === 'done' ||
-               status === 'finished';
-      });
-      const serviceCount = completedJobs.length;
-
-      console.log(`[Portal] Customer ${customerId} has ${serviceCount} completed services out of ${customerJobs.length} total jobs`);
-
-      // Calculate percentile ranking
-      // Get total service counts from our cached customers
       const { serviceTitanCustomers } = await import('@shared/schema');
+      const { gt, count, sql } = await import('drizzle-orm');
       
-      // Get all customers with their job counts from our database
-      // We'll use a simple heuristic: customers with more than N services are "above" this customer
-      const allCustomers = await db.select({ 
-        id: serviceTitanCustomers.id 
-      }).from(serviceTitanCustomers);
+      // Get this customer's job count from database
+      const [customer] = await db
+        .select({ 
+          jobCount: serviceTitanCustomers.jobCount 
+        })
+        .from(serviceTitanCustomers)
+        .where(sql`${serviceTitanCustomers.id} = ${parseInt(customerId)}`)
+        .limit(1);
 
-      // For now, use a simplified percentile calculation
-      // In production, you might want to cache job counts for all customers
-      let customersAboveCount = 0;
-      let customersChecked = 0;
-      
-      // Sample up to 100 customers for percentile calculation (for performance)
-      const sampleSize = Math.min(100, allCustomers.length);
-      const step = Math.max(1, Math.floor(allCustomers.length / sampleSize));
-      
-      for (let i = 0; i < allCustomers.length; i += step) {
-        if (customersChecked >= sampleSize) break;
-        
-        const otherCustomer = allCustomers[i];
-        if (otherCustomer.id === parseInt(customerId)) continue;
-        
-        try {
-          const otherJobs = await serviceTitan.getCustomerJobs(otherCustomer.id);
-          const otherCompletedCount = otherJobs.filter(job => {
-            if (job.completedOn) return true;
-            const status = job.status?.toLowerCase() || '';
-            return status === 'complete' || status === 'completed' || status === 'closed' || status === 'done' || status === 'finished';
-          }).length;
-          
-          if (otherCompletedCount > serviceCount) {
-            customersAboveCount++;
-          }
-          customersChecked++;
-        } catch (error) {
-          console.error(`[Portal] Error checking customer ${otherCustomer.id}:`, error);
-          // Continue with other customers
-        }
+      if (!customer) {
+        console.log(`[Portal] Customer ${customerId} not found in database`);
+        return res.status(404).json({ error: "Customer not found" });
       }
 
-      // Calculate percentile (what % of customers this customer is better than)
-      const percentile = customersChecked > 0 
-        ? Math.round((1 - (customersAboveCount / customersChecked)) * 100)
-        : 50; // Default to 50th percentile if we can't calculate
+      const serviceCount = customer.jobCount || 0;
 
       // Don't show stats if customer has 0 services
       if (serviceCount === 0) {
@@ -7334,11 +7284,38 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         return res.json({ serviceCount: 0, topPercentile: null });
       }
 
-      console.log(`[Portal] Customer ${customerId} is in top ${percentile}% (${customersAboveCount}/${customersChecked} customers have more services)`);
+      // Calculate percentile ranking using database
+      // Count how many customers have MORE services than this customer
+      const [result] = await db
+        .select({ 
+          total: count(),
+        })
+        .from(serviceTitanCustomers)
+        .where(gt(serviceTitanCustomers.jobCount, serviceCount));
+
+      const customersWithMore = result.total || 0;
+
+      // Get total number of customers with at least 1 service
+      const [totalResult] = await db
+        .select({ 
+          total: count(),
+        })
+        .from(serviceTitanCustomers)
+        .where(gt(serviceTitanCustomers.jobCount, 0));
+
+      const totalCustomersWithService = totalResult.total || 1;
+
+      // Calculate percentile (inverted - lower number = better rank)
+      // If 4 out of 100 customers have more services, you're in the top 4%
+      const topPercentile = totalCustomersWithService > 0
+        ? Math.round((customersWithMore / totalCustomersWithService) * 100)
+        : 50;
+
+      console.log(`[Portal] Customer ${customerId}: ${serviceCount} services, ${customersWithMore}/${totalCustomersWithService} customers have more → Top ${topPercentile}%`);
 
       res.json({
         serviceCount,
-        topPercentile: percentile, // e.g., "top 85%" means you're better than 85% of customers
+        topPercentile, // e.g., "top 4%" means only 4% of customers have more services
       });
     } catch (error: any) {
       console.error("[Portal] Customer stats error:", error);

@@ -1028,7 +1028,8 @@ class ServiceTitanAPI {
   async getCustomerMemberships(customerId: number): Promise<any[]> {
     try {
       // ServiceTitan memberships API endpoint (recurring service events)
-      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
+      // Use ?active=true to only get active memberships (API-level filtering)
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&active=true&pageSize=50`;
       const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
       
       console.log('[ServiceTitan] Memberships API response:', {
