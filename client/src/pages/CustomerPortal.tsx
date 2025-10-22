@@ -1727,7 +1727,7 @@ export default function CustomerPortal() {
                   {(() => {
                     // Show ALL estimates that haven't been sold/converted - includes Open, Pending, Sent, Draft, Expired, etc.
                     const unsoldEstimates = customerData.estimates?.filter(estimate => {
-                      const status = estimate.status.toLowerCase();
+                      const status = estimate.status?.toLowerCase() || '';
                       // Only filter out truly final states (sold, approved, declined, converted)
                       return !status.includes('sold') && 
                              !status.includes('approved') && 
