@@ -1982,25 +1982,11 @@ export default function CustomerPortal() {
                                 </Badge>
                               )}
                             </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setLocationId(location.id);
-                                setEditStreet(location.address.street || '');
-                                setEditCity(location.address.city || '');
-                                setEditState(location.address.state || '');
-                                setEditZip(location.address.zip || '');
-                                setEditAddressOpen(true);
-                              }}
-                              data-testid={`button-edit-location-${location.id}`}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
+                            {/* Address editing disabled - addresses cannot be changed for security */}
                           </div>
                         ))}
                         <p className="text-xs text-muted-foreground text-center pt-2">
-                          Click the edit button to update any service address
+                          Service addresses are managed by our team for security
                         </p>
                       </CardContent>
                     </Card>
