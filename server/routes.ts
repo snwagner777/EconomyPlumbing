@@ -6610,7 +6610,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       }
     } catch (error: any) {
       console.error("[Portal Auth] Send code error:", error);
-      res.status(500).json({ error: "Failed to send verification code" });
+      res.status(500).json({ 
+        error: error.message || "Failed to send verification code",
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
 
@@ -6728,6 +6731,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
 
       const customerIds = [customerId];
 
+      // Import schemas
+      const { serviceTitanCustomers, serviceTitanContacts } = await import("@shared/schema");
+      const { sql } = await import("drizzle-orm");
+
       // Fetch complete customer data with ALL contacts for each customer
       const customersData = await db
         .select()
@@ -6787,7 +6794,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       });
     } catch (error: any) {
       console.error("[Portal Auth] Verify code error:", error);
-      res.status(500).json({ error: "Failed to verify code" });
+      res.status(500).json({ 
+        error: error.message || "Failed to verify code",
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      });
     }
   });
 
