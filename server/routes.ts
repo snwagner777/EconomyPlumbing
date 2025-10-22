@@ -7264,13 +7264,21 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       // Get all jobs for this customer
       const customerJobs = await serviceTitan.getCustomerJobs(parseInt(customerId));
       
-      // Count completed jobs
-      const completedJobs = customerJobs.filter(job => 
-        job.completedOn && job.status?.toLowerCase().includes('complete')
-      );
+      // Count completed jobs - a job is completed if it has a completedOn date OR status indicates completion
+      const completedJobs = customerJobs.filter(job => {
+        if (job.completedOn) return true; // Has completion date = completed
+        
+        const status = job.status?.toLowerCase() || '';
+        // Check for exact completion status values (avoid matching "incomplete")
+        return status === 'complete' || 
+               status === 'completed' ||
+               status === 'closed' || 
+               status === 'done' ||
+               status === 'finished';
+      });
       const serviceCount = completedJobs.length;
 
-      console.log(`[Portal] Customer ${customerId} has ${serviceCount} completed services`);
+      console.log(`[Portal] Customer ${customerId} has ${serviceCount} completed services out of ${customerJobs.length} total jobs`);
 
       // Calculate percentile ranking
       // Get total service counts from our cached customers
@@ -7299,9 +7307,11 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         
         try {
           const otherJobs = await serviceTitan.getCustomerJobs(otherCustomer.id);
-          const otherCompletedCount = otherJobs.filter(job => 
-            job.completedOn && job.status?.toLowerCase().includes('complete')
-          ).length;
+          const otherCompletedCount = otherJobs.filter(job => {
+            if (job.completedOn) return true;
+            const status = job.status?.toLowerCase() || '';
+            return status === 'complete' || status === 'completed' || status === 'closed' || status === 'done' || status === 'finished';
+          }).length;
           
           if (otherCompletedCount > serviceCount) {
             customersAboveCount++;
@@ -7317,6 +7327,12 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const percentile = customersChecked > 0 
         ? Math.round((1 - (customersAboveCount / customersChecked)) * 100)
         : 50; // Default to 50th percentile if we can't calculate
+
+      // Don't show stats if customer has 0 services
+      if (serviceCount === 0) {
+        console.log(`[Portal] Customer ${customerId} has 0 services - not returning stats`);
+        return res.json({ serviceCount: 0, topPercentile: null });
+      }
 
       console.log(`[Portal] Customer ${customerId} is in top ${100 - percentile}% (${customersAboveCount}/${customersChecked} customers have more services)`);
 

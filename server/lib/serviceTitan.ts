@@ -1025,12 +1025,19 @@ class ServiceTitanAPI {
       activeMemberships.forEach((membership: any) => {
         const key = membership.membershipId || membership.membershipName;
         if (!uniqueMemberships.has(key) || new Date(membership.createdOn) > new Date(uniqueMemberships.get(key).startDate)) {
+          const expirationDate = membership.to || membership.expirationDate;
+          
+          // Check if membership has expired
+          const isExpired = expirationDate ? new Date(expirationDate) < new Date() : false;
+          const status = isExpired ? 'Expired' : 'Active Member';
+          
           uniqueMemberships.set(key, {
             id: membership.membershipId || membership.id,
             membershipType: membership.membershipName || membership.locationRecurringServiceName || 'VIP Membership',
-            status: 'Active Member', // Show friendly status instead of raw API status
+            status,
+            isExpired,
             startDate: membership.createdOn,
-            expirationDate: membership.to || membership.expirationDate,
+            expirationDate,
             renewalDate: membership.date || membership.nextScheduledDate,
             balance: parseFloat(membership.balance || '0'),
             totalValue: parseFloat(membership.total || '0'),
@@ -1049,7 +1056,7 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Get customer estimates (open quotes/proposals)
+   * Get customer estimates (open quotes/proposals) with full pricebook item details
    */
   async getCustomerEstimates(customerId: number): Promise<any[]> {
     try {
@@ -1067,22 +1074,172 @@ class ServiceTitanAPI {
         est.status === 'Open' || est.status === 'Pending' || (!est.status && !est.soldOn)
       );
       
-      return openEstimates.map((estimate: any) => ({
-        id: estimate.id,
-        estimateNumber: estimate.number || estimate.estimateNumber || estimate.id?.toString(),
-        total: parseFloat(estimate.total || estimate.subtotal || '0'),
-        status: estimate.status || 'Open',
-        createdOn: estimate.createdOn || estimate.createdDate,
-        expiresOn: estimate.expiresOn || estimate.expirationDate,
-        jobId: estimate.jobId,
-        jobNumber: estimate.job?.jobNumber || null,
-        summary: estimate.name || estimate.summary || `Estimate #${estimate.number || estimate.id}`,
-        items: estimate.items || [],
-      }));
+      // Create memoization cache for pricebook items to avoid duplicate API calls
+      const pricebookCache = new Map<string, any>();
+      
+      // Enhance each estimate with pricebook item details
+      const enhancedEstimates = await Promise.all(
+        openEstimates.map(async (estimate: any) => {
+          const items = estimate.items || [];
+          
+          // Fetch pricebook details for each item
+          const enhancedItems = await Promise.all(
+            items.map(async (item: any) => {
+              let pricebookDetails = null;
+              
+              try {
+                // Determine item type and fetch details (with memoization)
+                // ServiceTitan estimates typically have serviceId, materialId, or equipmentId
+                let cacheKey = '';
+                
+                if (item.serviceId || item.skuId) {
+                  const id = item.serviceId || item.skuId;
+                  cacheKey = `service-${id}`;
+                  
+                  if (!pricebookCache.has(cacheKey)) {
+                    const details = await this.getPricebookService(id);
+                    pricebookCache.set(cacheKey, details);
+                  }
+                  pricebookDetails = pricebookCache.get(cacheKey);
+                  
+                } else if (item.materialId) {
+                  cacheKey = `material-${item.materialId}`;
+                  
+                  if (!pricebookCache.has(cacheKey)) {
+                    const details = await this.getPricebookMaterial(item.materialId);
+                    pricebookCache.set(cacheKey, details);
+                  }
+                  pricebookDetails = pricebookCache.get(cacheKey);
+                  
+                } else if (item.equipmentId) {
+                  cacheKey = `equipment-${item.equipmentId}`;
+                  
+                  if (!pricebookCache.has(cacheKey)) {
+                    const details = await this.getPricebookEquipment(item.equipmentId);
+                    pricebookCache.set(cacheKey, details);
+                  }
+                  pricebookDetails = pricebookCache.get(cacheKey);
+                }
+              } catch (error) {
+                // Log but don't fail - missing pricebook details shouldn't break the estimate
+                console.error('[ServiceTitan] Error fetching pricebook details for item:', item, error);
+                pricebookDetails = null;
+              }
+              
+              return {
+                ...item,
+                pricebookDetails, // Add full pricebook data (name, description, imageUrl, etc.) or null if failed
+              };
+            })
+          );
+          
+          return {
+            id: estimate.id,
+            estimateNumber: estimate.number || estimate.estimateNumber || estimate.id?.toString(),
+            total: parseFloat(estimate.total || estimate.subtotal || '0'),
+            status: estimate.status || 'Open',
+            createdOn: estimate.createdOn || estimate.createdDate,
+            expiresOn: estimate.expiresOn || estimate.expirationDate,
+            jobId: estimate.jobId,
+            jobNumber: estimate.job?.jobNumber || null,
+            summary: estimate.name || estimate.summary || `Estimate #${estimate.number || estimate.id}`,
+            items: enhancedItems,
+          };
+        })
+      );
+      
+      return enhancedEstimates;
     } catch (error) {
       console.error('[ServiceTitan] Get customer estimates error:', error);
       // Return empty array on error rather than throwing
       return [];
+    }
+  }
+
+  /**
+   * Get pricebook service details by ID
+   */
+  async getPricebookService(serviceId: number): Promise<any> {
+    try {
+      const serviceUrl = `https://api.servicetitan.io/pricebook/v2/tenant/${this.config.tenantId}/services/${serviceId}`;
+      const result = await this.request<any>(serviceUrl, {}, true);
+      
+      return {
+        id: result.id,
+        name: result.name || result.displayName,
+        description: result.description,
+        price: parseFloat(result.price || '0'),
+        imageUrl: result.imageUrl || result.image || null,
+        category: result.category || result.categoryName,
+        type: 'service',
+      };
+    } catch (error) {
+      console.error(`[ServiceTitan] Error fetching pricebook service ${serviceId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get pricebook material details by ID
+   */
+  async getPricebookMaterial(materialId: number): Promise<any> {
+    try {
+      const materialUrl = `https://api.servicetitan.io/pricebook/v2/tenant/${this.config.tenantId}/materials/${materialId}`;
+      const result = await this.request<any>(materialUrl, {}, true);
+      
+      return {
+        id: result.id,
+        name: result.name || result.displayName,
+        description: result.description,
+        price: parseFloat(result.price || result.cost || '0'),
+        imageUrl: result.imageUrl || result.image || null,
+        category: result.category || result.categoryName,
+        type: 'material',
+      };
+    } catch (error) {
+      console.error(`[ServiceTitan] Error fetching pricebook material ${materialId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get pricebook equipment details by ID
+   */
+  async getPricebookEquipment(equipmentId: number): Promise<any> {
+    try {
+      const equipmentUrl = `https://api.servicetitan.io/pricebook/v2/tenant/${this.config.tenantId}/equipment/${equipmentId}`;
+      const result = await this.request<any>(equipmentUrl, {}, true);
+      
+      return {
+        id: result.id,
+        name: result.name || result.displayName,
+        description: result.description,
+        price: parseFloat(result.price || result.cost || '0'),
+        imageUrl: result.imageUrl || result.image || null,
+        category: result.category || result.categoryName,
+        type: 'equipment',
+      };
+    } catch (error) {
+      console.error(`[ServiceTitan] Error fetching pricebook equipment ${equipmentId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get pricebook item image URL
+   */
+  async getPricebookItemImage(imagePath: string): Promise<string | null> {
+    try {
+      if (!imagePath) return null;
+      
+      // ServiceTitan pricebook images endpoint
+      const imageUrl = `https://api.servicetitan.io/pricebook/v2/tenant/${this.config.tenantId}/images?path=${encodeURIComponent(imagePath)}`;
+      
+      // Return the full URL - frontend can fetch the image directly with auth headers
+      return imageUrl;
+    } catch (error) {
+      console.error(`[ServiceTitan] Error getting pricebook image ${imagePath}:`, error);
+      return null;
     }
   }
 
