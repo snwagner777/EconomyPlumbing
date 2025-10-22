@@ -11,9 +11,9 @@ import { getAllServiceHealth, getSystemHealth } from "./lib/healthMonitor";
 declare global {
   var invalidateSSRCache: (() => void) | undefined;
 }
-import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, reviewRequestCampaigns, reviewDripEmails } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, reviewRequestCampaigns, reviewDripEmails, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses } from "@shared/schema";
 import { db } from "./db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, desc } from "drizzle-orm";
 import { emailCampaigns } from "@shared/schema";
 import Stripe from "stripe";
 import multer from "multer";
@@ -6272,27 +6272,118 @@ Write in a professional yet friendly tone.`;
     }
   });
 
-  // AI Chatbot endpoint
+  // Enhanced AI Chatbot endpoint with conversation tracking
   app.post("/api/chatbot", async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { messages, sessionId, conversationId, pageContext, customerEmail, customerPhone } = req.body;
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: "Invalid messages format" });
       }
 
+      if (!sessionId) {
+        return res.status(400).json({ error: "Session ID required" });
+      }
+
+      // Get or create conversation
+      let conversation;
+      if (conversationId) {
+        const [existing] = await db
+          .select()
+          .from(chatbotConversations)
+          .where(eq(chatbotConversations.id, conversationId));
+        conversation = existing;
+      }
+      
+      if (!conversation) {
+        // Create new conversation
+        const [newConv] = await db
+          .insert(chatbotConversations)
+          .values({
+            sessionId,
+            pageContext: pageContext || 'unknown',
+            customerEmail,
+            customerPhone,
+          })
+          .returning();
+        conversation = newConv;
+        
+        // Store the first message (if any)
+        if (messages.length > 0) {
+          const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+          if (lastUserMessage) {
+            await db.insert(chatbotMessages).values({
+              conversationId: conversation.id,
+              role: 'user',
+              content: lastUserMessage.content,
+            });
+            
+            // Track analytics for the question
+            const questionLower = lastUserMessage.content.toLowerCase();
+            let category = 'general';
+            if (questionLower.includes('price') || questionLower.includes('cost')) category = 'pricing';
+            else if (questionLower.includes('emergency') || questionLower.includes('urgent')) category = 'emergency';
+            else if (questionLower.includes('schedule') || questionLower.includes('appointment')) category = 'scheduling';
+            else if (questionLower.includes('water heater')) category = 'water_heater';
+            else if (questionLower.includes('drain') || questionLower.includes('clog')) category = 'drain';
+            else if (questionLower.includes('leak')) category = 'leak';
+            
+            // Check if question already exists in analytics
+            const [existingAnalytics] = await db
+              .select()
+              .from(chatbotAnalytics)
+              .where(eq(chatbotAnalytics.question, lastUserMessage.content));
+              
+            if (existingAnalytics) {
+              await db
+                .update(chatbotAnalytics)
+                .set({ 
+                  count: existingAnalytics.count + 1,
+                  lastAsked: new Date(),
+                })
+                .where(eq(chatbotAnalytics.id, existingAnalytics.id));
+            } else {
+              await db.insert(chatbotAnalytics).values({
+                question: lastUserMessage.content,
+                category,
+              });
+            }
+          }
+        }
+      } else {
+        // Store the latest user message
+        const lastUserMessage = messages.filter(m => m.role === 'user').pop();
+        if (lastUserMessage) {
+          await db.insert(chatbotMessages).values({
+            conversationId: conversation.id,
+            role: 'user',
+            content: lastUserMessage.content,
+          });
+        }
+      }
+
       // Check if OpenAI is configured
       const openaiKey = process.env.OPENAI_API_KEY;
       if (!openaiKey) {
+        const fallbackMessage = "I'm having trouble connecting right now. Please text or call us directly for immediate assistance!";
+        
+        // Store the assistant message
+        await db.insert(chatbotMessages).values({
+          conversationId: conversation.id,
+          role: 'assistant',
+          content: fallbackMessage,
+        });
+        
         return res.json({
-          message: "I'm having trouble connecting right now. Please text or call us directly for immediate assistance!",
-          needsHandoff: true
+          message: fallbackMessage,
+          needsHandoff: true,
+          conversationId: conversation.id,
         });
       }
 
       const openai = new OpenAI({ apiKey: openaiKey });
 
-      // System prompt for the chatbot
+      // Enhanced system prompt with more knowledge
       const systemPrompt = `You are an AI assistant for Economy Plumbing Services, a trusted plumbing company serving Austin and Marble Falls, Texas.
 
 Your role:
@@ -6300,6 +6391,7 @@ Your role:
 - Help customers understand services
 - Provide general scheduling information
 - Be friendly, helpful, and professional
+- Provide DIY tips for minor issues while emphasizing safety
 
 Services we offer:
 - Water heater installation & repair (tank and tankless)
@@ -6310,12 +6402,25 @@ Services we offer:
 - Commercial plumbing
 - Gas line services
 - Toilet & faucet repair
+- VIP Membership (priority service, discounts, annual inspections)
 
 Pricing estimates:
 - Water heater installation: $1,200-$2,800 depending on size
 - Drain cleaning: $150-$400
 - Leak repair: $200-$600
 - Emergency service: Available 24/7
+- VIP Membership: $299/year (includes 15% discount on all services)
+
+Business hours:
+- Regular: Monday-Friday 7 AM - 7 PM
+- Emergency service: 24/7 available
+- Service areas: Austin, Marble Falls, Cedar Park, Leander, Georgetown, Round Rock
+
+Common DIY tips (always emphasize safety):
+- Running toilet: Check flapper valve and fill valve
+- Slow drain: Try plunger or baking soda/vinegar before chemicals
+- Low water pressure: Check aerators for buildup
+- Frozen pipes: Never use open flame, use hair dryer or space heater
 
 When to hand off to human via SMS/Call:
 - Customer wants specific pricing for their situation
@@ -6323,11 +6428,12 @@ When to hand off to human via SMS/Call:
 - Customer has an emergency (burst pipe, major leak, no hot water)
 - Customer asks complex technical questions beyond general info
 - Customer explicitly asks to speak with someone
+- Customer mentions ServiceTitan account or specific job history
 - You're unsure or don't have enough information
 
 If handoff is needed, respond with: "I'd be happy to connect you with our team! They can provide personalized pricing and schedule your service. Would you prefer to text or call us?"
 
-Keep responses concise (2-3 sentences max). Be warm and helpful.`;
+Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer is on a specific page (pageContext: ${pageContext || 'unknown'}), tailor your response to be contextually relevant.`;
 
       // Call OpenAI API
       const completion = await openai.chat.completions.create({
@@ -6341,6 +6447,13 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       });
 
       const aiResponse = completion.choices[0]?.message?.content || "I'm having trouble right now. Please text or call us!";
+
+      // Store the assistant message
+      await db.insert(chatbotMessages).values({
+        conversationId: conversation.id,
+        role: 'assistant',
+        content: aiResponse,
+      });
 
       // Detect if handoff keywords are present
       const handoffKeywords = [
@@ -6357,10 +6470,35 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
       const needsHandoff = handoffKeywords.some(keyword => 
         aiResponse.toLowerCase().includes(keyword.toLowerCase())
       );
+      
+      // Update conversation if handoff needed
+      if (needsHandoff) {
+        await db
+          .update(chatbotConversations)
+          .set({ 
+            handoffRequested: true,
+            handoffReason: 'AI detected handoff needed',
+          })
+          .where(eq(chatbotConversations.id, conversation.id));
+      }
+
+      // Get quick responses for the current context
+      const quickResponses = await db
+        .select()
+        .from(chatbotQuickResponses)
+        .where(eq(chatbotQuickResponses.active, true))
+        .orderBy(chatbotQuickResponses.sortOrder);
 
       res.json({
         message: aiResponse,
-        needsHandoff
+        needsHandoff,
+        conversationId: conversation.id,
+        quickResponses: quickResponses.map(qr => ({
+          id: qr.id,
+          label: qr.label,
+          message: qr.message,
+          icon: qr.icon,
+        })),
       });
 
     } catch (error: any) {
@@ -6369,6 +6507,458 @@ Keep responses concise (2-3 sentences max). Be warm and helpful.`;
         message: "I'm having trouble connecting right now. Please text or call us directly for immediate assistance!",
         needsHandoff: true
       });
+    }
+  });
+  
+  // Get conversation history
+  app.get("/api/chatbot/conversation/:conversationId", async (req, res) => {
+    try {
+      const { conversationId } = req.params;
+      
+      const messages = await db
+        .select()
+        .from(chatbotMessages)
+        .where(eq(chatbotMessages.conversationId, conversationId))
+        .orderBy(chatbotMessages.createdAt);
+        
+      res.json({ messages });
+    } catch (error) {
+      console.error("Error fetching conversation:", error);
+      res.status(500).json({ error: "Failed to fetch conversation" });
+    }
+  });
+  
+  // Submit feedback for a message
+  app.post("/api/chatbot/feedback", async (req, res) => {
+    try {
+      const { messageId, feedback, conversationId } = req.body;
+      
+      if (!messageId || !feedback || !['positive', 'negative'].includes(feedback)) {
+        return res.status(400).json({ error: "Invalid feedback data" });
+      }
+      
+      // Update message feedback
+      await db
+        .update(chatbotMessages)
+        .set({ feedback })
+        .where(eq(chatbotMessages.id, messageId));
+        
+      // Update conversation feedback counters
+      if (conversationId) {
+        const updateData = feedback === 'positive' 
+          ? { feedbackPositive: sql`feedback_positive + 1` }
+          : { feedbackNegative: sql`feedback_negative + 1` };
+          
+        await db
+          .update(chatbotConversations)
+          .set(updateData)
+          .where(eq(chatbotConversations.id, conversationId));
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      res.status(500).json({ error: "Failed to submit feedback" });
+    }
+  });
+  
+  // End conversation and send email
+  app.post("/api/chatbot/end-conversation", async (req, res) => {
+    try {
+      const { conversationId, rating } = req.body;
+      
+      if (!conversationId) {
+        return res.status(400).json({ error: "Conversation ID required" });
+      }
+      
+      // Get conversation and messages
+      const [conversation] = await db
+        .select()
+        .from(chatbotConversations)
+        .where(eq(chatbotConversations.id, conversationId));
+        
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      const messages = await db
+        .select()
+        .from(chatbotMessages)
+        .where(eq(chatbotMessages.conversationId, conversationId))
+        .orderBy(chatbotMessages.createdAt);
+      
+      // Update conversation
+      await db
+        .update(chatbotConversations)
+        .set({ 
+          endedAt: new Date(),
+          rating,
+          emailSent: true,
+        })
+        .where(eq(chatbotConversations.id, conversationId));
+      
+      // Send email to admin if configured
+      const resendApiKey = process.env.RESEND_API_KEY;
+      const adminEmail = process.env.ADMIN_EMAIL;
+      
+      if (resendApiKey && adminEmail && messages.length > 0) {
+        const { Resend } = await import("resend");
+        const resend = new Resend(resendApiKey);
+        
+        // Format conversation for email
+        const conversationHtml = messages.map(msg => `
+          <div style="margin: 10px 0; padding: 10px; background: ${msg.role === 'user' ? '#f0f0f0' : '#e3f2fd'}; border-radius: 8px;">
+            <strong>${msg.role === 'user' ? 'Customer' : 'AI Assistant'}:</strong><br/>
+            ${msg.content}
+            ${msg.feedback ? `<br/><small>Feedback: ${msg.feedback}</small>` : ''}
+          </div>
+        `).join('');
+        
+        const emailHtml = `
+          <h2>Chatbot Conversation Log</h2>
+          <p><strong>Session ID:</strong> ${conversation.sessionId}</p>
+          <p><strong>Page Context:</strong> ${conversation.pageContext || 'Unknown'}</p>
+          <p><strong>Started:</strong> ${new Date(conversation.startedAt).toLocaleString()}</p>
+          <p><strong>Rating:</strong> ${rating ? `${rating}/5 stars` : 'Not rated'}</p>
+          ${conversation.handoffRequested ? '<p><strong>⚠️ Handoff Requested</strong></p>' : ''}
+          ${conversation.customerEmail ? `<p><strong>Customer Email:</strong> ${conversation.customerEmail}</p>` : ''}
+          ${conversation.customerPhone ? `<p><strong>Customer Phone:</strong> ${conversation.customerPhone}</p>` : ''}
+          <hr/>
+          <h3>Conversation:</h3>
+          ${conversationHtml}
+        `;
+        
+        try {
+          await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || "notifications@economyplumbing.com",
+            to: adminEmail,
+            subject: `Chatbot Conversation ${conversation.handoffRequested ? '- HANDOFF NEEDED' : ''}`,
+            html: emailHtml,
+          });
+        } catch (emailError) {
+          console.error("Failed to send conversation email:", emailError);
+        }
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error ending conversation:", error);
+      res.status(500).json({ error: "Failed to end conversation" });
+    }
+  });
+  
+  // Upload image for diagnosis
+  app.post("/api/chatbot/upload-image", uploadMiddleware.single('image'), async (req, res) => {
+    try {
+      const { conversationId } = req.body;
+      const file = req.file;
+      
+      if (!file || !conversationId) {
+        return res.status(400).json({ error: "Image and conversation ID required" });
+      }
+      
+      // Convert to WebP for storage
+      const webpBuffer = await sharp(file.buffer)
+        .webp({ quality: 80 })
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .toBuffer();
+        
+      // Generate unique filename
+      const filename = `chatbot/${conversationId}/${Date.now()}.webp`;
+      
+      // TODO: Upload to storage (will implement with object storage if configured)
+      // For now, store as base64 in database
+      const base64Image = `data:image/webp;base64,${webpBuffer.toString('base64')}`;
+      
+      // Store message with image
+      await db.insert(chatbotMessages).values({
+        conversationId,
+        role: 'user',
+        content: 'Customer uploaded an image',
+        imageUrl: base64Image,
+      });
+      
+      // Use OpenAI Vision to analyze the image if configured
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (openaiKey) {
+        const openai = new OpenAI({ apiKey: openaiKey });
+        
+        try {
+          const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+              {
+                role: "system",
+                content: "You are a plumbing expert. Analyze this image and identify any visible plumbing issues, provide initial assessment, and recommend if professional service is needed.",
+              },
+              {
+                role: "user",
+                content: [
+                  {
+                    type: "text",
+                    text: "What plumbing issue can you see in this image?",
+                  },
+                  {
+                    type: "image_url",
+                    image_url: {
+                      url: base64Image,
+                      detail: "low",
+                    },
+                  },
+                ],
+              },
+            ],
+            max_tokens: 300,
+          });
+          
+          const analysis = response.choices[0]?.message?.content || "I can see the image but need more context. Can you describe what issue you're experiencing?";
+          
+          // Store AI analysis
+          await db.insert(chatbotMessages).values({
+            conversationId,
+            role: 'assistant',
+            content: analysis,
+          });
+          
+          res.json({ 
+            success: true,
+            analysis,
+            imageUrl: base64Image,
+          });
+        } catch (visionError) {
+          console.error("Vision API error:", visionError);
+          res.json({ 
+            success: true,
+            analysis: "I've received your image. Our team can better assess this when you contact us directly. Would you like to schedule a service call?",
+            imageUrl: base64Image,
+          });
+        }
+      } else {
+        res.json({ 
+          success: true,
+          analysis: "I've received your image. Our team will review it and can provide better assistance. Would you like to schedule a service call?",
+          imageUrl: base64Image,
+        });
+      }
+      
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      res.status(500).json({ error: "Failed to upload image" });
+    }
+  });
+  
+  // Admin: Get all conversations
+  app.get("/api/admin/chatbot/conversations", requireAuth, async (req, res) => {
+    try {
+      const { page = 1, archived = 'false', handoff = 'all' } = req.query;
+      const limit = 20;
+      const offset = (Number(page) - 1) * limit;
+      
+      let query = db
+        .select()
+        .from(chatbotConversations)
+        .orderBy(desc(chatbotConversations.startedAt))
+        .limit(limit)
+        .offset(offset);
+        
+      // Filter by archived status
+      if (archived === 'true') {
+        query = query.where(eq(chatbotConversations.archived, true));
+      } else if (archived === 'false') {
+        query = query.where(eq(chatbotConversations.archived, false));
+      }
+      
+      // Filter by handoff status
+      if (handoff === 'true') {
+        query = query.where(eq(chatbotConversations.handoffRequested, true));
+      } else if (handoff === 'false') {
+        query = query.where(eq(chatbotConversations.handoffRequested, false));
+      }
+      
+      const conversations = await query;
+      
+      // Get total count
+      const [{ count }] = await db
+        .select({ count: sql`count(*)` })
+        .from(chatbotConversations)
+        .where(archived === 'true' 
+          ? eq(chatbotConversations.archived, true)
+          : archived === 'false'
+          ? eq(chatbotConversations.archived, false)
+          : sql`true`);
+      
+      res.json({
+        conversations,
+        pagination: {
+          page: Number(page),
+          limit,
+          total: Number(count),
+          pages: Math.ceil(Number(count) / limit),
+        },
+      });
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      res.status(500).json({ error: "Failed to fetch conversations" });
+    }
+  });
+  
+  // Admin: Get conversation details
+  app.get("/api/admin/chatbot/conversation/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const [conversation] = await db
+        .select()
+        .from(chatbotConversations)
+        .where(eq(chatbotConversations.id, id));
+        
+      if (!conversation) {
+        return res.status(404).json({ error: "Conversation not found" });
+      }
+      
+      const messages = await db
+        .select()
+        .from(chatbotMessages)
+        .where(eq(chatbotMessages.conversationId, id))
+        .orderBy(chatbotMessages.createdAt);
+      
+      res.json({
+        conversation,
+        messages,
+      });
+    } catch (error) {
+      console.error("Error fetching conversation details:", error);
+      res.status(500).json({ error: "Failed to fetch conversation details" });
+    }
+  });
+  
+  // Admin: Update conversation (archive, notes)
+  app.patch("/api/admin/chatbot/conversation/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { archived, notes } = req.body;
+      
+      const updates: any = {};
+      if (archived !== undefined) updates.archived = archived;
+      if (notes !== undefined) updates.notes = notes;
+      
+      await db
+        .update(chatbotConversations)
+        .set(updates)
+        .where(eq(chatbotConversations.id, id));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating conversation:", error);
+      res.status(500).json({ error: "Failed to update conversation" });
+    }
+  });
+  
+  // Admin: Get analytics
+  app.get("/api/admin/chatbot/analytics", requireAuth, async (req, res) => {
+    try {
+      // Get common questions
+      const commonQuestions = await db
+        .select()
+        .from(chatbotAnalytics)
+        .orderBy(desc(chatbotAnalytics.count))
+        .limit(20);
+      
+      // Get conversation stats
+      const [stats] = await db
+        .select({
+          total: sql`count(*)`,
+          handoffs: sql`count(*) filter (where handoff_requested = true)`,
+          avgRating: sql`avg(rating)`,
+          withFeedback: sql`count(*) filter (where feedback_positive > 0 or feedback_negative > 0)`,
+        })
+        .from(chatbotConversations);
+      
+      // Get category breakdown
+      const categories = await db
+        .select({
+          category: chatbotAnalytics.category,
+          count: sql`sum(${chatbotAnalytics.count})`,
+        })
+        .from(chatbotAnalytics)
+        .groupBy(chatbotAnalytics.category)
+        .orderBy(desc(sql`sum(${chatbotAnalytics.count})`));
+      
+      res.json({
+        commonQuestions,
+        stats,
+        categories,
+      });
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+      res.status(500).json({ error: "Failed to fetch analytics" });
+    }
+  });
+  
+  // Admin: Manage quick responses
+  app.get("/api/admin/chatbot/quick-responses", requireAuth, async (req, res) => {
+    try {
+      const responses = await db
+        .select()
+        .from(chatbotQuickResponses)
+        .orderBy(chatbotQuickResponses.sortOrder);
+      
+      res.json(responses);
+    } catch (error) {
+      console.error("Error fetching quick responses:", error);
+      res.status(500).json({ error: "Failed to fetch quick responses" });
+    }
+  });
+  
+  app.post("/api/admin/chatbot/quick-responses", requireAuth, async (req, res) => {
+    try {
+      const { label, message, category, sortOrder, icon } = req.body;
+      
+      if (!label || !message) {
+        return res.status(400).json({ error: "Label and message required" });
+      }
+      
+      const [response] = await db
+        .insert(chatbotQuickResponses)
+        .values({ label, message, category, sortOrder: sortOrder || 0, icon })
+        .returning();
+      
+      res.json(response);
+    } catch (error) {
+      console.error("Error creating quick response:", error);
+      res.status(500).json({ error: "Failed to create quick response" });
+    }
+  });
+  
+  app.patch("/api/admin/chatbot/quick-responses/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      
+      await db
+        .update(chatbotQuickResponses)
+        .set(updates)
+        .where(eq(chatbotQuickResponses.id, id));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating quick response:", error);
+      res.status(500).json({ error: "Failed to update quick response" });
+    }
+  });
+  
+  app.delete("/api/admin/chatbot/quick-responses/:id", requireAuth, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      await db
+        .delete(chatbotQuickResponses)
+        .where(eq(chatbotQuickResponses.id, id));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting quick response:", error);
+      res.status(500).json({ error: "Failed to delete quick response" });
     }
   });
 
