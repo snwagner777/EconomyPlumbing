@@ -1189,34 +1189,17 @@ export default function CustomerPortal() {
                     </CardContent>
                   </Card>
 
-                  {/* 4 Compact Square Cards */}
+                  {/* 4 Dashboard Cards - Quick Stats */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Service History Card */}
-                    {customerStats && (
-                      <AspectRatio ratio={1 / 1}>
-                        <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-service-history">
-                          <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
-                            <Wrench className="w-8 h-8 text-primary mb-2" />
-                            <div className="text-2xl font-bold text-primary mb-1" data-testid="text-service-count">
-                              {customerStats.serviceCount}
-                            </div>
-                            <p className="text-xs text-muted-foreground mb-1">
-                              Total Services
-                            </p>
-                            <Badge variant="secondary" className="text-xs">
-                              Top {customerStats.topPercentile}%
-                            </Badge>
-                          </CardContent>
-                        </Card>
-                      </AspectRatio>
-                    )}
-
-                    {/* VIP Status Card */}
+                    {/* VIP Status Card - FIRST POSITION */}
                     <AspectRatio ratio={1 / 1}>
-                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-vip-status">
-                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                      <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-vip-status" onClick={() => {
+                        const element = document.getElementById('vip-membership-section');
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}>
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
                           <Crown className="w-8 h-8 text-primary mb-2" />
-                          {customerData.memberships && customerData.memberships.length > 0 ? (
+                          {customerData.memberships && customerData.memberships.length > 0 && !customerData.memberships[0].isExpired ? (
                             <>
                               <div className="text-base font-bold mb-1">
                                 VIP Member
@@ -1224,11 +1207,25 @@ export default function CustomerPortal() {
                               <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
                                 {customerData.memberships[0].membershipType}
                               </p>
-                              {customerData.memberships[0].expirationDate && (
+                              {customerData.memberships[0].startDate && (
                                 <p className="text-xs text-muted-foreground truncate w-full px-2">
-                                  Expires {formatDate(customerData.memberships[0].expirationDate)}
+                                  Member for {(() => {
+                                    const years = Math.floor((new Date().getTime() - new Date(customerData.memberships[0].startDate).getTime()) / (1000 * 60 * 60 * 24 * 365));
+                                    return years > 0 ? `${years}+ year${years > 1 ? 's' : ''}` : '< 1 year';
+                                  })()}
                                 </p>
                               )}
+                              <Badge variant="default" className="text-xs mt-1">Active</Badge>
+                            </>
+                          ) : customerData.memberships && customerData.memberships.length > 0 && customerData.memberships[0].isExpired ? (
+                            <>
+                              <div className="text-base font-bold mb-1">
+                                Expired
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-1 truncate w-full px-2">
+                                {customerData.memberships[0].membershipType}
+                              </p>
+                              <Badge variant="destructive" className="text-xs mt-1">Expired</Badge>
                             </>
                           ) : (
                             <>
@@ -1240,46 +1237,103 @@ export default function CustomerPortal() {
                               </p>
                             </>
                           )}
+                          <p className="text-xs text-primary mt-2 absolute bottom-2">View Details →</p>
                         </CardContent>
                       </Card>
                     </AspectRatio>
 
-                    {/* Referrals Card */}
+                    {/* Service History Card */}
+                    {customerStats && (
+                      <AspectRatio ratio={1 / 1}>
+                        <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
+                          const element = document.getElementById('job-history-section');
+                          element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }}>
+                          <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
+                            <Wrench className="w-8 h-8 text-primary mb-2" />
+                            <div className="text-2xl font-bold text-primary mb-1" data-testid="text-service-count">
+                              {customerStats.serviceCount}
+                            </div>
+                            <p className="text-xs text-muted-foreground mb-1">
+                              Total Services
+                            </p>
+                            <Badge variant="secondary" className="text-xs">
+                              Top {customerStats.topPercentile}%
+                            </Badge>
+                            <p className="text-xs text-primary mt-2 absolute bottom-2">View History →</p>
+                          </CardContent>
+                        </Card>
+                      </AspectRatio>
+                    )}
+
+                    {/* Referrals Card - Show Account Credit */}
                     <AspectRatio ratio={1 / 1}>
-                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-referrals">
-                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                      <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-referrals" onClick={() => {
+                        const element = document.getElementById('referral-section');
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}>
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
                           <Share2 className="w-8 h-8 text-primary mb-2" />
-                          <div className="text-2xl font-bold text-primary mb-1" data-testid="text-total-referrals">
-                            {referralsData?.referrals.length || 0}
-                          </div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Total Referrals
-                          </p>
-                          {referralLinkData && (
-                            <p className="text-xs text-muted-foreground">
-                              {referralLinkData.conversions} Conversions
-                            </p>
-                          )}
+                          {(() => {
+                            const creditedReferrals = referralsData?.referrals.filter((r: any) => r.status === 'credited') || [];
+                            const totalCredit = creditedReferrals.reduce((sum: number, r: any) => sum + (r.creditAmount || 0), 0);
+                            return (
+                              <>
+                                <div className="text-2xl font-bold text-primary mb-1" data-testid="text-account-credit">
+                                  {formatCurrency(totalCredit / 100)}
+                                </div>
+                                <p className="text-xs text-muted-foreground mb-1">
+                                  Account Credit
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {referralsData?.referrals.length || 0} referral{referralsData?.referrals.length === 1 ? '' : 's'}
+                                </p>
+                              </>
+                            );
+                          })()}
+                          <p className="text-xs text-primary mt-2 absolute bottom-2">View Details →</p>
                         </CardContent>
                       </Card>
                     </AspectRatio>
 
-                    {/* Upcoming Appointments Card */}
+                    {/* Upcoming Appointments Card - Show Next Appointment Details */}
                     <AspectRatio ratio={1 / 1}>
-                      <Card className="hover-elevate w-full h-full overflow-hidden" data-testid="card-upcoming-appointments">
-                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full">
+                      <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-upcoming-appointments" onClick={() => {
+                        const element = document.getElementById('appointments-section');
+                        element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}>
+                        <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
                           <Calendar className="w-8 h-8 text-primary mb-2" />
-                          <div className="text-2xl font-bold text-primary mb-1" data-testid="text-upcoming-count">
-                            {upcomingAppointments.length}
-                          </div>
-                          <p className="text-xs text-muted-foreground mb-1">
-                            Upcoming
-                          </p>
-                          {upcomingAppointments.length > 0 && (
-                            <p className="text-xs text-muted-foreground truncate w-full px-2">
-                              Next: {formatDate(upcomingAppointments[0].start)}
-                            </p>
+                          {upcomingAppointments.length > 0 ? (
+                            <>
+                              <div className="text-base font-bold mb-1" data-testid="text-next-appointment-date">
+                                {new Date(upcomingAppointments[0].start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                              </div>
+                              <p className="text-xs text-muted-foreground mb-1">
+                                {formatTime(upcomingAppointments[0].start)}
+                              </p>
+                              {upcomingAppointments[0].businessUnitName && (
+                                <p className="text-xs text-muted-foreground truncate w-full px-1">
+                                  {upcomingAppointments[0].businessUnitName}
+                                </p>
+                              )}
+                              {upcomingAppointments.length > 1 && (
+                                <Badge variant="secondary" className="text-xs mt-1">
+                                  +{upcomingAppointments.length - 1} more
+                                </Badge>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <div className="text-base font-bold mb-1">
+                                None Scheduled
+                              </div>
+                              <p className="text-xs text-muted-foreground">
+                                No upcoming appointments
+                              </p>
+                            </>
                           )}
+                          <p className="text-xs text-primary mt-2 absolute bottom-2">View All →</p>
                         </CardContent>
                       </Card>
                     </AspectRatio>
@@ -1378,6 +1432,7 @@ export default function CustomerPortal() {
                   })()}
 
                   {/* VIP Membership Status - Shows real data from ServiceTitan */}
+                  <div id="vip-membership-section">
                   {customerData.memberships && customerData.memberships.length > 0 ? (
                     <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
                       <CardHeader>
@@ -1533,6 +1588,7 @@ export default function CustomerPortal() {
                       </CardContent>
                     </Card>
                   )}
+                  </div>
 
                   {/* Service Locations */}
                   {customerLocations.length > 0 && (
@@ -1672,6 +1728,7 @@ export default function CustomerPortal() {
                   })()}
 
                   {/* Upcoming Appointments */}
+                  <div id="appointments-section">
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1739,8 +1796,10 @@ export default function CustomerPortal() {
                       )}
                     </CardContent>
                   </Card>
+                  </div>
 
                   {/* Invoices */}
+                  <div id="job-history-section">
                   <Card>
                     <CardHeader>
                       <div className="flex items-center gap-2">
@@ -1822,35 +1881,10 @@ export default function CustomerPortal() {
                       )}
                     </CardContent>
                   </Card>
-
-                  {/* Memberships */}
-                  {customerData.memberships && customerData.memberships.length > 0 && (
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                      <CardHeader>
-                        <div className="flex items-center justify-between gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <Crown className="w-6 h-6 text-primary" />
-                            <div>
-                              <CardTitle>VIP Membership</CardTitle>
-                              <CardDescription className="mt-1">
-                                {customerData.memberships[0].membershipType}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <Badge variant="default" className="text-xs bg-primary">
-                            {customerData.memberships[0].status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground">
-                          View membership details and benefits in the VIP Status card above
-                        </p>
-                      </CardContent>
-                    </Card>
-                  )}
+                  </div>
 
                   {/* Consolidated Referral Section */}
+                  <div id="referral-section">
                   {referralLinkData && (
                     <Card className="border-primary/20 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
                       <CardHeader>
@@ -2002,6 +2036,7 @@ export default function CustomerPortal() {
                       </CardContent>
                     </Card>
                   )}
+                  </div>
 
                   {/* Leave a Review (show if they have completed appointments) */}
                   {completedAppointments.length > 0 && (
