@@ -2702,6 +2702,11 @@ function ReviewsSection() {
   const { toast } = useToast();
   const [selectedSource, setSelectedSource] = useState<string>('all');
   const [selectedRating, setSelectedRating] = useState<string>('all');
+  const [replyDialogOpen, setReplyDialogOpen] = useState(false);
+  const [selectedReview, setSelectedReview] = useState<any>(null);
+  const [aiReply, setAiReply] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
 
   // Fetch Google Reviews (includes Google, Facebook, Yelp via source field)
   const { data: googleReviewsData, isLoading: loadingGoogle } = useQuery<{ reviews: any[] }>({

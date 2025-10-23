@@ -200,6 +200,7 @@ export interface IStorage {
   getAllReviews(status?: string): Promise<CustomReview[]>;
   moderateReview(id: string, updates: { status: string; moderatedBy: string; moderationNotes?: string; featured?: boolean; displayOnWebsite?: boolean }): Promise<CustomReview>;
   deleteReview(id: string): Promise<void>;
+  replyToReview(id: string, replyText: string): Promise<CustomReview>;
   getReviewStats(): Promise<{ total: number; pending: number; approved: number; rejected: number; spam: number; averageRating: number }>;
   
   // Review Requests
@@ -3374,6 +3375,18 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(customReviews)
       .where(eq(customReviews.id, id));
+  }
+
+  async replyToReview(id: string, replyText: string): Promise<CustomReview> {
+    const [result] = await db
+      .update(customReviews)
+      .set({
+        replyText: replyText.trim(),
+        repliedAt: new Date(),
+      })
+      .where(eq(customReviews.id, id))
+      .returning();
+    return result;
   }
 
   async getReviewStats(): Promise<{ total: number; pending: number; approved: number; rejected: number; spam: number; averageRating: number }> {

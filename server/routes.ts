@@ -3809,6 +3809,134 @@ ${rssItems}
     }
   });
 
+  // Admin: Generate AI reply for a review
+  app.post("/api/admin/reviews/:reviewId/generate-reply", requireAdmin, async (req, res) => {
+    try {
+      const { reviewId } = req.params;
+      
+      // Validate request body
+      const schema = z.object({
+        type: z.enum(['google', 'custom']),
+      });
+      const { type } = schema.parse(req.body);
+      
+      // Fetch the review
+      let review: any;
+      if (type === 'custom') {
+        const reviews = await storage.getReviews();
+        review = reviews.find(r => r.id === reviewId);
+        if (!review) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+      } else {
+        const { googleReviews } = await import("@shared/schema");
+        const result = await db
+          .select()
+          .from(googleReviews)
+          .where(eq(googleReviews.id, reviewId))
+          .execute();
+        
+        if (!result || result.length === 0) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+        review = result[0];
+      }
+      
+      // Generate AI reply using OpenAI
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+      
+      const prompt = `You are responding to a customer review for Economy Plumbing Services, a professional plumbing company in Austin, Texas.
+
+Review Details:
+- Customer: ${type === 'custom' ? review.customerName : review.authorName}
+- Rating: ${review.rating}/5 stars
+- Review: "${review.text}"
+
+Generate a professional, friendly, and personalized response that:
+1. Thanks the customer by name
+2. Acknowledges their specific feedback
+3. For 5-star reviews: Express gratitude and mention looking forward to serving them again
+4. For 4-star reviews: Thank them and subtly invite feedback on how to improve
+5. For 3-star or lower: Apologize for any issues, show empathy, and offer to make it right
+6. Keep it concise (2-3 sentences max)
+7. Sign off as "The Economy Plumbing Team"
+
+Generate ONLY the reply text, no explanations or meta-commentary.`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.7,
+        max_tokens: 200,
+      });
+      
+      const aiReply = completion.choices[0]?.message?.content?.trim();
+      
+      if (!aiReply) {
+        return res.status(500).json({ message: "Failed to generate AI reply" });
+      }
+      
+      console.log(`[Review Reply] Generated AI reply for review ${reviewId}`);
+      res.json({ reply: aiReply });
+    } catch (error: any) {
+      console.error('[Review Reply] AI generation error:', error);
+      res.status(500).json({ message: "Error generating AI reply: " + error.message });
+    }
+  });
+
+  // Admin: Post reply to a review
+  app.post("/api/admin/reviews/:reviewId/post-reply", requireAdmin, async (req, res) => {
+    try {
+      const { reviewId } = req.params;
+      
+      // Validate request body
+      const schema = z.object({
+        type: z.enum(['google', 'custom']),
+        replyText: z.string().min(1, "Reply text is required"),
+      });
+      const { replyText, type } = schema.parse(req.body);
+      
+      // Save reply to database
+      let result: any;
+      if (type === 'custom') {
+        result = await storage.replyToReview(reviewId, replyText);
+        if (!result) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+      } else {
+        const { googleReviews } = await import("@shared/schema");
+        const [updated] = await db
+          .update(googleReviews)
+          .set({
+            replyText: replyText.trim(),
+            repliedAt: new Date(),
+          })
+          .where(eq(googleReviews.id, reviewId))
+          .returning();
+        
+        if (!updated) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+        result = updated;
+      }
+      
+      // TODO: In the future, we'll add API integration to post replies to Google, Facebook, Yelp
+      // For now, we just save the reply to our database
+      
+      console.log(`[Review Reply] Reply posted for review ${reviewId}`);
+      res.json({ success: true, message: "Reply saved successfully" });
+    } catch (error: any) {
+      console.error('[Review Reply] Post reply error:', error);
+      
+      // Handle Zod validation errors
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: error.errors[0]?.message || "Invalid request data" });
+      }
+      
+      res.status(500).json({ message: "Error posting reply: " + error.message });
+    }
+  });
+
   // Manually trigger ServiceTitan customer sync (admin only)
   app.post("/api/admin/sync-servicetitan", requireAdmin, async (req, res) => {
     try {
