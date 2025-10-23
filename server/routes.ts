@@ -3555,98 +3555,92 @@ ${rssItems}
   // ============================================
   
   // Mailgun webhook for receiving XLSX email attachments
-  app.post("/api/webhooks/mailgun/customer-data", express.raw({ type: '*/*', limit: '50mb' }), async (req, res) => {
-    try {
-      console.log('[Mailgun Webhook] Received incoming email');
-      
-      const formData = require('form-data');
-      const Mailgun = require('mailgun.js');
-      const mailgun = new Mailgun(formData);
-      const mg = mailgun.client({
-        username: 'api',
-        key: process.env.MAILGUN_API_KEY || '',
-      });
-      
-      // Verify webhook signature
-      const signingKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY;
-      if (signingKey) {
-        const timestamp = req.body.toString().match(/timestamp=([0-9]+)/)?.[1];
-        const token = req.body.toString().match(/token=([a-f0-9]+)/)?.[1];
-        const signature = req.body.toString().match(/signature=([a-f0-9]+)/)?.[1];
-        
-        if (timestamp && token && signature) {
-          const crypto = require('crypto');
-          const encodedToken = crypto
-            .createHmac('sha256', signingKey)
-            .update(timestamp + token)
-            .digest('hex');
-          
-          if (encodedToken !== signature) {
-            console.error('[Mailgun Webhook] Invalid signature');
-            return res.status(403).json({ error: 'Invalid signature' });
-          }
-        }
+  // Use multer to handle multipart form data (Mailgun sends emails as multipart)
+  const mailgunUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  }).any();
+  
+  app.post("/api/webhooks/mailgun/customer-data", (req, res) => {
+    // Parse multipart form data first
+    mailgunUpload(req, res, async (err) => {
+      if (err) {
+        console.error('[Mailgun Webhook] Multer error:', err);
+        return res.status(400).json({ error: 'Failed to parse multipart data' });
       }
       
-      // Parse multipart form data
-      const busboy = require('busboy');
-      const bb = busboy({ headers: req.headers });
-      
-      let xlsxBuffer: Buffer | null = null;
-      let fileName: string | null = null;
-      
-      bb.on('file', (fieldname: string, file: any, info: any) => {
-        const { filename, mimeType } = info;
+      try {
+        console.log('[Mailgun Webhook] Received incoming email');
         
-        // Only process XLSX files
-        if (filename.endsWith('.xlsx') || mimeType.includes('spreadsheet')) {
-          console.log(`[Mailgun Webhook] Found XLSX attachment: ${filename}`);
-          fileName = filename;
-          
-          const chunks: Buffer[] = [];
-          file.on('data', (chunk: Buffer) => chunks.push(chunk));
-          file.on('end', () => {
-            xlsxBuffer = Buffer.concat(chunks);
-            console.log(`[Mailgun Webhook] XLSX file size: ${xlsxBuffer.length} bytes`);
-          });
-        } else {
-          file.resume(); // Skip non-XLSX files
+        // CRITICAL: Verify Mailgun signature before processing
+        const signingKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY;
+        if (!signingKey) {
+          console.error('[Mailgun Webhook] MAILGUN_WEBHOOK_SIGNING_KEY not configured');
+          return res.status(500).json({ error: 'Webhook signing key not configured' });
         }
-      });
+        
+        const timestamp = req.body.timestamp;
+        const token = req.body.token;
+        const signature = req.body.signature;
+        
+        if (!timestamp || !token || !signature) {
+          console.error('[Mailgun Webhook] Missing signature components');
+          console.log('[Mailgun Webhook] Available fields:', Object.keys(req.body));
+          return res.status(401).json({ error: 'Missing signature' });
+        }
+        
+        // Verify timestamp is recent (prevent replay attacks)
+        const currentTime = Math.floor(Date.now() / 1000);
+        const timestampAge = currentTime - parseInt(timestamp);
+        if (timestampAge > 300) { // 5 minutes
+          console.error(`[Mailgun Webhook] Timestamp too old: ${timestampAge}s`);
+          return res.status(401).json({ error: 'Timestamp expired' });
+        }
+        
+        // Verify HMAC signature
+        const encodedToken = crypto
+          .createHmac('sha256', signingKey)
+          .update(timestamp + token)
+          .digest('hex');
+        
+        if (encodedToken !== signature) {
+          console.error('[Mailgun Webhook] Invalid signature');
+          return res.status(403).json({ error: 'Invalid signature' });
+        }
+        
+        console.log('[Mailgun Webhook] Signature verified successfully');
       
-      bb.on('finish', async () => {
-        if (!xlsxBuffer) {
+        // Find XLSX attachment
+        const files = (req as any).files as Express.Multer.File[];
+        const xlsxFile = files?.find(f => 
+          f.originalname?.endsWith('.xlsx') || 
+          f.mimetype?.includes('spreadsheet')
+        );
+
+        if (!xlsxFile) {
           console.log('[Mailgun Webhook] No XLSX attachment found');
+          console.log('[Mailgun Webhook] Received files:', files?.map(f => f.originalname));
           return res.json({ success: false, message: 'No XLSX attachment found' });
         }
         
-        try {
-          // Import customers from XLSX
-          const { importCustomersFromXLSX } = await import('./lib/xlsxCustomerImporter');
-          const result = await importCustomersFromXLSX(xlsxBuffer, 'email');
-          
-          console.log('[Mailgun Webhook] Import completed successfully');
-          res.json({
-            success: true,
-            fileName,
-            ...result,
-          });
-        } catch (error: any) {
-          console.error('[Mailgun Webhook] Import failed:', error);
-          res.status(500).json({
-            success: false,
-            error: error.message,
-          });
-        }
-      });
-      
-      bb.write(req.body);
-      bb.end();
-      
-    } catch (error: any) {
-      console.error('[Mailgun Webhook] Error processing webhook:', error);
-      res.status(500).json({ error: error.message });
-    }
+        console.log(`[Mailgun Webhook] Found XLSX attachment: ${xlsxFile.originalname} (${xlsxFile.size} bytes)`);
+        
+        // Import customers from XLSX
+        const { importCustomersFromXLSX } = await import('./lib/xlsxCustomerImporter');
+        const result = await importCustomersFromXLSX(xlsxFile.buffer, 'email');
+        
+        console.log('[Mailgun Webhook] Import completed successfully');
+        res.json({
+          success: true,
+          fileName: xlsxFile.originalname,
+          ...result,
+        });
+        
+      } catch (error: any) {
+        console.error('[Mailgun Webhook] Error processing webhook:', error);
+        res.status(500).json({ error: error.message });
+      }
+    });
   });
 
   // Admin authentication middleware - OAuth + whitelist required (for review management, etc.)
