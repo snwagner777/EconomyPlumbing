@@ -11,6 +11,7 @@ declare global {
   var invalidateSSRCache: (() => void) | undefined;
 }
 import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses } from "@shared/schema";
+import { z } from "zod";
 import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
 import Stripe from "stripe";
@@ -3823,8 +3824,8 @@ ${rssItems}
       // Fetch the review
       let review: any;
       if (type === 'custom') {
-        const reviews = await storage.getReviews();
-        review = reviews.find(r => r.id === reviewId);
+        const reviews = await storage.getAllReviews();
+        review = reviews.find((r: any) => r.id === reviewId);
         if (!review) {
           return res.status(404).json({ message: "Review not found" });
         }
