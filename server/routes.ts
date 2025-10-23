@@ -47,6 +47,7 @@ import { ObjectStorageService } from "./objectStorage";
 import { analyzeProductionPhoto } from "./lib/productionPhotoAnalyzer";
 import OpenAI from "openai";
 import { generateH1FromTitle } from "./lib/generateH1";
+import sharp from "sharp";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Reference: javascript_object_storage integration - public file serving endpoint
@@ -1060,11 +1061,6 @@ ${rssItems}
       // Update rate limit tracking
       submissionRateLimit.set(clientIp, now);
       
-      // If this was from a review request, update the request status
-      if (reviewData.requestId) {
-        await storage.completeReviewRequest(reviewData.requestId, review.id);
-      }
-      
       console.log(`[Review] New submission from ${reviewData.customerName} (${review.rating} stars)`);
       
       res.json({ 
@@ -1098,21 +1094,6 @@ ${rssItems}
         timestamp: new Date().toISOString()
       });
 
-      // Send email notification to admin about the negative feedback
-      try {
-        const { sendContactFormEmail } = await import('./lib/email');
-        await sendContactFormEmail({
-          name: customerName || 'Customer',
-          email: customerEmail || 'no-email@provided.com',
-          phone: '',
-          subject: `Private Feedback - ${rating} Star Rating`,
-          message: feedback,
-          pageContext: 'Customer Portal Review Modal',
-        });
-      } catch (emailError) {
-        console.error('[Private Feedback] Email sending failed:', emailError);
-      }
-
       res.json({ 
         success: true, 
         message: "Thank you for your feedback. We'll review it and work to improve."
@@ -1142,12 +1123,12 @@ ${rssItems}
         id: review.id,
         authorName: review.customerName,
         authorUrl: null,
-        profilePhotoUrl: review.photoUrl || null,
+        profilePhotoUrl: review.photoUrls && review.photoUrls.length > 0 ? review.photoUrls[0] : null,
         rating: review.rating,
         text: review.text,
         relativeTime: `${Math.floor((Date.now() - new Date(review.submittedAt).getTime()) / (1000 * 60 * 60 * 24))} days ago`,
         timestamp: Math.floor(new Date(review.submittedAt).getTime() / 1000),
-        categories: review.serviceCategory ? [review.serviceCategory] : [],
+        categories: [] as string[],
         source: 'custom_review',
         reviewId: review.id,
       }));
@@ -1160,7 +1141,7 @@ ${rssItems}
       // Apply category filter if provided
       if (category) {
         allReviews = allReviews.filter(review => 
-          review.categories?.includes(category)
+          review.categories && Array.isArray(review.categories) && review.categories.includes(category)
         );
       }
       
@@ -1231,19 +1212,10 @@ ${rssItems}
       let isExistingCustomer = false;
       
       try {
-        // First check local cache (fast)
-        refereeCustomerId = await serviceTitan.searchLocalCustomer(refereePhone);
+        // Search for referee using fallback method (checks cache then API)
+        refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
         if (!refereeCustomerId && refereeEmail) {
-          refereeCustomerId = await serviceTitan.searchLocalCustomer(refereeEmail);
-        }
-        
-        // If not in cache, check ServiceTitan API directly (real-time)
-        if (!refereeCustomerId) {
-          console.log(`[Referral] Cache miss - checking ServiceTitan API directly for referee...`);
-          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
-          if (!refereeCustomerId && refereeEmail) {
-            refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
-          }
+          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
         }
         
         if (refereeCustomerId) {
@@ -1272,20 +1244,6 @@ ${rssItems}
       }).returning();
       
       console.log(`[Referral] Created referral ${referral.id} - Referrer: ${referrerName}, Referee: ${refereeName}`);
-      
-      // Send email notification to business
-      try {
-        await sendReferralEmail({
-          referrerName,
-          referrerPhone,
-          refereeName,
-          refereePhone,
-          refereeEmail: refereeEmail || undefined,
-        });
-      } catch (emailError) {
-        console.error('[Referral] Email sending failed:', emailError);
-        // Continue even if email fails
-      }
       
       res.json({ 
         success: true, 
@@ -3606,37 +3564,18 @@ ${rssItems}
   });
 
   // Get system health status (admin only)
-  app.get("/api/admin/system-health", requireAdmin, async (req, res) => {
-    try {
-      const [allServices, systemHealth] = await Promise.all([
-        getAllServiceHealth(),
-        getSystemHealth()
-      ]);
-
-      res.json({
-        systemHealth,
-        services: allServices.map((service: any) => ({
-          serviceName: service.serviceName,
-          serviceType: service.serviceType,
-          status: service.status,
-          statusMessage: service.statusMessage,
-          lastSuccessfulRunAt: service.lastSuccessfulRunAt,
-          lastFailedRunAt: service.lastFailedRunAt,
-          consecutiveFailures: service.consecutiveFailures,
-          totalRuns: service.totalRuns,
-          totalFailures: service.totalFailures,
-          lastDurationMs: service.lastDurationMs,
-          avgDurationMs: service.avgDurationMs,
-          lastError: service.lastError,
-          lastErrorAt: service.lastErrorAt,
-          lastCheckedAt: service.lastCheckedAt,
-        }))
-      });
-    } catch (error: any) {
-      console.error('[Admin] Error fetching system health:', error);
-      res.status(500).json({ error: error.message });
-    }
-  });
+  // Commented out - health monitoring functions removed with marketing automation
+  // app.get("/api/admin/system-health", requireAdmin, async (req, res) => {
+  //   try {
+  //     res.json({
+  //       systemHealth: { status: 'healthy' },
+  //       services: []
+  //     });
+  //   } catch (error: any) {
+  //     console.error('[Admin] Error fetching system health:', error);
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // });
 
   // Get all photos (admin only)
   app.get("/api/admin/photos", requireAdmin, async (req, res) => {
@@ -6349,28 +6288,38 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       const limit = 20;
       const offset = (Number(page) - 1) * limit;
       
-      let query = db
-        .select()
-        .from(chatbotConversations)
-        .orderBy(desc(chatbotConversations.startedAt))
-        .limit(limit)
-        .offset(offset);
-        
+      // Build where conditions
+      const whereConditions = [];
+      
       // Filter by archived status
       if (archived === 'true') {
-        query = query.where(eq(chatbotConversations.archived, true));
+        whereConditions.push(eq(chatbotConversations.archived, true));
       } else if (archived === 'false') {
-        query = query.where(eq(chatbotConversations.archived, false));
+        whereConditions.push(eq(chatbotConversations.archived, false));
       }
       
       // Filter by handoff status
       if (handoff === 'true') {
-        query = query.where(eq(chatbotConversations.handoffRequested, true));
+        whereConditions.push(eq(chatbotConversations.handoffRequested, true));
       } else if (handoff === 'false') {
-        query = query.where(eq(chatbotConversations.handoffRequested, false));
+        whereConditions.push(eq(chatbotConversations.handoffRequested, false));
       }
       
-      const conversations = await query;
+      // Execute query with conditions
+      const conversations = whereConditions.length > 0
+        ? await db
+            .select()
+            .from(chatbotConversations)
+            .where(sql`${whereConditions.map(c => sql`${c}`).reduce((a, b) => sql`${a} AND ${b}`)}`)
+            .orderBy(desc(chatbotConversations.startedAt))
+            .limit(limit)
+            .offset(offset)
+        : await db
+            .select()
+            .from(chatbotConversations)
+            .orderBy(desc(chatbotConversations.startedAt))
+            .limit(limit)
+            .offset(offset);
       
       // Get total count
       const [{ count }] = await db
@@ -6807,7 +6756,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       // Store verification
       const { portalVerifications } = await import('@shared/schema');
       await db.insert(portalVerifications).values({
-        customerId: parseInt(customerId),
+        customerIds: [parseInt(customerId)],
         contactValue,
         verificationType,
         code: verificationType === 'sms' ? code : uuid,
@@ -7552,68 +7501,15 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
 
   // Get customer email communication history
-  app.get("/api/portal/customer/:customerId/emails", async (req, res) => {
-    try {
-      const { customerId } = req.params;
-      
-      // Check if user has valid portal session
-      if (!req.session.portalCustomerId || req.session.portalCustomerId.toString() !== customerId) {
-        return res.status(401).json({ error: "Unauthorized" });
-      }
-      
-      const customerIdNum = parseInt(customerId);
-      
-      // Import required tables and operators
-      const { emailSendLog, campaignEmails, emailCampaigns, reviewRequestSendLog, reviewDripEmails, reviewRequestCampaigns } = await import("@shared/schema");
-      const { desc, eq } = await import("drizzle-orm");
-      
-      // Fetch email marketing history from email_send_log
-      const emailHistory = await db
-        .select({
-          id: emailSendLog.id,
-          subject: campaignEmails.subject,
-          campaignName: emailCampaigns.name,
-          sentAt: emailSendLog.sentAt,
-          openedAt: emailSendLog.openedAt,
-          clickedAt: emailSendLog.clickedAt,
-          status: emailSendLog.resendStatus,
-        })
-        .from(emailSendLog)
-        .leftJoin(campaignEmails, eq(emailSendLog.campaignEmailId, campaignEmails.id))
-        .leftJoin(emailCampaigns, eq(emailSendLog.campaignId, emailCampaigns.id))
-        .where(eq(emailSendLog.serviceTitanCustomerId, customerIdNum))
-        .orderBy(desc(emailSendLog.sentAt))
-        .limit(50);
-      
-      // Fetch review request emails from review_request_send_log
-      const reviewEmails = await db
-        .select({
-          id: reviewRequestSendLog.id,
-          subject: reviewDripEmails.subject,
-          campaignName: reviewRequestCampaigns.name,
-          sentAt: reviewRequestSendLog.sentAt,
-          openedAt: reviewRequestSendLog.openedAt,
-          clickedAt: reviewRequestSendLog.clickedAt,
-          status: reviewRequestSendLog.resendStatus,
-        })
-        .from(reviewRequestSendLog)
-        .leftJoin(reviewDripEmails, eq(reviewRequestSendLog.dripEmailId, reviewDripEmails.id))
-        .leftJoin(reviewRequestCampaigns, eq(reviewRequestSendLog.campaignId, reviewRequestCampaigns.id))
-        .where(eq(reviewRequestSendLog.serviceTitanCustomerId, customerIdNum))
-        .orderBy(desc(reviewRequestSendLog.sentAt))
-        .limit(50);
-      
-      // Combine and sort by sent date
-      const allEmails = [...emailHistory, ...reviewEmails].sort((a, b) => 
-        new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime()
-      );
-      
-      res.json({ emails: allEmails });
-    } catch (error: any) {
-      console.error("[Portal] Email history error:", error);
-      res.status(500).json({ error: "Failed to fetch email history" });
-    }
-  });
+  // Commented out - email marketing tables removed
+  // app.get("/api/portal/customer/:customerId/emails", async (req, res) => {
+  //   try {
+  //     res.json({ emails: [] });
+  //   } catch (error: any) {
+  //     console.error("[Portal] Email history error:", error);
+  //     res.status(500).json({ error: "Failed to fetch email history" });
+  //   }
+  // });
 
   // ServiceTitan Customer Sync (Admin only - manual trigger)
   app.post("/api/servicetitan/sync-customers", async (req, res) => {
@@ -7999,163 +7895,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
 
   // ===== EMAIL PREFERENCES & SUPPRESSION =====
-
-  // Get email preferences for a customer
-  app.get("/api/email-preferences/:email", async (req, res) => {
-    try {
-      const { email } = req.params;
-      const preferences = await storage.getEmailPreferencesByEmail(email);
-      
-      if (!preferences) {
-        // Return default preferences if none exist
-        return res.json({
-          email,
-          unsubscribedMarketing: false,
-          unsubscribedReviews: false,
-          unsubscribedServiceReminders: false,
-          unsubscribedReferrals: false,
-          unsubscribedAll: false
-        });
-      }
-      
-      res.json(preferences);
-    } catch (error: any) {
-      console.error("[Email Preferences] Get error:", error);
-      res.status(500).json({ error: "Failed to fetch email preferences" });
-    }
-  });
-
-  // Update email preferences
-  app.put("/api/email-preferences", async (req, res) => {
-    try {
-      const { email, ...preferences } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ error: "Email address required" });
-      }
-      
-      const updated = await storage.upsertEmailPreferences({ email, ...preferences });
-      res.json(updated);
-    } catch (error: any) {
-      console.error("[Email Preferences] Update error:", error);
-      res.status(500).json({ error: "Failed to update email preferences" });
-    }
-  });
-
-  // Unsubscribe from specific category (public endpoint for one-click unsubscribe)
-  app.post("/api/unsubscribe/:category", async (req, res) => {
-    try {
-      const { category } = req.params;
-      const { email } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ error: "Email address required" });
-      }
-      
-      if (!['marketing', 'reviews', 'serviceReminders', 'referrals'].includes(category)) {
-        return res.status(400).json({ error: "Invalid category" });
-      }
-      
-      const updated = await storage.unsubscribeFromCategory(email, category as any);
-      res.json({ 
-        success: true, 
-        message: `Successfully unsubscribed from ${category} emails`,
-        preferences: updated
-      });
-    } catch (error: any) {
-      console.error("[Email Preferences] Unsubscribe category error:", error);
-      res.status(500).json({ error: "Failed to unsubscribe" });
-    }
-  });
-
-  // Unsubscribe from all emails (public endpoint for one-click unsubscribe)
-  app.post("/api/unsubscribe-all", async (req, res) => {
-    try {
-      const { email } = req.body;
-      
-      if (!email) {
-        return res.status(400).json({ error: "Email address required" });
-      }
-      
-      const updated = await storage.unsubscribeFromAll(email);
-      res.json({ 
-        success: true, 
-        message: "Successfully unsubscribed from all emails",
-        preferences: updated
-      });
-    } catch (error: any) {
-      console.error("[Email Preferences] Unsubscribe all error:", error);
-      res.status(500).json({ error: "Failed to unsubscribe" });
-    }
-  });
-
-  // Admin: Get suppression list
-  app.get("/api/admin/suppression-list", async (req, res) => {
-    try {
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      
-      const { limit, offset } = req.query;
-      const suppressions = await storage.getSuppressionList({
-        limit: limit ? parseInt(limit as string) : 100,
-        offset: offset ? parseInt(offset as string) : 0
-      });
-      
-      const stats = await storage.getSuppressionStats();
-      
-      res.json({ suppressions, stats });
-    } catch (error: any) {
-      console.error("[Admin] Get suppression list error:", error);
-      res.status(500).json({ error: "Failed to fetch suppression list" });
-    }
-  });
-
-  // Admin: Add email to suppression list
-  app.post("/api/admin/suppression-list", async (req, res) => {
-    try {
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      
-      const { email, reason, reasonDetails } = req.body;
-      
-      if (!email || !reason) {
-        return res.status(400).json({ error: "Email and reason required" });
-      }
-      
-      const suppression = await storage.addToSuppressionList({
-        email,
-        reason,
-        reasonDetails: reasonDetails || null,
-        resendEmailId: null,
-        campaignId: null,
-        lastAttemptedAt: null
-      });
-      
-      res.json(suppression);
-    } catch (error: any) {
-      console.error("[Admin] Add to suppression list error:", error);
-      res.status(500).json({ error: "Failed to add to suppression list" });
-    }
-  });
-
-  // Admin: Remove email from suppression list
-  app.delete("/api/admin/suppression-list/:email", async (req, res) => {
-    try {
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-      
-      const { email } = req.params;
-      await storage.removeFromSuppressionList(email);
-      
-      res.json({ success: true, message: "Email removed from suppression list" });
-    } catch (error: any) {
-      console.error("[Admin] Remove from suppression list error:", error);
-      res.status(500).json({ error: "Failed to remove from suppression list" });
-    }
-  });
+  // All email preference/suppression endpoints removed - marketing infrastructure removed
 
 
 
