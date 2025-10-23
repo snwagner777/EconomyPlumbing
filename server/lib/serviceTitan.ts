@@ -1352,10 +1352,6 @@ class ServiceTitanAPI {
       contactsCount: 0,
       duration: 0,
     };
-    } catch (error) {
-      console.error('[ServiceTitan Sync] Failed:', error);
-      throw error;
-    }
   }
 
   /**
