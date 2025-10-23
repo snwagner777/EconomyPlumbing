@@ -2970,17 +2970,24 @@ function ReviewsSection() {
                       credentials: 'include',
                       body: JSON.stringify({ accountId, locationId }),
                     });
+                    
+                    if (!response.ok) {
+                      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                      throw new Error(errorData.error || `HTTP ${response.status}`);
+                    }
+                    
                     const data = await response.json();
                     
                     toast({
-                      title: data.success ? "Configuration Saved" : "Error",
-                      description: data.message || data.error,
+                      title: data.success ? "Configuration Saved!" : "Error",
+                      description: data.message || data.error || "Settings updated successfully",
                       variant: data.success ? "default" : "destructive",
                     });
-                  } catch (error) {
+                  } catch (error: any) {
+                    console.error('GMB config error:', error);
                     toast({
                       title: "Error",
-                      description: "Failed to save configuration",
+                      description: error.message || "Failed to save configuration",
                       variant: "destructive",
                     });
                   }
