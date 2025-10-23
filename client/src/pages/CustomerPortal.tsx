@@ -716,8 +716,8 @@ export default function CustomerPortal() {
       }
 
       toast({
-        title: "PDF Request Sent",
-        description: `We've sent the ${type} PDF to ${customerInfo.customerEmail}. Check your email in a few minutes.`,
+        title: "PDF Request Received",
+        description: `We'll email the ${type} PDF to ${customerInfo.customerEmail} by the next business day.`,
       });
     } catch (error) {
       console.error('PDF request failed:', error);
