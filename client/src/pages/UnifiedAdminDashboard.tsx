@@ -161,20 +161,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       description: "SKUs & ServiceTitan setup"
     },
     {
-      title: "SMS Marketing",
-      icon: MessageCircle,
-      section: 'sms-marketing' as AdminSection,
-      onClick: () => setLocation('/admin/sms-marketing'),
-      description: "AI-powered SMS campaigns"
-    },
-    {
-      title: "Marketing Overview",
-      icon: BarChart3,
-      section: 'marketing-overview' as AdminSection,
-      onClick: () => setLocation('/admin/marketing-overview'),
-      description: "Cross-channel analytics"
-    },
-    {
       title: "Commercial Customers",
       icon: Building2,
       section: 'commercial-customers' as AdminSection,
@@ -197,18 +183,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Users,
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
-    },
-    {
-      title: "Customer Segments",
-      icon: Users,
-      section: 'segments' as AdminSection,
-      description: "AI-generated customer groups"
-    },
-    {
-      title: "Email Campaigns",
-      icon: Mail,
-      section: 'campaigns' as AdminSection,
-      description: "Marketing automation campaigns"
     },
     {
       title: "Audience Logs",
