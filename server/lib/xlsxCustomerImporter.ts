@@ -1,6 +1,6 @@
 import XLSX from 'xlsx';
 import { db } from '../db';
-import { serviceTitanCustomers, serviceTitanContacts, customerDataImports } from '@shared/schema';
+import { customersXlsx, contactsXlsx, customerDataImports } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 interface CustomerRow {
@@ -113,10 +113,10 @@ export async function importCustomersFromXLSX(
     await tx.execute(sql`DROP TABLE IF EXISTS staging_contacts`);
     
     await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_customers (LIKE service_titan_customers INCLUDING ALL) ON COMMIT DROP
+      CREATE TEMPORARY TABLE staging_customers (LIKE customers_xlsx INCLUDING ALL) ON COMMIT DROP
     `);
     await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_contacts (LIKE service_titan_contacts INCLUDING ALL) ON COMMIT DROP
+      CREATE TEMPORARY TABLE staging_contacts (LIKE contacts_xlsx INCLUDING ALL) ON COMMIT DROP
     `);
     
     // Step 2: Parse and insert into staging tables
@@ -243,22 +243,22 @@ export async function importCustomersFromXLSX(
 
     // Step 4: Atomically swap staging → production
     // CRITICAL: This is the only point where production data changes
-    console.log('[XLSX Import] Swapping staging → production tables...');
+    console.log('[XLSX Import] Swapping staging → production tables (XLSX tables)...');
     
-    await tx.execute(sql`TRUNCATE TABLE service_titan_contacts CASCADE`);
-    await tx.execute(sql`TRUNCATE TABLE service_titan_customers CASCADE`);
+    await tx.execute(sql`TRUNCATE TABLE contacts_xlsx CASCADE`);
+    await tx.execute(sql`TRUNCATE TABLE customers_xlsx CASCADE`);
     
     await tx.execute(sql`
-      INSERT INTO service_titan_customers 
+      INSERT INTO customers_xlsx 
       SELECT * FROM staging_customers
     `);
     
     await tx.execute(sql`
-      INSERT INTO service_titan_contacts 
+      INSERT INTO contacts_xlsx 
       SELECT * FROM staging_contacts
     `);
     
-    console.log('[XLSX Import] Production tables updated successfully');
+    console.log('[XLSX Import] XLSX production tables updated successfully');
 
     const duration = Date.now() - startTime;
 
