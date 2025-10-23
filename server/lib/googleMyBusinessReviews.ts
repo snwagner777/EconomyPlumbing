@@ -42,12 +42,12 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
       });
     }
 
-    // Get account/location IDs from environment variables (more secure)
-    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
-    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    // Get account/location IDs from the token (stored during OAuth)
+    const accountId = tokenData.accountId;
+    const locationId = tokenData.locationId;
     
     if (!accountId || !locationId) {
-      console.error('[GMB] Missing GOOGLE_MY_BUSINESS_ACCOUNT_ID or GOOGLE_MY_BUSINESS_LOCATION_ID environment variables');
+      console.error('[GMB] Missing accountId or locationId in OAuth token. Please complete OAuth setup.');
       return [];
     }
 
@@ -124,12 +124,12 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
       return [];
     }
     
-    // Get account/location IDs from environment variables
-    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
-    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    // Get account/location IDs from the token (stored during OAuth)
+    const accountId = tokenData.accountId;
+    const locationId = tokenData.locationId;
     
     if (!accountId || !locationId) {
-      console.log('[GMB] Missing account/location IDs in environment variables');
+      console.log('[GMB] Missing accountId or locationId in OAuth token');
       return [];
     }
 
@@ -238,12 +238,12 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
       return false;
     }
     
-    // Get account/location IDs from environment variables
-    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
-    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    // Get account/location IDs from the token (stored during OAuth)
+    const accountId = tokenData.accountId;
+    const locationId = tokenData.locationId;
     
     if (!accountId || !locationId) {
-      console.error('[GMB] Missing account/location IDs in environment variables');
+      console.error('[GMB] Missing accountId or locationId in OAuth token');
       return false;
     }
 
