@@ -3038,11 +3038,27 @@ function ReviewsSection() {
               <p className="text-sm text-green-700 dark:text-green-300 font-medium mb-2">
                 How to find your IDs:
               </p>
-              <ol className="text-xs text-green-600 dark:text-green-400 space-y-1 list-decimal list-inside">
+              <ol className="text-xs text-green-600 dark:text-green-400 space-y-2 list-decimal list-inside">
                 <li>Go to your <a href="https://business.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google Business Profile</a></li>
                 <li>Click on your business location</li>
-                <li>Look at the URL - it contains both IDs: accounts/[ACCOUNT_ID]/locations/[LOCATION_ID]</li>
-                <li>Copy and paste those numbers into the fields above</li>
+                <li className="ml-4">
+                  Look at the URL in your browser. It will be in one of these formats:
+                  <div className="mt-1 p-2 bg-green-100 dark:bg-green-900 rounded text-[10px] font-mono">
+                    <strong>New format:</strong><br/>
+                    business.google.com/n/<span className="bg-yellow-200 dark:bg-yellow-700 px-1">9046246603261341847</span>/profile?fid=<span className="bg-blue-200 dark:bg-blue-700 px-1">14124492253644107589</span>
+                    <br/><br/>
+                    <strong>Old format:</strong><br/>
+                    business.google.com/accounts/<span className="bg-yellow-200 dark:bg-yellow-700 px-1">123456789012345678</span>/locations/<span className="bg-blue-200 dark:bg-blue-700 px-1">987654321098765432</span>
+                  </div>
+                </li>
+                <li className="ml-4">
+                  Copy the highlighted numbers:
+                  <ul className="mt-1 space-y-1 list-disc list-inside ml-4">
+                    <li><strong>Account ID:</strong> First number (yellow highlight) or number after /n/</li>
+                    <li><strong>Location ID:</strong> Second number (blue highlight) or fid= parameter</li>
+                  </ul>
+                </li>
+                <li>Paste those numbers into the fields above</li>
               </ol>
             </div>
           </CardContent>
