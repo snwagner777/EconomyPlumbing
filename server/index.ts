@@ -428,8 +428,8 @@ async function refreshReviewsPeriodically() {
   // Start photo cleanup job (runs daily at 3am to delete unused photos older than 60 days)
   startPhotoCleanupJob();
   
-  // Start ServiceTitan customer sync (runs daily at 3am)
-  startServiceTitanSync();
+  // ServiceTitan customer sync DISABLED - replaced with hourly XLSX import via Mailgun email
+  // startServiceTitanSync();
   
   // Start GMB automation (fetches reviews every 6 hours, auto-replies every 15 minutes)
   startGMBAutomation();
