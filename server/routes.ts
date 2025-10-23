@@ -3989,6 +3989,43 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     }
   });
 
+  // Update Google My Business account/location IDs (admin only)
+  app.post("/api/admin/gmb-config", requireAdmin, async (req, res) => {
+    try {
+      const { accountId, locationId } = req.body;
+      
+      if (!accountId || !locationId) {
+        return res.status(400).json({ error: "Both account ID and location ID are required" });
+      }
+      
+      console.log(`[Admin] Updating GMB config: accountId=${accountId}, locationId=${locationId}`);
+      
+      // Update the existing OAuth token with account/location IDs
+      const updated = await db.update(googleOAuthTokens)
+        .set({
+          accountId,
+          locationId,
+          updatedAt: new Date(),
+        })
+        .where(eq(googleOAuthTokens.service, 'google_my_business'))
+        .returning();
+      
+      if (updated.length === 0) {
+        return res.status(404).json({ error: "No Google OAuth token found. Please connect your Google account first." });
+      }
+      
+      res.json({ 
+        success: true, 
+        message: "Google My Business configuration updated successfully",
+        accountId,
+        locationId
+      });
+    } catch (error: any) {
+      console.error("[Admin] Error updating GMB config:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Manually fetch Google My Business reviews (admin only)
   app.post("/api/admin/fetch-gmb-reviews", requireAdmin, async (req, res) => {
     try {
