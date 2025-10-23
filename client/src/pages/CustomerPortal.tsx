@@ -939,6 +939,36 @@ export default function CustomerPortal() {
     return <Badge variant="outline" data-testid={`badge-status-${status}`}>{status}</Badge>;
   };
 
+  const getExpirationBadge = (estimate: any) => {
+    if (!estimate.expirationStatus) return null;
+    
+    if (estimate.expirationStatus === 'expired') {
+      return (
+        <Badge variant="destructive" className="text-xs">
+          <AlertCircle className="w-3 h-3 mr-1" />
+          Expired
+        </Badge>
+      );
+    }
+    if (estimate.expirationStatus === 'expiring_soon') {
+      return (
+        <Badge variant="secondary" className="text-xs bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+          <Clock className="w-3 h-3 mr-1" />
+          Expires in {estimate.daysUntilExpiration} days
+        </Badge>
+      );
+    }
+    // Valid - show days remaining if less than 30
+    if (estimate.daysUntilExpiration < 30) {
+      return (
+        <Badge variant="outline" className="text-xs">
+          Valid for {estimate.daysUntilExpiration} days
+        </Badge>
+      );
+    }
+    return null;
+  };
+
   return (
     <>
       <SEOHead
@@ -2107,35 +2137,28 @@ export default function CustomerPortal() {
                     </Card>
                   )}
 
-                  {/* Estimates Carousel - Show ALL unsold estimates */}
+                  {/* Open Estimates - Backend already filters for unsold estimates */}
                   {(() => {
-                    // Show ALL estimates that haven't been sold/converted - includes Open, Pending, Sent, Draft, Expired, etc.
-                    const unsoldEstimates = customerData.estimates?.filter(estimate => {
-                      const status = (estimate.status || '').toLowerCase();
-                      // Only filter out truly final states (sold, approved, declined, converted)
-                      return !status.includes('sold') && 
-                             !status.includes('approved') && 
-                             !status.includes('declined') && 
-                             !status.includes('converted');
-                    }) || [];
+                    // Backend now filters for unsold estimates (where soldOn is null)
+                    const openEstimates = customerData.estimates || [];
 
-                    if (unsoldEstimates.length === 0) return null;
+                    if (openEstimates.length === 0) return null;
 
                     return (
                       <Card>
                         <CardHeader>
                           <div className="flex items-center gap-2">
                             <FileText className="w-6 h-6 text-primary" />
-                            <CardTitle>Your Estimates</CardTitle>
+                            <CardTitle>Open Estimates</CardTitle>
                           </div>
                           <CardDescription>
-                            All estimates and quotes for your review
+                            Your pending estimates and quotes (valid for 30 days)
                           </CardDescription>
                         </CardHeader>
                         <CardContent>
                           <div className="overflow-x-auto pb-2">
                             <div className="flex gap-4 min-w-max">
-                              {unsoldEstimates.map((estimate) => (
+                              {openEstimates.map((estimate) => (
                                 <Card
                                   key={estimate.id}
                                   className="w-80 flex-shrink-0 hover-elevate active-elevate-2 cursor-pointer"
@@ -2147,13 +2170,16 @@ export default function CustomerPortal() {
                                 >
                                   <CardContent className="p-4">
                                     <div className="flex items-start justify-between gap-2 mb-3">
-                                      <div>
+                                      <div className="flex-1">
                                         <h4 className="font-semibold">Estimate #{estimate.estimateNumber}</h4>
                                         {estimate.summary && (
                                           <p className="text-sm text-muted-foreground line-clamp-1">{estimate.summary}</p>
                                         )}
                                       </div>
-                                      {getStatusBadge(estimate.status)}
+                                      <div className="flex flex-col gap-1 items-end">
+                                        {getStatusBadge(estimate.status)}
+                                        {getExpirationBadge(estimate)}
+                                      </div>
                                     </div>
                                     <div className="space-y-2 text-sm">
                                       <div className="flex justify-between">
@@ -2636,13 +2662,16 @@ export default function CustomerPortal() {
               {/* Estimate Header */}
               <div className="p-4 bg-muted/30 rounded-lg border">
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
+                  <div className="flex-1">
                     <h3 className="font-semibold text-lg">Estimate #{selectedEstimate.estimateNumber}</h3>
                     {selectedEstimate.summary && (
                       <p className="text-sm text-muted-foreground">{selectedEstimate.summary}</p>
                     )}
                   </div>
-                  {getStatusBadge(selectedEstimate.status)}
+                  <div className="flex flex-col gap-1 items-end">
+                    {getStatusBadge(selectedEstimate.status)}
+                    {getExpirationBadge(selectedEstimate)}
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div>
