@@ -853,6 +853,13 @@ export const customReviews = pgTable("custom_reviews", {
   customerIdIdx: index("custom_reviews_customer_id_idx").on(table.serviceTitanCustomerId),
 }));
 
+export const insertCustomReviewSchema = createInsertSchema(customReviews).omit({
+  id: true,
+  submittedAt: true,
+  moderatedBy: true,
+  moderatedAt: true,
+});
+
 // Review platform links (Google, Facebook, BBB, Yelp)
 export const reviewPlatforms = pgTable("review_platforms", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -913,6 +920,42 @@ export const serviceTitanJobs = pgTable("service_titan_jobs", {
   jobNumberIdx: index("st_jobs_job_number_idx").on(table.jobNumber),
   serviceCategoryIdx: index("st_jobs_service_category_idx").on(table.serviceCategory),
   customerSatisfactionIdx: index("st_jobs_customer_satisfaction_idx").on(table.customerSatisfaction),
+}));
+
+// Sync Watermarks - Tracks incremental sync progress for ServiceTitan API
+export const syncWatermarks = pgTable("sync_watermarks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  syncType: varchar("sync_type").notNull(), // 'customers', 'jobs', etc.
+  lastSuccessfulSyncAt: timestamp("last_successful_sync_at"),
+  lastModifiedOnFetched: timestamp("last_modified_on_fetched"), // Watermark timestamp
+  recordsProcessed: integer("records_processed").notNull().default(0),
+  syncDuration: integer("sync_duration"), // Milliseconds
+  lastError: text("last_error"),
+  lastErrorAt: timestamp("last_error_at"),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+// ServiceTitan Job Forms - Form submissions from jobs (for customer portal)
+export const serviceTitanJobForms = pgTable("service_titan_job_forms", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  formId: bigint("form_id", { mode: 'number' }).notNull(), // ServiceTitan form ID
+  jobId: bigint("job_id", { mode: 'number' }).notNull(), // References serviceTitanJobs.id
+  customerId: integer("customer_id").notNull(), // References serviceTitanCustomers.id
+  formTemplateId: bigint("form_template_id", { mode: 'number' }),
+  formTemplateName: text("form_template_name"),
+  rawFormData: jsonb("raw_form_data").notNull(), // Complete form JSON
+  parsedFields: jsonb("parsed_fields").notNull(), // Normalized key-value pairs
+  technicianNotes: text("technician_notes"),
+  customerConcerns: text("customer_concerns").array(),
+  recommendationsMade: text("recommendations_made").array(),
+  equipmentCondition: text("equipment_condition"),
+  submittedOn: timestamp("submitted_on").notNull(),
+  submittedBy: text("submitted_by"),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  jobIdIdx: index("st_job_forms_job_id_idx").on(table.jobId),
+  customerIdIdx: index("st_job_forms_customer_id_idx").on(table.customerId),
+  formIdIdx: index("st_job_forms_form_id_idx").on(table.formId),
 }));
 
 // Marketing tables removed - all marketing infrastructure has been removed from the system

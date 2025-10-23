@@ -1392,7 +1392,7 @@ class ServiceTitanAPI {
                   `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&page=${page}&pageSize=${pageSize}`,
                   {
                     headers: {
-                      'Authorization': `Bearer ${this.config.accessToken}`,
+                      'Authorization': `Bearer ${this.accessToken}`,
                       'ST-App-Key': this.config.appKey,
                       'Content-Type': 'application/json',
                     },

@@ -119,19 +119,18 @@ export async function startServiceTitanSync(): Promise<void> {
   
   // Run initial full sync on startup
   try {
-    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { serviceTitanCustomers, serviceTitanJobs } = await import('@shared/schema');
     const { db } = await import('../db');
     const { count } = await import('drizzle-orm');
     
     const customerResult = await db.select({ count: count() }).from(serviceTitanCustomers);
     const customerCount = customerResult[0]?.count || 0;
     
-    // ServiceTitan jobs table temporarily removed - will be rebuilt
-    const jobCount = 0;
+    const jobResult = await db.select({ count: count() }).from(serviceTitanJobs);
+    const jobCount = jobResult[0]?.count || 0;
     
     console.log(`[ServiceTitan Sync] 🚀 Starting full data sync...`);
-    console.log(`[ServiceTitan Sync] 📊 Current cache: ${customerCount} customers`);
-    console.log('[ServiceTitan Sync] ⚠️  Jobs sync temporarily disabled - will be rebuilt');
+    console.log(`[ServiceTitan Sync] 📊 Current cache: ${customerCount} customers, ${jobCount} jobs`);
     
     // Run sync without blocking startup
     syncServiceTitanData().catch(error => {
