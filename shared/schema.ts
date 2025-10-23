@@ -926,8 +926,9 @@ export type InsertCustomReview = z.infer<typeof insertCustomReviewSchema>;
 // Review request types removed - will be rebuilt
 export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
 export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
-export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
-export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect;
+// ServiceTitan job types removed - will be rebuilt
+// export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
+// export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect;
 export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 
 
