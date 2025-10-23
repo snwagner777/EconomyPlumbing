@@ -1130,16 +1130,16 @@ class ServiceTitanAPI {
       // Map estimates to display format
       const estimates = result.data || [];
       
-      // NO BACKEND FILTERING - Return ALL estimates and let frontend decide what to show
-      // This allows customers to see all their unsold estimates (Open, Pending, Sent, Draft, Expired, etc.)
-      console.log('[ServiceTitan] Returning all estimates without backend filtering');
+      // Filter for UNSOLD estimates only (where soldOn is null/empty)
+      const unsoldEstimates = estimates.filter((e: any) => !e.soldOn);
+      console.log(`[ServiceTitan] Filtered to ${unsoldEstimates.length} unsold estimates from ${estimates.length} total`);
       
       // Create memoization cache for pricebook items to avoid duplicate API calls
       const pricebookCache = new Map<string, any>();
       
       // Enhance each estimate with pricebook item details
       const enhancedEstimates = await Promise.all(
-        estimates.map(async (estimate: any) => {
+        unsoldEstimates.map(async (estimate: any) => {
           const items = estimate.items || [];
           
           // Fetch pricebook details for each item
@@ -1197,6 +1197,22 @@ class ServiceTitanAPI {
             })
           );
           
+          // Calculate expiration status
+          const createdDate = new Date(estimate.createdOn || estimate.createdDate);
+          const expiresDate = estimate.expiresOn || estimate.expirationDate 
+            ? new Date(estimate.expiresOn || estimate.expirationDate)
+            : new Date(createdDate.getTime() + (30 * 24 * 60 * 60 * 1000)); // 30 days from creation
+          
+          const now = new Date();
+          const daysUntilExpiration = Math.ceil((expiresDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
+          
+          let expirationStatus = 'valid';
+          if (daysUntilExpiration < 0) {
+            expirationStatus = 'expired';
+          } else if (daysUntilExpiration <= 7) {
+            expirationStatus = 'expiring_soon';
+          }
+          
           return {
             id: estimate.id,
             estimateNumber: estimate.number || estimate.estimateNumber || estimate.id?.toString(),
@@ -1206,7 +1222,9 @@ class ServiceTitanAPI {
               ? estimate.status.name 
               : (estimate.status || 'Open'),
             createdOn: estimate.createdOn || estimate.createdDate,
-            expiresOn: estimate.expiresOn || estimate.expirationDate,
+            expiresOn: expiresDate.toISOString(),
+            expirationStatus,
+            daysUntilExpiration,
             jobId: estimate.jobId,
             jobNumber: estimate.job?.jobNumber || null,
             summary: estimate.name || estimate.summary || `Estimate #${estimate.number || estimate.id}`,
