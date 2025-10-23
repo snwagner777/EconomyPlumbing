@@ -242,7 +242,6 @@ function Router() {
       <Route path="/admin/oauth-login" component={OAuthAdminLogin} />
       <Route path="/admin/login">{() => <Redirect to="/admin/oauth-login" />}</Route>
       <Route path="/admin/dashboard" component={AdminDashboard} />
-      <Route path="/admin/reviews" component={SuccessStoriesAdmin} />
       <Route path="/admin/success-stories" component={SuccessStoriesAdmin} />
       <Route path="/admin/tracking-numbers" component={TrackingNumbersAdmin} />
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />
