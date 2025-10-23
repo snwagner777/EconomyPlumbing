@@ -2708,6 +2708,20 @@ function ReviewsSection() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isPosting, setIsPosting] = useState(false);
 
+  // Check Google OAuth status
+  const { data: oauthStatus, isLoading: isLoadingOAuth, isError: isErrorOAuth } = useQuery<{ isAuthenticated: boolean }>({
+    queryKey: ['/api/oauth/status'],
+    queryFn: async () => {
+      const response = await fetch('/api/oauth/status', {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch OAuth status');
+      }
+      return response.json();
+    },
+  });
+
   // Fetch Google Reviews (includes Google, Facebook, Yelp via source field)
   const { data: googleReviewsData, isLoading: loadingGoogle } = useQuery<{ reviews: any[] }>({
     queryKey: ['/api/admin/google-reviews'],
@@ -2852,6 +2866,53 @@ function ReviewsSection() {
 
   return (
     <div className="space-y-6">
+      {/* Google Connection Status */}
+      {!isLoadingOAuth && !isErrorOAuth && !oauthStatus?.isAuthenticated && (
+        <Card className="border-orange-500/50 bg-orange-50 dark:bg-orange-950/20">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-orange-500/20 rounded-lg">
+                  <Settings className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-orange-900 dark:text-orange-100">Google Business Profile Not Connected</h3>
+                  <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                    Connect your Google Business Profile to post AI-generated replies directly to Google reviews
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={() => window.location.href = '/api/oauth/init'}
+                className="bg-orange-600 hover:bg-orange-700"
+                data-testid="button-connect-google"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Connect Google
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!isLoadingOAuth && !isErrorOAuth && oauthStatus?.isAuthenticated && (
+        <Card className="border-green-500/50 bg-green-50 dark:bg-green-950/20">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-green-900 dark:text-green-100">Google Business Profile Connected</h3>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  AI replies will be posted directly to your Google reviews
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
