@@ -36,8 +36,9 @@ const uploadMiddleware = multer({
     }
   },
 });
-import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
-import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
+// DataForSEO imports disabled - now using GMB API automation
+// import { fetchDataForSeoReviews } from "./lib/dataForSeoReviews";
+// import { fetchDataForSeoYelpReviews } from "./lib/dataForSeoYelpReviews";
 import { fetchFacebookReviews } from "./lib/facebookReviews";
 import { notifySearchEnginesNewPage } from "./lib/sitemapPing";
 import { processBlogImage } from "./lib/blogImageProcessor";
@@ -1500,9 +1501,9 @@ ${rssItems}
       const { serviceTitanCustomers } = await import('@shared/schema');
       const { desc } = await import('drizzle-orm');
       
-      console.log('[Customers Leaderboard] Fetching top customers from database...');
+      console.log('[Customers Leaderboard] Fetching top 5 customers from database...');
       
-      // Get top 30 customers by job count (show more for diversity)
+      // Get top 5 customers by job count
       const topCustomers = await db
         .select({
           name: serviceTitanCustomers.name,
@@ -1511,7 +1512,7 @@ ${rssItems}
         .from(serviceTitanCustomers)
         .where(sql`${serviceTitanCustomers.jobCount} > 0`)
         .orderBy(desc(serviceTitanCustomers.jobCount))
-        .limit(30);
+        .limit(5);
 
       if (!topCustomers.length) {
         return res.json({ leaderboard: [] });
@@ -1954,13 +1955,14 @@ ${rssItems}
         const facebookPageId = process.env.FACEBOOK_PAGE_ID;
         const facebookAccessToken = process.env.FACEBOOK_ACCESS_TOKEN;
 
-        // 1. Fetch ALL Google reviews from DataForSEO (550+ reviews)
-        if (placeId) {
-          console.log('[Reviews API] Fetching Google reviews from DataForSEO...');
-          const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
-          console.log(`[Reviews API] DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
-          allReviews.push(...dataForSeoReviews);
-        }
+        // 1. Google reviews now fetched via GMB API automation (every 6 hours)
+        // DataForSEO no longer needed - historical data preserved in database
+        // if (placeId) {
+        //   console.log('[Reviews API] Fetching Google reviews from DataForSEO...');
+        //   const dataForSeoReviews = await fetchDataForSeoReviews(placeId);
+        //   console.log(`[Reviews API] DataForSEO returned ${dataForSeoReviews.length} Google reviews`);
+        //   allReviews.push(...dataForSeoReviews);
+        // }
 
         // 2. Fetch Facebook reviews
         if (facebookPageId && facebookAccessToken) {
@@ -1970,12 +1972,12 @@ ${rssItems}
           allReviews.push(...fbReviews);
         }
 
-        // 3. Fetch Yelp reviews from DataForSEO
-        const yelpAlias = 'economy-plumbing-services-austin-3'; // Yelp business alias
-        console.log('[Reviews API] Fetching Yelp reviews from DataForSEO...');
-        const yelpReviews = await fetchDataForSeoYelpReviews(yelpAlias);
-        console.log(`[Reviews API] DataForSEO returned ${yelpReviews.length} Yelp reviews`);
-        allReviews.push(...yelpReviews);
+        // 3. Yelp reviews - DataForSEO disabled (not needed for current requirements)
+        // const yelpAlias = 'economy-plumbing-services-austin-3';
+        // console.log('[Reviews API] Fetching Yelp reviews from DataForSEO...');
+        // const yelpReviews = await fetchDataForSeoYelpReviews(yelpAlias);
+        // console.log(`[Reviews API] DataForSEO returned ${yelpReviews.length} Yelp reviews`);
+        // allReviews.push(...yelpReviews);
 
         // 4. Fetch new Google reviews from Places API (max 5, newest)
         console.log('[Reviews API] Fetching newest Google reviews from Places API...');

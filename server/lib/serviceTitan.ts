@@ -1368,9 +1368,16 @@ class ServiceTitanAPI {
         let customersWithJobs = 0;
         let totalJobsProcessed = 0;
         let highValueCustomers: { id: number; name: string; jobCount: number }[] = [];
+        let skippedInactive = 0;
         
         for (let idx = 0; idx < customers.length; idx++) {
           const customer = customers[idx];
+          
+          // SKIP INACTIVE/DEACTIVATED CUSTOMERS - only sync active customers
+          if (customer.active === false) {
+            skippedInactive++;
+            continue;
+          }
           
           // Show progress every 10 customers
           if ((idx + 1) % 10 === 0) {
@@ -1512,12 +1519,15 @@ class ServiceTitanAPI {
           }
         }
 
-        // Log page summary if we found high-value customers
-        if (highValueCustomers.length > 0) {
+        // Log page summary if we found high-value customers or skipped inactive
+        if (highValueCustomers.length > 0 || skippedInactive > 0) {
           console.log(`[ServiceTitan Sync] Page ${page - 1} Summary:`);
           console.log(`  - Customers with jobs: ${customersWithJobs}/${customers.length}`);
           console.log(`  - Total jobs counted: ${totalJobsProcessed}`);
           console.log(`  - High-value customers (100+ jobs): ${highValueCustomers.length}`);
+          if (skippedInactive > 0) {
+            console.log(`  - Skipped inactive/deactivated: ${skippedInactive}`);
+          }
           
           // Show top 3 high-value customers from this page
           const topCustomers = highValueCustomers.slice(0, 3);

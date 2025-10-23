@@ -22,7 +22,7 @@ export function CustomerWallOfFame() {
         <div className="text-center space-y-6">
           <Skeleton className="h-12 w-3/4 mx-auto" />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-            {[...Array(10)].map((_, i) => (
+            {[...Array(5)].map((_, i) => (
               <Skeleton key={i} className="h-32 w-full rounded-lg" />
             ))}
           </div>
@@ -150,22 +150,6 @@ export function CustomerWallOfFame() {
                   <Badge variant="outline" className="text-xs" data-testid={`badge-job-count-${index}`}>
                     {customer.jobCount} {customer.jobCount === 1 ? 'Service' : 'Services'}
                   </Badge>
-                </div>
-
-                {/* Hover Tooltip */}
-                <div className="
-                  absolute -bottom-16 left-1/2 -translate-x-1/2
-                  opacity-0 group-hover:opacity-100
-                  transition-opacity duration-200
-                  pointer-events-none
-                  z-20
-                ">
-                  <div className="bg-popover text-popover-foreground px-3 py-2 rounded-lg shadow-lg border text-xs whitespace-nowrap">
-                    <p className="font-semibold">{displayName}</p>
-                    <p className="text-muted-foreground">
-                      {customer.jobCount} completed service{customer.jobCount !== 1 ? 's' : ''}
-                    </p>
-                  </div>
                 </div>
               </div>
             );
