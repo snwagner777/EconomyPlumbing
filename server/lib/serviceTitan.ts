@@ -1343,7 +1343,18 @@ class ServiceTitanAPI {
         }
 
         // Process each customer
-        for (const customer of customers) {
+        let customersWithJobs = 0;
+        let totalJobsProcessed = 0;
+        let highValueCustomers: { id: number; name: string; jobCount: number }[] = [];
+        
+        for (let idx = 0; idx < customers.length; idx++) {
+          const customer = customers[idx];
+          
+          // Show progress every 10 customers
+          if ((idx + 1) % 10 === 0) {
+            console.log(`[ServiceTitan Sync] Processing customer ${idx + 1}/${customers.length}...`);
+          }
+          
           try {
             // Fetch ALL jobs for this customer to get accurate count
             let jobCount = 0;
@@ -1379,7 +1390,7 @@ class ServiceTitanAPI {
                   
                   // Safety check to prevent infinite loops
                   if (page > 50) { // Max 5000 jobs per customer (50 pages * 100)
-                    console.log(`[ServiceTitan Sync] Customer ${customer.id} has over 5000 jobs, stopping pagination`);
+                    console.log(`[ServiceTitan Sync] ⚠️ Customer ${customer.id} has over 5000 jobs, stopping pagination`);
                     break;
                   }
                 } else {
@@ -1388,9 +1399,16 @@ class ServiceTitanAPI {
                 }
               }
               
+              // Track statistics
+              if (jobCount > 0) {
+                customersWithJobs++;
+                totalJobsProcessed += jobCount;
+              }
+              
               // Log progress for customers with many jobs
               if (jobCount > 100) {
-                console.log(`[ServiceTitan Sync] Customer ${customer.id} (${customer.name}): ${jobCount} completed jobs`);
+                console.log(`[ServiceTitan Sync] 🌟 High-value customer: ${customer.name} (ID: ${customer.id}) - ${jobCount} completed jobs`);
+                highValueCustomers.push({ id: customer.id, name: customer.name || 'Unknown', jobCount });
               }
               
             } catch (jobError) {
@@ -1472,6 +1490,20 @@ class ServiceTitanAPI {
           }
         }
 
+        // Log page summary if we found high-value customers
+        if (highValueCustomers.length > 0) {
+          console.log(`[ServiceTitan Sync] Page ${page - 1} Summary:`);
+          console.log(`  - Customers with jobs: ${customersWithJobs}/${customers.length}`);
+          console.log(`  - Total jobs counted: ${totalJobsProcessed}`);
+          console.log(`  - High-value customers (100+ jobs): ${highValueCustomers.length}`);
+          
+          // Show top 3 high-value customers from this page
+          const topCustomers = highValueCustomers.slice(0, 3);
+          topCustomers.forEach(c => {
+            console.log(`    • ${c.name}: ${c.jobCount} jobs`);
+          });
+        }
+        
         page++;
         
         // Update heartbeat to prevent stale lock detection
