@@ -10,7 +10,19 @@ export class GoogleMyBusinessAuth {
   private constructor() {
     const clientId = process.env.GOOGLE_OAUTH_CLIENT_ID;
     const clientSecret = process.env.GOOGLE_OAUTH_CLIENT_SECRET;
-    const redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI || 'http://localhost:5000/api/oauth/callback';
+    
+    // Auto-detect production URL from Replit environment
+    let redirectUri = process.env.GOOGLE_OAUTH_REDIRECT_URI;
+    if (!redirectUri) {
+      const replitDomains = process.env.REPLIT_DOMAINS;
+      if (replitDomains) {
+        // Use the first production domain
+        const domain = replitDomains.split(',')[0];
+        redirectUri = `https://${domain}/api/oauth/callback`;
+      } else {
+        redirectUri = 'http://localhost:5000/api/oauth/callback';
+      }
+    }
 
     if (!clientId || !clientSecret) {
       throw new Error('Missing Google OAuth credentials');
