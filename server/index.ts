@@ -14,6 +14,7 @@ import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { getReferralProcessor } from "./lib/referralProcessor";
+import { startGMBAutomation } from "./lib/gmbAutomation";
 // Marketing schedulers removed - all marketing infrastructure has been removed
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
@@ -429,6 +430,9 @@ async function refreshReviewsPeriodically() {
   
   // Start ServiceTitan customer sync (runs daily at 3am)
   startServiceTitanSync();
+  
+  // Start GMB automation (fetches reviews every 6 hours, auto-replies every 15 minutes)
+  startGMBAutomation();
   
   // Marketing schedulers removed - all marketing infrastructure has been removed
   

@@ -42,8 +42,12 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
       });
     }
 
-    if (!tokenData.accountId || !tokenData.locationId) {
-      console.error('[GMB] Missing account ID or location ID in stored token');
+    // Get account/location IDs from environment variables (more secure)
+    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
+    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    
+    if (!accountId || !locationId) {
+      console.error('[GMB] Missing GOOGLE_MY_BUSINESS_ACCOUNT_ID or GOOGLE_MY_BUSINESS_LOCATION_ID environment variables');
       return [];
     }
 
@@ -57,10 +61,6 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
     if (!token) {
       throw new Error('Failed to get access token');
     }
-    
-    // Remove 'accounts/' and 'locations/' prefixes if they exist (stored with prefixes)
-    const accountId = tokenData.accountId.replace('accounts/', '');
-    const locationId = tokenData.locationId.replace('locations/', '');
     const url = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews?pageSize=50`;
     
     const reviewsResponse = await fetch(url, {
@@ -119,8 +119,17 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
   try {
     const tokenData = await storage.getGoogleOAuthToken('google_my_business');
     
-    if (!tokenData || !tokenData.accountId || !tokenData.locationId) {
-      console.log('[GMB] No OAuth credentials available');
+    if (!tokenData) {
+      console.log('[GMB] No OAuth token available');
+      return [];
+    }
+    
+    // Get account/location IDs from environment variables
+    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
+    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    
+    if (!accountId || !locationId) {
+      console.log('[GMB] Missing account/location IDs in environment variables');
       return [];
     }
 
@@ -159,10 +168,6 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
     if (!token) {
       throw new Error('Failed to get access token');
     }
-
-    // Remove 'accounts/' and 'locations/' prefixes if they exist (stored with prefixes)
-    const accountId = tokenData.accountId.replace('accounts/', '');
-    const locationId = tokenData.locationId.replace('locations/', '');
     
     // Paginate through all reviews
     do {
@@ -228,8 +233,17 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
   try {
     const tokenData = await storage.getGoogleOAuthToken('google_my_business');
     
-    if (!tokenData || !tokenData.accountId || !tokenData.locationId) {
-      console.error('[GMB] No OAuth credentials available to post reply');
+    if (!tokenData) {
+      console.error('[GMB] No OAuth token available to post reply');
+      return false;
+    }
+    
+    // Get account/location IDs from environment variables
+    const accountId = process.env.GOOGLE_MY_BUSINESS_ACCOUNT_ID;
+    const locationId = process.env.GOOGLE_MY_BUSINESS_LOCATION_ID;
+    
+    if (!accountId || !locationId) {
+      console.error('[GMB] Missing account/location IDs in environment variables');
       return false;
     }
 
@@ -269,10 +283,6 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     if (!token) {
       throw new Error('Failed to get access token');
     }
-
-    // Remove 'accounts/' and 'locations/' prefixes if they exist
-    const accountId = tokenData.accountId.replace('accounts/', '');
-    const locationId = tokenData.locationId.replace('locations/', '');
     
     // Post reply using Google My Business API v4
     const url = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${reviewId}/reply`;

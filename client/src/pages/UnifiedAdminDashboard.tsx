@@ -2897,169 +2897,17 @@ function ReviewsSection() {
 
       {!isLoadingOAuth && !isErrorOAuth && oauthStatus?.isAuthenticated && (
         <Card className="border-green-500/50 bg-green-50 dark:bg-green-950/20">
-          <CardContent className="p-6 space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-500/20 rounded-lg">
-                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-green-900 dark:text-green-100">Google Business Profile Connected</h3>
-                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                    Configure your account/location IDs below to fetch reviews
-                  </p>
-                </div>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
-            </div>
-
-            {/* Configuration Form */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-green-200 dark:border-green-800">
-              <div>
-                <label className="text-sm font-medium text-green-900 dark:text-green-100 block mb-2">
-                  Account ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., 123456789012345678"
-                  className="w-full px-3 py-2 border border-green-300 dark:border-green-700 rounded-md bg-white dark:bg-green-950 text-green-900 dark:text-green-100"
-                  data-testid="input-gmb-account-id"
-                  id="gmb-account-id"
-                />
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                  Find this in your Google My Business dashboard
+              <div className="flex-1">
+                <h3 className="font-semibold text-green-900 dark:text-green-100">Google Business Profile - Automated</h3>
+                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                  Reviews are fetched automatically every 6 hours. AI-powered replies are generated and posted automatically for new reviews.
                 </p>
               </div>
-
-              <div>
-                <label className="text-sm font-medium text-green-900 dark:text-green-100 block mb-2">
-                  Location ID
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., 987654321098765432"
-                  className="w-full px-3 py-2 border border-green-300 dark:border-green-700 rounded-md bg-white dark:bg-green-950 text-green-900 dark:text-green-100"
-                  data-testid="input-gmb-location-id"
-                  id="gmb-location-id"
-                />
-                <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-                  Your business location's unique identifier
-                </p>
-              </div>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-3 pt-2">
-              <Button
-                onClick={async () => {
-                  const accountId = (document.getElementById('gmb-account-id') as HTMLInputElement)?.value;
-                  const locationId = (document.getElementById('gmb-location-id') as HTMLInputElement)?.value;
-                  
-                  if (!accountId || !locationId) {
-                    toast({
-                      title: "Error",
-                      description: "Please enter both Account ID and Location ID",
-                      variant: "destructive",
-                    });
-                    return;
-                  }
-                  
-                  try {
-                    const response = await fetch('/api/admin/gmb-config', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      credentials: 'include',
-                      body: JSON.stringify({ accountId, locationId }),
-                    });
-                    
-                    if (!response.ok) {
-                      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                      throw new Error(errorData.error || `HTTP ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    toast({
-                      title: data.success ? "Configuration Saved!" : "Error",
-                      description: data.message || data.error || "Settings updated successfully",
-                      variant: data.success ? "default" : "destructive",
-                    });
-                  } catch (error: any) {
-                    console.error('GMB config error:', error);
-                    toast({
-                      title: "Error",
-                      description: error.message || "Failed to save configuration",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="bg-blue-600 hover:bg-blue-700"
-                data-testid="button-save-gmb-config"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Save Configuration
-              </Button>
-
-              <Button
-                onClick={async () => {
-                  try {
-                    const response = await fetch('/api/admin/fetch-gmb-reviews', {
-                      method: 'POST',
-                      credentials: 'include',
-                    });
-                    const data = await response.json();
-                    
-                    toast({
-                      title: data.success ? "Success" : "Error",
-                      description: data.message || data.error,
-                      variant: data.success ? "default" : "destructive",
-                    });
-                    
-                    if (data.success) {
-                      queryClient.invalidateQueries({ queryKey: ['/api/admin/google-reviews'] });
-                    }
-                  } catch (error) {
-                    toast({
-                      title: "Error",
-                      description: "Failed to fetch GMB reviews",
-                      variant: "destructive",
-                    });
-                  }
-                }}
-                className="bg-green-600 hover:bg-green-700"
-                data-testid="button-fetch-gmb-reviews"
-              >
-                <Settings className="w-4 h-4 mr-2" />
-                Fetch GMB Reviews
-              </Button>
-            </div>
-
-            {/* Help Text */}
-            <div className="pt-4 border-t border-green-200 dark:border-green-800">
-              <p className="text-sm text-green-700 dark:text-green-300 font-medium mb-2">
-                How to find your IDs:
-              </p>
-              <ol className="text-xs text-green-600 dark:text-green-400 space-y-2 list-decimal list-inside">
-                <li>Go to your <a href="https://business.google.com" target="_blank" rel="noopener noreferrer" className="underline">Google Business Profile</a></li>
-                <li>Click on your business location</li>
-                <li className="ml-4">
-                  Look at the URL in your browser. It will be in one of these formats:
-                  <div className="mt-1 p-2 bg-green-100 dark:bg-green-900 rounded text-[10px] font-mono">
-                    <strong>New format:</strong><br/>
-                    business.google.com/n/<span className="bg-yellow-200 dark:bg-yellow-700 px-1">9046246603261341847</span>/profile?fid=<span className="bg-blue-200 dark:bg-blue-700 px-1">14124492253644107589</span>
-                    <br/><br/>
-                    <strong>Old format:</strong><br/>
-                    business.google.com/accounts/<span className="bg-yellow-200 dark:bg-yellow-700 px-1">123456789012345678</span>/locations/<span className="bg-blue-200 dark:bg-blue-700 px-1">987654321098765432</span>
-                  </div>
-                </li>
-                <li className="ml-4">
-                  Copy the highlighted numbers:
-                  <ul className="mt-1 space-y-1 list-disc list-inside ml-4">
-                    <li><strong>Account ID:</strong> First number (yellow highlight) or number after /n/</li>
-                    <li><strong>Location ID:</strong> Second number (blue highlight) or fid= parameter</li>
-                  </ul>
-                </li>
-                <li>Paste those numbers into the fields above</li>
-              </ol>
             </div>
           </CardContent>
         </Card>
