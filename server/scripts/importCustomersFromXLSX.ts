@@ -75,94 +75,115 @@ async function importCustomers() {
 
   console.log(`[XLSX Import] Found ${rows.length} customers to import`);
 
-  // Clear existing data
-  console.log('[XLSX Import] Clearing existing customer and contact data...');
-  await db.delete(serviceTitanContacts);
-  await db.delete(serviceTitanCustomers);
-  console.log('[XLSX Import] Existing data cleared');
+  // Step 1: Clear all existing data using TRUNCATE (faster and more reliable)
+  console.log('[XLSX Import] Truncating existing data...');
+  await db.execute(sql`TRUNCATE TABLE service_titan_contacts CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE service_titan_customers CASCADE`);
+  console.log('[XLSX Import] Database cleared');
 
+  const BATCH_SIZE = 500; // Larger batches for bulk insert
   let imported = 0;
   let errors = 0;
 
-  for (const row of rows) {
-    try {
-      const customerId = row['Customer ID'];
-      if (!customerId) {
-        console.warn('[XLSX Import] Skipping row with no Customer ID');
-        continue;
-      }
+  // Step 2: Bulk insert customers in large batches
+  for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    const batch = rows.slice(i, i + BATCH_SIZE);
+    
+    const customerBatch = [];
+    
+    for (const row of batch) {
+      try {
+        const customerId = row['Customer ID'];
+        // Skip empty rows
+        if (!customerId || customerId === '') continue;
 
-      const address = parseAddress(row['Full Address']);
-      const phone = row['Phone Number'];
-      const email = row['Email'];
-      
-      // Convert lifetime revenue from dollars to cents
-      const lifetimeRevenue = Math.round((row['Customers Lifetime Revenue'] || 0) * 100);
+        const address = parseAddress(row['Full Address']);
+        const phone = row['Phone Number'];
+        const email = row['Email'];
+        const lifetimeRevenue = Math.round((row['Customers Lifetime Revenue'] || 0) * 100);
 
-      // Insert customer
-      await db.insert(serviceTitanCustomers).values({
-        id: customerId,
-        name: row['Customer Name'] || 'Unknown',
-        type: row['Type'] || 'Residential',
-        email: email || null,
-        phone: phone || null,
-        mobilePhone: null, // Will be populated from contacts if available
-        street: address.street,
-        city: address.city,
-        state: address.state,
-        zip: address.zip,
-        active: true,
-        balance: '0.00',
-        jobCount: row['Lifetime Jobs Completed'] || 0,
-        lastServiceDate: row['Last Job Completed'] ? new Date(row['Last Job Completed']) : null,
-        lastServiceType: null,
-        lifetimeValue: lifetimeRevenue,
-        customerTags: [],
-        preferredContactMethod: null,
-        lastSyncedAt: new Date(),
-      });
-
-      // Insert contacts (phone and email)
-      const contacts = [];
-      
-      if (phone) {
-        contacts.push({
-          customerId: customerId,
-          contactType: 'Phone',
-          value: phone,
-          normalizedValue: normalizePhone(phone) || phone,
-          isPrimary: true,
+        customerBatch.push({
+          id: customerId,
+          name: row['Customer Name'] || 'Unknown',
+          type: row['Type'] || 'Residential',
+          email: email || null,
+          phone: phone || null,
+          mobilePhone: null,
+          street: address.street,
+          city: address.city,
+          state: address.state,
+          zip: address.zip,
+          active: true,
+          balance: '0.00',
+          jobCount: row['Lifetime Jobs Completed'] || 0,
+          lastServiceDate: row['Last Job Completed'] ? new Date(row['Last Job Completed']) : null,
+          lastServiceType: null,
+          lifetimeValue: lifetimeRevenue,
+          customerTags: [],
+          preferredContactMethod: null,
+          lastSyncedAt: new Date(),
         });
+
+      } catch (error: any) {
+        errors++;
+        console.error(`[XLSX Import] Error processing row:`, error.message);
       }
-
-      if (email) {
-        contacts.push({
-          customerId: customerId,
-          contactType: 'Email',
-          value: email,
-          normalizedValue: normalizeEmail(email) || email,
-          isPrimary: true,
-        });
-      }
-
-      if (contacts.length > 0) {
-        await db.insert(serviceTitanContacts).values(contacts);
-      }
-
-      imported++;
-
-      if (imported % 1000 === 0) {
-        console.log(`[XLSX Import] Progress: ${imported}/${rows.length} customers imported`);
-      }
-
-    } catch (error: any) {
-      errors++;
-      console.error(`[XLSX Import] Error importing customer ${row['Customer ID']}:`, error.message);
     }
+
+    // Bulk insert this batch of customers (skip conflicts just in case)
+    if (customerBatch.length > 0) {
+      await db.insert(serviceTitanCustomers)
+        .values(customerBatch)
+        .onConflictDoNothing();
+      imported += customerBatch.length;
+    }
+
+    console.log(`[XLSX Import] Progress: ${Math.min(i + BATCH_SIZE, rows.length)}/${rows.length} customers inserted`);
+  }
+
+  console.log('[XLSX Import] Customers imported. Now inserting contacts...');
+
+  // Step 3: Bulk insert contacts
+  const contactBatch = [];
+  for (const row of rows) {
+    const customerId = row['Customer ID'];
+    if (!customerId) continue;
+
+    const phone = row['Phone Number'];
+    const email = row['Email'];
+
+    if (phone) {
+      contactBatch.push({
+        customerId: customerId,
+        contactType: 'Phone',
+        value: phone,
+        normalizedValue: normalizePhone(phone) || phone,
+        isPrimary: true,
+      });
+    }
+
+    if (email) {
+      contactBatch.push({
+        customerId: customerId,
+        contactType: 'Email',
+        value: email,
+        normalizedValue: normalizeEmail(email) || email,
+        isPrimary: true,
+      });
+    }
+  }
+
+  // Insert all contacts in one go (or in chunks if too large)
+  const CONTACT_BATCH_SIZE = 1000;
+  for (let i = 0; i < contactBatch.length; i += CONTACT_BATCH_SIZE) {
+    const chunk = contactBatch.slice(i, i + CONTACT_BATCH_SIZE);
+    await db.insert(serviceTitanContacts).values(chunk);
+    console.log(`[XLSX Import] Contacts progress: ${Math.min(i + CONTACT_BATCH_SIZE, contactBatch.length)}/${contactBatch.length} inserted`);
   }
 
   console.log('[XLSX Import] Import complete!');
   console.log(`[XLSX Import] Successfully imported: ${imported} customers`);
+  console.log(`[XLSX Import] Successfully imported: ${contactBatch.length} contacts`);
   console.log(`[XLSX Import] Errors: ${errors}`);
 }
 
