@@ -213,13 +213,7 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    onClick={() => {
-                      if (item.onClick) {
-                        item.onClick();
-                      } else if (item.section) {
-                        setActiveSection(item.section);
-                      }
-                    }}
+                    onClick={() => setActiveSection(item.section)}
                     isActive={activeSection === item.section}
                     data-testid={`nav-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
                   >
@@ -1119,9 +1113,7 @@ function SuccessStoriesSection() {
 
   const reprocessMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/reprocess-success-story-collages', {
-        method: 'POST',
-      });
+      const response = await apiRequest('POST', '/api/admin/reprocess-success-story-collages');
       return response;
     },
     onSuccess: (data: any) => {
@@ -2323,7 +2315,7 @@ function PageMetadataSection() {
                       ) : (
                         <div className="max-w-md">
                           <div className="text-sm text-muted-foreground line-clamp-2">
-                            {page.defaultTitle || `${page.title} | Economy Plumbing`}
+                            {`${page.title} | Economy Plumbing`}
                           </div>
                           <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
                         </div>
@@ -2340,7 +2332,7 @@ function PageMetadataSection() {
                       ) : (
                         <div className="max-w-md">
                           <div className="text-sm text-muted-foreground line-clamp-2">
-                            {page.defaultDescription || `Professional ${page.title.toLowerCase()} services in Austin & Marble Falls, TX. Licensed plumbers, same-day service available.`}
+                            {`Professional ${page.title.toLowerCase()} services in Austin & Marble Falls, TX. Licensed plumbers, same-day service available.`}
                           </div>
                           <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
                         </div>
