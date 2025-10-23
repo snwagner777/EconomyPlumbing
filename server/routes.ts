@@ -2083,7 +2083,8 @@ ${rssItems}
     try {
       const auth = GoogleMyBusinessAuth.getInstance();
       const authUrl = auth.getAuthUrl();
-      res.json({ authUrl });
+      // Redirect user to Google OAuth consent screen
+      res.redirect(authUrl);
     } catch (error: any) {
       res.status(500).json({ message: "Failed to initialize OAuth: " + error.message });
     }
