@@ -4096,25 +4096,12 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     }
   });
 
-  // Manually trigger ServiceTitan customer sync (admin only)
+  // DISABLED: ServiceTitan API sync replaced with XLSX email imports
   app.post("/api/admin/sync-servicetitan", requireAdmin, async (req, res) => {
-    try {
-      console.log("[Admin] Manual ServiceTitan sync triggered");
-      const { syncServiceTitanCustomers } = await import("./lib/serviceTitanSync");
-      
-      // Trigger sync in background (don't wait)
-      syncServiceTitanCustomers().catch(error => {
-        console.error("[Admin] Background sync failed:", error);
-      });
-      
-      res.json({ 
-        success: true, 
-        message: "ServiceTitan customer sync started in background. Check server logs for progress."
-      });
-    } catch (error: any) {
-      console.error("[Admin] Error triggering sync:", error);
-      res.status(500).json({ error: error.message });
-    }
+    res.status(410).json({ 
+      error: "ServiceTitan API sync has been disabled. Customer data is now imported via hourly XLSX email reports from ServiceTitan via Mailgun webhook.",
+      message: "Configure ServiceTitan to send scheduled XLSX reports to your Mailgun email address."
+    });
   });
 
   // Fetch Google My Business reviews (runs automatically, or manually via admin)
@@ -7700,34 +7687,12 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   //   }
   // });
 
-  // ServiceTitan Customer Sync (Admin only - manual trigger)
+  // DISABLED: ServiceTitan API sync replaced with XLSX email imports
   app.post("/api/servicetitan/sync-customers", async (req, res) => {
-    try {
-      // Fix auth check - use optional chaining
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      console.log("[ServiceTitan Sync] Manual sync triggered by admin");
-
-      const { syncServiceTitanCustomers } = await import("./lib/serviceTitanSync");
-
-      // Start sync in background to avoid timeout
-      res.json({ message: "Customer sync started. Check server logs for progress." });
-
-      // Run sync asynchronously
-      syncServiceTitanCustomers()
-        .then(() => {
-          console.log(`[ServiceTitan Sync] ✅ Manual sync completed`);
-        })
-        .catch(error => {
-          console.error(`[ServiceTitan Sync] ❌ Manual sync failed:`, error);
-        });
-
-    } catch (error: any) {
-      console.error("[ServiceTitan Sync] Error:", error);
-      res.status(500).json({ error: "Failed to start customer sync" });
-    }
+    res.status(410).json({ 
+      error: "ServiceTitan API sync has been disabled. Customer data is now imported via hourly XLSX email reports from ServiceTitan via Mailgun webhook.",
+      message: "Configure ServiceTitan to send scheduled XLSX reports to your Mailgun email address."
+    });
   });
 
   // Admin: Get ServiceTitan sync status
@@ -7764,28 +7729,12 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
     }
   });
 
-  // Admin: Manually trigger ServiceTitan sync
+  // DISABLED: ServiceTitan API sync replaced with XLSX email imports
   app.post("/api/admin/trigger-sync", async (req, res) => {
-    try {
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ error: "Authentication required" });
-      }
-
-      const { syncServiceTitanCustomers, resetSyncLock } = await import('./lib/serviceTitanSync');
-      
-      // Reset lock first (in case it's stuck)
-      resetSyncLock();
-      
-      // Trigger sync in background
-      syncServiceTitanCustomers().catch(error => {
-        console.error("[Admin] Background sync error:", error);
-      });
-      
-      res.json({ success: true, message: "Sync started (lock reset)" });
-    } catch (error: any) {
-      console.error("[Admin] Trigger sync error:", error);
-      res.status(500).json({ error: "Failed to start sync" });
-    }
+    res.status(410).json({ 
+      error: "ServiceTitan API sync has been disabled. Customer data is now imported via hourly XLSX email reports from ServiceTitan via Mailgun webhook.",
+      message: "Configure ServiceTitan to send scheduled XLSX reports to your Mailgun email address."
+    });
   });
 
   // Get customer stats (service count and percentile ranking)
