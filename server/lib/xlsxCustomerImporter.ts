@@ -107,19 +107,11 @@ export async function importCustomersFromXLSX(
   return await db.transaction(async (tx) => {
     console.log('[XLSX Import] Starting database transaction...');
     
-    // Step 1: Create staging tables (drop first to ensure clean slate)
-    console.log('[XLSX Import] Creating staging tables...');
-    await tx.execute(sql`DROP TABLE IF EXISTS staging_customers`);
-    await tx.execute(sql`DROP TABLE IF EXISTS staging_contacts`);
+    // Step 1: Truncate existing data (simpler than staging tables)
+    console.log('[XLSX Import] Clearing existing customer data...');
+    await tx.execute(sql`TRUNCATE TABLE service_titan_customers, service_titan_contacts CASCADE`);
     
-    await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_customers (LIKE service_titan_customers INCLUDING ALL) ON COMMIT DROP
-    `);
-    await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_contacts (LIKE service_titan_contacts INCLUDING ALL) ON COMMIT DROP
-    `);
-    
-    // Step 2: Parse and insert into staging tables
+    // Step 2: Insert customers and contacts directly
     const BATCH_SIZE = 500;
     let imported = 0;
     let contactsImported = 0;
@@ -194,75 +186,31 @@ export async function importCustomersFromXLSX(
         }
       }
 
-      // Insert into staging tables using raw SQL
+      // Insert directly into production tables
       if (customerBatch.length > 0) {
-        for (const customer of customerBatch) {
-          await tx.execute(sql`
-            INSERT INTO staging_customers (
-              id, name, type, email, phone, mobile_phone, street, city, state, zip,
-              active, balance, job_count, last_service_date, last_service_type,
-              lifetime_value, customer_tags, preferred_contact_method, last_synced_at
-            ) VALUES (
-              ${customer.id}, ${customer.name}, ${customer.type}, ${customer.email},
-              ${customer.phone}, ${customer.mobilePhone}, ${customer.street}, ${customer.city},
-              ${customer.state}, ${customer.zip}, ${customer.active}, ${customer.balance},
-              ${customer.jobCount}, ${customer.lastServiceDate}, ${customer.lastServiceType},
-              ${customer.lifetimeValue}, ${customer.customerTags}, ${customer.preferredContactMethod},
-              ${customer.lastSyncedAt}
-            )
-          `);
-        }
+        await tx.insert(serviceTitanCustomers).values(customerBatch);
       }
       
       if (contactBatch.length > 0) {
-        for (const contact of contactBatch) {
-          await tx.execute(sql`
-            INSERT INTO staging_contacts (
-              customer_id, contact_type, value, normalized_value, is_primary, last_synced_at
-            ) VALUES (
-              ${contact.customerId}, ${contact.contactType}, ${contact.value},
-              ${contact.normalizedValue}, ${contact.isPrimary}, NOW()
-            )
-          `);
-        }
+        await tx.insert(serviceTitanContacts).values(contactBatch);
         contactsImported += contactBatch.length;
       }
 
-      console.log(`[XLSX Import] Staged: ${imported}/${rows.length} customers (${contactsImported} contacts)`);
+      console.log(`[XLSX Import] Imported: ${imported}/${rows.length} customers (${contactsImported} contacts)`);
     }
 
-    // Step 3: Verify staging data
-    const stagedCustomerCount = await tx.execute(sql`SELECT COUNT(*) FROM staging_customers`);
-    const stagedContactCount = await tx.execute(sql`SELECT COUNT(*) FROM staging_contacts`);
+    // Step 3: Verify imported data
+    const finalCustomerCount = await tx.execute(sql`SELECT COUNT(*) FROM service_titan_customers`);
+    const finalContactCount = await tx.execute(sql`SELECT COUNT(*) FROM service_titan_contacts`);
     
-    console.log(`[XLSX Import] Verification: ${stagedCustomerCount.rows[0].count} customers, ${stagedContactCount.rows[0].count} contacts in staging`);
+    console.log(`[XLSX Import] Verification: ${finalCustomerCount.rows[0].count} customers, ${finalContactCount.rows[0].count} contacts imported`);
     
-    if (Number(stagedCustomerCount.rows[0].count) === 0) {
-      throw new Error('No customers were successfully staged - aborting import');
+    if (Number(finalCustomerCount.rows[0].count) === 0) {
+      throw new Error('No customers were successfully imported - rolling back transaction');
     }
 
-    // Step 4: Atomically swap staging → production
-    // CRITICAL: This is the only point where production data changes
-    console.log('[XLSX Import] Swapping staging → production tables...');
-    
-    await tx.execute(sql`TRUNCATE TABLE service_titan_contacts CASCADE`);
-    await tx.execute(sql`TRUNCATE TABLE service_titan_customers CASCADE`);
-    
-    await tx.execute(sql`
-      INSERT INTO service_titan_customers 
-      SELECT * FROM staging_customers
-    `);
-    
-    await tx.execute(sql`
-      INSERT INTO service_titan_contacts 
-      SELECT * FROM staging_contacts
-    `);
-    
-    console.log('[XLSX Import] Production tables updated successfully');
-
+    // Step 4: Record import history
     const duration = Date.now() - startTime;
-
-    // Step 5: Record import in history
     await tx.insert(customerDataImports).values({
       fileName: `import_${new Date().toISOString()}`,
       importSource: source,
