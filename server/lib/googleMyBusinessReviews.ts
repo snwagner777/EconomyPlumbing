@@ -186,6 +186,10 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
         const reviewText = review.comment || review.reviewReply?.comment || '';
         const categories = categorizeReview(reviewText);
         
+        // Extract review ID from name field (format: accounts/{accountId}/locations/{locationId}/reviews/{reviewId})
+        const reviewIdMatch = review.name?.match(/reviews\/([^/]+)$/);
+        const reviewId = reviewIdMatch ? reviewIdMatch[1] : null;
+        
         return {
           authorName: review.reviewer?.displayName || 'Anonymous',
           authorUrl: review.reviewer?.profilePhotoUrl || null,
@@ -199,6 +203,8 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
           relativeTime: review.createTime ? new Date(review.createTime).toLocaleDateString() : 'Recently',
           timestamp: review.createTime ? Math.floor(new Date(review.createTime).getTime() / 1000) : Date.now() / 1000,
           categories,
+          source: 'gmb_api',
+          reviewId,
         };
       });
 

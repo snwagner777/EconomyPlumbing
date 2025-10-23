@@ -2898,16 +2898,50 @@ function ReviewsSection() {
       {!isLoadingOAuth && !isErrorOAuth && oauthStatus?.isAuthenticated && (
         <Card className="border-green-500/50 bg-green-50 dark:bg-green-950/20">
           <CardContent className="p-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/20 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-green-500/20 rounded-lg">
+                  <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-green-900 dark:text-green-100">Google Business Profile Connected</h3>
+                  <p className="text-sm text-green-700 dark:text-green-300 mt-1">
+                    Click "Fetch GMB Reviews" to import reviews with reply support
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-semibold text-green-900 dark:text-green-100">Google Business Profile Connected</h3>
-                <p className="text-sm text-green-700 dark:text-green-300 mt-1">
-                  AI replies will be posted directly to your Google reviews
-                </p>
-              </div>
+              <Button
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/admin/fetch-gmb-reviews', {
+                      method: 'POST',
+                      credentials: 'include',
+                    });
+                    const data = await response.json();
+                    
+                    toast({
+                      title: data.success ? "Success" : "Error",
+                      description: data.message || data.error,
+                      variant: data.success ? "default" : "destructive",
+                    });
+                    
+                    if (data.success) {
+                      queryClient.invalidateQueries({ queryKey: ['/api/admin/google-reviews'] });
+                    }
+                  } catch (error) {
+                    toast({
+                      title: "Error",
+                      description: "Failed to fetch GMB reviews",
+                      variant: "destructive",
+                    });
+                  }
+                }}
+                className="bg-green-600 hover:bg-green-700"
+                data-testid="button-fetch-gmb-reviews"
+              >
+                <Settings className="w-4 h-4 mr-2" />
+                Fetch GMB Reviews
+              </Button>
             </div>
           </CardContent>
         </Card>

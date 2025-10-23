@@ -3918,8 +3918,10 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         }
         
         // Post to Google My Business if this is a Google review with reviewId
+        // Note: Only 'gmb_api' reviews have valid GMB review IDs that support posting replies
+        // dataforseo and places_api reviews don't have the correct GMB review ID format
         let postedToGoogle = false;
-        const isGoogleReview = ['dataforseo', 'places_api'].includes(review.source);
+        const isGoogleReview = review.source === 'gmb_api';
         
         if (isGoogleReview && review.reviewId) {
           const { postReplyToGoogleReview } = await import("./lib/googleMyBusinessReviews");
@@ -3983,6 +3985,49 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       });
     } catch (error: any) {
       console.error("[Admin] Error triggering sync:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Manually fetch Google My Business reviews (admin only)
+  app.post("/api/admin/fetch-gmb-reviews", requireAdmin, async (req, res) => {
+    try {
+      console.log('[Admin] Manual GMB review fetch triggered');
+      const { fetchAllGoogleMyBusinessReviews } = await import("./lib/googleMyBusinessReviews");
+      
+      const gmbReviews = await fetchAllGoogleMyBusinessReviews();
+      
+      if (gmbReviews.length === 0) {
+        return res.json({ 
+          success: true, 
+          message: "No reviews fetched. Please ensure you're authenticated and have configured account/location IDs.",
+          count: 0
+        });
+      }
+
+      // Save GMB reviews to database (with source = 'gmb_api')
+      let inserted = 0;
+      for (const review of gmbReviews) {
+        try {
+          await db.insert(googleReviews).values({
+            ...review,
+            source: 'gmb_api', // Mark as GMB API source so replies work
+          }).onConflictDoNothing();
+          inserted++;
+        } catch (err) {
+          console.error('[GMB Fetch] Error inserting review:', err);
+        }
+      }
+      
+      console.log(`[Admin] GMB review fetch complete: ${inserted}/${gmbReviews.length} new reviews saved`);
+      res.json({ 
+        success: true, 
+        message: `Successfully fetched ${gmbReviews.length} reviews from Google My Business. ${inserted} new reviews saved.`,
+        total: gmbReviews.length,
+        inserted
+      });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching GMB reviews:", error);
       res.status(500).json({ error: error.message });
     }
   });
