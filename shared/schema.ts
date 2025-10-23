@@ -866,15 +866,7 @@ export const reviewPlatforms = pgTable("review_platforms", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-// Review requests sent to customers
-
-export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit({
-  id: true,
-  createdAt: true,
-  sentAt: true,
-  clickedAt: true,
-  completedAt: true,
-});
+// Review requests removed - will be rebuilt
 
 export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).omit({
   id: true,
@@ -931,8 +923,7 @@ export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertOtpVerification = z.infer<typeof insertOtpVerificationSchema>;
 export type CustomReview = typeof customReviews.$inferSelect;
 export type InsertCustomReview = z.infer<typeof insertCustomReviewSchema>;
-export type ReviewRequest = typeof reviewRequests.$inferSelect;
-export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
+// Review request types removed - will be rebuilt
 export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
 export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
 export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
@@ -940,61 +931,13 @@ export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect
 export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 
 
-// Customer Segments - AI-generated customer groups for targeted campaigns
+// Marketing schemas removed - will be rebuilt
 
-// Insert schemas and types
-export const insertCustomerSegmentSchema = createInsertSchema(customerSegments).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  lastRefreshedAt: true,
-});
+// Review link click schema removed - will be rebuilt
 
+// ServiceTitan job form schema removed - will be rebuilt
 
-export const insertEmailCampaignSchema = createInsertSchema(emailCampaigns).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  approvedAt: true,
-  startedAt: true,
-  completedAt: true,
-});
-
-export const insertCampaignEmailSchema = createInsertSchema(campaignEmails).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
-
-
-
-export const insertEmailSuppressionSchema = createInsertSchema(emailSuppressionList).omit({
-  id: true,
-  addedAt: true,
-  lastAttemptedAt: true,
-});
-
-export const insertReviewLinkClickSchema = createInsertSchema(reviewLinkClicks).omit({
-  id: true,
-  clickedAt: true,
-  reviewedAt: true,
-  lastRemarketingEmailAt: true,
-});
-
-export const insertServiceTitanJobFormSchema = createInsertSchema(serviceTitanJobForms).omit({
-  id: true,
-  lastSyncedAt: true,
-});
-
-export const insertAudienceMovementLogSchema = createInsertSchema(audienceMovementLogs).omit({
-  id: true,
-  occurredAt: true,
-});
-
-export const insertMarketingSystemSettingSchema = createInsertSchema(marketingSystemSettings).omit({
-  id: true,
-  updatedAt: true,
-});
+// Audience movement and marketing system settings schemas removed - will be rebuilt
 
 
 // Review Email Preferences - SEPARATE from marketing preferences (transactional)
@@ -1007,42 +950,13 @@ export const insertMarketingSystemSettingSchema = createInsertSchema(marketingSy
 
 // SMS Marketing Preferences - TCPA-compliant opt-in/opt-out tracking
 
-export const insertReviewRequestCampaignSchema = createInsertSchema(reviewRequestCampaigns).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// Review request campaign schema removed - will be rebuilt
 
-export const insertReviewDripEmailSchema = createInsertSchema(reviewDripEmails).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// Review drip email schema removed - will be rebuilt
 
 
 
-export const insertAIReviewResponseSchema = createInsertSchema(aiReviewResponses).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  approvedAt: true,
-  postedAt: true,
-});
-
-export const insertNegativeReviewAlertSchema = createInsertSchema(negativeReviewAlerts).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  acknowledgedAt: true,
-  emailSentAt: true,
-  smsSentAt: true,
-  respondedAt: true,
-});
-
-export const insertReputationSystemSettingSchema = createInsertSchema(reputationSystemSettings).omit({
-  id: true,
-  updatedAt: true,
-});
+// Reputation management schemas removed - will be rebuilt
 
 // ============================================================================
 // SYSTEM RELIABILITY & MONITORING
@@ -1085,41 +999,15 @@ export const webhookFailureQueue = pgTable("webhook_failure_queue", {
 // Campaign Send Idempotency - Prevents duplicate email/SMS sends
 
 // SMS Marketing insert schemas
-export const insertSMSMarketingPreferencesSchema = createInsertSchema(smsMarketingPreferences).omit({
-  id: true,
-  createdAt: true,
-  lastUpdatedAt: true,
-});
+// SMS marketing schemas removed - will be rebuilt
 
-export const insertSMSCampaignSchema = createInsertSchema(smsCampaigns).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// SMS campaign schema removed - will be rebuilt
 
-export const insertSMSCampaignMessageSchema = createInsertSchema(smsCampaignMessages).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-});
+// SMS campaign message schema removed - will be rebuilt
 
-export const insertSMSSendLogSchema = createInsertSchema(smsSendLog).omit({
-  id: true,
-  sentAt: true,
-  deliveredAt: true,
-  failedAt: true,
-  clickedAt: true,
-  conversionDate: true,
-  optedOutAt: true,
-  createdAt: true,
-});
+// SMS send log schema removed - will be rebuilt
 
-export const insertSMSKeywordSchema = createInsertSchema(smsKeywords).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  lastUsedAt: true,
-});
+// SMS keyword schema removed - will be rebuilt
 
 // System Reliability & Monitoring insert schemas
 export const insertWebhookFailureQueueSchema = createInsertSchema(webhookFailureQueue).omit({
@@ -1132,61 +1020,12 @@ export const insertWebhookFailureQueueSchema = createInsertSchema(webhookFailure
 });
 
 
-export const insertSystemHealthCheckSchema = createInsertSchema(systemHealthChecks).omit({
-  id: true,
-  createdAt: true,
-  updatedAt: true,
-  lastCheckedAt: true,
-  lastSuccessfulRunAt: true,
-  lastFailedRunAt: true,
-  lastErrorAt: true,
-  alertSentAt: true,
-  alertAcknowledgedAt: true,
-});
+// System health check schema removed - will be rebuilt
 
-// Export types
-export type CustomerSegment = typeof customerSegments.$inferSelect;
-export type InsertCustomerSegment = z.infer<typeof insertCustomerSegmentSchema>;
-export type EmailCampaign = typeof emailCampaigns.$inferSelect;
-export type InsertEmailCampaign = z.infer<typeof insertEmailCampaignSchema>;
-export type CampaignEmail = typeof campaignEmails.$inferSelect;
-export type InsertCampaignEmail = z.infer<typeof insertCampaignEmailSchema>;
-export type EmailSuppression = typeof emailSuppressionList.$inferSelect;
-export type InsertEmailSuppression = z.infer<typeof insertEmailSuppressionSchema>;
-export type EmailTemplate = typeof emailTemplates.$inferSelect;
-export type InsertEmailTemplate = z.infer<typeof insertEmailTemplateSchema>;
-export type ReviewLinkClick = typeof reviewLinkClicks.$inferSelect;
-export type InsertReviewLinkClick = z.infer<typeof insertReviewLinkClickSchema>;
-export type ServiceTitanJobForm = typeof serviceTitanJobForms.$inferSelect;
-export type InsertServiceTitanJobForm = z.infer<typeof insertServiceTitanJobFormSchema>;
-export type AudienceMovementLog = typeof audienceMovementLogs.$inferSelect;
-export type InsertAudienceMovementLog = z.infer<typeof insertAudienceMovementLogSchema>;
-export type MarketingSystemSetting = typeof marketingSystemSettings.$inferSelect;
-export type InsertMarketingSystemSetting = z.infer<typeof insertMarketingSystemSettingSchema>;
-export type ReviewRequestCampaign = typeof reviewRequestCampaigns.$inferSelect;
-export type InsertReviewRequestCampaign = z.infer<typeof insertReviewRequestCampaignSchema>;
-export type ReviewDripEmail = typeof reviewDripEmails.$inferSelect;
-export type InsertReviewDripEmail = z.infer<typeof insertReviewDripEmailSchema>;
-export type AIReviewResponse = typeof aiReviewResponses.$inferSelect;
-export type InsertAIReviewResponse = z.infer<typeof insertAIReviewResponseSchema>;
-export type NegativeReviewAlert = typeof negativeReviewAlerts.$inferSelect;
-export type InsertNegativeReviewAlert = z.infer<typeof insertNegativeReviewAlertSchema>;
-export type ReputationSystemSetting = typeof reputationSystemSettings.$inferSelect;
-export type InsertReputationSystemSetting = z.infer<typeof insertReputationSystemSettingSchema>;
-export type SMSMarketingPreferences = typeof smsMarketingPreferences.$inferSelect;
-export type InsertSMSMarketingPreferences = z.infer<typeof insertSMSMarketingPreferencesSchema>;
-export type SMSCampaign = typeof smsCampaigns.$inferSelect;
-export type InsertSMSCampaign = z.infer<typeof insertSMSCampaignSchema>;
-export type SMSCampaignMessage = typeof smsCampaignMessages.$inferSelect;
-export type InsertSMSCampaignMessage = z.infer<typeof insertSMSCampaignMessageSchema>;
-export type SMSSendLog = typeof smsSendLog.$inferSelect;
-export type InsertSMSSendLog = z.infer<typeof insertSMSSendLogSchema>;
-export type SMSKeyword = typeof smsKeywords.$inferSelect;
-export type InsertSMSKeyword = z.infer<typeof insertSMSKeywordSchema>;
+// Marketing type exports removed - will be rebuilt
 export type WebhookFailureQueue = typeof webhookFailureQueue.$inferSelect;
 export type InsertWebhookFailureQueue = z.infer<typeof insertWebhookFailureQueueSchema>;
-export type SystemHealthCheck = typeof systemHealthChecks.$inferSelect;
-export type InsertSystemHealthCheck = z.infer<typeof insertSystemHealthCheckSchema>;
+// System health check types removed - will be rebuilt
 
 // Chatbot types and schemas
 export const insertChatbotConversationSchema = createInsertSchema(chatbotConversations).omit({

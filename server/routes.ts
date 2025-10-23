@@ -11,10 +11,9 @@ import { getAllServiceHealth, getSystemHealth } from "./lib/healthMonitor";
 declare global {
   var invalidateSSRCache: (() => void) | undefined;
 }
-import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, reviewRequestCampaigns, reviewDripEmails, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses } from "@shared/schema";
 import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
-import { emailCampaigns } from "@shared/schema";
 import Stripe from "stripe";
 import multer from "multer";
 import { sendContactFormEmail, sendReferralEmail, sendSuccessStoryNotificationEmail, sendNegativeReviewAlert } from "./email";
