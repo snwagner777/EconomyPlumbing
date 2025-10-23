@@ -90,12 +90,9 @@ const ReferralOffer = lazy(() => import("@/pages/ReferralOffer"));
 const CustomerPortal = lazy(() => import("@/pages/CustomerPortal"));
 const LeaveReview = lazy(() => import("@/pages/LeaveReview"));
 const ReviewRequest = lazy(() => import("@/pages/ReviewRequest"));
-const ReviewsAdmin = lazy(() => import("@/pages/ReviewsAdmin"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const SMSSignup = lazy(() => import("@/pages/SMSSignup"));
-const SMSMarketingAdmin = lazy(() => import("@/pages/SMSMarketingAdmin"));
-const MarketingOverview = lazy(() => import("@/pages/MarketingOverview"));
 const ChatbotAdmin = lazy(() => import("@/pages/ChatbotAdmin"));
 
 // Simple loading fallback
@@ -250,9 +247,6 @@ function Router() {
       <Route path="/admin/commercial-customers" component={CommercialCustomersAdmin} />
       <Route path="/admin/page-metadata" component={PageMetadataAdmin} />
       <Route path="/admin/products" component={ProductsAdmin} />
-      <Route path="/admin/reviews" component={ReviewsAdmin} />
-      <Route path="/admin/sms-marketing" component={SMSMarketingAdmin} />
-      <Route path="/admin/marketing-overview" component={MarketingOverview} />
       <Route path="/admin/chatbot" component={ChatbotAdmin} />
       <Route path="/admin" component={UnifiedAdminDashboard} />
       
