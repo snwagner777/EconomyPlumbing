@@ -880,7 +880,7 @@ export const serviceTitanJobsStaging = pgTable("service_titan_jobs_staging", {
   processedAtIdx: index("st_jobs_staging_processed_at_idx").on(table.processedAt),
 }));
 
-// ServiceTitan Jobs - Normalized job data for fast queries
+// ServiceTitan Jobs - Normalized job data for fast queries (kept for customer portal)
 export const serviceTitanJobs = pgTable("service_titan_jobs", {
   id: bigint("id", { mode: 'number' }).primaryKey(), // ServiceTitan job ID
   jobNumber: varchar("job_number").notNull(),
@@ -896,11 +896,10 @@ export const serviceTitanJobs = pgTable("service_titan_jobs", {
   total: integer("total").notNull().default(0), // Total amount in cents
   invoice: integer("invoice").notNull().default(0), // Invoice amount in cents
   
-  // Marketing automation personalization fields
+  // Service info (kept for customer portal display)
   serviceCategory: varchar("service_category"), // 'Plumbing', 'Water Heater', 'Drain Cleaning', etc.
   equipmentInstalled: text("equipment_installed").array(), // ['Tankless Water Heater', 'Water Softener']
   customerSatisfaction: integer("customer_satisfaction"), // 1-5 rating
-  campaignId: varchar("campaign_id"), // Links to email_campaigns for attribution
   
   // Timestamps
   createdOn: timestamp("created_on").notNull(),
@@ -914,7 +913,6 @@ export const serviceTitanJobs = pgTable("service_titan_jobs", {
   jobNumberIdx: index("st_jobs_job_number_idx").on(table.jobNumber),
   serviceCategoryIdx: index("st_jobs_service_category_idx").on(table.serviceCategory),
   customerSatisfactionIdx: index("st_jobs_customer_satisfaction_idx").on(table.customerSatisfaction),
-  campaignIdIdx: index("st_jobs_campaign_id_idx").on(table.campaignId),
 }));
 
 // Marketing tables removed - all marketing infrastructure has been removed from the system
