@@ -866,6 +866,46 @@ export const reviewPlatforms = pgTable("review_platforms", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+// Review requests sent to customers
+export const reviewRequests = pgTable("review_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  customerName: text("customer_name").notNull(),
+  email: text("email"),
+  phone: text("phone"),
+  serviceTitanCustomerId: integer("service_titan_customer_id"),
+  serviceTitanJobId: integer("service_titan_job_id"), // The job that triggered this request
+  
+  // Request details
+  method: text("method").notNull(), // 'email', 'sms', 'both'
+  status: text("status").notNull().default('pending'), // 'pending', 'sent', 'failed', 'clicked', 'completed'
+  uniqueToken: text("unique_token").notNull().unique(), // UUID for personalized review link
+  
+  // Tracking
+  sentAt: timestamp("sent_at"),
+  clickedAt: timestamp("clicked_at"), // When they clicked the review link
+  completedAt: timestamp("completed_at"), // When they submitted the review
+  reviewId: varchar("review_id"), // Links to customReviews table
+  
+  // Content sent
+  emailSubject: text("email_subject"),
+  emailBody: text("email_body"),
+  smsBody: text("sms_body"),
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").notNull().default(0),
+  
+  // Metadata
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  automatedSend: boolean("automated_send").notNull().default(false), // Auto-sent after job vs manual
+}, (table) => ({
+  statusIdx: index("review_requests_status_idx").on(table.status),
+  tokenIdx: index("review_requests_token_idx").on(table.uniqueToken),
+  customerIdIdx: index("review_requests_customer_id_idx").on(table.serviceTitanCustomerId),
+  createdAtIdx: index("review_requests_created_at_idx").on(table.createdAt),
+}));
 
 // ServiceTitan Jobs Staging - Raw API responses for safe processing
 export const serviceTitanJobsStaging = pgTable("service_titan_jobs_staging", {
@@ -940,6 +980,13 @@ export const insertCustomReviewSchema = createInsertSchema(customReviews).omit({
   moderatedBy: true,
 });
 
+export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+  clickedAt: true,
+  completedAt: true,
+});
 
 export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).omit({
   id: true,
@@ -996,12 +1043,17 @@ export type OtpVerification = typeof otpVerifications.$inferSelect;
 export type InsertOtpVerification = z.infer<typeof insertOtpVerificationSchema>;
 export type CustomReview = typeof customReviews.$inferSelect;
 export type InsertCustomReview = z.infer<typeof insertCustomReviewSchema>;
+export type ReviewRequest = typeof reviewRequests.$inferSelect;
+export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
 export type ReviewPlatform = typeof reviewPlatforms.$inferSelect;
 export type InsertReviewPlatform = z.infer<typeof insertReviewPlatformSchema>;
 export type ServiceTitanJob = typeof serviceTitanJobs.$inferSelect;
 export type ServiceTitanJobStaging = typeof serviceTitanJobsStaging.$inferSelect;
 export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 
+// ============================================================================
+// MARKETING AUTOMATION SYSTEM
+// ============================================================================
 
 // Customer Segments - AI-generated customer groups for targeted campaigns
 export const customerSegments = pgTable("customer_segments", {
