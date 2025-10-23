@@ -1027,9 +1027,9 @@ class ServiceTitanAPI {
    */
   async getCustomerMemberships(customerId: number): Promise<any[]> {
     try {
-      // ServiceTitan memberships API endpoint (recurring service events)
-      // Get ALL memberships (not just active) so we can show expired ones
-      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/recurring-service-events?customerId=${customerId}&pageSize=50`;
+      // ServiceTitan memberships API endpoint 
+      // Using the correct /memberships endpoint with customerIds parameter
+      const membershipsUrl = `https://api.servicetitan.io/memberships/v2/tenant/${this.config.tenantId}/memberships?customerIds=${customerId}&active=Any&pageSize=50`;
       const result = await this.request<{ data: any[] }>(membershipsUrl, {}, true);
       
       console.log('[ServiceTitan] Memberships API response:', {
@@ -1037,27 +1037,26 @@ class ServiceTitanAPI {
         memberships: result.data?.map((m: any) => ({
           id: m.id,
           status: m.status,
-          membershipName: m.membershipName,
-          expirationDate: m.to || m.expirationDate,
-          canceledOn: m.canceledOn,
-          createdOn: m.createdOn
+          name: m.name,
+          duration: m.duration,
+          billingFrequency: m.billingFrequency,
+          createdOn: m.createdOn,
+          modifiedOn: m.modifiedOn,
+          active: m.active
         })) || []
       });
       
       // Map memberships to display format
       const memberships = result.data || [];
       
-      // Filter OUT canceled memberships (but keep expired ones)
+      // Filter OUT deleted memberships (but keep expired/suspended ones to show history)
       const displayableMemberships = memberships.filter((m: any) => {
         // Skip if missing required fields
-        if (!m.membershipName && !m.locationRecurringServiceName) return false;
+        if (!m.name && !m.id) return false;
         
-        // Skip if explicitly canceled (user doesn't want to see these)
-        if (m.canceledOn) return false;
-        
-        // Skip if status indicates canceled/lost/void
+        // Skip deleted memberships
         const status = (m.status || '').toLowerCase();
-        if (status === 'canceled' || status === 'lost' || status === 'void') return false;
+        if (status === 'deleted') return false;
         
         return true;
       });
@@ -1076,37 +1075,34 @@ class ServiceTitanAPI {
       // Group by membership to avoid duplicates
       const uniqueMemberships = new Map();
       displayableMemberships.forEach((membership: any) => {
-        const key = membership.membershipId || membership.membershipName;
-        if (!uniqueMemberships.has(key) || new Date(membership.createdOn) > new Date(uniqueMemberships.get(key).startDate)) {
-          const expirationDate = membership.to || membership.expirationDate;
-          
-          // Determine membership status
-          // Check raw status first for definitive states
-          const rawStatus = (membership.status || '').toLowerCase();
-          const isDefinitelyInactive = ['expired', 'inactive', 'terminated', 'paused', 'suspended'].includes(rawStatus);
-          
-          // If no expiration date and status is not definitively inactive, consider it active
-          // If there is an expiration date, check if it's expired
-          const isExpired = isDefinitelyInactive || (expirationDate ? new Date(expirationDate) < new Date() : false);
-          const status = isExpired ? 'Expired' : 'Active';
-          
-          // Extract membership type name for visual variants (Silver, Platinum, Rental, Commercial)
-          const membershipName = membership.membershipName || membership.locationRecurringServiceName || 'VIP Membership';
-          
-          uniqueMemberships.set(key, {
-            id: membership.membershipId || membership.id,
-            membershipType: membershipName,
-            status,
-            isExpired,
-            startDate: membership.createdOn,
-            expirationDate,
-            renewalDate: membership.date || membership.nextScheduledDate,
-            balance: parseFloat(membership.balance || '0'),
-            totalValue: parseFloat(membership.total || '0'),
-            description: membership.memo || membership.description || '',
-            rawStatus: membership.status, // Keep original for reference
-          });
-        }
+        const key = membership.id;
+        
+        // Map membership status - using the actual API status values
+        // Values from API docs: Active, Suspended, Expired, Canceled, Deleted
+        const status = membership.status || 'Unknown';
+        const isActive = status === 'Active';
+        const isExpired = status === 'Expired';
+        
+        // Use duration to determine if it has an expiration
+        // duration = null means ongoing/no expiration
+        const hasExpiration = membership.duration !== null && membership.duration !== undefined;
+        
+        uniqueMemberships.set(key, {
+          id: membership.id,
+          membershipType: membership.name || 'VIP Membership',
+          status: status,
+          isExpired: isExpired || status === 'Canceled',
+          startDate: membership.createdOn,
+          expirationDate: hasExpiration ? membership.expirationDate : null,
+          renewalDate: membership.renewalDate,
+          balance: 0, // These fields may not exist in the new API
+          totalValue: 0,
+          description: membership.description || '',
+          rawStatus: membership.status,
+          billingFrequency: membership.billingFrequency,
+          duration: membership.duration,
+          active: membership.active
+        });
       });
       
       return Array.from(uniqueMemberships.values());

@@ -1,0 +1,98 @@
+CustomerMemberships_GetList
+Gets a list of customer memberships
+
+Request
+Production Environment
+https://api.servicetitan.io/memberships/v2/tenant/{tenant}/memberships[?ids][&customerIds][&status][&duration][&billingFrequency][&active][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&page][&pageSize][&includeTotal]
+Integration Environment
+https://api-integration.servicetitan.io/memberships/v2/tenant/{tenant}/memberships[?ids][&customerIds][&status][&duration][&billingFrequency][&active][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&page][&pageSize][&includeTotal]
+Request parameters
+
+Name
+In
+Required
+Type
+Description
+tenant
+template
+true
+integer
+Format - int64. Tenant ID
+
+ids
+query
+false
+string
+Perform lookup by multiple IDs (maximum 50)
+
+customerIds
+query
+false
+string
+Filters by customer IDs
+
+status
+query
+false
+Filters by membership status
+Values: [Active, Suspended, Expired, Canceled, Deleted]
+
+duration
+query
+false
+integer
+Format - int32. Filters by membership duration (in months); use null for ongoing memberships
+
+billingFrequency
+query
+false
+Filters by membership billing frequency
+Values: [OneTime, Monthly, EveryOtherMonth, Quarterly, BiAnnual, Annual]
+
+active
+query
+false
+What kind of items should be returned (only active items will be returned by default)
+Values: [True, Any, False]
+
+createdBefore
+query
+false
+string
+Format - date-time (as date-time in RFC3339). Return items created before certain date/time (in UTC)
+
+createdOnOrAfter
+query
+false
+string
+Format - date-time (as date-time in RFC3339). Return items created on or after certain date/time (in UTC)
+
+modifiedBefore
+query
+false
+string
+Format - date-time (as date-time in RFC3339). Return items modified before certain date/time (in UTC)
+
+modifiedOnOrAfter
+query
+false
+string
+Format - date-time (as date-time in RFC3339). Return items modified on or after certain date/time (in UTC)
+
+page
+query
+false
+integer
+Format - int32. The logical number of page to return, starting from 1
+
+pageSize
+query
+false
+integer
+Format - int32. How many records to return (50 by default)
+
+includeTotal
+query
+false
+boolean
+Whether total count should be returned
