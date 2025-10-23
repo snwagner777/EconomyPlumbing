@@ -311,12 +311,18 @@ export const googleReviews = pgTable("google_reviews", {
   timestamp: integer("timestamp").notNull(),
   fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
   categories: text("categories").array().notNull().default(sql`ARRAY[]::text[]`),
-  source: text("source").notNull().default('places_api'), // 'places_api', 'dataforseo', 'facebook', 'gmb_api'
-  reviewId: text("review_id"), // External review ID for deduplication
+  source: text("source").notNull().default('places_api'), // 'places_api', 'dataforseo', 'facebook', 'gmb_api', 'yelp'
+  reviewId: text("review_id"), // External review ID for deduplication and API posting
+  
+  // Reply tracking
+  replyText: text("reply_text"), // Our posted reply
+  repliedAt: timestamp("replied_at"), // When we replied
+  canReply: boolean("can_reply").notNull().default(false), // Can we reply via API?
 }, (table) => ({
   ratingIdx: index("google_reviews_rating_idx").on(table.rating),
   timestampIdx: index("google_reviews_timestamp_idx").on(table.timestamp),
   sourceIdx: index("google_reviews_source_idx").on(table.source),
+  repliedIdx: index("google_reviews_replied_idx").on(table.repliedAt),
 }));
 
 export const googleOAuthTokens = pgTable("google_oauth_tokens", {
@@ -831,6 +837,10 @@ export const customReviews = pgTable("custom_reviews", {
   
   // Moderation workflow
   status: text("status").notNull().default('pending'), // 'pending', 'approved', 'rejected', 'spam'
+  
+  // Reply tracking (custom reviews can be replied to on our website)
+  replyText: text("reply_text"), // Our posted reply
+  repliedAt: timestamp("replied_at"), // When we replied
   moderatedBy: varchar("moderated_by"), // Admin user ID who approved/rejected
   moderatedAt: timestamp("moderated_at"),
   moderationNotes: text("moderation_notes"), // Internal notes from moderator
