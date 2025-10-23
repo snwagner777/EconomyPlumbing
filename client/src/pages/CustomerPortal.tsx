@@ -2687,18 +2687,35 @@ export default function CustomerPortal() {
                           )}
                           <div className="flex-1">
                             <p className="font-medium">
-                              {item.pricebookDetails?.name || item.description || 'Service Item'}
+                              {item.pricebookDetails?.name || item.sku?.name || 'Service Item'}
                             </p>
-                            {item.description && item.pricebookDetails?.name && (
-                              <p className="text-sm text-muted-foreground mt-1">{item.description}</p>
+                            {item.description && (
+                              <div 
+                                className="text-sm text-muted-foreground mt-1"
+                                dangerouslySetInnerHTML={{ __html: item.description }}
+                              />
                             )}
-                            <div className="flex justify-between items-center mt-2">
-                              <span className="text-sm text-muted-foreground">
-                                Qty: {item.quantity || 1}
-                              </span>
-                              <span className="font-semibold text-primary">
-                                {formatCurrency(item.price || 0)}
-                              </span>
+                            <div className="mt-3 space-y-1">
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">
+                                  Quantity:
+                                </span>
+                                <span>{item.quantity || item.qty || 1}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-sm">
+                                <span className="text-muted-foreground">
+                                  Unit Price:
+                                </span>
+                                <span>{formatCurrency(item.unitRate || 0)}</span>
+                              </div>
+                              <div className="flex justify-between items-center pt-1 border-t">
+                                <span className="font-medium">
+                                  Line Total:
+                                </span>
+                                <span className="font-semibold text-primary">
+                                  {formatCurrency(item.total || 0)}
+                                </span>
+                              </div>
                             </div>
                           </div>
                         </div>
