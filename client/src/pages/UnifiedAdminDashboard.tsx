@@ -66,7 +66,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'segments' | 'campaigns' | 'audience-logs' | 'marketing-settings' | 'sms-marketing' | 'marketing-overview';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -184,18 +184,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
     },
-    {
-      title: "Audience Logs",
-      icon: Activity,
-      section: 'audience-logs' as AdminSection,
-      description: "Segment entry/exit tracking"
-    },
-    {
-      title: "Marketing Settings",
-      icon: Settings,
-      section: 'marketing-settings' as AdminSection,
-      description: "Master send switch & config"
-    },
   ];
 
   const handleLogout = () => {
@@ -278,53 +266,6 @@ interface PortalStats {
     timestamp: string;
     found: boolean;
   }[];
-}
-
-function MarketingAutomationMetrics() {
-  const { data: segmentsData } = useQuery<{ segments: any[] }>({
-    queryKey: ['/api/admin/segments'],
-  });
-
-  const { data: campaignsData } = useQuery<{ campaigns: any[] }>({
-    queryKey: ['/api/admin/campaigns'],
-  });
-
-  const { data: settings } = useQuery<{ masterSendEnabled: boolean }>({
-    queryKey: ['/api/admin/marketing-settings'],
-  });
-
-  const segments = segmentsData?.segments || [];
-  const campaigns = campaignsData?.campaigns || [];
-  const activeSegments = segments.filter(s => s.status === 'active');
-  const pendingCampaigns = campaigns.filter(c => c.status === 'pending_approval');
-  const masterSendEnabled = settings?.masterSendEnabled || false;
-
-  return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <p className="text-sm text-muted-foreground">Active Segments</p>
-          <p className="text-2xl font-bold">{activeSegments.length}</p>
-        </div>
-        <div>
-          <p className="text-sm text-muted-foreground">Pending Campaigns</p>
-          <p className="text-2xl font-bold">{pendingCampaigns.length}</p>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-between pt-2 border-t">
-        <div className="flex items-center gap-2">
-          <div className={`h-2 w-2 rounded-full ${masterSendEnabled ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-sm text-muted-foreground">
-            Master Send: {masterSendEnabled ? 'ON' : 'OFF'}
-          </span>
-        </div>
-        <Badge variant={masterSendEnabled ? "default" : "secondary"}>
-          {masterSendEnabled ? 'Active' : 'Disabled'}
-        </Badge>
-      </div>
-    </>
-  );
 }
 
 function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
@@ -493,16 +434,6 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 </div>
               </div>
             )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Marketing Automation</CardTitle>
-            <CardDescription>AI-powered email campaigns</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <MarketingAutomationMetrics />
           </CardContent>
         </Card>
       </div>
@@ -3716,14 +3647,6 @@ export default function UnifiedAdminDashboard() {
         return <ReviewPlatformsSection />;
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
-      case 'segments':
-        return <div className="text-center p-8"><p className="text-muted-foreground">Marketing segments will be rebuilt soon</p></div>;
-      case 'campaigns':
-        return <div className="text-center p-8"><p className="text-muted-foreground">Email campaigns will be rebuilt soon</p></div>;
-      case 'audience-logs':
-        return <div className="text-center p-8"><p className="text-muted-foreground">Audience logs will be rebuilt soon</p></div>;
-      case 'marketing-settings':
-        return <div className="text-center p-8"><p className="text-muted-foreground">Marketing settings will be rebuilt soon</p></div>;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -3741,12 +3664,6 @@ export default function UnifiedAdminDashboard() {
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral Tracking',
-      'segments': 'Customer Segments',
-      'campaigns': 'Email Campaigns',
-      'audience-logs': 'Audience Logs',
-      'marketing-settings': 'Marketing Settings',
-      'sms-marketing': 'SMS Marketing',
-      'marketing-overview': 'Marketing Overview',
     };
     return titles[activeSection];
   };

@@ -15,7 +15,7 @@ import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
 import Stripe from "stripe";
 import multer from "multer";
-import { sendContactFormEmail, sendSuccessStoryNotificationEmail, sendNegativeReviewAlert } from "./email";
+import { sendContactFormEmail, sendSuccessStoryNotificationEmail } from "./email";
 import { fetchGoogleReviews, filterReviewsByKeywords, getHighRatedReviews } from "./lib/googleReviews";
 import { GoogleMyBusinessAuth } from "./lib/googleMyBusinessAuth";
 import { fetchAllGoogleMyBusinessReviews } from "./lib/googleMyBusinessReviews";
@@ -1065,43 +1065,6 @@ ${rssItems}
       }
       
       console.log(`[Review] New submission from ${reviewData.customerName} (${review.rating} stars)`);
-      
-      // Check if this is a negative review and send alerts (async, don't block response)
-      const negativeThreshold = parseInt((await storage.getReputationSetting('negative_review_threshold'))?.settingValue || '2');
-      const alertsEnabled = (await storage.getReputationSetting('negative_review_alerts_enabled'))?.settingValue === 'true';
-      
-      if (review.rating <= negativeThreshold && alertsEnabled) {
-        // Send email alert
-        sendNegativeReviewAlert({
-          customerName: review.customerName,
-          rating: review.rating,
-          reviewText: review.text,
-          email: review.email,
-          phone: review.phone,
-          serviceDate: review.serviceDate,
-          reviewId: review.id,
-        }).catch(err => {
-          console.error('[Review] Failed to send negative review email alert:', err);
-        });
-
-        // Send SMS alert if enabled
-        const smsAlertsEnabled = (await storage.getReputationSetting('negative_review_sms_alerts'))?.settingValue === 'true';
-        const alertPhone = (await storage.getReputationSetting('negative_review_alert_phone'))?.settingValue;
-        
-        if (smsAlertsEnabled && alertPhone) {
-          const { sendSMS } = await import('./lib/sms');
-          const message = `NEGATIVE REVIEW ALERT: ${review.customerName} left a ${review.rating}-star review.\n\nReview: "${review.text.substring(0, 100)}${review.text.length > 100 ? '...' : ''}"\n\nRespond immediately to prevent damage. View in admin dashboard.`;
-          
-          sendSMS({
-            to: alertPhone,
-            message: message,
-            customerId: null,
-            campaignId: null,
-          }).catch(err => {
-            console.error('[Review] Failed to send negative review SMS alert:', err);
-          });
-        }
-      }
       
       res.json({ 
         success: true, 
