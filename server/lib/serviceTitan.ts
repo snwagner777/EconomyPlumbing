@@ -1188,6 +1188,10 @@ class ServiceTitanAPI {
               
               return {
                 ...item,
+                quantity: item.qty || 1,
+                unitRate: item.unitRate || 0,
+                total: item.total || 0,
+                description: item.description || '',
                 pricebookDetails, // Add full pricebook data (name, description, imageUrl, etc.) or null if failed
               };
             })
