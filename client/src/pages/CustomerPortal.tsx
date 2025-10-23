@@ -17,7 +17,6 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { ReferralModal } from "@/components/ReferralModal";
-import SMSOptInWidget from "@/components/SMSOptInWidget";
 import { 
   User,
   Users,
@@ -1527,20 +1526,6 @@ export default function CustomerPortal() {
                           </div>
                         )}
                       </div>
-                    </CardContent>
-                  </Card>
-                  
-                  {/* SMS Opt-In Widget */}
-                  <Card>
-                    <CardContent className="p-0">
-                      <SMSOptInWidget 
-                        variant="card"
-                        title="Get VIP Text Updates"
-                        description="Receive appointment reminders, special offers, and maintenance alerts via text"
-                        customerId={parseInt(customerId)}
-                        source="customer_portal"
-                        showIncentive={false}
-                      />
                     </CardContent>
                   </Card>
 
