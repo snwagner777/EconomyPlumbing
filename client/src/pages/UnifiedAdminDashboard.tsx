@@ -2698,6 +2698,254 @@ function ProductsSection() {
   );
 }
 
+function ReviewsSection() {
+  const { toast } = useToast();
+  const [selectedSource, setSelectedSource] = useState<string>('all');
+  const [selectedRating, setSelectedRating] = useState<string>('all');
+
+  // Fetch Google Reviews (includes Google, Facebook, Yelp via source field)
+  const { data: googleReviewsData, isLoading: loadingGoogle } = useQuery<{ reviews: any[] }>({
+    queryKey: ['/api/admin/google-reviews'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/google-reviews', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch reviews');
+      return response.json();
+    },
+  });
+
+  // Fetch Custom Reviews (website submissions)
+  const { data: customReviewsData, isLoading: loadingCustom } = useQuery<any[]>({
+    queryKey: ['/api/admin/reviews'],
+  });
+
+  const googleReviews = googleReviewsData?.reviews || [];
+  const customReviews = customReviewsData || [];
+
+  // Combine and normalize all reviews
+  const allReviews = [
+    ...googleReviews.map((r: any) => ({
+      id: r.id,
+      authorName: r.authorName,
+      rating: r.rating,
+      text: r.text,
+      timestamp: r.timestamp * 1000, // Convert to milliseconds
+      source: r.source === 'places_api' || r.source === 'gmb_api' ? 'Google' :
+              r.source === 'dataforseo' ? 'Yelp' :
+              r.source === 'facebook' ? 'Facebook' : r.source,
+      profilePhotoUrl: r.profilePhotoUrl,
+      type: 'google' as const,
+    })),
+    ...customReviews.map((r: any) => ({
+      id: r.id,
+      authorName: r.customerName,
+      rating: r.rating,
+      text: r.text,
+      timestamp: new Date(r.submittedAt).getTime(),
+      source: 'Website',
+      status: r.status,
+      type: 'custom' as const,
+    })),
+  ].sort((a, b) => b.timestamp - a.timestamp);
+
+  // Filter reviews
+  const filteredReviews = allReviews.filter(review => {
+    if (selectedSource !== 'all' && review.source !== selectedSource) return false;
+    if (selectedRating !== 'all' && review.rating.toString() !== selectedRating) return false;
+    return true;
+  });
+
+  const isLoading = loadingGoogle || loadingCustom;
+
+  // Get unique sources
+  const sources = ['all', ...new Set(allReviews.map(r => r.source))];
+
+  // Stats
+  const totalReviews = allReviews.length;
+  const averageRating = allReviews.length > 0
+    ? (allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length).toFixed(1)
+    : '0.0';
+  const fiveStarCount = allReviews.filter(r => r.rating === 5).length;
+  const pendingCount = customReviews.filter((r: any) => r.status === 'pending').length;
+
+  return (
+    <div className="space-y-6">
+      {/* Header Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Reviews</p>
+                <p className="text-3xl font-bold mt-1">{totalReviews}</p>
+              </div>
+              <Star className="w-8 h-8 text-primary" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Average Rating</p>
+                <p className="text-3xl font-bold mt-1">{averageRating}</p>
+              </div>
+              <Star className="w-8 h-8 text-yellow-500 fill-yellow-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">5-Star Reviews</p>
+                <p className="text-3xl font-bold mt-1">{fiveStarCount}</p>
+              </div>
+              <Star className="w-8 h-8 text-green-500 fill-green-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Pending</p>
+                <p className="text-3xl font-bold mt-1">{pendingCount}</p>
+              </div>
+              <MessageCircle className="w-8 h-8 text-orange-500" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card>
+        <CardContent className="p-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="source-filter" className="text-sm">Source</Label>
+              <select
+                id="source-filter"
+                value={selectedSource}
+                onChange={(e) => setSelectedSource(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                data-testid="select-source-filter"
+              >
+                {sources.map(source => (
+                  <option key={source} value={source}>
+                    {source === 'all' ? 'All Sources' : source}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex-1 min-w-[200px]">
+              <Label htmlFor="rating-filter" className="text-sm">Rating</Label>
+              <select
+                id="rating-filter"
+                value={selectedRating}
+                onChange={(e) => setSelectedRating(e.target.value)}
+                className="w-full mt-1 px-3 py-2 border rounded-md bg-background"
+                data-testid="select-rating-filter"
+              >
+                <option value="all">All Ratings</option>
+                <option value="5">5 Stars</option>
+                <option value="4">4 Stars</option>
+                <option value="3">3 Stars</option>
+                <option value="2">2 Stars</option>
+                <option value="1">1 Star</option>
+              </select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Reviews List */}
+      <Card>
+        <CardContent className="p-0">
+          {isLoading ? (
+            <div className="py-12 text-center">
+              <p className="text-muted-foreground">Loading reviews...</p>
+            </div>
+          ) : filteredReviews.length === 0 ? (
+            <div className="py-12 text-center">
+              <MessageCircle className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">No reviews found</p>
+            </div>
+          ) : (
+            <div className="divide-y">
+              {filteredReviews.map((review) => (
+                <div key={review.id} className="p-6 hover-elevate" data-testid={`review-${review.id}`}>
+                  <div className="flex items-start gap-4">
+                    {review.profilePhotoUrl ? (
+                      <img
+                        src={review.profilePhotoUrl}
+                        alt={review.authorName}
+                        className="w-12 h-12 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                        <span className="text-lg font-semibold text-primary">
+                          {review.authorName.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex-1">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h3 className="font-semibold">{review.authorName}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <div className="flex">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-4 h-4 ${
+                                    star <= review.rating
+                                      ? 'text-yellow-500 fill-yellow-500'
+                                      : 'text-gray-300'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <Badge variant="outline" className="text-xs">
+                              {review.source}
+                            </Badge>
+                            {review.type === 'custom' && review.status && (
+                              <Badge
+                                variant={
+                                  review.status === 'approved' ? 'default' :
+                                  review.status === 'pending' ? 'outline' :
+                                  'destructive'
+                                }
+                                className="text-xs"
+                              >
+                                {review.status}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(review.timestamp).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed">{review.text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 function TrackingNumbersSection() {
   const [editingNumber, setEditingNumber] = useState<TrackingNumber | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -3597,12 +3845,6 @@ export default function UnifiedAdminDashboard() {
     },
   });
 
-  // Handle navigation to dedicated reviews page
-  useEffect(() => {
-    if (activeSection === 'reviews') {
-      setLocation('/admin/reviews');
-    }
-  }, [activeSection, setLocation]);
 
   // Show nothing while checking auth or if not admin (redirect happens via useEffect above)
   if (!authData?.isAdmin) {
@@ -3625,8 +3867,7 @@ export default function UnifiedAdminDashboard() {
       case 'success-stories':
         return <SuccessStoriesSection />;
       case 'reviews':
-        // Navigation handled by useEffect above
-        return null;
+        return <ReviewsSection />;
       case 'commercial-customers':
         return <CommercialCustomersSection />;
       case 'page-metadata':
