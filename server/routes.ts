@@ -2063,8 +2063,14 @@ ${rssItems}
   app.get("/api/oauth/status", async (req, res) => {
     try {
       const token = await storage.getGoogleOAuthToken('google_my_business');
+      
+      // Check if token exists AND is not expired
+      const now = new Date();
+      const isExpired = token ? new Date(token.expiryDate) <= now : false;
+      const isAuthenticated = !!token && !isExpired;
+      
       res.json({ 
-        isAuthenticated: !!token,
+        isAuthenticated,
         hasAccountId: !!token?.accountId,
         hasLocationId: !!token?.locationId,
       });

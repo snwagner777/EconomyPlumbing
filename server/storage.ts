@@ -223,9 +223,7 @@ export interface IStorage {
   
   // Email Send Log
   
-  // Email Templates
-  deleteEmailTemplate(id: string): Promise<void>;
-  trackTemplateUsage(id: string): Promise<void>;
+  // Email Templates - removed with marketing automation
   
   // Email Campaigns - ServiceTitan Integration
   
@@ -2434,9 +2432,7 @@ Call (512) 368-9159 or schedule service online.`,
     return { total: 0, hardBounces: 0, spamComplaints: 0, manual: 0 };
   }
   
-  // Email Templates
-  async deleteEmailTemplate(id: string): Promise<void> {}
-  async trackTemplateUsage(id: string): Promise<void> {}
+  // Email Templates - removed with marketing automation
   
   // Email Campaigns
   
