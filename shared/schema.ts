@@ -499,6 +499,45 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
   contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
 }));
 
+// Customer Data Import History - Tracks XLSX imports from ServiceTitan
+export const customerDataImports = pgTable("customer_data_imports", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Import metadata
+  fileName: text("file_name").notNull(), // Original XLSX filename
+  importedBy: text("imported_by"), // Email of admin who triggered import (if manual)
+  importSource: text("import_source").notNull().default('manual'), // 'manual', 'email', 'scheduled'
+  
+  // Import statistics
+  totalRows: integer("total_rows").notNull().default(0),
+  customersImported: integer("customers_imported").notNull().default(0),
+  contactsImported: integer("contacts_imported").notNull().default(0),
+  errors: integer("errors").notNull().default(0),
+  
+  // Metrics snapshot (at time of import)
+  totalLifetimeRevenue: integer("total_lifetime_revenue").notNull().default(0), // In cents
+  customersWithRevenue: integer("customers_with_revenue").notNull().default(0),
+  avgLifetimeRevenue: integer("avg_lifetime_revenue").notNull().default(0), // In cents
+  maxLifetimeRevenue: integer("max_lifetime_revenue").notNull().default(0), // In cents
+  
+  // Significant changes detection
+  newCustomers: integer("new_customers").notNull().default(0), // Customers added since last import
+  revenueChange: integer("revenue_change").notNull().default(0), // Revenue delta in cents
+  
+  // Import status
+  status: text("status").notNull().default('processing'), // 'processing', 'completed', 'failed'
+  errorMessage: text("error_message"),
+  
+  // Timestamps
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+  processingTime: integer("processing_time"), // Milliseconds
+}, (table) => ({
+  importSourceIdx: index("customer_imports_source_idx").on(table.importSource),
+  statusIdx: index("customer_imports_status_idx").on(table.status),
+  startedAtIdx: index("customer_imports_started_at_idx").on(table.startedAt),
+}));
+
 export const trackingNumbers = pgTable("tracking_numbers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   channelKey: text("channel_key").notNull().unique(), // e.g., 'google', 'facebook', 'yelp'
@@ -798,6 +837,12 @@ export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanCo
   lastSyncedAt: true,
 });
 
+export const insertCustomerDataImportSchema = createInsertSchema(customerDataImports).omit({
+  id: true,
+  startedAt: true,
+  completedAt: true,
+});
+
 export const otpVerifications = pgTable("otp_verifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   phoneNumber: text("phone_number").notNull(),
@@ -1017,6 +1062,8 @@ export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
 export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
+export type CustomerDataImport = typeof customerDataImports.$inferSelect;
+export type InsertCustomerDataImport = z.infer<typeof insertCustomerDataImportSchema>;
 export type OAuthUser = typeof oauthUsers.$inferSelect;
 export type UpsertOAuthUser = typeof oauthUsers.$inferInsert;
 export type AdminWhitelist = typeof adminWhitelist.$inferSelect;

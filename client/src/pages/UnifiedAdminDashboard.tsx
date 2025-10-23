@@ -66,7 +66,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -183,6 +183,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Users,
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
+    },
+    {
+      title: "Customer Data",
+      icon: Database,
+      section: 'customer-data' as AdminSection,
+      description: "Import history & metrics"
     },
   ];
 
@@ -4023,6 +4029,208 @@ function ReviewPlatformsSection() {
   );
 }
 
+// Customer Data Section - Import history and metrics
+function CustomerDataSection() {
+  const { data: customerMetrics, isLoading: metricsLoading } = useQuery({
+    queryKey: ['/api/admin/customer-metrics'],
+  });
+
+  const { data: importHistory, isLoading: historyLoading } = useQuery({
+    queryKey: ['/api/admin/customer-imports'],
+  });
+
+  if (metricsLoading || historyLoading) {
+    return (
+      <div className="p-8 space-y-6">
+        <Skeleton className="h-32 w-full" />
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
+  }
+
+  const metrics = customerMetrics || {};
+  const imports = importHistory || [];
+  const latestImport = imports[0];
+
+  return (
+    <div className="p-8 space-y-6">
+      {/* Overall Metrics */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card data-testid="card-total-customers">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Customers</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{metrics.totalCustomers?.toLocaleString() || '0'}</div>
+            <p className="text-xs text-muted-foreground">
+              {metrics.customersWithRevenue?.toLocaleString() || '0'} with revenue
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-total-revenue">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Lifetime Revenue</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${((metrics.totalLifetimeRevenue || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              All-time customer value
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-avg-revenue">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Average Customer Value</CardTitle>
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${((metrics.avgLifetimeRevenue || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Per customer
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card data-testid="card-max-revenue">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Top Customer Value</CardTitle>
+            <Star className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              ${((metrics.maxLifetimeRevenue || 0) / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Highest lifetime value
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Latest Import Status */}
+      {latestImport && (
+        <Card data-testid="card-latest-import">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Latest Import
+            </CardTitle>
+            <CardDescription>
+              Most recent customer data update from ServiceTitan
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <p className="text-sm font-medium mb-1">Import Date</p>
+                <p className="text-sm text-muted-foreground">
+                  {new Date(latestImport.startedAt).toLocaleString()}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1">File</p>
+                <p className="text-sm text-muted-foreground">{latestImport.fileName}</p>
+              </div>
+              <div>
+                <p className="text-sm font-medium mb-1">Status</p>
+                <Badge variant={latestImport.status === 'completed' ? 'default' : 'secondary'}>
+                  {latestImport.status}
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="grid gap-4 md:grid-cols-4">
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Customers Imported</p>
+                <p className="text-2xl font-bold">{latestImport.customersImported?.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Contacts Imported</p>
+                <p className="text-2xl font-bold">{latestImport.contactsImported?.toLocaleString()}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Processing Time</p>
+                <p className="text-2xl font-bold">
+                  {latestImport.processingTime ? `${(latestImport.processingTime / 1000).toFixed(1)}s` : 'N/A'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Errors</p>
+                <p className="text-2xl font-bold text-destructive">{latestImport.errors || 0}</p>
+              </div>
+            </div>
+
+            {latestImport.newCustomers > 0 && (
+              <div className="flex items-center gap-2 p-3 bg-primary/10 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-primary" />
+                <p className="text-sm font-medium">
+                  {latestImport.newCustomers} new customers added since last import
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Import History */}
+      <Card data-testid="card-import-history">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Import History
+          </CardTitle>
+          <CardDescription>
+            Recent customer data imports from ServiceTitan
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {imports.length === 0 ? (
+            <div className="text-center p-8 text-muted-foreground">
+              No imports yet. Upload your first XLSX file to get started.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {imports.map((imp: any) => (
+                <div
+                  key={imp.id}
+                  className="flex items-center justify-between p-3 border rounded-lg hover-elevate"
+                  data-testid={`import-${imp.id}`}
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <p className="font-medium">{imp.fileName}</p>
+                      <Badge variant={imp.status === 'completed' ? 'default' : 'secondary'} className="text-xs">
+                        {imp.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(imp.startedAt).toLocaleString()} • {imp.customersImported?.toLocaleString()} customers
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">
+                      ${((imp.totalLifetimeRevenue || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Total revenue</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function UnifiedAdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
   const [, setLocation] = useLocation();
@@ -4092,6 +4300,8 @@ export default function UnifiedAdminDashboard() {
         return <ReviewPlatformsSection />;
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
+      case 'customer-data':
+        return <CustomerDataSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -4109,6 +4319,7 @@ export default function UnifiedAdminDashboard() {
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral Tracking',
+      'customer-data': 'Customer Data',
     };
     return titles[activeSection];
   };

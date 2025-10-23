@@ -1729,6 +1729,62 @@ ${rssItems}
     }
   });
 
+  // Get customer data metrics (Admin Dashboard)
+  app.get("/api/admin/customer-metrics", async (req, res) => {
+    try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { serviceTitanCustomers } = await import('@shared/schema');
+      
+      const metrics = await db
+        .select({
+          totalCustomers: sql<number>`count(*)::int`,
+          customersWithRevenue: sql<number>`count(CASE WHEN ${serviceTitanCustomers.lifetimeValue} > 0 THEN 1 END)::int`,
+          totalLifetimeRevenue: sql<number>`COALESCE(sum(${serviceTitanCustomers.lifetimeValue}), 0)::bigint`,
+          avgLifetimeRevenue: sql<number>`COALESCE(avg(${serviceTitanCustomers.lifetimeValue}), 0)::int`,
+          maxLifetimeRevenue: sql<number>`COALESCE(max(${serviceTitanCustomers.lifetimeValue}), 0)::bigint`
+        })
+        .from(serviceTitanCustomers);
+
+      res.json(metrics[0] || {
+        totalCustomers: 0,
+        customersWithRevenue: 0,
+        totalLifetimeRevenue: 0,
+        avgLifetimeRevenue: 0,
+        maxLifetimeRevenue: 0
+      });
+    } catch (error: any) {
+      console.error('[Admin] Error fetching customer metrics:', error);
+      res.status(500).json({ message: "Error fetching customer metrics" });
+    }
+  });
+
+  // Get customer data import history (Admin Dashboard)
+  app.get("/api/admin/customer-imports", async (req, res) => {
+    try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerDataImports } = await import('@shared/schema');
+      
+      const imports = await db
+        .select()
+        .from(customerDataImports)
+        .orderBy(sql`${customerDataImports.startedAt} DESC`)
+        .limit(20);
+
+      res.json(imports);
+    } catch (error: any) {
+      console.error('[Admin] Error fetching customer imports:', error);
+      res.status(500).json({ message: "Error fetching customer imports" });
+    }
+  });
+
   // Customer Success Story submission with spam protection and photo upload
   app.post("/api/success-stories", async (req, res) => {
     try {

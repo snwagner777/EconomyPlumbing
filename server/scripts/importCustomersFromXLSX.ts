@@ -95,7 +95,7 @@ async function importCustomers() {
       try {
         const customerId = row['Customer ID'];
         // Skip empty rows
-        if (!customerId || customerId === '') continue;
+        if (!customerId) continue;
 
         const address = parseAddress(row['Full Address']);
         const phone = row['Phone Number'];
