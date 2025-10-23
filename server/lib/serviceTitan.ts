@@ -1329,29 +1329,234 @@ class ServiceTitanAPI {
   }
 
   /**
-   * DISABLED: ServiceTitan API sync replaced with XLSX email imports
-   * Customer data now imported via hourly XLSX reports from ServiceTitan via Mailgun webhook
+   * Sync all customers from ServiceTitan to local database
+   * Paginates through all customers and stores them with normalized contacts
    */
   async syncAllCustomers(): Promise<{ customersCount: number; contactsCount: number; duration: number }> {
-    console.log('[ServiceTitan Sync] ⚠️  syncAllCustomers() disabled - customer data imported via XLSX email reports');
-    return {
-      customersCount: 0,
-      contactsCount: 0,
-      duration: 0,
-    };
-  }
+    const startTime = Date.now();
+    console.log('[ServiceTitan Sync] Starting full customer sync...');
+    
+    try {
+      const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+      const { eq } = await import('drizzle-orm');
+      
+      let page = 1;
+      let hasMore = true;
+      let totalCustomers = 0;
+      let totalContacts = 0;
+      let customersWithJobs = 0;
+      const pageSize = 200; // Increased from 50 to reduce API calls
 
-  /**
-   * DELETED - This function was being mysteriously called and syncing customers
-   * Customer data is now ONLY imported via XLSX email reports from Mailgun
-   */
-  async _DISABLED_syncAllCustomers(): Promise<{ customersCount: number; contactsCount: number; duration: number }> {
-    console.log('[ServiceTitan Sync] ⚠️  _DISABLED_syncAllCustomers() deleted - customer data imported via XLSX email reports ONLY');
-    return {
-      customersCount: 0,
-      contactsCount: 0,
-      duration: 0,
-    };
+      // Use upsert strategy - no deletion, just update existing records
+      console.log('[ServiceTitan Sync] Using upsert strategy for zero-downtime sync...');
+      console.log('[ServiceTitan Sync] Will also fetch job counts for each customer...');
+
+      while (hasMore) {
+        console.log(`[ServiceTitan Sync] Fetching page ${page}...`);
+        
+        // Fetch customers page (use relative endpoint, request() will prepend baseUrl)
+        const result = await this.request<{ data: any[]; hasMore: boolean }>(`/customers?page=${page}&pageSize=${pageSize}`);
+        
+        const customers = result.data || [];
+        hasMore = result.hasMore || false;
+        
+        if (customers.length === 0) {
+          break;
+        }
+
+        // Process each customer
+        let customersWithJobs = 0;
+        let totalJobsProcessed = 0;
+        let highValueCustomers: { id: number; name: string; jobCount: number }[] = [];
+        let skippedInactive = 0;
+        
+        for (let idx = 0; idx < customers.length; idx++) {
+          const customer = customers[idx];
+          
+          // SKIP INACTIVE/DEACTIVATED CUSTOMERS - only sync active customers
+          if (customer.active === false) {
+            skippedInactive++;
+            continue;
+          }
+          
+          // Show progress every 10 customers
+          if ((idx + 1) % 10 === 0) {
+            console.log(`[ServiceTitan Sync] Processing customer ${idx + 1}/${customers.length}...`);
+          }
+          
+          try {
+            // Fetch ALL jobs for this customer to get accurate count
+            let jobCount = 0;
+            try {
+              // Jobs API uses different base path (jpm/v2 instead of crm/v2)
+              const jobsBaseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}`;
+              let page = 1;
+              let hasMore = true;
+              const pageSize = 100; // ServiceTitan max page size
+              
+              while (hasMore) {
+                const response = await fetch(
+                  `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&page=${page}&pageSize=${pageSize}`,
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${this.accessToken}`,
+                      'ST-App-Key': this.config.appKey,
+                      'Content-Type': 'application/json',
+                    },
+                  }
+                );
+                
+                if (response.ok) {
+                  const jobsResult = await response.json();
+                  
+                  if (jobsResult.data && jobsResult.data.length > 0) {
+                    jobCount += jobsResult.data.length;
+                  }
+                  
+                  // Continue pagination if there are more pages
+                  hasMore = jobsResult.hasMore || false;
+                  page++;
+                  
+                  // Safety check to prevent infinite loops
+                  if (page > 50) { // Max 5000 jobs per customer (50 pages * 100)
+                    console.log(`[ServiceTitan Sync] ⚠️ Customer ${customer.id} has over 5000 jobs, stopping pagination`);
+                    break;
+                  }
+                } else {
+                  // Stop on any error
+                  hasMore = false;
+                }
+              }
+              
+              // Track statistics
+              if (jobCount > 0) {
+                customersWithJobs++;
+                totalJobsProcessed += jobCount;
+              }
+              
+              // Log progress for customers with many jobs
+              if (jobCount > 100) {
+                console.log(`[ServiceTitan Sync] 🌟 High-value customer: ${customer.name} (ID: ${customer.id}) - ${jobCount} completed jobs`);
+                highValueCustomers.push({ id: customer.id, name: customer.name || 'Unknown', jobCount });
+              }
+              
+            } catch (jobError) {
+              // Silently continue with jobCount = 0 - don't log to avoid flooding logs
+              // Jobs API might not have data for all customers
+            }
+
+            // Insert customer with job count
+            await db.insert(serviceTitanCustomers).values({
+              id: customer.id,
+              name: customer.name || 'Unknown',
+              type: customer.type || 'Residential',
+              street: customer.address?.street || null,
+              city: customer.address?.city || null,
+              state: customer.address?.state || null,
+              zip: customer.address?.zip || null,
+              active: customer.active ?? true,
+              balance: customer.balance?.toString() || '0.00',
+              jobCount: jobCount,
+            }).onConflictDoUpdate({
+              target: serviceTitanCustomers.id,
+              set: {
+                name: customer.name || 'Unknown',
+                type: customer.type || 'Residential',
+                street: customer.address?.street || null,
+                city: customer.address?.city || null,
+                state: customer.address?.state || null,
+                zip: customer.address?.zip || null,
+                active: customer.active ?? true,
+                balance: customer.balance?.toString() || '0.00',
+                jobCount: jobCount,
+                lastSyncedAt: new Date(),
+              },
+            });
+            
+            totalCustomers++;
+            if (jobCount > 0) {
+              customersWithJobs++;
+            }
+
+            // Clean up old contacts for this customer before syncing new ones
+            // This ensures we don't have stale contacts if they were removed in ServiceTitan
+            await db.delete(serviceTitanContacts).where(eq(serviceTitanContacts.customerId, customer.id));
+
+            // Fetch and store customer contacts
+            const contacts = await this.getCustomerContacts(customer.id);
+            
+            for (const contact of contacts) {
+              const contactType = contact.type || 'Unknown';
+              const value = contact.value || contact.phoneNumber || contact.email || '';
+              
+              if (!value) continue;
+
+              // Normalize based on type
+              let normalizedValue = '';
+              if (contactType.toLowerCase().includes('phone') || contactType.toLowerCase().includes('mobile')) {
+                normalizedValue = normalizePhone(value);
+              } else if (contactType.toLowerCase().includes('email')) {
+                normalizedValue = normalizeEmail(value);
+              } else {
+                normalizedValue = value.toLowerCase().trim();
+              }
+
+              if (normalizedValue) {
+                await db.insert(serviceTitanContacts).values({
+                  customerId: customer.id,
+                  contactType,
+                  value,
+                  normalizedValue,
+                  isPrimary: false, // ServiceTitan doesn't expose primary flag clearly
+                }).onConflictDoNothing();
+                
+                totalContacts++;
+              }
+            }
+          } catch (error) {
+            console.error(`[ServiceTitan Sync] Error processing customer ${customer.id}:`, error);
+            // Continue with next customer
+          }
+        }
+
+        // Log page summary if we found high-value customers or skipped inactive
+        if (highValueCustomers.length > 0 || skippedInactive > 0) {
+          console.log(`[ServiceTitan Sync] Page ${page - 1} Summary:`);
+          console.log(`  - Customers with jobs: ${customersWithJobs}/${customers.length}`);
+          console.log(`  - Total jobs counted: ${totalJobsProcessed}`);
+          console.log(`  - High-value customers (100+ jobs): ${highValueCustomers.length}`);
+          if (skippedInactive > 0) {
+            console.log(`  - Skipped inactive/deactivated: ${skippedInactive}`);
+          }
+          
+          // Show top 3 high-value customers from this page
+          const topCustomers = highValueCustomers.slice(0, 3);
+          topCustomers.forEach(c => {
+            console.log(`    • ${c.name}: ${c.jobCount} jobs`);
+          });
+        }
+        
+        page++;
+        
+        // Update heartbeat to prevent stale lock detection
+        const { updateSyncHeartbeat } = await import('./serviceTitanSync');
+        updateSyncHeartbeat();
+        
+        // Log progress every 10 pages
+        if (page % 10 === 0) {
+          console.log(`[ServiceTitan Sync] Progress: ${totalCustomers} customers, ${totalContacts} contacts, ${customersWithJobs} with jobs`);
+        }
+      }
+
+      const duration = Date.now() - startTime;
+      console.log(`[ServiceTitan Sync] ✅ Completed! ${totalCustomers} customers, ${totalContacts} contacts in ${(duration / 1000).toFixed(1)}s`);
+      console.log(`[ServiceTitan Sync] 📊 ${customersWithJobs} customers have completed jobs`);
+      
+      return { customersCount: totalCustomers, contactsCount: totalContacts, duration };
+    } catch (error) {
+      console.error('[ServiceTitan Sync] Failed:', error);
+      throw error;
+    }
   }
 
   /**
@@ -1470,14 +1675,8 @@ class ServiceTitanAPI {
     const liveCustomer = await this.searchCustomer(email, phone);
     
     if (liveCustomer) {
-      console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API`);
+      console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API, caching...`);
       
-      // DISABLED: On-demand caching disabled - customer data only imported via XLSX email reports
-      // Keeping search functionality active for Customer Portal
-      console.log(`[ServiceTitan] ⚠️  On-demand caching disabled - customer data imported via XLSX only`);
-      console.log(`[DEBUG] searchCustomerWithFallback called for: "${phoneOrEmail}" - CACHING IS DISABLED, returning customer ID only`);
-      
-      /*
       // Cache on-demand
       try {
         const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
@@ -1565,7 +1764,6 @@ class ServiceTitanAPI {
         console.error('[ServiceTitan] Failed to cache customer:', error);
         // Non-fatal, customer was still found
       }
-      */
       
       return liveCustomer.id;
     }
@@ -2324,8 +2522,6 @@ class ServiceTitanAPI {
    */
   async getAllCustomersMap(): Promise<Map<number, string>> {
     try {
-      console.log('🚨🚨🚨🚨🚨 [CULPRIT] getAllCustomersMap() IS BEING CALLED! Stack trace:');
-      console.trace();
       console.log('[ServiceTitan] Fetching all customers for lookup map...');
       
       const customerMap = new Map<number, string>();

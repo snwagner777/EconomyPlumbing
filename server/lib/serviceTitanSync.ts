@@ -33,28 +33,118 @@ export function updateSyncHeartbeat(): void {
 }
 
 /**
- * DISABLED: ServiceTitan API sync replaced with XLSX email imports
- * Customer data now imported via hourly XLSX reports from ServiceTitan via Mailgun webhook
+ * Sync all customers from ServiceTitan to local database
+ * Protected by mutex to prevent concurrent execution
  */
 export async function syncServiceTitanCustomers(): Promise<void> {
-  console.log('[ServiceTitan Sync] ⚠️  API sync disabled - using XLSX email imports instead');
-  return;
+  // Check if sync is already running
+  if (syncInProgress) {
+    console.log('[ServiceTitan Sync] ⏭️  Sync already in progress, skipping...');
+    return;
+  }
+
+  try {
+    syncInProgress = true;
+    console.log('[ServiceTitan Sync] Starting customer sync...');
+    
+    const serviceTitan = getServiceTitanAPI();
+    const result = await serviceTitan.syncAllCustomers();
+    
+    console.log(`[ServiceTitan Sync] ✅ Customer sync completed!`);
+    console.log(`[ServiceTitan Sync] - Customers synced: ${result.customersCount}`);
+    console.log(`[ServiceTitan Sync] - Contacts synced: ${result.contactsCount}`);
+    console.log(`[ServiceTitan Sync] - Duration: ${(result.duration / 1000).toFixed(1)}s`);
+  } catch (error) {
+    console.error('[ServiceTitan Sync] ❌ Customer sync failed:', error);
+  } finally {
+    syncInProgress = false;
+  }
 }
 
 /**
- * DISABLED: ServiceTitan API sync replaced with XLSX email imports
- * Customer data now imported via hourly XLSX reports from ServiceTitan via Mailgun webhook
+ * Sync all data from ServiceTitan to local database (customers + jobs)
+ * Protected by mutex to prevent concurrent execution
  */
 export async function syncServiceTitanData(): Promise<void> {
-  console.log('[ServiceTitan Sync] ⚠️  API sync disabled - using XLSX email imports instead');
-  return;
+  // Check if sync is already running
+  if (syncInProgress) {
+    console.log('[ServiceTitan Sync] ⏭️  Sync already in progress, skipping...');
+    return;
+  }
+
+  try {
+    syncInProgress = true;
+    const startTime = Date.now();
+    console.log('[ServiceTitan Sync] 🚀 Starting full data sync (customers + jobs)...');
+    
+    const serviceTitan = getServiceTitanAPI();
+    
+    // Sync customers first
+    console.log('[ServiceTitan Sync] 📋 Phase 1/2: Syncing customers...');
+    updateSyncHeartbeat();
+    const customerResult = await serviceTitan.syncAllCustomers();
+    
+    console.log(`[ServiceTitan Sync] ✅ Customer sync completed!`);
+    console.log(`[ServiceTitan Sync] - Customers synced: ${customerResult.customersCount}`);
+    console.log(`[ServiceTitan Sync] - Contacts synced: ${customerResult.contactsCount}`);
+    console.log(`[ServiceTitan Sync] - Customer sync duration: ${(customerResult.duration / 1000).toFixed(1)}s`);
+    
+    // Sync jobs
+    console.log('[ServiceTitan Sync] 📋 Phase 2/2: Syncing jobs...');
+    updateSyncHeartbeat();
+    const jobResult = await serviceTitan.syncAllJobs();
+    
+    console.log(`[ServiceTitan Sync] ✅ Job sync completed!`);
+    console.log(`[ServiceTitan Sync] - Jobs synced: ${jobResult.jobsCount}`);
+    console.log(`[ServiceTitan Sync] - Customers updated: ${jobResult.customersUpdated}`);
+    console.log(`[ServiceTitan Sync] - Job sync duration: ${(jobResult.duration / 1000).toFixed(1)}s`);
+    
+    const totalDuration = (Date.now() - startTime) / 1000;
+    console.log(`[ServiceTitan Sync] ✨ Full data sync completed in ${totalDuration.toFixed(1)}s`);
+  } catch (error) {
+    console.error('[ServiceTitan Sync] ❌ Data sync failed:', error);
+  } finally {
+    syncInProgress = false;
+  }
 }
 
 /**
- * DISABLED: ServiceTitan API sync replaced with XLSX email imports
- * Customer data now imported via hourly XLSX reports from ServiceTitan via Mailgun webhook
+ * Start the ServiceTitan data sync scheduler
+ * - Full sync every 6 hours (for complete data integrity)
+ * - Runs initial sync on startup
+ * - Syncs both customers and jobs
  */
 export async function startServiceTitanSync(): Promise<void> {
-  console.log('[ServiceTitan Sync] ⚠️  Scheduler disabled - customer data now imported via XLSX email reports from ServiceTitan via Mailgun');
-  return;
+  console.log('[ServiceTitan Sync] Scheduler started - will sync customers and jobs every 6 hours');
+  
+  // Run initial full sync on startup
+  try {
+    const { serviceTitanCustomers, serviceTitanJobs } = await import('@shared/schema');
+    const { db } = await import('../db');
+    const { count } = await import('drizzle-orm');
+    
+    const customerResult = await db.select({ count: count() }).from(serviceTitanCustomers);
+    const customerCount = customerResult[0]?.count || 0;
+    
+    const jobResult = await db.select({ count: count() }).from(serviceTitanJobs);
+    const jobCount = jobResult[0]?.count || 0;
+    
+    console.log(`[ServiceTitan Sync] 🚀 Starting full data sync...`);
+    console.log(`[ServiceTitan Sync] 📊 Current cache: ${customerCount} customers, ${jobCount} jobs`);
+    
+    // Run sync without blocking startup
+    syncServiceTitanData().catch(error => {
+      console.error('[ServiceTitan Sync] Initial sync failed:', error);
+    });
+  } catch (error) {
+    console.error('[ServiceTitan Sync] Failed to check data counts:', error);
+  }
+  
+  // Run full sync every 6 hours to keep cache fresh
+  setInterval(() => {
+    console.log('[ServiceTitan Sync] 🔄 Starting scheduled 6-hour data sync...');
+    syncServiceTitanData().catch(error => {
+      console.error('[ServiceTitan Sync] Scheduled sync failed:', error);
+    });
+  }, 6 * 60 * 60 * 1000); // 6 hours
 }

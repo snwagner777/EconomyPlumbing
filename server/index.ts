@@ -6,13 +6,13 @@ import * as path from "path";
 import * as fs from "fs";
 import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
-// import { startMembershipSyncJob } from "./lib/membershipSyncJob"; // DISABLED for debugging
+import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 // import { startWeeklyPostScheduler } from "./lib/weeklyPostScheduler"; // Disabled - no social media integration yet
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
-// import { startServiceTitanSync } from "./lib/serviceTitanSync"; // DISABLED for debugging
+import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { getReferralProcessor } from "./lib/referralProcessor";
 import { startGMBAutomation } from "./lib/gmbAutomation";
 // Marketing schedulers removed - all marketing infrastructure has been removed
@@ -408,8 +408,7 @@ async function refreshReviewsPeriodically() {
   refreshReviewsPeriodically();
   
   // Start membership sync background job (non-blocking)
-  // DISABLED for debugging customer count increase
-  // startMembershipSyncJob();
+  startMembershipSyncJob();
   
   // Social media posting disabled - no integration yet
   // startWeeklyPostScheduler();

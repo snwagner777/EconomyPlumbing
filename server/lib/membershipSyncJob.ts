@@ -107,8 +107,23 @@ export async function processPendingMemberships(): Promise<void> {
 }
 
 /**
- * TEMPORARILY DISABLED for debugging
+ * Start the background job to process membership syncs
+ * Runs every 30 seconds
  */
 export function startMembershipSyncJob(): void {
-  log('[MembershipSync] ⚠️ TEMPORARILY DISABLED for debugging customer count increase');
+  const INTERVAL = 30 * 1000; // 30 seconds
+
+  // Run immediately on startup
+  processPendingMemberships().catch(error => {
+    log(`[MembershipSync] ERROR in initial run: ${error}`);
+  });
+
+  // Then run periodically
+  setInterval(() => {
+    processPendingMemberships().catch(error => {
+      log(`[MembershipSync] ERROR in scheduled run: ${error}`);
+    });
+  }, INTERVAL);
+
+  log('[MembershipSync] Background job started (runs every 30 seconds)');
 }
