@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import CustomerSegmentsAdmin from "./CustomerSegmentsAdmin";
-import EmailCampaignsAdmin from "./EmailCampaignsAdmin";
-import AudienceLogsAdmin from "./AudienceLogsAdmin";
-import MarketingSettingsAdmin from "./MarketingSettingsAdmin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   Sidebar, 
@@ -3747,13 +3743,13 @@ export default function UnifiedAdminDashboard() {
       case 'referrals':
         return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
       case 'segments':
-        return <CustomerSegmentsAdmin />;
+        return <div className="text-center p-8"><p className="text-muted-foreground">Marketing segments will be rebuilt soon</p></div>;
       case 'campaigns':
-        return <EmailCampaignsAdmin />;
+        return <div className="text-center p-8"><p className="text-muted-foreground">Email campaigns will be rebuilt soon</p></div>;
       case 'audience-logs':
-        return <AudienceLogsAdmin />;
+        return <div className="text-center p-8"><p className="text-muted-foreground">Audience logs will be rebuilt soon</p></div>;
       case 'marketing-settings':
-        return <MarketingSettingsAdmin />;
+        return <div className="text-center p-8"><p className="text-muted-foreground">Marketing settings will be rebuilt soon</p></div>;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
