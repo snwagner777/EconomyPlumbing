@@ -2732,8 +2732,9 @@ function ReviewsSection() {
       text: r.text,
       timestamp: r.timestamp * 1000, // Convert to milliseconds
       source: r.source === 'places_api' || r.source === 'gmb_api' ? 'Google' :
-              r.source === 'dataforseo' ? 'Yelp' :
-              r.source === 'facebook' ? 'Facebook' : r.source,
+              r.source === 'dataforseo' || r.source.toLowerCase() === 'yelp' ? 'Yelp' :
+              r.source === 'facebook' ? 'Facebook' : 
+              r.source.charAt(0).toUpperCase() + r.source.slice(1), // Capitalize first letter
       profilePhotoUrl: r.profilePhotoUrl,
       type: 'google' as const,
     })),
