@@ -3525,56 +3525,7 @@ ${rssItems}
   // ============================================
   // ADMIN REVIEW MANAGEMENT ENDPOINTS
   // ============================================
-
-  // Admin: Get all reviews (all statuses)
-  app.get("/api/admin/reviews", requireAdmin, async (req, res) => {
-    try {
-      const reviews = await storage.getAllReviews();
-      res.json({ reviews });
-    } catch (error: any) {
-      console.error('[Admin Reviews] Error fetching reviews:', error);
-      res.status(500).json({ message: "Error fetching reviews" });
-    }
-  });
-
-  // Admin: Approve a review
-  app.post("/api/admin/reviews/:id/approve", requireAdmin, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const review = await storage.approveReview(id);
-      console.log(`[Admin Reviews] Approved review ${id}`);
-      res.json({ success: true, review });
-    } catch (error: any) {
-      console.error('[Admin Reviews] Error approving review:', error);
-      res.status(500).json({ message: "Error approving review" });
-    }
-  });
-
-  // Admin: Reject a review
-  app.post("/api/admin/reviews/:id/reject", requireAdmin, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const review = await storage.rejectReview(id);
-      console.log(`[Admin Reviews] Rejected review ${id}`);
-      res.json({ success: true, review });
-    } catch (error: any) {
-      console.error('[Admin Reviews] Error rejecting review:', error);
-      res.status(500).json({ message: "Error rejecting review" });
-    }
-  });
-
-  // Admin: Delete a review permanently
-  app.delete("/api/admin/reviews/:id", requireAdmin, async (req, res) => {
-    try {
-      const { id } = req.params;
-      await storage.deleteReview(id);
-      console.log(`[Admin Reviews] Deleted review ${id}`);
-      res.json({ success: true });
-    } catch (error: any) {
-      console.error('[Admin Reviews] Error deleting review:', error);
-      res.status(500).json({ message: "Error deleting review" });
-    }
-  });
+  // Note: Custom reviews endpoints moved to line ~3787
 
   // ============================================
   // REVIEW PLATFORMS ENDPOINTS
@@ -3613,6 +3564,17 @@ ${rssItems}
     } catch (error: any) {
       console.error('[Admin Review Platforms] Error updating platform:', error);
       res.status(500).json({ message: "Error updating review platform" });
+    }
+  });
+
+  // Admin: Get all Google reviews (includes Google, Facebook, Yelp reviews)
+  app.get("/api/admin/google-reviews", requireAdmin, async (req, res) => {
+    try {
+      const reviews = await storage.getGoogleReviews();
+      res.json({ reviews });
+    } catch (error: any) {
+      console.error('[Admin Google Reviews] Error fetching reviews:', error);
+      res.status(500).json({ message: "Error fetching Google reviews" });
     }
   });
 
