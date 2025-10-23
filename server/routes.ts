@@ -4,8 +4,7 @@ import { createServer, type Server } from "http";
 import crypto from "crypto";
 import { storage } from "./storage";
 import { getServiceTitanAPI } from "./lib/serviceTitan";
-import { processSegmentAutoEntry, processSegmentAutoExit, refreshAllSegments } from "./lib/audienceManager";
-import { getAllServiceHealth, getSystemHealth } from "./lib/healthMonitor";
+// Marketing imports removed - all marketing infrastructure has been removed
 
 // Declare global types for SSR cache invalidation
 declare global {

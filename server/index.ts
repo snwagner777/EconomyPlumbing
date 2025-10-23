@@ -14,10 +14,7 @@ import { startDailyCompositeJob } from "./lib/dailyCompositeJob";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { getReferralProcessor } from "./lib/referralProcessor";
-import { startSegmentRefreshScheduler } from "./lib/segmentRefreshScheduler";
-import { startWebhookRetryProcessor } from "./lib/webhookRetryProcessor";
-import { startCountReconciliationScheduler } from "./lib/segmentCountReconciliation";
-import { initHealthAlerterScheduler } from "./lib/healthAlerterScheduler";
+// Marketing schedulers removed - all marketing infrastructure has been removed
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
 import { securityHeadersMiddleware } from "./middleware/securityHeaders";
@@ -433,17 +430,7 @@ async function refreshReviewsPeriodically() {
   // Start ServiceTitan customer sync (runs daily at 3am)
   startServiceTitanSync();
   
-  // Start segment refresh scheduler (runs every 12 hours to auto-enter/exit customers from segments)
-  startSegmentRefreshScheduler();
-  
-  // Start webhook retry processor (handles failed webhooks with exponential backoff)
-  startWebhookRetryProcessor();
-  
-  // Start segment count reconciliation scheduler (runs every 24 hours to verify and fix count drift)
-  startCountReconciliationScheduler();
-  
-  // Start health alerter scheduler (runs every 5 minutes to check system health and send alerts)
-  initHealthAlerterScheduler();
+  // Marketing schedulers removed - all marketing infrastructure has been removed
   
   // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
   const referralProcessor = getReferralProcessor();
