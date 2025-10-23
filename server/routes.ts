@@ -8173,6 +8173,25 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       const { serviceTitanCustomers } = await import('@shared/schema');
       const { gt, count } = await import('drizzle-orm');
       
+      // Get total number of customers with at least 1 service in the database
+      const [totalResult] = await db
+        .select({ 
+          total: count(),
+        })
+        .from(serviceTitanCustomers)
+        .where(gt(serviceTitanCustomers.jobCount, 0));
+
+      const totalCustomersWithService = totalResult.total || 0;
+
+      // If the database hasn't been populated with job data yet, don't show misleading percentiles
+      if (totalCustomersWithService === 0) {
+        console.log(`[Portal] Customer ${customerId}: Job sync hasn't run yet, skipping percentile calculation`);
+        return res.json({ 
+          serviceCount, 
+          topPercentile: null  // Don't show percentile if database is empty
+        });
+      }
+      
       // Count how many customers have MORE services than this customer
       const [result] = await db
         .select({ 
@@ -8183,21 +8202,9 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
 
       const customersWithMore = result.total || 0;
 
-      // Get total number of customers with at least 1 service
-      const [totalResult] = await db
-        .select({ 
-          total: count(),
-        })
-        .from(serviceTitanCustomers)
-        .where(gt(serviceTitanCustomers.jobCount, 0));
-
-      const totalCustomersWithService = totalResult.total || 1;
-
       // Calculate percentile (inverted - lower number = better rank)
       // If 4 out of 100 customers have more services, you're in the top 4%
-      const topPercentile = totalCustomersWithService > 0
-        ? Math.min(99, Math.round((customersWithMore / totalCustomersWithService) * 100)) // Cap at 99% to prevent "Better than 100%"
-        : 50;
+      const topPercentile = Math.min(99, Math.round((customersWithMore / totalCustomersWithService) * 100)); // Cap at 99% to prevent "Better than 100%"
 
       console.log(`[Portal] Customer ${customerId}: ${serviceCount} completed services, ${customersWithMore}/${totalCustomersWithService} customers have more → Top ${topPercentile}%`);
 
