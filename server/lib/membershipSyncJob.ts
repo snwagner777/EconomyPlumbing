@@ -109,6 +109,7 @@ export async function processPendingMemberships(): Promise<void> {
 /**
  * Start the background job to process membership syncs
  * Runs every 30 seconds
+ * NOTE: This is different from bulk customer sync - this only processes online membership purchases
  */
 export function startMembershipSyncJob(): void {
   const INTERVAL = 30 * 1000; // 30 seconds

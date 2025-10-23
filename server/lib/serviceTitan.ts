@@ -1329,10 +1329,23 @@ class ServiceTitanAPI {
   }
 
   /**
-   * Sync all customers from ServiceTitan to local database
-   * Paginates through all customers and stores them with normalized contacts
+   * DISABLED: ServiceTitan API sync replaced with XLSX email imports
+   * Customer data now imported via hourly XLSX reports from ServiceTitan via Mailgun webhook
    */
   async syncAllCustomers(): Promise<{ customersCount: number; contactsCount: number; duration: number }> {
+    console.log('[ServiceTitan Sync] ⚠️  syncAllCustomers() disabled - customer data imported via XLSX email reports');
+    return {
+      customersCount: 0,
+      contactsCount: 0,
+      duration: 0,
+    };
+  }
+
+  /**
+   * DISABLED VERSION - Sync all customers from ServiceTitan to local database
+   * Paginates through all customers and stores them with normalized contacts
+   */
+  async _DISABLED_syncAllCustomers(): Promise<{ customersCount: number; contactsCount: number; duration: number }> {
     const startTime = Date.now();
     console.log('[ServiceTitan Sync] Starting full customer sync...');
     
@@ -1675,8 +1688,13 @@ class ServiceTitanAPI {
     const liveCustomer = await this.searchCustomer(email, phone);
     
     if (liveCustomer) {
-      console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API, caching...`);
+      console.log(`[ServiceTitan] ✅ Found customer ${liveCustomer.id} via live API`);
       
+      // DISABLED: On-demand caching disabled - customer data only imported via XLSX email reports
+      // Keeping search functionality active for Customer Portal
+      console.log(`[ServiceTitan] ⚠️  On-demand caching disabled - customer data imported via XLSX only`);
+      
+      /*
       // Cache on-demand
       try {
         const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
@@ -1764,6 +1782,7 @@ class ServiceTitanAPI {
         console.error('[ServiceTitan] Failed to cache customer:', error);
         // Non-fatal, customer was still found
       }
+      */
       
       return liveCustomer.id;
     }

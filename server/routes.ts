@@ -1504,13 +1504,20 @@ ${rssItems}
       console.log('[Customers Leaderboard] Fetching top 5 customers from database...');
       
       // Get top 5 customers by job count
+      // Filter: Must have jobs AND last job within 6 years
+      const sixYearsAgo = new Date();
+      sixYearsAgo.setFullYear(sixYearsAgo.getFullYear() - 6);
+      
       const topCustomers = await db
         .select({
           name: serviceTitanCustomers.name,
           jobCount: serviceTitanCustomers.jobCount,
         })
         .from(serviceTitanCustomers)
-        .where(sql`${serviceTitanCustomers.jobCount} > 0`)
+        .where(sql`
+          ${serviceTitanCustomers.jobCount} > 0 
+          AND ${serviceTitanCustomers.lastServiceDate} >= ${sixYearsAgo.toISOString()}
+        `)
         .orderBy(desc(serviceTitanCustomers.jobCount))
         .limit(5);
 
