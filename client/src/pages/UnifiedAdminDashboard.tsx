@@ -2767,6 +2767,81 @@ function ReviewsSection() {
   // Get unique sources
   const sources = ['all', ...new Set(allReviews.map(r => r.source))];
 
+  // Reply handlers
+  const handleGenerateReply = async (review: any) => {
+    setSelectedReview(review);
+    setIsGenerating(true);
+    setReplyDialogOpen(true);
+    setAiReply('');
+
+    try {
+      const response = await fetch(`/api/admin/reviews/${review.id}/generate-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ type: review.type }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate reply');
+      }
+
+      const data = await response.json();
+      setAiReply(data.reply);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to generate AI reply. Please try again.",
+        variant: "destructive",
+      });
+      setReplyDialogOpen(false);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handlePostReply = async () => {
+    if (!selectedReview || !aiReply.trim()) return;
+
+    setIsPosting(true);
+    try {
+      const response = await fetch(`/api/admin/reviews/${selectedReview.id}/post-reply`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          type: selectedReview.type,
+          replyText: aiReply,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to post reply');
+      }
+
+      toast({
+        title: "Success",
+        description: "Reply posted successfully!",
+      });
+
+      // Refresh reviews
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/google-reviews'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/reviews'] });
+
+      setReplyDialogOpen(false);
+      setSelectedReview(null);
+      setAiReply('');
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to post reply. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsPosting(false);
+    }
+  };
+
   // Stats
   const totalReviews = allReviews.length;
   const averageRating = allReviews.length > 0
@@ -2939,7 +3014,18 @@ function ReviewsSection() {
                           {new Date(review.timestamp).toLocaleDateString()}
                         </span>
                       </div>
-                      <p className="text-sm leading-relaxed">{review.text}</p>
+                      <p className="text-sm leading-relaxed mb-3">{review.text}</p>
+                      
+                      {/* Reply Button */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleGenerateReply(review)}
+                        data-testid={`button-reply-${review.id}`}
+                      >
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        AI Reply
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -2948,6 +3034,65 @@ function ReviewsSection() {
           )}
         </CardContent>
       </Card>
+
+      {/* Reply Dialog */}
+      <Dialog open={replyDialogOpen} onOpenChange={setReplyDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>AI-Generated Reply</DialogTitle>
+            <DialogDescription>
+              Review and edit the AI-generated response before posting
+            </DialogDescription>
+          </DialogHeader>
+
+          {isGenerating ? (
+            <div className="py-12 text-center">
+              <Loader2 className="w-8 h-8 mx-auto animate-spin text-primary mb-3" />
+              <p className="text-muted-foreground">Generating AI reply...</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="ai-reply">Reply Text</Label>
+                <Textarea
+                  id="ai-reply"
+                  value={aiReply}
+                  onChange={(e) => setAiReply(e.target.value)}
+                  rows={6}
+                  className="mt-1"
+                  placeholder="AI-generated reply will appear here..."
+                  data-testid="textarea-ai-reply"
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReplyDialogOpen(false)}
+              disabled={isPosting}
+              data-testid="button-cancel-reply"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handlePostReply}
+              disabled={isPosting || isGenerating || !aiReply.trim()}
+              data-testid="button-post-reply"
+            >
+              {isPosting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Posting...
+                </>
+              ) : (
+                'Post Reply'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
