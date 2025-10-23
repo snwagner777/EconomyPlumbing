@@ -499,6 +499,62 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
   contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
 }));
 
+// NEW XLSX-BASED TABLES - These are the primary tables for customer data
+// The old serviceTitanCustomers/Contacts tables will continue to be synced by the API (which we can't stop)
+// but all application code will use these XLSX-based tables instead
+
+// XLSX Customers - Primary customer data source (replaces serviceTitanCustomers for application use)
+export const customersXlsx = pgTable("customers_xlsx", {
+  id: integer("id").primaryKey(), // ServiceTitan customer ID from XLSX
+  name: text("name").notNull(),
+  type: text("type").notNull(), // 'Residential' or 'Commercial'
+  email: text("email"),
+  phone: text("phone"),
+  mobilePhone: text("mobile_phone"),
+  street: text("street"),
+  city: text("city"),
+  state: text("state"),
+  zip: text("zip"),
+  active: boolean("active").notNull().default(true),
+  balance: text("balance"),
+  jobCount: integer("job_count").notNull().default(0),
+  
+  // Marketing automation personalization fields
+  lastServiceDate: timestamp("last_service_date"),
+  lastServiceType: text("last_service_type"),
+  lifetimeValue: integer("lifetime_value").notNull().default(0), // Total revenue in cents
+  customerTags: text("customer_tags").array(),
+  preferredContactMethod: text("preferred_contact_method"),
+  
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  activeIdx: index("customers_xlsx_active_idx").on(table.active),
+  emailIdx: index("customers_xlsx_email_idx").on(table.email),
+  phoneIdx: index("customers_xlsx_phone_idx").on(table.phone),
+  mobilePhoneIdx: index("customers_xlsx_mobile_phone_idx").on(table.mobilePhone),
+  typeIdx: index("customers_xlsx_type_idx").on(table.type),
+  jobCountIdx: index("customers_xlsx_job_count_idx").on(table.jobCount),
+  lastSyncedIdx: index("customers_xlsx_last_synced_idx").on(table.lastSyncedAt),
+  lastServiceDateIdx: index("customers_xlsx_last_service_date_idx").on(table.lastServiceDate),
+  lifetimeValueIdx: index("customers_xlsx_lifetime_value_idx").on(table.lifetimeValue),
+  preferredContactIdx: index("customers_xlsx_preferred_contact_idx").on(table.preferredContactMethod),
+}));
+
+// XLSX Customer Contacts - Primary contact data source (replaces serviceTitanContacts for application use)
+export const contactsXlsx = pgTable("contacts_xlsx", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: integer("customer_id").notNull(), // References customers_xlsx.id
+  contactType: text("contact_type").notNull(), // 'Phone', 'MobilePhone', 'Email', etc.
+  value: text("value").notNull(), // Raw value from XLSX
+  normalizedValue: text("normalized_value").notNull(), // Normalized for searching (digits only for phones, lowercase for emails)
+  isPrimary: boolean("is_primary").notNull().default(false),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("contacts_xlsx_customer_id_idx").on(table.customerId),
+  normalizedValueIdx: index("contacts_xlsx_normalized_value_idx").on(table.normalizedValue),
+  contactTypeIdx: index("contacts_xlsx_contact_type_idx").on(table.contactType),
+}));
+
 // Customer Data Import History - Tracks XLSX imports from ServiceTitan
 export const customerDataImports = pgTable("customer_data_imports", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
