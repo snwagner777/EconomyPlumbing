@@ -10,7 +10,7 @@ import { getServiceTitanAPI } from "./lib/serviceTitan";
 declare global {
   var invalidateSSRCache: (() => void) | undefined;
 }
-import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses } from "@shared/schema";
+import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses, googleOAuthTokens, googleReviews } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
 import { eq, sql, desc } from "drizzle-orm";
