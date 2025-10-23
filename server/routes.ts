@@ -3919,7 +3919,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         
         // Post to Google My Business if this is a Google review with reviewId
         let postedToGoogle = false;
-        if (review.source === 'gmb_api' && review.reviewId) {
+        const isGoogleReview = ['dataforseo', 'places_api'].includes(review.source);
+        
+        if (isGoogleReview && review.reviewId) {
           const { postReplyToGoogleReview } = await import("./lib/googleMyBusinessReviews");
           postedToGoogle = await postReplyToGoogleReview(review.reviewId, replyText);
           
@@ -3941,7 +3943,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         result = updated;
         
         // Inform user if Google posting failed
-        if (review.source === 'gmb_api' && review.reviewId && !postedToGoogle) {
+        if (isGoogleReview && review.reviewId && !postedToGoogle) {
           return res.json({ 
             success: true, 
             message: "Reply saved to database, but failed to post to Google. Please check your Google Business Profile connection.",
