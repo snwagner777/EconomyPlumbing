@@ -1322,10 +1322,12 @@ class ServiceTitanAPI {
       let hasMore = true;
       let totalCustomers = 0;
       let totalContacts = 0;
+      let customersWithJobs = 0;
       const pageSize = 200; // Increased from 50 to reduce API calls
 
       // Use upsert strategy - no deletion, just update existing records
       console.log('[ServiceTitan Sync] Using upsert strategy for zero-downtime sync...');
+      console.log('[ServiceTitan Sync] Will also fetch job counts for each customer...');
 
       while (hasMore) {
         console.log(`[ServiceTitan Sync] Fetching page ${page}...`);
@@ -1343,7 +1345,57 @@ class ServiceTitanAPI {
         // Process each customer
         for (const customer of customers) {
           try {
-            // Insert customer
+            // Fetch job count for this customer
+            let jobCount = 0;
+            try {
+              // Jobs API uses different base path (jpm/v2 instead of crm/v2)
+              const jobsBaseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}`;
+              
+              // First check if customer has any completed jobs
+              const response = await fetch(
+                `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&pageSize=1`,
+                {
+                  headers: {
+                    'Authorization': `Bearer ${this.config.accessToken}`,
+                    'ST-App-Key': this.config.appKey,
+                    'Content-Type': 'application/json',
+                  },
+                }
+              );
+              
+              if (response.ok) {
+                const jobsResult = await response.json();
+                
+                if (jobsResult.data && jobsResult.data.length > 0) {
+                  // Customer has at least one completed job
+                  // Fetch up to 100 to get a more accurate count
+                  const fullResponse = await fetch(
+                    `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&pageSize=100`,
+                    {
+                      headers: {
+                        'Authorization': `Bearer ${this.config.accessToken}`,
+                        'ST-App-Key': this.config.appKey,
+                        'Content-Type': 'application/json',
+                      },
+                    }
+                  );
+                  
+                  if (fullResponse.ok) {
+                    const fullJobsResult = await fullResponse.json();
+                    jobCount = fullJobsResult.data?.length || 0;
+                    // If there are more than 100, cap at 100 for display
+                    if (fullJobsResult.hasMore) {
+                      jobCount = 100;
+                    }
+                  }
+                }
+              }
+            } catch (jobError) {
+              // Silently continue with jobCount = 0 - don't log to avoid flooding logs
+              // Jobs API might not have data for all customers
+            }
+
+            // Insert customer with job count
             await db.insert(serviceTitanCustomers).values({
               id: customer.id,
               name: customer.name || 'Unknown',
@@ -1354,6 +1406,7 @@ class ServiceTitanAPI {
               zip: customer.address?.zip || null,
               active: customer.active ?? true,
               balance: customer.balance?.toString() || '0.00',
+              jobCount: jobCount,
             }).onConflictDoUpdate({
               target: serviceTitanCustomers.id,
               set: {
@@ -1365,11 +1418,15 @@ class ServiceTitanAPI {
                 zip: customer.address?.zip || null,
                 active: customer.active ?? true,
                 balance: customer.balance?.toString() || '0.00',
+                jobCount: jobCount,
                 lastSyncedAt: new Date(),
               },
             });
             
             totalCustomers++;
+            if (jobCount > 0) {
+              customersWithJobs++;
+            }
 
             // Clean up old contacts for this customer before syncing new ones
             // This ensures we don't have stale contacts if they were removed in ServiceTitan
@@ -1420,12 +1477,13 @@ class ServiceTitanAPI {
         
         // Log progress every 10 pages
         if (page % 10 === 0) {
-          console.log(`[ServiceTitan Sync] Progress: ${totalCustomers} customers, ${totalContacts} contacts`);
+          console.log(`[ServiceTitan Sync] Progress: ${totalCustomers} customers, ${totalContacts} contacts, ${customersWithJobs} with jobs`);
         }
       }
 
       const duration = Date.now() - startTime;
       console.log(`[ServiceTitan Sync] ✅ Completed! ${totalCustomers} customers, ${totalContacts} contacts in ${(duration / 1000).toFixed(1)}s`);
+      console.log(`[ServiceTitan Sync] 📊 ${customersWithJobs} customers have completed jobs`);
       
       return { customersCount: totalCustomers, contactsCount: totalContacts, duration };
     } catch (error) {
