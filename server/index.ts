@@ -437,24 +437,25 @@ async function refreshReviewsPeriodically() {
   
   // Marketing schedulers removed - all marketing infrastructure has been removed
   
+  // DISABLED TEMPORARILY FOR DEBUGGING MYSTERY CUSTOMER SYNC
   // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
-  const referralProcessor = getReferralProcessor();
+  // const referralProcessor = getReferralProcessor();
   
   // Run immediately on startup
-  setTimeout(() => {
-    console.log('[Referral Processor] Running initial referral processing...');
-    referralProcessor.processPendingReferrals().catch(err => {
-      console.error('[Referral Processor] Error during initial processing:', err);
-    });
-  }, 5000); // Wait 5 seconds after startup
+  // setTimeout(() => {
+  //   console.log('[Referral Processor] Running initial referral processing...');
+  //   referralProcessor.processPendingReferrals().catch(err => {
+  //     console.error('[Referral Processor] Error during initial processing:', err);
+  //   });
+  // }, 5000); // Wait 5 seconds after startup
   
   // Then run every hour
-  setInterval(() => {
-    console.log('[Referral Processor] Running hourly referral processing...');
-    referralProcessor.processPendingReferrals().catch(err => {
-      console.error('[Referral Processor] Error during hourly processing:', err);
-    });
-  }, 60 * 60 * 1000); // Every hour
+  // setInterval(() => {
+  //   console.log('[Referral Processor] Running hourly referral processing...');
+  //   referralProcessor.processPendingReferrals().catch(err => {
+  //     console.error('[Referral Processor] Error during hourly processing:', err);
+  //   });
+  // }, 60 * 60 * 1000); // Every hour
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
