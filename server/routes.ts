@@ -3897,7 +3897,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       });
       const { replyText, type } = schema.parse(req.body);
       
-      // Save reply to database
+      // Save reply to database and post to external platform
       let result: any;
       if (type === 'custom') {
         result = await storage.replyToReview(reviewId, replyText);
@@ -3905,7 +3905,30 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           return res.status(404).json({ message: "Review not found" });
         }
       } else {
+        // Get the review to check its source and external reviewId
         const { googleReviews } = await import("@shared/schema");
+        const [review] = await db
+          .select()
+          .from(googleReviews)
+          .where(eq(googleReviews.id, reviewId))
+          .limit(1);
+        
+        if (!review) {
+          return res.status(404).json({ message: "Review not found" });
+        }
+        
+        // Post to Google My Business if this is a Google review with reviewId
+        let postedToGoogle = false;
+        if (review.source === 'gmb_api' && review.reviewId) {
+          const { postReplyToGoogleReview } = await import("./lib/googleMyBusinessReviews");
+          postedToGoogle = await postReplyToGoogleReview(review.reviewId, replyText);
+          
+          if (!postedToGoogle) {
+            console.warn(`[Review Reply] Failed to post reply to Google for review ${reviewId}`);
+          }
+        }
+        
+        // Update database with reply
         const [updated] = await db
           .update(googleReviews)
           .set({
@@ -3915,17 +3938,20 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           .where(eq(googleReviews.id, reviewId))
           .returning();
         
-        if (!updated) {
-          return res.status(404).json({ message: "Review not found" });
-        }
         result = updated;
+        
+        // Inform user if Google posting failed
+        if (review.source === 'gmb_api' && review.reviewId && !postedToGoogle) {
+          return res.json({ 
+            success: true, 
+            message: "Reply saved to database, but failed to post to Google. Please check your Google Business Profile connection.",
+            postedToGoogle: false
+          });
+        }
       }
       
-      // TODO: In the future, we'll add API integration to post replies to Google, Facebook, Yelp
-      // For now, we just save the reply to our database
-      
       console.log(`[Review Reply] Reply posted for review ${reviewId}`);
-      res.json({ success: true, message: "Reply saved successfully" });
+      res.json({ success: true, message: "Reply posted successfully", postedToGoogle: type === 'google' });
     } catch (error: any) {
       console.error('[Review Reply] Post reply error:', error);
       
