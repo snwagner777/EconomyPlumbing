@@ -2064,15 +2064,46 @@ ${rssItems}
     try {
       const token = await storage.getGoogleOAuthToken('google_my_business');
       
-      // Check if token exists AND is not expired
+      if (!token) {
+        return res.json({ 
+          isAuthenticated: false,
+          hasAccountId: false,
+          hasLocationId: false,
+        });
+      }
+      
+      // Check if token is expired and refresh if needed
       const now = new Date();
-      const isExpired = token ? new Date(token.expiryDate) <= now : false;
-      const isAuthenticated = !!token && !isExpired;
+      const isExpired = new Date(token.expiryDate) <= now;
+      
+      if (isExpired && token.refreshToken) {
+        try {
+          console.log('[OAuth Status] Token expired, refreshing...');
+          const auth = GoogleMyBusinessAuth.getInstance();
+          const newTokens = await auth.refreshAccessToken(token.refreshToken);
+          
+          if (newTokens.access_token && newTokens.expiry_date) {
+            await storage.updateGoogleOAuthToken(token.id, {
+              accessToken: newTokens.access_token,
+              expiryDate: new Date(newTokens.expiry_date),
+              ...(newTokens.refresh_token && { refreshToken: newTokens.refresh_token })
+            });
+            console.log('[OAuth Status] Token refreshed successfully');
+          }
+        } catch (refreshError: any) {
+          console.error('[OAuth Status] Failed to refresh token:', refreshError.message);
+          return res.json({ 
+            isAuthenticated: false,
+            hasAccountId: !!token.accountId,
+            hasLocationId: !!token.locationId,
+          });
+        }
+      }
       
       res.json({ 
-        isAuthenticated,
-        hasAccountId: !!token?.accountId,
-        hasLocationId: !!token?.locationId,
+        isAuthenticated: true,
+        hasAccountId: !!token.accountId,
+        hasLocationId: !!token.locationId,
       });
     } catch (error: any) {
       res.status(500).json({ message: "Failed to check OAuth status: " + error.message });
