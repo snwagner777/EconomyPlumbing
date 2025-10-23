@@ -1345,51 +1345,54 @@ class ServiceTitanAPI {
         // Process each customer
         for (const customer of customers) {
           try {
-            // Fetch job count for this customer
+            // Fetch ALL jobs for this customer to get accurate count
             let jobCount = 0;
             try {
               // Jobs API uses different base path (jpm/v2 instead of crm/v2)
               const jobsBaseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${this.config.tenantId}`;
+              let page = 1;
+              let hasMore = true;
+              const pageSize = 100; // ServiceTitan max page size
               
-              // First check if customer has any completed jobs
-              const response = await fetch(
-                `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&pageSize=1`,
-                {
-                  headers: {
-                    'Authorization': `Bearer ${this.config.accessToken}`,
-                    'ST-App-Key': this.config.appKey,
-                    'Content-Type': 'application/json',
-                  },
-                }
-              );
-              
-              if (response.ok) {
-                const jobsResult = await response.json();
-                
-                if (jobsResult.data && jobsResult.data.length > 0) {
-                  // Customer has at least one completed job
-                  // Fetch up to 100 to get a more accurate count
-                  const fullResponse = await fetch(
-                    `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&pageSize=100`,
-                    {
-                      headers: {
-                        'Authorization': `Bearer ${this.config.accessToken}`,
-                        'ST-App-Key': this.config.appKey,
-                        'Content-Type': 'application/json',
-                      },
-                    }
-                  );
-                  
-                  if (fullResponse.ok) {
-                    const fullJobsResult = await fullResponse.json();
-                    jobCount = fullJobsResult.data?.length || 0;
-                    // If there are more than 100, cap at 100 for display
-                    if (fullJobsResult.hasMore) {
-                      jobCount = 100;
-                    }
+              while (hasMore) {
+                const response = await fetch(
+                  `${jobsBaseUrl}/jobs?customerId=${customer.id}&jobStatus=Completed&page=${page}&pageSize=${pageSize}`,
+                  {
+                    headers: {
+                      'Authorization': `Bearer ${this.config.accessToken}`,
+                      'ST-App-Key': this.config.appKey,
+                      'Content-Type': 'application/json',
+                    },
                   }
+                );
+                
+                if (response.ok) {
+                  const jobsResult = await response.json();
+                  
+                  if (jobsResult.data && jobsResult.data.length > 0) {
+                    jobCount += jobsResult.data.length;
+                  }
+                  
+                  // Continue pagination if there are more pages
+                  hasMore = jobsResult.hasMore || false;
+                  page++;
+                  
+                  // Safety check to prevent infinite loops
+                  if (page > 50) { // Max 5000 jobs per customer (50 pages * 100)
+                    console.log(`[ServiceTitan Sync] Customer ${customer.id} has over 5000 jobs, stopping pagination`);
+                    break;
+                  }
+                } else {
+                  // Stop on any error
+                  hasMore = false;
                 }
               }
+              
+              // Log progress for customers with many jobs
+              if (jobCount > 100) {
+                console.log(`[ServiceTitan Sync] Customer ${customer.id} (${customer.name}): ${jobCount} completed jobs`);
+              }
+              
             } catch (jobError) {
               // Silently continue with jobCount = 0 - don't log to avoid flooding logs
               // Jobs API might not have data for all customers
