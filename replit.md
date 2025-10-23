@@ -24,7 +24,9 @@ Preferred communication style: Simple, everyday language.
 - **AI Blog Generation System:** OpenAI GPT-4o for SEO-optimized, automated, and seasonally aware blog posts.
 - **Dynamic Phone Number Tracking:** 100% database-driven system with automatic UTM parameter generation for marketing campaigns. When phone numbers are entered in email/SMS campaigns, the system automatically creates tracking number entries with campaign-specific UTM parameters (utm_source, utm_medium, utm_campaign) and detection rules.
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy. 100% type-safe TypeScript. Stripe PaymentIntents for payment security.
-- **ServiceTitan Integration:** Incremental job sync system with staging tables, batch processing, error tracking, and a database-driven customer leaderboard. Includes multi-location service address management, self-service customer data updates, and a custom review system with admin moderation.
+- **ServiceTitan Integration:** 
+  - **XLSX-Based Customer Import (Oct 2024):** Replaced slow API pagination sync with automated email-based XLSX imports via Mailgun. Hourly scheduled reports sent as XLSX attachments, processed via webhook with HMAC signature verification (5-minute replay window), atomic database transactions with staging tables (ON COMMIT DROP), and automatic rollback on error. Supports 11,000+ customers with full transactional safety.
+  - **Legacy Features:** Incremental job sync system with staging tables, batch processing, error tracking, and a database-driven customer leaderboard. Includes multi-location service address management, self-service customer data updates, and a custom review system with admin moderation.
 - **Marketing Automation (Enhanced Dec 2024):** Complete AI-powered marketing automation system replacing ServiceTitan Marketing Pro ($3,240/year):
   - **AI Customer Segmentation (`/admin/customer-segments`):** GPT-4o analyzes ServiceTitan data to identify marketing opportunities, creates targeted segments with revenue potential, full approval workflow for AI-generated content, inline editing of AI reasoning, performance tracking (revenue, jobs booked, ROI).
   - **Automated Remarketing Engine:** Scans unsold estimates daily, creates targeted follow-up campaigns with multiple strategies (discount, urgency, value, trust, seasonal), multi-channel sequences (email + SMS), automatic conversion tracking.
@@ -67,7 +69,7 @@ Preferred communication style: Simple, everyday language.
 - **E-commerce Platform:** Ecwid (Stripe for payments), Printful, Spocket.
 - **Database:** Neon (PostgreSQL) via `@neondatabase/serverless` with Drizzle ORM.
 - **Online Scheduler:** ServiceTitan.
-- **Email Integration:** Resend.
+- **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
 - **SMS Providers:** Twilio (primary), Zoom Phone (OAuth-configured).
 - **AI Services:** OpenAI (GPT-4o Vision for blog generation, photo analysis, success story focal point detection; GPT-4o-mini for chatbot).
 - **Photo Management:** CompanyCam, Google Drive, ServiceTitan.
