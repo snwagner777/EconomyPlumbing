@@ -49,9 +49,12 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
 
     // Fetch reviews using Google My Business API v4 via REST
     const client = auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const accessTokenRaw = await client.getAccessToken();
     
-    if (!accessToken.token) {
+    // Normalize token (can be string or object with token property)
+    const token = typeof accessTokenRaw === 'string' ? accessTokenRaw : accessTokenRaw?.token;
+    
+    if (!token) {
       throw new Error('Failed to get access token');
     }
     
@@ -62,7 +65,7 @@ export async function fetchGoogleMyBusinessReviews(): Promise<InsertGoogleReview
     
     const reviewsResponse = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${accessToken.token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     });
@@ -148,9 +151,12 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
     }
 
     const client = auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const accessTokenRaw = await client.getAccessToken();
     
-    if (!accessToken.token) {
+    // Normalize token (can be string or object with token property)
+    const token = typeof accessTokenRaw === 'string' ? accessTokenRaw : accessTokenRaw?.token;
+    
+    if (!token) {
       throw new Error('Failed to get access token');
     }
 
@@ -164,7 +170,7 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
       
       const response: Response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${accessToken.token}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -249,9 +255,12 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     }
 
     const client = auth.getClient();
-    const accessToken = await client.getAccessToken();
+    const accessTokenRaw = await client.getAccessToken();
     
-    if (!accessToken.token) {
+    // Normalize token (can be string or object with token property)
+    const token = typeof accessTokenRaw === 'string' ? accessTokenRaw : accessTokenRaw?.token;
+    
+    if (!token) {
       throw new Error('Failed to get access token');
     }
 
@@ -265,7 +274,7 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     const response = await fetch(url, {
       method: 'PUT',
       headers: {
-        'Authorization': `Bearer ${accessToken.token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
