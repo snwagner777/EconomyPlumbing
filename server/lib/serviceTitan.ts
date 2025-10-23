@@ -1459,6 +1459,7 @@ class ServiceTitanAPI {
             }
 
             // Insert customer with job count
+            console.log(`🚨🚨🚨 [CULPRIT FOUND] _DISABLED_syncAllCustomers is ACTUALLY RUNNING! Customer ID: ${customer.id} being inserted!`);
             await db.insert(serviceTitanCustomers).values({
               id: customer.id,
               name: customer.name || 'Unknown',
@@ -1693,6 +1694,7 @@ class ServiceTitanAPI {
       // DISABLED: On-demand caching disabled - customer data only imported via XLSX email reports
       // Keeping search functionality active for Customer Portal
       console.log(`[ServiceTitan] ⚠️  On-demand caching disabled - customer data imported via XLSX only`);
+      console.log(`[DEBUG] searchCustomerWithFallback called for: "${phoneOrEmail}" - CACHING IS DISABLED, returning customer ID only`);
       
       /*
       // Cache on-demand
@@ -2541,6 +2543,8 @@ class ServiceTitanAPI {
    */
   async getAllCustomersMap(): Promise<Map<number, string>> {
     try {
+      console.log('🚨🚨🚨🚨🚨 [CULPRIT] getAllCustomersMap() IS BEING CALLED! Stack trace:');
+      console.trace();
       console.log('[ServiceTitan] Fetching all customers for lookup map...');
       
       const customerMap = new Map<number, string>();

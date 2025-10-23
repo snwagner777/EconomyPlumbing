@@ -107,24 +107,8 @@ export async function processPendingMemberships(): Promise<void> {
 }
 
 /**
- * Start the background job to process membership syncs
- * Runs every 30 seconds
- * NOTE: This is different from bulk customer sync - this only processes online membership purchases
+ * TEMPORARILY DISABLED for debugging
  */
 export function startMembershipSyncJob(): void {
-  const INTERVAL = 30 * 1000; // 30 seconds
-
-  // Run immediately on startup
-  processPendingMemberships().catch(error => {
-    log(`[MembershipSync] ERROR in initial run: ${error}`);
-  });
-
-  // Then run periodically
-  setInterval(() => {
-    processPendingMemberships().catch(error => {
-      log(`[MembershipSync] ERROR in scheduled run: ${error}`);
-    });
-  }, INTERVAL);
-
-  log('[MembershipSync] Background job started (runs every 30 seconds)');
+  log('[MembershipSync] ⚠️ TEMPORARILY DISABLED for debugging customer count increase');
 }

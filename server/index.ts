@@ -408,7 +408,8 @@ async function refreshReviewsPeriodically() {
   refreshReviewsPeriodically();
   
   // Start membership sync background job (non-blocking)
-  startMembershipSyncJob();
+  // DISABLED for debugging customer count increase
+  // startMembershipSyncJob();
   
   // Social media posting disabled - no integration yet
   // startWeeklyPostScheduler();
