@@ -3569,6 +3569,10 @@ ${rssItems}
   }).any();
   
   app.post("/api/webhooks/mailgun/customer-data", (req, res) => {
+    // TEMPORARILY DISABLED FOR DEBUGGING MYSTERY SYNC
+    console.log('🚨🚨🚨 [DISABLED] Mailgun webhook called - returning 410 Gone');
+    return res.status(410).json({ error: 'Webhook temporarily disabled for debugging' });
+    
     // Parse multipart form data first
     mailgunUpload(req, res, async (err) => {
       if (err) {
