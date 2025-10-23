@@ -1337,7 +1337,7 @@ class ServiceTitanAPI {
     console.log('[ServiceTitan Sync] Starting full customer sync...');
     
     try {
-      const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+      const { customersXlsx, contactsXlsx } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       
       let page = 1;
@@ -1446,7 +1446,7 @@ class ServiceTitanAPI {
             }
 
             // Insert customer with job count
-            await db.insert(serviceTitanCustomers).values({
+            await db.insert(customersXlsx).values({
               id: customer.id,
               name: customer.name || 'Unknown',
               type: customer.type || 'Residential',
@@ -1458,7 +1458,7 @@ class ServiceTitanAPI {
               balance: customer.balance?.toString() || '0.00',
               jobCount: jobCount,
             }).onConflictDoUpdate({
-              target: serviceTitanCustomers.id,
+              target: customersXlsx.id,
               set: {
                 name: customer.name || 'Unknown',
                 type: customer.type || 'Residential',
@@ -1480,7 +1480,7 @@ class ServiceTitanAPI {
 
             // Clean up old contacts for this customer before syncing new ones
             // This ensures we don't have stale contacts if they were removed in ServiceTitan
-            await db.delete(serviceTitanContacts).where(eq(serviceTitanContacts.customerId, customer.id));
+            await db.delete(contactsXlsx).where(eq(contactsXlsx.customerId, customer.id));
 
             // Fetch and store customer contacts
             const contacts = await this.getCustomerContacts(customer.id);
@@ -1502,7 +1502,7 @@ class ServiceTitanAPI {
               }
 
               if (normalizedValue) {
-                await db.insert(serviceTitanContacts).values({
+                await db.insert(contactsXlsx).values({
                   customerId: customer.id,
                   contactType,
                   value,
@@ -1565,7 +1565,7 @@ class ServiceTitanAPI {
    */
   async searchLocalCustomer(phoneOrEmail: string): Promise<number[]> {
     try {
-      const { serviceTitanContacts } = await import('@shared/schema');
+      const { contactsXlsx } = await import('@shared/schema');
       const { eq } = await import('drizzle-orm');
       
       // Normalize input
@@ -1577,9 +1577,9 @@ class ServiceTitanAPI {
 
       // Search in contacts - get ALL matching customer IDs
       const results = await db
-        .select({ customerId: serviceTitanContacts.customerId })
-        .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalized));
+        .select({ customerId: contactsXlsx.customerId })
+        .from(contactsXlsx)
+        .where(eq(contactsXlsx.normalizedValue, normalized));
 
       // Return unique customer IDs
       const uniqueCustomerIds = Array.from(new Set(results.map(r => r.customerId)));
@@ -1604,7 +1604,7 @@ class ServiceTitanAPI {
     address?: string;
   }>> {
     try {
-      const { serviceTitanContacts, serviceTitanCustomers } = await import('@shared/schema');
+      const { contactsXlsx, customersXlsx } = await import('@shared/schema');
       const { eq, inArray } = await import('drizzle-orm');
       
       // Normalize input
@@ -1616,9 +1616,9 @@ class ServiceTitanAPI {
 
       // Find all matching contact records
       const contactResults = await db
-        .select({ customerId: serviceTitanContacts.customerId })
-        .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalized));
+        .select({ customerId: contactsXlsx.customerId })
+        .from(contactsXlsx)
+        .where(eq(contactsXlsx.normalizedValue, normalized));
 
       if (contactResults.length === 0) {
         console.log('[ServiceTitan] No matching customers in cache');
@@ -1632,8 +1632,8 @@ class ServiceTitanAPI {
       // Fetch full customer details
       const customers = await db
         .select()
-        .from(serviceTitanCustomers)
-        .where(inArray(serviceTitanCustomers.id, customerIds));
+        .from(customersXlsx)
+        .where(inArray(customersXlsx.id, customerIds));
 
       return customers.map(c => ({
         id: c.id,
@@ -1679,10 +1679,10 @@ class ServiceTitanAPI {
       
       // Cache on-demand
       try {
-        const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+        const { customersXlsx, contactsXlsx } = await import('@shared/schema');
         
         // Store customer WITH email and phone from the customer record
-        await db.insert(serviceTitanCustomers).values({
+        await db.insert(customersXlsx).values({
           id: liveCustomer.id,
           name: liveCustomer.name || 'Unknown',
           type: (liveCustomer as any).type || 'Residential',
@@ -1695,7 +1695,7 @@ class ServiceTitanAPI {
           active: true,
           balance: '0.00',
         }).onConflictDoUpdate({
-          target: serviceTitanCustomers.id,
+          target: customersXlsx.id,
           set: { 
             email: liveCustomer.email || null,
             phone: liveCustomer.phoneNumber || null,
@@ -1721,7 +1721,7 @@ class ServiceTitanAPI {
           }
 
           if (normalizedValue) {
-            await db.insert(serviceTitanContacts).values({
+            await db.insert(contactsXlsx).values({
               customerId: liveCustomer.id,
               contactType,
               value,
@@ -1736,7 +1736,7 @@ class ServiceTitanAPI {
         if (liveCustomer.email) {
           const emailNormalized = normalizeEmail(liveCustomer.email);
           if (emailNormalized) {
-            await db.insert(serviceTitanContacts).values({
+            await db.insert(contactsXlsx).values({
               customerId: liveCustomer.id,
               contactType: 'Email',
               value: liveCustomer.email,
@@ -1749,7 +1749,7 @@ class ServiceTitanAPI {
         if (liveCustomer.phoneNumber) {
           const phoneNormalized = normalizePhone(liveCustomer.phoneNumber);
           if (phoneNormalized) {
-            await db.insert(serviceTitanContacts).values({
+            await db.insert(contactsXlsx).values({
               customerId: liveCustomer.id,
               contactType: 'Phone',
               value: liveCustomer.phoneNumber,
@@ -1937,7 +1937,7 @@ class ServiceTitanAPI {
     duration: number;
   }> {
     const startTime = Date.now();
-    const { serviceTitanJobsStaging, serviceTitanJobs, serviceTitanCustomers, syncWatermarks } = await import('@shared/schema');
+    const { serviceTitanJobsStaging, serviceTitanJobs, customersXlsx, syncWatermarks } = await import('@shared/schema');
     const { eq, sql } = await import('drizzle-orm');
 
     try {

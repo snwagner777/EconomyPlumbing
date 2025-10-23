@@ -10,7 +10,7 @@ async function verifyJobCounts() {
     // Import required modules
     const { getServiceTitanAPI } = await import('../lib/serviceTitan');
     const { db } = await import('../db');
-    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { customersXlsx } = await import('@shared/schema');
     const { sql } = await import('drizzle-orm');
     
     // Get ServiceTitan API instance
@@ -18,7 +18,7 @@ async function verifyJobCounts() {
     
     // Get customers with job counts from database
     const customersToVerify = await db.select()
-      .from(serviceTitanCustomers)
+      .from(customersXlsx)
       .where(sql`job_count > 0`)
       .orderBy(sql`job_count DESC`)
       .limit(5);
@@ -106,7 +106,7 @@ async function verifyJobCounts() {
       // Update mismatched records
       console.log('\n[Verify Job Counts] Updating mismatched records...');
       for (const mismatch of mismatches) {
-        await db.update(serviceTitanCustomers)
+        await db.update(customersXlsx)
           .set({ 
             jobCount: mismatch.apiCount,
             lastSyncedAt: new Date()
@@ -120,7 +120,7 @@ async function verifyJobCounts() {
     
     // Show final database state
     const finalTopCustomers = await db.select()
-      .from(serviceTitanCustomers)
+      .from(customersXlsx)
       .orderBy(sql`job_count DESC`)
       .limit(5);
     

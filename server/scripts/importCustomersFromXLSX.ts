@@ -1,6 +1,6 @@
 import XLSX from 'xlsx';
 import { db } from '../db';
-import { serviceTitanCustomers, serviceTitanContacts } from '@shared/schema';
+import { customersXlsx, contactsXlsx } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 interface CustomerRow {
@@ -132,7 +132,7 @@ async function importCustomers() {
 
     // Bulk insert this batch of customers (skip conflicts just in case)
     if (customerBatch.length > 0) {
-      await db.insert(serviceTitanCustomers)
+      await db.insert(customersXlsx)
         .values(customerBatch)
         .onConflictDoNothing();
       imported += customerBatch.length;
@@ -177,7 +177,7 @@ async function importCustomers() {
   const CONTACT_BATCH_SIZE = 1000;
   for (let i = 0; i < contactBatch.length; i += CONTACT_BATCH_SIZE) {
     const chunk = contactBatch.slice(i, i + CONTACT_BATCH_SIZE);
-    await db.insert(serviceTitanContacts).values(chunk);
+    await db.insert(contactsXlsx).values(chunk);
     console.log(`[XLSX Import] Contacts progress: ${Math.min(i + CONTACT_BATCH_SIZE, contactBatch.length)}/${contactBatch.length} inserted`);
   }
 

@@ -7,7 +7,7 @@ async function processAllJobs() {
   console.log('[Process All Jobs] Starting...');
   
   const { db } = await import('../db');
-  const { serviceTitanJobs, serviceTitanJobsStaging, serviceTitanCustomers } = await import('@shared/schema');
+  const { serviceTitanJobs, serviceTitanJobsStaging, customersXlsx } = await import('@shared/schema');
   const { eq, isNull, sql } = await import('drizzle-orm');
   
   try {

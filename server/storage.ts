@@ -65,7 +65,7 @@ import {
   adminWhitelist,
   customReviews,
   reviewPlatforms,
-  serviceTitanCustomers
+  customersXlsx
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";

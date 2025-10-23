@@ -10,7 +10,7 @@ async function testJobCountSync() {
     // Import required modules
     const { getServiceTitanAPI } = await import('../lib/serviceTitan');
     const { db } = await import('../db');
-    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { customersXlsx } = await import('@shared/schema');
     const { sql } = await import('drizzle-orm');
     
     // Get ServiceTitan API instance
@@ -75,7 +75,7 @@ async function testJobCountSync() {
         console.log(`[Test Job Count Sync] Customer ${customer.id} (${customer.name}): ${jobCount} completed jobs`);
         
         // Update the customer in the database
-        await db.insert(serviceTitanCustomers).values({
+        await db.insert(customersXlsx).values({
           id: customer.id,
           name: customer.name || 'Unknown',
           type: customer.type || 'Residential',
@@ -87,7 +87,7 @@ async function testJobCountSync() {
           balance: customer.balance?.toString() || '0.00',
           jobCount: jobCount,
         }).onConflictDoUpdate({
-          target: serviceTitanCustomers.id,
+          target: customersXlsx.id,
           set: {
             name: customer.name || 'Unknown',
             type: customer.type || 'Residential',

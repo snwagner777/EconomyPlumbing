@@ -1498,7 +1498,7 @@ ${rssItems}
   // ⚡ Fast database-driven query - no API calls! Updated by job sync.
   app.get("/api/customers/leaderboard", async (req, res) => {
     try {
-      const { serviceTitanCustomers } = await import('@shared/schema');
+      const { customersXlsx } = await import('@shared/schema');
       const { desc } = await import('drizzle-orm');
       
       console.log('[Customers Leaderboard] Fetching top 5 customers from database...');
@@ -1506,12 +1506,12 @@ ${rssItems}
       // Get top 5 customers by job count
       const topCustomers = await db
         .select({
-          name: serviceTitanCustomers.name,
-          jobCount: serviceTitanCustomers.jobCount,
+          name: customersXlsx.name,
+          jobCount: customersXlsx.jobCount,
         })
-        .from(serviceTitanCustomers)
-        .where(sql`${serviceTitanCustomers.jobCount} > 0`)
-        .orderBy(desc(serviceTitanCustomers.jobCount))
+        .from(customersXlsx)
+        .where(sql`${customersXlsx.jobCount} > 0`)
+        .orderBy(desc(customersXlsx.jobCount))
         .limit(5);
 
       if (!topCustomers.length) {
@@ -1737,17 +1737,17 @@ ${rssItems}
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const { serviceTitanCustomers } = await import('@shared/schema');
+      const { customersXlsx } = await import('@shared/schema');
       
       const metrics = await db
         .select({
           totalCustomers: sql<number>`count(*)::int`,
-          customersWithRevenue: sql<number>`count(CASE WHEN ${serviceTitanCustomers.lifetimeValue} > 0 THEN 1 END)::int`,
-          totalLifetimeRevenue: sql<number>`COALESCE(sum(${serviceTitanCustomers.lifetimeValue}), 0)::bigint`,
-          avgLifetimeRevenue: sql<number>`COALESCE(avg(${serviceTitanCustomers.lifetimeValue}), 0)::int`,
-          maxLifetimeRevenue: sql<number>`COALESCE(max(${serviceTitanCustomers.lifetimeValue}), 0)::bigint`
+          customersWithRevenue: sql<number>`count(CASE WHEN ${customersXlsx.lifetimeValue} > 0 THEN 1 END)::int`,
+          totalLifetimeRevenue: sql<number>`COALESCE(sum(${customersXlsx.lifetimeValue}), 0)::bigint`,
+          avgLifetimeRevenue: sql<number>`COALESCE(avg(${customersXlsx.lifetimeValue}), 0)::int`,
+          maxLifetimeRevenue: sql<number>`COALESCE(max(${customersXlsx.lifetimeValue}), 0)::bigint`
         })
-        .from(serviceTitanCustomers);
+        .from(customersXlsx);
 
       res.json(metrics[0] || {
         totalCustomers: 0,
@@ -7297,20 +7297,20 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       }
 
       // Import schemas
-      const { serviceTitanCustomers, serviceTitanContacts } = await import("@shared/schema");
+      const { customersXlsx, contactsXlsx } = await import("@shared/schema");
       const { inArray } = await import("drizzle-orm");
 
       // Fetch complete customer data with ALL contacts for each customer
       const customersData = await db
         .select()
-        .from(serviceTitanCustomers)
-        .where(inArray(serviceTitanCustomers.id, customerIds));
+        .from(customersXlsx)
+        .where(inArray(customersXlsx.id, customerIds));
 
       // Fetch ALL contacts for these customers
       const allContacts = await db
         .select()
-        .from(serviceTitanContacts)
-        .where(inArray(serviceTitanContacts.customerId, customerIds));
+        .from(contactsXlsx)
+        .where(inArray(contactsXlsx.customerId, customerIds));
 
       // Group contacts by customer ID
       const contactsByCustomer = allContacts.reduce((acc, contact) => {
@@ -7737,19 +7737,19 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+      const { customersXlsx, contactsXlsx } = await import('@shared/schema');
       const { isSyncRunning } = await import('./lib/serviceTitanSync');
 
       // Get customer and contact counts
       const [customerCount, contactCount] = await Promise.all([
-        db.select({ count: sql<number>`count(*)` }).from(serviceTitanCustomers),
-        db.select({ count: sql<number>`count(*)` }).from(serviceTitanContacts)
+        db.select({ count: sql<number>`count(*)` }).from(customersXlsx),
+        db.select({ count: sql<number>`count(*)` }).from(contactsXlsx)
       ]);
 
       // Get most recent sync timestamp
-      const recentCustomer = await db.select({ lastSynced: serviceTitanCustomers.lastSyncedAt })
-        .from(serviceTitanCustomers)
-        .orderBy(sql`${serviceTitanCustomers.lastSyncedAt} DESC`)
+      const recentCustomer = await db.select({ lastSynced: customersXlsx.lastSyncedAt })
+        .from(customersXlsx)
+        .orderBy(sql`${customersXlsx.lastSyncedAt} DESC`)
         .limit(1);
 
       res.json({
@@ -7823,7 +7823,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
 
       // Calculate percentile ranking using database for performance
       // (Can't make 11,000+ API calls for comparison)
-      const { serviceTitanCustomers } = await import('@shared/schema');
+      const { customersXlsx } = await import('@shared/schema');
       const { gt, count } = await import('drizzle-orm');
       
       // Get total number of customers with at least 1 service in the database
@@ -7831,8 +7831,8 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         .select({ 
           total: count(),
         })
-        .from(serviceTitanCustomers)
-        .where(gt(serviceTitanCustomers.jobCount, 0));
+        .from(customersXlsx)
+        .where(gt(customersXlsx.jobCount, 0));
 
       const totalCustomersWithService = totalResult.total || 0;
 
@@ -7850,8 +7850,8 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         .select({ 
           total: count(),
         })
-        .from(serviceTitanCustomers)
-        .where(gt(serviceTitanCustomers.jobCount, serviceCount));
+        .from(customersXlsx)
+        .where(gt(customersXlsx.jobCount, serviceCount));
 
       const customersWithMore = result.total || 0;
 

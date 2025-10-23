@@ -10,7 +10,7 @@ async function testCompleteJobCount() {
     // Import required modules
     const { getServiceTitanAPI } = await import('../lib/serviceTitan');
     const { db } = await import('../db');
-    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { customersXlsx } = await import('@shared/schema');
     const { sql, desc } = await import('drizzle-orm');
     
     // Get ServiceTitan API instance
@@ -18,9 +18,9 @@ async function testCompleteJobCount() {
     
     // First, find a customer we know has jobs to test pagination
     const existingHighJobCustomers = await db.select()
-      .from(serviceTitanCustomers)
+      .from(customersXlsx)
       .where(sql`job_count > 50`)
-      .orderBy(desc(serviceTitanCustomers.jobCount))
+      .orderBy(desc(customersXlsx.jobCount))
       .limit(3);
     
     console.log(`[Test Complete Job Count] Found ${existingHighJobCustomers.length} existing high-job customers to retest`);
@@ -95,7 +95,7 @@ async function testCompleteJobCount() {
         }
         
         // Update the customer in the database
-        await db.insert(serviceTitanCustomers).values({
+        await db.insert(customersXlsx).values({
           id: customer.id,
           name: customer.name || 'Unknown',
           type: customer.type || 'Residential',
@@ -107,7 +107,7 @@ async function testCompleteJobCount() {
           balance: customer.balance?.toString() || '0.00',
           jobCount: jobCount,
         }).onConflictDoUpdate({
-          target: serviceTitanCustomers.id,
+          target: customersXlsx.id,
           set: {
             jobCount: jobCount,
             lastSyncedAt: new Date(),
@@ -135,8 +135,8 @@ async function testCompleteJobCount() {
     
     // Check database for highest job counts
     const topCustomers = await db.select()
-      .from(serviceTitanCustomers)
-      .orderBy(desc(serviceTitanCustomers.jobCount))
+      .from(customersXlsx)
+      .orderBy(desc(customersXlsx.jobCount))
       .limit(5);
     
     console.log('\n[Test Complete Job Count] 📊 Top 5 customers by job count in database:');
