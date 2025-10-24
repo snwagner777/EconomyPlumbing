@@ -1219,6 +1219,176 @@ export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 // Reputation management schemas removed - will be rebuilt
 
 // ============================================================================
+// REVIEW & REFERRAL DRIP CAMPAIGN SYSTEM
+// ============================================================================
+
+// Job Completions - Track recently completed jobs eligible for review requests
+export const jobCompletions = pgTable("job_completions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // ServiceTitan job details
+  jobId: integer("job_id").notNull().unique(),
+  customerId: integer("customer_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  
+  // Job metadata
+  completionDate: timestamp("completion_date").notNull(),
+  serviceName: text("service_name"),
+  technicianName: text("technician_name"),
+  invoiceTotal: integer("invoice_total"), // In cents
+  jobNotes: text("job_notes"),
+  
+  // Marketing flags
+  marketingOptedOut: boolean("marketing_opted_out").notNull().default(false),
+  
+  // Tracking
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  completionDateIdx: index("job_completions_completion_date_idx").on(table.completionDate),
+  customerIdIdx: index("job_completions_customer_id_idx").on(table.customerId),
+}));
+
+// Review Requests - 4-email drip campaign over 21 days
+export const reviewRequests = pgTable("review_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to job
+  jobCompletionId: varchar("job_completion_id").notNull(),
+  customerId: integer("customer_id").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  
+  // Campaign status
+  status: text("status").notNull().default('queued'), // 'queued', 'email1_sent', 'email2_sent', 'email3_sent', 'email4_sent', 'completed', 'stopped'
+  stopReason: text("stop_reason"), // 'review_submitted', 'opted_out', 'email_bounced'
+  
+  // Email tracking (4 emails in drip)
+  email1SentAt: timestamp("email1_sent_at"),
+  email2SentAt: timestamp("email2_sent_at"),
+  email3SentAt: timestamp("email3_sent_at"),
+  email4SentAt: timestamp("email4_sent_at"),
+  
+  // Response tracking
+  reviewSubmitted: boolean("review_submitted").notNull().default(false),
+  reviewSubmittedAt: timestamp("review_submitted_at"),
+  reviewRating: integer("review_rating"), // 1-5 stars
+  reviewPlatform: text("review_platform"), // 'google', 'facebook', 'internal'
+  
+  // Engagement
+  emailOpens: integer("email_opens").notNull().default(0),
+  linkClicks: integer("link_clicks").notNull().default(0),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  statusIdx: index("review_requests_status_idx").on(table.status),
+  customerIdIdx: index("review_requests_customer_id_idx").on(table.customerId),
+  createdAtIdx: index("review_requests_created_at_idx").on(table.createdAt),
+}));
+
+// Review Feedback - Internal feedback from <4 star reviews
+export const reviewFeedback = pgTable("review_feedback", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to review request
+  reviewRequestId: varchar("review_request_id").notNull(),
+  customerId: integer("customer_id").notNull(),
+  
+  // Feedback details
+  rating: integer("rating").notNull(), // 1-5 stars (typically <4)
+  feedbackText: text("feedback_text"),
+  wouldRecommend: boolean("would_recommend"),
+  
+  // Admin follow-up
+  followedUp: boolean("followed_up").notNull().default(false),
+  followedUpAt: timestamp("followed_up_at"),
+  followUpNotes: text("follow_up_notes"),
+  resolved: boolean("resolved").notNull().default(false),
+  
+  // Timestamps
+  submittedAt: timestamp("submitted_at").notNull().defaultNow(),
+}, (table) => ({
+  reviewRequestIdIdx: index("review_feedback_review_request_idx").on(table.reviewRequestId),
+  followedUpIdx: index("review_feedback_followed_up_idx").on(table.followedUp),
+  ratingIdx: index("review_feedback_rating_idx").on(table.rating),
+}));
+
+// Referral Nurture Campaigns - 4-email drip over 6 months for happy reviewers
+export const referralNurtureCampaigns = pgTable("referral_nurture_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to customer
+  customerId: integer("customer_id").notNull().unique(), // One campaign per customer
+  customerEmail: text("customer_email").notNull(),
+  originalReviewId: varchar("original_review_id"), // The review that triggered this campaign
+  
+  // Campaign status
+  status: text("status").notNull().default('queued'), // 'queued', 'email1_sent', 'email2_sent', 'email3_sent', 'email4_sent', 'completed', 'paused'
+  pauseReason: text("pause_reason"), // 'referral_submitted', 'opted_out', 'low_engagement'
+  
+  // Email tracking (4 emails over 6 months)
+  email1SentAt: timestamp("email1_sent_at"), // Day 14
+  email2SentAt: timestamp("email2_sent_at"), // Day 60
+  email3SentAt: timestamp("email3_sent_at"), // Day 150
+  email4SentAt: timestamp("email4_sent_at"), // Day 210
+  
+  // Engagement tracking
+  consecutiveUnopened: integer("consecutive_unopened").notNull().default(0), // Auto-pause after 2
+  totalOpens: integer("total_opens").notNull().default(0),
+  totalClicks: integer("total_clicks").notNull().default(0),
+  
+  // Referral tracking
+  referralsSubmitted: integer("referrals_submitted").notNull().default(0),
+  lastReferralAt: timestamp("last_referral_at"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  pausedAt: timestamp("paused_at"),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  statusIdx: index("referral_nurture_status_idx").on(table.status),
+  customerIdIdx: index("referral_nurture_customer_id_idx").on(table.customerId),
+  createdAtIdx: index("referral_nurture_created_at_idx").on(table.createdAt),
+}));
+
+// Review Email Templates - Customizable templates for campaign emails
+export const reviewEmailTemplates = pgTable("review_email_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Template identification
+  campaignType: text("campaign_type").notNull(), // 'review_request', 'referral_nurture'
+  emailNumber: integer("email_number").notNull(), // 1-4
+  
+  // Template content
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  plainTextContent: text("plain_text_content").notNull(),
+  
+  // Dynamic merge fields used (for reference)
+  mergeFields: text("merge_fields").array(), // ['customerName', 'technicianName', 'serviceName', etc.]
+  
+  // Admin customization
+  isDefault: boolean("is_default").notNull().default(false),
+  customized: boolean("customized").notNull().default(false),
+  lastEditedBy: varchar("last_edited_by"),
+  lastEditedAt: timestamp("last_edited_at"),
+  
+  // AI generation metadata
+  aiGenerated: boolean("ai_generated").notNull().default(false),
+  aiPrompt: text("ai_prompt"), // The prompt used to generate this template
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignTypeIdx: index("review_email_templates_campaign_type_idx").on(table.campaignType),
+  emailNumberIdx: index("review_email_templates_email_number_idx").on(table.emailNumber),
+  uniqueCampaignEmail: uniqueIndex("review_email_templates_campaign_email_unique").on(table.campaignType, table.emailNumber),
+}));
+
+// ============================================================================
 // SYSTEM RELIABILITY & MONITORING
 // ============================================================================
 

@@ -231,10 +231,12 @@ export async function fetchAllGoogleMyBusinessReviews(): Promise<InsertGoogleRev
 
 export async function postReplyToGoogleReview(reviewId: string, replyText: string): Promise<boolean> {
   try {
+    console.log(`[GMB Reply] Attempting to post reply to review ${reviewId}`);
+    
     const tokenData = await storage.getGoogleOAuthToken('google_my_business');
     
     if (!tokenData) {
-      console.error('[GMB] No OAuth token available to post reply');
+      console.error('[GMB Reply] ✗ No OAuth token available');
       return false;
     }
     
@@ -243,18 +245,21 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     const locationId = tokenData.locationId;
     
     if (!accountId || !locationId) {
-      console.error('[GMB] Missing accountId or locationId in OAuth token');
+      console.error('[GMB Reply] ✗ Missing credentials:', { accountId, locationId });
       return false;
     }
+    
+    console.log(`[GMB Reply] Using accountId: ${accountId}, locationId: ${locationId}`);
 
     const auth = GoogleMyBusinessAuth.getInstance();
     
-    // Refresh token if expired
+    // Refresh token proactively if expiring within 5 minutes
     const now = new Date();
     const expiryDate = new Date(tokenData.expiryDate);
+    const fiveMinutesFromNow = new Date(now.getTime() + 5 * 60 * 1000);
     
-    if (expiryDate <= now && tokenData.refreshToken) {
-      console.log('[GMB] Access token expired, refreshing...');
+    if (expiryDate <= fiveMinutesFromNow && tokenData.refreshToken) {
+      console.log('[GMB Reply] Token expiring soon, refreshing proactively...');
       const newTokens = await auth.refreshAccessToken(tokenData.refreshToken);
       
       if (newTokens.access_token && newTokens.expiry_date) {
@@ -265,6 +270,7 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
         });
         
         auth.setCredentials(newTokens);
+        console.log('[GMB Reply] ✓ Token refreshed successfully');
       }
     } else {
       auth.setCredentials({
@@ -286,6 +292,7 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     
     // Post reply using Google My Business API v4
     const url = `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations/${locationId}/reviews/${reviewId}/reply`;
+    console.log(`[GMB Reply] POST URL: ${url}`);
     
     const response = await fetch(url, {
       method: 'PUT',
@@ -299,15 +306,36 @@ export async function postReplyToGoogleReview(reviewId: string, replyText: strin
     });
 
     if (!response.ok) {
+      // Enhanced error logging - capture full Google response
       const errorText = await response.text();
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(errorText);
+      } catch {
+        errorDetails = errorText;
+      }
+      
+      console.error('[GMB Reply] ✗ Google API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        url,
+        reviewId,
+        errorBody: errorDetails
+      });
+      
       throw new Error(`GMB API error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
-    console.log(`[GMB] Successfully posted reply to review ${reviewId}`);
+    const responseData = await response.json();
+    console.log(`[GMB Reply] ✓ Successfully posted reply to review ${reviewId}`, responseData);
     return true;
     
   } catch (error: any) {
-    console.error('[GMB] Error posting reply:', error.message);
+    console.error('[GMB Reply] ✗ Error posting reply:', {
+      reviewId,
+      error: error.message,
+      stack: error.stack
+    });
     return false;
   }
 }
