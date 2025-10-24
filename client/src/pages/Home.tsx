@@ -267,8 +267,8 @@ export default function Home() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SMSOptInWidget 
               variant="inline"
-              title="Get VIP Text Alerts"
-              description="Join our text list for exclusive discounts, maintenance reminders, and emergency priority service"
+              title="Join Our Text List"
+              description="Get exclusive discounts, maintenance reminders, and emergency priority service via text"
               source="homepage"
               showIncentive={true}
             />

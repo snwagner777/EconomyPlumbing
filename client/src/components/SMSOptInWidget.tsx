@@ -22,7 +22,7 @@ interface SMSOptInWidgetProps {
 export default function SMSOptInWidget({
   variant = "card",
   title = "Get Exclusive Offers via Text",
-  description = "Join our VIP text list for special discounts, maintenance reminders, and priority service",
+  description = "Join our text list for special discounts, maintenance reminders, and priority service",
   showIncentive = true,
   customerId,
   source = "website",

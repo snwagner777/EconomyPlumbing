@@ -6991,7 +6991,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         .from(contactsXlsx)
         .where(
           and(
-            eq(contactsXlsx.type, 'Phone'),
+            eq(contactsXlsx.contactType, 'Phone'),
             or(
               sql`${contactsXlsx.normalizedValue} = ${normalizedPhone}`,
               sql`${contactsXlsx.normalizedValue} LIKE ${'%,' + normalizedPhone + ',%'}`,
@@ -7015,7 +7015,7 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         .where(
           and(
             eq(contactsXlsx.customerId, phoneContact.customerId),
-            eq(contactsXlsx.type, 'Email')
+            eq(contactsXlsx.contactType, 'Email')
           )
         )
         .limit(1);
