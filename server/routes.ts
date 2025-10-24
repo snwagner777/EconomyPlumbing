@@ -1105,6 +1105,40 @@ ${rssItems}
     }
   });
 
+  // Public: Submit review feedback (rating-first flow for /request-review page)
+  app.post("/api/review-feedback", async (req, res) => {
+    try {
+      const { rating, feedback } = req.body;
+      const { reviewFeedback } = await import("@shared/schema");
+
+      // Validate required fields
+      if (!rating || !feedback) {
+        return res.status(400).json({ message: "Rating and feedback are required" });
+      }
+
+      // Insert feedback into database
+      const [newFeedback] = await db
+        .insert(reviewFeedback)
+        .values({
+          rating,
+          feedbackText: feedback,
+          submittedAt: new Date(),
+        })
+        .returning();
+
+      console.log(`[Review Feedback] Received ${rating}-star feedback from /request-review page`);
+
+      res.json({ 
+        success: true, 
+        message: "Thank you for your feedback. We'll use it to improve our service.",
+        feedbackId: newFeedback.id
+      });
+    } catch (error: any) {
+      console.error('[Review Feedback] Error:', error);
+      res.status(500).json({ message: "Error submitting feedback: " + error.message });
+    }
+  });
+
   // Public: Get approved reviews for display (merges Google reviews + custom reviews)
   app.get("/api/reviews", async (req, res) => {
     try {

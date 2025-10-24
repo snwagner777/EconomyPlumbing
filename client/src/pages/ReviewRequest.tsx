@@ -149,164 +149,280 @@ export default function ReviewRequest() {
             {getGreeting()}! Thank You for Choosing Economy Plumbing
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            {randomImpact}. A quick review takes just 2 minutes and makes a huge difference!
+            We'd love to hear about your experience!
           </p>
-          
-          {/* Trust indicators */}
-          <div className="flex flex-wrap justify-center gap-6 pt-4">
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">15,000+ Happy Customers</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Award className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">4.8★ Average Rating</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              <span className="text-sm font-medium">Since 1995</span>
-            </div>
-          </div>
         </div>
 
-        {/* Quick Questions for Your Review */}
-        <Card className="border-2 border-primary/30 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
-            <CardTitle className="text-2xl flex items-center gap-2">
-              <CheckCircle className="w-6 h-6 text-primary" />
-              Quick Questions to Guide Your Review
-            </CardTitle>
-            <CardDescription>Consider mentioning these in your feedback</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4 pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <TrendingUp className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">How was our response time?</p>
-                  <p className="text-sm text-muted-foreground">Did we arrive when promised?</p>
-                </div>
+        {/* Rating Selector - STEP 1 */}
+        {!selectedRating && !feedbackSubmitted && (
+          <Card className="border-2 border-primary/30 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-primary/10 to-primary/5">
+              <CardTitle className="text-2xl text-center">How Would You Rate Your Experience?</CardTitle>
+              <CardDescription className="text-center">Click to select your rating</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-8 pb-10">
+              <div className="flex justify-center gap-3" data-testid="rating-selector">
+                {[1, 2, 3, 4, 5].map((rating) => (
+                  <button
+                    key={rating}
+                    onClick={() => setSelectedRating(rating)}
+                    onMouseEnter={() => setHoverRating(rating)}
+                    onMouseLeave={() => setHoverRating(null)}
+                    className="transition-transform hover:scale-110 active:scale-95"
+                    data-testid={`star-${rating}`}
+                  >
+                    <Star
+                      className={`w-16 h-16 transition-colors ${
+                        displayRating && displayRating >= rating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'fill-none text-gray-300'
+                      }`}
+                    />
+                  </button>
+                ))}
               </div>
-              <div className="flex items-start gap-3">
-                <Users className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">How was our technician?</p>
-                  <p className="text-sm text-muted-foreground">Professional, friendly, knowledgeable?</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Shield className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Was the problem solved?</p>
-                  <p className="text-sm text-muted-foreground">Did we fix it right the first time?</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3">
-                <Heart className="w-5 h-5 text-primary mt-1" />
-                <div>
-                  <p className="font-medium">Would you recommend us?</p>
-                  <p className="text-sm text-muted-foreground">To friends, family, or neighbors?</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              {displayRating && (
+                <p className="text-center mt-6 text-lg font-medium" data-testid="rating-label">
+                  {displayRating === 5 && "Excellent! ⭐"}
+                  {displayRating === 4 && "Great! 👍"}
+                  {displayRating === 3 && "Good"}
+                  {displayRating === 2 && "Fair"}
+                  {displayRating === 1 && "Poor"}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
-        {/* Why Your Review Matters */}
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-          <CardHeader>
-            <CardTitle className="text-2xl">The Impact of Your Review</CardTitle>
-            <CardDescription>Here's how your 2-minute review helps</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-start gap-3">
-              <Users className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Helps 50+ families monthly:</strong> Your review guides Austin homeowners to reliable emergency plumbing service
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <Award className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Recognizes excellent service:</strong> Our technicians take pride in every positive review - it's the highlight of their day
-              </p>
-            </div>
-            <div className="flex items-start gap-3">
-              <TrendingUp className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
-              <p className="text-muted-foreground">
-                <strong className="text-foreground">Supports a local business:</strong> As a family-owned company since 1995, your review helps us compete with corporate chains
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Happy customers (4-5 stars) → Public Review Platforms */}
+        {selectedRating && selectedRating >= 4 && !feedbackSubmitted && (
+          <>
+            <Card className="border-2 border-green-500/30 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-green-500/10 to-green-500/5">
+                <CardTitle className="text-2xl text-center flex items-center justify-center gap-2">
+                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  Wonderful! We're So Glad You Had a Great Experience
+                </CardTitle>
+                <CardDescription className="text-center">
+                  {randomImpact}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground mb-6">
+                  Would you mind sharing your positive experience on one of these platforms? It only takes 2 minutes!
+                </p>
+              </CardContent>
+            </Card>
 
-        {/* Platform Selection */}
-        <div className="space-y-4">
-          <h2 className="text-2xl font-semibold text-center">Choose Your Preferred Platform</h2>
-          
-          {isLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <Skeleton key={i} className="h-32 w-full" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {platforms?.map((platform) => (
-                <Card key={platform.id} className="hover-elevate transition-all">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`p-2 rounded-lg ${getPlatformColor(platform.platform)} text-white`}>
-                        {getPlatformIcon(platform.platform)}
-                      </div>
-                      <div>
-                        <CardTitle className="text-lg">{platform.displayName}</CardTitle>
-                        {platform.description && (
-                          <CardDescription className="text-xs mt-1">{platform.description}</CardDescription>
-                        )}
-                      </div>
+            {/* Quick Questions for Your Review */}
+            <Card className="border-primary/20">
+              <CardHeader>
+                <CardTitle className="text-xl flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-primary" />
+                  Quick Questions to Guide Your Review
+                </CardTitle>
+                <CardDescription>Consider mentioning these in your feedback</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-start gap-3">
+                    <TrendingUp className="w-5 h-5 text-primary mt-1" />
+                    <div>
+                      <p className="font-medium">How was our response time?</p>
+                      <p className="text-sm text-muted-foreground">Did we arrive when promised?</p>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      asChild
-                      className={`w-full ${getPlatformColor(platform.platform)} text-white`}
-                      size="lg"
-                      data-testid={`button-review-${platform.platform}`}
-                    >
-                      <a
-                        href={platform.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        Review on {platform.displayName}
-                        <ExternalLink className="w-4 h-4 ml-2" />
-                      </a>
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
-        </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Users className="w-5 h-5 text-primary mt-1" />
+                    <div>
+                      <p className="font-medium">How was our technician?</p>
+                      <p className="text-sm text-muted-foreground">Professional, friendly, knowledgeable?</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Shield className="w-5 h-5 text-primary mt-1" />
+                    <div>
+                      <p className="font-medium">Was the problem solved?</p>
+                      <p className="text-sm text-muted-foreground">Did we fix it right the first time?</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <Heart className="w-5 h-5 text-primary mt-1" />
+                    <div>
+                      <p className="font-medium">Would you recommend us?</p>
+                      <p className="text-sm text-muted-foreground">To friends, family, or neighbors?</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
 
-        {/* Thank You Message */}
-        <Card className="bg-muted/50 border-muted">
-          <CardContent className="pt-6 text-center space-y-4">
-            <div className="flex justify-center">
-              <Heart className="w-12 h-12 text-primary fill-primary/20" />
-            </div>
-            <div>
-              <p className="text-lg font-medium mb-2">Thank You for Being Part of Our Story</p>
+        {/* Unhappy customers (<4 stars) → Internal Feedback Form */}
+        {selectedRating && selectedRating < 4 && !feedbackSubmitted && (
+          <Card className="border-2 border-orange-500/30 shadow-lg">
+            <CardHeader className="bg-gradient-to-r from-orange-500/10 to-orange-500/5">
+              <CardTitle className="text-2xl text-center">We're Sorry to Hear That</CardTitle>
+              <CardDescription className="text-center">
+                Your feedback is valuable and helps us improve. Please tell us what went wrong.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+              <div>
+                <Label htmlFor="feedback-text" className="text-base font-medium">
+                  What could we have done better?
+                </Label>
+                <Textarea
+                  id="feedback-text"
+                  data-testid="input-feedback"
+                  placeholder="Please share details about your experience so we can make it right..."
+                  value={feedbackText}
+                  onChange={(e) => setFeedbackText(e.target.value)}
+                  rows={6}
+                  className="mt-2"
+                />
+              </div>
+              <div className="flex gap-3 justify-end">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSelectedRating(null);
+                    setFeedbackText("");
+                  }}
+                  data-testid="button-cancel-feedback"
+                >
+                  Go Back
+                </Button>
+                <Button
+                  onClick={handleFeedbackSubmit}
+                  disabled={feedbackMutation.isPending || !feedbackText.trim()}
+                  data-testid="button-submit-feedback"
+                >
+                  {feedbackMutation.isPending ? (
+                    "Submitting..."
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Submit Feedback
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Feedback Submitted Success */}
+        {feedbackSubmitted && (
+          <Card className="border-2 border-green-500/30 shadow-lg">
+            <CardContent className="pt-8 pb-8 text-center">
+              <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
+              <h2 className="text-2xl font-bold mb-2">Thank You for Your Feedback</h2>
               <p className="text-muted-foreground">
-                Every review represents a real person we've helped. Your honest feedback helps us continue delivering excellent plumbing service to the Austin and Marble Falls area for another 30 years.
+                We take all feedback seriously and will use it to improve our service. A member of our team may reach out to discuss your experience further.
               </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Platform Selection - Only for Happy Customers */}
+        {selectedRating && selectedRating >= 4 && !feedbackSubmitted && (
+          <>
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardHeader>
+                <CardTitle className="text-2xl">The Impact of Your Review</CardTitle>
+                <CardDescription>Here's how your 2-minute review helps</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-start gap-3">
+                  <Users className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <p className="text-muted-foreground">
+                    <strong className="text-foreground">Helps 50+ families monthly:</strong> Your review guides Austin homeowners to reliable emergency plumbing service
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Award className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <p className="text-muted-foreground">
+                    <strong className="text-foreground">Recognizes excellent service:</strong> Our technicians take pride in every positive review - it's the highlight of their day
+                  </p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <TrendingUp className="w-5 h-5 text-primary mt-1 flex-shrink-0" />
+                  <p className="text-muted-foreground">
+                    <strong className="text-foreground">Supports a local business:</strong> As a family-owned company since 1995, your review helps us compete with corporate chains
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-4">
+              <h2 className="text-2xl font-semibold text-center">Choose Your Preferred Platform</h2>
+              
+              {isLoading ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <Skeleton key={i} className="h-32 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {platforms?.map((platform) => (
+                    <Card key={platform.id} className="hover-elevate transition-all">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center gap-3">
+                          <div className={`p-2 rounded-lg ${getPlatformColor(platform.platform)} text-white`}>
+                            {getPlatformIcon(platform.platform)}
+                          </div>
+                          <div>
+                            <CardTitle className="text-lg">{platform.displayName}</CardTitle>
+                            {platform.description && (
+                              <CardDescription className="text-xs mt-1">{platform.description}</CardDescription>
+                            )}
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <Button
+                          asChild
+                          className={`w-full ${getPlatformColor(platform.platform)} text-white`}
+                          size="lg"
+                          data-testid={`button-review-${platform.platform}`}
+                        >
+                          <a
+                            href={platform.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Review on {platform.displayName}
+                            <ExternalLink className="w-4 h-4 ml-2" />
+                          </a>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
-            <p className="text-sm text-muted-foreground italic">
-              "We treat every home like it's our own, and every customer like family."
-            </p>
-          </CardContent>
-        </Card>
+
+            <Card className="bg-muted/50 border-muted">
+              <CardContent className="pt-6 text-center space-y-4">
+                <div className="flex justify-center">
+                  <Heart className="w-12 h-12 text-primary fill-primary/20" />
+                </div>
+                <div>
+                  <p className="text-lg font-medium mb-2">Thank You for Being Part of Our Story</p>
+                  <p className="text-muted-foreground">
+                    Every review represents a real person we've helped. Your honest feedback helps us continue delivering excellent plumbing service to the Austin and Marble Falls area for another 30 years.
+                  </p>
+                </div>
+                <p className="text-sm text-muted-foreground italic">
+                  "We treat every home like it's our own, and every customer like family."
+                </p>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
       
       <Footer />
