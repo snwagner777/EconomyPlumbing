@@ -157,10 +157,17 @@ export default function CustomerPortal() {
   const [showAccountSelection, setShowAccountSelection] = useState(false);
   
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'select-account' | 'authenticated'>('lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Phone-based login state
+  const [phoneLoginNumber, setPhoneLoginNumber] = useState("");
+  const [maskedEmail, setMaskedEmail] = useState("");
+  const [lookupToken, setLookupToken] = useState("");
+  const [isLookingUp, setIsLookingUp] = useState(false);
+  const [isSendingLink, setIsSendingLink] = useState(false);
   
   // Reschedule state
   const [rescheduleDialogOpen, setRescheduleDialogOpen] = useState(false);
@@ -552,6 +559,77 @@ export default function CustomerPortal() {
     setVerificationCode("");
     setLookupError(null);
     setVerificationMessage("");
+    setPhoneLoginNumber("");
+    setMaskedEmail("");
+    setLookupToken("");
+  };
+
+  // Phone-based login handlers
+  const handlePhoneLookup = async () => {
+    if (!phoneLoginNumber.trim()) return;
+    
+    setLookupError(null);
+    setLookupSuccess(null);
+    setIsLookingUp(true);
+
+    try {
+      const response = await fetch('/api/portal/auth/lookup-by-phone', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneLoginNumber }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Account not found');
+      }
+
+      const result = await response.json();
+      
+      setMaskedEmail(result.maskedEmail);
+      setLookupToken(result.lookupToken);
+      setVerificationStep('phone-email-found');
+      setLookupSuccess(`We found your account! We'll send a login link to ${result.maskedEmail}`);
+    } catch (err: any) {
+      console.error('Phone lookup failed:', err);
+      setLookupError(err.message || 'We couldn\'t find an account with that phone number.');
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
+
+  const handleSendPhoneMagicLink = async () => {
+    setLookupError(null);
+    setLookupSuccess(null);
+    setIsSendingLink(true);
+
+    try {
+      const response = await fetch('/api/portal/auth/send-phone-magic-link', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lookupToken,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send login link');
+      }
+
+      const result = await response.json();
+      
+      setLookupSuccess(result.message || `Magic link sent to ${maskedEmail}! Check your email.`);
+      toast({
+        title: "Check your email!",
+        description: `We've sent a login link to ${maskedEmail}`,
+      });
+    } catch (err: any) {
+      console.error('Send magic link failed:', err);
+      setLookupError(err.message || 'Failed to send login link. Please try again.');
+    } finally {
+      setIsSendingLink(false);
+    }
   };
 
   const handleOpenRescheduleDialog = (appointment: ServiceTitanAppointment) => {
@@ -1107,6 +1185,161 @@ export default function CustomerPortal() {
                     data-testid="button-lookup-submit"
                   >
                     {isSearching ? 'Searching...' : 'Access My Account'}
+                  </Button>
+
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setVerificationStep('phone-lookup')}
+                    className="w-full"
+                    data-testid="button-phone-login"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Login with Phone Number
+                  </Button>
+
+                  {lookupSuccess && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-green-700 dark:text-green-400">
+                          <p className="font-medium mb-1">Success</p>
+                          <p>{lookupSuccess}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {lookupError && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="text-destructive">
+                          <p className="font-medium mb-1">Error</p>
+                          <p>{lookupError}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : verificationStep === 'phone-lookup' ? (
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Login with Phone Number</CardTitle>
+                  <CardDescription>
+                    Enter your phone number and we'll send a login link to your email
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone-lookup-input">
+                      Phone Number
+                    </Label>
+                    <Input
+                      id="phone-lookup-input"
+                      type="tel"
+                      placeholder="(512) 555-1234"
+                      value={phoneLoginNumber}
+                      onChange={(e) => setPhoneLoginNumber(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handlePhoneLookup()}
+                      data-testid="input-phone-lookup"
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handlePhoneLookup}
+                    className="w-full"
+                    disabled={!phoneLoginNumber.trim() || isLookingUp}
+                    data-testid="button-phone-lookup-submit"
+                  >
+                    {isLookingUp ? 'Looking up...' : 'Find My Account'}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={handleBackToLookup}
+                    className="w-full"
+                    data-testid="button-back-to-email"
+                  >
+                    Back to Email Login
+                  </Button>
+
+                  {lookupSuccess && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-green-700 dark:text-green-400">
+                          <p className="font-medium mb-1">Success</p>
+                          <p>{lookupSuccess}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {lookupError && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="text-destructive">
+                          <p className="font-medium mb-1">Error</p>
+                          <p>{lookupError}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : verificationStep === 'phone-email-found' ? (
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Account Found!</CardTitle>
+                  <CardDescription>
+                    We'll send a login link to your email address
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <Mail className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium mb-1">Email Address</p>
+                        <p className="text-sm text-muted-foreground">
+                          {maskedEmail}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-2">
+                          For security, we've hidden part of your email address
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <Button
+                    onClick={handleSendPhoneMagicLink}
+                    className="w-full"
+                    disabled={isSendingLink}
+                    data-testid="button-send-phone-magic-link"
+                  >
+                    {isSendingLink ? 'Sending...' : 'Send Login Link'}
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    onClick={handleBackToLookup}
+                    className="w-full"
+                    data-testid="button-back-from-phone"
+                  >
+                    Use Different Method
                   </Button>
 
                   {lookupSuccess && (

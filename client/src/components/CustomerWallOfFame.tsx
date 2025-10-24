@@ -127,19 +127,6 @@ export function CustomerWallOfFame() {
                   >
                     {getInitials(customer.name)}
                   </div>
-
-                  {/* VIP Badge for Top 10 */}
-                  {index < 10 && (
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2">
-                      <Badge 
-                        variant="secondary" 
-                        className="text-xs px-2 py-0.5 bg-primary/90 text-primary-foreground border-2 border-background shadow-md"
-                      >
-                        <Star className="w-3 h-3 mr-1 fill-current" />
-                        VIP
-                      </Badge>
-                    </div>
-                  )}
                 </div>
 
                 {/* Customer Info */}

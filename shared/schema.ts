@@ -834,6 +834,20 @@ export const portalAnalytics = pgTable("portal_analytics", {
   foundIdx: index("portal_analytics_found_idx").on(table.found),
 }));
 
+// Phone-based login temporary lookups (prevents email harvesting)
+export const phoneLoginLookups = pgTable("phone_login_lookups", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  lookupToken: text("lookup_token").notNull().unique(),
+  phone: text("phone").notNull(),
+  email: text("email").notNull(),
+  customerId: integer("customer_id").notNull(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  tokenIdx: index("phone_login_lookups_token_idx").on(table.lookupToken),
+  expiresIdx: index("phone_login_lookups_expires_idx").on(table.expiresAt),
+}));
+
 // Customer Portal Authentication (SMS codes and email magic links)
 export const portalVerifications = pgTable("portal_verifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
