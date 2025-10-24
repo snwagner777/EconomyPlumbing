@@ -3625,6 +3625,11 @@ ${rssItems}
   }).any();
   
   app.post("/api/webhooks/mailgun/customer-data", (req, res) => {
+    console.log('[Mailgun Webhook] === WEBHOOK REQUEST RECEIVED ===');
+    console.log('[Mailgun Webhook] Method:', req.method);
+    console.log('[Mailgun Webhook] Content-Type:', req.headers['content-type']);
+    console.log('[Mailgun Webhook] Headers:', Object.keys(req.headers));
+    
     // Parse multipart form data first
     mailgunUpload(req, res, async (err) => {
       if (err) {
@@ -3633,7 +3638,8 @@ ${rssItems}
       }
       
       try {
-        console.log('[Mailgun Webhook] Received incoming email');
+        console.log('[Mailgun Webhook] Multipart data parsed successfully');
+        console.log('[Mailgun Webhook] Body fields:', Object.keys(req.body));
         
         // CRITICAL: Verify Mailgun signature before processing
         const signingKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY;
@@ -6972,18 +6978,24 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   // Phone-based login: Look up customer email by phone number
   app.post("/api/portal/auth/lookup-by-phone", async (req, res) => {
     try {
+      console.log("[Portal Phone Auth] === PHONE LOOKUP REQUEST RECEIVED ===");
+      console.log("[Portal Phone Auth] Request body:", JSON.stringify(req.body));
+      
       const { phone } = req.body;
 
       if (!phone) {
+        console.log("[Portal Phone Auth] ERROR: No phone number provided in request");
         return res.status(400).json({ error: "Phone number required" });
       }
 
-      console.log("[Portal Phone Auth] Looking up email for phone:", phone);
+      console.log("[Portal Phone Auth] Raw phone from request:", phone);
+      const normalizedPhone = phone.replace(/\D/g, ''); // Remove all non-digits
+      console.log("[Portal Phone Auth] Normalized phone:", normalizedPhone);
 
       const { contactsXlsx } = await import('@shared/schema');
       
       // Search for phone in contacts_xlsx (handles comma-separated values)
-      const normalizedPhone = phone.replace(/\D/g, ''); // Remove all non-digits
+      console.log("[Portal Phone Auth] Querying database for phone:", normalizedPhone);
       
       // Search using LIKE for comma-separated values and exact match
       const contacts = await db
@@ -7002,13 +7014,24 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         )
         .limit(1);
 
+      console.log("[Portal Phone Auth] Database query returned", contacts.length, "contacts");
+      
       if (contacts.length === 0) {
+        console.log("[Portal Phone Auth] ERROR: No contacts found for phone:", normalizedPhone);
         return res.status(404).json({ error: "No account found with this phone number" });
       }
+      
+      console.log("[Portal Phone Auth] Found contact:", {
+        customerId: contacts[0].customerId,
+        contactType: contacts[0].contactType,
+        value: contacts[0].value
+      });
 
       const phoneContact = contacts[0];
       
       // Now find the email for this customer
+      console.log("[Portal Phone Auth] Looking for email for customer ID:", phoneContact.customerId);
+      
       const emailContacts = await db
         .select()
         .from(contactsXlsx)
@@ -7020,7 +7043,10 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         )
         .limit(1);
 
+      console.log("[Portal Phone Auth] Found", emailContacts.length, "email contacts");
+
       if (emailContacts.length === 0) {
+        console.log("[Portal Phone Auth] ERROR: No email found for customer", phoneContact.customerId);
         return res.status(404).json({ 
           error: "No email address found for this account. Please contact us directly." 
         });
@@ -7031,7 +7057,8 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
       const emails = emailContact.value.split(',').map(e => e.trim());
       const primaryEmail = emails[0];
 
-      console.log("[Portal Phone Auth] Found email for customer", phoneContact.customerId);
+      console.log("[Portal Phone Auth] Primary email:", primaryEmail);
+      console.log("[Portal Phone Auth] Creating lookup token for customer", phoneContact.customerId);
 
       // Store lookup in session/temporary cache for verification
       // SECURITY: Never send actual email to frontend
@@ -7047,15 +7074,20 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
         expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
       });
 
+      console.log("[Portal Phone Auth] Lookup token created:", lookupToken);
+
       // Return ONLY masked email and lookup token
       const maskedEmail = maskEmail(primaryEmail);
+      
+      console.log("[Portal Phone Auth] SUCCESS - Returning masked email:", maskedEmail);
       
       res.json({ 
         maskedEmail,
         lookupToken, // Frontend uses this to request magic link
       });
     } catch (error: any) {
-      console.error("[Portal Phone Auth] Lookup error:", error);
+      console.error("[Portal Phone Auth] CRITICAL ERROR in lookup:", error);
+      console.error("[Portal Phone Auth] Error stack:", error.stack);
       res.status(500).json({ error: "Failed to lookup account" });
     }
   });
