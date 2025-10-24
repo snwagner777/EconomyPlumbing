@@ -28,16 +28,16 @@ interface EmailSettings {
 
 interface JobCompletion {
   id: string;
-  serviceTitanJobId: number;
+  jobId: number; // ServiceTitan job ID
   customerId: number;
   customerName: string;
   customerEmail: string;
   customerPhone?: string;
-  serviceType?: string;
-  jobAmount?: number;
-  completedAt: Date;
+  serviceName?: string;
+  invoiceTotal?: number; // In cents
+  completionDate: Date;
   technicianName?: string;
-  location?: string;
+  jobNotes?: string;
 }
 
 class ReviewRequestScheduler {
@@ -106,23 +106,18 @@ class ReviewRequestScheduler {
       const [reviewRequest] = await db
         .insert(reviewRequests)
         .values({
-          serviceTitanJobId: job.serviceTitanJobId,
+          jobCompletionId: job.id, // Link to job_completions table
           customerId: job.customerId,
-          customerName: job.customerName,
           customerEmail: job.customerEmail,
-          customerPhone: job.customerPhone,
-          jobCompletedAt: job.completedAt,
-          campaignStatus: 'active',
-          currentEmailNumber: 0, // Start at 0, will increment to 1 when first email sends
-          phoneNumber: settings.phoneNumber || undefined,
+          status: 'queued', // Initial status
           createdAt: new Date(),
         })
         .returning();
 
-      console.log(`[Review Request Scheduler] Created review request ${reviewRequest.id} for job ${job.serviceTitanJobId}`);
+      console.log(`[Review Request Scheduler] Created review request ${reviewRequest.id} for job ${job.jobId}`);
       return reviewRequest.id;
     } catch (error) {
-      console.error(`[Review Request Scheduler] Error creating review request for job ${job.serviceTitanJobId}:`, error);
+      console.error(`[Review Request Scheduler] Error creating review request for job ${job.jobId}:`, error);
       return null;
     }
   }
@@ -139,8 +134,7 @@ class ReviewRequestScheduler {
         .where(
           and(
             eq(reviewEmailTemplates.campaignType, 'review_request'),
-            eq(reviewEmailTemplates.emailNumber, emailNumber),
-            eq(reviewEmailTemplates.isActive, true)
+            eq(reviewEmailTemplates.emailNumber, emailNumber)
           )
         )
         .limit(1);
@@ -149,9 +143,8 @@ class ReviewRequestScheduler {
         console.log(`[Review Request Scheduler] Using database template for email ${emailNumber}`);
         return {
           subject: template.subject,
-          preheader: template.preheader,
-          bodyHtml: template.bodyHtml,
-          bodyPlain: template.bodyPlain,
+          htmlContent: template.htmlContent,
+          plainTextContent: template.plainTextContent,
         };
       }
 
@@ -163,19 +156,17 @@ class ReviewRequestScheduler {
         jobDetails: {
           customerId: job.customerId,
           customerName: job.customerName,
-          serviceType: job.serviceType,
-          jobAmount: job.jobAmount,
-          jobDate: job.completedAt,
-          location: job.location,
+          serviceType: job.serviceName,
+          jobAmount: job.invoiceTotal,
+          jobDate: job.completionDate,
         },
         phoneNumber: settings.phoneNumber || undefined,
       });
 
       return {
         subject: generated.subject,
-        preheader: generated.preheader,
-        bodyHtml: generated.bodyHtml,
-        bodyPlain: generated.bodyPlain,
+        htmlContent: generated.bodyHtml,
+        plainTextContent: generated.bodyPlain,
       };
     } catch (error) {
       console.error(`[Review Request Scheduler] Error getting email content for email ${emailNumber}:`, error);
@@ -188,17 +179,23 @@ class ReviewRequestScheduler {
    */
   async sendReviewEmail(reviewRequestId: string, emailNumber: number) {
     try {
-      // Get review request details
-      const [reviewRequest] = await db
-        .select()
+      // Get review request details with job completion info
+      const [result] = await db
+        .select({
+          reviewRequest: reviewRequests,
+          jobCompletion: jobCompletions,
+        })
         .from(reviewRequests)
+        .innerJoin(jobCompletions, eq(reviewRequests.jobCompletionId, jobCompletions.id))
         .where(eq(reviewRequests.id, reviewRequestId))
         .limit(1);
 
-      if (!reviewRequest) {
+      if (!result) {
         console.error(`[Review Request Scheduler] Review request ${reviewRequestId} not found`);
         return false;
       }
+
+      const { reviewRequest, jobCompletion } = result;
 
       // Check if customer already submitted review
       if (reviewRequest.reviewSubmittedAt) {
@@ -206,7 +203,7 @@ class ReviewRequestScheduler {
         await db
           .update(reviewRequests)
           .set({
-            campaignStatus: 'completed',
+            status: 'completed',
             completedAt: new Date(),
             stopReason: 'review_submitted',
           })
@@ -220,13 +217,16 @@ class ReviewRequestScheduler {
       const emailContent = await this.getEmailContent(
         emailNumber,
         {
-          id: reviewRequestId,
-          serviceTitanJobId: reviewRequest.serviceTitanJobId,
-          customerId: reviewRequest.customerId,
-          customerName: reviewRequest.customerName,
-          customerEmail: reviewRequest.customerEmail,
-          customerPhone: reviewRequest.customerPhone || undefined,
-          completedAt: reviewRequest.jobCompletedAt,
+          id: jobCompletion.id,
+          jobId: jobCompletion.jobId,
+          customerId: jobCompletion.customerId,
+          customerName: jobCompletion.customerName,
+          customerEmail: jobCompletion.customerEmail || '',
+          customerPhone: jobCompletion.customerPhone || undefined,
+          serviceName: jobCompletion.serviceName || undefined,
+          invoiceTotal: jobCompletion.invoiceTotal || undefined,
+          completionDate: jobCompletion.completionDate,
+          technicianName: jobCompletion.technicianName || undefined,
         },
         settings
       );
@@ -236,18 +236,24 @@ class ReviewRequestScheduler {
       console.log(`[Review Request Scheduler] Subject: ${emailContent.subject}`);
 
       // Update review request with email sent timestamp
-      const updateFields: any = {
-        currentEmailNumber: emailNumber,
-        updatedAt: new Date(),
-      };
+      const updateFields: any = {};
 
-      // Set specific email timestamp
-      if (emailNumber === 1) updateFields.email1SentAt = new Date();
-      if (emailNumber === 2) updateFields.email2SentAt = new Date();
-      if (emailNumber === 3) updateFields.email3SentAt = new Date();
+      // Set specific email timestamp and status
+      if (emailNumber === 1) {
+        updateFields.email1SentAt = new Date();
+        updateFields.status = 'email1_sent';
+      }
+      if (emailNumber === 2) {
+        updateFields.email2SentAt = new Date();
+        updateFields.status = 'email2_sent';
+      }
+      if (emailNumber === 3) {
+        updateFields.email3SentAt = new Date();
+        updateFields.status = 'email3_sent';
+      }
       if (emailNumber === 4) {
         updateFields.email4SentAt = new Date();
-        updateFields.campaignStatus = 'completed';
+        updateFields.status = 'completed';
         updateFields.completedAt = new Date();
         updateFields.stopReason = 'sequence_completed';
       }
@@ -278,40 +284,49 @@ class ReviewRequestScheduler {
 
       const now = new Date();
       
-      // Find active review requests that need emails sent
+      // Find active review requests that need emails sent (join with job_completions for completion date)
       const pendingRequests = await db
-        .select()
+        .select({
+          reviewRequest: reviewRequests,
+          jobCompletion: jobCompletions,
+        })
         .from(reviewRequests)
+        .innerJoin(jobCompletions, eq(reviewRequests.jobCompletionId, jobCompletions.id))
         .where(
           and(
-            eq(reviewRequests.campaignStatus, 'active'),
+            or(
+              eq(reviewRequests.status, 'queued'),
+              eq(reviewRequests.status, 'email1_sent'),
+              eq(reviewRequests.status, 'email2_sent'),
+              eq(reviewRequests.status, 'email3_sent')
+            ),
             isNull(reviewRequests.reviewSubmittedAt)
           )
         );
 
       console.log(`[Review Request Scheduler] Found ${pendingRequests.length} active review requests`);
 
-      for (const request of pendingRequests) {
+      for (const { reviewRequest, jobCompletion } of pendingRequests) {
         const daysSinceCompletion = Math.floor(
-          (now.getTime() - request.jobCompletedAt.getTime()) / (1000 * 60 * 60 * 24)
+          (now.getTime() - jobCompletion.completionDate.getTime()) / (1000 * 60 * 60 * 24)
         );
 
         // Determine which email to send based on days since completion
         let emailToSend: number | null = null;
 
-        if (daysSinceCompletion >= 1 && !request.email1SentAt) {
+        if (daysSinceCompletion >= 1 && !reviewRequest.email1SentAt) {
           emailToSend = 1;
-        } else if (daysSinceCompletion >= 7 && !request.email2SentAt) {
+        } else if (daysSinceCompletion >= 7 && !reviewRequest.email2SentAt) {
           emailToSend = 2;
-        } else if (daysSinceCompletion >= 14 && !request.email3SentAt) {
+        } else if (daysSinceCompletion >= 14 && !reviewRequest.email3SentAt) {
           emailToSend = 3;
-        } else if (daysSinceCompletion >= 21 && !request.email4SentAt) {
+        } else if (daysSinceCompletion >= 21 && !reviewRequest.email4SentAt) {
           emailToSend = 4;
         }
 
         if (emailToSend) {
-          console.log(`[Review Request Scheduler] Sending email ${emailToSend} for request ${request.id} (${daysSinceCompletion} days since job)`);
-          await this.sendReviewEmail(request.id, emailToSend);
+          console.log(`[Review Request Scheduler] Sending email ${emailToSend} for request ${reviewRequest.id} (${daysSinceCompletion} days since job)`);
+          await this.sendReviewEmail(reviewRequest.id, emailToSend);
         }
       }
     } catch (error) {
