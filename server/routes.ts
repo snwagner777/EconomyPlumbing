@@ -1316,6 +1316,15 @@ ${rssItems}
         try {
           const { generateRefereeWelcomeEmail } = await import('./lib/aiEmailGenerator');
           const { refereeWelcomeEmails } = await import('@shared/schema');
+          const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./lib/emailPreferenceEnforcer');
+          
+          // Check email preferences before sending
+          const prefCheck = await canSendEmail(refereeEmail, { type: 'referral' });
+          
+          if (!prefCheck.canSend) {
+            console.log(`[Referral] Skipping welcome email - ${prefCheck.reason}`);
+            return;
+          }
           
           console.log(`[Referral] Generating welcome email for ${refereeName}...`);
           
@@ -1323,8 +1332,12 @@ ${rssItems}
           const emailContent = await generateRefereeWelcomeEmail({
             refereeName,
             referrerName,
-            phoneNumber: undefined, // TODO: Add phone tracking if needed
+            phoneNumber: undefined,
           });
+          
+          // Add unsubscribe footer
+          const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
+          const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
           
           // Save to database
           const [welcomeEmail] = await db.insert(refereeWelcomeEmails).values({
@@ -1333,14 +1346,14 @@ ${rssItems}
             refereeEmail,
             referrerName,
             subject: emailContent.subject,
-            htmlContent: emailContent.bodyHtml,
-            plainTextContent: emailContent.bodyPlain,
+            htmlContent: htmlWithFooter,
+            plainTextContent: plainWithFooter,
             status: 'queued',
             generatedByAI: true,
             aiPrompt: `Welcome email for referee ${refereeName}, referred by ${referrerName}`,
           }).returning();
           
-          // Send via Resend
+          // Send via Resend with unsubscribe headers
           const { getResendClient } = await import('./lib/resendClient');
           const { client: resend, fromEmail } = await getResendClient();
           
@@ -1348,8 +1361,12 @@ ${rssItems}
             from: fromEmail,
             to: refereeEmail,
             subject: emailContent.subject,
-            html: emailContent.bodyHtml,
-            text: emailContent.bodyPlain,
+            html: htmlWithFooter,
+            text: plainWithFooter,
+            headers: {
+              'List-Unsubscribe': prefCheck.listUnsubscribeHeader!,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
           });
           
           // Mark as sent
@@ -1364,7 +1381,6 @@ ${rssItems}
         } catch (emailError: any) {
           console.error('[Referral] Error sending welcome email:', emailError);
           // Don't fail the entire referral submission if email fails
-          // Just log it and continue
         }
       } else {
         console.log(`[Referral] No email provided for referee ${refereeName} - skipping welcome email`);
@@ -8994,11 +9010,117 @@ Keep responses concise (2-3 sentences max). Be warm and helpful. If the customer
   });
 
   // ===== EMAIL PREFERENCES & SUPPRESSION =====
-  // All email preference/suppression endpoints removed - marketing infrastructure removed
 
+  // Get email preferences by token (public - no auth required)
+  app.get("/api/email-preferences/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { emailPreferences } = await import('@shared/schema');
+      
+      const [prefs] = await db
+        .select()
+        .from(emailPreferences)
+        .where(sql`${emailPreferences.unsubscribeToken} = ${token}`)
+        .limit(1);
+      
+      if (!prefs) {
+        return res.status(404).json({ message: "Preferences not found" });
+      }
+      
+      res.json({ preferences: prefs });
+    } catch (error: any) {
+      console.error('[Email Preferences] Error fetching preferences:', error);
+      res.status(500).json({ message: "Error fetching preferences" });
+    }
+  });
 
+  // Update email preferences by token (public - no auth required)
+  app.put("/api/email-preferences/:token", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { marketingEmails, reviewRequests, referralEmails, serviceReminders, transactionalOnly } = req.body;
+      const { emailPreferences } = await import('@shared/schema');
+      
+      // Find existing preferences
+      const [existing] = await db
+        .select()
+        .from(emailPreferences)
+        .where(sql`${emailPreferences.unsubscribeToken} = ${token}`)
+        .limit(1);
+      
+      if (!existing) {
+        return res.status(404).json({ message: "Preferences not found" });
+      }
+      
+      // Check if they're opting out of everything
+      const allOptedOut = !marketingEmails && !reviewRequests && !referralEmails && !serviceReminders;
+      const anyOptedOut = !marketingEmails || !reviewRequests || !referralEmails || !serviceReminders;
+      
+      // Update preferences
+      const [updated] = await db
+        .update(emailPreferences)
+        .set({
+          marketingEmails: marketingEmails ?? existing.marketingEmails,
+          reviewRequests: reviewRequests ?? existing.reviewRequests,
+          referralEmails: referralEmails ?? existing.referralEmails,
+          serviceReminders: serviceReminders ?? existing.serviceReminders,
+          transactionalOnly: transactionalOnly ?? existing.transactionalOnly,
+          optedOutAt: anyOptedOut && !existing.optedOutAt ? new Date() : existing.optedOutAt,
+          fullyUnsubscribedAt: allOptedOut ? new Date() : null,
+          lastUpdated: new Date(),
+        })
+        .where(sql`${emailPreferences.unsubscribeToken} = ${token}`)
+        .returning();
+      
+      console.log(`[Email Preferences] Updated preferences for ${updated.email}`);
+      res.json({ 
+        success: true,
+        preferences: updated,
+        message: allOptedOut 
+          ? "You've been unsubscribed from all emails" 
+          : "Your email preferences have been updated"
+      });
+    } catch (error: any) {
+      console.error('[Email Preferences] Error updating preferences:', error);
+      res.status(500).json({ message: "Error updating preferences" });
+    }
+  });
 
-
+  // One-click unsubscribe (public - no auth required)
+  app.post("/api/email-preferences/:token/unsubscribe-all", async (req, res) => {
+    try {
+      const { token } = req.params;
+      const { emailPreferences } = await import('@shared/schema');
+      
+      const [updated] = await db
+        .update(emailPreferences)
+        .set({
+          marketingEmails: false,
+          reviewRequests: false,
+          referralEmails: false,
+          serviceReminders: false,
+          transactionalOnly: true,
+          optedOutAt: new Date(),
+          fullyUnsubscribedAt: new Date(),
+          lastUpdated: new Date(),
+        })
+        .where(sql`${emailPreferences.unsubscribeToken} = ${token}`)
+        .returning();
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Preferences not found" });
+      }
+      
+      console.log(`[Email Preferences] Unsubscribed ${updated.email} from all emails`);
+      res.json({ 
+        success: true,
+        message: "You've been unsubscribed from all emails"
+      });
+    } catch (error: any) {
+      console.error('[Email Preferences] Error unsubscribing:', error);
+      res.status(500).json({ message: "Error unsubscribing" });
+    }
+  });
 
   const httpServer = createServer(app);
 

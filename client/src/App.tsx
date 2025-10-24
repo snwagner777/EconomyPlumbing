@@ -92,6 +92,7 @@ const LeaveReview = lazy(() => import("@/pages/LeaveReview"));
 const ReviewRequest = lazy(() => import("@/pages/ReviewRequest"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
+const EmailPreferences = lazy(() => import("@/pages/EmailPreferences"));
 const SMSSignup = lazy(() => import("@/pages/SMSSignup"));
 const ChatbotAdmin = lazy(() => import("@/pages/ChatbotAdmin"));
 const ReviewRequestsAdmin = lazy(() => import("@/pages/ReviewRequestsAdmin"));
@@ -206,6 +207,7 @@ function Router() {
       <Route path="/leave-review/:token" component={LeaveReview} />
       <Route path="/request-review" component={ReviewRequest} />
       <Route path="/unsubscribe" component={Unsubscribe} />
+      <Route path="/email-preferences/:token" component={EmailPreferences} />
       <Route path="/sms-signup" component={SMSSignup} />
       <Route path="/faq" component={FAQ} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />

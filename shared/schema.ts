@@ -1615,6 +1615,12 @@ export const insertRefereeWelcomeEmailSchema = createInsertSchema(refereeWelcome
   sentAt: true,
 });
 
+export const insertEmailPreferencesSchema = createInsertSchema(emailPreferences).omit({
+  id: true,
+  createdAt: true,
+  lastUpdated: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1629,3 +1635,5 @@ export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
 export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;
 export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;
 export type InsertRefereeWelcomeEmail = z.infer<typeof insertRefereeWelcomeEmailSchema>;
+export type EmailPreference = typeof emailPreferences.$inferSelect;
+export type InsertEmailPreference = z.infer<typeof insertEmailPreferencesSchema>;
