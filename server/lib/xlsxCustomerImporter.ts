@@ -181,7 +181,7 @@ export async function importCustomersFromXLSX(
 
           // Convert Excel serial date to JavaScript Date
           // Excel stores dates as serial numbers (days since 1900-01-01)
-          let lastServiceDate: Date | null = null;
+          let lastServiceDate: Date = new Date('2012-01-01'); // Default for empty dates
           const rawDate = row['Last Job Completed'];
           if (rawDate) {
             if (typeof rawDate === 'number') {
