@@ -3617,16 +3617,16 @@ ${rssItems}
   // MAILGUN WEBHOOK - XLSX CUSTOMER DATA IMPORT
   // ============================================
   
-  // Mailgun webhook for receiving XLSX email attachments
-  // Use multer to handle multipart form data (Mailgun sends emails as multipart)
-  const mailgunUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
-  }).any();
-  
-  // Use dedicated webhook handler
-  const { handleMailgunWebhook } = await import('./webhooks/mailgunCustomerData');
-  app.post("/api/webhooks/mailgun/customer-data", handleMailgunWebhook);
+  // Bulletproof webhook handler with comprehensive logging
+  try {
+    console.log('[Routes] Importing Mailgun webhook handler...');
+    const { handleMailgunWebhook } = await import('./webhooks/mailgunCustomerData');
+    console.log('[Routes] Mailgun webhook handler imported successfully');
+    app.post("/api/webhooks/mailgun/customer-data", handleMailgunWebhook);
+    console.log('[Routes] Mailgun webhook route registered at POST /api/webhooks/mailgun/customer-data');
+  } catch (error) {
+    console.error('[Routes] CRITICAL ERROR: Failed to import Mailgun webhook handler:', error);
+  }
 
   // Admin authentication middleware - OAuth + whitelist required (for review management, etc.)
   const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
