@@ -1499,18 +1499,25 @@ ${rssItems}
   app.get("/api/customers/leaderboard", async (req, res) => {
     try {
       const { customersXlsx } = await import('@shared/schema');
-      const { desc } = await import('drizzle-orm');
+      const { desc, and, gte } = await import('drizzle-orm');
       
-      console.log('[Customers Leaderboard] Fetching top 5 customers from database...');
+      console.log('[Customers Leaderboard] Fetching top 5 active customers from database...');
       
-      // Get top 5 customers by job count
+      // Calculate date 6 years ago (exclude customers with no service in 6+ years)
+      const sixYearsAgo = new Date();
+      sixYearsAgo.setFullYear(sixYearsAgo.getFullYear() - 6);
+      
+      // Get top 5 customers by job count (must have service in last 6 years)
       const topCustomers = await db
         .select({
           name: customersXlsx.name,
           jobCount: customersXlsx.jobCount,
         })
         .from(customersXlsx)
-        .where(sql`${customersXlsx.jobCount} > 0`)
+        .where(and(
+          sql`${customersXlsx.jobCount} > 0`,
+          gte(customersXlsx.lastServiceDate, sixYearsAgo)
+        ))
         .orderBy(desc(customersXlsx.jobCount))
         .limit(5);
 
