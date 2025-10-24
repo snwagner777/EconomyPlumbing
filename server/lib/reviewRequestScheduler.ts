@@ -19,6 +19,7 @@ import { db } from "../db";
 import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, customersXlsx, contactsXlsx, systemSettings } from "../../shared/schema";
 import { eq, and, lt, gte, isNull, or, sql } from "drizzle-orm";
 import { generateEmail } from "./aiEmailGenerator";
+import { Resend } from "resend";
 
 interface ServiceTitanConfig {
   clientId: string;
@@ -402,9 +403,30 @@ class ReviewRequestScheduler {
         settings
       );
 
-      // TODO: Actually send email via Resend
-      console.log(`[Review Request Scheduler] Would send email ${emailNumber} to ${reviewRequest.customerEmail}`);
-      console.log(`[Review Request Scheduler] Subject: ${emailContent.subject}`);
+      // Send email via Resend
+      if (!process.env.RESEND_API_KEY) {
+        console.error('[Review Request Scheduler] RESEND_API_KEY not configured');
+        return false;
+      }
+
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      
+      console.log(`[Review Request Scheduler] Sending email ${emailNumber} to ${reviewRequest.customerEmail}`);
+      
+      const emailResult = await resend.emails.send({
+        from: 'Economy Plumbing Services <reviews@economyplumbing.com>',
+        to: reviewRequest.customerEmail,
+        subject: emailContent.subject,
+        html: emailContent.htmlContent,
+        text: emailContent.plainTextContent,
+      });
+
+      if (emailResult.error) {
+        console.error(`[Review Request Scheduler] Resend error:`, emailResult.error);
+        return false;
+      }
+
+      console.log(`[Review Request Scheduler] Email sent successfully. Resend ID: ${emailResult.data?.id}`);
 
       // Update review request with email sent timestamp
       const updateFields: any = {};
