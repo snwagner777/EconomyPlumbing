@@ -1566,7 +1566,7 @@ class ServiceTitanAPI {
   async searchLocalCustomer(phoneOrEmail: string): Promise<number[]> {
     try {
       const { contactsXlsx } = await import('@shared/schema');
-      const { eq } = await import('drizzle-orm');
+      const { eq, or, sql } = await import('drizzle-orm');
       
       // Normalize input
       const normalized = phoneOrEmail.includes('@') 
@@ -1576,10 +1576,14 @@ class ServiceTitanAPI {
       if (!normalized) return [];
 
       // Search in contacts - get ALL matching customer IDs
+      // Handle both exact matches and comma-separated values (e.g., "email1, email2, email3")
       const results = await db
         .select({ customerId: contactsXlsx.customerId })
         .from(contactsXlsx)
-        .where(eq(contactsXlsx.normalizedValue, normalized));
+        .where(or(
+          eq(contactsXlsx.normalizedValue, normalized),
+          sql`${contactsXlsx.normalizedValue} LIKE ${'%' + normalized + '%'}`
+        ));
 
       // Return unique customer IDs
       const uniqueCustomerIds = Array.from(new Set(results.map(r => r.customerId)));
@@ -1605,7 +1609,7 @@ class ServiceTitanAPI {
   }>> {
     try {
       const { contactsXlsx, customersXlsx } = await import('@shared/schema');
-      const { eq, inArray } = await import('drizzle-orm');
+      const { eq, or, sql, inArray } = await import('drizzle-orm');
       
       // Normalize input
       const normalized = phoneOrEmail.includes('@') 
@@ -1615,10 +1619,14 @@ class ServiceTitanAPI {
       if (!normalized) return [];
 
       // Find all matching contact records
+      // Handle both exact matches and comma-separated values
       const contactResults = await db
         .select({ customerId: contactsXlsx.customerId })
         .from(contactsXlsx)
-        .where(eq(contactsXlsx.normalizedValue, normalized));
+        .where(or(
+          eq(contactsXlsx.normalizedValue, normalized),
+          sql`${contactsXlsx.normalizedValue} LIKE ${'%' + normalized + '%'}`
+        ));
 
       if (contactResults.length === 0) {
         console.log('[ServiceTitan] No matching customers in cache');

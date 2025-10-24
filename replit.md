@@ -30,7 +30,8 @@ Preferred communication style: Simple, everyday language.
     - **Automated Imports:** Mailgun webhook (`/api/webhooks/mailgun/customer-data`) processes hourly XLSX email attachments with HMAC signature verification (5-minute replay window)
     - **Data Safety:** Atomic transactions with staging tables (`ON COMMIT DROP`), automatic rollback on error, parameterized queries preventing SQL injection
     - **Legacy Tables:** `service_titan_customers` and `service_titan_contacts` remain in database but are **no longer queried by application** - the uncontrollable ServiceTitan API sync continues writing to these abandoned tables
-    - **Technical Details:** Supports 11,443+ customers, batch processing (500 records/batch), proper PostgreSQL array handling, numeric zero preservation (no NULL conversion bug)
+    - **Technical Details:** Supports 11,443+ customers, batch processing (500 records/batch), proper PostgreSQL array handling, numeric zero preservation (no NULL conversion bug), comma-separated contact value search (handles XLSX multi-value fields)
+    - **Customer Portal Search Fix (Oct 24, 2024):** Fixed `searchLocalCustomer()` and `searchAllMatchingCustomers()` to handle comma-separated email/phone values in `contacts_xlsx.normalized_value` using SQL LIKE pattern matching alongside exact matches - resolves "account not found" errors for valid customers
     - **Integration Points:** All features updated to use XLSX tables: `serviceTitan.ts`, `routes.ts`, `storage.ts`, `referralProcessor.ts`, membership purchasing, customer portal authentication
   - **Legacy Features (Deprecated):** Incremental job sync system with staging tables, batch processing, error tracking. Multi-location service address management and self-service customer data updates now read from XLSX tables.
 - **Marketing Automation (Enhanced Dec 2024):** Complete AI-powered marketing automation system replacing ServiceTitan Marketing Pro ($3,240/year):
