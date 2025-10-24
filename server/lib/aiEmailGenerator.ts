@@ -312,3 +312,101 @@ export async function regenerateEmail(
   
   return await generateEmail(regenerateOptions);
 }
+
+/**
+ * Generate referee welcome email
+ * Sent immediately when someone is referred to Economy Plumbing
+ */
+export async function generateRefereeWelcomeEmail(options: {
+  refereeName: string;
+  referrerName: string;
+  phoneNumber?: string;
+}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+  const { refereeName, referrerName, phoneNumber } = options;
+  const { season, context: seasonalContext } = getSeasonalContext();
+
+  const systemPrompt = `You are an expert email copywriter for Economy Plumbing Services, a family-owned plumbing company serving Austin and Central Texas.
+
+Brand Voice:
+- Friendly, professional, and trustworthy
+- Texas-local feel (but not overly "y'all")
+- Focus on quality service and customer relationships
+- Value honesty and transparency
+- Family-owned business for 20+ years
+
+Email Guidelines:
+- Keep subject lines under 50 characters, compelling and personal
+- Use HTML formatting with proper structure
+- Include clear call-to-action buttons
+- Mobile-friendly layout
+- Warm welcome tone - they were referred by a friend
+- ${phoneNumber ? `Include phone number ${phoneNumber} for tracking` : 'No phone number tracking'}`;
+
+  const userPrompt = `Generate a welcome email for a new referee with these specifications:
+
+Campaign Details:
+- Type: Referee Welcome Email
+- Sent immediately when someone is referred to Economy Plumbing
+- Purpose: Warm introduction and make booking easy
+- Season: ${season}
+- Seasonal Context: ${seasonalContext}
+
+Recipient Details:
+- Name: ${refereeName}
+- Referred by: ${referrerName} (their friend/family member)
+
+Email Objectives:
+- Thank them for trusting the referral from ${referrerName}
+- Welcome them to the Economy Plumbing family
+- Emphasize personal touch: friend recommended us, we'll take great care of them
+- Make scheduling service EASY (include phone number and online scheduler link)
+- Brief mention of services: water heaters, drain cleaning, leak repair, emergency service
+- Mention 20+ years serving Central Texas families
+- Professional but warm tone - this is a friend-to-friend referral
+
+${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email for tracking purposes. Format: "Ready to schedule? Call us at ${phoneNumber}"` : ''}
+
+Include a clear CTA button with text like "Schedule Service Now" that links to: https://economyplumbingtx.com/schedule
+
+${seasonalContext ? `Seasonal touch: ${seasonalContext}` : ''}
+
+Generate:
+1. Subject line (under 50 chars, friendly and welcoming)
+2. HTML email body (well-formatted, professional, mobile-friendly)
+3. Plain text version (clean, readable)
+
+Return as JSON:
+{
+  "subject": "...",
+  "bodyHtml": "...",
+  "bodyPlain": "..."
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from AI');
+    }
+
+    const parsed = JSON.parse(content);
+    
+    return {
+      subject: parsed.subject,
+      bodyHtml: parsed.bodyHtml,
+      bodyPlain: parsed.bodyPlain,
+    };
+  } catch (error: any) {
+    console.error('[AI Email Generator] Error generating referee welcome email:', error);
+    throw new Error(`Failed to generate referee welcome email: ${error.message}`);
+  }
+}
