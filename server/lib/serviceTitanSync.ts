@@ -119,11 +119,11 @@ export async function startServiceTitanSync(): Promise<void> {
   
   // Run initial full sync on startup
   try {
-    const { serviceTitanCustomers, serviceTitanJobs } = await import('@shared/schema');
+    const { customersXlsx, serviceTitanJobs } = await import('@shared/schema');
     const { db } = await import('../db');
     const { count } = await import('drizzle-orm');
     
-    const customerResult = await db.select({ count: count() }).from(serviceTitanCustomers);
+    const customerResult = await db.select({ count: count() }).from(customersXlsx);
     const customerCount = customerResult[0]?.count || 0;
     
     const jobResult = await db.select({ count: count() }).from(serviceTitanJobs);

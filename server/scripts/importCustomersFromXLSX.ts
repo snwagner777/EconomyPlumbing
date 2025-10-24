@@ -68,7 +68,7 @@ async function importCustomers() {
   console.log('[XLSX Import] Starting customer import...');
   
   // Read XLSX file
-  const workbook = XLSX.readFile('attached_assets/Customer List_Dated 10_01_12 - 10_23_25-3_1761254397484.xlsx');
+  const workbook = XLSX.readFile('attached_assets/Customer List_Dated 10_01_12 - 10_23_25-3_1761262846661.xlsx');
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   const rows = XLSX.utils.sheet_to_json<CustomerRow>(worksheet);
@@ -77,8 +77,8 @@ async function importCustomers() {
 
   // Step 1: Clear all existing data using TRUNCATE (faster and more reliable)
   console.log('[XLSX Import] Truncating existing data...');
-  await db.execute(sql`TRUNCATE TABLE service_titan_contacts CASCADE`);
-  await db.execute(sql`TRUNCATE TABLE service_titan_customers CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE contacts_xlsx CASCADE`);
+  await db.execute(sql`TRUNCATE TABLE customers_xlsx CASCADE`);
   console.log('[XLSX Import] Database cleared');
 
   const BATCH_SIZE = 500; // Larger batches for bulk insert

@@ -2054,7 +2054,7 @@ class ServiceTitanAPI {
       // Update customer job counts (aggregate from completed jobs)
       console.log('[ServiceTitan Jobs Sync] 📊 Updating customer job counts...');
       await db.execute(sql`
-        UPDATE service_titan_customers c
+        UPDATE customers_xlsx c
         SET job_count = (
           SELECT COUNT(*)
           FROM service_titan_jobs j
@@ -2066,7 +2066,7 @@ class ServiceTitanAPI {
 
       const customersUpdatedResult = await db.execute(sql`
         SELECT COUNT(*) as count 
-        FROM service_titan_customers 
+        FROM customers_xlsx 
         WHERE job_count > 0
       `);
       const customersUpdated = customersUpdatedResult.rows[0]?.count || 0;
