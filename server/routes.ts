@@ -1311,6 +1311,65 @@ ${rssItems}
       
       console.log(`[Referral] Created referral ${referral.id} - Referrer: ${referrerName}, Referee: ${refereeName}`);
       
+      // Send welcome email to referee (if email provided)
+      if (refereeEmail) {
+        try {
+          const { generateRefereeWelcomeEmail } = await import('./lib/aiEmailGenerator');
+          const { refereeWelcomeEmails } = await import('@shared/schema');
+          
+          console.log(`[Referral] Generating welcome email for ${refereeName}...`);
+          
+          // Generate AI-powered welcome email
+          const emailContent = await generateRefereeWelcomeEmail({
+            refereeName,
+            referrerName,
+            phoneNumber: undefined, // TODO: Add phone tracking if needed
+          });
+          
+          // Save to database
+          const [welcomeEmail] = await db.insert(refereeWelcomeEmails).values({
+            referralId: referral.id,
+            refereeName,
+            refereeEmail,
+            referrerName,
+            subject: emailContent.subject,
+            htmlContent: emailContent.bodyHtml,
+            plainTextContent: emailContent.bodyPlain,
+            status: 'queued',
+            generatedByAI: true,
+            aiPrompt: `Welcome email for referee ${refereeName}, referred by ${referrerName}`,
+          }).returning();
+          
+          // Send via Resend
+          const { getResendClient } = await import('./lib/resendClient');
+          const { client: resend, fromEmail } = await getResendClient();
+          
+          await resend.emails.send({
+            from: fromEmail,
+            to: refereeEmail,
+            subject: emailContent.subject,
+            html: emailContent.bodyHtml,
+            text: emailContent.bodyPlain,
+          });
+          
+          // Mark as sent
+          await db.update(refereeWelcomeEmails)
+            .set({ 
+              status: 'sent',
+              sentAt: new Date(),
+            })
+            .where(sql`${refereeWelcomeEmails.id} = ${welcomeEmail.id}`);
+          
+          console.log(`[Referral] ✅ Welcome email sent to ${refereeName} (${refereeEmail})`);
+        } catch (emailError: any) {
+          console.error('[Referral] Error sending welcome email:', emailError);
+          // Don't fail the entire referral submission if email fails
+          // Just log it and continue
+        }
+      } else {
+        console.log(`[Referral] No email provided for referee ${refereeName} - skipping welcome email`);
+      }
+      
       res.json({ 
         success: true, 
         message: "Referral submitted successfully! We'll reach out to your friend soon.",
