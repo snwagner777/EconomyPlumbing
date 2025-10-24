@@ -109,15 +109,52 @@ export async function importCustomersFromXLSX(
     
     // Step 1: Create staging tables (drop first to ensure clean slate)
     console.log('[XLSX Import] Creating staging tables...');
-    await tx.execute(sql`DROP TABLE IF EXISTS staging_customers`);
-    await tx.execute(sql`DROP TABLE IF EXISTS staging_contacts`);
+    console.log('[XLSX Import] Dropping existing staging tables...');
+    await tx.execute(sql.raw(`DROP TABLE IF EXISTS staging_customers`));
+    console.log('[XLSX Import] Dropped staging_customers');
+    await tx.execute(sql.raw(`DROP TABLE IF EXISTS staging_contacts`));
+    console.log('[XLSX Import] Dropped staging_contacts');
     
-    await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_customers (LIKE customers_xlsx INCLUDING ALL) ON COMMIT DROP
-    `);
-    await tx.execute(sql`
-      CREATE TEMPORARY TABLE staging_contacts (LIKE contacts_xlsx INCLUDING ALL) ON COMMIT DROP
-    `);
+    // Explicitly create staging tables to avoid LIKE issues with array types
+    console.log('[XLSX Import] Creating staging_customers table...');
+    await tx.execute(sql.raw(`
+      CREATE TEMPORARY TABLE staging_customers (
+        id integer PRIMARY KEY,
+        name text NOT NULL,
+        type text NOT NULL,
+        email text,
+        phone text,
+        mobile_phone text,
+        street text,
+        city text,
+        state text,
+        zip text,
+        active boolean NOT NULL DEFAULT true,
+        balance text,
+        job_count integer NOT NULL DEFAULT 0,
+        last_service_date timestamp,
+        last_service_type text,
+        lifetime_value integer NOT NULL DEFAULT 0,
+        customer_tags text[],
+        preferred_contact_method text,
+        last_synced_at timestamp NOT NULL DEFAULT NOW()
+      )
+    `));
+    console.log('[XLSX Import] Created staging_customers');
+    
+    console.log('[XLSX Import] Creating staging_contacts table...');
+    await tx.execute(sql.raw(`
+      CREATE TEMPORARY TABLE staging_contacts (
+        id varchar PRIMARY KEY DEFAULT gen_random_uuid(),
+        customer_id integer NOT NULL,
+        contact_type text NOT NULL,
+        value text NOT NULL,
+        normalized_value text NOT NULL,
+        is_primary boolean NOT NULL DEFAULT false,
+        last_synced_at timestamp NOT NULL DEFAULT NOW()
+      )
+    `));
+    console.log('[XLSX Import] Created staging_contacts');
     
     // Step 2: Parse and insert into staging tables
     const BATCH_SIZE = 500;
@@ -194,9 +231,15 @@ export async function importCustomersFromXLSX(
         }
       }
 
-      // Insert into staging tables using raw SQL
+      // Insert into staging tables using Drizzle's parameterized inserts
       if (customerBatch.length > 0) {
+        // Use parameterized INSERT with special handling for arrays
         for (const customer of customerBatch) {
+          // Convert JavaScript array to PostgreSQL array literal
+          const tagsArray = customer.customerTags && customer.customerTags.length > 0
+            ? sql.raw(`ARRAY[${customer.customerTags.map((t: string) => `'${t.replace(/'/g, "''")}'`).join(',')}]::text[]`)
+            : sql.raw(`ARRAY[]::text[]`);
+          
           await tx.execute(sql`
             INSERT INTO staging_customers (
               id, name, type, email, phone, mobile_phone, street, city, state, zip,
@@ -207,7 +250,7 @@ export async function importCustomersFromXLSX(
               ${customer.phone}, ${customer.mobilePhone}, ${customer.street}, ${customer.city},
               ${customer.state}, ${customer.zip}, ${customer.active}, ${customer.balance},
               ${customer.jobCount}, ${customer.lastServiceDate}, ${customer.lastServiceType},
-              ${customer.lifetimeValue}, ${customer.customerTags}, ${customer.preferredContactMethod},
+              ${customer.lifetimeValue}, ${tagsArray}, ${customer.preferredContactMethod},
               ${customer.lastSyncedAt}
             )
           `);
