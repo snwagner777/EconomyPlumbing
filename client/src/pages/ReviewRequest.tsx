@@ -1,12 +1,17 @@
-import { useQuery } from "@tanstack/react-query";
-import { Star, ExternalLink, Facebook, Shield, Heart, Clock, TrendingUp, CheckCircle, Award, Users } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { Star, ExternalLink, Facebook, Shield, Heart, Clock, TrendingUp, CheckCircle, Award, Users, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { SiYelp } from "react-icons/si";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { useState } from "react";
 
 interface ReviewPlatform {
   id: string;
@@ -50,9 +55,60 @@ const getPlatformColor = (platform: string) => {
 };
 
 export default function ReviewRequest() {
+  const { toast } = useToast();
+  const [selectedRating, setSelectedRating] = useState<number | null>(null);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+
   const { data: platforms, isLoading } = useQuery<ReviewPlatform[]>({
     queryKey: ['/api/review-platforms'],
   });
+
+  // Submit internal feedback mutation
+  const feedbackMutation = useMutation({
+    mutationFn: async (data: { rating: number; feedback: string }) => {
+      const response = await apiRequest("POST", "/api/review-feedback", data);
+      return await response.json();
+    },
+    onSuccess: () => {
+      setFeedbackSubmitted(true);
+      toast({
+        title: "Thank You!",
+        description: "Your feedback has been received. We'll use it to improve our service."
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Submission Failed",
+        description: error.message || "Failed to submit feedback",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleFeedbackSubmit = () => {
+    if (!selectedRating) {
+      toast({
+        title: "Rating Required",
+        description: "Please select a rating before submitting",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (!feedbackText.trim()) {
+      toast({
+        title: "Feedback Required",
+        description: "Please tell us about your experience",
+        variant: "destructive"
+      });
+      return;
+    }
+    feedbackMutation.mutate({
+      rating: selectedRating,
+      feedback: feedbackText
+    });
+  };
 
   // Dynamic personalization based on time of day
   const getGreeting = () => {
@@ -70,6 +126,8 @@ export default function ReviewRequest() {
     "By sharing your experience, you're helping neighbors avoid plumbing disasters",
   ];
   const randomImpact = impactMessages[Math.floor(Math.random() * impactMessages.length)];
+
+  const displayRating = hoverRating !== null ? hoverRating : selectedRating;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">

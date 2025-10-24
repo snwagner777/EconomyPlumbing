@@ -96,6 +96,7 @@ const SMSSignup = lazy(() => import("@/pages/SMSSignup"));
 const ChatbotAdmin = lazy(() => import("@/pages/ChatbotAdmin"));
 const ReviewRequestsAdmin = lazy(() => import("@/pages/ReviewRequestsAdmin"));
 const ReferralTrackingAdmin = lazy(() => import("@/pages/ReferralTrackingAdmin"));
+const EmailTemplateEditor = lazy(() => import("@/pages/EmailTemplateEditor"));
 
 // Simple loading fallback
 function PageLoader() {
@@ -252,6 +253,7 @@ function Router() {
       <Route path="/admin/chatbot" component={ChatbotAdmin} />
       <Route path="/admin/review-requests" component={ReviewRequestsAdmin} />
       <Route path="/admin/referrals" component={ReferralTrackingAdmin} />
+      <Route path="/admin/email-templates" component={EmailTemplateEditor} />
       <Route path="/admin" component={UnifiedAdminDashboard} />
       
       {/* Blog posts - must be last to avoid conflicts with other routes */}
