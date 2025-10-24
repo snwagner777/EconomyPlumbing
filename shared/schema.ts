@@ -246,6 +246,45 @@ export const referralCreditUsage = pgTable("referral_credit_usage", {
   usedAtIdx: index("referral_credit_usage_used_at_idx").on(table.usedAt),
 }));
 
+// Referee welcome emails - sent immediately when someone is referred
+export const refereeWelcomeEmails = pgTable("referee_welcome_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to referral
+  referralId: varchar("referral_id").notNull(),
+  
+  // Referee info (who receives the email)
+  refereeName: text("referee_name").notNull(),
+  refereeEmail: text("referee_email").notNull(),
+  referrerName: text("referrer_name").notNull(), // Name of person who referred them
+  
+  // Email content and tracking
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  plainTextContent: text("plain_text_content").notNull(),
+  
+  // Status
+  status: text("status").notNull().default('queued'), // 'queued', 'sent', 'failed'
+  sentAt: timestamp("sent_at"),
+  failureReason: text("failure_reason"),
+  
+  // Engagement tracking
+  emailOpens: integer("email_opens").notNull().default(0),
+  linkClicks: integer("link_clicks").notNull().default(0),
+  
+  // AI generation metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(true),
+  aiPrompt: text("ai_prompt"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  referralIdIdx: index("referee_welcome_emails_referral_id_idx").on(table.referralId),
+  statusIdx: index("referee_welcome_emails_status_idx").on(table.status),
+  sentAtIdx: index("referee_welcome_emails_sent_at_idx").on(table.sentAt),
+  refereeEmailIdx: index("referee_welcome_emails_referee_email_idx").on(table.refereeEmail),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
@@ -1541,6 +1580,12 @@ export const insertReferralCreditUsageSchema = createInsertSchema(referralCredit
   processedAt: true,
 });
 
+export const insertRefereeWelcomeEmailSchema = createInsertSchema(refereeWelcomeEmails).omit({
+  id: true,
+  createdAt: true,
+  sentAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1553,3 +1598,5 @@ export type ReviewEmailTemplate = typeof reviewEmailTemplates.$inferSelect;
 export type InsertReviewEmailTemplate = z.infer<typeof insertReviewEmailTemplateSchema>;
 export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
 export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;
+export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;
+export type InsertRefereeWelcomeEmail = z.infer<typeof insertRefereeWelcomeEmailSchema>;
