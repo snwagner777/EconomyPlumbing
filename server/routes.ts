@@ -4881,7 +4881,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/emails/generate", requireAdmin, async (req, res) => {
     try {
       const { generateEmail } = await import("./lib/aiEmailGenerator");
-      const { campaignType, emailNumber, jobDetails, phoneNumber, strategy } = req.body;
+      const { campaignType, emailNumber, jobDetails, phoneNumber, referralLink, strategy } = req.body;
 
       // Validate required fields
       if (!campaignType || !emailNumber || !jobDetails) {
@@ -4911,6 +4911,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         emailNumber,
         jobDetails,
         phoneNumber,
+        referralLink, // Optional: Only needed for referral nurture emails
         strategy
       });
 

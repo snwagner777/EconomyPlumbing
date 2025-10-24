@@ -30,6 +30,7 @@ interface GenerateEmailOptions {
   emailNumber: 1 | 2 | 3 | 4; // Which email in the drip sequence
   jobDetails: JobDetails;
   phoneNumber?: string;
+  referralLink?: string; // Full referral link (e.g., "https://economyplumbingtx.com/ref/JOHN-SMITH")
   strategy?: 'value' | 'trust' | 'urgency' | 'social_proof' | 'seasonal';
 }
 
@@ -106,7 +107,7 @@ function getEmailStrategy(campaignType: 'review_request' | 'referral_nurture', e
  * Generate personalized email content using AI
  */
 export async function generateEmail(options: GenerateEmailOptions): Promise<GeneratedEmail> {
-  const { campaignType, emailNumber, jobDetails, phoneNumber, strategy: customStrategy } = options;
+  const { campaignType, emailNumber, jobDetails, phoneNumber, referralLink, strategy: customStrategy } = options;
   const { season, context: seasonalContext } = getSeasonalContext();
   const strategy = getEmailStrategy(campaignType, emailNumber, customStrategy);
 
@@ -239,9 +240,14 @@ ${emailNumber === 1 ? `
 
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}
 
-CRITICAL: Include information about how to access their unique referral link. Tell them to visit https://economyplumbingtx.com/customer-portal to get their personalized referral link. DO NOT make up a fake referral link.
+${referralLink ? `CRITICAL: Include their unique referral link in the email: ${referralLink}
 
-Include a clear CTA button with text like "Get My Referral Link" that links to: https://economyplumbingtx.com/customer-portal
+Instructions for including the referral link:
+- Prominently display their referral link: ${referralLink}
+- Explain they can share this link with friends, family, and neighbors
+- When someone books service through their link, they earn $25 credit
+- Make the link easy to copy and share (formatted as clickable button and also plain text)
+- Include a clear CTA button that links to: ${referralLink}` : `CRITICAL: Tell them to visit https://economyplumbingtx.com/customer-portal to get their personalized referral link. Include a CTA button that links to: https://economyplumbingtx.com/customer-portal`}
 
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused)
