@@ -79,3 +79,69 @@ export async function send404AlertEmail(url: string, referrer: string | undefine
     throw error;
   }
 }
+
+export async function sendReferralCreditNotification(data: {
+  referrerName: string;
+  refereeName: string;
+  creditAmount: number;
+  creditDate: Date;
+  jobNumber?: string;
+}) {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    
+    const dateStr = data.creditDate.toLocaleString('en-US', { 
+      timeZone: 'America/Chicago',
+      dateStyle: 'full',
+      timeStyle: 'short'
+    });
+    
+    const emailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9fafb;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #10b981; margin-top: 0;">Referral Credit Issued</h2>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              A new referral credit has been issued in the Economy Plumbing Services system:
+            </p>
+            
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 20px 0;">
+              <p style="margin: 8px 0;"><strong>Referrer:</strong> ${data.referrerName}</p>
+              <p style="margin: 8px 0;"><strong>New Customer (Referee):</strong> ${data.refereeName}</p>
+              <p style="margin: 8px 0;"><strong>Credit Amount:</strong> <span style="color: #10b981; font-size: 18px; font-weight: bold;">$${data.creditAmount.toFixed(2)}</span></p>
+              ${data.jobNumber ? `<p style="margin: 8px 0;"><strong>Qualifying Job:</strong> #${data.jobNumber}</p>` : ''}
+              <p style="margin: 8px 0;"><strong>Date Issued:</strong> ${dateStr}</p>
+            </div>
+            
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px;">
+              <p style="margin: 0; font-size: 14px; color: #92400e;">
+                <strong>Next Steps:</strong> The credit has been added to the referrer's ServiceTitan account and will expire in 180 days. A pinned note has been added to both customer accounts.
+              </p>
+            </div>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              This notification was sent by the Economy Plumbing Services referral tracking system.
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Use NOTIFICATION_EMAIL if set, otherwise fall back to fromEmail
+    const notificationEmail = process.env.NOTIFICATION_EMAIL || fromEmail;
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: notificationEmail,
+      subject: `Referral Credit Issued: $${data.creditAmount.toFixed(2)} for ${data.referrerName}`,
+      html: emailHtml,
+    });
+
+    console.log('[Resend] Referral credit notification sent to:', notificationEmail);
+    return result;
+  } catch (error) {
+    console.error('[Resend] Failed to send referral credit notification:', error);
+    throw error;
+  }
+}

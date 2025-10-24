@@ -73,6 +73,86 @@ export class ReferralProcessor {
   }
 
   /**
+   * Helper: Update or create referral credit balance note on referrer's account
+   * Tracks running credit balance as a pinned note at top of customer file
+   */
+  private async updateReferralCreditNote(
+    customerId: number,
+    creditAmount: number,
+    refereeName: string,
+    creditDate: Date
+  ): Promise<void> {
+    const api = getServiceTitanAPI();
+    
+    try {
+      // Get existing notes to check if we already have a credit balance note
+      const notes = await api.getCustomerNotes(customerId);
+      const creditNotePrefix = '[REFERRAL CREDITS]';
+      const existingCreditNote = notes.find(n => n.pinToTop && n.text.startsWith(creditNotePrefix));
+      
+      // Parse current balance from existing note (if any)
+      let currentBalance = 0;
+      if (existingCreditNote) {
+        const balanceMatch = existingCreditNote.text.match(/Balance: \$(\d+\.?\d*)/);
+        if (balanceMatch) {
+          currentBalance = parseFloat(balanceMatch[1]);
+        }
+      }
+      
+      // Calculate new balance
+      const newBalance = currentBalance + creditAmount;
+      
+      // Build note text with running balance and transaction history
+      const dateStr = creditDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const noteText = `${creditNotePrefix}
+================================
+Current Balance: $${newBalance.toFixed(2)}
+================================
+
+RECENT ACTIVITY:
++ ${dateStr}: Earned $${creditAmount.toFixed(2)} for referring ${refereeName}
+
+NOTE: Credits expire 180 days from issue date.
+NOTE: Use code "REFERRAL" when booking service.
+NOTE: Refer more friends to earn more credits!`;
+      
+      if (existingCreditNote) {
+        // Update existing note
+        await api.updateCustomerNote(customerId, existingCreditNote.id, noteText, true);
+        console.log(`[Referral Processor] Updated credit balance note for customer ${customerId}: $${newBalance.toFixed(2)}`);
+      } else {
+        // Create new note
+        await api.createCustomerNote(customerId, noteText, true);
+        console.log(`[Referral Processor] Created credit balance note for customer ${customerId}: $${newBalance.toFixed(2)}`);
+      }
+    } catch (error) {
+      console.error(`[Referral Processor] Error updating credit note for customer ${customerId}:`, error);
+      // Don't throw - credit was already issued, note is just a courtesy
+    }
+  }
+
+  /**
+   * Helper: Create pinned note on referee's account noting they were referred
+   */
+  private async createRefereeNote(customerId: number, referrerName: string): Promise<void> {
+    const api = getServiceTitanAPI();
+    
+    try {
+      const noteText = `[CUSTOMER REFERRAL]
+================================
+This customer was referred by ${referrerName}.
+
+Thank you for trusting us with your plumbing needs!`;
+      
+      await api.createCustomerNote(customerId, noteText, true);
+      console.log(`[Referral Processor] Created referral note for referee customer ${customerId}`);
+    } catch (error) {
+      console.error(`[Referral Processor] Error creating referee note for customer ${customerId}:`, error);
+      // Don't throw - this is a non-critical feature
+    }
+  }
+
+  /**
    * Step 1: Match referees to ServiceTitan customers using DATABASE lookups (fast!)
    * Updates status from 'pending' to 'contacted' when referee becomes a customer
    * 
@@ -98,7 +178,7 @@ export class ReferralProcessor {
     for (const referral of pendingReferrals) {
       // Skip if already marked as ineligible
       if (referral.creditNotes?.includes('ineligible') || referral.creditNotes?.includes('already a customer')) {
-        console.log(`[Referral Processor] ⏭️ Skipping referral ${referral.id} - marked as ineligible`);
+        console.log(`[Referral Processor] Skipping referral ${referral.id} - marked as ineligible`);
         continue;
       }
 
@@ -122,7 +202,7 @@ export class ReferralProcessor {
         if (refereeContact.length > 0 && refereeContact[0].customerId) {
           const finalCustomerId = refereeContact[0].customerId;
           // They became a customer! (We already verified they weren't one at submission)
-          console.log(`[Referral Processor] ✅ Referee "${referral.refereeName}" became a customer (ID: ${finalCustomerId}) [database match]`);
+          console.log(`[Referral Processor] SUCCESS: Referee "${referral.refereeName}" became a customer (ID: ${finalCustomerId}) [database match]`);
           
           await db
             .update(referrals)
@@ -134,7 +214,7 @@ export class ReferralProcessor {
             })
             .where(eq(referrals.id, referral.id));
         } else {
-          console.log(`[Referral Processor] ⏳ Referee "${referral.refereeName}" not yet a customer`);
+          console.log(`[Referral Processor] PENDING: Referee "${referral.refereeName}" not yet a customer`);
         }
       } catch (error) {
         console.error(`[Referral Processor] Error matching referral ${referral.id}:`, error);
@@ -179,7 +259,7 @@ export class ReferralProcessor {
         );
 
         if (qualifyingJob) {
-          console.log(`[Referral Processor] ✅ Found qualifying job ${qualifyingJob.jobNumber} ($${(qualifyingJob.total / 100).toFixed(2)}) for referral ${referral.id}`);
+          console.log(`[Referral Processor] FOUND: Qualifying job ${qualifyingJob.jobNumber} ($${(qualifyingJob.total / 100).toFixed(2)}) for referral ${referral.id}`);
           
           await db
             .update(referrals)
@@ -219,7 +299,7 @@ export class ReferralProcessor {
 
     for (const referral of completedReferrals) {
       if (!referral.referrerCustomerId) {
-        console.error(`[Referral Processor] ❌ Cannot issue credit for referral ${referral.id}: no referrer customer ID`);
+        console.error(`[Referral Processor] ERROR: Cannot issue credit for referral ${referral.id}: no referrer customer ID`);
         continue;
       }
 
@@ -231,10 +311,41 @@ export class ReferralProcessor {
           `Referral reward for ${referral.refereeName} - Job #${referral.firstJobId}`
         );
 
-        console.log(`[Referral Processor] ✅ Issued $25 credit to customer ${referral.referrerCustomerId} for referring ${referral.refereeName}`);
+        console.log(`[Referral Processor] SUCCESS: Issued $25 credit to customer ${referral.referrerCustomerId} for referring ${referral.refereeName}`);
+
+        // Create/update pinned note on referrer's account with credit balance
+        await this.updateReferralCreditNote(
+          referral.referrerCustomerId,
+          CREDIT_AMOUNT / 100, // Convert cents to dollars
+          referral.refereeName,
+          new Date()
+        );
+
+        // Create pinned note on referee's account
+        if (referral.refereeCustomerId) {
+          await this.createRefereeNote(
+            referral.refereeCustomerId,
+            referral.referrerName || 'existing customer'
+          );
+        }
+
+        // Send email notification to business owner
+        const creditDate = new Date();
+        try {
+          const { sendReferralCreditNotification } = await import('./resendClient');
+          await sendReferralCreditNotification({
+            referrerName: referral.referrerName || 'Unknown',
+            refereeName: referral.refereeName,
+            creditAmount: CREDIT_AMOUNT / 100, // Convert cents to dollars
+            creditDate,
+            jobNumber: referral.firstJobId || undefined
+          });
+        } catch (emailError) {
+          console.error('[Referral Processor] Failed to send email notification:', emailError);
+          // Don't throw - email is non-critical
+        }
 
         // Update referral status with 180-day expiration
-        const creditDate = new Date();
         const expirationDate = new Date(creditDate);
         expirationDate.setDate(expirationDate.getDate() + 180); // 180 days from now
         

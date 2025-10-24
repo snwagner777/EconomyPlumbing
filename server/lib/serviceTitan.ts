@@ -1877,6 +1877,100 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Create a pinned note on customer account (for referral credit tracking)
+   * Uses ServiceTitan CRM API to create notes that appear at top of customer file
+   */
+  async createCustomerNote(customerId: number, noteText: string, pinToTop: boolean = true): Promise<{
+    id: number;
+    customerId: number;
+    text: string;
+  }> {
+    try {
+      const endpoint = `/customers/${customerId}/notes`;
+
+      console.log('[ServiceTitan] Creating customer note:', {
+        customerId,
+        noteText: noteText.substring(0, 50) + '...',
+        pinToTop
+      });
+
+      const response = await this.request<{
+        id: number;
+        customerId: number;
+        text: string;
+      }>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify({
+          text: noteText,
+          pinToTop
+        })
+      });
+
+      console.log('[ServiceTitan] ✅ Note created successfully:', response.id);
+      return response;
+    } catch (error) {
+      console.error('[ServiceTitan] Error creating customer note:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all notes for a customer (to check existing credit balance notes)
+   */
+  async getCustomerNotes(customerId: number): Promise<Array<{
+    id: number;
+    text: string;
+    pinToTop: boolean;
+    createdOn: string;
+  }>> {
+    try {
+      const endpoint = `/customers/${customerId}/notes`;
+
+      const response = await this.request<{
+        data: Array<{
+          id: number;
+          text: string;
+          pinToTop: boolean;
+          createdOn: string;
+        }>;
+      }>(endpoint);
+
+      return response.data || [];
+    } catch (error) {
+      console.error('[ServiceTitan] Error fetching customer notes:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Update an existing customer note (for updating credit balance)
+   */
+  async updateCustomerNote(customerId: number, noteId: number, noteText: string, pinToTop: boolean = true): Promise<void> {
+    try {
+      const endpoint = `/customers/${customerId}/notes/${noteId}`;
+
+      console.log('[ServiceTitan] Updating customer note:', {
+        customerId,
+        noteId,
+        noteText: noteText.substring(0, 50) + '...'
+      });
+
+      await this.request(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify({
+          text: noteText,
+          pinToTop
+        })
+      });
+
+      console.log('[ServiceTitan] ✅ Note updated successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Error updating customer note:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Fetch jobs with incremental sync support using modifiedOnOrAfter watermark
    * Returns jobs in batches for efficient processing
    */
