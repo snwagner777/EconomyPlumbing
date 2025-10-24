@@ -4718,6 +4718,116 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     }
   });
 
+  // REFERRAL TRACKING ADMIN ROUTES
+  
+  // Get all referrals with comprehensive stats (admin only)
+  app.get("/api/admin/referrals", requireAdmin, async (req, res) => {
+    try {
+      const { referrals: referralsTable, customersXlsx } = await import("@shared/schema");
+      
+      // Get all referrals with customer details
+      const allReferrals = await db
+        .select({
+          id: referralsTable.id,
+          referrerCustomerId: referralsTable.referrerCustomerId,
+          referralCode: referralsTable.referralCode,
+          refereeName: referralsTable.refereeName,
+          refereePhone: referralsTable.refereePhone,
+          refereeEmail: referralsTable.refereeEmail,
+          refereeCustomerId: referralsTable.refereeCustomerId,
+          status: referralsTable.status,
+          jobId: referralsTable.jobId,
+          jobAmount: referralsTable.jobAmount,
+          creditStatus: referralsTable.creditStatus,
+          creditAmount: referralsTable.creditAmount,
+          creditIssuedAt: referralsTable.creditIssuedAt,
+          creditNotes: referralsTable.creditNotes,
+          submittedAt: referralsTable.submittedAt,
+          contactedAt: referralsTable.contactedAt,
+          jobCompletedAt: referralsTable.jobCompletedAt,
+          referrerName: customersXlsx.name,
+          referrerEmail: customersXlsx.email
+        })
+        .from(referralsTable)
+        .leftJoin(customersXlsx, eq(referralsTable.referrerCustomerId, customersXlsx.id))
+        .orderBy(desc(referralsTable.submittedAt));
+
+      // Calculate stats
+      const stats = {
+        total: allReferrals.length,
+        pending: allReferrals.filter(r => r.status === 'pending').length,
+        contacted: allReferrals.filter(r => r.status === 'contacted').length,
+        completed: allReferrals.filter(r => r.status === 'completed').length,
+        credited: allReferrals.filter(r => r.creditStatus === 'credited').length,
+        ineligible: allReferrals.filter(r => r.status === 'ineligible').length,
+        totalRevenue: allReferrals
+          .filter(r => r.jobAmount)
+          .reduce((sum, r) => sum + (r.jobAmount || 0), 0),
+        totalCredits: allReferrals
+          .filter(r => r.creditAmount)
+          .reduce((sum, r) => sum + (r.creditAmount || 0), 0)
+      };
+
+      res.json({
+        referrals: allReferrals,
+        stats
+      });
+    } catch (error: any) {
+      console.error("[Referrals] Error fetching referrals:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Manual credit referral (admin only)
+  app.post("/api/admin/referrals/:id/credit", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { amount, notes } = req.body;
+      const { referrals: referralsTable } = await import("@shared/schema");
+
+      // Update referral status
+      await db
+        .update(referralsTable)
+        .set({
+          creditStatus: 'credited',
+          creditAmount: amount || 2500, // Default $25
+          creditIssuedAt: new Date(),
+          creditNotes: notes || 'Manually credited by admin'
+        })
+        .where(eq(referralsTable.id, id));
+
+      console.log(`[Referrals] Manually credited referral ${id} for $${((amount || 2500) / 100).toFixed(2)}`);
+      res.json({ success: true, message: 'Referral credited successfully' });
+    } catch (error: any) {
+      console.error("[Referrals] Error crediting referral:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Mark referral as ineligible (admin only)
+  app.post("/api/admin/referrals/:id/ineligible", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { reason } = req.body;
+      const { referrals: referralsTable } = await import("@shared/schema");
+
+      await db
+        .update(referralsTable)
+        .set({
+          status: 'ineligible',
+          creditStatus: 'ineligible',
+          creditNotes: reason || 'Marked ineligible by admin'
+        })
+        .where(eq(referralsTable.id, id));
+
+      console.log(`[Referrals] Marked referral ${id} as ineligible: ${reason}`);
+      res.json({ success: true, message: 'Referral marked as ineligible' });
+    } catch (error: any) {
+      console.error("[Referrals] Error marking referral ineligible:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Get active referral nurture campaigns (admin only)
   app.get("/api/admin/review-requests/referrals", requireAdmin, async (req, res) => {
     try {
@@ -4727,6 +4837,172 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       res.json(campaigns);
     } catch (error: any) {
       console.error("[Review Requests] Error fetching referral campaigns:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // AI EMAIL GENERATOR ROUTES
+  
+  // Generate AI email (admin only)
+  app.post("/api/admin/emails/generate", requireAdmin, async (req, res) => {
+    try {
+      const { generateEmail } = await import("./lib/aiEmailGenerator");
+      const { campaignType, emailNumber, jobDetails, phoneNumber, strategy } = req.body;
+
+      // Validate required fields
+      if (!campaignType || !emailNumber || !jobDetails) {
+        return res.status(400).json({
+          error: "Missing required fields: campaignType, emailNumber, jobDetails"
+        });
+      }
+
+      // Validate campaign type
+      if (!['review_request', 'referral_nurture'].includes(campaignType)) {
+        return res.status(400).json({
+          error: "Invalid campaignType. Must be 'review_request' or 'referral_nurture'"
+        });
+      }
+
+      // Validate email number
+      if (![1, 2, 3, 4].includes(emailNumber)) {
+        return res.status(400).json({
+          error: "Invalid emailNumber. Must be 1, 2, 3, or 4"
+        });
+      }
+
+      console.log(`[AI Email Generator] Generating ${campaignType} email #${emailNumber}...`);
+      
+      const generatedEmail = await generateEmail({
+        campaignType,
+        emailNumber,
+        jobDetails,
+        phoneNumber,
+        strategy
+      });
+
+      console.log(`[AI Email Generator] Successfully generated email: "${generatedEmail.subject}"`);
+      res.json(generatedEmail);
+    } catch (error: any) {
+      console.error("[AI Email Generator] Error:", error);
+      res.status(500).json({ error: error.message || 'Failed to generate email' });
+    }
+  });
+
+  // Save AI-generated email as template (admin only)
+  app.post("/api/admin/emails/save-template", requireAdmin, async (req, res) => {
+    try {
+      const { reviewEmailTemplates } = await import("@shared/schema");
+      const {
+        campaignType,
+        emailNumber,
+        subject,
+        preheader,
+        bodyHtml,
+        bodyPlain,
+        isActive
+      } = req.body;
+
+      // Validate required fields
+      if (!campaignType || !emailNumber || !subject || !bodyHtml) {
+        return res.status(400).json({
+          error: "Missing required fields: campaignType, emailNumber, subject, bodyHtml"
+        });
+      }
+
+      // Check if template already exists for this campaign/email combination
+      const existing = await db
+        .select()
+        .from(reviewEmailTemplates)
+        .where(
+          and(
+            eq(reviewEmailTemplates.campaignType, campaignType),
+            eq(reviewEmailTemplates.emailNumber, emailNumber)
+          )
+        )
+        .limit(1);
+
+      if (existing.length > 0) {
+        // Update existing template
+        const updated = await db
+          .update(reviewEmailTemplates)
+          .set({
+            subject,
+            preheader,
+            bodyHtml,
+            bodyPlain,
+            isActive: isActive ?? true,
+            updatedAt: new Date()
+          })
+          .where(eq(reviewEmailTemplates.id, existing[0].id))
+          .returning();
+
+        console.log(`[AI Email Generator] Updated template for ${campaignType} email #${emailNumber}`);
+        res.json({ template: updated[0], updated: true });
+      } else {
+        // Create new template
+        const newTemplate = await db
+          .insert(reviewEmailTemplates)
+          .values({
+            campaignType,
+            emailNumber,
+            subject,
+            preheader,
+            bodyHtml,
+            bodyPlain,
+            isActive: isActive ?? true
+          })
+          .returning();
+
+        console.log(`[AI Email Generator] Created new template for ${campaignType} email #${emailNumber}`);
+        res.json({ template: newTemplate[0], updated: false });
+      }
+    } catch (error: any) {
+      console.error("[AI Email Generator] Error saving template:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all email templates (admin only)
+  app.get("/api/admin/emails/templates", requireAdmin, async (req, res) => {
+    try {
+      const { reviewEmailTemplates } = await import("@shared/schema");
+      
+      const templates = await db
+        .select()
+        .from(reviewEmailTemplates)
+        .orderBy(reviewEmailTemplates.campaignType, reviewEmailTemplates.emailNumber);
+
+      res.json({ templates });
+    } catch (error: any) {
+      console.error("[AI Email Generator] Error fetching templates:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get specific email template (admin only)
+  app.get("/api/admin/emails/templates/:campaignType/:emailNumber", requireAdmin, async (req, res) => {
+    try {
+      const { campaignType, emailNumber } = req.params;
+      const { reviewEmailTemplates } = await import("@shared/schema");
+      
+      const template = await db
+        .select()
+        .from(reviewEmailTemplates)
+        .where(
+          and(
+            eq(reviewEmailTemplates.campaignType, campaignType),
+            eq(reviewEmailTemplates.emailNumber, parseInt(emailNumber))
+          )
+        )
+        .limit(1);
+
+      if (template.length === 0) {
+        return res.status(404).json({ error: 'Template not found' });
+      }
+
+      res.json({ template: template[0] });
+    } catch (error: any) {
+      console.error("[AI Email Generator] Error fetching template:", error);
       res.status(500).json({ error: error.message });
     }
   });
