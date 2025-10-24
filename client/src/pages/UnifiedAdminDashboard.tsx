@@ -57,7 +57,8 @@ import {
   Calendar,
   AlertCircle,
   MessageCircle,
-  CreditCard
+  CreditCard,
+  Trophy
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -4031,12 +4032,25 @@ function ReviewPlatformsSection() {
 
 // Customer Data Section - Import history and metrics
 function CustomerDataSection() {
+  const [timePeriod, setTimePeriod] = useState<'all' | '1year' | '2years' | '3years'>('all');
+
   const { data: customerMetrics, isLoading: metricsLoading } = useQuery({
     queryKey: ['/api/admin/customer-metrics'],
   });
 
   const { data: importHistory, isLoading: historyLoading } = useQuery({
     queryKey: ['/api/admin/customer-imports'],
+  });
+
+  const { data: topCustomersData, isLoading: topCustomersLoading } = useQuery({
+    queryKey: ['/api/admin/top-customers', timePeriod],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/top-customers?period=${timePeriod}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch top customers');
+      return response.json();
+    },
   });
 
   if (metricsLoading || historyLoading) {
@@ -4051,6 +4065,7 @@ function CustomerDataSection() {
   const metrics = customerMetrics || {};
   const imports = importHistory || [];
   const latestImport = imports[0];
+  const topCustomers = topCustomersData?.topCustomers || [];
 
   return (
     <div className="p-8 space-y-6">
@@ -4220,6 +4235,110 @@ function CustomerDataSection() {
                       ${((imp.totalLifetimeRevenue || 0) / 100).toLocaleString(undefined, { maximumFractionDigits: 0 })}
                     </p>
                     <p className="text-xs text-muted-foreground">Total revenue</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Top Customers */}
+      <Card data-testid="card-top-customers">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                Top Customers by Lifetime Value
+              </CardTitle>
+              <CardDescription>
+                Highest revenue customers in selected time period
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={timePeriod === '1year' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimePeriod('1year')}
+                data-testid="button-filter-1year"
+              >
+                Last Year
+              </Button>
+              <Button
+                variant={timePeriod === '2years' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimePeriod('2years')}
+                data-testid="button-filter-2years"
+              >
+                Last 2 Years
+              </Button>
+              <Button
+                variant={timePeriod === '3years' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimePeriod('3years')}
+                data-testid="button-filter-3years"
+              >
+                Last 3 Years
+              </Button>
+              <Button
+                variant={timePeriod === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setTimePeriod('all')}
+                data-testid="button-filter-all"
+              >
+                All Time
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {topCustomersLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          ) : topCustomers.length === 0 ? (
+            <div className="text-center p-8 text-muted-foreground">
+              No customers found for this time period.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {topCustomers.map((customer: any, index: number) => (
+                <div
+                  key={customer.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover-elevate"
+                  data-testid={`top-customer-${customer.id}`}
+                >
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 font-bold text-primary">
+                      {index + 1}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{customer.name}</p>
+                      <div className="flex items-center gap-4 mt-1">
+                        <p className="text-sm text-muted-foreground">
+                          {customer.jobCount} {customer.jobCount === 1 ? 'job' : 'jobs'}
+                        </p>
+                        {customer.lastServiceDate && (
+                          <p className="text-sm text-muted-foreground">
+                            Last service: {new Date(customer.lastServiceDate).toLocaleDateString()}
+                          </p>
+                        )}
+                        {customer.lastServiceType && (
+                          <Badge variant="secondary" className="text-xs">
+                            {customer.lastServiceType}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold">
+                      ${(customer.lifetimeValue / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Lifetime value</p>
                   </div>
                 </div>
               ))}

@@ -1785,6 +1785,62 @@ ${rssItems}
     }
   });
 
+  // Get top customers by lifetime value (Admin Dashboard)
+  app.get("/api/admin/top-customers", async (req, res) => {
+    try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customersXlsx } = await import('@shared/schema');
+      const { desc, and, gte } = await import('drizzle-orm');
+      
+      const period = req.query.period as string || 'all';
+      const requestedLimit = parseInt(req.query.limit as string) || 20;
+      const limit = Math.min(Math.max(requestedLimit, 1), 100); // Clamp between 1-100
+      
+      // Calculate date threshold based on period
+      let dateThreshold: Date | null = null;
+      const now = new Date();
+      
+      if (period === '1year') {
+        dateThreshold = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
+      } else if (period === '2years') {
+        dateThreshold = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
+      } else if (period === '3years') {
+        dateThreshold = new Date(now.getFullYear() - 3, now.getMonth(), now.getDate());
+      }
+      
+      // Build query with optional date filter
+      const conditions = [];
+      conditions.push(sql`${customersXlsx.lifetimeValue} > 0`);
+      
+      if (dateThreshold) {
+        conditions.push(gte(customersXlsx.lastServiceDate, dateThreshold));
+      }
+      
+      const topCustomers = await db
+        .select({
+          id: customersXlsx.id,
+          name: customersXlsx.name,
+          lifetimeValue: customersXlsx.lifetimeValue,
+          jobCount: customersXlsx.jobCount,
+          lastServiceDate: customersXlsx.lastServiceDate,
+          lastServiceType: customersXlsx.lastServiceType,
+        })
+        .from(customersXlsx)
+        .where(and(...conditions))
+        .orderBy(desc(customersXlsx.lifetimeValue))
+        .limit(limit);
+
+      res.json({ topCustomers });
+    } catch (error: any) {
+      console.error('[Admin] Error fetching top customers:', error);
+      res.status(500).json({ message: "Error fetching top customers" });
+    }
+  });
+
   // Customer Success Story submission with spam protection and photo upload
   app.post("/api/success-stories", async (req, res) => {
     try {
