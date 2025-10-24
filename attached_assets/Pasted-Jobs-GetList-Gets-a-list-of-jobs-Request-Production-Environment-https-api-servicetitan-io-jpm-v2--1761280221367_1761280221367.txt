@@ -1,0 +1,228 @@
+Jobs_GetList
+Gets a list of jobs
+
+Request
+Production Environment
+https://api.servicetitan.io/jpm/v2/tenant/{tenant}/jobs[?page][&pageSize][&includeTotal][&ids][&number][&projectId][&bookingId][&jobStatus][&appointmentStatus][&priority][&firstAppointmentStartsOnOrAfter][&firstAppointmentStartsBefore][&appointmentStartsOnOrAfter][&appointmentStartsBefore][&technicianId][&customerId][&locationId][&soldById][&jobTypeId][&campaignId][&businessUnitId][&invoiceId][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&completedOnOrAfter][&completedBefore][&tagTypeIds][&sort][&externalDataApplicationGuid][&externalDataKey][&externalDataValues][&hasUnusedAppointments]
+Integration Environment
+https://api-integration.servicetitan.io/jpm/v2/tenant/{tenant}/jobs[?page][&pageSize][&includeTotal][&ids][&number][&projectId][&bookingId][&jobStatus][&appointmentStatus][&priority][&firstAppointmentStartsOnOrAfter][&firstAppointmentStartsBefore][&appointmentStartsOnOrAfter][&appointmentStartsBefore][&technicianId][&customerId][&locationId][&soldById][&jobTypeId][&campaignId][&businessUnitId][&invoiceId][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&completedOnOrAfter][&completedBefore][&tagTypeIds][&sort][&externalDataApplicationGuid][&externalDataKey][&externalDataValues][&hasUnusedAppointments]
+Request parameters
+
+Name
+In
+Required
+Type
+Description
+tenant
+template
+true
+integer
+Tenant ID
+
+page
+query
+false
+integer
+The logical number of page to return, starting from 1
+
+pageSize
+query
+false
+integer
+How many records to return (50 by default)
+
+includeTotal
+query
+false
+boolean
+Whether total count should be returned
+
+ids
+query
+false
+string
+Perform lookup by multiple IDs (maximum 50)
+
+number
+query
+false
+string
+Filters by job number
+
+projectId
+query
+false
+integer
+Filters by project ID
+
+bookingId
+query
+false
+integer
+Filters by booking ID that resulted in this job
+
+jobStatus
+query
+false
+Filters by job status
+Values: [Scheduled, Dispatched, InProgress, Hold, Completed, Canceled]
+
+appointmentStatus
+query
+false
+Filters by appointment status. Return a job if it has any appointment with the specified status.
+Values: [Scheduled, Dispatched, Working, Hold, Done, Canceled]
+
+priority
+query
+false
+string
+Filters by priority. Supported priorities are "Low", "Normal", "High", "Urgent"
+
+firstAppointmentStartsOnOrAfter
+query
+false
+string
+Return jobs whose first appointment starts on or after date/time (in UTC). Use with "firstAppointmentStartsBefore" to find jobs whose first appointment is within the specified date range.
+
+firstAppointmentStartsBefore
+query
+false
+string
+Return jobs whose first appointment starts before date/time (in UTC)
+
+appointmentStartsOnOrAfter
+query
+false
+string
+Return jobs if any appointment starts after date/time (in UTC)
+
+appointmentStartsBefore
+query
+false
+string
+Return jobs if any appointment starts after date/time (in UTC)
+
+technicianId
+query
+false
+integer
+Return jobs if technician is assigned to any appointment
+
+customerId
+query
+false
+integer
+Filters by job's customer ID
+
+locationId
+query
+false
+integer
+Filters by job's location ID
+
+soldById
+query
+false
+integer
+Filters by the technician who sold the job
+
+jobTypeId
+query
+false
+integer
+Filters by job type ID
+
+campaignId
+query
+false
+integer
+Filters by job's campaign ID
+
+businessUnitId
+query
+false
+integer
+Filters by job's business unit ID
+
+invoiceId
+query
+false
+integer
+Filters by job's invoice ID
+
+createdBefore
+query
+false
+string
+Return items created before certain date/time (in UTC)
+
+createdOnOrAfter
+query
+false
+string
+Return items created on or after certain date/time (in UTC)
+
+modifiedBefore
+query
+false
+string
+Return items modified before certain date/time (in UTC)
+
+modifiedOnOrAfter
+query
+false
+string
+Return items modified on or after certain date/time (in UTC)
+
+completedOnOrAfter
+query
+false
+string
+Return jobs that are completed after a certain date/time (in UTC)
+
+completedBefore
+query
+false
+string
+Return jobs that are completed before a certain date/time (in UTC)
+
+tagTypeIds
+query
+false
+string
+Return jobs that have at least one of provided Tag Type assigned
+
+sort
+query
+false
+string
+Applies sorting by the specified field:
+"?sort=+FieldName" for ascending order,
+"?sort=-FieldName" for descending order.
+
+Available fields are: Id, ModifiedOn, CreatedOn, Priority.
+
+externalDataApplicationGuid
+query
+false
+string
+If this guid is provided, external data corresponding to this application guid will be returned.
+
+externalDataKey
+query
+false
+string
+Performs lookup by external data key, 'externalDataValues' must also be provided.
+
+externalDataValues
+query
+false
+string
+Performs lookup by external data values (maximum 50), 'externalDataKey' must also be provided.
+
+hasUnusedAppointments
+query
+false
+boolean
+If set to true, return jobs that have unused appointments.
