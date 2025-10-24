@@ -16,9 +16,93 @@
  */
 
 import { db } from "../db";
-import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback } from "../../shared/schema";
-import { eq, and, lt, gte, isNull, or } from "drizzle-orm";
+import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, customersXlsx, contactsXlsx, systemSettings } from "../../shared/schema";
+import { eq, and, lt, gte, isNull, or, sql } from "drizzle-orm";
 import { generateEmail } from "./aiEmailGenerator";
+
+interface ServiceTitanConfig {
+  clientId: string;
+  clientSecret: string;
+  tenantId: string;
+  appKey: string;
+}
+
+interface ServiceTitanJob {
+  id: number;
+  customerId: number;
+  completedOn: string;
+  total: number;
+  summary: string;
+  jobTypeId: number;
+  soldById: number;
+}
+
+interface ServiceTitanJobsResponse {
+  page: number;
+  pageSize: number;
+  hasMore: boolean;
+  totalCount?: number;
+  data: ServiceTitanJob[];
+}
+
+class ServiceTitanJobsAPI {
+  private config: ServiceTitanConfig;
+  private baseUrl: string;
+  private accessToken: string | null = null;
+  private tokenExpiry: number = 0;
+
+  constructor(config: ServiceTitanConfig) {
+    this.config = config;
+    this.baseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${config.tenantId}`;
+  }
+
+  private async authenticate(): Promise<void> {
+    if (this.accessToken && Date.now() < this.tokenExpiry) {
+      return;
+    }
+
+    const tokenUrl = 'https://auth.servicetitan.io/connect/token';
+    const credentials = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString('base64');
+
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'grant_type=client_credentials',
+    });
+
+    if (!response.ok) {
+      throw new Error(`ServiceTitan auth failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    this.accessToken = data.access_token;
+    this.tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000;
+  }
+
+  async getCompletedJobs(completedOnOrAfter: Date): Promise<ServiceTitanJob[]> {
+    await this.authenticate();
+
+    const isoDate = completedOnOrAfter.toISOString();
+    const url = `${this.baseUrl}/jobs?jobStatus=Completed&completedOnOrAfter=${encodeURIComponent(isoDate)}&pageSize=50`;
+
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${this.accessToken}`,
+        'ST-App-Key': this.config.appKey,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
+    }
+
+    const data: ServiceTitanJobsResponse = await response.json();
+    return data.data || [];
+  }
+}
 
 interface EmailSettings {
   masterEmailEnabled: boolean;
@@ -48,13 +132,23 @@ class ReviewRequestScheduler {
    * Get email campaign settings from database
    */
   async getEmailSettings(): Promise<EmailSettings> {
-    // TODO: Fetch from review_request_settings table when user sends it
-    // For now, return mock settings
-    return {
-      masterEmailEnabled: false, // Default to disabled for safety
-      phoneNumber: null,
-      reviewRequestEnabled: false,
-    };
+    try {
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+
+      return {
+        masterEmailEnabled: settingsMap.get('review_master_email_switch') === 'true',
+        phoneNumber: settingsMap.get('review_request_phone_number') || null,
+        reviewRequestEnabled: settingsMap.get('review_drip_enabled') === 'true',
+      };
+    } catch (error) {
+      console.error("[Review Request Scheduler] Error fetching settings:", error);
+      return {
+        masterEmailEnabled: false,
+        phoneNumber: null,
+        reviewRequestEnabled: false,
+      };
+    }
   }
 
   /**
@@ -80,18 +174,95 @@ class ReviewRequestScheduler {
 
   /**
    * Detect new completed jobs from ServiceTitan
-   * This will be updated when user provides ServiceTitan Jobs API docs
    */
   async detectCompletedJobs(): Promise<JobCompletion[]> {
     try {
       console.log("[Review Request Scheduler] Checking for new completed jobs...");
 
-      // TODO: Replace with actual ServiceTitan API call when docs are provided
-      // This is placeholder logic
-      const completedJobs: JobCompletion[] = [];
+      // Initialize ServiceTitan API
+      const config: ServiceTitanConfig = {
+        clientId: process.env.SERVICETITAN_CLIENT_ID!,
+        clientSecret: process.env.SERVICETITAN_CLIENT_SECRET!,
+        tenantId: process.env.SERVICETITAN_TENANT_ID!,
+        appKey: process.env.SERVICETITAN_APP_KEY!,
+      };
 
-      console.log(`[Review Request Scheduler] Found ${completedJobs.length} new completed jobs`);
-      return completedJobs;
+      const stApi = new ServiceTitanJobsAPI(config);
+
+      // Fetch jobs completed in last 24 hours
+      const yesterday = new Date();
+      yesterday.setHours(yesterday.getHours() - 24);
+
+      const stJobs = await stApi.getCompletedJobs(yesterday);
+      console.log(`[Review Request Scheduler] Found ${stJobs.length} completed jobs from ServiceTitan API`);
+
+      const newJobsToProcess: JobCompletion[] = [];
+
+      for (const stJob of stJobs) {
+        // Check if we've already created a job_completion for this ServiceTitan job
+        const existingCompletion = await db
+          .select()
+          .from(jobCompletions)
+          .where(eq(jobCompletions.jobId, stJob.id))
+          .limit(1);
+
+        if (existingCompletion.length > 0) {
+          continue;
+        }
+
+        // Get customer details from customers_xlsx
+        const customer = await db
+          .select()
+          .from(customersXlsx)
+          .where(eq(customersXlsx.id, stJob.customerId))
+          .limit(1);
+
+        if (customer.length === 0) {
+          console.log(`[Review Request Scheduler] No customer found for ST customer ID ${stJob.customerId}, skipping`);
+          continue;
+        }
+
+        // Get customer email from contacts_xlsx
+        const emailContact = await db
+          .select()
+          .from(contactsXlsx)
+          .where(
+            and(
+              eq(contactsXlsx.customerId, stJob.customerId),
+              sql`LOWER(${contactsXlsx.contactType}) = 'email'`
+            )
+          )
+          .limit(1);
+
+        if (emailContact.length === 0 || !emailContact[0].normalizedValue) {
+          console.log(`[Review Request Scheduler] No email for customer ${stJob.customerId}, skipping`);
+          continue;
+        }
+
+        // Extract first email if comma-separated
+        const customerEmail = emailContact[0].normalizedValue.split(',')[0].trim();
+
+        // Create job_completion entry
+        const jobCompletion: JobCompletion = {
+          id: `job-${stJob.id}`,
+          jobId: stJob.id,
+          customerId: stJob.customerId,
+          customerName: customer[0].name || 'Valued Customer',
+          customerEmail: customerEmail,
+          serviceName: stJob.summary || 'Service',
+          invoiceTotal: stJob.total ? Math.round(stJob.total * 100) : undefined,
+          completionDate: new Date(stJob.completedOn),
+        };
+
+        // Insert job_completion to database
+        await db.insert(jobCompletions).values(jobCompletion);
+        console.log(`[Review Request Scheduler] Created job_completion for job ${stJob.id}`);
+
+        newJobsToProcess.push(jobCompletion);
+      }
+
+      console.log(`[Review Request Scheduler] Processed ${newJobsToProcess.length} new completed jobs`);
+      return newJobsToProcess;
     } catch (error) {
       console.error("[Review Request Scheduler] Error detecting completed jobs:", error);
       return [];
