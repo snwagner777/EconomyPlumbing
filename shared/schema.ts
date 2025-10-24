@@ -1488,3 +1488,45 @@ export type ChatbotAnalytics = typeof chatbotAnalytics.$inferSelect;
 export type InsertChatbotAnalytics = z.infer<typeof insertChatbotAnalyticsSchema>;
 export type ChatbotQuickResponse = typeof chatbotQuickResponses.$inferSelect;
 export type InsertChatbotQuickResponse = z.infer<typeof insertChatbotQuickResponseSchema>;
+
+// Review & Referral Drip Campaign Schemas
+export const insertJobCompletionSchema = createInsertSchema(jobCompletions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertReviewFeedbackSchema = createInsertSchema(reviewFeedback).omit({
+  id: true,
+  submittedAt: true,
+  followedUpAt: true,
+});
+
+export const insertReferralNurtureCampaignSchema = createInsertSchema(referralNurtureCampaigns).omit({
+  id: true,
+  createdAt: true,
+  pausedAt: true,
+  completedAt: true,
+});
+
+export const insertReviewEmailTemplateSchema = createInsertSchema(reviewEmailTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type JobCompletion = typeof jobCompletions.$inferSelect;
+export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
+export type ReviewRequest = typeof reviewRequests.$inferSelect;
+export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
+export type ReviewFeedback = typeof reviewFeedback.$inferSelect;
+export type InsertReviewFeedback = z.infer<typeof insertReviewFeedbackSchema>;
+export type ReferralNurtureCampaign = typeof referralNurtureCampaigns.$inferSelect;
+export type InsertReferralNurtureCampaign = z.infer<typeof insertReferralNurtureCampaignSchema>;
+export type ReviewEmailTemplate = typeof reviewEmailTemplates.$inferSelect;
+export type InsertReviewEmailTemplate = z.infer<typeof insertReviewEmailTemplateSchema>;
