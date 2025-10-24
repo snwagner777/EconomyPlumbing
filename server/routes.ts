@@ -3621,9 +3621,16 @@ ${rssItems}
   try {
     console.log('[Routes] Importing Mailgun webhook handler...');
     const { handleMailgunWebhook } = await import('./webhooks/mailgunCustomerData');
-    console.log('[Routes] Mailgun webhook handler imported successfully');
+    console.log('[Routes] Mailgun webhook handler imported successfully, type:', typeof handleMailgunWebhook);
     app.post("/api/webhooks/mailgun/customer-data", handleMailgunWebhook);
     console.log('[Routes] Mailgun webhook route registered at POST /api/webhooks/mailgun/customer-data');
+    
+    // Verify route was actually registered by Express
+    const routes = (app._router?.stack || [])
+      .filter((layer: any) => layer.route)
+      .map((layer: any) => ({ path: layer.route.path, methods: Object.keys(layer.route.methods) }));
+    const webhookRoute = routes.find((r: any) => r.path === '/api/webhooks/mailgun/customer-data');
+    console.log('[Routes] Verification - webhook route in Express stack:', webhookRoute ? 'FOUND' : 'NOT FOUND');
   } catch (error) {
     console.error('[Routes] CRITICAL ERROR: Failed to import Mailgun webhook handler:', error);
   }

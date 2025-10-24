@@ -22,6 +22,22 @@ import { securityHeadersMiddleware } from "./middleware/securityHeaders";
 
 const app = express();
 
+// ==================================================================
+// CRITICAL: Register Mailgun webhook FIRST - before ANY middleware
+// ==================================================================
+// This MUST come before security headers, compression, and especially before Vite middleware
+// Otherwise Vite intercepts the request and returns HTML instead of processing the webhook
+import { handleMailgunWebhook } from "./webhooks/mailgunCustomerData";
+console.log('[Server] Imported handleMailgunWebhook, type:', typeof handleMailgunWebhook);
+console.log('[Server] Handler is function:', typeof handleMailgunWebhook === 'function');
+
+app.post("/api/webhooks/mailgun/customer-data", (req, res) => {
+  console.log('[Server] ===== ROUTE MATCHED! =====');
+  console.log('[Server] Method:', req.method, 'Path:', req.path);
+  return handleMailgunWebhook(req, res);
+});
+console.log('[Server] Mailgun webhook route registered FIRST at POST /api/webhooks/mailgun/customer-data');
+
 // Security headers (CSP, HSTS, etc.) - applied first for all responses
 app.use(securityHeadersMiddleware);
 

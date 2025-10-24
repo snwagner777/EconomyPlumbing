@@ -21,6 +21,10 @@ const mailgunUpload = multer({
 }).any();
 
 export function handleMailgunWebhook(req: Request, res: Response) {
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  console.log('!!! MAILGUN WEBHOOK HANDLER CALLED !!!!!!!!!!!!');
+  console.log('!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!');
+  
   const startTime = Date.now();
   
   // Initialize webhook log entry

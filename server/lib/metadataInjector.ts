@@ -113,6 +113,11 @@ export function createMetadataInjector(storage: IStorage) {
   return async (req: Request, res: Response, next: NextFunction) => {
     const path = req.path;
     
+    // Skip for non-GET requests (POST, PUT, DELETE, etc.) - these are API calls, not page loads
+    if (req.method !== 'GET') {
+      return next();
+    }
+    
     // Skip for API routes, assets, etc.
     if (
       path.startsWith('/api/') ||
