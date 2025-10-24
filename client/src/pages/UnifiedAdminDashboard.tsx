@@ -301,15 +301,15 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
     },
     onSuccess: () => {
       toast({
-        title: "Sync Started",
-        description: "Sync lock reset! Numbers should start increasing now. Check progress below.",
+        title: "Stats Refreshed",
+        description: "Customer database stats updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/sync-status'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Sync Failed",
-        description: error.message || "Failed to start customer sync",
+        title: "Refresh Failed",
+        description: error.message || "Failed to refresh stats",
         variant: "destructive",
       });
     },
@@ -321,14 +321,14 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
 
   return (
     <div className="space-y-6">
-      {/* ServiceTitan Sync Overview */}
+      {/* Customer Database Overview */}
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle>ServiceTitan Sync</CardTitle>
-                <CardDescription>Customer database synchronization</CardDescription>
+                <CardTitle>Customer Database</CardTitle>
+                <CardDescription>XLSX-based customer data (hourly Mailgun imports)</CardDescription>
               </div>
               <Button
                 onClick={() => syncMutation.mutate()}
@@ -339,12 +339,12 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 {syncMutation.isPending || syncStatus?.isRunning ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Syncing...
+                    Refreshing...
                   </>
                 ) : (
                   <>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    Manual Sync
+                    Refresh Stats
                   </>
                 )}
               </Button>
@@ -378,9 +378,9 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
 
                 <div className="flex items-center justify-between pt-2 border-t">
                   <div className="flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full ${syncStatus.isRunning ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                    <div className={`h-2 w-2 rounded-full bg-green-500`} />
                     <span className="text-sm text-muted-foreground">
-                      Status: {syncStatus.isRunning ? 'Running' : 'Idle'}
+                      XLSX Import Active
                     </span>
                   </div>
                   {syncStatus.lastSyncedAt && (
