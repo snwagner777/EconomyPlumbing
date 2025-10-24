@@ -179,6 +179,22 @@ export async function importCustomersFromXLSX(
           const lifetimeRevenue = Math.round((row['Customers Lifetime Revenue'] || 0) * 100);
           totalRevenue += lifetimeRevenue;
 
+          // Convert Excel serial date to JavaScript Date
+          // Excel stores dates as serial numbers (days since 1900-01-01)
+          let lastServiceDate: Date | null = null;
+          const rawDate = row['Last Job Completed'];
+          if (rawDate) {
+            if (typeof rawDate === 'number') {
+              // Excel serial date: convert to milliseconds since Unix epoch
+              // Formula: (excelSerial - 25569) * 86400 * 1000
+              // 25569 = days between 1900-01-01 and 1970-01-01
+              lastServiceDate = new Date((rawDate - 25569) * 86400 * 1000);
+            } else if (typeof rawDate === 'string') {
+              // String date: parse directly
+              lastServiceDate = new Date(rawDate);
+            }
+          }
+
           customerBatch.push({
             id: customerId,
             name: row['Customer Name'] || 'Unknown',
@@ -193,7 +209,7 @@ export async function importCustomersFromXLSX(
             active: true,
             balance: '0.00',
             jobCount: row['Lifetime Jobs Completed'] || 0,
-            lastServiceDate: row['Last Job Completed'] ? new Date(row['Last Job Completed']) : null,
+            lastServiceDate,
             lastServiceType: null,
             lifetimeValue: lifetimeRevenue,
             customerTags: [],
