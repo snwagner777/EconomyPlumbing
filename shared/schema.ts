@@ -285,6 +285,35 @@ export const refereeWelcomeEmails = pgTable("referee_welcome_emails", {
   refereeEmailIdx: index("referee_welcome_emails_referee_email_idx").on(table.refereeEmail),
 }));
 
+// Email Preferences - Granular opt-out controls for customers
+export const emailPreferences = pgTable("email_preferences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer identification (email is primary lookup)
+  email: text("email").notNull().unique(),
+  customerId: integer("customer_id"), // ServiceTitan customer ID (if known)
+  
+  // Granular opt-out preferences
+  marketingEmails: boolean("marketing_emails").notNull().default(true), // Newsletters, promotions, segments
+  reviewRequests: boolean("review_requests").notNull().default(true), // Review request drip campaigns
+  referralEmails: boolean("referral_emails").notNull().default(true), // Referral nurture, referee welcome
+  serviceReminders: boolean("service_reminders").notNull().default(true), // Maintenance reminders, follow-ups
+  transactionalOnly: boolean("transactional_only").notNull().default(false), // Receipts, confirmations only
+  
+  // Unsubscribe token for secure one-click unsubscribe
+  unsubscribeToken: text("unsubscribe_token").notNull().unique(),
+  
+  // Tracking
+  optedOutAt: timestamp("opted_out_at"), // When they first opted out of anything
+  fullyUnsubscribedAt: timestamp("fully_unsubscribed_at"), // When they opted out of everything
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  emailIdx: index("email_preferences_email_idx").on(table.email),
+  customerIdIdx: index("email_preferences_customer_id_idx").on(table.customerId),
+  tokenIdx: index("email_preferences_token_idx").on(table.unsubscribeToken),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
