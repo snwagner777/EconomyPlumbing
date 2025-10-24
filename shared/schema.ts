@@ -230,6 +230,22 @@ export const referrals = pgTable("referrals", {
   submittedAtIdx: index("referrals_submitted_at_idx").on(table.submittedAt),
 }));
 
+// Referral credit usage tracking
+// Tracks when customers use their referral credits on jobs
+export const referralCreditUsage = pgTable("referral_credit_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  jobId: text("job_id").notNull(), // ServiceTitan job ID where credit was used
+  jobNumber: text("job_number").notNull(), // Human-readable job number
+  amountUsed: integer("amount_used").notNull(), // Amount in cents
+  usedAt: timestamp("used_at").notNull(), // When the credit was used (job completion date)
+  processedAt: timestamp("processed_at").notNull().defaultNow(), // When we detected and logged this usage
+}, (table) => ({
+  customerIdIdx: index("referral_credit_usage_customer_id_idx").on(table.customerId),
+  jobIdIdx: uniqueIndex("referral_credit_usage_job_id_idx").on(table.jobId), // Prevent duplicate processing
+  usedAtIdx: index("referral_credit_usage_used_at_idx").on(table.usedAt),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
@@ -1520,6 +1536,11 @@ export const insertReviewEmailTemplateSchema = createInsertSchema(reviewEmailTem
   updatedAt: true,
 });
 
+export const insertReferralCreditUsageSchema = createInsertSchema(referralCreditUsage).omit({
+  id: true,
+  processedAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1530,3 +1551,5 @@ export type ReferralNurtureCampaign = typeof referralNurtureCampaigns.$inferSele
 export type InsertReferralNurtureCampaign = z.infer<typeof insertReferralNurtureCampaignSchema>;
 export type ReviewEmailTemplate = typeof reviewEmailTemplates.$inferSelect;
 export type InsertReviewEmailTemplate = z.infer<typeof insertReviewEmailTemplateSchema>;
+export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
+export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;

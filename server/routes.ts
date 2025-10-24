@@ -1633,6 +1633,65 @@ ${rssItems}
     }
   });
 
+  // Record manual referral credit usage (Admin only)
+  app.post("/api/admin/referrals/record-credit-usage", async (req, res) => {
+    try {
+      // Check authentication
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { referralCreditUsage } = await import('@shared/schema');
+      const { getReferralProcessor } = await import('./lib/referralProcessor');
+      
+      // Validate request body
+      const { customerId, jobId, jobNumber, amountUsed, usedAt } = req.body;
+      
+      if (!customerId || !jobId || !jobNumber || !amountUsed) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if already recorded
+      const existing = await db
+        .select()
+        .from(referralCreditUsage)
+        .where(eq(referralCreditUsage.jobId, jobId))
+        .limit(1);
+
+      if (existing.length > 0) {
+        return res.status(400).json({ message: "Credit usage for this job already recorded" });
+      }
+
+      // Record the usage
+      await db.insert(referralCreditUsage).values({
+        customerId: parseInt(customerId),
+        jobId,
+        jobNumber,
+        amountUsed: Math.round(parseFloat(amountUsed) * 100), // Convert dollars to cents
+        usedAt: usedAt ? new Date(usedAt) : new Date(),
+      });
+
+      // Update the customer's credit balance note
+      const processor = getReferralProcessor();
+      await processor.deductFromCreditNote(
+        parseInt(customerId),
+        parseFloat(amountUsed), // Amount in dollars
+        jobNumber,
+        usedAt ? new Date(usedAt) : new Date()
+      );
+
+      res.json({ 
+        message: "Credit usage recorded successfully",
+        customerId,
+        jobNumber,
+        amountUsed
+      });
+    } catch (error: any) {
+      console.error('[Admin] Error recording credit usage:', error);
+      res.status(500).json({ message: "Error recording credit usage", error: error.message });
+    }
+  });
+
   // Get all referrals (Admin Dashboard)
   app.get("/api/admin/referrals", async (req, res) => {
     try {
