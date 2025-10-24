@@ -1222,45 +1222,76 @@ ${rssItems}
         return res.status(400).json({ message: "Missing required fields" });
       }
       
-      // Try to find referrer's ServiceTitan customer ID immediately
-      const { getServiceTitanAPI } = await import('./lib/serviceTitan');
-      const serviceTitan = getServiceTitanAPI();
+      // Try to find referrer's ServiceTitan customer ID from DATABASE (fast!)
+      const { customersXlsx, contactsXlsx } = await import('@shared/schema');
       let referrerCustomerId: number | null = null;
       
       try {
-        // Search by email first (more reliable), then phone
-        const searchValue = referrerEmail || referrerPhone;
-        referrerCustomerId = await serviceTitan.searchCustomerWithFallback(searchValue);
-        if (referrerCustomerId) {
-          console.log(`[Referral] ✅ Matched referrer to ServiceTitan customer ${referrerCustomerId}`);
+        // Search by phone in contacts_xlsx
+        let referrerContact = await db
+          .select({ customerId: contactsXlsx.customerId })
+          .from(contactsXlsx)
+          .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${referrerPhone.replace(/\D/g, '')}%`}`)
+          .limit(1);
+        
+        // If not found by phone and email provided, try email
+        if (referrerContact.length === 0 && referrerEmail) {
+          referrerContact = await db
+            .select({ customerId: contactsXlsx.customerId })
+            .from(contactsXlsx)
+            .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${referrerEmail.toLowerCase()}%`}`)
+            .limit(1);
+        }
+        
+        if (referrerContact.length > 0 && referrerContact[0].customerId) {
+          referrerCustomerId = referrerContact[0].customerId;
+          console.log(`[Referral] ✅ Matched referrer to customer ${referrerCustomerId} (database)`);
         } else {
-          console.log('[Referral] ⚠️ Could not find referrer in ServiceTitan yet');
+          console.log('[Referral] ⚠️ Could not find referrer in database yet');
         }
       } catch (error) {
-        console.error('[Referral] Error looking up referrer:', error);
+        console.error('[Referral] Error looking up referrer in database:', error);
         // Continue even if lookup fails - we can match later
       }
 
       // CRITICAL: Check if referee is ALREADY a customer (ineligible for referral)
-      // Use REAL-TIME API check (not cache) for accuracy
+      // Use DATABASE check for speed (instant vs hours for API)
       let refereeCustomerId: number | null = null;
       let isExistingCustomer = false;
       
       try {
-        // Search for referee using fallback method (checks cache then API)
-        refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereePhone);
-        if (!refereeCustomerId && refereeEmail) {
-          refereeCustomerId = await serviceTitan.searchCustomerWithFallback(refereeEmail);
+        // Search for referee in customers_xlsx by phone/email
+        let refereeContact = await db
+          .select({ customerId: contactsXlsx.customerId })
+          .from(contactsXlsx)
+          .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${refereePhone.replace(/\D/g, '')}%`}`)
+          .limit(1);
+        
+        // If not found by phone and email provided, try email
+        if (refereeContact.length === 0 && refereeEmail) {
+          refereeContact = await db
+            .select({ customerId: contactsXlsx.customerId })
+            .from(contactsXlsx)
+            .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${refereeEmail.toLowerCase()}%`}`)
+            .limit(1);
         }
         
-        if (refereeCustomerId) {
+        if (refereeContact.length > 0 && refereeContact[0].customerId) {
           isExistingCustomer = true;
+          refereeCustomerId = refereeContact[0].customerId;
           console.log(`[Referral] ❌ Referee "${refereeName}" is ALREADY a customer (ID: ${refereeCustomerId}) - ineligible`);
+          
+          // REJECT with friendly message
+          return res.status(400).json({ 
+            success: false,
+            message: `It looks like ${refereeName} is already a valued customer! Referrals are for new customers only. Thank you for thinking of us!`,
+            alreadyCustomer: true
+          });
         } else {
           console.log(`[Referral] ✅ Referee "${refereeName}" is NOT yet a customer - eligible`);
         }
       } catch (error) {
-        console.error('[Referral] Error checking referee:', error);
+        console.error('[Referral] Error checking referee in database:', error);
         // Continue - we'll check later
       }
       
@@ -4770,15 +4801,15 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           refereeEmail: referralsTable.refereeEmail,
           refereeCustomerId: referralsTable.refereeCustomerId,
           status: referralsTable.status,
-          jobId: referralsTable.jobId,
-          jobAmount: referralsTable.jobAmount,
-          creditStatus: referralsTable.creditStatus,
+          firstJobId: referralsTable.firstJobId,
+          firstJobAmount: referralsTable.firstJobAmount,
+          firstJobDate: referralsTable.firstJobDate,
           creditAmount: referralsTable.creditAmount,
-          creditIssuedAt: referralsTable.creditIssuedAt,
+          creditedAt: referralsTable.creditedAt,
+          creditedBy: referralsTable.creditedBy,
           creditNotes: referralsTable.creditNotes,
           submittedAt: referralsTable.submittedAt,
           contactedAt: referralsTable.contactedAt,
-          jobCompletedAt: referralsTable.jobCompletedAt,
           referrerName: customersXlsx.name,
           referrerEmail: customersXlsx.email
         })
@@ -4791,14 +4822,14 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         total: allReferrals.length,
         pending: allReferrals.filter(r => r.status === 'pending').length,
         contacted: allReferrals.filter(r => r.status === 'contacted').length,
-        completed: allReferrals.filter(r => r.status === 'completed').length,
-        credited: allReferrals.filter(r => r.creditStatus === 'credited').length,
+        completed: allReferrals.filter(r => r.status === 'job_completed').length,
+        credited: allReferrals.filter(r => r.status === 'credited').length,
         ineligible: allReferrals.filter(r => r.status === 'ineligible').length,
         totalRevenue: allReferrals
-          .filter(r => r.jobAmount)
-          .reduce((sum, r) => sum + (r.jobAmount || 0), 0),
+          .filter(r => r.firstJobAmount)
+          .reduce((sum, r) => sum + (r.firstJobAmount || 0), 0),
         totalCredits: allReferrals
-          .filter(r => r.creditAmount)
+          .filter(r => r.creditAmount && r.status === 'credited')
           .reduce((sum, r) => sum + (r.creditAmount || 0), 0)
       };
 
@@ -4823,9 +4854,10 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       await db
         .update(referralsTable)
         .set({
-          creditStatus: 'credited',
+          status: 'credited',
           creditAmount: amount || 2500, // Default $25
-          creditIssuedAt: new Date(),
+          creditedAt: new Date(),
+          creditedBy: 'manual_admin',
           creditNotes: notes || 'Manually credited by admin'
         })
         .where(eq(referralsTable.id, id));
@@ -4849,7 +4881,6 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         .update(referralsTable)
         .set({
           status: 'ineligible',
-          creditStatus: 'ineligible',
           creditNotes: reason || 'Marked ineligible by admin'
         })
         .where(eq(referralsTable.id, id));

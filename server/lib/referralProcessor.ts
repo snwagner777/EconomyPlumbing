@@ -19,6 +19,25 @@ export class ReferralProcessor {
   private isProcessing = false;
 
   /**
+   * Check if current time is 9am or 5pm Central (±30 minutes window)
+   */
+  private isJobCheckTime(): boolean {
+    const now = new Date();
+    // Convert to Central Time (UTC-6 during standard, UTC-5 during daylight saving)
+    const centralTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+    const centralHour = centralTime.getHours();
+    const centralMinutes = centralTime.getMinutes();
+    
+    // Check if it's within 30 minutes of 9am or 5pm Central
+    // 9am window: 8:30-9:30 (hour 8 with minutes>=30, or hour 9 with minutes<=30)
+    const is9am = (centralHour === 8 && centralMinutes >= 30) || (centralHour === 9 && centralMinutes <= 30);
+    // 5pm window: 16:30-17:30 (hour 16 with minutes>=30, or hour 17 with minutes<=30)
+    const is5pm = (centralHour === 16 && centralMinutes >= 30) || (centralHour === 17 && centralMinutes <= 30);
+    
+    return is9am || is5pm;
+  }
+
+  /**
    * Process all pending referrals
    */
   async processPendingReferrals(): Promise<void> {
@@ -31,10 +50,18 @@ export class ReferralProcessor {
     try {
       console.log('[Referral Processor] Starting referral processing cycle...');
       
-      // NOTE: Referrers are now matched via referralCodes table when referee info is captured
-      // No need for separate referrer matching step!
+      // Always run referee matching (fast database query)
       await this.matchRefereesToCustomers();
-      await this.checkForCompletedJobs();
+      
+      // Only check jobs twice per day at 9am and 5pm Central (API call)
+      if (this.isJobCheckTime()) {
+        console.log('[Referral Processor] Running scheduled job check (9am/5pm Central)');
+        await this.checkForCompletedJobs();
+      } else {
+        console.log('[Referral Processor] Skipping job check (only runs at 9am/5pm Central)');
+      }
+      
+      // Always try to issue credits if jobs are completed
       await this.issueCreditsForCompletedJobs();
       
       console.log('[Referral Processor] Processing cycle complete');
@@ -46,13 +73,16 @@ export class ReferralProcessor {
   }
 
   /**
-   * Step 1: Match referees to ServiceTitan customers
+   * Step 1: Match referees to ServiceTitan customers using DATABASE lookups (fast!)
    * Updates status from 'pending' to 'contacted' when referee becomes a customer
    * 
    * IMPORTANT: We already checked if they were an existing customer at submission time.
-   * If they show up in ServiceTitan now but didn't at submission, they're a NEW customer!
+   * If they show up in contacts_xlsx now but didn't at submission, they're a NEW customer!
    */
   private async matchRefereesToCustomers(): Promise<void> {
+    const { contactsXlsx } = await import("../../shared/schema");
+    const { sql } = await import("drizzle-orm");
+    
     const pendingReferrals = await db
       .select()
       .from(referrals)
@@ -65,8 +95,6 @@ export class ReferralProcessor {
 
     console.log(`[Referral Processor] Found ${pendingReferrals.length} pending referrals to match`);
 
-    const api = getServiceTitanAPI();
-
     for (const referral of pendingReferrals) {
       // Skip if already marked as ineligible
       if (referral.creditNotes?.includes('ineligible') || referral.creditNotes?.includes('already a customer')) {
@@ -75,16 +103,26 @@ export class ReferralProcessor {
       }
 
       try {
-        // Try to find referee by phone first
-        const customerId = await api.searchCustomerWithFallback(referral.refereePhone);
+        // Search for referee in database by phone first (instant vs hours for API)
+        let refereeContact = await db
+          .select({ customerId: contactsXlsx.customerId })
+          .from(contactsXlsx)
+          .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${referral.refereePhone.replace(/\D/g, '')}%`}`)
+          .limit(1);
         
-        // If not found by phone, try email if provided
-        const finalCustomerId = customerId || 
-          (referral.refereeEmail ? await api.searchCustomerWithFallback(referral.refereeEmail) : null);
+        // If not found by phone and email provided, try email
+        if (refereeContact.length === 0 && referral.refereeEmail) {
+          refereeContact = await db
+            .select({ customerId: contactsXlsx.customerId })
+            .from(contactsXlsx)
+            .where(sql`${contactsXlsx.normalizedValue} LIKE ${`%${referral.refereeEmail.toLowerCase()}%`}`)
+            .limit(1);
+        }
 
-        if (finalCustomerId) {
+        if (refereeContact.length > 0 && refereeContact[0].customerId) {
+          const finalCustomerId = refereeContact[0].customerId;
           // They became a customer! (We already verified they weren't one at submission)
-          console.log(`[Referral Processor] ✅ Referee "${referral.refereeName}" became a customer (ID: ${finalCustomerId})`);
+          console.log(`[Referral Processor] ✅ Referee "${referral.refereeName}" became a customer (ID: ${finalCustomerId}) [database match]`);
           
           await db
             .update(referrals)
