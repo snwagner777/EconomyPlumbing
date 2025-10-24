@@ -556,6 +556,40 @@ export const contactsXlsx = pgTable("contacts_xlsx", {
 }));
 
 // Customer Data Import History - Tracks XLSX imports from ServiceTitan
+// Mailgun webhook attempt logging - tracks EVERY webhook hit (success or failure)
+export const mailgunWebhookLogs = pgTable("mailgun_webhook_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Webhook metadata
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+  messageId: text("message_id"), // Mailgun message ID
+  sender: text("sender"), // From address
+  recipient: text("recipient"), // To address
+  subject: text("subject"),
+  
+  // Signature verification
+  signatureVerified: boolean("signature_verified").notNull().default(false),
+  timestampAge: integer("timestamp_age"), // Seconds old when received
+  
+  // Attachment detection
+  attachmentCount: integer("attachment_count").notNull().default(0),
+  xlsxFound: boolean("xlsx_found").notNull().default(false),
+  xlsxFileName: text("xlsx_file_name"),
+  xlsxSize: integer("xlsx_size"), // Bytes
+  
+  // Processing result
+  status: text("status").notNull(), // 'success', 'failed', 'rejected'
+  errorMessage: text("error_message"),
+  importId: varchar("import_id"), // Links to customerDataImports if successful
+  
+  // Timing
+  processingTime: integer("processing_time"), // Milliseconds
+}, (table) => ({
+  receivedAtIdx: index("mailgun_webhook_logs_received_at_idx").on(table.receivedAt),
+  statusIdx: index("mailgun_webhook_logs_status_idx").on(table.status),
+  messageIdIdx: index("mailgun_webhook_logs_message_id_idx").on(table.messageId),
+}));
+
 export const customerDataImports = pgTable("customer_data_imports", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
@@ -907,6 +941,11 @@ export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanCo
   lastSyncedAt: true,
 });
 
+export const insertMailgunWebhookLogSchema = createInsertSchema(mailgunWebhookLogs).omit({
+  id: true,
+  receivedAt: true,
+});
+
 export const insertCustomerDataImportSchema = createInsertSchema(customerDataImports).omit({
   id: true,
   startedAt: true,
@@ -1132,6 +1171,8 @@ export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
 export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
+export type MailgunWebhookLog = typeof mailgunWebhookLogs.$inferSelect;
+export type InsertMailgunWebhookLog = z.infer<typeof insertMailgunWebhookLogSchema>;
 export type CustomerDataImport = typeof customerDataImports.$inferSelect;
 export type InsertCustomerDataImport = z.infer<typeof insertCustomerDataImportSchema>;
 export type OAuthUser = typeof oauthUsers.$inferSelect;

@@ -3624,93 +3624,9 @@ ${rssItems}
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
   }).any();
   
-  app.post("/api/webhooks/mailgun/customer-data", (req, res) => {
-    console.log('[Mailgun Webhook] === WEBHOOK REQUEST RECEIVED ===');
-    console.log('[Mailgun Webhook] Method:', req.method);
-    console.log('[Mailgun Webhook] Content-Type:', req.headers['content-type']);
-    console.log('[Mailgun Webhook] Headers:', Object.keys(req.headers));
-    
-    // Parse multipart form data first
-    mailgunUpload(req, res, async (err) => {
-      if (err) {
-        console.error('[Mailgun Webhook] Multer error:', err);
-        return res.status(400).json({ error: 'Failed to parse multipart data' });
-      }
-      
-      try {
-        console.log('[Mailgun Webhook] Multipart data parsed successfully');
-        console.log('[Mailgun Webhook] Body fields:', Object.keys(req.body));
-        
-        // CRITICAL: Verify Mailgun signature before processing
-        const signingKey = process.env.MAILGUN_WEBHOOK_SIGNING_KEY;
-        if (!signingKey) {
-          console.error('[Mailgun Webhook] MAILGUN_WEBHOOK_SIGNING_KEY not configured');
-          return res.status(500).json({ error: 'Webhook signing key not configured' });
-        }
-        
-        const timestamp = req.body.timestamp;
-        const token = req.body.token;
-        const signature = req.body.signature;
-        
-        if (!timestamp || !token || !signature) {
-          console.error('[Mailgun Webhook] Missing signature components');
-          console.log('[Mailgun Webhook] Available fields:', Object.keys(req.body));
-          return res.status(401).json({ error: 'Missing signature' });
-        }
-        
-        // Verify timestamp is recent (prevent replay attacks)
-        const currentTime = Math.floor(Date.now() / 1000);
-        const timestampAge = currentTime - parseInt(timestamp);
-        if (timestampAge > 300) { // 5 minutes
-          console.error(`[Mailgun Webhook] Timestamp too old: ${timestampAge}s`);
-          return res.status(401).json({ error: 'Timestamp expired' });
-        }
-        
-        // Verify HMAC signature
-        const encodedToken = crypto
-          .createHmac('sha256', signingKey)
-          .update(timestamp + token)
-          .digest('hex');
-        
-        if (encodedToken !== signature) {
-          console.error('[Mailgun Webhook] Invalid signature');
-          return res.status(403).json({ error: 'Invalid signature' });
-        }
-        
-        console.log('[Mailgun Webhook] Signature verified successfully');
-      
-        // Find XLSX attachment
-        const files = (req as any).files as Express.Multer.File[];
-        const xlsxFile = files?.find(f => 
-          f.originalname?.endsWith('.xlsx') || 
-          f.mimetype?.includes('spreadsheet')
-        );
-
-        if (!xlsxFile) {
-          console.log('[Mailgun Webhook] No XLSX attachment found');
-          console.log('[Mailgun Webhook] Received files:', files?.map(f => f.originalname));
-          return res.json({ success: false, message: 'No XLSX attachment found' });
-        }
-        
-        console.log(`[Mailgun Webhook] Found XLSX attachment: ${xlsxFile.originalname} (${xlsxFile.size} bytes)`);
-        
-        // Import customers from XLSX
-        const { importCustomersFromXLSX } = await import('./lib/xlsxCustomerImporter');
-        const result = await importCustomersFromXLSX(xlsxFile.buffer, 'email');
-        
-        console.log('[Mailgun Webhook] Import completed successfully');
-        res.json({
-          success: true,
-          fileName: xlsxFile.originalname,
-          ...result,
-        });
-        
-      } catch (error: any) {
-        console.error('[Mailgun Webhook] Error processing webhook:', error);
-        res.status(500).json({ error: error.message });
-      }
-    });
-  });
+  // Use dedicated webhook handler
+  const { handleMailgunWebhook } = await import('./webhooks/mailgunCustomerData');
+  app.post("/api/webhooks/mailgun/customer-data", handleMailgunWebhook);
 
   // Admin authentication middleware - OAuth + whitelist required (for review management, etc.)
   const requireAdmin = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
