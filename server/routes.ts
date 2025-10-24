@@ -4513,6 +4513,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
 
       const settings = {
+        masterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
         reviewDripEnabled: settingsMap.get('review_drip_enabled') === 'true',
         referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
         autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',
@@ -4533,6 +4534,20 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     try {
       const { systemSettings } = await import("@shared/schema");
       const updates = req.body;
+
+      // SERVER-SIDE VALIDATION: Prevent enabling master switch without phone number
+      if (updates.masterEmailSwitch === true) {
+        // Check if phone number is configured
+        const dbSettings = await db.select().from(systemSettings);
+        const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+        const phoneNumber = settingsMap.get('review_request_phone_number');
+        
+        if (!phoneNumber) {
+          return res.status(400).json({
+            error: "Cannot enable master email switch without a configured phone number. Please set a phone number first."
+          });
+        }
+      }
 
       // Save each setting to database
       for (const [key, value] of Object.entries(updates)) {

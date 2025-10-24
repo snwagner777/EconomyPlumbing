@@ -10,11 +10,12 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { LogOut, Star, Mail, Users, TrendingUp, Phone, Plus, Settings, Eye } from "lucide-react";
+import { LogOut, Star, Mail, Users, TrendingUp, Phone, Plus, Settings, Eye, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
 interface SystemSettings {
+  masterEmailSwitch: boolean;
   reviewDripEnabled: boolean;
   referralDripEnabled: boolean;
   autoSendReviewRequests: boolean;
@@ -554,6 +555,32 @@ export default function ReviewRequestsAdmin() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
+                <div className="flex items-center justify-between border-b pb-4">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="master-email-switch" className="text-base font-semibold">Master Email Switch</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable ALL review/referral emails (requires phone number configured)
+                    </p>
+                    {!settings?.reviewRequestPhoneNumber && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                        <p className="text-sm text-destructive font-medium">
+                          Configure phone number below before enabling
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  <Switch
+                    id="master-email-switch"
+                    data-testid="switch-master-email"
+                    checked={settings?.masterEmailSwitch || false}
+                    disabled={!settings?.reviewRequestPhoneNumber}
+                    onCheckedChange={(checked) =>
+                      updateSettingsMutation.mutate({ masterEmailSwitch: checked })
+                    }
+                  />
+                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="review-drip-enabled">Enable Review Drip Campaign</Label>
@@ -565,6 +592,7 @@ export default function ReviewRequestsAdmin() {
                     id="review-drip-enabled"
                     data-testid="switch-review-drip-enabled"
                     checked={settings?.reviewDripEnabled || false}
+                    disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                     onCheckedChange={(checked) =>
                       updateSettingsMutation.mutate({ reviewDripEnabled: checked })
                     }
@@ -582,6 +610,7 @@ export default function ReviewRequestsAdmin() {
                     id="referral-drip-enabled"
                     data-testid="switch-referral-drip-enabled"
                     checked={settings?.referralDripEnabled || false}
+                    disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                     onCheckedChange={(checked) =>
                       updateSettingsMutation.mutate({ referralDripEnabled: checked })
                     }
@@ -599,6 +628,7 @@ export default function ReviewRequestsAdmin() {
                     id="auto-send-reviews"
                     data-testid="switch-auto-send-reviews"
                     checked={settings?.autoSendReviewRequests || false}
+                    disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                     onCheckedChange={(checked) =>
                       updateSettingsMutation.mutate({ autoSendReviewRequests: checked })
                     }
@@ -616,6 +646,7 @@ export default function ReviewRequestsAdmin() {
                     id="auto-start-referrals"
                     data-testid="switch-auto-start-referrals"
                     checked={settings?.autoStartReferralCampaigns || false}
+                    disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                     onCheckedChange={(checked) =>
                       updateSettingsMutation.mutate({ autoStartReferralCampaigns: checked })
                     }
