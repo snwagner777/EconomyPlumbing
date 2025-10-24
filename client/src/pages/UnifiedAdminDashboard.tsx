@@ -67,7 +67,7 @@ import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'review-requests' | 'email-templates';
 
 // Define all application pages
 const ALL_PAGES = [
@@ -184,6 +184,18 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Users,
       section: 'referrals' as AdminSection,
       description: "Manage customer referrals"
+    },
+    {
+      title: "Review Requests",
+      icon: Mail,
+      section: 'review-requests' as AdminSection,
+      description: "Automated review campaigns"
+    },
+    {
+      title: "Email Templates",
+      icon: FileText,
+      section: 'email-templates' as AdminSection,
+      description: "Manage email templates"
     },
     {
       title: "Customer Data",
@@ -4350,6 +4362,212 @@ function CustomerDataSection() {
   );
 }
 
+// Referral Tracking Section
+function ReferralTrackingSection() {
+  const { data, isLoading } = useQuery<{referrals: any[], stats: any}>({
+    queryKey: ['/api/admin/referrals'],
+  });
+
+  if (isLoading) {
+    return <div className="space-y-4">{Array(5).fill(0).map((_, i) => (
+      <Skeleton key={i} className="h-24" />
+    ))}</div>;
+  }
+
+  const stats = data?.stats || {};
+  const referrals = data?.referrals || [];
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Total Referrals</CardDescription>
+            <CardTitle className="text-3xl">{stats.total || 0}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Completed</CardDescription>
+            <CardTitle className="text-3xl">{stats.completed || 0}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Total Revenue</CardDescription>
+            <CardTitle className="text-3xl">${((stats.totalRevenue || 0) / 100).toFixed(0)}</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Referrals</CardTitle>
+          <CardDescription>Latest {referrals.length} referral submissions</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {referrals.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8">No referrals yet</p>
+          ) : (
+            <div className="space-y-4">
+              {referrals.slice(0, 10).map((ref: any) => (
+                <div key={ref.id} className="flex items-center justify-between border-b pb-4 last:border-0">
+                  <div>
+                    <p className="font-medium">{ref.refereeName}</p>
+                    <p className="text-sm text-muted-foreground">Referred by: {ref.referrerName}</p>
+                    <Badge variant={ref.status === 'completed' ? 'default' : 'secondary'} className="mt-1">
+                      {ref.status}
+                    </Badge>
+                  </div>
+                  {ref.jobAmount && (
+                    <p className="text-lg font-semibold">${(ref.jobAmount / 100).toFixed(2)}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Review Requests Section
+function ReviewRequestsSection() {
+  const { toast } = useToast();
+  const { data: settings, isLoading } = useQuery({
+    queryKey: ['/api/admin/review-requests/settings'],
+  });
+
+  const updateSettings = useMutation({
+    mutationFn: async (updates: any) => {
+      const response = await apiRequest('PUT', '/api/admin/review-requests/settings', updates);
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
+      toast({ title: "Settings saved successfully" });
+    },
+  });
+
+  if (isLoading) {
+    return <Skeleton className="h-96" />;
+  }
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Review Request Campaign Settings</CardTitle>
+          <CardDescription>Configure automated review request emails sent after job completion</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Master Email Switch</Label>
+              <p className="text-sm text-muted-foreground">Enable all email campaigns</p>
+            </div>
+            <Switch
+              checked={settings?.masterEmailSwitch || false}
+              onCheckedChange={(checked) => updateSettings.mutate({ masterEmailSwitch: checked })}
+            />
+          </div>
+
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label className="text-base">Review Drip Campaign</Label>
+              <p className="text-sm text-muted-foreground">4-email sequence over 21 days</p>
+            </div>
+            <Switch
+              checked={settings?.reviewDripEnabled || false}
+              onCheckedChange={(checked) => updateSettings.mutate({ reviewDripEnabled: checked })}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Tracking Phone Number</Label>
+            <Input
+              value={settings?.reviewRequestPhoneNumber || ''}
+              placeholder="(512) 555-1234"
+              readOnly
+            />
+            <p className="text-xs text-muted-foreground">
+              Phone number used for tracking in email campaigns
+            </p>
+          </div>
+
+          <div className="rounded-lg border p-4 bg-muted/50">
+            <h4 className="font-semibold mb-2">Campaign Timeline</h4>
+            <ul className="space-y-2 text-sm">
+              <li>• Email 1: Day 1 after job completion</li>
+              <li>• Email 2: Day 7 after job completion</li>
+              <li>• Email 3: Day 14 after job completion</li>
+              <li>• Email 4: Day 21 after job completion</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-4">
+              Campaign auto-stops when customer submits review
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+// Email Templates Section  
+function EmailTemplatesSection() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['/api/admin/email-templates'],
+  });
+
+  if (isLoading) {
+    return <Skeleton className="h-96" />;
+  }
+
+  const templates = data?.templates || [];
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Email Templates</CardTitle>
+          <CardDescription>Manage review request and referral nurture email templates</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {templates.length === 0 ? (
+            <div className="text-center py-12">
+              <Mail className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No templates created yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Templates will be auto-generated by AI when campaigns start
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {templates.map((template: any) => (
+                <div key={template.id} className="border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <h4 className="font-semibold">{template.subject}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {template.campaignType === 'review_request' ? 'Review Request' : 'Referral Nurture'} - Email {template.emailNumber}
+                      </p>
+                    </div>
+                    <Badge>{template.generationMethod}</Badge>
+                  </div>
+                  {template.previewText && (
+                    <p className="text-sm text-muted-foreground mt-2 italic">"{template.previewText}"</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 export default function UnifiedAdminDashboard() {
   const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
   const [, setLocation] = useLocation();
@@ -4418,7 +4636,11 @@ export default function UnifiedAdminDashboard() {
       case 'review-platforms':
         return <ReviewPlatformsSection />;
       case 'referrals':
-        return <div className="text-center p-8"><p className="text-muted-foreground">Referral management coming soon</p></div>;
+        return <ReferralTrackingSection />;
+      case 'review-requests':
+        return <ReviewRequestsSection />;
+      case 'email-templates':
+        return <EmailTemplatesSection />;
       case 'customer-data':
         return <CustomerDataSection />;
       default:
@@ -4438,6 +4660,8 @@ export default function UnifiedAdminDashboard() {
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral Tracking',
+      'review-requests': 'Review Requests',
+      'email-templates': 'Email Templates',
       'customer-data': 'Customer Data',
     };
     return titles[activeSection];

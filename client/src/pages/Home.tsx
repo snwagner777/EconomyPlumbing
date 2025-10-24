@@ -262,8 +262,8 @@ export default function Home() {
         <Header />
         <Hero />
         
-        {/* SMS Opt-in Section */}
-        <section className="py-8 bg-primary/5 border-y">
+        {/* SMS Opt-in Section - Hidden until SMS system is fully configured */}
+        {/* <section className="py-8 bg-primary/5 border-y">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <SMSOptInWidget 
               variant="inline"
@@ -273,7 +273,7 @@ export default function Home() {
               showIncentive={true}
             />
           </div>
-        </section>
+        </section> */}
 
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
