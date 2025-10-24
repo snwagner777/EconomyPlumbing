@@ -13,7 +13,7 @@ declare global {
 import { insertContactSubmissionSchema, insertCustomerSuccessStorySchema, type InsertGoogleReview, companyCamPhotos, blogPosts, importedPhotos, chatbotConversations, chatbotMessages, chatbotAnalytics, chatbotQuickResponses, googleOAuthTokens, googleReviews } from "@shared/schema";
 import { z } from "zod";
 import { db } from "./db";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and, or } from "drizzle-orm";
 import Stripe from "stripe";
 import multer from "multer";
 import { sendContactFormEmail, sendSuccessStoryNotificationEmail } from "./email";
