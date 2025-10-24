@@ -65,7 +65,22 @@ import {
   adminWhitelist,
   customReviews,
   reviewPlatforms,
-  customersXlsx
+  customersXlsx,
+  type JobCompletion,
+  type InsertJobCompletion,
+  type ReviewRequest,
+  type InsertReviewRequest,
+  type ReviewFeedback,
+  type InsertReviewFeedback,
+  type ReferralNurtureCampaign,
+  type InsertReferralNurtureCampaign,
+  type ReviewEmailTemplate,
+  type InsertReviewEmailTemplate,
+  jobCompletions,
+  reviewRequests,
+  reviewFeedback,
+  referralNurtureCampaigns,
+  reviewEmailTemplates
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 import { db } from "./db";
@@ -203,7 +218,37 @@ export interface IStorage {
   replyToReview(id: string, replyText: string): Promise<CustomReview>;
   getReviewStats(): Promise<{ total: number; pending: number; approved: number; rejected: number; spam: number; averageRating: number }>;
   
-  // Review Requests
+  // Job Completions (Review/Referral System)
+  createJobCompletion(job: InsertJobCompletion): Promise<JobCompletion>;
+  getJobCompletionByJobId(jobId: number): Promise<JobCompletion | undefined>;
+  getRecentJobCompletions(days: number): Promise<JobCompletion[]>;
+  updateJobCompletion(id: string, updates: Partial<InsertJobCompletion>): Promise<JobCompletion>;
+  
+  // Review Requests (4-email drip over 21 days)
+  createReviewRequest(request: InsertReviewRequest): Promise<ReviewRequest>;
+  getReviewRequestById(id: string): Promise<ReviewRequest | undefined>;
+  getActiveReviewRequests(): Promise<ReviewRequest[]>;
+  getReviewRequestsByStatus(status: string): Promise<ReviewRequest[]>;
+  updateReviewRequest(id: string, updates: Partial<InsertReviewRequest>): Promise<ReviewRequest>;
+  markReviewSubmitted(id: string, rating: number, platform: string): Promise<ReviewRequest>;
+  
+  // Review Feedback (<4 star internal feedback)
+  createReviewFeedback(feedback: InsertReviewFeedback): Promise<ReviewFeedback>;
+  getUnfollowedUpFeedback(): Promise<ReviewFeedback[]>;
+  markFeedbackFollowedUp(id: string, notes: string): Promise<ReviewFeedback>;
+  
+  // Referral Nurture Campaigns (6-month drip for happy reviewers)
+  createReferralNurture(campaign: InsertReferralNurtureCampaign): Promise<ReferralNurtureCampaign>;
+  getReferralNurtureById(id: string): Promise<ReferralNurtureCampaign | undefined>;
+  getActiveReferralCampaigns(): Promise<ReferralNurtureCampaign[]>;
+  updateReferralNurture(id: string, updates: Partial<InsertReferralNurtureCampaign>): Promise<ReferralNurtureCampaign>;
+  pauseReferralNurture(id: string, reason: string): Promise<ReferralNurtureCampaign>;
+  
+  // Review Email Templates (AI-generated customizable templates)
+  getAllEmailTemplates(): Promise<ReviewEmailTemplate[]>;
+  getEmailTemplate(campaignType: string, emailNumber: number): Promise<ReviewEmailTemplate | undefined>;
+  upsertEmailTemplate(template: InsertReviewEmailTemplate): Promise<ReviewEmailTemplate>;
+  deleteEmailTemplate(id: string): Promise<void>;
   
   // Review Platforms
   getEnabledReviewPlatforms(): Promise<ReviewPlatform[]>;

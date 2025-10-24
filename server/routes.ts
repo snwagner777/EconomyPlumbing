@@ -4491,6 +4491,231 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     }
   });
 
+  // Review Request & Referral Nurture System Routes
+
+  // Get system settings (admin only)
+  app.get("/api/admin/review-requests/settings", requireAdmin, async (req, res) => {
+    try {
+      const { systemSettings } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
+      
+      // Fetch all review request settings from database
+      const settingsKeys = [
+        'review_drip_enabled',
+        'referral_drip_enabled',
+        'auto_send_review_requests',
+        'auto_start_referral_campaigns',
+        'review_request_phone_number',
+        'review_request_phone_formatted'
+      ];
+
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+
+      const settings = {
+        reviewDripEnabled: settingsMap.get('review_drip_enabled') === 'true',
+        referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
+        autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',
+        autoStartReferralCampaigns: settingsMap.get('auto_start_referral_campaigns') === 'true',
+        reviewRequestPhoneNumber: settingsMap.get('review_request_phone_number') || '',
+        reviewRequestPhoneFormatted: settingsMap.get('review_request_phone_formatted') || ''
+      };
+      
+      res.json(settings);
+    } catch (error: any) {
+      console.error("[Review Requests] Error fetching settings:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update system settings (admin only)
+  app.put("/api/admin/review-requests/settings", requireAdmin, async (req, res) => {
+    try {
+      const { systemSettings } = await import("@shared/schema");
+      const updates = req.body;
+
+      // Save each setting to database
+      for (const [key, value] of Object.entries(updates)) {
+        // Convert camelCase to snake_case
+        const dbKey = key.replace(/([A-Z])/g, '_$1').toLowerCase();
+        
+        await db
+          .insert(systemSettings)
+          .values({
+            key: dbKey,
+            value: String(value),
+            updatedAt: new Date()
+          })
+          .onConflictDoUpdate({
+            target: systemSettings.key,
+            set: {
+              value: String(value),
+              updatedAt: new Date()
+            }
+          });
+      }
+      
+      console.log("[Review Requests] Settings updated:", updates);
+      res.json({ success: true, settings: updates });
+    } catch (error: any) {
+      console.error("[Review Requests] Error updating settings:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Update phone number - auto-creates tracking number with UTM params (admin only)
+  app.post("/api/admin/review-requests/phone", requireAdmin, async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+
+      // Format and validate phone number
+      const cleaned = phoneNumber.replace(/\D/g, '');
+      if (cleaned.length !== 10) {
+        return res.status(400).json({ error: "Phone number must be 10 digits" });
+      }
+
+      const formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+      const telLink = `tel:+1${cleaned}`;
+
+      // Check if tracking number already exists for review requests
+      const existingNumbers = await storage.getAllTrackingNumbers();
+      const existingReviewNumber = existingNumbers.find(n => n.channelKey === 'review_request_email');
+
+      if (existingReviewNumber) {
+        // Update existing tracking number
+        await storage.updateTrackingNumber(existingReviewNumber.id, {
+          displayNumber: formatted,
+          rawNumber: cleaned,
+          telLink: telLink
+        });
+      } else {
+        // Create new tracking number with UTM parameters (snake_case for downstream attribution)
+        await storage.createTrackingNumber({
+          channelKey: 'review_request_email',
+          channelName: 'Review Request Emails',
+          displayNumber: formatted,
+          rawNumber: cleaned,
+          telLink: telLink,
+          detectionRules: JSON.stringify({
+            utm_source: 'review_request',
+            utm_medium: 'email',
+            utm_campaign: 'review_drip',
+            description: 'Automatically created for review request email campaigns'
+          }),
+          isActive: true,
+          isDefault: false,
+          sortOrder: 100
+        });
+      }
+
+      // Save phone number to system settings
+      const { systemSettings } = await import("@shared/schema");
+      await db
+        .insert(systemSettings)
+        .values({
+          key: 'review_request_phone_number',
+          value: cleaned,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: {
+            value: cleaned,
+            updatedAt: new Date()
+          }
+        });
+
+      await db
+        .insert(systemSettings)
+        .values({
+          key: 'review_request_phone_formatted',
+          value: formatted,
+          updatedAt: new Date()
+        })
+        .onConflictDoUpdate({
+          target: systemSettings.key,
+          set: {
+            value: formatted,
+            updatedAt: new Date()
+          }
+        });
+
+      // Invalidate SSR cache
+      if (global.invalidateSSRCache) global.invalidateSSRCache();
+
+      res.json({
+        success: true,
+        phoneNumber: cleaned,
+        phoneFormatted: formatted,
+        message: "Phone number updated and tracking number created with UTM parameters"
+      });
+    } catch (error: any) {
+      console.error("[Review Requests] Error updating phone number:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get dashboard statistics (admin only)
+  app.get("/api/admin/review-requests/stats", requireAdmin, async (req, res) => {
+    try {
+      // Mock stats for now - will be replaced with real database queries
+      const stats = {
+        reviewRequests: {
+          total: 0,
+          active: 0,
+          completed: 0,
+          reviewsSubmitted: 0,
+          averageRating: 0,
+          openRate: 0,
+          clickRate: 0
+        },
+        referralNurture: {
+          total: 0,
+          active: 0,
+          paused: 0,
+          completed: 0,
+          totalReferrals: 0,
+          averageEngagement: 0
+        }
+      };
+
+      res.json(stats);
+    } catch (error: any) {
+      console.error("[Review Requests] Error fetching stats:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get active review campaigns (admin only)
+  app.get("/api/admin/review-requests/active", requireAdmin, async (req, res) => {
+    try {
+      // Mock data for now - will be replaced with real database queries
+      const campaigns: any[] = [];
+      
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error("[Review Requests] Error fetching active campaigns:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get active referral nurture campaigns (admin only)
+  app.get("/api/admin/review-requests/referrals", requireAdmin, async (req, res) => {
+    try {
+      // Mock data for now - will be replaced with real database queries
+      const campaigns: any[] = [];
+      
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error("[Review Requests] Error fetching referral campaigns:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Commercial Customers Admin Routes
   
   // Get all commercial customers (admin only)
