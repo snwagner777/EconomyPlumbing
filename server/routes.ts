@@ -2538,6 +2538,8 @@ ${rssItems}
     try {
       const auth = GoogleMyBusinessAuth.getInstance();
       const authUrl = auth.getAuthUrl();
+      console.log('[GMB OAuth] Redirecting to:', authUrl);
+      console.log('[GMB OAuth] Client ID:', process.env.GOOGLE_OAUTH_CLIENT_ID?.substring(0, 20) + '...');
       // Redirect user to Google OAuth consent screen
       res.redirect(authUrl);
     } catch (error: any) {
@@ -2547,9 +2549,19 @@ ${rssItems}
 
   app.get("/api/google/oauth/callback", async (req, res) => {
     try {
-      const { code } = req.query;
+      const { code, error } = req.query;
+      
+      // Log what we received from Google
+      console.log('[GMB OAuth] Callback received:', { code: !!code, error, allParams: req.query });
+      
+      // Check if Google returned an error
+      if (error) {
+        console.error('[GMB OAuth] Google returned error:', error);
+        return res.status(400).send(`Google OAuth error: ${error}`);
+      }
       
       if (!code || typeof code !== 'string') {
+        console.error('[GMB OAuth] No authorization code received');
         return res.status(400).send('Missing authorization code');
       }
 

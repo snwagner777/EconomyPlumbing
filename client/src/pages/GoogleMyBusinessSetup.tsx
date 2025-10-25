@@ -160,14 +160,32 @@ export default function GoogleMyBusinessSetup() {
               )}
             </div>
 
-            <div className="text-sm text-muted-foreground space-y-2 pt-4 border-t">
-              <p><strong>What happens when you connect:</strong></p>
-              <ul className="list-disc pl-5 space-y-1">
-                <li>Google will ask you to grant access to your Business Profile</li>
-                <li>Your Account ID and Location ID will be automatically detected</li>
-                <li>You'll be able to fetch all reviews (not just the latest 5)</li>
-                <li>You'll be able to respond to reviews directly from the admin panel</li>
-              </ul>
+            <div className="text-sm text-muted-foreground space-y-4 pt-4 border-t">
+              <div>
+                <p className="font-semibold text-foreground mb-2">⚠️ Before Connecting:</p>
+                <Alert className="border-yellow-500 bg-yellow-50 dark:bg-yellow-950">
+                  <AlertDescription className="text-sm space-y-2">
+                    <div>1. Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="underline text-blue-600 dark:text-blue-400">Google Cloud Console → Credentials</a></div>
+                    <div>2. Click your OAuth 2.0 Client ID</div>
+                    <div>3. Add this redirect URI:</div>
+                    <div className="bg-background p-2 rounded mt-1 font-mono text-xs break-all border">
+                      {window.location.origin}/api/google/oauth/callback
+                    </div>
+                    <div>4. Click <strong>Save</strong></div>
+                    <div>5. Then click "Connect" above</div>
+                  </AlertDescription>
+                </Alert>
+              </div>
+
+              <div>
+                <p><strong>What happens when you connect:</strong></p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Google will ask you to grant access to your Business Profile</li>
+                  <li>Your Account ID and Location ID will be automatically detected</li>
+                  <li>You'll be able to fetch all reviews (not just the latest 5)</li>
+                  <li>You'll be able to respond to reviews directly from the admin panel</li>
+                </ul>
+              </div>
             </div>
           </CardContent>
         </Card>
