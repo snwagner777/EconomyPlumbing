@@ -2485,6 +2485,11 @@ ${rssItems}
 
   // Google OAuth routes for My Business API
   app.get("/api/oauth/status", async (req, res) => {
+    // SECURITY: Require admin authentication
+    if (!req.isAuthenticated?.()) {
+      return res.status(401).json({ message: "Unauthorized - Admin access required" });
+    }
+    
     try {
       const token = await storage.getGoogleOAuthToken('google_my_business');
       
@@ -2535,6 +2540,11 @@ ${rssItems}
   });
 
   app.get("/api/google/oauth/init", async (req, res) => {
+    // SECURITY: Require admin authentication
+    if (!req.isAuthenticated?.()) {
+      return res.status(401).json({ message: "Unauthorized - Admin access required" });
+    }
+    
     try {
       const auth = GoogleMyBusinessAuth.getInstance();
       const authUrl = auth.getAuthUrl();
@@ -2548,6 +2558,11 @@ ${rssItems}
   });
 
   app.get("/api/google/oauth/callback", async (req, res) => {
+    // SECURITY: Require admin authentication for OAuth callback
+    if (!req.isAuthenticated?.()) {
+      return res.status(401).send('Unauthorized - Admin access required');
+    }
+    
     try {
       const { code, error } = req.query;
       
