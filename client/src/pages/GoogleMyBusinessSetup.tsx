@@ -32,7 +32,7 @@ export default function GoogleMyBusinessSetup() {
   });
 
   const handleConnect = () => {
-    window.location.href = "/api/oauth/init";
+    window.location.href = "/api/google/oauth/init";
   };
 
   const isFullySetup = status?.isAuthenticated && status?.hasAccountId && status?.hasLocationId;
