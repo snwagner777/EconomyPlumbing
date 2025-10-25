@@ -4302,6 +4302,16 @@ ${rssItems}
   app.get("/api/admin/campaign-analytics/overview", requireAdmin, async (req, res) => {
     try {
       const { reviewRequests, referralNurtureCampaigns, emailSendLog } = await import("@shared/schema");
+      const { days = '30' } = req.query;
+      
+      // Build date filter if not "all"
+      const dateFilter = days === 'all' 
+        ? sql`true`
+        : sql`${reviewRequests.createdAt} >= now() - interval '${sql.raw(days as string)} days'`;
+      
+      const emailDateFilter = days === 'all'
+        ? sql`true`
+        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
       
       // Get all campaign counts and stats
       const [reviewStats] = await db
@@ -4312,7 +4322,8 @@ ${rssItems}
           totalOpens: sql<number>`sum(${reviewRequests.emailOpens})`,
           totalClicks: sql<number>`sum(${reviewRequests.linkClicks})`,
         })
-        .from(reviewRequests);
+        .from(reviewRequests)
+        .where(dateFilter);
 
       const [referralStats] = await db
         .select({
@@ -4322,7 +4333,10 @@ ${rssItems}
           totalOpens: sql<number>`sum(${referralNurtureCampaigns.totalOpens})`,
           totalClicks: sql<number>`sum(${referralNurtureCampaigns.totalClicks})`,
         })
-        .from(referralNurtureCampaigns);
+        .from(referralNurtureCampaigns)
+        .where(days === 'all' 
+          ? sql`true`
+          : sql`${referralNurtureCampaigns.createdAt} >= now() - interval '${sql.raw(days as string)} days'`);
 
       // Get email send stats
       const [emailStats] = await db
@@ -4333,7 +4347,8 @@ ${rssItems}
           totalBounced: sql<number>`count(*) filter (where ${emailSendLog.bouncedAt} is not null)`,
           totalComplained: sql<number>`count(*) filter (where ${emailSendLog.complainedAt} is not null)`,
         })
-        .from(emailSendLog);
+        .from(emailSendLog)
+        .where(emailDateFilter);
 
       res.json({
         reviewRequests: {
@@ -4383,7 +4398,11 @@ ${rssItems}
     try {
       const { emailSendLog } = await import("@shared/schema");
       const { days = '30' } = req.query;
-      const daysAgo = parseInt(days as string);
+      
+      // Build date filter if not "all"
+      const dateFilter = days === 'all'
+        ? sql`true`
+        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
       
       // Get stats grouped by campaign type for the time period
       const stats = await db
@@ -4396,7 +4415,7 @@ ${rssItems}
           avgTimeToClick: sql<number>`avg(extract(epoch from (${emailSendLog.clickedAt} - ${emailSendLog.sentAt})))`,
         })
         .from(emailSendLog)
-        .where(sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(daysAgo.toString())} days'`)
+        .where(dateFilter)
         .groupBy(emailSendLog.campaignType);
 
       const formattedStats = stats.map(stat => ({
@@ -4414,7 +4433,7 @@ ${rssItems}
         avgTimeToClick: stat.avgTimeToClick ? Math.round(Number(stat.avgTimeToClick) / 3600) : null, // hours
       }));
 
-      res.json({ stats: formattedStats, period: `${daysAgo} days` });
+      res.json({ stats: formattedStats, period: days === 'all' ? 'all time' : `${days} days` });
     } catch (error: any) {
       console.error("[Admin] Error fetching campaign analytics by type:", error);
       res.status(500).json({ error: error.message });
@@ -4425,11 +4444,17 @@ ${rssItems}
   app.get("/api/admin/campaign-analytics/recent", requireAdmin, async (req, res) => {
     try {
       const { emailSendLog } = await import("@shared/schema");
-      const { limit = '50' } = req.query;
+      const { limit = '50', days = '30' } = req.query;
+      
+      // Build date filter if not "all"
+      const dateFilter = days === 'all'
+        ? sql`true`
+        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
       
       const recentEmails = await db
         .select()
         .from(emailSendLog)
+        .where(dateFilter)
         .orderBy(desc(emailSendLog.sentAt))
         .limit(parseInt(limit as string));
 

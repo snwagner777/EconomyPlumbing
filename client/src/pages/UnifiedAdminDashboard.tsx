@@ -6110,14 +6110,22 @@ function EmailTemplatesSection() {
 
 // Campaign Analytics Section
 function CampaignAnalyticsSection() {
+  const [dateRange, setDateRange] = useState<string>('30');
+
   const { data: overviewData, isLoading: overviewLoading } = useQuery({
-    queryKey: ['/api/admin/campaign-analytics/overview'],
+    queryKey: ['/api/admin/campaign-analytics/overview', dateRange],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/campaign-analytics/overview?days=${dateRange}`, {
+        credentials: 'include',
+      });
+      return response.json();
+    },
   });
 
   const { data: byTypeData, isLoading: byTypeLoading } = useQuery({
-    queryKey: ['/api/admin/campaign-analytics/by-type', '30'],
+    queryKey: ['/api/admin/campaign-analytics/by-type', dateRange],
     queryFn: async () => {
-      const response = await fetch('/api/admin/campaign-analytics/by-type?days=30', {
+      const response = await fetch(`/api/admin/campaign-analytics/by-type?days=${dateRange}`, {
         credentials: 'include',
       });
       return response.json();
@@ -6125,9 +6133,9 @@ function CampaignAnalyticsSection() {
   });
 
   const { data: recentData, isLoading: recentLoading } = useQuery({
-    queryKey: ['/api/admin/campaign-analytics/recent', '50'],
+    queryKey: ['/api/admin/campaign-analytics/recent', '50', dateRange],
     queryFn: async () => {
-      const response = await fetch('/api/admin/campaign-analytics/recent?limit=50', {
+      const response = await fetch(`/api/admin/campaign-analytics/recent?limit=50&days=${dateRange}`, {
         credentials: 'include',
       });
       return response.json();
@@ -6148,6 +6156,26 @@ function CampaignAnalyticsSection() {
 
   return (
     <div className="space-y-6">
+      {/* Date Range Filter */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold">Campaign Analytics</h2>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="date-range-select" className="text-sm text-muted-foreground">Time Period:</Label>
+          <Select value={dateRange} onValueChange={setDateRange}>
+            <SelectTrigger id="date-range-select" className="w-[180px]" data-testid="select-date-range">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7">Last 7 days</SelectItem>
+              <SelectItem value="30">Last 30 days</SelectItem>
+              <SelectItem value="90">Last 90 days</SelectItem>
+              <SelectItem value="365">Last year</SelectItem>
+              <SelectItem value="all">All time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Overview Cards */}
       <div>
         <h2 className="text-lg font-semibold mb-4">Campaign Overview</h2>
@@ -6229,9 +6257,9 @@ function CampaignAnalyticsSection() {
         </div>
       </div>
 
-      {/* Stats by Campaign Type (Last 30 Days) */}
+      {/* Stats by Campaign Type */}
       <div>
-        <h2 className="text-lg font-semibold mb-4">Performance by Campaign Type (Last 30 Days)</h2>
+        <h2 className="text-lg font-semibold mb-4">Performance by Campaign Type</h2>
         <Card data-testid="card-campaign-type-stats">
           <CardContent className="p-6">
             <Table>
