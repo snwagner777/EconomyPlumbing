@@ -123,6 +123,7 @@ interface JobCompletion {
   completionDate: Date;
   technicianName?: string;
   jobNotes?: string;
+  isQuoteOnly?: boolean; // True for $0 jobs (quotes/estimates)
 }
 
 class ReviewRequestScheduler {
@@ -244,6 +245,9 @@ class ReviewRequestScheduler {
         const customerEmail = emailContact[0].normalizedValue.split(',')[0].trim();
 
         // Create job_completion entry
+        const invoiceTotal = stJob.total ? Math.round(stJob.total * 100) : 0;
+        const isQuoteOnly = invoiceTotal === 0; // Flag $0 jobs as quotes/estimates
+        
         const jobCompletion: JobCompletion = {
           id: `job-${stJob.id}`,
           jobId: stJob.id,
@@ -251,8 +255,9 @@ class ReviewRequestScheduler {
           customerName: customer[0].name || 'Valued Customer',
           customerEmail: customerEmail,
           serviceName: stJob.summary || 'Service',
-          invoiceTotal: stJob.total ? Math.round(stJob.total * 100) : undefined,
+          invoiceTotal: invoiceTotal || undefined,
           completionDate: new Date(stJob.completedOn),
+          isQuoteOnly,
         };
 
         // Insert job_completion to database
