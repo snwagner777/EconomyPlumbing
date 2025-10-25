@@ -385,6 +385,26 @@ class ReviewRequestScheduler {
 
       const settings = await this.getEmailSettings();
       
+      // Check email preferences before sending
+      const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./emailPreferenceEnforcer');
+      const prefCheck = await canSendEmail(reviewRequest.customerEmail, { type: 'review_request' });
+      
+      if (!prefCheck.canSend) {
+        console.log(`[Review Request Scheduler] Skipping email - ${prefCheck.reason}`);
+        
+        // Mark as skipped
+        await db
+          .update(reviewRequests)
+          .set({
+            status: 'skipped',
+            completedAt: new Date(),
+            stopReason: 'unsubscribed_from_category',
+          })
+          .where(eq(reviewRequests.id, reviewRequestId));
+        
+        return false;
+      }
+      
       // Get email content
       const emailContent = await this.getEmailContent(
         emailNumber,
@@ -411,14 +431,22 @@ class ReviewRequestScheduler {
 
       const resend = new Resend(process.env.RESEND_API_KEY);
       
+      // Add unsubscribe footer to email content
+      const htmlWithFooter = addUnsubscribeFooter(emailContent.htmlContent, prefCheck.unsubscribeUrl!);
+      const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.plainTextContent, prefCheck.unsubscribeUrl!);
+      
       console.log(`[Review Request Scheduler] Sending email ${emailNumber} to ${reviewRequest.customerEmail}`);
       
       const emailResult = await resend.emails.send({
         from: 'Economy Plumbing Services <reviews@economyplumbing.com>',
         to: reviewRequest.customerEmail,
         subject: emailContent.subject,
-        html: emailContent.htmlContent,
-        text: emailContent.plainTextContent,
+        html: htmlWithFooter,
+        text: plainWithFooter,
+        headers: {
+          'List-Unsubscribe': prefCheck.listUnsubscribeHeader!,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
       });
 
       if (emailResult.error) {
