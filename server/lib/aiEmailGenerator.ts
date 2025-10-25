@@ -139,7 +139,10 @@ CRITICAL: Template Generation Rules:
 - You are creating TEMPLATES with merge fields, not personalized emails
 - Use merge field syntax: {{customerName}}, {{serviceType}}, {{jobAmount}}, {{location}}
 - NEVER use hardcoded names like "John" or "Sarah"
-- The admin will approve the template structure/tone, then AI will personalize for each customer
+- DO NOT include seasonal content (fall, winter, summer, etc.) - that will be added dynamically at send-time
+- DO NOT reference specific job details - use merge fields instead
+- Templates should be evergreen and work year-round
+- The admin will approve the template structure/tone, then AI will personalize for each customer at send-time
 - Available merge fields: {{customerName}}, {{serviceType}}, {{jobAmount}}, {{location}}, {{jobDate}}
 
 Email Guidelines:
@@ -161,8 +164,7 @@ Campaign Details:
 - Type: Review Request Drip Campaign
 - ${emailSequence} in sequence (sent ${daysFromJob} days after service completion)
 - Strategy: ${strategy}
-- Season: ${season}
-- Seasonal Context: ${seasonalContext}
+- NOTE: Do NOT include seasonal context in template - it will be added dynamically when sending
 
 Template Context (use merge fields, not actual values):
 - Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
@@ -221,8 +223,7 @@ Campaign Details:
 - Type: Referral Nurture Campaign
 - ${emailSequence} in sequence (sent ${daysFromJob} days after positive review)
 - Strategy: ${strategy}
-- Season: ${season}
-- Seasonal Context: ${seasonalContext}
+- NOTE: Do NOT include seasonal context in template - it will be added dynamically when sending
 
 Template Context (use merge fields, not actual values):
 - Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
@@ -296,8 +297,7 @@ Campaign Details:
 - Type: Quote Follow-up Campaign (for customers who received estimate but no work completed)
 - ${emailSequence} in sequence (sent ${daysFromJob} days after quote/estimate)
 - Strategy: ${strategy}
-- Season: ${season}
-- Seasonal Context: ${seasonalContext}
+- NOTE: Do NOT include seasonal context in template - it will be added dynamically when sending
 
 Template Context (use merge fields, not actual values):
 - Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
@@ -518,6 +518,7 @@ export async function personalizeEmailForCustomer(options: {
     subject: string;
     htmlContent: string;
     plainTextContent: string | null;
+    preheader?: string | null;
   };
   jobData: {
     customerName: string;
@@ -528,43 +529,70 @@ export async function personalizeEmailForCustomer(options: {
     jobDescription?: string;
     estimateDetails?: string;
     workCompleted?: string;
+    customerHistory?: Array<{
+      date: Date;
+      service: string;
+      amount: number;
+      notes?: string;
+    }>;
+    totalJobsCompleted?: number;
+    isRepeatCustomer?: boolean;
   };
   campaignType: 'review_request' | 'referral_nurture' | 'quote_followup';
   phoneNumber?: string;
   referralLink?: string;
-}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+}): Promise<{ subject: string; preheader: string; bodyHtml: string; bodyPlain: string }> {
   const { template, jobData, campaignType, phoneNumber, referralLink } = options;
   const { season, context: seasonalContext } = getSeasonalContext();
 
   const systemPrompt = `You are an expert email personalizer for Economy Plumbing Services.
 
-Your task is to take an approved email TEMPLATE and personalize it for a specific customer using their real job data.
+Your task is to take an approved email TEMPLATE and personalize it for a specific customer using their real job data, history, and current seasonal context.
 
 CRITICAL RULES:
 1. Keep the overall structure, tone, and CTAs from the template
 2. Replace merge fields ({{customerName}}, {{serviceType}}, etc.) with actual data
-3. Add personalized touches based on the specific work done
-4. Analyze job details to make references feel genuine and specific
-5. Maintain the professional, friendly brand voice
-6. DO NOT change URLs, phone numbers, or key messaging from the template
-7. The admin approved the template structure - respect it
+3. Add personalized touches based on the specific work done AND customer history
+4. Analyze job details AND past jobs to make references feel genuine and specific
+5. Add seasonal context relevant to RIGHT NOW (${season})
+6. Generate a compelling, personalized preheader text (40-80 chars)
+7. Maintain the professional, friendly brand voice
+8. DO NOT change URLs, phone numbers, or key messaging from the template
+9. The admin approved the template structure - respect it
 
-Available Job Data:
-- Customer Name: ${jobData.customerName}
+Current Season & Context:
+- Season: ${season}
+- Seasonal Context: ${seasonalContext}
+- Use this to add timely, relevant seasonal messaging
+
+Customer Information:
+- Name: ${jobData.customerName}
+- Location: ${jobData.location || 'Central Texas'}
+${jobData.isRepeatCustomer ? `- REPEAT CUSTOMER (${jobData.totalJobsCompleted || 'multiple'} jobs completed)` : '- First-time customer'}
+
+Current Job/Estimate:
 - Service Type: ${jobData.serviceType || 'plumbing service'}
 - Job Amount: ${jobData.jobAmount ? `$${(jobData.jobAmount / 100).toFixed(2)}` : 'N/A'}
 - Job Date: ${jobData.jobDate ? jobData.jobDate.toLocaleDateString() : 'recent'}
-- Location: ${jobData.location || 'Central Texas'}
 ${jobData.jobDescription ? `- Job Description: ${jobData.jobDescription}` : ''}
 ${jobData.estimateDetails ? `- Estimate Details: ${jobData.estimateDetails}` : ''}
 ${jobData.workCompleted ? `- Work Completed: ${jobData.workCompleted}` : ''}
 
-Season: ${season}
-Seasonal Context: ${seasonalContext}`;
+${jobData.customerHistory && jobData.customerHistory.length > 0 ? `
+Customer History (Previous Jobs):
+${jobData.customerHistory.map((job, i) => 
+  `${i + 1}. ${job.date.toLocaleDateString()}: ${job.service} ($${(job.amount / 100).toFixed(2)})${job.notes ? ` - ${job.notes}` : ''}`
+).join('\n')}
+
+IMPORTANT: Reference their history to build rapport and show you remember them!
+` : 'No previous job history - this is their first interaction with us'}
+
+Campaign Type: ${campaignType}`;
 
   const userPrompt = `Personalize this email template for ${jobData.customerName}:
 
 TEMPLATE SUBJECT: ${template.subject}
+TEMPLATE PREHEADER: ${template.preheader || 'Generate one based on content'}
 
 TEMPLATE HTML BODY:
 ${template.htmlContent}
@@ -580,21 +608,32 @@ Instructions:
    - {{location}} → ${jobData.location || 'Central Texas'}
    - {{jobDate}} → ${jobData.jobDate ? jobData.jobDate.toLocaleDateString() : 'recently'}
 
-2. Analyze the job details and add personalized touches:
+2. Add SEASONAL CONTEXT based on current season (${season}):
+   - Reference seasonal plumbing needs: ${seasonalContext}
+   - Make it feel timely and relevant to RIGHT NOW
+   - This is WHY templates don't have seasonal content - you add it dynamically!
+
+3. Analyze customer history and job details for personalization:
+   ${jobData.isRepeatCustomer ? '- Acknowledge they\'re a valued repeat customer' : '- Welcome them as a new customer'}
+   ${jobData.customerHistory && jobData.customerHistory.length > 0 ? `- Reference their previous work (e.g., "last year's water heater installation")` : ''}
    ${jobData.jobDescription ? `- Reference the specific work: ${jobData.jobDescription}` : ''}
    ${jobData.estimateDetails ? `- Mention estimate details naturally: ${jobData.estimateDetails}` : ''}
    ${jobData.workCompleted ? `- Acknowledge completed work: ${jobData.workCompleted}` : ''}
 
-3. Keep the template structure, CTAs, and brand voice
-4. Make it feel like it was written specifically for this customer
-5. ${phoneNumber ? `Ensure phone number ${phoneNumber} is included for tracking` : 'Use standard phone number'}
-6. ${referralLink ? `Include their unique referral link: ${referralLink}` : ''}
+4. Generate a compelling PREHEADER TEXT (40-80 chars):
+   - Personalized for this specific customer
+   - Complements the subject line
+   - Creates curiosity or urgency
 
-Campaign Type: ${campaignType}
+5. Keep the template structure, CTAs, and brand voice
+6. Make it feel like it was written specifically for THIS customer, RIGHT NOW
+7. ${phoneNumber ? `Ensure phone number ${phoneNumber} is included for tracking` : 'Use standard phone number'}
+8. ${referralLink ? `Include their unique referral link: ${referralLink}` : ''}
 
 Return as JSON:
 {
   "subject": "...",
+  "preheader": "...",
   "bodyHtml": "...",
   "bodyPlain": "..."
 }`;
@@ -619,6 +658,7 @@ Return as JSON:
     
     return {
       subject: parsed.subject,
+      preheader: parsed.preheader,
       bodyHtml: parsed.bodyHtml,
       bodyPlain: parsed.bodyPlain,
     };
