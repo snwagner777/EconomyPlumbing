@@ -1356,6 +1356,7 @@ export const jobCompletions = pgTable("job_completions", {
   
   // Marketing flags
   marketingOptedOut: boolean("marketing_opted_out").notNull().default(false),
+  isQuoteOnly: boolean("is_quote_only").notNull().default(false), // $0 jobs - quotes/estimates without completed work
   
   // Tracking
   createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -1472,7 +1473,7 @@ export const reviewEmailTemplates = pgTable("review_email_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
   // Template identification
-  campaignType: text("campaign_type").notNull(), // 'review_request', 'referral_nurture'
+  campaignType: text("campaign_type").notNull(), // 'review_request', 'referral_nurture', 'quote_followup'
   emailNumber: integer("email_number").notNull(), // 1-4
   
   // Template content
