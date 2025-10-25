@@ -2560,6 +2560,60 @@ ${rssItems}
         throw new Error('Invalid tokens received');
       }
 
+      // Set credentials for API calls
+      auth.setCredentials(tokens);
+
+      // Auto-fetch account and location IDs from Google
+      let accountId: string | null = null;
+      let locationId: string | null = null;
+
+      try {
+        const client = auth.getClient();
+        const accessTokenRaw = await client.getAccessToken();
+        const token = typeof accessTokenRaw === 'string' ? accessTokenRaw : accessTokenRaw?.token;
+
+        if (token) {
+          // Fetch accounts
+          const accountsResponse = await fetch('https://mybusiness.googleapis.com/v4/accounts', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (accountsResponse.ok) {
+            const accountsData = await accountsResponse.json();
+            const accounts = accountsData.accounts || [];
+            
+            if (accounts.length > 0) {
+              // Extract account ID from name (format: accounts/{accountId})
+              const accountMatch = accounts[0].name?.match(/accounts\/([^/]+)$/);
+              accountId = accountMatch ? accountMatch[1] : null;
+
+              if (accountId) {
+                // Fetch locations for this account
+                const locationsResponse = await fetch(
+                  `https://mybusiness.googleapis.com/v4/accounts/${accountId}/locations`,
+                  { headers: { 'Authorization': `Bearer ${token}` } }
+                );
+
+                if (locationsResponse.ok) {
+                  const locationsData = await locationsResponse.json();
+                  const locations = locationsData.locations || [];
+                  
+                  if (locations.length > 0) {
+                    // Extract location ID from name (format: accounts/{accountId}/locations/{locationId})
+                    const locationMatch = locations[0].name?.match(/locations\/([^/]+)$/);
+                    locationId = locationMatch ? locationMatch[1] : null;
+                    
+                    console.log('[OAuth] Auto-fetched IDs:', { accountId, locationId });
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (fetchError: any) {
+        console.warn('[OAuth] Could not auto-fetch account/location IDs:', fetchError.message);
+      }
+
       // Check if token already exists
       const existingToken = await storage.getGoogleOAuthToken('google_my_business');
       
@@ -2569,21 +2623,23 @@ ${rssItems}
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
           expiryDate: new Date(tokens.expiry_date),
+          ...(accountId && { accountId }),
+          ...(locationId && { locationId }),
         });
       } else {
-        // Save new token (account/location IDs will be set separately)
+        // Save new token with auto-fetched IDs
         await storage.saveGoogleOAuthToken({
           service: 'google_my_business',
           accessToken: tokens.access_token,
           refreshToken: tokens.refresh_token,
           expiryDate: new Date(tokens.expiry_date),
-          accountId: null,
-          locationId: null,
+          accountId,
+          locationId,
         });
       }
 
       // Redirect to setup completion page
-      res.redirect('/admin/oauth-success');
+      res.redirect('/admin/gmb-setup?success=true');
     } catch (error: any) {
       console.error('OAuth callback error:', error);
       res.status(500).send(`OAuth failed: ${error.message}`);
