@@ -93,6 +93,7 @@ const ReviewRequest = lazy(() => import("@/pages/ReviewRequest"));
 const AdminDashboard = lazy(() => import("@/pages/admin/Dashboard"));
 const Unsubscribe = lazy(() => import("@/pages/Unsubscribe"));
 const EmailPreferences = lazy(() => import("@/pages/EmailPreferences"));
+const ReferredBy = lazy(() => import("@/pages/ReferredBy"));
 const SMSSignup = lazy(() => import("@/pages/SMSSignup"));
 const ChatbotAdmin = lazy(() => import("@/pages/ChatbotAdmin"));
 const ReviewRequestsAdmin = lazy(() => import("@/pages/ReviewRequestsAdmin"));
@@ -208,6 +209,7 @@ function Router() {
       <Route path="/request-review" component={ReviewRequest} />
       <Route path="/unsubscribe" component={Unsubscribe} />
       <Route path="/email-preferences/:token" component={EmailPreferences} />
+      <Route path="/referred-by/:referrerCustomerId" component={ReferredBy} />
       <Route path="/sms-signup" component={SMSSignup} />
       <Route path="/faq" component={FAQ} />
       <Route path="/privacy-policy" component={PrivacyPolicy} />

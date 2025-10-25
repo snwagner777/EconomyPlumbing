@@ -1416,6 +1416,93 @@ ${rssItems}
     }
   });
 
+  // Get referrer info for landing page
+  app.get("/api/referrals/referrer/:customerId", async (req, res) => {
+    try {
+      const customerId = parseInt(req.params.customerId);
+      if (isNaN(customerId)) {
+        return res.status(400).json({ message: "Invalid customer ID" });
+      }
+
+      // Look up referrer info from customers_xlsx
+      const { customersXlsx } = await import('@shared/schema');
+      const [customer] = await db
+        .select({
+          name: customersXlsx.name,
+          customerId: customersXlsx.customerId,
+        })
+        .from(customersXlsx)
+        .where(sql`${customersXlsx.customerId} = ${customerId}`)
+        .limit(1);
+
+      if (!customer) {
+        return res.status(404).json({ message: "Referrer not found" });
+      }
+
+      res.json({
+        name: customer.name,
+        customerId: customer.customerId,
+      });
+    } catch (error: any) {
+      console.error('[Referral] Error fetching referrer info:', error);
+      res.status(500).json({ message: "Error fetching referrer information" });
+    }
+  });
+
+  // Capture referee contact info from landing page
+  app.post("/api/referrals/capture-landing", async (req, res) => {
+    try {
+      const { referrerCustomerId, refereeName, refereeEmail, refereePhone } = req.body;
+
+      if (!referrerCustomerId || !refereeName || (!refereeEmail && !refereePhone)) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Get referrer info
+      const { customersXlsx } = await import('@shared/schema');
+      const [referrer] = await db
+        .select({
+          name: customersXlsx.name,
+        })
+        .from(customersXlsx)
+        .where(sql`${customersXlsx.customerId} = ${referrerCustomerId}`)
+        .limit(1);
+
+      if (!referrer) {
+        return res.status(404).json({ message: "Referrer not found" });
+      }
+
+      // Create pending referral with expiration (30 days)
+      const { pendingReferrals } = await import('@shared/schema');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 30);
+
+      // Generate tracking cookie
+      const trackingCookie = `ref_${referrerCustomerId}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+      const [pendingReferral] = await db.insert(pendingReferrals).values({
+        referrerCustomerId,
+        referrerName: referrer.name,
+        refereeName,
+        refereeEmail: refereeEmail || null,
+        refereePhone: refereePhone || null,
+        trackingCookie,
+        expiresAt,
+      }).returning();
+
+      console.log(`[Referral] Created pending referral ${pendingReferral.id} - Referrer: ${referrer.name}, Referee: ${refereeName}`);
+
+      res.json({
+        success: true,
+        message: "Contact information captured successfully",
+        trackingCookie,
+      });
+    } catch (error: any) {
+      console.error('[Referral] Error capturing landing contact:', error);
+      res.status(500).json({ message: "Error capturing contact information" });
+    }
+  });
+
   // Get or create referral code for a customer
   app.get("/api/referrals/code/:customerId", async (req, res) => {
     try {
