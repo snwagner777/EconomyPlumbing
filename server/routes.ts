@@ -1438,6 +1438,69 @@ ${rssItems}
       } else {
         console.log(`[Referral] No email provided for referee ${refereeName} - skipping welcome email`);
       }
+
+      // Send thank you email to referrer (if email provided)
+      if (referrerEmail && referrerCustomerId) {
+        try {
+          const { generateReferrerThankYouEmail } = await import('./lib/aiEmailGenerator');
+          const { referrerThankYouEmails, systemSettings } = await import('@shared/schema');
+          const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./lib/emailPreferenceEnforcer');
+          
+          // Check master email switch
+          const dbSettings = await db.select().from(systemSettings);
+          const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+          const masterEmailEnabled = settingsMap.get('review_master_email_switch') === 'true';
+          
+          if (!masterEmailEnabled) {
+            console.log('[Referral] Master email switch disabled - skipping thank you email');
+          } else {
+            // Check email preferences before sending
+            const prefCheck = await canSendEmail(referrerEmail, { type: 'referral' });
+            
+            if (!prefCheck.canSend) {
+              console.log(`[Referral] Skipping thank you email - ${prefCheck.reason}`);
+            } else {
+              console.log(`[Referral] Generating thank you email for ${referrerName}...`);
+              
+              // Get referral nurture phone number
+              const phoneNumber = settingsMap.get('referral_nurture_phone_number') || undefined;
+              
+              // Generate AI-powered thank you email
+              const emailContent = await generateReferrerThankYouEmail({
+                referrerName,
+                refereeName,
+                phoneNumber,
+              });
+              
+              // Add unsubscribe footer
+              const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
+              const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
+              
+              // Save to database for admin review
+              const [thankYouEmail] = await db.insert(referrerThankYouEmails).values({
+                referralId: referral.id,
+                referrerName,
+                referrerEmail,
+                referrerCustomerId,
+                refereeName,
+                subject: emailContent.subject,
+                htmlContent: htmlWithFooter,
+                plainTextContent: plainWithFooter,
+                status: 'queued', // Admin must approve before sending
+                generatedByAI: true,
+                aiPrompt: `Thank you email for referrer ${referrerName} who referred ${refereeName}`,
+              }).returning();
+              
+              console.log(`[Referral] ✅ Thank you email queued for admin review (ID: ${thankYouEmail.id})`);
+            }
+          }
+        } catch (emailError: any) {
+          console.error('[Referral] Error generating thank you email:', emailError);
+          // Don't fail the entire referral submission if email fails
+        }
+      } else {
+        console.log(`[Referral] No email provided for referrer ${referrerName} - skipping thank you email`);
+      }
       
       // Generate personalized referral link
       const baseUrl = process.env.NODE_ENV === 'production' 
@@ -5581,7 +5644,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/referrals/generate-thank-you-email", requireAdmin, async (req, res) => {
     try {
       const { generateReferrerThankYouEmail } = await import("./lib/aiEmailGenerator");
-      const { referrerThankYouEmails, marketingSystemSettings } = await import("@shared/schema");
+      const { systemSettings } = await import("@shared/schema");
       const { referralId, referrerName, refereeName } = req.body;
 
       if (!referralId || !referrerName || !refereeName) {
@@ -5591,8 +5654,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       }
 
       // Get referral nurture phone number from settings
-      const settings = await db.select().from(marketingSystemSettings).limit(1);
-      const phoneNumber = settings[0]?.referralNurturePhoneNumber || undefined;
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      const phoneNumber = settingsMap.get('referral_nurture_phone_number') || undefined;
 
       console.log(`[Referral Emails] Generating thank you email for ${referrerName}...`);
       
@@ -5619,7 +5683,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/referrals/generate-success-email", requireAdmin, async (req, res) => {
     try {
       const { generateReferrerSuccessEmail } = await import("./lib/aiEmailGenerator");
-      const { marketingSystemSettings } = await import("@shared/schema");
+      const { systemSettings } = await import("@shared/schema");
       const { referralId, referrerName, refereeName, creditAmount, creditExpiresAt, currentBalance } = req.body;
 
       if (!referralId || !referrerName || !refereeName || creditAmount === undefined || !creditExpiresAt) {
@@ -5629,8 +5693,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       }
 
       // Get referral nurture phone number from settings
-      const settings = await db.select().from(marketingSystemSettings).limit(1);
-      const phoneNumber = settings[0]?.referralNurturePhoneNumber || undefined;
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      const phoneNumber = settingsMap.get('referral_nurture_phone_number') || undefined;
 
       console.log(`[Referral Emails] Generating success email for ${referrerName}...`);
       
@@ -5694,8 +5759,8 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/referrals/approve-thank-you-email/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const { referrerThankYouEmails, marketingSystemSettings } = await import("@shared/schema");
-      const { sendEmail } = await import("./lib/resendClient");
+      const { referrerThankYouEmails, systemSettings } = await import("@shared/schema");
+      const { getResendClient } = await import("./lib/resendClient");
       const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
 
       // Get the email record
@@ -5713,8 +5778,11 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       }
 
       // Check master email switch
-      const settings = await db.select().from(marketingSystemSettings).limit(1);
-      if (!settings[0]?.masterEmailSwitchEnabled) {
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      const masterEmailEnabled = settingsMap.get('review_master_email_switch') === 'true';
+      
+      if (!masterEmailEnabled) {
         return res.status(400).json({ 
           error: "Master email switch is disabled. Enable it in Marketing Settings to send emails." 
         });
@@ -5741,7 +5809,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       // Send email
       console.log(`[Referral Emails] Sending thank you email to ${email.referrerEmail}...`);
       
-      await sendEmail({
+      const { client, fromEmail } = await getResendClient();
+      await client.emails.send({
+        from: fromEmail,
         to: email.referrerEmail,
         subject: email.subject,
         html: htmlWithFooter,
@@ -5786,8 +5856,8 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/referrals/approve-success-email/:id", requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
-      const { referrerSuccessEmails, marketingSystemSettings } = await import("@shared/schema");
-      const { sendEmail } = await import("./lib/resendClient");
+      const { referrerSuccessEmails, systemSettings } = await import("@shared/schema");
+      const { getResendClient } = await import("./lib/resendClient");
       const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
 
       // Get the email record
@@ -5805,8 +5875,11 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       }
 
       // Check master email switch
-      const settings = await db.select().from(marketingSystemSettings).limit(1);
-      if (!settings[0]?.masterEmailSwitchEnabled) {
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      const masterEmailEnabled = settingsMap.get('review_master_email_switch') === 'true';
+      
+      if (!masterEmailEnabled) {
         return res.status(400).json({ 
           error: "Master email switch is disabled. Enable it in Marketing Settings to send emails." 
         });
@@ -5833,7 +5906,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       // Send email
       console.log(`[Referral Emails] Sending success email to ${email.referrerEmail}...`);
       
-      await sendEmail({
+      const { client, fromEmail } = await getResendClient();
+      await client.emails.send({
+        from: fromEmail,
         to: email.referrerEmail,
         subject: email.subject,
         html: htmlWithFooter,
