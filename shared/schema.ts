@@ -1503,6 +1503,61 @@ export const reviewEmailTemplates = pgTable("review_email_templates", {
   uniqueCampaignEmail: uniqueIndex("review_email_templates_campaign_email_unique").on(table.campaignType, table.emailNumber),
 }));
 
+// Email Send Log - Tracks all campaign email sends for engagement tracking
+export const emailSendLog = pgTable("email_send_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign identification
+  campaignType: text("campaign_type").notNull(), // 'review_request', 'referral_nurture', 'quote_followup'
+  campaignRecordId: varchar("campaign_record_id").notNull(), // ID of reviewRequest or referralNurtureCampaign
+  emailNumber: integer("email_number").notNull(), // 1-4
+  
+  // Recipient info
+  recipientEmail: text("recipient_email").notNull(),
+  recipientName: text("recipient_name"),
+  customerId: integer("customer_id").notNull(),
+  
+  // Email provider details
+  resendEmailId: text("resend_email_id").unique(), // Resend's email ID for webhook tracking
+  resendStatus: text("resend_status"), // 'queued', 'sent', 'delivered', 'bounced', 'complained'
+  
+  // Tracking events
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  bouncedAt: timestamp("bounced_at"),
+  complainedAt: timestamp("complained_at"),
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+}, (table) => ({
+  resendEmailIdIdx: index("email_send_log_resend_email_id_idx").on(table.resendEmailId),
+  campaignTypeIdx: index("email_send_log_campaign_type_idx").on(table.campaignType),
+  campaignRecordIdx: index("email_send_log_campaign_record_idx").on(table.campaignRecordId),
+  recipientEmailIdx: index("email_send_log_recipient_email_idx").on(table.recipientEmail),
+}));
+
+// Email Suppression List - Hard bounces, spam complaints (NEVER email these)
+export const emailSuppressionList = pgTable("email_suppression_list", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  
+  // Suppression reason
+  reason: text("reason").notNull(), // 'hard_bounce', 'spam_complaint', 'manual_suppression'
+  reasonDetails: text("reason_details"),
+  
+  // Source tracking
+  resendEmailId: text("resend_email_id"),
+  campaignRecordId: varchar("campaign_record_id"),
+  
+  // Timestamps
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+}, (table) => ({
+  emailIdx: index("email_suppression_list_email_idx").on(table.email),
+  reasonIdx: index("email_suppression_list_reason_idx").on(table.reason),
+}));
+
 // ============================================================================
 // SYSTEM RELIABILITY & MONITORING
 // ============================================================================
@@ -1635,6 +1690,16 @@ export const insertReviewEmailTemplateSchema = createInsertSchema(reviewEmailTem
   updatedAt: true,
 });
 
+export const insertEmailSendLogSchema = createInsertSchema(emailSendLog).omit({
+  id: true,
+  sentAt: true,
+});
+
+export const insertEmailSuppressionListSchema = createInsertSchema(emailSuppressionList).omit({
+  id: true,
+  addedAt: true,
+});
+
 export const insertReferralCreditUsageSchema = createInsertSchema(referralCreditUsage).omit({
   id: true,
   processedAt: true,
@@ -1668,6 +1733,10 @@ export type ReferralNurtureCampaign = typeof referralNurtureCampaigns.$inferSele
 export type InsertReferralNurtureCampaign = z.infer<typeof insertReferralNurtureCampaignSchema>;
 export type ReviewEmailTemplate = typeof reviewEmailTemplates.$inferSelect;
 export type InsertReviewEmailTemplate = z.infer<typeof insertReviewEmailTemplateSchema>;
+export type EmailSendLog = typeof emailSendLog.$inferSelect;
+export type InsertEmailSendLog = z.infer<typeof insertEmailSendLogSchema>;
+export type EmailSuppressionList = typeof emailSuppressionList.$inferSelect;
+export type InsertEmailSuppressionList = z.infer<typeof insertEmailSuppressionListSchema>;
 export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
 export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;
 export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;

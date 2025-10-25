@@ -14,6 +14,9 @@ Preferred communication style: Simple, everyday language.
 - Before implementing any new feature, search the codebase to verify it doesn't already exist
 - Consolidation over separation: One unified interface is better than multiple scattered pages
 
+## TODO: Referral Nurture Campaign Auto-Enrollment
+**PENDING IMPLEMENTATION:** Referral nurture campaigns need to be auto-created when customers submit 4+ star reviews. The `createCampaignForReviewer()` function exists in `referralNurtureScheduler.ts` but is not currently called anywhere. This should be wired into the review feedback handler so customers are automatically enrolled in the referral nurture sequence after leaving positive feedback.
+
 ## System Architecture
 
 ### Frontend
@@ -33,10 +36,14 @@ Preferred communication style: Simple, everyday language.
 - **Dynamic Phone Number Tracking:** Database-driven system with automatic UTM parameter generation for marketing campaigns. Each email campaign type (review requests, referral nurture, quote follow-up) has its own dedicated tracking phone number. All email links include proper UTM parameters for attribution tracking. Phone numbers sync automatically to centralized tracking number management page.
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript, Stripe PaymentIntents.
 - **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Includes automated imports, data safety measures, and specific fixes for search and login security.
-- **Marketing Automation:** AI-powered system with three campaign types, each with dedicated tracking phone numbers and UTM parameters:
+- **Marketing Automation:** AI-powered system with comprehensive email engagement tracking:
   - **Review Request Campaign:** 4 emails over 21 days with campaign-specific tracking phone number
-  - **Referral Nurture Campaign:** 4 emails over 6 months with campaign-specific tracking phone number
+  - **Referral Nurture Campaign:** 4 emails over 6 months (days 14, 60, 150, 210) with auto-pause after 2 consecutive unopened emails
   - **Quote Follow-up Campaign:** 4 emails over 21 days for $0 jobs with campaign-specific tracking phone number
+  - **Email Tracking:** emailSendLog table tracks all campaign emails with engagement timestamps (opened, clicked, bounced, complained)
+  - **Webhook Integration:** Resend webhooks update engagement counters in both emailSendLog and campaign tables (reviewRequests, referralNurtureCampaigns)
+  - **Suppression List:** emailSuppressionList table prevents sending to hard bounces and spam complaints (CAN-SPAM compliance)
+  - **Schedulers:** Review request and referral nurture schedulers run every 30 minutes, checking suppression list and email preferences before every send
   - Features: AI customer segmentation (GPT-4o), visual HTML preview/approval workflow, campaign-specific phone tracking, automatic UTM parameter generation for all email links
 - **SMS Marketing System:** Complete platform with AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out, and multi-channel coordination.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests.

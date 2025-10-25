@@ -1,7 +1,6 @@
 import { db } from '../db';
 import { webhookFailureQueue, type InsertWebhookFailureQueue } from '@shared/schema';
 import { eq, and, lte, or, isNull } from 'drizzle-orm';
-import { recordSuccess, recordFailure } from './healthMonitor';
 
 /**
  * Webhook Retry Processor
@@ -102,7 +101,7 @@ async function processFailedWebhook(webhook: any): Promise<{ success: boolean; e
         throw new Error('No email_id in webhook event');
       }
       
-      const { emailSendLog, emailSuppressionList, campaignEmails } = await import('@shared/schema');
+      const { emailSendLog, reviewRequests, referralNurtureCampaigns, emailSuppressionList } = await import('@shared/schema');
       const { sql } = await import('drizzle-orm');
       
       const sendLog = await db.query.emailSendLog.findFirst({
@@ -136,13 +135,16 @@ async function processFailedWebhook(webhook: any): Promise<{ success: boolean; e
           
           // Add to suppression list for hard bounces
           if (event.data?.bounce_type === 'hard') {
+            console.log(`[Webhook Retry] Hard bounce - adding ${sendLog.recipientEmail} to suppression list`);
             await db.insert(emailSuppressionList).values({
               email: sendLog.recipientEmail,
               reason: 'hard_bounce',
               reasonDetails: event.data?.bounce_reason || 'Hard bounce from Resend',
               resendEmailId: emailId,
-              campaignId: sendLog.campaignId,
+              campaignRecordId: sendLog.campaignRecordId,
             }).onConflictDoNothing();
+          } else {
+            console.log(`[Webhook Retry] Soft bounce: ${sendLog.recipientEmail}`);
           }
           break;
           
@@ -151,12 +153,13 @@ async function processFailedWebhook(webhook: any): Promise<{ success: boolean; e
           updates.resendStatus = 'complained';
           
           // Add to suppression list for spam complaints
+          console.log(`[Webhook Retry] Spam complaint - adding ${sendLog.recipientEmail} to suppression list`);
           await db.insert(emailSuppressionList).values({
             email: sendLog.recipientEmail,
             reason: 'spam_complaint',
             reasonDetails: 'Spam complaint from Resend',
             resendEmailId: emailId,
-            campaignId: sendLog.campaignId,
+            campaignRecordId: sendLog.campaignRecordId,
           }).onConflictDoNothing();
           break;
           
@@ -170,17 +173,38 @@ async function processFailedWebhook(webhook: any): Promise<{ success: boolean; e
           .set(updates)
           .where(eq(emailSendLog.id, sendLog.id));
           
-        // Update campaign email metrics
-        if (updates.openedAt) {
-          await db.update(campaignEmails)
-            .set({ totalOpened: sql`${campaignEmails.totalOpened} + 1` })
-            .where(eq(campaignEmails.id, sendLog.campaignEmailId));
-        }
-        
-        if (updates.clickedAt) {
-          await db.update(campaignEmails)
-            .set({ totalClicked: sql`${campaignEmails.totalClicked} + 1` })
-            .where(eq(campaignEmails.id, sendLog.campaignEmailId));
+        // Update campaign-specific engagement counters
+        if (updates.openedAt || updates.clickedAt) {
+          if (sendLog.campaignType === 'review_request' || sendLog.campaignType === 'quote_followup') {
+            // Increment reviewRequests counters
+            const reviewCounterUpdates: any = {};
+            if (updates.openedAt) {
+              reviewCounterUpdates.emailOpens = sql`${reviewRequests.emailOpens} + 1`;
+            }
+            if (updates.clickedAt) {
+              reviewCounterUpdates.linkClicks = sql`${reviewRequests.linkClicks} + 1`;
+            }
+            
+            await db.update(reviewRequests)
+              .set(reviewCounterUpdates)
+              .where(eq(reviewRequests.id, sendLog.campaignRecordId));
+              
+          } else if (sendLog.campaignType === 'referral_nurture') {
+            // Increment referralNurtureCampaigns counters
+            const referralCounterUpdates: any = {};
+            if (updates.openedAt) {
+              referralCounterUpdates.totalOpens = sql`${referralNurtureCampaigns.totalOpens} + 1`;
+              // Reset consecutive unopened counter on open
+              referralCounterUpdates.consecutiveUnopened = 0;
+            }
+            if (updates.clickedAt) {
+              referralCounterUpdates.totalClicks = sql`${referralNurtureCampaigns.totalClicks} + 1`;
+            }
+            
+            await db.update(referralNurtureCampaigns)
+              .set(referralCounterUpdates)
+              .where(eq(referralNurtureCampaigns.id, sendLog.campaignRecordId));
+          }
         }
       }
       
@@ -232,12 +256,7 @@ async function processRetryQueue(): Promise<void> {
       .limit(50); // Process up to 50 webhooks at a time
     
     if (pendingWebhooks.length === 0) {
-      // Record success with no webhooks to process
-      await recordSuccess('webhook_retry_processor', 'processor', {
-        statusMessage: 'No webhooks pending',
-        executionTimeMs: Date.now() - startTime,
-        recordsProcessed: 0
-      });
+      console.log('[Webhook Retry] No webhooks pending');
       return;
     }
     
@@ -303,22 +322,9 @@ async function processRetryQueue(): Promise<void> {
       }
     }
     
-    console.log('[Webhook Retry] ✓ Retry queue processing complete');
-
-    // Record successful processing run
-    await recordSuccess('webhook_retry_processor', 'processor', {
-      statusMessage: `Processed ${pendingWebhooks.length} webhooks`,
-      executionTimeMs: Date.now() - startTime,
-      recordsProcessed: pendingWebhooks.length
-    });
+    console.log(`[Webhook Retry] ✓ Retry queue processing complete - processed ${pendingWebhooks.length} webhooks in ${Date.now() - startTime}ms`);
   } catch (error) {
     console.error('[Webhook Retry] ✗ Error processing retry queue:', error);
-
-    // Record failure
-    await recordFailure('webhook_retry_processor', 'processor', error as Error, {
-      statusMessage: 'Webhook retry queue processing failed',
-      executionTimeMs: Date.now() - startTime
-    });
   } finally {
     isProcessing = false;
   }

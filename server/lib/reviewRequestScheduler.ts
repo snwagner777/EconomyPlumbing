@@ -16,7 +16,7 @@
  */
 
 import { db } from "../db";
-import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, customersXlsx, contactsXlsx, systemSettings } from "../../shared/schema";
+import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, customersXlsx, contactsXlsx, systemSettings, emailSendLog } from "../../shared/schema";
 import { eq, and, lt, gte, isNull, or, sql } from "drizzle-orm";
 import { generateEmail } from "./aiEmailGenerator";
 import { Resend } from "resend";
@@ -439,6 +439,25 @@ class ReviewRequestScheduler {
 
       const settings = await this.getEmailSettings();
       
+      // Check suppression list FIRST (hard bounces, spam complaints)
+      const { emailSuppressionList } = await import('@shared/schema');
+      const suppressed = await db.query.emailSuppressionList.findFirst({
+        where: eq(emailSuppressionList.email, jobCompletion.email),
+      });
+      
+      if (suppressed) {
+        console.log(`[Review Request Scheduler] Email ${jobCompletion.email} is suppressed (${suppressed.reason}), stopping campaign`);
+        await db
+          .update(reviewRequests)
+          .set({
+            status: 'paused',
+            pausedAt: new Date(),
+            pauseReason: suppressed.reason,
+          })
+          .where(eq(reviewRequests.id, reviewRequestId));
+        return false;
+      }
+      
       // Re-validate campaign-specific phone BEFORE sending (settings may have changed)
       const campaignType = jobCompletion.isQuoteOnly ? 'quote_followup' : 'review_request';
       const validation = this.canSendCampaign(campaignType, settings);
@@ -518,6 +537,18 @@ class ReviewRequestScheduler {
       }
 
       console.log(`[Review Request Scheduler] Email sent successfully. Resend ID: ${emailResult.data?.id}`);
+
+      // Create emailSendLog record for engagement tracking
+      await db.insert(emailSendLog).values({
+        campaignType,
+        campaignRecordId: reviewRequestId,
+        emailNumber,
+        recipientEmail: reviewRequest.customerEmail,
+        recipientName: jobCompletion.customerName,
+        customerId: jobCompletion.customerId,
+        resendEmailId: emailResult.data?.id || null,
+        resendStatus: 'sent',
+      });
 
       // Update review request with email sent timestamp
       const updateFields: any = {};

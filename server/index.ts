@@ -15,7 +15,8 @@ import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { startServiceTitanSync } from "./lib/serviceTitanSync";
 import { getReferralProcessor } from "./lib/referralProcessor";
 import { startGMBAutomation } from "./lib/gmbAutomation";
-// Marketing schedulers removed - all marketing infrastructure has been removed
+import { getReviewRequestScheduler } from "./lib/reviewRequestScheduler";
+import { getReferralNurtureScheduler } from "./lib/referralNurtureScheduler";
 import { setupOAuth } from "./replitAuth";
 import { createMetadataInjector } from "./lib/metadataInjector";
 import { securityHeadersMiddleware } from "./middleware/securityHeaders";
@@ -456,7 +457,38 @@ async function refreshReviewsPeriodically() {
   // Start GMB automation (fetches reviews every 6 hours, auto-replies every 15 minutes)
   startGMBAutomation();
   
-  // Marketing schedulers removed - all marketing infrastructure has been removed
+  // Start review request and referral nurture email schedulers
+  console.log('[Schedulers] Starting review request and referral nurture email schedulers...');
+  
+  const reviewRequestScheduler = getReviewRequestScheduler();
+  const referralNurtureScheduler = getReferralNurtureScheduler();
+  
+  // Review request scheduler - runs every 30 minutes
+  setInterval(() => {
+    console.log('[Review Request Scheduler] Running scheduled email check...');
+    reviewRequestScheduler.processPendingEmails().catch((err: Error) => {
+      console.error('[Review Request Scheduler] Error processing emails:', err);
+    });
+  }, 30 * 60 * 1000); // Every 30 minutes
+  
+  // Referral nurture scheduler - runs every 30 minutes
+  setInterval(() => {
+    console.log('[Referral Nurture Scheduler] Running scheduled email check...');
+    referralNurtureScheduler.processPendingEmails().catch((err: Error) => {
+      console.error('[Referral Nurture Scheduler] Error processing emails:', err);
+    });
+  }, 30 * 60 * 1000); // Every 30 minutes
+  
+  // Run both immediately on startup (after 10 seconds)
+  setTimeout(() => {
+    console.log('[Schedulers] Running initial email processing...');
+    reviewRequestScheduler.processPendingEmails().catch((err: Error) => {
+      console.error('[Review Request Scheduler] Initial processing error:', err);
+    });
+    referralNurtureScheduler.processPendingEmails().catch((err: Error) => {
+      console.error('[Referral Nurture Scheduler] Initial processing error:', err);
+    });
+  }, 10000);
   
   // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
   const referralProcessor = getReferralProcessor();
