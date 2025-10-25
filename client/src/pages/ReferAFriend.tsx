@@ -17,6 +17,7 @@ import {
   Medal
 } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { ReferralSubmissionForm } from "@/components/ReferralSubmissionForm";
 
 interface LeaderboardEntry {
   name: string;
@@ -93,8 +94,15 @@ export default function ReferAFriend() {
         </div>
       </section>
 
-      {/* How It Works */}
+      {/* Referral Submission Form */}
       <section className="py-12 px-4">
+        <div className="max-w-5xl mx-auto">
+          <ReferralSubmissionForm />
+        </div>
+      </section>
+
+      {/* How It Works */}
+      <section className="py-12 px-4 bg-muted/30">
         <div className="max-w-5xl mx-auto">
           <div className="grid md:grid-cols-3 gap-6 mb-12">
             <Card className="text-center">

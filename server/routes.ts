@@ -1247,11 +1247,20 @@ ${rssItems}
           referrerCustomerId = referrerContact[0].customerId;
           console.log(`[Referral] ✅ Matched referrer to customer ${referrerCustomerId} (database)`);
         } else {
-          console.log('[Referral] ⚠️ Could not find referrer in database yet');
+          console.log('[Referral] ❌ Could not find referrer in database - not a customer');
+          // REJECT: Referrer must be an existing customer
+          return res.status(400).json({
+            success: false,
+            message: "We couldn't find your account in our system. You must be an existing customer to refer friends. If you believe this is an error, please call us at (512) 392-4689.",
+            notCustomer: true
+          });
         }
       } catch (error) {
         console.error('[Referral] Error looking up referrer in database:', error);
-        // Continue even if lookup fails - we can match later
+        return res.status(500).json({
+          success: false,
+          message: "Error validating your account. Please try again or call us at (512) 392-4689.",
+        });
       }
 
       // CRITICAL: Check if referee is ALREADY a customer (ineligible for referral)
@@ -1386,10 +1395,20 @@ ${rssItems}
         console.log(`[Referral] No email provided for referee ${refereeName} - skipping welcome email`);
       }
       
+      // Generate personalized referral link
+      const baseUrl = process.env.NODE_ENV === 'production' 
+        ? 'https://economyplumbingtx.com' 
+        : (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
+      
+      const referralLink = `${baseUrl}/referred-by/${referrerCustomerId}`;
+      
       res.json({ 
         success: true, 
-        message: "Referral submitted successfully! We'll reach out to your friend soon.",
+        message: "Referral submitted successfully! Share this link with your friend to track the referral.",
         referralId: referral.id,
+        referralLink,
+        referrerId: referrerCustomerId,
+        referrerName,
       });
     } catch (error: any) {
       console.error('[Referral] Error:', error);
