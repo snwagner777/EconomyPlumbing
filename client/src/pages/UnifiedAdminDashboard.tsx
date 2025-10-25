@@ -81,7 +81,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'review-requests' | 'email-templates' | 'chatbot';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-automation' | 'email-templates' | 'chatbot';
 
 interface EmailTemplate {
   id: string;
@@ -102,8 +102,15 @@ interface SystemSettings {
   referralDripEnabled: boolean;
   autoSendReviewRequests: boolean;
   autoStartReferralCampaigns: boolean;
+  // Review Request campaign phone
   reviewRequestPhoneNumber: string;
   reviewRequestPhoneFormatted: string;
+  // Referral Nurture campaign phone
+  referralNurturePhoneNumber: string;
+  referralNurturePhoneFormatted: string;
+  // Quote Follow-up campaign phone
+  quoteFollowupPhoneNumber: string;
+  quoteFollowupPhoneFormatted: string;
 }
 
 interface ReviewRequest {
@@ -286,10 +293,10 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       description: "Manage customer referrals"
     },
     {
-      title: "Review Requests",
+      title: "Marketing Automation",
       icon: Mail,
-      section: 'review-requests' as AdminSection,
-      description: "Automated review campaigns"
+      section: 'marketing-automation' as AdminSection,
+      description: "Review, referral & quote campaigns"
     },
     {
       title: "Email Templates",
@@ -4543,6 +4550,7 @@ function ReviewRequestsSection() {
   const { toast } = useToast();
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [editingCampaign, setEditingCampaign] = useState<'review_request' | 'referral_nurture' | 'quote_followup'>('review_request');
   
   // AI Email Generation State
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
@@ -4589,16 +4597,26 @@ function ReviewRequestsSection() {
   // Update phone number mutation (auto-creates tracking number with UTM params)
   const updatePhoneMutation = useMutation({
     mutationFn: async (phone: string) => {
-      return await apiRequest("POST", "/api/admin/review-requests/phone", { phoneNumber: phone });
+      const endpointMap = {
+        'review_request': '/api/admin/review-requests/phone',
+        'referral_nurture': '/api/admin/referral-nurture/phone',
+        'quote_followup': '/api/admin/quote-followup/phone'
+      };
+      return await apiRequest("POST", endpointMap[editingCampaign], { phoneNumber: phone });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/tracking-numbers'] });
       setIsPhoneDialogOpen(false);
       setPhoneNumber("");
+      const campaignNames = {
+        'review_request': 'Review Request',
+        'referral_nurture': 'Referral Nurture',
+        'quote_followup': 'Quote Follow-up'
+      };
       toast({
         title: "Phone Number Updated",
-        description: "Tracking number created with UTM parameters: utm_source=review_request, utm_medium=email, utm_campaign=review_drip",
+        description: `${campaignNames[editingCampaign]} campaign phone number updated with UTM tracking`,
       });
     },
   });
@@ -5164,28 +5182,81 @@ function ReviewRequestsSection() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Contact Information</CardTitle>
+              <CardTitle>Campaign Phone Numbers</CardTitle>
               <CardDescription>
-                Phone number shown in review request emails (with UTM tracking)
+                Dedicated tracking phone numbers for each campaign type (auto-creates UTM tracking)
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
+            <CardContent className="space-y-6">
+              {/* Review Request Campaign Phone */}
+              <div className="flex items-center gap-4 border-b pb-4">
                 <div className="flex-1">
-                  <Label>Current Phone Number</Label>
+                  <Label>Review Request Campaign</Label>
                   <p className="text-lg font-medium mt-1">
                     {settings?.reviewRequestPhoneFormatted || "Not configured"}
                   </p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    UTM tracking: utm_source=review_request, utm_medium=email, utm_campaign=review_drip
+                    UTM: utm_source=review_request, utm_medium=email, utm_campaign=review_drip
                   </p>
                 </div>
                 <Button
-                  onClick={() => setIsPhoneDialogOpen(true)}
-                  data-testid="button-update-phone"
+                  onClick={() => {
+                    setEditingCampaign('review_request');
+                    setIsPhoneDialogOpen(true);
+                  }}
+                  data-testid="button-update-review-phone"
+                  variant="outline"
                 >
                   <Phone className="h-4 w-4 mr-2" />
-                  Update Phone Number
+                  Edit
+                </Button>
+              </div>
+
+              {/* Referral Nurture Campaign Phone */}
+              <div className="flex items-center gap-4 border-b pb-4">
+                <div className="flex-1">
+                  <Label>Referral Nurture Campaign</Label>
+                  <p className="text-lg font-medium mt-1">
+                    {settings?.referralNurturePhoneFormatted || "Not configured"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    UTM: utm_source=referral_nurture, utm_medium=email, utm_campaign=referral_drip
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    setEditingCampaign('referral_nurture');
+                    setIsPhoneDialogOpen(true);
+                  }}
+                  data-testid="button-update-referral-phone"
+                  variant="outline"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </div>
+
+              {/* Quote Follow-up Campaign Phone */}
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <Label>Quote Follow-up Campaign</Label>
+                  <p className="text-lg font-medium mt-1">
+                    {settings?.quoteFollowupPhoneFormatted || "Not configured"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    UTM: utm_source=quote_followup, utm_medium=email, utm_campaign=quote_followup_drip
+                  </p>
+                </div>
+                <Button
+                  onClick={() => {
+                    setEditingCampaign('quote_followup');
+                    setIsPhoneDialogOpen(true);
+                  }}
+                  data-testid="button-update-quote-phone"
+                  variant="outline"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Edit
                 </Button>
               </div>
             </CardContent>
@@ -5197,10 +5268,11 @@ function ReviewRequestsSection() {
       <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Update Phone Number</DialogTitle>
+            <DialogTitle>
+              Update {editingCampaign === 'review_request' ? 'Review Request' : editingCampaign === 'referral_nurture' ? 'Referral Nurture' : 'Quote Follow-up'} Phone Number
+            </DialogTitle>
             <DialogDescription>
-              This will automatically create a tracking number entry with UTM parameters:
-              utm_source=review_request, utm_medium=email, utm_campaign=review_drip
+              This will automatically create a tracking number entry with UTM parameters for the {editingCampaign === 'review_request' ? 'review request' : editingCampaign === 'referral_nurture' ? 'referral nurture' : 'quote follow-up'} campaign
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -6111,7 +6183,7 @@ export default function UnifiedAdminDashboard() {
         return <ReviewPlatformsSection />;
       case 'referrals':
         return <ReferralTrackingSection />;
-      case 'review-requests':
+      case 'marketing-automation':
         return <ReviewRequestsSection />;
       case 'email-templates':
         return <EmailTemplatesSection />;

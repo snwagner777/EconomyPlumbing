@@ -4881,22 +4881,93 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
 
   // Review Request & Referral Nurture System Routes
 
-  // Get system settings (admin only)
+  // Shared helper function for campaign phone number updates
+  async function upsertCampaignPhoneNumber(
+    campaignKey: string,
+    campaignName: string,
+    phoneNumber: string,
+    utmConfig: { utm_source: string; utm_medium: string; utm_campaign: string; description: string },
+    sortOrder: number
+  ) {
+    // Format and validate phone number
+    const cleaned = phoneNumber.replace(/\D/g, '');
+    if (cleaned.length !== 10) {
+      throw new Error("Phone number must be 10 digits");
+    }
+
+    const formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    const telLink = `tel:+1${cleaned}`;
+
+    // Check if tracking number already exists
+    const existingNumbers = await storage.getAllTrackingNumbers();
+    const existingNumber = existingNumbers.find(n => n.channelKey === `${campaignKey}_email`);
+
+    if (existingNumber) {
+      // Update existing tracking number
+      await storage.updateTrackingNumber(existingNumber.id, {
+        displayNumber: formatted,
+        rawNumber: cleaned,
+        telLink: telLink
+      });
+    } else {
+      // Create new tracking number with UTM parameters
+      await storage.createTrackingNumber({
+        channelKey: `${campaignKey}_email`,
+        channelName: campaignName,
+        displayNumber: formatted,
+        rawNumber: cleaned,
+        telLink: telLink,
+        detectionRules: JSON.stringify(utmConfig),
+        isActive: true,
+        isDefault: false,
+        sortOrder
+      });
+    }
+
+    // Save phone number to system settings
+    const { systemSettings } = await import("@shared/schema");
+    await db
+      .insert(systemSettings)
+      .values({
+        key: `${campaignKey}_phone_number`,
+        value: cleaned,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: {
+          value: cleaned,
+          updatedAt: new Date()
+        }
+      });
+
+    await db
+      .insert(systemSettings)
+      .values({
+        key: `${campaignKey}_phone_formatted`,
+        value: formatted,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: systemSettings.key,
+        set: {
+          value: formatted,
+          updatedAt: new Date()
+        }
+      });
+
+    // Invalidate SSR cache
+    if (global.invalidateSSRCache) global.invalidateSSRCache();
+
+    return { cleaned, formatted };
+  }
+
+  // Get system settings (admin only) - now returns ALL campaign phone numbers
   app.get("/api/admin/review-requests/settings", requireAdmin, async (req, res) => {
     try {
       const { systemSettings } = await import("@shared/schema");
       const { eq } = await import("drizzle-orm");
       
-      // Fetch all review request settings from database
-      const settingsKeys = [
-        'review_drip_enabled',
-        'referral_drip_enabled',
-        'auto_send_review_requests',
-        'auto_start_referral_campaigns',
-        'review_request_phone_number',
-        'review_request_phone_formatted'
-      ];
-
       const dbSettings = await db.select().from(systemSettings);
       const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
 
@@ -4906,8 +4977,15 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
         autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',
         autoStartReferralCampaigns: settingsMap.get('auto_start_referral_campaigns') === 'true',
+        // Review Request campaign phone
         reviewRequestPhoneNumber: settingsMap.get('review_request_phone_number') || '',
-        reviewRequestPhoneFormatted: settingsMap.get('review_request_phone_formatted') || ''
+        reviewRequestPhoneFormatted: settingsMap.get('review_request_phone_formatted') || '',
+        // Referral Nurture campaign phone
+        referralNurturePhoneNumber: settingsMap.get('referral_nurture_phone_number') || '',
+        referralNurturePhoneFormatted: settingsMap.get('referral_nurture_phone_formatted') || '',
+        // Quote Follow-up campaign phone
+        quoteFollowupPhoneNumber: settingsMap.get('quote_followup_phone_number') || '',
+        quoteFollowupPhoneFormatted: settingsMap.get('quote_followup_phone_formatted') || ''
       };
       
       res.json(settings);
@@ -4975,80 +5053,18 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         return res.status(400).json({ error: "Phone number is required" });
       }
 
-      // Format and validate phone number
-      const cleaned = phoneNumber.replace(/\D/g, '');
-      if (cleaned.length !== 10) {
-        return res.status(400).json({ error: "Phone number must be 10 digits" });
-      }
-
-      const formatted = `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
-      const telLink = `tel:+1${cleaned}`;
-
-      // Check if tracking number already exists for review requests
-      const existingNumbers = await storage.getAllTrackingNumbers();
-      const existingReviewNumber = existingNumbers.find(n => n.channelKey === 'review_request_email');
-
-      if (existingReviewNumber) {
-        // Update existing tracking number
-        await storage.updateTrackingNumber(existingReviewNumber.id, {
-          displayNumber: formatted,
-          rawNumber: cleaned,
-          telLink: telLink
-        });
-      } else {
-        // Create new tracking number with UTM parameters (snake_case for downstream attribution)
-        await storage.createTrackingNumber({
-          channelKey: 'review_request_email',
-          channelName: 'Review Request Emails',
-          displayNumber: formatted,
-          rawNumber: cleaned,
-          telLink: telLink,
-          detectionRules: JSON.stringify({
-            utm_source: 'review_request',
-            utm_medium: 'email',
-            utm_campaign: 'review_drip',
-            description: 'Automatically created for review request email campaigns'
-          }),
-          isActive: true,
-          isDefault: false,
-          sortOrder: 100
-        });
-      }
-
-      // Save phone number to system settings
-      const { systemSettings } = await import("@shared/schema");
-      await db
-        .insert(systemSettings)
-        .values({
-          key: 'review_request_phone_number',
-          value: cleaned,
-          updatedAt: new Date()
-        })
-        .onConflictDoUpdate({
-          target: systemSettings.key,
-          set: {
-            value: cleaned,
-            updatedAt: new Date()
-          }
-        });
-
-      await db
-        .insert(systemSettings)
-        .values({
-          key: 'review_request_phone_formatted',
-          value: formatted,
-          updatedAt: new Date()
-        })
-        .onConflictDoUpdate({
-          target: systemSettings.key,
-          set: {
-            value: formatted,
-            updatedAt: new Date()
-          }
-        });
-
-      // Invalidate SSR cache
-      if (global.invalidateSSRCache) global.invalidateSSRCache();
+      const { cleaned, formatted } = await upsertCampaignPhoneNumber(
+        'review_request',
+        'Review Request Emails',
+        phoneNumber,
+        {
+          utm_source: 'review_request',
+          utm_medium: 'email',
+          utm_campaign: 'review_drip',
+          description: 'Automatically created for review request email campaigns'
+        },
+        100
+      );
 
       res.json({
         success: true,
@@ -5058,6 +5074,74 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       });
     } catch (error: any) {
       console.error("[Review Requests] Error updating phone number:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Referral Nurture campaign phone number
+  app.post("/api/admin/referral-nurture/phone", requireAdmin, async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+
+      const { cleaned, formatted } = await upsertCampaignPhoneNumber(
+        'referral_nurture',
+        'Referral Nurture Emails',
+        phoneNumber,
+        {
+          utm_source: 'referral_nurture',
+          utm_medium: 'email',
+          utm_campaign: 'referral_drip',
+          description: 'Automatically created for referral nurture email campaigns'
+        },
+        101
+      );
+
+      res.json({
+        success: true,
+        phoneNumber: cleaned,
+        phoneFormatted: formatted,
+        message: "Phone number updated and tracking number created with UTM parameters"
+      });
+    } catch (error: any) {
+      console.error("[Referral Nurture] Error updating phone number:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Quote Follow-up campaign phone number
+  app.post("/api/admin/quote-followup/phone", requireAdmin, async (req, res) => {
+    try {
+      const { phoneNumber } = req.body;
+      
+      if (!phoneNumber) {
+        return res.status(400).json({ error: "Phone number is required" });
+      }
+
+      const { cleaned, formatted } = await upsertCampaignPhoneNumber(
+        'quote_followup',
+        'Quote Follow-up Emails',
+        phoneNumber,
+        {
+          utm_source: 'quote_followup',
+          utm_medium: 'email',
+          utm_campaign: 'quote_followup_drip',
+          description: 'Automatically created for quote follow-up email campaigns'
+        },
+        102
+      );
+
+      res.json({
+        success: true,
+        phoneNumber: cleaned,
+        phoneFormatted: formatted,
+        message: "Phone number updated and tracking number created with UTM parameters"
+      });
+    } catch (error: any) {
+      console.error("[Quote Follow-up] Error updating phone number:", error);
       res.status(500).json({ error: error.message });
     }
   });

@@ -22,7 +22,7 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panels:** Unified admin for ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, and SMS Marketing with AI-powered campaign management.
+- **Admin Panels:** Unified admin with Marketing Automation section (campaign-specific phone numbers, email templates, settings), ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
 
 ### Backend
 - **Framework & API:** Express.js with TypeScript, RESTful API.
@@ -30,10 +30,14 @@ Preferred communication style: Simple, everyday language.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **E-commerce:** Ecwid integration with Printful and Spocket.
 - **AI Blog Generation System:** OpenAI GPT-4o for SEO-optimized and seasonally aware blog posts.
-- **Dynamic Phone Number Tracking:** Database-driven system with automatic UTM parameter generation for marketing campaigns.
+- **Dynamic Phone Number Tracking:** Database-driven system with automatic UTM parameter generation for marketing campaigns. Each email campaign type (review requests, referral nurture, quote follow-up) has its own dedicated tracking phone number. All email links include proper UTM parameters for attribution tracking. Phone numbers sync automatically to centralized tracking number management page.
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript, Stripe PaymentIntents.
 - **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Includes automated imports, data safety measures, and specific fixes for search and login security.
-- **Marketing Automation:** AI-powered system for customer segmentation (GPT-4o), automated remarketing, unified marketing dashboard, and AI campaign generation for email/SMS. Features visual HTML preview/approval workflow for AI-generated content.
+- **Marketing Automation:** AI-powered system with three campaign types, each with dedicated tracking phone numbers and UTM parameters:
+  - **Review Request Campaign:** 4 emails over 21 days with campaign-specific tracking phone number
+  - **Referral Nurture Campaign:** 4 emails over 6 months with campaign-specific tracking phone number
+  - **Quote Follow-up Campaign:** 4 emails over 21 days for $0 jobs with campaign-specific tracking phone number
+  - Features: AI customer segmentation (GPT-4o), visual HTML preview/approval workflow, campaign-specific phone tracking, automatic UTM parameter generation for all email links
 - **SMS Marketing System:** Complete platform with AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out, and multi-channel coordination.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests.
 - **Referral System:** Database-first referral management with ServiceTitan integration for pre-submission validation, hourly processing, job completion tracking, ServiceTitan notes integration, AI-generated referee welcome emails, and credit management.
