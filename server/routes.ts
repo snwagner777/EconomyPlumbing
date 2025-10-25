@@ -1063,6 +1063,27 @@ ${rssItems}
       submissionRateLimit.set(clientIp, now);
       
       console.log(`[Review] New submission from ${reviewData.customerName} (${review.rating} stars)`);
+
+      // If 4+ star review AND we have customer email + ID, create referral nurture campaign
+      if (review.rating >= 4 && reviewData.email && reviewData.serviceTitanCustomerId) {
+        try {
+          const { getReferralNurtureScheduler } = await import('./lib/referralNurtureScheduler');
+          const scheduler = getReferralNurtureScheduler();
+          
+          const campaignId = await scheduler.createCampaignForReviewer(
+            reviewData.serviceTitanCustomerId,
+            reviewData.email,
+            review.id
+          );
+          
+          if (campaignId) {
+            console.log(`[Review] Created referral nurture campaign ${campaignId} for ${reviewData.email}`);
+          }
+        } catch (campaignError: any) {
+          // Don't fail the whole request if campaign creation fails
+          console.error('[Review] Error creating referral campaign:', campaignError);
+        }
+      }
       
       res.json({ 
         success: true, 
@@ -1108,7 +1129,7 @@ ${rssItems}
   // Public: Submit review feedback (rating-first flow for /request-review page)
   app.post("/api/review-feedback", async (req, res) => {
     try {
-      const { rating, feedback } = req.body;
+      const { rating, feedback, reviewRequestId, customerId, customerEmail } = req.body;
       const { reviewFeedback } = await import("@shared/schema");
 
       // Validate required fields
@@ -1120,6 +1141,8 @@ ${rssItems}
       const [newFeedback] = await db
         .insert(reviewFeedback)
         .values({
+          reviewRequestId: reviewRequestId || '',
+          customerId: customerId || 0,
           rating,
           feedbackText: feedback,
           submittedAt: new Date(),
@@ -1127,6 +1150,27 @@ ${rssItems}
         .returning();
 
       console.log(`[Review Feedback] Received ${rating}-star feedback from /request-review page`);
+
+      // If 4+ star review AND we have customer email, create referral nurture campaign
+      if (rating >= 4 && customerEmail && customerId) {
+        try {
+          const { getReferralNurtureScheduler } = await import('./lib/referralNurtureScheduler');
+          const scheduler = getReferralNurtureScheduler();
+          
+          const campaignId = await scheduler.createCampaignForReviewer(
+            customerId,
+            customerEmail,
+            reviewRequestId || newFeedback.id
+          );
+          
+          if (campaignId) {
+            console.log(`[Review Feedback] Created referral nurture campaign ${campaignId} for ${customerEmail}`);
+          }
+        } catch (campaignError: any) {
+          // Don't fail the whole request if campaign creation fails
+          console.error('[Review Feedback] Error creating referral campaign:', campaignError);
+        }
+      }
 
       res.json({ 
         success: true, 
@@ -4246,6 +4290,152 @@ ${rssItems}
       res.json({ stats });
     } catch (error: any) {
       console.error("[Admin] Error fetching stats:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============================================
+  // ADMIN CAMPAIGN ANALYTICS ENDPOINTS
+  // ============================================
+
+  // Admin: Get overall campaign analytics
+  app.get("/api/admin/campaign-analytics/overview", requireAdmin, async (req, res) => {
+    try {
+      const { reviewRequests, referralNurtureCampaigns, emailSendLog } = await import("@shared/schema");
+      
+      // Get all campaign counts and stats
+      const [reviewStats] = await db
+        .select({
+          total: sql<number>`count(*)`,
+          completed: sql<number>`count(*) filter (where status = 'completed')`,
+          paused: sql<number>`count(*) filter (where status = 'paused')`,
+          totalOpens: sql<number>`sum(${reviewRequests.emailOpens})`,
+          totalClicks: sql<number>`sum(${reviewRequests.linkClicks})`,
+        })
+        .from(reviewRequests);
+
+      const [referralStats] = await db
+        .select({
+          total: sql<number>`count(*)`,
+          completed: sql<number>`count(*) filter (where status = 'completed')`,
+          paused: sql<number>`count(*) filter (where status = 'paused')`,
+          totalOpens: sql<number>`sum(${referralNurtureCampaigns.totalOpens})`,
+          totalClicks: sql<number>`sum(${referralNurtureCampaigns.totalClicks})`,
+        })
+        .from(referralNurtureCampaigns);
+
+      // Get email send stats
+      const [emailStats] = await db
+        .select({
+          totalSent: sql<number>`count(*)`,
+          totalOpened: sql<number>`count(*) filter (where ${emailSendLog.openedAt} is not null)`,
+          totalClicked: sql<number>`count(*) filter (where ${emailSendLog.clickedAt} is not null)`,
+          totalBounced: sql<number>`count(*) filter (where ${emailSendLog.bouncedAt} is not null)`,
+          totalComplained: sql<number>`count(*) filter (where ${emailSendLog.complainedAt} is not null)`,
+        })
+        .from(emailSendLog);
+
+      res.json({
+        reviewRequests: {
+          total: Number(reviewStats?.total || 0),
+          completed: Number(reviewStats?.completed || 0),
+          paused: Number(reviewStats?.paused || 0),
+          openRate: reviewStats?.totalOpens && reviewStats?.total 
+            ? (Number(reviewStats.totalOpens) / (Number(reviewStats.total) * 4) * 100).toFixed(1)
+            : '0.0',
+          clickRate: reviewStats?.totalClicks && reviewStats?.total
+            ? (Number(reviewStats.totalClicks) / (Number(reviewStats.total) * 4) * 100).toFixed(1)
+            : '0.0',
+        },
+        referralNurture: {
+          total: Number(referralStats?.total || 0),
+          completed: Number(referralStats?.completed || 0),
+          paused: Number(referralStats?.paused || 0),
+          openRate: referralStats?.totalOpens && referralStats?.total
+            ? (Number(referralStats.totalOpens) / (Number(referralStats.total) * 4) * 100).toFixed(1)
+            : '0.0',
+          clickRate: referralStats?.totalClicks && referralStats?.total
+            ? (Number(referralStats.totalClicks) / (Number(referralStats.total) * 4) * 100).toFixed(1)
+            : '0.0',
+        },
+        emailStats: {
+          totalSent: Number(emailStats?.totalSent || 0),
+          totalOpened: Number(emailStats?.totalOpened || 0),
+          totalClicked: Number(emailStats?.totalClicked || 0),
+          totalBounced: Number(emailStats?.totalBounced || 0),
+          totalComplained: Number(emailStats?.totalComplained || 0),
+          openRate: emailStats?.totalSent && emailStats?.totalOpened
+            ? (Number(emailStats.totalOpened) / Number(emailStats.totalSent) * 100).toFixed(1)
+            : '0.0',
+          clickRate: emailStats?.totalSent && emailStats?.totalClicked
+            ? (Number(emailStats.totalClicked) / Number(emailStats.totalSent) * 100).toFixed(1)
+            : '0.0',
+        },
+      });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching campaign analytics:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Get campaign analytics by type and time period
+  app.get("/api/admin/campaign-analytics/by-type", requireAdmin, async (req, res) => {
+    try {
+      const { emailSendLog } = await import("@shared/schema");
+      const { days = '30' } = req.query;
+      const daysAgo = parseInt(days as string);
+      
+      // Get stats grouped by campaign type for the time period
+      const stats = await db
+        .select({
+          campaignType: emailSendLog.campaignType,
+          totalSent: sql<number>`count(*)`,
+          totalOpened: sql<number>`count(*) filter (where ${emailSendLog.openedAt} is not null)`,
+          totalClicked: sql<number>`count(*) filter (where ${emailSendLog.clickedAt} is not null)`,
+          avgTimeToOpen: sql<number>`avg(extract(epoch from (${emailSendLog.openedAt} - ${emailSendLog.sentAt})))`,
+          avgTimeToClick: sql<number>`avg(extract(epoch from (${emailSendLog.clickedAt} - ${emailSendLog.sentAt})))`,
+        })
+        .from(emailSendLog)
+        .where(sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(daysAgo.toString())} days'`)
+        .groupBy(emailSendLog.campaignType);
+
+      const formattedStats = stats.map(stat => ({
+        campaignType: stat.campaignType,
+        totalSent: Number(stat.totalSent),
+        totalOpened: Number(stat.totalOpened),
+        totalClicked: Number(stat.totalClicked),
+        openRate: stat.totalSent > 0 
+          ? ((Number(stat.totalOpened) / Number(stat.totalSent)) * 100).toFixed(1)
+          : '0.0',
+        clickRate: stat.totalSent > 0
+          ? ((Number(stat.totalClicked) / Number(stat.totalSent)) * 100).toFixed(1)
+          : '0.0',
+        avgTimeToOpen: stat.avgTimeToOpen ? Math.round(Number(stat.avgTimeToOpen) / 3600) : null, // hours
+        avgTimeToClick: stat.avgTimeToClick ? Math.round(Number(stat.avgTimeToClick) / 3600) : null, // hours
+      }));
+
+      res.json({ stats: formattedStats, period: `${daysAgo} days` });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching campaign analytics by type:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Admin: Get recent campaign activity
+  app.get("/api/admin/campaign-analytics/recent", requireAdmin, async (req, res) => {
+    try {
+      const { emailSendLog } = await import("@shared/schema");
+      const { limit = '50' } = req.query;
+      
+      const recentEmails = await db
+        .select()
+        .from(emailSendLog)
+        .orderBy(desc(emailSendLog.sentAt))
+        .limit(parseInt(limit as string));
+
+      res.json({ emails: recentEmails });
+    } catch (error: any) {
+      console.error("[Admin] Error fetching recent campaign activity:", error);
       res.status(500).json({ error: error.message });
     }
   });
