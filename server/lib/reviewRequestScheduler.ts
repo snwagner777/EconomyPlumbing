@@ -107,8 +107,11 @@ class ServiceTitanJobsAPI {
 
 interface EmailSettings {
   masterEmailEnabled: boolean;
-  phoneNumber: string | null;
   reviewRequestEnabled: boolean;
+  // Campaign-specific phone numbers
+  reviewRequestPhone: string | null;
+  referralNurturePhone: string | null;
+  quoteFollowupPhone: string | null;
 }
 
 interface JobCompletion {
@@ -140,21 +143,26 @@ class ReviewRequestScheduler {
 
       return {
         masterEmailEnabled: settingsMap.get('review_master_email_switch') === 'true',
-        phoneNumber: settingsMap.get('review_request_phone_number') || null,
         reviewRequestEnabled: settingsMap.get('review_drip_enabled') === 'true',
+        // Campaign-specific phone numbers
+        reviewRequestPhone: settingsMap.get('review_request_phone_number') || null,
+        referralNurturePhone: settingsMap.get('referral_nurture_phone_number') || null,
+        quoteFollowupPhone: settingsMap.get('quote_followup_phone_number') || null,
       };
     } catch (error) {
       console.error("[Review Request Scheduler] Error fetching settings:", error);
       return {
         masterEmailEnabled: false,
-        phoneNumber: null,
         reviewRequestEnabled: false,
+        reviewRequestPhone: null,
+        referralNurturePhone: null,
+        quoteFollowupPhone: null,
       };
     }
   }
 
   /**
-   * Check if campaign should send emails
+   * Check if campaign should send emails (global check)
    */
   async canSendEmails(): Promise<{ allowed: boolean; reason?: string }> {
     const settings = await this.getEmailSettings();
@@ -163,12 +171,35 @@ class ReviewRequestScheduler {
       return { allowed: false, reason: "Master email switch is disabled" };
     }
 
-    if (!settings.phoneNumber) {
-      return { allowed: false, reason: "No phone number configured for tracking" };
+    if (!settings.reviewRequestEnabled) {
+      return { allowed: false, reason: "Review request campaign is disabled" };
+    }
+
+    return { allowed: true };
+  }
+
+  /**
+   * Check if specific campaign type can send (per-campaign validation)
+   */
+  canSendCampaign(campaignType: 'review_request' | 'quote_followup', settings: EmailSettings): { allowed: boolean; reason?: string } {
+    if (!settings.masterEmailEnabled) {
+      return { allowed: false, reason: "Master email switch disabled" };
     }
 
     if (!settings.reviewRequestEnabled) {
-      return { allowed: false, reason: "Review request campaign is disabled" };
+      return { allowed: false, reason: "Review drip campaigns disabled" };
+    }
+
+    // Campaign-specific phone validation
+    const requiredPhone = campaignType === 'quote_followup' 
+      ? settings.quoteFollowupPhone 
+      : settings.reviewRequestPhone;
+
+    if (!requiredPhone) {
+      return { 
+        allowed: false, 
+        reason: `${campaignType === 'quote_followup' ? 'Quote follow-up' : 'Review request'} phone number not configured` 
+      };
     }
 
     return { allowed: true };
@@ -280,6 +311,15 @@ class ReviewRequestScheduler {
    */
   async createReviewRequest(job: JobCompletion, settings: EmailSettings): Promise<string | null> {
     try {
+      // Determine campaign type and validate BEFORE creating request
+      const campaignType = job.isQuoteOnly ? 'quote_followup' : 'review_request';
+      const validation = this.canSendCampaign(campaignType, settings);
+      
+      if (!validation.allowed) {
+        console.log(`[Review Request Scheduler] Skipping ${campaignType} creation for job ${job.jobId}: ${validation.reason}`);
+        return null;
+      }
+
       const [reviewRequest] = await db
         .insert(reviewRequests)
         .values({
@@ -291,7 +331,7 @@ class ReviewRequestScheduler {
         })
         .returning();
 
-      console.log(`[Review Request Scheduler] Created review request ${reviewRequest.id} for job ${job.jobId}`);
+      console.log(`[Review Request Scheduler] Created ${campaignType} request ${reviewRequest.id} for job ${job.jobId}`);
       return reviewRequest.id;
     } catch (error) {
       console.error(`[Review Request Scheduler] Error creating review request for job ${job.jobId}:`, error);
@@ -330,6 +370,12 @@ class ReviewRequestScheduler {
 
       // No template found, generate with AI
       console.log(`[Review Request Scheduler] No template found, generating ${campaignType} email ${emailNumber} with AI`);
+      
+      // Select campaign-specific phone number
+      const phoneNumber = campaignType === 'quote_followup' 
+        ? settings.quoteFollowupPhone 
+        : settings.reviewRequestPhone;
+      
       const generated = await generateEmail({
         campaignType: campaignType as 'review_request' | 'quote_followup',
         emailNumber: emailNumber as 1 | 2 | 3 | 4,
@@ -340,7 +386,7 @@ class ReviewRequestScheduler {
           jobAmount: job.invoiceTotal,
           jobDate: job.completionDate,
         },
-        phoneNumber: settings.phoneNumber || undefined,
+        phoneNumber: phoneNumber || undefined,
       });
 
       return {
@@ -392,6 +438,15 @@ class ReviewRequestScheduler {
       }
 
       const settings = await this.getEmailSettings();
+      
+      // Re-validate campaign-specific phone BEFORE sending (settings may have changed)
+      const campaignType = jobCompletion.isQuoteOnly ? 'quote_followup' : 'review_request';
+      const validation = this.canSendCampaign(campaignType, settings);
+      
+      if (!validation.allowed) {
+        console.log(`[Review Request Scheduler] Cannot send ${campaignType} email ${emailNumber}: ${validation.reason}`);
+        return false;
+      }
       
       // Check email preferences before sending
       const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./emailPreferenceEnforcer');
@@ -502,6 +557,11 @@ class ReviewRequestScheduler {
 
   /**
    * Process pending review request emails
+   * 
+   * NOTE: This currently handles review_request and quote_followup campaigns only.
+   * Referral nurture campaigns (referralNurtureCampaigns table) are NOT processed here.
+   * TODO: Implement separate processPendingReferralNurture() function to send
+   * referral nurture emails (4 emails over 6 months) using settings.referralNurturePhone
    */
   async processPendingEmails() {
     try {
@@ -511,6 +571,7 @@ class ReviewRequestScheduler {
         return;
       }
 
+      const settings = await this.getEmailSettings();
       const now = new Date();
       
       // Find active review requests that need emails sent (join with job_completions for completion date)
@@ -533,9 +594,21 @@ class ReviewRequestScheduler {
           )
         );
 
-      console.log(`[Review Request Scheduler] Found ${pendingRequests.length} active review requests`);
+      console.log(`[Review Request Scheduler] Found ${pendingRequests.length} active review/quote requests`);
 
       for (const { reviewRequest, jobCompletion } of pendingRequests) {
+        // Determine campaign type
+        const campaignType = jobCompletion.isQuoteOnly ? 'quote_followup' : 'review_request';
+        const requiredPhone = campaignType === 'quote_followup' 
+          ? settings.quoteFollowupPhone 
+          : settings.reviewRequestPhone;
+        
+        // Skip if campaign-specific phone number is not configured
+        if (!requiredPhone) {
+          console.log(`[Review Request Scheduler] Skipping ${campaignType} request ${reviewRequest.id} - no phone number configured`);
+          continue;
+        }
+        
         const daysSinceCompletion = Math.floor(
           (now.getTime() - jobCompletion.completionDate.getTime()) / (1000 * 60 * 60 * 24)
         );
@@ -554,7 +627,7 @@ class ReviewRequestScheduler {
         }
 
         if (emailToSend) {
-          console.log(`[Review Request Scheduler] Sending email ${emailToSend} for request ${reviewRequest.id} (${daysSinceCompletion} days since job)`);
+          console.log(`[Review Request Scheduler] Sending ${campaignType} email ${emailToSend} for request ${reviewRequest.id} (${daysSinceCompletion} days since job)`);
           await this.sendReviewEmail(reviewRequest.id, emailToSend);
         }
       }
