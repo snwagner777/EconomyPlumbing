@@ -285,6 +285,97 @@ export const refereeWelcomeEmails = pgTable("referee_welcome_emails", {
   refereeEmailIdx: index("referee_welcome_emails_referee_email_idx").on(table.refereeEmail),
 }));
 
+// Referrer thank you emails - sent when someone submits a referral
+export const referrerThankYouEmails = pgTable("referrer_thank_you_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to referral
+  referralId: varchar("referral_id").notNull(),
+  
+  // Referrer info (who receives the email)
+  referrerName: text("referrer_name").notNull(),
+  referrerEmail: text("referrer_email").notNull(),
+  referrerCustomerId: integer("referrer_customer_id").notNull(),
+  refereeName: text("referee_name").notNull(), // Who they referred
+  
+  // Email content and tracking
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  plainTextContent: text("plain_text_content").notNull(),
+  
+  // Status
+  status: text("status").notNull().default('queued'), // 'queued', 'approved', 'sent', 'failed'
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by"), // Admin who approved
+  sentAt: timestamp("sent_at"),
+  failureReason: text("failure_reason"),
+  
+  // Engagement tracking
+  emailOpens: integer("email_opens").notNull().default(0),
+  linkClicks: integer("link_clicks").notNull().default(0),
+  
+  // AI generation metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(true),
+  aiPrompt: text("ai_prompt"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  referralIdIdx: index("referrer_thank_you_emails_referral_id_idx").on(table.referralId),
+  statusIdx: index("referrer_thank_you_emails_status_idx").on(table.status),
+  sentAtIdx: index("referrer_thank_you_emails_sent_at_idx").on(table.sentAt),
+  referrerEmailIdx: index("referrer_thank_you_emails_referrer_email_idx").on(table.referrerEmail),
+  referrerCustomerIdIdx: index("referrer_thank_you_emails_referrer_customer_id_idx").on(table.referrerCustomerId),
+}));
+
+// Referrer success notification emails - sent when referred customer completes first job
+export const referrerSuccessEmails = pgTable("referrer_success_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to referral
+  referralId: varchar("referral_id").notNull(),
+  
+  // Referrer info (who receives the email)
+  referrerName: text("referrer_name").notNull(),
+  referrerEmail: text("referrer_email").notNull(),
+  referrerCustomerId: integer("referrer_customer_id").notNull(),
+  refereeName: text("referee_name").notNull(), // Who completed the job
+  
+  // Credit details
+  creditAmount: integer("credit_amount").notNull(), // Amount in cents ($25 = 2500)
+  creditExpiresAt: timestamp("credit_expires_at").notNull(),
+  currentBalance: integer("current_balance"), // Total available credits in cents
+  
+  // Email content and tracking
+  subject: text("subject").notNull(),
+  htmlContent: text("html_content").notNull(),
+  plainTextContent: text("plain_text_content").notNull(),
+  
+  // Status
+  status: text("status").notNull().default('queued'), // 'queued', 'approved', 'sent', 'failed'
+  approvedAt: timestamp("approved_at"),
+  approvedBy: varchar("approved_by"), // Admin who approved
+  sentAt: timestamp("sent_at"),
+  failureReason: text("failure_reason"),
+  
+  // Engagement tracking
+  emailOpens: integer("email_opens").notNull().default(0),
+  linkClicks: integer("link_clicks").notNull().default(0),
+  
+  // AI generation metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(true),
+  aiPrompt: text("ai_prompt"),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  referralIdIdx: index("referrer_success_emails_referral_id_idx").on(table.referralId),
+  statusIdx: index("referrer_success_emails_status_idx").on(table.status),
+  sentAtIdx: index("referrer_success_emails_sent_at_idx").on(table.sentAt),
+  referrerEmailIdx: index("referrer_success_emails_referrer_email_idx").on(table.referrerEmail),
+  referrerCustomerIdIdx: index("referrer_success_emails_referrer_customer_id_idx").on(table.referrerCustomerId),
+}));
+
 // Email Preferences - Granular opt-out controls for customers
 export const emailPreferences = pgTable("email_preferences", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
