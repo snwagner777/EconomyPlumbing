@@ -304,20 +304,23 @@ class ReviewRequestScheduler {
    */
   async getEmailContent(emailNumber: number, job: JobCompletion, settings: EmailSettings) {
     try {
+      // Determine campaign type based on whether job is quote-only
+      const campaignType = job.isQuoteOnly ? 'quote_followup' : 'review_request';
+      
       // First, try to get template from database
       const [template] = await db
         .select()
         .from(reviewEmailTemplates)
         .where(
           and(
-            eq(reviewEmailTemplates.campaignType, 'review_request'),
+            eq(reviewEmailTemplates.campaignType, campaignType),
             eq(reviewEmailTemplates.emailNumber, emailNumber)
           )
         )
         .limit(1);
 
       if (template) {
-        console.log(`[Review Request Scheduler] Using database template for email ${emailNumber}`);
+        console.log(`[Review Request Scheduler] Using database template for ${campaignType} email ${emailNumber}`);
         return {
           subject: template.subject,
           htmlContent: template.htmlContent,
@@ -326,9 +329,9 @@ class ReviewRequestScheduler {
       }
 
       // No template found, generate with AI
-      console.log(`[Review Request Scheduler] No template found, generating email ${emailNumber} with AI`);
+      console.log(`[Review Request Scheduler] No template found, generating ${campaignType} email ${emailNumber} with AI`);
       const generated = await generateEmail({
-        campaignType: 'review_request',
+        campaignType: campaignType as 'review_request' | 'quote_followup',
         emailNumber: emailNumber as 1 | 2 | 3 | 4,
         jobDetails: {
           customerId: job.customerId,
