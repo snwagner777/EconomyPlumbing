@@ -5575,6 +5575,305 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
     }
   });
 
+  // REFERRAL EMAIL MANAGEMENT ROUTES (Thank You & Success Notifications)
+
+  // Generate referrer thank you email (admin only)
+  app.post("/api/admin/referrals/generate-thank-you-email", requireAdmin, async (req, res) => {
+    try {
+      const { generateReferrerThankYouEmail } = await import("./lib/aiEmailGenerator");
+      const { referrerThankYouEmails, marketingSystemSettings } = await import("@shared/schema");
+      const { referralId, referrerName, refereeName } = req.body;
+
+      if (!referralId || !referrerName || !refereeName) {
+        return res.status(400).json({
+          error: "Missing required fields: referralId, referrerName, refereeName"
+        });
+      }
+
+      // Get referral nurture phone number from settings
+      const settings = await db.select().from(marketingSystemSettings).limit(1);
+      const phoneNumber = settings[0]?.referralNurturePhoneNumber || undefined;
+
+      console.log(`[Referral Emails] Generating thank you email for ${referrerName}...`);
+      
+      const emailContent = await generateReferrerThankYouEmail({
+        referrerName,
+        refereeName,
+        phoneNumber
+      });
+
+      console.log(`[Referral Emails] Successfully generated: "${emailContent.subject}"`);
+      
+      res.json({
+        subject: emailContent.subject,
+        htmlContent: emailContent.bodyHtml,
+        plainTextContent: emailContent.bodyPlain
+      });
+    } catch (error: any) {
+      console.error("[Referral Emails] Error generating thank you email:", error);
+      res.status(500).json({ error: error.message || 'Failed to generate email' });
+    }
+  });
+
+  // Generate referrer success notification email (admin only)
+  app.post("/api/admin/referrals/generate-success-email", requireAdmin, async (req, res) => {
+    try {
+      const { generateReferrerSuccessEmail } = await import("./lib/aiEmailGenerator");
+      const { marketingSystemSettings } = await import("@shared/schema");
+      const { referralId, referrerName, refereeName, creditAmount, creditExpiresAt, currentBalance } = req.body;
+
+      if (!referralId || !referrerName || !refereeName || creditAmount === undefined || !creditExpiresAt) {
+        return res.status(400).json({
+          error: "Missing required fields: referralId, referrerName, refereeName, creditAmount, creditExpiresAt"
+        });
+      }
+
+      // Get referral nurture phone number from settings
+      const settings = await db.select().from(marketingSystemSettings).limit(1);
+      const phoneNumber = settings[0]?.referralNurturePhoneNumber || undefined;
+
+      console.log(`[Referral Emails] Generating success email for ${referrerName}...`);
+      
+      const emailContent = await generateReferrerSuccessEmail({
+        referrerName,
+        refereeName,
+        creditAmount: Number(creditAmount) / 100, // Convert cents to dollars
+        creditExpiresAt: new Date(creditExpiresAt),
+        currentBalance: currentBalance !== undefined ? Number(currentBalance) / 100 : undefined,
+        phoneNumber
+      });
+
+      console.log(`[Referral Emails] Successfully generated: "${emailContent.subject}"`);
+      
+      res.json({
+        subject: emailContent.subject,
+        htmlContent: emailContent.bodyHtml,
+        plainTextContent: emailContent.bodyPlain
+      });
+    } catch (error: any) {
+      console.error("[Referral Emails] Error generating success email:", error);
+      res.status(500).json({ error: error.message || 'Failed to generate email' });
+    }
+  });
+
+  // Get all pending referrer thank you emails (admin only)
+  app.get("/api/admin/referrals/thank-you-emails", requireAdmin, async (req, res) => {
+    try {
+      const { referrerThankYouEmails } = await import("@shared/schema");
+      
+      const emails = await db
+        .select()
+        .from(referrerThankYouEmails)
+        .orderBy(desc(referrerThankYouEmails.createdAt));
+
+      res.json(emails);
+    } catch (error: any) {
+      console.error("[Referral Emails] Error fetching thank you emails:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get all pending referrer success emails (admin only)
+  app.get("/api/admin/referrals/success-emails", requireAdmin, async (req, res) => {
+    try {
+      const { referrerSuccessEmails } = await import("@shared/schema");
+      
+      const emails = await db
+        .select()
+        .from(referrerSuccessEmails)
+        .orderBy(desc(referrerSuccessEmails.createdAt));
+
+      res.json(emails);
+    } catch (error: any) {
+      console.error("[Referral Emails] Error fetching success emails:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Approve and send referrer thank you email (admin only)
+  app.post("/api/admin/referrals/approve-thank-you-email/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { referrerThankYouEmails, marketingSystemSettings } = await import("@shared/schema");
+      const { sendEmail } = await import("./lib/resendClient");
+      const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+
+      // Get the email record
+      const [email] = await db
+        .select()
+        .from(referrerThankYouEmails)
+        .where(eq(referrerThankYouEmails.id, id));
+
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+
+      if (email.status !== 'queued') {
+        return res.status(400).json({ error: "Email already processed" });
+      }
+
+      // Check master email switch
+      const settings = await db.select().from(marketingSystemSettings).limit(1);
+      if (!settings[0]?.masterEmailSwitchEnabled) {
+        return res.status(400).json({ 
+          error: "Master email switch is disabled. Enable it in Marketing Settings to send emails." 
+        });
+      }
+
+      // Check email preferences
+      const prefCheck = await canSendEmail(email.referrerEmail, { type: 'referral' });
+      if (!prefCheck.canSend) {
+        await db
+          .update(referrerThankYouEmails)
+          .set({
+            status: 'failed',
+            failureReason: `Cannot send: ${prefCheck.reason}`,
+          })
+          .where(eq(referrerThankYouEmails.id, id));
+
+        return res.status(400).json({ error: prefCheck.reason });
+      }
+
+      // Add unsubscribe footer
+      const htmlWithFooter = addUnsubscribeFooter(email.htmlContent, prefCheck.unsubscribeUrl!);
+      const plainWithFooter = addUnsubscribeFooterPlainText(email.plainTextContent, prefCheck.unsubscribeUrl!);
+
+      // Send email
+      console.log(`[Referral Emails] Sending thank you email to ${email.referrerEmail}...`);
+      
+      await sendEmail({
+        to: email.referrerEmail,
+        subject: email.subject,
+        html: htmlWithFooter,
+        text: plainWithFooter,
+      });
+
+      // Mark as approved and sent
+      await db
+        .update(referrerThankYouEmails)
+        .set({
+          status: 'sent',
+          approvedAt: new Date(),
+          approvedBy: 'admin',
+          sentAt: new Date(),
+        })
+        .where(eq(referrerThankYouEmails.id, id));
+
+      console.log(`[Referral Emails] Thank you email sent successfully to ${email.referrerEmail}`);
+      res.json({ success: true, message: 'Email sent successfully' });
+    } catch (error: any) {
+      console.error("[Referral Emails] Error sending thank you email:", error);
+      
+      // Update email status to failed
+      try {
+        const { referrerThankYouEmails } = await import("@shared/schema");
+        await db
+          .update(referrerThankYouEmails)
+          .set({
+            status: 'failed',
+            failureReason: error.message
+          })
+          .where(eq(referrerThankYouEmails.id, req.params.id));
+      } catch (updateError) {
+        console.error("[Referral Emails] Error updating email status:", updateError);
+      }
+      
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Approve and send referrer success email (admin only)
+  app.post("/api/admin/referrals/approve-success-email/:id", requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { referrerSuccessEmails, marketingSystemSettings } = await import("@shared/schema");
+      const { sendEmail } = await import("./lib/resendClient");
+      const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+
+      // Get the email record
+      const [email] = await db
+        .select()
+        .from(referrerSuccessEmails)
+        .where(eq(referrerSuccessEmails.id, id));
+
+      if (!email) {
+        return res.status(404).json({ error: "Email not found" });
+      }
+
+      if (email.status !== 'queued') {
+        return res.status(400).json({ error: "Email already processed" });
+      }
+
+      // Check master email switch
+      const settings = await db.select().from(marketingSystemSettings).limit(1);
+      if (!settings[0]?.masterEmailSwitchEnabled) {
+        return res.status(400).json({ 
+          error: "Master email switch is disabled. Enable it in Marketing Settings to send emails." 
+        });
+      }
+
+      // Check email preferences
+      const prefCheck = await canSendEmail(email.referrerEmail, { type: 'referral' });
+      if (!prefCheck.canSend) {
+        await db
+          .update(referrerSuccessEmails)
+          .set({
+            status: 'failed',
+            failureReason: `Cannot send: ${prefCheck.reason}`,
+          })
+          .where(eq(referrerSuccessEmails.id, id));
+
+        return res.status(400).json({ error: prefCheck.reason });
+      }
+
+      // Add unsubscribe footer
+      const htmlWithFooter = addUnsubscribeFooter(email.htmlContent, prefCheck.unsubscribeUrl!);
+      const plainWithFooter = addUnsubscribeFooterPlainText(email.plainTextContent, prefCheck.unsubscribeUrl!);
+
+      // Send email
+      console.log(`[Referral Emails] Sending success email to ${email.referrerEmail}...`);
+      
+      await sendEmail({
+        to: email.referrerEmail,
+        subject: email.subject,
+        html: htmlWithFooter,
+        text: plainWithFooter,
+      });
+
+      // Mark as approved and sent
+      await db
+        .update(referrerSuccessEmails)
+        .set({
+          status: 'sent',
+          approvedAt: new Date(),
+          approvedBy: 'admin',
+          sentAt: new Date(),
+        })
+        .where(eq(referrerSuccessEmails.id, id));
+
+      console.log(`[Referral Emails] Success email sent successfully to ${email.referrerEmail}`);
+      res.json({ success: true, message: 'Email sent successfully' });
+    } catch (error: any) {
+      console.error("[Referral Emails] Error sending success email:", error);
+      
+      // Update email status to failed
+      try {
+        const { referrerSuccessEmails } = await import("@shared/schema");
+        await db
+          .update(referrerSuccessEmails)
+          .set({
+            status: 'failed',
+            failureReason: error.message
+          })
+          .where(eq(referrerSuccessEmails.id, req.params.id));
+      } catch (updateError) {
+        console.error("[Referral Emails] Error updating email status:", updateError);
+      }
+      
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // AI EMAIL GENERATOR ROUTES
   
   // Generate AI email (admin only)
