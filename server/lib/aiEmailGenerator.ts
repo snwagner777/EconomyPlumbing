@@ -30,7 +30,7 @@ interface GenerateEmailOptions {
   emailNumber: 1 | 2 | 3 | 4; // Which email in the drip sequence
   jobDetails: JobDetails;
   phoneNumber?: string;
-  referralLink?: string; // Full referral link (e.g., "https://economyplumbingtx.com/ref/JOHN-SMITH")
+  referralLink?: string; // Full referral link (e.g., "https://plumbersthatcare.com/ref/JOHN-SMITH")
   strategy?: 'value' | 'trust' | 'urgency' | 'social_proof' | 'seasonal';
 }
 
@@ -199,7 +199,7 @@ ${emailNumber === 1 ? `
 
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}
 
-Include a clear CTA button with text like "Leave a Review" that links to: https://economyplumbingtx.com/leave-review
+Include a clear CTA button with text like "Leave a Review" that links to: https://plumbersthatcare.com/leave-review
 
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused)
@@ -272,7 +272,7 @@ Instructions for including the referral link:
 - Explain they can share this link with friends, family, and neighbors
 - When someone books service through their link, they earn $25 credit
 - Make the link easy to copy and share (formatted as clickable button and also plain text)
-- Include a clear CTA button that links to: ${referralLink}` : `CRITICAL: Tell them to visit https://economyplumbingtx.com/customer-portal to get their personalized referral link. Include a CTA button that links to: https://economyplumbingtx.com/customer-portal`}
+- Include a clear CTA button that links to: ${referralLink}` : `CRITICAL: Tell them to visit https://plumbersthatcare.com/customer-portal to get their personalized referral link. Include a CTA button that links to: https://plumbersthatcare.com/customer-portal`}
 
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused)
@@ -341,7 +341,7 @@ ${emailNumber === 1 ? `
 
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}
 
-Include a clear CTA button with text like "Get a Quote" or "Schedule Service" that links to: https://economyplumbingtx.com/contact
+Include a clear CTA button with text like "Get a Quote" or "Schedule Service" that links to: https://plumbersthatcare.com/contact
 
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused, NOT pushy)
@@ -461,7 +461,7 @@ Email Objectives:
 
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email for tracking purposes. Format: "Ready to schedule? Call us at ${phoneNumber}"` : ''}
 
-Include a clear CTA button with text like "Schedule Service Now" that links to: https://economyplumbingtx.com/schedule
+Include a clear CTA button with text like "Schedule Service Now" that links to: https://plumbersthatcare.com/schedule
 
 ${seasonalContext ? `Seasonal touch: ${seasonalContext}` : ''}
 

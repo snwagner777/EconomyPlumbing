@@ -178,7 +178,7 @@ Economy Plumbing Services | Serving Austin & Central Texas
 function getBaseUrl(): string {
   // Production URL
   if (process.env.NODE_ENV === 'production') {
-    return 'https://economyplumbingtx.com';
+    return 'https://plumbersthatcare.com';
   }
   
   // Development - use replit.dev domain if available

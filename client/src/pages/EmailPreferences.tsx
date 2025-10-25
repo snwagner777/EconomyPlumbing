@@ -268,7 +268,7 @@ export default function EmailPreferences() {
         </Card>
 
         <div className="text-center mt-8 text-sm text-muted-foreground">
-          <p>Questions? Contact us at info@economyplumbingtx.com</p>
+          <p>Questions? Contact us at info@plumbersthatcare.com</p>
           <p className="mt-2">Economy Plumbing Services - Serving Austin & Central Texas</p>
         </div>
       </div>

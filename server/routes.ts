@@ -1397,7 +1397,7 @@ ${rssItems}
       
       // Generate personalized referral link
       const baseUrl = process.env.NODE_ENV === 'production' 
-        ? 'https://economyplumbingtx.com' 
+        ? 'https://plumbersthatcare.com' 
         : (process.env.REPLIT_DEV_DOMAIN ? `https://${process.env.REPLIT_DEV_DOMAIN}` : 'http://localhost:5000');
       
       const referralLink = `${baseUrl}/referred-by/${referrerCustomerId}`;
