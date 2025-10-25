@@ -6,6 +6,14 @@ Economy Plumbing Services is a full-stack web application designed to enhance a 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Development Principles
+**CRITICAL RULE: Always check existing functionality before creating new pages/features**
+- The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
+- NEVER create separate admin pages (e.g., `/admin/gmb-setup`) without first checking if the functionality already exists in the unified dashboard
+- When adding admin features, ALWAYS integrate them into the existing unified admin panel
+- Before implementing any new feature, search the codebase to verify it doesn't already exist
+- Consolidation over separation: One unified interface is better than multiple scattered pages
+
 ## System Architecture
 
 ### Frontend
