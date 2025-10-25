@@ -3008,7 +3008,7 @@ function ReviewsSection() {
                 </div>
               </div>
               <Button
-                onClick={() => window.location.href = '/api/oauth/init'}
+                onClick={() => window.location.href = '/api/google/oauth/init'}
                 className="bg-orange-600 hover:bg-orange-700"
                 data-testid="button-connect-google"
               >
