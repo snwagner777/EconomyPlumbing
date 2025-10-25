@@ -387,7 +387,7 @@ class ReviewRequestScheduler {
       
       // Check email preferences before sending
       const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./emailPreferenceEnforcer');
-      const prefCheck = await canSendEmail(reviewRequest.customerEmail, { type: 'review_request' });
+      const prefCheck = await canSendEmail(reviewRequest.customerEmail, { type: 'review' });
       
       if (!prefCheck.canSend) {
         console.log(`[Review Request Scheduler] Skipping email - ${prefCheck.reason}`);
