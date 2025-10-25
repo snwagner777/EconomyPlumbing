@@ -4543,6 +4543,14 @@ function ReviewRequestsSection() {
   const { toast } = useToast();
   const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
+  
+  // AI Email Generation State
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture'>('review_request');
+  const [generateEmailNumber, setGenerateEmailNumber] = useState<1 | 2 | 3 | 4>(1);
+  const [generateStrategy, setGenerateStrategy] = useState<string>('');
+  const [generatedEmail, setGeneratedEmail] = useState<any>(null);
+  const [previewMode, setPreviewMode] = useState<'visual' | 'html' | 'plain'>('visual');
 
   // Fetch system settings
   const { data: settings } = useQuery<SystemSettings>({
@@ -4595,6 +4603,50 @@ function ReviewRequestsSection() {
     },
   });
 
+  // AI Email Generation Mutation
+  const generateMutation = useMutation({
+    mutationFn: async (params: any) => {
+      return await apiRequest("POST", "/api/admin/emails/generate", params);
+    },
+    onSuccess: (data: any) => {
+      setGeneratedEmail(data);
+      toast({
+        title: "Email Generated",
+        description: "AI has created a personalized email. Review and save if you'd like to use it.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate email",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Save generated email as template
+  const saveGeneratedMutation = useMutation({
+    mutationFn: async (params: any) => {
+      return await apiRequest("POST", "/api/admin/emails/save-template", params);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/emails/templates'] });
+      setGenerateDialogOpen(false);
+      setGeneratedEmail(null);
+      toast({
+        title: "Template Saved",
+        description: "Email template has been saved successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save template",
+        variant: "destructive"
+      });
+    }
+  });
+
   const formatPhoneNumber = (phone: string) => {
     const cleaned = phone.replace(/\D/g, '');
     if (cleaned.length === 10) {
@@ -4613,6 +4665,39 @@ function ReviewRequestsSection() {
     };
     const config = variants[status] || { variant: "outline", label: status };
     return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
+
+  const handleGenerateEmail = () => {
+    const mockJobDetails = {
+      customerId: 12345,
+      customerName: "John Smith",
+      serviceType: "Water Heater Installation",
+      jobAmount: 185000,
+      jobDate: new Date(),
+      location: "Austin, TX"
+    };
+
+    generateMutation.mutate({
+      campaignType: generateCampaignType,
+      emailNumber: generateEmailNumber,
+      jobDetails: mockJobDetails,
+      phoneNumber: settings?.reviewRequestPhoneNumber || "(512) 276-1690",
+      strategy: generateStrategy || undefined
+    });
+  };
+
+  const handleSaveGeneratedEmail = () => {
+    if (!generatedEmail) return;
+
+    saveGeneratedMutation.mutate({
+      campaignType: generateCampaignType,
+      emailNumber: generateEmailNumber,
+      subject: generatedEmail.subject,
+      preheader: generatedEmail.preheader,
+      bodyHtml: generatedEmail.bodyHtml,
+      bodyPlain: generatedEmail.bodyPlain,
+      isActive: true
+    });
   };
 
   return (
@@ -4959,6 +5044,16 @@ function ReviewRequestsSection() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
+          <div className="flex justify-end mb-4">
+            <Button
+              onClick={() => setGenerateDialogOpen(true)}
+              data-testid="button-generate-email"
+            >
+              <Sparkles className="w-4 h-4 mr-2" />
+              Generate Email with AI
+            </Button>
+          </div>
+          
           <Card>
             <CardHeader>
               <CardTitle>Campaign Settings</CardTitle>
@@ -5142,6 +5237,172 @@ function ReviewRequestsSection() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* AI Email Generation Dialog */}
+      <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Generate Email with AI</DialogTitle>
+            <DialogDescription>
+              Create a personalized email using job details and seasonal context
+            </DialogDescription>
+          </DialogHeader>
+
+          {!generatedEmail ? (
+            <div className="space-y-4">
+              <div>
+                <Label>Campaign Type</Label>
+                <Select
+                  value={generateCampaignType}
+                  onValueChange={(value: 'review_request' | 'referral_nurture') => setGenerateCampaignType(value)}
+                >
+                  <SelectTrigger data-testid="select-campaign-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="review_request">Review Request Drip</SelectItem>
+                    <SelectItem value="referral_nurture">Referral Nurture</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Email Number (1-4)</Label>
+                <Select
+                  value={generateEmailNumber.toString()}
+                  onValueChange={(value) => setGenerateEmailNumber(parseInt(value) as 1 | 2 | 3 | 4)}
+                >
+                  <SelectTrigger data-testid="select-email-number">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Email 1 - {generateCampaignType === 'review_request' ? 'Day 1' : 'Day 14'}</SelectItem>
+                    <SelectItem value="2">Email 2 - {generateCampaignType === 'review_request' ? 'Day 7' : 'Day 60'}</SelectItem>
+                    <SelectItem value="3">Email 3 - {generateCampaignType === 'review_request' ? 'Day 14' : 'Day 150'}</SelectItem>
+                    <SelectItem value="4">Email 4 - {generateCampaignType === 'review_request' ? 'Day 21' : 'Day 210'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label>Strategy (Optional)</Label>
+                <Select
+                  value={generateStrategy}
+                  onValueChange={setGenerateStrategy}
+                >
+                  <SelectTrigger data-testid="select-strategy">
+                    <SelectValue placeholder="Auto-select based on email number" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">Auto-select</SelectItem>
+                    <SelectItem value="value">Value - Focus on service quality</SelectItem>
+                    <SelectItem value="trust">Trust - Build credibility</SelectItem>
+                    <SelectItem value="urgency">Urgency - Time-sensitive ask</SelectItem>
+                    <SelectItem value="social_proof">Social Proof - Others sharing reviews</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Leave blank for automatic strategy selection
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setGenerateDialogOpen(false)}
+                  data-testid="button-cancel-generate"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleGenerateEmail}
+                  disabled={generateMutation.isPending}
+                  data-testid="button-run-generation"
+                >
+                  {generateMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Generate Email
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-semibold text-lg">{generatedEmail.subject}</h3>
+                  <p className="text-sm text-muted-foreground">{generatedEmail.preheader}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Tabs value={previewMode} onValueChange={(v) => setPreviewMode(v as 'visual' | 'html' | 'plain')}>
+                    <TabsList>
+                      <TabsTrigger value="visual" data-testid="tab-preview-visual">Visual</TabsTrigger>
+                      <TabsTrigger value="html" data-testid="tab-preview-html">HTML</TabsTrigger>
+                      <TabsTrigger value="plain" data-testid="tab-preview-plain">Plain</TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              </div>
+
+              <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
+                {previewMode === 'visual' && (
+                  <div dangerouslySetInnerHTML={{ __html: generatedEmail.bodyHtml }} />
+                )}
+                {previewMode === 'html' && (
+                  <pre className="text-xs whitespace-pre-wrap">{generatedEmail.bodyHtml}</pre>
+                )}
+                {previewMode === 'plain' && (
+                  <pre className="whitespace-pre-wrap">{generatedEmail.bodyPlain}</pre>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setGeneratedEmail(null)}
+                  data-testid="button-regenerate"
+                >
+                  Regenerate
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setGenerateDialogOpen(false);
+                    setGeneratedEmail(null);
+                  }}
+                  data-testid="button-close-preview"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={handleSaveGeneratedEmail}
+                  disabled={saveGeneratedMutation.isPending}
+                  data-testid="button-save-generated"
+                >
+                  {saveGeneratedMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save as Template
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
