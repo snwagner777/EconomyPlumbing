@@ -4302,19 +4302,19 @@ ${rssItems}
   app.get("/api/admin/campaign-analytics/overview", requireAdmin, async (req, res) => {
     try {
       const { reviewRequests, referralNurtureCampaigns, emailSendLog } = await import("@shared/schema");
+      const { eq, gte } = await import("drizzle-orm");
       const { days = '30' } = req.query;
       
-      // Build date filter if not "all"
-      const dateFilter = days === 'all' 
-        ? sql`true`
-        : sql`${reviewRequests.createdAt} >= now() - interval '${sql.raw(days as string)} days'`;
+      // Validate days parameter
+      const validDays = ['7', '30', '90', '365', 'all'];
+      if (!validDays.includes(days as string)) {
+        return res.status(400).json({ error: 'Invalid days parameter. Must be 7, 30, 90, 365, or all' });
+      }
       
-      const emailDateFilter = days === 'all'
-        ? sql`true`
-        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
+      const daysNum = days === 'all' ? null : parseInt(days as string);
       
-      // Get all campaign counts and stats
-      const [reviewStats] = await db
+      // Build review requests query
+      let reviewQuery = db
         .select({
           total: sql<number>`count(*)`,
           completed: sql<number>`count(*) filter (where status = 'completed')`,
@@ -4322,10 +4322,16 @@ ${rssItems}
           totalOpens: sql<number>`sum(${reviewRequests.emailOpens})`,
           totalClicks: sql<number>`sum(${reviewRequests.linkClicks})`,
         })
-        .from(reviewRequests)
-        .where(dateFilter);
-
-      const [referralStats] = await db
+        .from(reviewRequests);
+      
+      if (daysNum !== null) {
+        reviewQuery = reviewQuery.where(
+          sql`${reviewRequests.createdAt} >= now() - interval '${sql.raw(daysNum.toString())} days'`
+        ) as typeof reviewQuery;
+      }
+      
+      // Build referral nurture query
+      let referralQuery = db
         .select({
           total: sql<number>`count(*)`,
           completed: sql<number>`count(*) filter (where status = 'completed')`,
@@ -4333,13 +4339,16 @@ ${rssItems}
           totalOpens: sql<number>`sum(${referralNurtureCampaigns.totalOpens})`,
           totalClicks: sql<number>`sum(${referralNurtureCampaigns.totalClicks})`,
         })
-        .from(referralNurtureCampaigns)
-        .where(days === 'all' 
-          ? sql`true`
-          : sql`${referralNurtureCampaigns.createdAt} >= now() - interval '${sql.raw(days as string)} days'`);
-
-      // Get email send stats
-      const [emailStats] = await db
+        .from(referralNurtureCampaigns);
+      
+      if (daysNum !== null) {
+        referralQuery = referralQuery.where(
+          sql`${referralNurtureCampaigns.createdAt} >= now() - interval '${sql.raw(daysNum.toString())} days'`
+        ) as typeof referralQuery;
+      }
+      
+      // Build email stats query
+      let emailQuery = db
         .select({
           totalSent: sql<number>`count(*)`,
           totalOpened: sql<number>`count(*) filter (where ${emailSendLog.openedAt} is not null)`,
@@ -4347,8 +4356,18 @@ ${rssItems}
           totalBounced: sql<number>`count(*) filter (where ${emailSendLog.bouncedAt} is not null)`,
           totalComplained: sql<number>`count(*) filter (where ${emailSendLog.complainedAt} is not null)`,
         })
-        .from(emailSendLog)
-        .where(emailDateFilter);
+        .from(emailSendLog);
+      
+      if (daysNum !== null) {
+        emailQuery = emailQuery.where(
+          sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(daysNum.toString())} days'`
+        ) as typeof emailQuery;
+      }
+      
+      // Execute queries
+      const [reviewStats] = await reviewQuery;
+      const [referralStats] = await referralQuery;
+      const [emailStats] = await emailQuery;
 
       res.json({
         reviewRequests: {
@@ -4399,13 +4418,16 @@ ${rssItems}
       const { emailSendLog } = await import("@shared/schema");
       const { days = '30' } = req.query;
       
-      // Build date filter if not "all"
-      const dateFilter = days === 'all'
-        ? sql`true`
-        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
+      // Validate days parameter
+      const validDays = ['7', '30', '90', '365', 'all'];
+      if (!validDays.includes(days as string)) {
+        return res.status(400).json({ error: 'Invalid days parameter. Must be 7, 30, 90, 365, or all' });
+      }
       
-      // Get stats grouped by campaign type for the time period
-      const stats = await db
+      const daysNum = days === 'all' ? null : parseInt(days as string);
+      
+      // Build query
+      let query = db
         .select({
           campaignType: emailSendLog.campaignType,
           totalSent: sql<number>`count(*)`,
@@ -4414,9 +4436,16 @@ ${rssItems}
           avgTimeToOpen: sql<number>`avg(extract(epoch from (${emailSendLog.openedAt} - ${emailSendLog.sentAt})))`,
           avgTimeToClick: sql<number>`avg(extract(epoch from (${emailSendLog.clickedAt} - ${emailSendLog.sentAt})))`,
         })
-        .from(emailSendLog)
-        .where(dateFilter)
-        .groupBy(emailSendLog.campaignType);
+        .from(emailSendLog);
+      
+      // Add date filter if not "all"
+      if (daysNum !== null) {
+        query = query.where(
+          sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(daysNum.toString())} days'`
+        ) as typeof query;
+      }
+      
+      const stats = await query.groupBy(emailSendLog.campaignType);
 
       const formattedStats = stats.map(stat => ({
         campaignType: stat.campaignType,
@@ -4446,17 +4475,35 @@ ${rssItems}
       const { emailSendLog } = await import("@shared/schema");
       const { limit = '50', days = '30' } = req.query;
       
-      // Build date filter if not "all"
-      const dateFilter = days === 'all'
-        ? sql`true`
-        : sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(days as string)} days'`;
+      // Validate days parameter
+      const validDays = ['7', '30', '90', '365', 'all'];
+      if (!validDays.includes(days as string)) {
+        return res.status(400).json({ error: 'Invalid days parameter. Must be 7, 30, 90, 365, or all' });
+      }
       
-      const recentEmails = await db
+      // Validate and parse limit
+      const limitNum = parseInt(limit as string);
+      if (isNaN(limitNum) || limitNum < 1 || limitNum > 1000) {
+        return res.status(400).json({ error: 'Invalid limit parameter. Must be between 1 and 1000' });
+      }
+      
+      const daysNum = days === 'all' ? null : parseInt(days as string);
+      
+      // Build query
+      let query = db
         .select()
-        .from(emailSendLog)
-        .where(dateFilter)
+        .from(emailSendLog);
+      
+      // Add date filter if not "all"
+      if (daysNum !== null) {
+        query = query.where(
+          sql`${emailSendLog.sentAt} >= now() - interval '${sql.raw(daysNum.toString())} days'`
+        ) as typeof query;
+      }
+      
+      const recentEmails = await query
         .orderBy(desc(emailSendLog.sentAt))
-        .limit(parseInt(limit as string));
+        .limit(limitNum);
 
       res.json({ emails: recentEmails });
     } catch (error: any) {
