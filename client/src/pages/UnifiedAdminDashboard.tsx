@@ -6242,9 +6242,11 @@ function ChatbotSection() {
   const [showExportDialog, setShowExportDialog] = useState(false);
 
   // Fetch conversations
-  const { data: conversations = [], isLoading: loadingConversations, refetch: refetchConversations } = useQuery<ChatbotConversation[]>({
+  const { data: conversationsData, isLoading: loadingConversations, refetch: refetchConversations } = useQuery<{ conversations: ChatbotConversation[], pagination: any }>({
     queryKey: ["/api/admin/chatbot/conversations"],
   });
+  
+  const conversations = conversationsData?.conversations || [];
 
   // Fetch analytics
   const { data: analytics, isLoading: loadingAnalytics } = useQuery<ChatbotAnalytics>({
