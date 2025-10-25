@@ -57,8 +57,16 @@ import {
   Calendar,
   AlertCircle,
   MessageCircle,
+  MessageSquare,
   CreditCard,
-  Trophy
+  Trophy,
+  Archive,
+  ThumbsDown,
+  ThumbsUp,
+  Clock,
+  ChevronRight,
+  Download,
+  Bot
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -66,8 +74,100 @@ import type { TrackingNumber, PageMetadata, CommercialCustomer } from "@shared/s
 import { FocalPointEditor } from "@/components/FocalPointEditor";
 import { DraggableCollageEditor } from "@/components/DraggableCollageEditor";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Code, Save, AlertTriangle } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'review-requests' | 'email-templates';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'review-requests' | 'email-templates' | 'chatbot';
+
+interface EmailTemplate {
+  id: string;
+  campaignType: string;
+  emailNumber: number;
+  subject: string;
+  preheader: string | null;
+  bodyHtml: string;
+  bodyPlain: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SystemSettings {
+  masterEmailSwitch: boolean;
+  reviewDripEnabled: boolean;
+  referralDripEnabled: boolean;
+  autoSendReviewRequests: boolean;
+  autoStartReferralCampaigns: boolean;
+  reviewRequestPhoneNumber: string;
+  reviewRequestPhoneFormatted: string;
+}
+
+interface ReviewRequest {
+  id: string;
+  jobCompletionId: string;
+  customerId: number;
+  customerEmail: string;
+  customerName: string;
+  status: string;
+  stopReason?: string;
+  email1SentAt?: string;
+  email2SentAt?: string;
+  email3SentAt?: string;
+  email4SentAt?: string;
+  reviewSubmitted: boolean;
+  reviewSubmittedAt?: string;
+  reviewRating?: number;
+  reviewPlatform?: string;
+  emailOpens: number;
+  linkClicks: number;
+  createdAt: string;
+  completedAt?: string;
+}
+
+interface ReferralNurture {
+  id: string;
+  customerId: number;
+  customerEmail: string;
+  customerName: string;
+  status: string;
+  pauseReason?: string;
+  email1SentAt?: string;
+  email2SentAt?: string;
+  email3SentAt?: string;
+  email4SentAt?: string;
+  consecutiveUnopened: number;
+  totalOpens: number;
+  totalClicks: number;
+  referralsSubmitted: number;
+  lastReferralAt?: string;
+  createdAt: string;
+  pausedAt?: string;
+  completedAt?: string;
+}
+
+interface ReviewRequestsDashboardStats {
+  reviewRequests: {
+    total: number;
+    active: number;
+    completed: number;
+    reviewsSubmitted: number;
+    averageRating: number;
+    openRate: number;
+    clickRate: number;
+  };
+  referralNurture: {
+    total: number;
+    active: number;
+    paused: number;
+    completed: number;
+    totalReferrals: number;
+    averageEngagement: number;
+  };
+}
 
 // Define all application pages
 const ALL_PAGES = [
@@ -202,6 +302,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Database,
       section: 'customer-data' as AdminSection,
       description: "Import history & metrics"
+    },
+    {
+      title: "AI Chatbot",
+      icon: Bot,
+      section: 'chatbot' as AdminSection,
+      description: "Conversations & analytics"
     },
   ];
 
@@ -4435,147 +4541,1176 @@ function ReferralTrackingSection() {
 // Review Requests Section
 function ReviewRequestsSection() {
   const { toast } = useToast();
-  const { data: settings, isLoading } = useQuery({
+  const [isPhoneDialogOpen, setIsPhoneDialogOpen] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState("");
+
+  // Fetch system settings
+  const { data: settings } = useQuery<SystemSettings>({
     queryKey: ['/api/admin/review-requests/settings'],
   });
 
-  const updateSettings = useMutation({
-    mutationFn: async (updates: any) => {
-      const response = await apiRequest('PUT', '/api/admin/review-requests/settings', updates);
-      return response.json();
+  // Fetch dashboard stats
+  const { data: stats } = useQuery<ReviewRequestsDashboardStats>({
+    queryKey: ['/api/admin/review-requests/stats'],
+  });
+
+  // Fetch active review requests
+  const { data: reviewRequests } = useQuery<ReviewRequest[]>({
+    queryKey: ['/api/admin/review-requests/active'],
+  });
+
+  // Fetch active referral campaigns
+  const { data: referralCampaigns } = useQuery<ReferralNurture[]>({
+    queryKey: ['/api/admin/review-requests/referrals'],
+  });
+
+  // Update settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (updates: Partial<SystemSettings>) => {
+      return await apiRequest("PUT", "/api/admin/review-requests/settings", updates);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
-      toast({ title: "Settings saved successfully" });
+      toast({
+        title: "Settings Updated",
+        description: "Your review request settings have been saved.",
+      });
     },
   });
 
-  if (isLoading) {
-    return <Skeleton className="h-96" />;
-  }
+  // Update phone number mutation (auto-creates tracking number with UTM params)
+  const updatePhoneMutation = useMutation({
+    mutationFn: async (phone: string) => {
+      return await apiRequest("POST", "/api/admin/review-requests/phone", { phoneNumber: phone });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/tracking-numbers'] });
+      setIsPhoneDialogOpen(false);
+      setPhoneNumber("");
+      toast({
+        title: "Phone Number Updated",
+        description: "Tracking number created with UTM parameters: utm_source=review_request, utm_medium=email, utm_campaign=review_drip",
+      });
+    },
+  });
+
+  const formatPhoneNumber = (phone: string) => {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 3)}) ${cleaned.slice(3, 6)}-${cleaned.slice(6)}`;
+    }
+    return phone;
+  };
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
+      queued: { variant: "secondary", label: "Queued" },
+      sending: { variant: "default", label: "Sending" },
+      paused: { variant: "outline", label: "Paused" },
+      completed: { variant: "default", label: "Completed" },
+      stopped: { variant: "destructive", label: "Stopped" },
+    };
+    const config = variants[status] || { variant: "outline", label: status };
+    return <Badge variant={config.variant}>{config.label}</Badge>;
+  };
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Review Request Campaign Settings</CardTitle>
-          <CardDescription>Configure automated review request emails sent after job completion</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
+      <Tabs defaultValue="dashboard" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="dashboard" data-testid="tab-dashboard">
+            <TrendingUp className="h-4 w-4 mr-2" />
+            Dashboard
+          </TabsTrigger>
+          <TabsTrigger value="review-campaigns" data-testid="tab-review-campaigns">
+            <Mail className="h-4 w-4 mr-2" />
+            Review Campaigns
+          </TabsTrigger>
+          <TabsTrigger value="referral-campaigns" data-testid="tab-referral-campaigns">
+            <Users className="h-4 w-4 mr-2" />
+            Referral Nurture
+          </TabsTrigger>
+          <TabsTrigger value="settings" data-testid="tab-settings">
+            <Settings className="h-4 w-4 mr-2" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Dashboard Tab */}
+        <TabsContent value="dashboard" className="space-y-6">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Active Review Campaigns
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold" data-testid="stat-active-review-campaigns">
+                  {stats?.reviewRequests.active || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats?.reviewRequests.total || 0} total campaigns
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Reviews Submitted
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold" data-testid="stat-reviews-submitted">
+                  {stats?.reviewRequests.reviewsSubmitted || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats?.reviewRequests.averageRating.toFixed(1) || "N/A"} avg rating
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Email Engagement
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold" data-testid="stat-open-rate">
+                  {((stats?.reviewRequests.openRate || 0) * 100).toFixed(1)}%
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {((stats?.reviewRequests.clickRate || 0) * 100).toFixed(1)}% click rate
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2 space-y-0">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  Referrals Generated
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold" data-testid="stat-referrals">
+                  {stats?.referralNurture.totalReferrals || 0}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {stats?.referralNurture.active || 0} active campaigns
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* System Status */}
+          <Card>
+            <CardHeader>
+              <CardTitle>System Status</CardTitle>
+              <CardDescription>
+                Current configuration and campaign health
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Review Drip Campaign</p>
+                  <p className="text-sm text-muted-foreground">
+                    4-email sequence over 21 days
+                  </p>
+                </div>
+                <Badge variant={settings?.reviewDripEnabled ? "default" : "secondary"}>
+                  {settings?.reviewDripEnabled ? "Enabled" : "Disabled"}
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Referral Nurture Campaign</p>
+                  <p className="text-sm text-muted-foreground">
+                    4-email sequence over 6 months
+                  </p>
+                </div>
+                <Badge variant={settings?.referralDripEnabled ? "default" : "secondary"}>
+                  {settings?.referralDripEnabled ? "Enabled" : "Disabled"}
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Contact Phone Number</p>
+                  <p className="text-sm text-muted-foreground">
+                    {settings?.reviewRequestPhoneFormatted || "Not configured"}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsPhoneDialogOpen(true)}
+                  data-testid="button-edit-phone"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Review Campaigns Tab */}
+        <TabsContent value="review-campaigns" className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base">Master Email Switch</Label>
-              <p className="text-sm text-muted-foreground">Enable all email campaigns</p>
+            <div>
+              <h2 className="text-2xl font-bold">Active Review Campaigns</h2>
+              <p className="text-muted-foreground">
+                4-email drip sequence to request customer reviews
+              </p>
             </div>
-            <Switch
-              checked={settings?.masterEmailSwitch || false}
-              onCheckedChange={(checked) => updateSettings.mutate({ masterEmailSwitch: checked })}
-            />
           </div>
 
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaign Timeline</CardTitle>
+              <CardDescription>
+                Email 1: Immediate | Email 2: Day 3 | Email 3: Day 7 | Email 4: Day 21
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {reviewRequests && reviewRequests.length > 0 ? (
+                  reviewRequests.map((campaign) => (
+                    <div
+                      key={campaign.id}
+                      className="border rounded-lg p-4 hover-elevate"
+                      data-testid={`campaign-review-${campaign.id}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-medium">{campaign.customerName}</p>
+                          <p className="text-sm text-muted-foreground">{campaign.customerEmail}</p>
+                        </div>
+                        {getStatusBadge(campaign.status)}
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Email 1</p>
+                          <p className="font-medium">
+                            {campaign.email1SentAt ? format(new Date(campaign.email1SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 2</p>
+                          <p className="font-medium">
+                            {campaign.email2SentAt ? format(new Date(campaign.email2SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 3</p>
+                          <p className="font-medium">
+                            {campaign.email3SentAt ? format(new Date(campaign.email3SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 4</p>
+                          <p className="font-medium">
+                            {campaign.email4SentAt ? format(new Date(campaign.email4SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 mt-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Opens:</span>{" "}
+                          <span className="font-medium">{campaign.emailOpens}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Clicks:</span>{" "}
+                          <span className="font-medium">{campaign.linkClicks}</span>
+                        </div>
+                        {campaign.reviewSubmitted && (
+                          <Badge variant="default">
+                            <Star className="h-3 w-3 mr-1" />
+                            {campaign.reviewRating}★ on {campaign.reviewPlatform}
+                          </Badge>
+                        )}
+                      </div>
+
+                      {campaign.stopReason && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Stop reason: {campaign.stopReason}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Mail className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No active review campaigns</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Referral Nurture Tab */}
+        <TabsContent value="referral-campaigns" className="space-y-4">
           <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label className="text-base">Review Drip Campaign</Label>
-              <p className="text-sm text-muted-foreground">4-email sequence over 21 days</p>
+            <div>
+              <h2 className="text-2xl font-bold">Referral Nurture Campaigns</h2>
+              <p className="text-muted-foreground">
+                6-month drip sequence for happy customers who left positive reviews
+              </p>
             </div>
-            <Switch
-              checked={settings?.reviewDripEnabled || false}
-              onCheckedChange={(checked) => updateSettings.mutate({ reviewDripEnabled: checked })}
-            />
           </div>
 
-          <div className="space-y-2">
-            <Label>Tracking Phone Number</Label>
-            <Input
-              value={settings?.reviewRequestPhoneNumber || ''}
-              placeholder="(512) 555-1234"
-              readOnly
-            />
-            <p className="text-xs text-muted-foreground">
-              Phone number used for tracking in email campaigns
-            </p>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaign Timeline</CardTitle>
+              <CardDescription>
+                Email 1: Immediate | Email 2: 1 month | Email 3: 3 months | Email 4: 6 months
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {referralCampaigns && referralCampaigns.length > 0 ? (
+                  referralCampaigns.map((campaign) => (
+                    <div
+                      key={campaign.id}
+                      className="border rounded-lg p-4 hover-elevate"
+                      data-testid={`campaign-referral-${campaign.id}`}
+                    >
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="font-medium">{campaign.customerName}</p>
+                          <p className="text-sm text-muted-foreground">{campaign.customerEmail}</p>
+                        </div>
+                        {getStatusBadge(campaign.status)}
+                      </div>
 
-          <div className="rounded-lg border p-4 bg-muted/50">
-            <h4 className="font-semibold mb-2">Campaign Timeline</h4>
-            <ul className="space-y-2 text-sm">
-              <li>• Email 1: Day 1 after job completion</li>
-              <li>• Email 2: Day 7 after job completion</li>
-              <li>• Email 3: Day 14 after job completion</li>
-              <li>• Email 4: Day 21 after job completion</li>
-            </ul>
-            <p className="text-xs text-muted-foreground mt-4">
-              Campaign auto-stops when customer submits review
-            </p>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-3 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Email 1</p>
+                          <p className="font-medium">
+                            {campaign.email1SentAt ? format(new Date(campaign.email1SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 2</p>
+                          <p className="font-medium">
+                            {campaign.email2SentAt ? format(new Date(campaign.email2SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 3</p>
+                          <p className="font-medium">
+                            {campaign.email3SentAt ? format(new Date(campaign.email3SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Email 4</p>
+                          <p className="font-medium">
+                            {campaign.email4SentAt ? format(new Date(campaign.email4SentAt), "MMM d") : "—"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4 mt-3 text-sm">
+                        <div>
+                          <span className="text-muted-foreground">Total Opens:</span>{" "}
+                          <span className="font-medium">{campaign.totalOpens}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Total Clicks:</span>{" "}
+                          <span className="font-medium">{campaign.totalClicks}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Referrals:</span>{" "}
+                          <span className="font-medium">{campaign.referralsSubmitted}</span>
+                        </div>
+                        {campaign.consecutiveUnopened > 0 && (
+                          <Badge variant="outline">
+                            {campaign.consecutiveUnopened} consecutive unopened
+                          </Badge>
+                        )}
+                      </div>
+
+                      {campaign.pauseReason && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          Pause reason: {campaign.pauseReason}
+                        </p>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                    <p className="text-muted-foreground">No active referral campaigns</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Campaign Settings</CardTitle>
+              <CardDescription>
+                Configure automatic review and referral campaigns
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between border-b pb-4">
+                <div className="space-y-0.5">
+                  <Label htmlFor="master-email-switch" className="text-base font-semibold">Master Email Switch</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Enable ALL review/referral emails (requires phone number configured)
+                  </p>
+                  {!settings?.reviewRequestPhoneNumber && (
+                    <div className="flex items-center gap-2 mt-1">
+                      <AlertTriangle className="h-4 w-4 text-destructive" />
+                      <p className="text-sm text-destructive font-medium">
+                        Configure phone number below before enabling
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <Switch
+                  id="master-email-switch"
+                  data-testid="switch-master-email"
+                  checked={settings?.masterEmailSwitch || false}
+                  disabled={!settings?.reviewRequestPhoneNumber}
+                  onCheckedChange={(checked) =>
+                    updateSettingsMutation.mutate({ masterEmailSwitch: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="review-drip-enabled">Enable Review Drip Campaign</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically send 4-email review request sequence after job completion
+                  </p>
+                </div>
+                <Switch
+                  id="review-drip-enabled"
+                  data-testid="switch-review-drip-enabled"
+                  checked={settings?.reviewDripEnabled || false}
+                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  onCheckedChange={(checked) =>
+                    updateSettingsMutation.mutate({ reviewDripEnabled: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="referral-drip-enabled">Enable Referral Nurture Campaign</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically send 6-month referral sequence to customers who left 4+ star reviews
+                  </p>
+                </div>
+                <Switch
+                  id="referral-drip-enabled"
+                  data-testid="switch-referral-drip-enabled"
+                  checked={settings?.referralDripEnabled || false}
+                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  onCheckedChange={(checked) =>
+                    updateSettingsMutation.mutate({ referralDripEnabled: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto-send-reviews">Auto-Send Review Requests</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Start sending immediately after job marked complete (no approval needed)
+                  </p>
+                </div>
+                <Switch
+                  id="auto-send-reviews"
+                  data-testid="switch-auto-send-reviews"
+                  checked={settings?.autoSendReviewRequests || false}
+                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  onCheckedChange={(checked) =>
+                    updateSettingsMutation.mutate({ autoSendReviewRequests: checked })
+                  }
+                />
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="auto-start-referrals">Auto-Start Referral Campaigns</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically enroll customers in referral nurture after positive review
+                  </p>
+                </div>
+                <Switch
+                  id="auto-start-referrals"
+                  data-testid="switch-auto-start-referrals"
+                  checked={settings?.autoStartReferralCampaigns || false}
+                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  onCheckedChange={(checked) =>
+                    updateSettingsMutation.mutate({ autoStartReferralCampaigns: checked })
+                  }
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Contact Information</CardTitle>
+              <CardDescription>
+                Phone number shown in review request emails (with UTM tracking)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <div className="flex-1">
+                  <Label>Current Phone Number</Label>
+                  <p className="text-lg font-medium mt-1">
+                    {settings?.reviewRequestPhoneFormatted || "Not configured"}
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    UTM tracking: utm_source=review_request, utm_medium=email, utm_campaign=review_drip
+                  </p>
+                </div>
+                <Button
+                  onClick={() => setIsPhoneDialogOpen(true)}
+                  data-testid="button-update-phone"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Update Phone Number
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Phone Number Dialog */}
+      <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Phone Number</DialogTitle>
+            <DialogDescription>
+              This will automatically create a tracking number entry with UTM parameters:
+              utm_source=review_request, utm_medium=email, utm_campaign=review_drip
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="phone-number">Phone Number</Label>
+              <Input
+                id="phone-number"
+                data-testid="input-phone-number"
+                placeholder="(512) 555-1234"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <p className="text-sm text-muted-foreground mt-1">
+                Enter in any format - will be auto-formatted
+              </p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsPhoneDialogOpen(false);
+                  setPhoneNumber("");
+                }}
+                data-testid="button-cancel-phone"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => updatePhoneMutation.mutate(phoneNumber)}
+                disabled={!phoneNumber || updatePhoneMutation.isPending}
+                data-testid="button-save-phone"
+              >
+                {updatePhoneMutation.isPending ? "Saving..." : "Save & Create Tracking Number"}
+              </Button>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
 
 // Email Templates Section  
 function EmailTemplatesSection() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['/api/admin/email-templates'],
+  const { toast } = useToast();
+  const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplate | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'visual' | 'html' | 'plain'>('visual');
+  
+  // Edit form state
+  const [editSubject, setEditSubject] = useState("");
+  const [editPreheader, setEditPreheader] = useState("");
+  const [editBodyHtml, setEditBodyHtml] = useState("");
+  const [editBodyPlain, setEditBodyPlain] = useState("");
+
+  // Generate form state
+  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture'>('review_request');
+  const [generateEmailNumber, setGenerateEmailNumber] = useState<1 | 2 | 3 | 4>(1);
+  const [generateStrategy, setGenerateStrategy] = useState("");
+
+  // Fetch all templates
+  const { data: templatesData, isLoading } = useQuery<{ templates: EmailTemplate[] }>({
+    queryKey: ['/api/admin/emails/templates'],
   });
+
+  const templates = templatesData?.templates || [];
+
+  // Generate email mutation
+  const generateMutation = useMutation({
+    mutationFn: async (params: any) => {
+      const response = await apiRequest("POST", "/api/admin/emails/generate", params);
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Email Generated",
+        description: "AI has created your email. Review and save if you like it."
+      });
+      setEditSubject(data.subject);
+      setEditPreheader(data.preheader || "");
+      setEditBodyHtml(data.bodyHtml);
+      setEditBodyPlain(data.bodyPlain || "");
+      setGenerateDialogOpen(false);
+      setEditDialogOpen(true);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Generation Failed",
+        description: error.message || "Failed to generate email",
+        variant: "destructive"
+      });
+    }
+  });
+
+  // Save template mutation
+  const saveMutation = useMutation({
+    mutationFn: async (params: any) => {
+      const response = await apiRequest("POST", "/api/admin/emails/save-template", params);
+      return await response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Template Saved",
+        description: "Email template has been saved successfully"
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/emails/templates'] });
+      setEditDialogOpen(false);
+      setSelectedTemplate(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save template",
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleEditTemplate = (template: EmailTemplate) => {
+    setSelectedTemplate(template);
+    setEditSubject(template.subject);
+    setEditPreheader(template.preheader || "");
+    setEditBodyHtml(template.bodyHtml);
+    setEditBodyPlain(template.bodyPlain || "");
+    setEditDialogOpen(true);
+  };
+
+  const handleGenerateEmail = () => {
+    const mockJobDetails = {
+      customerId: 12345,
+      customerName: "John Smith",
+      serviceType: "Water Heater Installation",
+      jobAmount: 185000,
+      jobDate: new Date(),
+      location: "Austin, TX"
+    };
+
+    generateMutation.mutate({
+      campaignType: generateCampaignType,
+      emailNumber: generateEmailNumber,
+      jobDetails: mockJobDetails,
+      phoneNumber: "(512) 276-1690",
+      strategy: generateStrategy || undefined
+    });
+  };
+
+  const handleSaveTemplate = () => {
+    if (!editSubject.trim() || !editBodyHtml.trim()) {
+      toast({
+        title: "Missing Fields",
+        description: "Subject and HTML body are required",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const campaignType = selectedTemplate?.campaignType || generateCampaignType;
+    const emailNumber = selectedTemplate?.emailNumber || generateEmailNumber;
+
+    saveMutation.mutate({
+      campaignType,
+      emailNumber,
+      subject: editSubject,
+      preheader: editPreheader,
+      bodyHtml: editBodyHtml,
+      bodyPlain: editBodyPlain,
+      isActive: true
+    });
+  };
+
+  const getTemplateTitle = (template: EmailTemplate) => {
+    const type = template.campaignType === 'review_request' ? 'Review Request' : 'Referral Nurture';
+    return `${type} - Email ${template.emailNumber}`;
+  };
+
+  const getTemplateDescription = (template: EmailTemplate) => {
+    if (template.campaignType === 'review_request') {
+      const days = [1, 7, 14, 21][template.emailNumber - 1];
+      return `Sent ${days} day${days > 1 ? 's' : ''} after job completion`;
+    } else {
+      const days = [14, 60, 150, 210][template.emailNumber - 1];
+      return `Sent ${days} days after positive review`;
+    }
+  };
+
+  const reviewTemplates = templates.filter((t: EmailTemplate) => t.campaignType === 'review_request');
+  const referralTemplates = templates.filter((t: EmailTemplate) => t.campaignType === 'referral_nurture');
 
   if (isLoading) {
     return <Skeleton className="h-96" />;
   }
 
-  const templates = data?.templates || [];
-
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Email Templates</CardTitle>
-          <CardDescription>Manage review request and referral nurture email templates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {templates.length === 0 ? (
-            <div className="text-center py-12">
-              <Mail className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">No templates created yet</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Templates will be auto-generated by AI when campaigns start
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {templates.map((template: any) => (
-                <div key={template.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h4 className="font-semibold">{template.subject}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {template.campaignType === 'review_request' ? 'Review Request' : 'Referral Nurture'} - Email {template.emailNumber}
-                      </p>
+    <>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">Email Template Editor</h2>
+            <p className="text-muted-foreground">
+              Manage and customize review request and referral nurture email templates
+            </p>
+          </div>
+          <Button
+            onClick={() => setGenerateDialogOpen(true)}
+            data-testid="button-generate-new"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Generate with AI
+          </Button>
+        </div>
+
+        <div className="space-y-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Review Request Drip Campaign</CardTitle>
+              <CardDescription>
+                4-email sequence sent over 21 days after job completion
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4].map(num => {
+                const template = reviewTemplates.find((t: EmailTemplate) => t.emailNumber === num);
+                return (
+                  <div
+                    key={num}
+                    className="p-4 border rounded-lg hover-elevate"
+                    data-testid={`template-review-${num}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">
+                          Email {num} - {template ? template.subject : 'Not Created'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {template ? getTemplateDescription(template) : `Day ${[1, 7, 14, 21][num - 1]}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {template ? (
+                          <>
+                            <Badge variant={template.isActive ? "default" : "outline"}>
+                              {template.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditTemplate(template)}
+                              data-testid={`button-edit-review-${num}`}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setGenerateCampaignType('review_request');
+                              setGenerateEmailNumber(num as 1 | 2 | 3 | 4);
+                              setGenerateDialogOpen(true);
+                            }}
+                            data-testid={`button-create-review-${num}`}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Create
+                          </Button>
+                        )}
+                      </div>
                     </div>
-                    <Badge>{template.generationMethod}</Badge>
+                    {template && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Preview:</strong> {template.preheader || 'No preheader'}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  {template.previewText && (
-                    <p className="text-sm text-muted-foreground mt-2 italic">"{template.previewText}"</p>
-                  )}
-                </div>
-              ))}
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Referral Nurture Campaign</CardTitle>
+              <CardDescription>
+                4-email sequence sent over 6 months to happy reviewers
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4].map(num => {
+                const template = referralTemplates.find((t: EmailTemplate) => t.emailNumber === num);
+                return (
+                  <div
+                    key={num}
+                    className="p-4 border rounded-lg hover-elevate"
+                    data-testid={`template-referral-${num}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">
+                          Email {num} - {template ? template.subject : 'Not Created'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {template ? getTemplateDescription(template) : `Day ${[14, 60, 150, 210][num - 1]}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {template ? (
+                          <>
+                            <Badge variant={template.isActive ? "default" : "outline"}>
+                              {template.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditTemplate(template)}
+                              data-testid={`button-edit-referral-${num}`}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setGenerateCampaignType('referral_nurture');
+                              setGenerateEmailNumber(num as 1 | 2 | 3 | 4);
+                              setGenerateDialogOpen(true);
+                            }}
+                            data-testid={`button-create-referral-${num}`}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Create
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {template && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Preview:</strong> {template.preheader || 'No preheader'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Generate AI Email Dialog */}
+      <Dialog open={generateDialogOpen} onOpenChange={setGenerateDialogOpen}>
+        <DialogContent data-testid="dialog-generate-email">
+          <DialogHeader>
+            <DialogTitle>Generate Email with AI</DialogTitle>
+            <DialogDescription>
+              Use AI to create a personalized email template based on best practices
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="campaign-type">Campaign Type</Label>
+              <select
+                id="campaign-type"
+                className="w-full border rounded-md p-2"
+                value={generateCampaignType}
+                onChange={(e) => setGenerateCampaignType(e.target.value as any)}
+                data-testid="select-campaign-type"
+              >
+                <option value="review_request">Review Request</option>
+                <option value="referral_nurture">Referral Nurture</option>
+              </select>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+            <div>
+              <Label htmlFor="email-number">Email Number in Sequence</Label>
+              <select
+                id="email-number"
+                className="w-full border rounded-md p-2"
+                value={generateEmailNumber}
+                onChange={(e) => setGenerateEmailNumber(parseInt(e.target.value) as any)}
+                data-testid="select-email-number"
+              >
+                <option value="1">Email 1 (First contact)</option>
+                <option value="2">Email 2 (Follow-up)</option>
+                <option value="3">Email 3 (Social proof)</option>
+                <option value="4">Email 4 (Final reminder)</option>
+              </select>
+            </div>
+            <div>
+              <Label htmlFor="strategy">Strategy (Optional)</Label>
+              <select
+                id="strategy"
+                className="w-full border rounded-md p-2"
+                value={generateStrategy}
+                onChange={(e) => setGenerateStrategy(e.target.value)}
+                data-testid="select-strategy"
+              >
+                <option value="">Auto (Recommended)</option>
+                <option value="value">Value-focused</option>
+                <option value="trust">Trust-building</option>
+                <option value="urgency">Urgency-driven</option>
+                <option value="social_proof">Social Proof</option>
+                <option value="seasonal">Seasonal</option>
+              </select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
+                onClick={() => setGenerateDialogOpen(false)}
+                data-testid="button-cancel-generate"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleGenerateEmail}
+                disabled={generateMutation.isPending}
+                data-testid="button-confirm-generate"
+              >
+                {generateMutation.isPending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 mr-2" />
+                    Generate
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit/Preview Template Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="dialog-edit-template">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedTemplate ? getTemplateTitle(selectedTemplate) : 'New Email Template'}
+            </DialogTitle>
+            <DialogDescription>
+              Preview and edit email content. Use AI to regenerate if needed.
+            </DialogDescription>
+          </DialogHeader>
+          <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="visual" data-testid="tab-visual">
+                <Eye className="w-4 h-4 mr-2" />
+                Visual
+              </TabsTrigger>
+              <TabsTrigger value="html" data-testid="tab-html">
+                <Code className="w-4 h-4 mr-2" />
+                HTML
+              </TabsTrigger>
+              <TabsTrigger value="plain" data-testid="tab-plain">
+                <FileText className="w-4 h-4 mr-2" />
+                Plain Text
+              </TabsTrigger>
+            </TabsList>
+
+            <div className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="edit-subject">Subject Line</Label>
+                <Input
+                  id="edit-subject"
+                  value={editSubject}
+                  onChange={(e) => setEditSubject(e.target.value)}
+                  placeholder="Enter subject line..."
+                  data-testid="input-subject"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-preheader">Preheader Text (Optional)</Label>
+                <Input
+                  id="edit-preheader"
+                  value={editPreheader}
+                  onChange={(e) => setEditPreheader(e.target.value)}
+                  placeholder="Enter preheader text..."
+                  data-testid="input-preheader"
+                />
+              </div>
+
+              <TabsContent value="visual">
+                <div className="border rounded-lg p-4 bg-white min-h-[300px]">
+                  <div className="mb-4 pb-4 border-b">
+                    <p className="text-sm text-muted-foreground mb-1">Subject:</p>
+                    <p className="font-semibold">{editSubject}</p>
+                    {editPreheader && (
+                      <>
+                        <p className="text-sm text-muted-foreground mb-1 mt-2">Preheader:</p>
+                        <p className="text-sm">{editPreheader}</p>
+                      </>
+                    )}
+                  </div>
+                  <div
+                    dangerouslySetInnerHTML={{ __html: editBodyHtml }}
+                    className="prose max-w-none"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="html">
+                <div>
+                  <Label htmlFor="edit-html">HTML Body</Label>
+                  <Textarea
+                    id="edit-html"
+                    value={editBodyHtml}
+                    onChange={(e) => setEditBodyHtml(e.target.value)}
+                    placeholder="Enter HTML content..."
+                    className="font-mono text-sm min-h-[400px]"
+                    data-testid="textarea-html"
+                  />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="plain">
+                <div>
+                  <Label htmlFor="edit-plain">Plain Text Body</Label>
+                  <Textarea
+                    id="edit-plain"
+                    value={editBodyPlain}
+                    onChange={(e) => setEditBodyPlain(e.target.value)}
+                    placeholder="Enter plain text content..."
+                    className="min-h-[400px]"
+                    data-testid="textarea-plain"
+                  />
+                </div>
+              </TabsContent>
+            </div>
+
+            <div className="flex gap-2 justify-end mt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditDialogOpen(false);
+                  setSelectedTemplate(null);
+                }}
+                data-testid="button-cancel-edit"
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditDialogOpen(false);
+                  setGenerateDialogOpen(true);
+                }}
+                data-testid="button-regenerate"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Regenerate with AI
+              </Button>
+              <Button
+                onClick={handleSaveTemplate}
+                disabled={saveMutation.isPending}
+                data-testid="button-save-template"
+              >
+                {saveMutation.isPending ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4 mr-2" />
+                    Save Template
+                  </>
+                )}
+              </Button>
+            </div>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
 export default function UnifiedAdminDashboard() {
-  const [activeSection, setActiveSection] = useState<AdminSection>('dashboard');
+  // Load active section from localStorage, fallback to 'dashboard'
+  const [activeSection, setActiveSection] = useState<AdminSection>(() => {
+    const saved = localStorage.getItem('admin-active-section');
+    if (saved && ['dashboard', 'photos', 'success-stories', 'commercial-customers', 'page-metadata', 'tracking-numbers', 'products', 'referrals', 'reviews', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
+      return saved as AdminSection;
+    }
+    return 'dashboard';
+  });
   const [, setLocation] = useLocation();
 
   // Check auth status
   const { data: authData } = useQuery<{ isAdmin: boolean }>({
     queryKey: ['/api/admin/check'],
   });
+
+  // Save active section to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('admin-active-section', activeSection);
+  }, [activeSection]);
 
   useEffect(() => {
     if (authData && !authData.isAdmin) {
@@ -4643,6 +5778,8 @@ export default function UnifiedAdminDashboard() {
         return <EmailTemplatesSection />;
       case 'customer-data':
         return <CustomerDataSection />;
+      case 'chatbot':
+        return <ChatbotSection />;
       default:
         return <DashboardOverview stats={stats} photos={photos} />;
     }
@@ -4663,6 +5800,7 @@ export default function UnifiedAdminDashboard() {
       'review-requests': 'Review Requests',
       'email-templates': 'Email Templates',
       'customer-data': 'Customer Data',
+      'chatbot': 'AI Chatbot',
     };
     return titles[activeSection];
   };
@@ -4695,6 +5833,928 @@ export default function UnifiedAdminDashboard() {
         </div>
       </div>
     </SidebarProvider>
+  );
+}
+
+// Chatbot Section Interfaces
+interface ChatbotConversation {
+  id: string;
+  sessionId: string;
+  startedAt: string;
+  endedAt: string | null;
+  rating: number | null;
+  archived: boolean;
+  notes: string | null;
+  pageContext: string | null;
+  messageCount?: number;
+  lastMessage?: string;
+  customerName?: string;
+  customerEmail?: string;
+}
+
+interface ChatbotMessage {
+  id: number;
+  conversationId: string;
+  content: string;
+  role: "user" | "assistant";
+  timestamp: string;
+  feedback: "positive" | "negative" | null;
+  imageUrl: string | null;
+}
+
+interface ChatbotAnalytics {
+  totalConversations: number;
+  activeConversations: number;
+  averageRating: number;
+  totalFeedback: {
+    positive: number;
+    negative: number;
+  };
+  commonQuestions: Array<{
+    question: string;
+    count: number;
+  }>;
+  peakHours: Array<{
+    hour: number;
+    count: number;
+  }>;
+}
+
+interface QuickResponse {
+  id: number;
+  label: string;
+  message: string;
+  category: string;
+  icon: string | null;
+  sortOrder: number;
+  isActive: boolean;
+}
+
+// Chatbot Section Component
+function ChatbotSection() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("conversations");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"all" | "active" | "archived">("all");
+  const [selectedConversation, setSelectedConversation] = useState<ChatbotConversation | null>(null);
+  const [conversationMessages, setConversationMessages] = useState<ChatbotMessage[]>([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [editingQuickResponse, setEditingQuickResponse] = useState<QuickResponse | null>(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+
+  // Fetch conversations
+  const { data: conversations = [], isLoading: loadingConversations, refetch: refetchConversations } = useQuery<ChatbotConversation[]>({
+    queryKey: ["/api/admin/chatbot/conversations"],
+  });
+
+  // Fetch analytics
+  const { data: analytics, isLoading: loadingAnalytics } = useQuery<ChatbotAnalytics>({
+    queryKey: ["/api/admin/chatbot/analytics"],
+  });
+
+  // Fetch quick responses
+  const { data: quickResponses = [], isLoading: loadingQuickResponses, refetch: refetchQuickResponses } = useQuery<QuickResponse[]>({
+    queryKey: ["/api/admin/chatbot/quick-responses"],
+  });
+
+  // Archive conversation mutation
+  const archiveConversation = useMutation({
+    mutationFn: async ({ id, archived }: { id: string; archived: boolean }) => {
+      return apiRequest("PATCH", `/api/admin/chatbot/conversation/${id}`, { archived });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Conversation updated successfully",
+      });
+      refetchConversations();
+      if (selectedConversation) {
+        setSelectedConversation(null);
+      }
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update conversation",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update conversation notes
+  const updateNotes = useMutation({
+    mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
+      return apiRequest("PATCH", `/api/admin/chatbot/conversation/${id}`, { notes });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Notes saved successfully",
+      });
+      refetchConversations();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save notes",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Create/Update quick response
+  const saveQuickResponse = useMutation({
+    mutationFn: async (data: Partial<QuickResponse>) => {
+      if (data.id) {
+        return apiRequest("PATCH", `/api/admin/chatbot/quick-responses/${data.id}`, data);
+      } else {
+        return apiRequest("POST", "/api/admin/chatbot/quick-responses", data);
+      }
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Quick response saved successfully",
+      });
+      refetchQuickResponses();
+      setEditingQuickResponse(null);
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to save quick response",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete quick response
+  const deleteQuickResponse = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest("DELETE", `/api/admin/chatbot/quick-responses/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Quick response deleted successfully",
+      });
+      refetchQuickResponses();
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete quick response",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Load conversation details
+  const loadConversationDetails = async (conversation: ChatbotConversation) => {
+    setSelectedConversation(conversation);
+    setLoadingMessages(true);
+    try {
+      const response = await fetch(`/api/admin/chatbot/conversation/${conversation.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        setConversationMessages(data.messages || []);
+      }
+    } catch (error) {
+      console.error("Failed to load conversation details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load conversation details",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  // Email conversation
+  const emailConversation = async (conversationId: string) => {
+    try {
+      await apiRequest("POST", `/api/admin/chatbot/conversation/${conversationId}/email`);
+      toast({
+        title: "Success",
+        description: "Conversation emailed to admin successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to email conversation",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Export conversations
+  const exportConversations = async (format: "csv" | "json") => {
+    try {
+      const response = await fetch(`/api/admin/chatbot/export?format=${format}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `chatbot-conversations-${new Date().toISOString().split("T")[0]}.${format}`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        toast({
+          title: "Success",
+          description: `Conversations exported as ${format.toUpperCase()}`,
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export conversations",
+        variant: "destructive",
+      });
+    }
+    setShowExportDialog(false);
+  };
+
+  // Filter conversations
+  const filteredConversations = conversations.filter((conv: ChatbotConversation) => {
+    if (filterStatus === "active" && conv.archived) return false;
+    if (filterStatus === "archived" && !conv.archived) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        conv.customerName?.toLowerCase().includes(query) ||
+        conv.customerEmail?.toLowerCase().includes(query) ||
+        conv.lastMessage?.toLowerCase().includes(query) ||
+        conv.pageContext?.toLowerCase().includes(query)
+      );
+    }
+    return true;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-muted-foreground">
+            Monitor conversations, analyze engagement, and manage responses
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            onClick={() => refetchConversations()} 
+            variant="outline"
+            data-testid="button-refresh-conversations"
+          >
+            <RefreshCw className="w-4 h-4 mr-2" />
+            Refresh
+          </Button>
+          <Button 
+            onClick={() => setShowExportDialog(true)}
+            data-testid="button-export-conversations"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="conversations" data-testid="tab-conversations">
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Conversations
+          </TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-analytics">
+            <TrendingUp className="w-4 h-4 mr-2" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="quick-responses" data-testid="tab-quick-responses">
+            <Clock className="w-4 h-4 mr-2" />
+            Quick Responses
+          </TabsTrigger>
+          <TabsTrigger value="settings" data-testid="tab-settings">
+            <Archive className="w-4 h-4 mr-2" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Conversations Tab */}
+        <TabsContent value="conversations" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>Recent Conversations</CardTitle>
+                <div className="flex gap-2">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search conversations..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 w-64"
+                      data-testid="input-search-conversations"
+                    />
+                  </div>
+                  <Select value={filterStatus} onValueChange={(v: any) => setFilterStatus(v)}>
+                    <SelectTrigger className="w-32" data-testid="select-filter-status">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
+                      <SelectItem value="archived">Archived</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingConversations ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-20 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Started</TableHead>
+                      <TableHead>Messages</TableHead>
+                      <TableHead>Page</TableHead>
+                      <TableHead>Rating</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredConversations.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8">
+                          No conversations found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredConversations.map((conv: ChatbotConversation) => (
+                        <TableRow key={conv.id}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{conv.customerName || "Anonymous"}</p>
+                              {conv.customerEmail && (
+                                <p className="text-sm text-muted-foreground">{conv.customerEmail}</p>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {formatDistanceToNow(new Date(conv.startedAt), { addSuffix: true })}
+                          </TableCell>
+                          <TableCell>{conv.messageCount || 0}</TableCell>
+                          <TableCell>
+                            <Badge variant="outline">
+                              {conv.pageContext || "Unknown"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {conv.rating ? (
+                              <div className="flex items-center">
+                                <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                                {conv.rating}
+                              </div>
+                            ) : (
+                              <span className="text-muted-foreground">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={conv.archived ? "secondary" : conv.endedAt ? "default" : "outline"}>
+                              {conv.archived ? "Archived" : conv.endedAt ? "Ended" : "Active"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-2">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => loadConversationDetails(conv)}
+                                data-testid={`button-view-conversation-${conv.id}`}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => emailConversation(conv.id)}
+                                data-testid={`button-email-conversation-${conv.id}`}
+                              >
+                                <Mail className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                onClick={() => archiveConversation.mutate({
+                                  id: conv.id,
+                                  archived: !conv.archived,
+                                })}
+                                data-testid={`button-archive-conversation-${conv.id}`}
+                              >
+                                <Archive className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Analytics Tab */}
+        <TabsContent value="analytics" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Conversations</CardTitle>
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loadingAnalytics ? <Skeleton className="h-8 w-20" /> : analytics?.totalConversations || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">All time</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Now</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loadingAnalytics ? <Skeleton className="h-8 w-20" /> : analytics?.activeConversations || 0}
+                </div>
+                <p className="text-xs text-muted-foreground">Currently chatting</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Avg Rating</CardTitle>
+                <Star className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {loadingAnalytics ? (
+                    <Skeleton className="h-8 w-20" />
+                  ) : (
+                    analytics?.averageRating?.toFixed(1) || "N/A"
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">Out of 5 stars</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Feedback</CardTitle>
+                <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    <ThumbsUp className="w-4 h-4 text-green-600 mr-1" />
+                    <span className="font-bold">{analytics?.totalFeedback?.positive || 0}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <ThumbsDown className="w-4 h-4 text-red-600 mr-1" />
+                    <span className="font-bold">{analytics?.totalFeedback?.negative || 0}</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">User feedback</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {analytics?.commonQuestions && analytics.commonQuestions.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Common Questions</CardTitle>
+                <CardDescription>Most frequently asked questions by customers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {analytics.commonQuestions.map((q, idx) => (
+                    <div key={idx} className="flex justify-between items-center p-2 rounded-lg bg-muted">
+                      <span className="flex-1">{q.question}</span>
+                      <Badge variant="secondary">{q.count} times</Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        {/* Quick Responses Tab */}
+        <TabsContent value="quick-responses" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Quick Response Templates</CardTitle>
+                  <CardDescription>
+                    Manage predefined responses for common questions
+                  </CardDescription>
+                </div>
+                <Button 
+                  onClick={() => setEditingQuickResponse({} as QuickResponse)}
+                  data-testid="button-add-quick-response"
+                >
+                  Add Response
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {loadingQuickResponses ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <Skeleton key={i} className="h-16 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {quickResponses.length === 0 ? (
+                    <p className="text-center py-8 text-muted-foreground">
+                      No quick responses configured
+                    </p>
+                  ) : (
+                    quickResponses.map((response: QuickResponse) => (
+                      <div
+                        key={response.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-medium">{response.label}</h4>
+                            <Badge variant="outline">{response.category}</Badge>
+                            {!response.isActive && <Badge variant="secondary">Inactive</Badge>}
+                          </div>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {response.message}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => setEditingQuickResponse(response)}
+                            data-testid={`button-edit-quick-response-${response.id}`}
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => deleteQuickResponse.mutate(response.id)}
+                            data-testid={`button-delete-quick-response-${response.id}`}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Settings Tab */}
+        <TabsContent value="settings" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Chatbot Configuration</CardTitle>
+              <CardDescription>
+                Configure chatbot behavior and settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Greeting Message</Label>
+                <Textarea
+                  placeholder="Hi! How can I help you today?"
+                  className="min-h-20"
+                  data-testid="textarea-greeting-message"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Auto-Response Delay (seconds)</Label>
+                <Input 
+                  type="number" 
+                  defaultValue="1" 
+                  min="0" 
+                  max="10"
+                  data-testid="input-response-delay"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Session Timeout (minutes)</Label>
+                <Input 
+                  type="number" 
+                  defaultValue="30" 
+                  min="5" 
+                  max="120"
+                  data-testid="input-session-timeout"
+                />
+              </div>
+              <Button className="w-full" data-testid="button-save-settings">
+                Save Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Conversation Detail Dialog */}
+      <Dialog open={!!selectedConversation} onOpenChange={() => setSelectedConversation(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Conversation Details</DialogTitle>
+            <DialogDescription>
+              {selectedConversation && (
+                <div className="flex items-center gap-4 mt-2">
+                  <Badge>{selectedConversation.pageContext || "Unknown Page"}</Badge>
+                  <span className="text-sm">
+                    Started {formatDistanceToNow(new Date(selectedConversation.startedAt), { addSuffix: true })}
+                  </span>
+                  {selectedConversation.rating && (
+                    <div className="flex items-center">
+                      <Star className="w-4 h-4 text-yellow-500 mr-1" />
+                      {selectedConversation.rating}/5
+                    </div>
+                  )}
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-3 gap-4">
+            <div className="col-span-2">
+              <ScrollArea className="h-[400px] border rounded-lg p-4">
+                {loadingMessages ? (
+                  <div className="space-y-2">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-16 w-full" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {conversationMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${
+                          message.role === "user" ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[70%] p-3 rounded-lg ${
+                            message.role === "user"
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          }`}
+                        >
+                          {message.imageUrl && (
+                            <div className="mb-2">
+                              <img
+                                src={message.imageUrl}
+                                alt="Uploaded"
+                                className="rounded-lg max-w-full"
+                              />
+                            </div>
+                          )}
+                          <p className="text-sm">{message.content}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-xs opacity-70">
+                              {formatDistanceToNow(new Date(message.timestamp), { addSuffix: true })}
+                            </span>
+                            {message.role === "assistant" && message.feedback && (
+                              <div className="flex items-center">
+                                {message.feedback === "positive" ? (
+                                  <ThumbsUp className="w-3 h-3 text-green-600" />
+                                ) : (
+                                  <ThumbsDown className="w-3 h-3 text-red-600" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <Label>Internal Notes</Label>
+                <Textarea
+                  placeholder="Add notes about this conversation..."
+                  value={selectedConversation?.notes || ""}
+                  onChange={(e) => {
+                    if (selectedConversation) {
+                      setSelectedConversation({
+                        ...selectedConversation,
+                        notes: e.target.value,
+                      });
+                    }
+                  }}
+                  className="min-h-32 mt-2"
+                  data-testid="textarea-conversation-notes"
+                />
+                <Button
+                  className="w-full mt-2"
+                  onClick={() => {
+                    if (selectedConversation && selectedConversation.notes) {
+                      updateNotes.mutate({
+                        id: selectedConversation.id,
+                        notes: selectedConversation.notes,
+                      });
+                    }
+                  }}
+                  data-testid="button-save-notes"
+                >
+                  Save Notes
+                </Button>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-2">
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => selectedConversation && emailConversation(selectedConversation.id)}
+                  data-testid="button-email-conversation-detail"
+                >
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email Conversation
+                </Button>
+                <Button
+                  className="w-full"
+                  variant="outline"
+                  onClick={() => {
+                    if (selectedConversation) {
+                      archiveConversation.mutate({
+                        id: selectedConversation.id,
+                        archived: !selectedConversation.archived,
+                      });
+                    }
+                  }}
+                  data-testid="button-archive-conversation-detail"
+                >
+                  <Archive className="w-4 h-4 mr-2" />
+                  {selectedConversation?.archived ? "Unarchive" : "Archive"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Quick Response Edit Dialog */}
+      <Dialog open={!!editingQuickResponse} onOpenChange={() => setEditingQuickResponse(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingQuickResponse?.id ? "Edit" : "Add"} Quick Response
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Label</Label>
+              <Input
+                value={editingQuickResponse?.label || ""}
+                onChange={(e) => setEditingQuickResponse({
+                  ...editingQuickResponse!,
+                  label: e.target.value,
+                })}
+                placeholder="e.g., Schedule Service"
+                data-testid="input-quick-response-label"
+              />
+            </div>
+            <div>
+              <Label>Message</Label>
+              <Textarea
+                value={editingQuickResponse?.message || ""}
+                onChange={(e) => setEditingQuickResponse({
+                  ...editingQuickResponse!,
+                  message: e.target.value,
+                })}
+                placeholder="The message that will be sent..."
+                className="min-h-24"
+                data-testid="textarea-quick-response-message"
+              />
+            </div>
+            <div>
+              <Label>Category</Label>
+              <Select
+                value={editingQuickResponse?.category || "general"}
+                onValueChange={(v) => setEditingQuickResponse({
+                  ...editingQuickResponse!,
+                  category: v,
+                })}
+              >
+                <SelectTrigger data-testid="select-quick-response-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="service">Service</SelectItem>
+                  <SelectItem value="emergency">Emergency</SelectItem>
+                  <SelectItem value="pricing">Pricing</SelectItem>
+                  <SelectItem value="hours">Hours</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Sort Order</Label>
+              <Input
+                type="number"
+                value={editingQuickResponse?.sortOrder || 0}
+                onChange={(e) => setEditingQuickResponse({
+                  ...editingQuickResponse!,
+                  sortOrder: parseInt(e.target.value) || 0,
+                })}
+                min="0"
+                data-testid="input-quick-response-sort-order"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="quick-response-active"
+                checked={editingQuickResponse?.isActive !== false}
+                onChange={(e) => setEditingQuickResponse({
+                  ...editingQuickResponse!,
+                  isActive: e.target.checked,
+                })}
+                data-testid="checkbox-quick-response-active"
+              />
+              <Label htmlFor="quick-response-active">Active</Label>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setEditingQuickResponse(null)}
+                data-testid="button-cancel-quick-response"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => saveQuickResponse.mutate(editingQuickResponse!)}
+                data-testid="button-save-quick-response"
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Conversations</DialogTitle>
+            <DialogDescription>
+              Choose the format for exporting conversation data
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2">
+            <Button
+              className="flex-1"
+              onClick={() => exportConversations("csv")}
+              data-testid="button-export-csv"
+            >
+              Export as CSV
+            </Button>
+            <Button
+              className="flex-1"
+              variant="outline"
+              onClick={() => exportConversations("json")}
+              data-testid="button-export-json"
+            >
+              Export as JSON
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
