@@ -667,3 +667,217 @@ Return as JSON:
     throw new Error(`Failed to personalize email: ${error.message}`);
   }
 }
+
+/**
+ * Generate AI-powered thank you email for referrer (sent when they submit a referral)
+ */
+export async function generateReferrerThankYouEmail(options: {
+  referrerName: string;
+  refereeName: string;
+  phoneNumber?: string;
+}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+  const { referrerName, refereeName, phoneNumber } = options;
+  const { season, context: seasonalContext } = getSeasonalContext();
+
+  const systemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
+
+Your task is to generate a warm, appreciative thank you email to a customer who just submitted a referral.
+
+CRITICAL RULES:
+1. Express genuine gratitude for the referral
+2. Explain the referral reward clearly ($25 credit per successful referral)
+3. Let them know what happens next (we'll reach out to their friend)
+4. Remind them they can refer multiple people
+5. Keep it short, warm, and personal (not salesy)
+6. Use Austin/Texas-friendly language
+7. Include clear contact info
+8. Make them feel valued and appreciated
+9. Professional but friendly tone
+10. Mobile-optimized HTML (works on all devices)
+
+Email Structure:
+- Subject line: Personal, grateful, clear benefit mentioned
+- Opening: Thank them by name for the specific referral
+- Body: Explain next steps, reward details, encourage more referrals
+- Closing: Gratitude + easy way to contact us
+- Call to Action: Refer more friends (make it easy)
+
+Brand Voice:
+- Friendly, trustworthy, professional
+- Austin/Central Texas local feel
+- Family-owned business vibe
+- Helpful and approachable
+- No pushy sales language
+
+Seasonal Context (${season}):
+${seasonalContext}
+- Use this to add a timely seasonal touch if relevant`;
+
+  const userPrompt = `Generate a thank you email for ${referrerName} who just referred ${refereeName}.
+
+Key Details:
+- Referrer: ${referrerName}
+- Person they referred: ${refereeName}
+- Reward: $25 credit for each successful referral (when referred friend becomes a customer)
+- Phone: ${phoneNumber || '(512) 368-9159'}
+- Website: plumbersthatcare.com
+- Current Season: ${season}
+
+Requirements:
+1. Thank ${referrerName} personally for referring ${refereeName}
+2. Explain we'll reach out to ${refereeName} soon
+3. Clarify the reward: $25 credit after ${refereeName} becomes a customer
+4. Mention credits are valid for 1 year
+5. Encourage them to refer more friends (each one = another $25)
+6. Make them feel appreciated and valued
+7. Include clear contact information
+8. Add a subtle seasonal touch based on current season (${season})
+9. Keep it warm and personal, not corporate
+
+Return as JSON:
+{
+  "subject": "Thank you for referring ${refereeName}!",
+  "bodyHtml": "Mobile-optimized HTML email",
+  "bodyPlain": "Plain text version"
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from AI');
+    }
+
+    const parsed = JSON.parse(content);
+    
+    return {
+      subject: parsed.subject,
+      bodyHtml: parsed.bodyHtml,
+      bodyPlain: parsed.bodyPlain,
+    };
+  } catch (error: any) {
+    console.error('[AI Email Generator] Error generating referrer thank you email:', error);
+    throw new Error(`Failed to generate referrer thank you email: ${error.message}`);
+  }
+}
+
+/**
+ * Generate AI-powered success notification for referrer (sent when referee completes first job)
+ */
+export async function generateReferrerSuccessEmail(options: {
+  referrerName: string;
+  refereeName: string;
+  creditAmount: number; // In dollars (e.g., 25.00)
+  creditExpiresAt: Date;
+  currentBalance?: number; // Total available credits in dollars
+  phoneNumber?: string;
+}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+  const { referrerName, refereeName, creditAmount, creditExpiresAt, currentBalance, phoneNumber } = options;
+  const { season, context: seasonalContext } = getSeasonalContext();
+
+  const systemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
+
+Your task is to generate an exciting congratulatory email to a customer whose referral just converted (their friend became a customer).
+
+CRITICAL RULES:
+1. Lead with celebration - their referral succeeded!
+2. Clearly state the credit amount earned
+3. Show their total available credit balance if provided
+4. Explain credit expiration clearly
+5. Encourage them to refer more friends
+6. Make them feel successful and appreciated
+7. Include easy next steps (how to use credit, refer more)
+8. Professional but exciting tone
+9. Mobile-optimized HTML
+10. Create urgency to use credits before expiration
+
+Email Structure:
+- Subject: Exciting news, credit confirmed
+- Opening: Congratulate them on successful referral
+- Body: Credit details, total balance, expiration, encourage more referrals
+- Closing: How to use credits + easy referral process
+- Call to Action: Schedule service to use credit OR refer another friend
+
+Brand Voice:
+- Celebratory and positive
+- Austin/Central Texas local feel
+- Family-owned business vibe
+- Grateful for their support
+- Encouraging without being pushy
+
+Seasonal Context (${season}):
+${seasonalContext}
+- Use this to suggest seasonal services they could use their credit on`;
+
+  const userPrompt = `Generate a success notification for ${referrerName} - their referral (${refereeName}) just became a customer!
+
+Key Details:
+- Referrer: ${referrerName}
+- Successful referral: ${refereeName}
+- Credit earned: $${creditAmount.toFixed(2)}
+${currentBalance !== undefined ? `- Total available credits: $${currentBalance.toFixed(2)}` : ''}
+- Credit expires: ${creditExpiresAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+- Phone: ${phoneNumber || '(512) 368-9159'}
+- Website: plumbersthatcare.com
+- Current Season: ${season}
+
+Requirements:
+1. Congratulate ${referrerName} - ${refereeName} is now a customer!
+2. Clearly state they earned $${creditAmount.toFixed(2)} credit
+3. ${currentBalance !== undefined ? `Show total available balance: $${currentBalance.toFixed(2)}` : 'Mention this is their referral credit'}
+4. Explain credits expire on ${creditExpiresAt.toLocaleDateString()}
+5. Encourage them to:
+   a) Use their credit on upcoming service (suggest seasonal services based on ${season})
+   b) Refer more friends to earn more credits
+6. Make them feel successful and appreciated
+7. Include clear contact information
+8. Add seasonal context for services they could use credit on
+9. Create gentle urgency about credit expiration without being pushy
+10. Make referring more friends easy and appealing
+
+Tone: Celebratory, grateful, encouraging
+
+Return as JSON:
+{
+  "subject": "Great news! You earned $${creditAmount.toFixed(2)} in referral credit",
+  "bodyHtml": "Mobile-optimized HTML email",
+  "bodyPlain": "Plain text version"
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from AI');
+    }
+
+    const parsed = JSON.parse(content);
+    
+    return {
+      subject: parsed.subject,
+      bodyHtml: parsed.bodyHtml,
+      bodyPlain: parsed.bodyPlain,
+    };
+  } catch (error: any) {
+    console.error('[AI Email Generator] Error generating referrer success email:', error);
+    throw new Error(`Failed to generate referrer success email: ${error.message}`);
+  }
+}
