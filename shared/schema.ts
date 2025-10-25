@@ -314,6 +314,36 @@ export const emailPreferences = pgTable("email_preferences", {
   tokenIdx: index("email_preferences_token_idx").on(table.unsubscribeToken),
 }));
 
+// Pending Referrals - Track contact info from referral landing page before job booking
+export const pendingReferrals = pgTable("pending_referrals", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Referrer info (from link)
+  referrerCustomerId: integer("referrer_customer_id").notNull(), // ServiceTitan customer ID
+  referrerName: text("referrer_name").notNull(),
+  
+  // Referee info (captured from landing page)
+  refereeName: text("referee_name").notNull(),
+  refereeEmail: text("referee_email"),
+  refereePhone: text("referee_phone"),
+  
+  // Tracking
+  trackingCookie: text("tracking_cookie").unique(), // 30-day cookie for backup tracking
+  convertedToReferral: boolean("converted_to_referral").notNull().default(false),
+  referralId: varchar("referral_id"), // Links to referrals table when they book
+  
+  // Timestamps
+  capturedAt: timestamp("captured_at").notNull().defaultNow(),
+  convertedAt: timestamp("converted_at"), // When they actually booked/became customer
+  expiresAt: timestamp("expires_at").notNull(), // capturedAt + 30 days
+}, (table) => ({
+  referrerIdIdx: index("pending_referrals_referrer_id_idx").on(table.referrerCustomerId),
+  emailIdx: index("pending_referrals_email_idx").on(table.refereeEmail),
+  phoneIdx: index("pending_referrals_phone_idx").on(table.refereePhone),
+  cookieIdx: index("pending_referrals_cookie_idx").on(table.trackingCookie),
+  convertedIdx: index("pending_referrals_converted_idx").on(table.convertedToReferral),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
@@ -1621,6 +1651,12 @@ export const insertEmailPreferencesSchema = createInsertSchema(emailPreferences)
   lastUpdated: true,
 });
 
+export const insertPendingReferralSchema = createInsertSchema(pendingReferrals).omit({
+  id: true,
+  capturedAt: true,
+  convertedAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1637,3 +1673,5 @@ export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;
 export type InsertRefereeWelcomeEmail = z.infer<typeof insertRefereeWelcomeEmailSchema>;
 export type EmailPreference = typeof emailPreferences.$inferSelect;
 export type InsertEmailPreference = z.infer<typeof insertEmailPreferencesSchema>;
+export type PendingReferral = typeof pendingReferrals.$inferSelect;
+export type InsertPendingReferral = z.infer<typeof insertPendingReferralSchema>;
