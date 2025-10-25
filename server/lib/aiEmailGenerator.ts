@@ -135,13 +135,20 @@ Brand Voice:
 - Value honesty and transparency
 - Family-owned business for 20+ years
 
+CRITICAL: Template Generation Rules:
+- You are creating TEMPLATES with merge fields, not personalized emails
+- Use merge field syntax: {{customerName}}, {{serviceType}}, {{jobAmount}}, {{location}}
+- NEVER use hardcoded names like "John" or "Sarah"
+- The admin will approve the template structure/tone, then AI will personalize for each customer
+- Available merge fields: {{customerName}}, {{serviceType}}, {{jobAmount}}, {{location}}, {{jobDate}}
+
 Email Guidelines:
 - Keep subject lines under 50 characters, compelling and personal
 - Preheader should complement subject (40-80 chars)
 - Use HTML formatting with proper structure
 - Include clear call-to-action buttons
 - Mobile-friendly layout
-- Personalize with customer name and service details
+- Use merge fields for personalization ({{customerName}}, {{serviceType}}, etc.)
 - ${phoneNumber ? `Include phone number ${phoneNumber} for tracking` : 'No phone number tracking'}`;
 
   let userPrompt = '';
@@ -157,11 +164,13 @@ Campaign Details:
 - Season: ${season}
 - Seasonal Context: ${seasonalContext}
 
-Customer Details:
-- Name: ${jobDetails.customerName}
-- Service Type: ${jobDetails.serviceType || 'plumbing service'}
-- Job Amount: ${jobDetails.jobAmount ? `$${(jobDetails.jobAmount / 100).toFixed(2)}` : 'not specified'}
-- Location: ${jobDetails.location || 'Central Texas'}
+Template Context (use merge fields, not actual values):
+- Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
+- Example Service: ${jobDetails.serviceType || 'plumbing service'} → Use {{serviceType}} in template
+- Example Job Amount: ${jobDetails.jobAmount ? `$${(jobDetails.jobAmount / 100).toFixed(2)}` : 'varies'} → Use {{jobAmount}} in template
+- Example Location: ${jobDetails.location || 'Central Texas'} → Use {{location}} in template
+
+IMPORTANT: Create a TEMPLATE using {{merge_fields}}, not a personalized email with hardcoded values!
 
 Email Objectives:
 ${emailNumber === 1 ? `
@@ -215,10 +224,12 @@ Campaign Details:
 - Season: ${season}
 - Seasonal Context: ${seasonalContext}
 
-Customer Details:
-- Name: ${jobDetails.customerName}
-- Original Service: ${jobDetails.serviceType || 'plumbing service'}
-- Location: ${jobDetails.location || 'Central Texas'}
+Template Context (use merge fields, not actual values):
+- Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
+- Example Service: ${jobDetails.serviceType || 'plumbing service'} → Use {{serviceType}} in template
+- Example Location: ${jobDetails.location || 'Central Texas'} → Use {{location}} in template
+
+IMPORTANT: Create a TEMPLATE using {{merge_fields}}, not a personalized email with hardcoded values!
 
 Referral Program Details:
 - Referrer earns $25 account credit for each successful referral
@@ -288,10 +299,12 @@ Campaign Details:
 - Season: ${season}
 - Seasonal Context: ${seasonalContext}
 
-Customer Details:
-- Name: ${jobDetails.customerName}
-- Service Quoted: ${jobDetails.serviceType || 'plumbing service'}
-- Location: ${jobDetails.location || 'Central Texas'}
+Template Context (use merge fields, not actual values):
+- Example Customer Name: ${jobDetails.customerName} → Use {{customerName}} in template
+- Example Service: ${jobDetails.serviceType || 'plumbing service'} → Use {{serviceType}} in template
+- Example Location: ${jobDetails.location || 'Central Texas'} → Use {{location}} in template
+
+IMPORTANT: Create a TEMPLATE using {{merge_fields}}, not a personalized email with hardcoded values!
 
 Important Context:
 - This customer received a quote/estimate but NO WORK WAS DONE (invoice was $0)
@@ -490,5 +503,127 @@ Return as JSON:
   } catch (error: any) {
     console.error('[AI Email Generator] Error generating referee welcome email:', error);
     throw new Error(`Failed to generate referee welcome email: ${error.message}`);
+  }
+}
+
+/**
+ * Personalize an email template for a specific customer
+ * This function takes a template with merge fields and job data, then uses AI to:
+ * 1. Replace merge fields with actual customer data
+ * 2. Analyze the job details to add personalized touches
+ * 3. Generate context-aware content based on the specific work done
+ */
+export async function personalizeEmailForCustomer(options: {
+  template: {
+    subject: string;
+    htmlContent: string;
+    plainTextContent: string | null;
+  };
+  jobData: {
+    customerName: string;
+    serviceType?: string;
+    jobAmount?: number;
+    jobDate?: Date;
+    location?: string;
+    jobDescription?: string;
+    estimateDetails?: string;
+    workCompleted?: string;
+  };
+  campaignType: 'review_request' | 'referral_nurture' | 'quote_followup';
+  phoneNumber?: string;
+  referralLink?: string;
+}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+  const { template, jobData, campaignType, phoneNumber, referralLink } = options;
+  const { season, context: seasonalContext } = getSeasonalContext();
+
+  const systemPrompt = `You are an expert email personalizer for Economy Plumbing Services.
+
+Your task is to take an approved email TEMPLATE and personalize it for a specific customer using their real job data.
+
+CRITICAL RULES:
+1. Keep the overall structure, tone, and CTAs from the template
+2. Replace merge fields ({{customerName}}, {{serviceType}}, etc.) with actual data
+3. Add personalized touches based on the specific work done
+4. Analyze job details to make references feel genuine and specific
+5. Maintain the professional, friendly brand voice
+6. DO NOT change URLs, phone numbers, or key messaging from the template
+7. The admin approved the template structure - respect it
+
+Available Job Data:
+- Customer Name: ${jobData.customerName}
+- Service Type: ${jobData.serviceType || 'plumbing service'}
+- Job Amount: ${jobData.jobAmount ? `$${(jobData.jobAmount / 100).toFixed(2)}` : 'N/A'}
+- Job Date: ${jobData.jobDate ? jobData.jobDate.toLocaleDateString() : 'recent'}
+- Location: ${jobData.location || 'Central Texas'}
+${jobData.jobDescription ? `- Job Description: ${jobData.jobDescription}` : ''}
+${jobData.estimateDetails ? `- Estimate Details: ${jobData.estimateDetails}` : ''}
+${jobData.workCompleted ? `- Work Completed: ${jobData.workCompleted}` : ''}
+
+Season: ${season}
+Seasonal Context: ${seasonalContext}`;
+
+  const userPrompt = `Personalize this email template for ${jobData.customerName}:
+
+TEMPLATE SUBJECT: ${template.subject}
+
+TEMPLATE HTML BODY:
+${template.htmlContent}
+
+TEMPLATE PLAIN TEXT:
+${template.plainTextContent || 'N/A'}
+
+Instructions:
+1. Replace all merge fields with actual customer data:
+   - {{customerName}} → ${jobData.customerName}
+   - {{serviceType}} → ${jobData.serviceType || 'plumbing service'}
+   - {{jobAmount}} → ${jobData.jobAmount ? `$${(jobData.jobAmount / 100).toFixed(2)}` : 'varies'}
+   - {{location}} → ${jobData.location || 'Central Texas'}
+   - {{jobDate}} → ${jobData.jobDate ? jobData.jobDate.toLocaleDateString() : 'recently'}
+
+2. Analyze the job details and add personalized touches:
+   ${jobData.jobDescription ? `- Reference the specific work: ${jobData.jobDescription}` : ''}
+   ${jobData.estimateDetails ? `- Mention estimate details naturally: ${jobData.estimateDetails}` : ''}
+   ${jobData.workCompleted ? `- Acknowledge completed work: ${jobData.workCompleted}` : ''}
+
+3. Keep the template structure, CTAs, and brand voice
+4. Make it feel like it was written specifically for this customer
+5. ${phoneNumber ? `Ensure phone number ${phoneNumber} is included for tracking` : 'Use standard phone number'}
+6. ${referralLink ? `Include their unique referral link: ${referralLink}` : ''}
+
+Campaign Type: ${campaignType}
+
+Return as JSON:
+{
+  "subject": "...",
+  "bodyHtml": "...",
+  "bodyPlain": "..."
+}`;
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.7,
+    });
+
+    const content = completion.choices[0]?.message?.content;
+    if (!content) {
+      throw new Error('No content generated from AI');
+    }
+
+    const parsed = JSON.parse(content);
+    
+    return {
+      subject: parsed.subject,
+      bodyHtml: parsed.bodyHtml,
+      bodyPlain: parsed.bodyPlain,
+    };
+  } catch (error: any) {
+    console.error('[AI Email Personalizer] Error:', error);
+    throw new Error(`Failed to personalize email: ${error.message}`);
   }
 }
