@@ -4546,7 +4546,7 @@ function ReviewRequestsSection() {
   
   // AI Email Generation State
   const [generateDialogOpen, setGenerateDialogOpen] = useState(false);
-  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture'>('review_request');
+  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture' | 'quote_followup'>('review_request');
   const [generateEmailNumber, setGenerateEmailNumber] = useState<1 | 2 | 3 | 4>(1);
   const [generateStrategy, setGenerateStrategy] = useState<string>('');
   const [generatedEmail, setGeneratedEmail] = useState<any>(null);
@@ -5256,13 +5256,14 @@ function ReviewRequestsSection() {
                 <Label>Campaign Type</Label>
                 <Select
                   value={generateCampaignType}
-                  onValueChange={(value: 'review_request' | 'referral_nurture') => setGenerateCampaignType(value)}
+                  onValueChange={(value: 'review_request' | 'referral_nurture' | 'quote_followup') => setGenerateCampaignType(value)}
                 >
                   <SelectTrigger data-testid="select-campaign-type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="review_request">Review Request Drip</SelectItem>
+                    <SelectItem value="quote_followup">Quote Follow-up</SelectItem>
                     <SelectItem value="referral_nurture">Referral Nurture</SelectItem>
                   </SelectContent>
                 </Select>
@@ -5278,10 +5279,10 @@ function ReviewRequestsSection() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">Email 1 - {generateCampaignType === 'review_request' ? 'Day 1' : 'Day 14'}</SelectItem>
-                    <SelectItem value="2">Email 2 - {generateCampaignType === 'review_request' ? 'Day 7' : 'Day 60'}</SelectItem>
-                    <SelectItem value="3">Email 3 - {generateCampaignType === 'review_request' ? 'Day 14' : 'Day 150'}</SelectItem>
-                    <SelectItem value="4">Email 4 - {generateCampaignType === 'review_request' ? 'Day 21' : 'Day 210'}</SelectItem>
+                    <SelectItem value="1">Email 1 - {generateCampaignType === 'referral_nurture' ? 'Day 14' : 'Day 1'}</SelectItem>
+                    <SelectItem value="2">Email 2 - {generateCampaignType === 'referral_nurture' ? 'Day 60' : 'Day 7'}</SelectItem>
+                    <SelectItem value="3">Email 3 - {generateCampaignType === 'referral_nurture' ? 'Day 150' : 'Day 14'}</SelectItem>
+                    <SelectItem value="4">Email 4 - {generateCampaignType === 'referral_nurture' ? 'Day 210' : 'Day 21'}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -5424,7 +5425,7 @@ function EmailTemplatesSection() {
   const [editBodyPlain, setEditBodyPlain] = useState("");
 
   // Generate form state
-  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture'>('review_request');
+  const [generateCampaignType, setGenerateCampaignType] = useState<'review_request' | 'referral_nurture' | 'quote_followup'>('review_request');
   const [generateEmailNumber, setGenerateEmailNumber] = useState<1 | 2 | 3 | 4>(1);
   const [generateStrategy, setGenerateStrategy] = useState("");
 
@@ -5539,14 +5540,19 @@ function EmailTemplatesSection() {
   };
 
   const getTemplateTitle = (template: EmailTemplate) => {
-    const type = template.campaignType === 'review_request' ? 'Review Request' : 'Referral Nurture';
+    const type = template.campaignType === 'review_request' 
+      ? 'Review Request' 
+      : template.campaignType === 'quote_followup'
+      ? 'Quote Follow-up'
+      : 'Referral Nurture';
     return `${type} - Email ${template.emailNumber}`;
   };
 
   const getTemplateDescription = (template: EmailTemplate) => {
-    if (template.campaignType === 'review_request') {
+    if (template.campaignType === 'review_request' || template.campaignType === 'quote_followup') {
       const days = [1, 7, 14, 21][template.emailNumber - 1];
-      return `Sent ${days} day${days > 1 ? 's' : ''} after job completion`;
+      const context = template.campaignType === 'quote_followup' ? 'quote/estimate' : 'job completion';
+      return `Sent ${days} day${days > 1 ? 's' : ''} after ${context}`;
     } else {
       const days = [14, 60, 150, 210][template.emailNumber - 1];
       return `Sent ${days} days after positive review`;
@@ -5554,6 +5560,7 @@ function EmailTemplatesSection() {
   };
 
   const reviewTemplates = templates.filter((t: EmailTemplate) => t.campaignType === 'review_request');
+  const quoteTemplates = templates.filter((t: EmailTemplate) => t.campaignType === 'quote_followup');
   const referralTemplates = templates.filter((t: EmailTemplate) => t.campaignType === 'referral_nurture');
 
   if (isLoading) {
@@ -5630,6 +5637,76 @@ function EmailTemplatesSection() {
                               setGenerateDialogOpen(true);
                             }}
                             data-testid={`button-create-review-${num}`}
+                          >
+                            <Plus className="w-4 h-4 mr-1" />
+                            Create
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {template && (
+                      <div className="mt-3 pt-3 border-t">
+                        <p className="text-sm text-muted-foreground">
+                          <strong>Preview:</strong> {template.preheader || 'No preheader'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Quote Follow-up Campaign</CardTitle>
+              <CardDescription>
+                4-email sequence sent over 21 days after quote/estimate ($0 jobs)
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4].map(num => {
+                const template = quoteTemplates.find((t: EmailTemplate) => t.emailNumber === num);
+                return (
+                  <div
+                    key={num}
+                    className="p-4 border rounded-lg hover-elevate"
+                    data-testid={`template-quote-${num}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h3 className="font-semibold">
+                          Email {num} - {template ? template.subject : 'Not Created'}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {template ? getTemplateDescription(template) : `Day ${[1, 7, 14, 21][num - 1]}`}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        {template ? (
+                          <>
+                            <Badge variant={template.isActive ? "default" : "outline"}>
+                              {template.isActive ? "Active" : "Inactive"}
+                            </Badge>
+                            <Button
+                              size="sm"
+                              onClick={() => handleEditTemplate(template)}
+                              data-testid={`button-edit-quote-${num}`}
+                            >
+                              <Eye className="w-4 h-4 mr-1" />
+                              Edit
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setGenerateCampaignType('quote_followup');
+                              setGenerateEmailNumber(num as 1 | 2 | 3 | 4);
+                              setGenerateDialogOpen(true);
+                            }}
+                            data-testid={`button-create-quote-${num}`}
                           >
                             <Plus className="w-4 h-4 mr-1" />
                             Create
@@ -5742,6 +5819,7 @@ function EmailTemplatesSection() {
                 data-testid="select-campaign-type"
               >
                 <option value="review_request">Review Request</option>
+                <option value="quote_followup">Quote Follow-up</option>
                 <option value="referral_nurture">Referral Nurture</option>
               </select>
             </div>
