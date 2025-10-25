@@ -5258,16 +5258,15 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         campaignType,
         emailNumber,
         subject,
-        preheader,
-        bodyHtml,
-        bodyPlain,
+        htmlContent,
+        plainTextContent,
         isActive
       } = req.body;
 
       // Validate required fields
-      if (!campaignType || !emailNumber || !subject || !bodyHtml) {
+      if (!campaignType || !emailNumber || !subject || !htmlContent || !plainTextContent) {
         return res.status(400).json({
-          error: "Missing required fields: campaignType, emailNumber, subject, bodyHtml"
+          error: "Missing required fields: campaignType, emailNumber, subject, htmlContent, plainTextContent"
         });
       }
 
@@ -5289,10 +5288,10 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           .update(reviewEmailTemplates)
           .set({
             subject,
-            preheader,
-            bodyHtml,
-            bodyPlain,
-            isActive: isActive ?? true,
+            htmlContent,
+            plainTextContent,
+            customized: true,
+            lastEditedAt: new Date(),
             updatedAt: new Date()
           })
           .where(eq(reviewEmailTemplates.id, existing[0].id))
@@ -5308,10 +5307,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
             campaignType,
             emailNumber,
             subject,
-            preheader,
-            bodyHtml,
-            bodyPlain,
-            isActive: isActive ?? true
+            htmlContent,
+            plainTextContent,
+            aiGenerated: true
           })
           .returning();
 

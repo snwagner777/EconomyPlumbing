@@ -89,8 +89,8 @@ interface EmailTemplate {
   emailNumber: number;
   subject: string;
   preheader: string | null;
-  bodyHtml: string;
-  bodyPlain: string | null;
+  htmlContent: string;
+  plainTextContent: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -4694,8 +4694,8 @@ function ReviewRequestsSection() {
       emailNumber: generateEmailNumber,
       subject: generatedEmail.subject,
       preheader: generatedEmail.preheader,
-      bodyHtml: generatedEmail.bodyHtml,
-      bodyPlain: generatedEmail.bodyPlain,
+      htmlContent: generatedEmail.htmlContent,
+      plainTextContent: generatedEmail.plainTextContent,
       isActive: true
     });
   };
@@ -5356,13 +5356,13 @@ function ReviewRequestsSection() {
 
               <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
                 {previewMode === 'visual' && (
-                  <div dangerouslySetInnerHTML={{ __html: generatedEmail.bodyHtml }} />
+                  <div dangerouslySetInnerHTML={{ __html: generatedEmail.htmlContent }} />
                 )}
                 {previewMode === 'html' && (
-                  <pre className="text-xs whitespace-pre-wrap">{generatedEmail.bodyHtml}</pre>
+                  <pre className="text-xs whitespace-pre-wrap">{generatedEmail.htmlContent}</pre>
                 )}
                 {previewMode === 'plain' && (
-                  <pre className="whitespace-pre-wrap">{generatedEmail.bodyPlain}</pre>
+                  <pre className="whitespace-pre-wrap">{generatedEmail.plainTextContent}</pre>
                 )}
               </div>
 
@@ -5449,8 +5449,8 @@ function EmailTemplatesSection() {
       });
       setEditSubject(data.subject);
       setEditPreheader(data.preheader || "");
-      setEditBodyHtml(data.bodyHtml);
-      setEditBodyPlain(data.bodyPlain || "");
+      setEditBodyHtml(data.htmlContent);
+      setEditBodyPlain(data.plainTextContent || "");
       setGenerateDialogOpen(false);
       setEditDialogOpen(true);
     },
@@ -5491,8 +5491,8 @@ function EmailTemplatesSection() {
     setSelectedTemplate(template);
     setEditSubject(template.subject);
     setEditPreheader(template.preheader || "");
-    setEditBodyHtml(template.bodyHtml);
-    setEditBodyPlain(template.bodyPlain || "");
+    setEditBodyHtml(template.htmlContent);
+    setEditBodyPlain(template.plainTextContent || "");
     setEditDialogOpen(true);
   };
 
@@ -5533,8 +5533,8 @@ function EmailTemplatesSection() {
       emailNumber,
       subject: editSubject,
       preheader: editPreheader,
-      bodyHtml: editBodyHtml,
-      bodyPlain: editBodyPlain,
+      htmlContent: editBodyHtml,
+      plainTextContent: editBodyPlain,
       isActive: true
     });
   };

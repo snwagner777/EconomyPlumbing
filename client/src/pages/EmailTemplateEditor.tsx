@@ -22,8 +22,8 @@ interface EmailTemplate {
   emailNumber: number;
   subject: string;
   preheader: string | null;
-  bodyHtml: string;
-  bodyPlain: string | null;
+  htmlContent: string;
+  plainTextContent: string | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -68,8 +68,8 @@ export default function EmailTemplateEditor() {
       // Pre-populate edit dialog with generated content
       setEditSubject(data.subject);
       setEditPreheader(data.preheader || "");
-      setEditBodyHtml(data.bodyHtml);
-      setEditBodyPlain(data.bodyPlain || "");
+      setEditBodyHtml(data.htmlContent);
+      setEditBodyPlain(data.plainTextContent || "");
       setGenerateDialogOpen(false);
       setEditDialogOpen(true);
     },
@@ -110,8 +110,8 @@ export default function EmailTemplateEditor() {
     setSelectedTemplate(template);
     setEditSubject(template.subject);
     setEditPreheader(template.preheader || "");
-    setEditBodyHtml(template.bodyHtml);
-    setEditBodyPlain(template.bodyPlain || "");
+    setEditBodyHtml(template.htmlContent);
+    setEditBodyPlain(template.plainTextContent || "");
     setEditDialogOpen(true);
   };
 
@@ -153,8 +153,8 @@ export default function EmailTemplateEditor() {
       emailNumber,
       subject: editSubject,
       preheader: editPreheader,
-      bodyHtml: editBodyHtml,
-      bodyPlain: editBodyPlain,
+      htmlContent: editBodyHtml,
+      plainTextContent: editBodyPlain,
       isActive: true
     });
   };
