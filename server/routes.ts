@@ -5245,9 +5245,9 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       }
 
       // Validate campaign type
-      if (!['review_request', 'referral_nurture'].includes(campaignType)) {
+      if (!['review_request', 'referral_nurture', 'quote_followup'].includes(campaignType)) {
         return res.status(400).json({
-          error: "Invalid campaignType. Must be 'review_request' or 'referral_nurture'"
+          error: "Invalid campaignType. Must be 'review_request', 'referral_nurture', or 'quote_followup'"
         });
       }
 
@@ -5270,7 +5270,16 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       });
 
       console.log(`[AI Email Generator] Successfully generated email: "${generatedEmail.subject}"`);
-      res.json(generatedEmail);
+      
+      // Map field names: AI returns bodyHtml/bodyPlain, frontend expects htmlContent/plainTextContent
+      res.json({
+        subject: generatedEmail.subject,
+        preheader: generatedEmail.preheader,
+        htmlContent: generatedEmail.bodyHtml,
+        plainTextContent: generatedEmail.bodyPlain,
+        strategy: generatedEmail.strategy,
+        seasonalContext: generatedEmail.seasonalContext
+      });
     } catch (error: any) {
       console.error("[AI Email Generator] Error:", error);
       res.status(500).json({ error: error.message || 'Failed to generate email' });
