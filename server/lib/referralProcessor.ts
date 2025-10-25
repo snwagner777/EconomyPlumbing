@@ -351,6 +351,104 @@ Thank you for trusting us with your plumbing needs!`;
           // Don't throw - email is non-critical
         }
 
+        // Generate success notification email for referrer (if they have a customer ID)
+        if (referral.referrerCustomerId) {
+          try {
+            const { generateReferrerSuccessEmail } = await import('./aiEmailGenerator');
+            const { referrerSuccessEmails, systemSettings, contactsXlsx, referrals: referralsTable } = await import('@shared/schema');
+            const { sql: sqlRaw } = await import('drizzle-orm');
+            const { canSendEmail, addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import('./emailPreferenceEnforcer');
+            
+            // Try to get referrer's email from database
+            const referrerContact = await db
+              .select({ value: contactsXlsx.value })
+              .from(contactsXlsx)
+              .where(
+                sqlRaw`${contactsXlsx.customerId} = ${referral.referrerCustomerId} AND ${contactsXlsx.contactType} = 'Email'`
+              )
+              .limit(1);
+            
+            const referrerEmail = referrerContact[0]?.value;
+            
+            if (!referrerEmail) {
+              console.log(`[Referral Processor] No email found for referrer customer ${referral.referrerCustomerId} - skipping success email`);
+            } else {
+              // Check master email switch
+              const dbSettings = await db.select().from(systemSettings);
+              const settingsMap = new Map(dbSettings.map((s: any) => [s.key, s.value]));
+              const masterEmailEnabled = settingsMap.get('review_master_email_switch') === 'true';
+              
+              if (!masterEmailEnabled) {
+                console.log('[Referral Processor] Master email switch disabled - skipping success email');
+              } else {
+                // Check email preferences
+                const prefCheck = await canSendEmail(referrerEmail, { type: 'referral' });
+                
+                if (!prefCheck.canSend) {
+                  console.log(`[Referral Processor] Skipping success email - ${prefCheck.reason}`);
+                } else {
+                  console.log(`[Referral Processor] Generating success notification for ${referral.referrerName}...`);
+                  
+                  // Calculate expiration date (180 days)
+                  const expirationDate = new Date(creditDate);
+                  expirationDate.setDate(expirationDate.getDate() + 180);
+                  
+                  // Get current balance by summing all credited referrals for this customer
+                  const allCredits = await db
+                    .select()
+                    .from(referralsTable)
+                    .where(
+                      sqlRaw`${referralsTable.referrerCustomerId} = ${referral.referrerCustomerId} AND ${referralsTable.status} = 'credited'`
+                    );
+                  
+                  const totalBalance = allCredits.length * CREDIT_AMOUNT; // Each credit is $25
+                  
+                  // Get phone number from settings
+                  const phoneNumber = settingsMap.get('referral_nurture_phone_number');
+                  const phoneStr = phoneNumber || undefined;
+                  
+                  // Generate AI-powered success email
+                  const emailContent = await generateReferrerSuccessEmail({
+                    referrerName: referral.referrerName || 'Valued Customer',
+                    refereeName: referral.refereeName,
+                    creditAmount: CREDIT_AMOUNT / 100, // $25.00
+                    creditExpiresAt: expirationDate,
+                    currentBalance: totalBalance / 100, // Total balance in dollars
+                    phoneNumber: phoneStr,
+                  });
+                  
+                  // Add unsubscribe footer
+                  const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
+                  const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
+                  
+                  // Save to database for admin review
+                  await db.insert(referrerSuccessEmails).values({
+                    referralId: referral.id,
+                    referrerName: referral.referrerName || 'Valued Customer',
+                    referrerEmail,
+                    referrerCustomerId: referral.referrerCustomerId,
+                    refereeName: referral.refereeName,
+                    creditAmount: CREDIT_AMOUNT,
+                    creditExpiresAt: expirationDate,
+                    currentBalance: totalBalance,
+                    subject: emailContent.subject,
+                    htmlContent: htmlWithFooter,
+                    plainTextContent: plainWithFooter,
+                    status: 'queued', // Admin must approve before sending
+                    generatedByAI: true,
+                    aiPrompt: `Success notification for ${referral.referrerName} - ${referral.refereeName} became a customer`,
+                  });
+                  
+                  console.log(`[Referral Processor] ✅ Success email queued for admin review`);
+                }
+              }
+            }
+          } catch (emailError) {
+            console.error('[Referral Processor] Failed to generate success email:', emailError);
+            // Don't throw - email is non-critical
+          }
+        }
+
         // Update referral status with 180-day expiration
         const expirationDate = new Date(creditDate);
         expirationDate.setDate(expirationDate.getDate() + 180); // 180 days from now
