@@ -18,9 +18,9 @@ export class GoogleMyBusinessAuth {
       if (replitDomains) {
         // Use the first production domain
         const domain = replitDomains.split(',')[0];
-        redirectUri = `https://${domain}/api/oauth/callback`;
+        redirectUri = `https://${domain}/api/google/oauth/callback`;
       } else {
-        redirectUri = 'http://localhost:5000/api/oauth/callback';
+        redirectUri = 'http://localhost:5000/api/google/oauth/callback';
       }
     }
 

@@ -2534,7 +2534,7 @@ ${rssItems}
     }
   });
 
-  app.get("/api/oauth/init", async (req, res) => {
+  app.get("/api/google/oauth/init", async (req, res) => {
     try {
       const auth = GoogleMyBusinessAuth.getInstance();
       const authUrl = auth.getAuthUrl();
@@ -2545,7 +2545,7 @@ ${rssItems}
     }
   });
 
-  app.get("/api/oauth/callback", async (req, res) => {
+  app.get("/api/google/oauth/callback", async (req, res) => {
     try {
       const { code } = req.query;
       
