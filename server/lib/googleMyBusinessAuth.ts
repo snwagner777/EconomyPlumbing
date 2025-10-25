@@ -43,11 +43,24 @@ export class GoogleMyBusinessAuth {
   }
 
   getAuthUrl(): string {
-    return this.oauth2Client.generateAuthUrl({
+    const authUrl = this.oauth2Client.generateAuthUrl({
       access_type: 'offline',
       scope: SCOPES,
       prompt: 'consent', // Force consent to get refresh token
     });
+    
+    // Log for debugging
+    console.log('[GMB Auth] Generated OAuth URL:', authUrl);
+    console.log('[GMB Auth] Scopes:', SCOPES);
+    
+    // Extract and log the redirect_uri parameter
+    const url = new URL(authUrl);
+    const redirectUri = url.searchParams.get('redirect_uri');
+    const clientId = url.searchParams.get('client_id');
+    console.log('[GMB Auth] Redirect URI in request:', redirectUri);
+    console.log('[GMB Auth] Client ID in request:', clientId?.substring(0, 30) + '...');
+    
+    return authUrl;
   }
 
   async getTokenFromCode(code: string) {
