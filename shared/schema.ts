@@ -1802,6 +1802,20 @@ export const insertRefereeWelcomeEmailSchema = createInsertSchema(refereeWelcome
   sentAt: true,
 });
 
+export const insertReferrerThankYouEmailSchema = createInsertSchema(referrerThankYouEmails).omit({
+  id: true,
+  createdAt: true,
+  approvedAt: true,
+  sentAt: true,
+});
+
+export const insertReferrerSuccessEmailSchema = createInsertSchema(referrerSuccessEmails).omit({
+  id: true,
+  createdAt: true,
+  approvedAt: true,
+  sentAt: true,
+});
+
 export const insertEmailPreferencesSchema = createInsertSchema(emailPreferences).omit({
   id: true,
   createdAt: true,
@@ -1832,6 +1846,10 @@ export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
 export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;
 export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;
 export type InsertRefereeWelcomeEmail = z.infer<typeof insertRefereeWelcomeEmailSchema>;
+export type ReferrerThankYouEmail = typeof referrerThankYouEmails.$inferSelect;
+export type InsertReferrerThankYouEmail = z.infer<typeof insertReferrerThankYouEmailSchema>;
+export type ReferrerSuccessEmail = typeof referrerSuccessEmails.$inferSelect;
+export type InsertReferrerSuccessEmail = z.infer<typeof insertReferrerSuccessEmailSchema>;
 export type EmailPreference = typeof emailPreferences.$inferSelect;
 export type InsertEmailPreference = z.infer<typeof insertEmailPreferencesSchema>;
 export type PendingReferral = typeof pendingReferrals.$inferSelect;
