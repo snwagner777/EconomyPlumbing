@@ -446,13 +446,13 @@ class ReviewRequestScheduler {
       });
       
       if (suppressed) {
-        console.log(`[Review Request Scheduler] Email ${jobCompletion.email} is suppressed (${suppressed.reason}), stopping campaign`);
+        console.log(`[Review Request Scheduler] Email ${jobCompletion.email} is suppressed (${suppressed.reason}), pausing campaign permanently`);
         await db
           .update(reviewRequests)
           .set({
             status: 'paused',
             pausedAt: new Date(),
-            pauseReason: suppressed.reason,
+            pauseReason: `suppressed_${suppressed.reason}`, // e.g., 'suppressed_hard_bounce', 'suppressed_spam_complaint'
           })
           .where(eq(reviewRequests.id, reviewRequestId));
         return false;
