@@ -26,7 +26,7 @@ interface JobDetails {
 }
 
 interface GenerateEmailOptions {
-  campaignType: 'review_request' | 'referral_nurture';
+  campaignType: 'review_request' | 'referral_nurture' | 'quote_followup';
   emailNumber: 1 | 2 | 3 | 4; // Which email in the drip sequence
   jobDetails: JobDetails;
   phoneNumber?: string;
@@ -79,7 +79,7 @@ function getSeasonalContext(): { season: string; context: string } {
 /**
  * Get messaging strategy for specific email number in sequence
  */
-function getEmailStrategy(campaignType: 'review_request' | 'referral_nurture', emailNumber: number, customStrategy?: string): string {
+function getEmailStrategy(campaignType: 'review_request' | 'referral_nurture' | 'quote_followup', emailNumber: number, customStrategy?: string): string {
   if (customStrategy) return customStrategy;
   
   if (campaignType === 'review_request') {
@@ -91,13 +91,22 @@ function getEmailStrategy(campaignType: 'review_request' | 'referral_nurture', e
       4: 'urgency', // Day 21: Final gentle reminder
     };
     return strategies[emailNumber as keyof typeof strategies] || 'value';
-  } else {
+  } else if (campaignType === 'referral_nurture') {
     // Referral Nurture (6 months)
     const strategies = {
       1: 'value', // Day 14: Introduce referral program + $25 reward
       2: 'trust', // Day 60: Your friends deserve quality service
       3: 'social_proof', // Day 150: Share success stories from referrals
       4: 'urgency', // Day 210: Limited time to earn rewards (soft close)
+    };
+    return strategies[emailNumber as keyof typeof strategies] || 'value';
+  } else {
+    // Quote Follow-up (21 days) - nurture potential customers
+    const strategies = {
+      1: 'value', // Day 1: Thank you for considering us
+      2: 'trust', // Day 7: We're here when you're ready
+      3: 'seasonal', // Day 14: Timely service reminders
+      4: 'urgency', // Day 21: Limited-time offer or seasonal urgency
     };
     return strategies[emailNumber as keyof typeof strategies] || 'value';
   }
@@ -112,11 +121,10 @@ export async function generateEmail(options: GenerateEmailOptions): Promise<Gene
   const strategy = getEmailStrategy(campaignType, emailNumber, customStrategy);
 
   // Build the AI prompt
-  const isReviewRequest = campaignType === 'review_request';
   const emailSequence = `Email ${emailNumber} of 4`;
-  const daysFromJob = isReviewRequest 
-    ? [1, 7, 14, 21][emailNumber - 1]
-    : [14, 60, 150, 210][emailNumber - 1];
+  const daysFromJob = campaignType === 'referral_nurture'
+    ? [14, 60, 150, 210][emailNumber - 1]
+    : [1, 7, 14, 21][emailNumber - 1]; // review_request and quote_followup use same timing
 
   const systemPrompt = `You are an expert email copywriter for Economy Plumbing Services, a family-owned plumbing company serving Austin and Central Texas.
 
@@ -136,7 +144,10 @@ Email Guidelines:
 - Personalize with customer name and service details
 - ${phoneNumber ? `Include phone number ${phoneNumber} for tracking` : 'No phone number tracking'}`;
 
-  const userPrompt = isReviewRequest ? `
+  let userPrompt = '';
+  
+  if (campaignType === 'review_request') {
+    userPrompt = `
 Generate a review request email with these specifications:
 
 Campaign Details:
@@ -192,7 +203,9 @@ Return as JSON:
   "bodyHtml": "...",
   "bodyPlain": "..."
 }
-` : `
+`;
+  } else if (campaignType === 'referral_nurture') {
+    userPrompt = `
 Generate a referral nurture email with these specifications:
 
 Campaign Details:
@@ -263,6 +276,75 @@ Return as JSON:
   "bodyPlain": "..."
 }
 `;
+  } else {
+    // quote_followup campaign
+    userPrompt = `
+Generate a quote follow-up email with these specifications:
+
+Campaign Details:
+- Type: Quote Follow-up Campaign (for customers who received estimate but no work completed)
+- ${emailSequence} in sequence (sent ${daysFromJob} days after quote/estimate)
+- Strategy: ${strategy}
+- Season: ${season}
+- Seasonal Context: ${seasonalContext}
+
+Customer Details:
+- Name: ${jobDetails.customerName}
+- Service Quoted: ${jobDetails.serviceType || 'plumbing service'}
+- Location: ${jobDetails.location || 'Central Texas'}
+
+Important Context:
+- This customer received a quote/estimate but NO WORK WAS DONE (invoice was $0)
+- We want to stay top-of-mind for when they're ready to move forward
+- Focus on nurturing the relationship, not pressuring them
+- If they appreciated our professionalism during the estimate, that's worth mentioning
+
+Email Objectives:
+${emailNumber === 1 ? `
+- Thank them for considering Economy Plumbing
+- Acknowledge that they received a quote but haven't moved forward yet
+- Let them know we're here when they're ready
+- Soft ask: if they appreciated our professionalism during the quote, we'd love to hear about it
+- NO PRESSURE - just staying in touch
+` : emailNumber === 2 ? `
+- Gentle check-in: "Just following up on your estimate"
+- Offer help: "Do you have any questions about the quote?"
+- Reinforce our value: quality work, fair pricing, family-owned
+- Mention we're always here to help, even with questions
+- Build trust and stay top-of-mind
+` : emailNumber === 3 ? `
+- Seasonal reminder: ${seasonalContext}
+- Timely service recommendation based on season
+- Educational value: why this service matters now
+- Still warm and helpful, not salesy
+- "When you're ready, we're here"
+` : `
+- Final soft touch: limited-time seasonal offer or discount (if appropriate)
+- Express appreciation for their consideration
+- Leave door open: "We hope to earn your business in the future"
+- Include testimonial or social proof
+- Thank them regardless of whether they book
+`}
+
+${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}
+
+Include a clear CTA button with text like "Get a Quote" or "Schedule Service" that links to: https://economyplumbingtx.com/contact
+
+Generate:
+1. Subject line (under 50 chars, ${strategy} focused, NOT pushy)
+2. Preheader text (40-80 chars)
+3. HTML email body (well-formatted, professional, mobile-friendly)
+4. Plain text version (clean, readable)
+
+Return as JSON:
+{
+  "subject": "...",
+  "preheader": "...",
+  "bodyHtml": "...",
+  "bodyPlain": "..."
+}
+`;
+  }
 
   try {
     const completion = await openai.chat.completions.create({
