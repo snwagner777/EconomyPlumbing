@@ -6020,20 +6020,29 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.post("/api/admin/referral-email-preview", requireAdmin, async (req, res) => {
     try {
       const { generateReferrerThankYouEmail, generateReferrerSuccessEmail } = await import("./lib/aiEmailGenerator");
+      const { systemSettings } = await import("@shared/schema");
       const { emailType, customPrompt, brandGuidelines } = req.body;
       
       if (!emailType || !['thank_you', 'success'].includes(emailType)) {
         return res.status(400).json({ error: "Invalid emailType. Must be 'thank_you' or 'success'" });
       }
       
-      // Use sample data for preview
+      // Get tracking phone numbers from database
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      
+      // Use sample data for preview (with {{trackingNumber}} placeholder)
       let emailContent;
       if (emailType === 'thank_you') {
         emailContent = await generateReferrerThankYouEmail({
           referrerName: 'John Smith',
           refereeName: 'Jane Doe',
-          phoneNumber: '(512) 368-9159',
         }, customPrompt, brandGuidelines);
+        
+        // Replace {{trackingNumber}} with actual tracking phone number
+        const trackingPhoneNumber = settingsMap.get('referral_thank_you_phone_formatted') || '(512) 276-1690';
+        emailContent.bodyHtml = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+        emailContent.bodyPlain = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
       } else {
         emailContent = await generateReferrerSuccessEmail({
           referrerName: 'John Smith',
@@ -6041,8 +6050,12 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           creditAmount: 25,
           creditExpiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
           currentBalance: 75,
-          phoneNumber: '(512) 368-9159',
         }, customPrompt, brandGuidelines);
+        
+        // Replace {{trackingNumber}} with actual tracking phone number
+        const trackingPhoneNumber = settingsMap.get('referral_success_phone_formatted') || '(512) 395-2847';
+        emailContent.bodyHtml = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+        emailContent.bodyPlain = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
       }
       
       res.json({
