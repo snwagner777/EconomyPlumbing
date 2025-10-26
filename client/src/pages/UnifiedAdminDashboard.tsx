@@ -4657,15 +4657,15 @@ function CustomCampaignsListSection() {
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Sent</p>
-                <p className="text-sm font-medium">{campaign.emailsSent || 0}</p>
+                <p className="text-sm font-medium">{campaign.totalSent || 0}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Opens</p>
-                <p className="text-sm font-medium">{campaign.emailsOpened || 0}</p>
+                <p className="text-sm font-medium">{campaign.totalOpened || 0}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Clicks</p>
-                <p className="text-sm font-medium">{campaign.emailsClicked || 0}</p>
+                <p className="text-sm font-medium">{campaign.totalClicked || 0}</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
