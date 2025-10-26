@@ -5619,6 +5619,22 @@ function EmailTemplatesSection() {
   };
 
   const handleGenerateEmail = () => {
+    // Get campaign-specific phone number
+    const phoneNumber = generateCampaignType === 'review_request'
+      ? settings?.reviewRequestPhoneFormatted
+      : generateCampaignType === 'referral_nurture'
+      ? settings?.referralNurturePhoneFormatted
+      : settings?.quoteFollowupPhoneFormatted;
+
+    if (!phoneNumber) {
+      toast({
+        title: "Missing Phone Number",
+        description: `Please configure a tracking phone number for ${generateCampaignType.replace('_', ' ')} campaigns in Campaign Settings first.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     const mockJobDetails = {
       customerId: 12345,
       customerName: "John Smith",
@@ -5632,7 +5648,7 @@ function EmailTemplatesSection() {
       campaignType: generateCampaignType,
       emailNumber: generateEmailNumber,
       jobDetails: mockJobDetails,
-      phoneNumber: "(512) 276-1690",
+      phoneNumber,
       strategy: generateStrategy || undefined
     });
   };

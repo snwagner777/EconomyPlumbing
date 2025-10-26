@@ -52,6 +52,16 @@ export default function EmailTemplateEditor() {
     queryKey: ['/api/admin/emails/templates'],
   });
 
+  // Fetch settings for campaign-specific phone numbers
+  const { data: settings, isLoading: settingsLoading } = useQuery<{
+    reviewMasterEmailSwitch: boolean;
+    reviewRequestPhoneFormatted: string;
+    referralNurturePhoneFormatted: string;
+    quoteFollowupPhoneFormatted: string;
+  }>({
+    queryKey: ['/api/admin/review-requests/settings'],
+  });
+
   const templates = templatesData?.templates || [];
 
   // Generate email mutation
@@ -116,6 +126,22 @@ export default function EmailTemplateEditor() {
   };
 
   const handleGenerateEmail = () => {
+    // Get campaign-specific phone number
+    const phoneNumber = generateCampaignType === 'review_request'
+      ? settings?.reviewRequestPhoneFormatted
+      : generateCampaignType === 'referral_nurture'
+      ? settings?.referralNurturePhoneFormatted
+      : settings?.quoteFollowupPhoneFormatted;
+
+    if (!phoneNumber) {
+      toast({
+        title: "Missing Phone Number",
+        description: `Please configure a tracking phone number for ${generateCampaignType.replace('_', ' ')} campaigns in Campaign Settings first.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Mock job details for preview generation
     const mockJobDetails = {
       customerId: 12345,
@@ -130,7 +156,7 @@ export default function EmailTemplateEditor() {
       campaignType: generateCampaignType,
       emailNumber: generateEmailNumber,
       jobDetails: mockJobDetails,
-      phoneNumber: "(512) 276-1690",
+      phoneNumber,
       strategy: generateStrategy || undefined
     });
   };
@@ -433,13 +459,18 @@ export default function EmailTemplateEditor() {
               </Button>
               <Button
                 onClick={handleGenerateEmail}
-                disabled={generateMutation.isPending}
+                disabled={generateMutation.isPending || settingsLoading}
                 data-testid="button-confirm-generate"
               >
                 {generateMutation.isPending ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                     Generating...
+                  </>
+                ) : settingsLoading ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Loading settings...
                   </>
                 ) : (
                   <>
