@@ -717,9 +717,10 @@ Seasonal Context (${season}):
 ${seasonalContext}
 - Use this to add a timely seasonal touch if relevant
 
-${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}`;
+${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}
+${customPrompt ? `\nCUSTOM INSTRUCTIONS:\n${customPrompt}` : ''}`;
 
-  const systemPrompt = customPrompt || defaultSystemPrompt;
+  const systemPrompt = defaultSystemPrompt;
 
   const userPrompt = `Generate a thank you email for ${referrerName} who just referred ${refereeName}.
 
@@ -830,9 +831,10 @@ Seasonal Context (${season}):
 ${seasonalContext}
 - Use this to suggest seasonal services they could use their credit on
 
-${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}`;
+${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}
+${customPrompt ? `\nCUSTOM INSTRUCTIONS:\n${customPrompt}` : ''}`;
 
-  const systemPrompt = customPrompt || defaultSystemPrompt;
+  const systemPrompt = defaultSystemPrompt;
 
   const userPrompt = `Generate a success notification for ${referrerName} - their referral (${refereeName}) just became a customer!
 
