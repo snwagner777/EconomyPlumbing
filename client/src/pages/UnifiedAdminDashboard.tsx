@@ -81,7 +81,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-automation' | 'campaign-analytics' | 'email-templates' | 'referral-email-templates' | 'chatbot';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'chatbot';
 
 interface EmailTemplate {
   id: string;
@@ -287,34 +287,16 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       description: "Phone number tracking"
     },
     {
-      title: "Referral Tracking",
+      title: "Referral System",
       icon: Users,
       section: 'referrals' as AdminSection,
-      description: "Manage customer referrals"
+      description: "Tracking, emails & history"
     },
     {
-      title: "Marketing Automation",
+      title: "Marketing Campaigns",
       icon: Mail,
-      section: 'marketing-automation' as AdminSection,
-      description: "Review, referral & quote campaigns"
-    },
-    {
-      title: "Campaign Analytics",
-      icon: BarChart3,
-      section: 'campaign-analytics' as AdminSection,
-      description: "Email engagement & performance"
-    },
-    {
-      title: "Email Templates",
-      icon: FileText,
-      section: 'email-templates' as AdminSection,
-      description: "Manage email templates"
-    },
-    {
-      title: "Referral Email Templates",
-      icon: Sparkles,
-      section: 'referral-email-templates' as AdminSection,
-      description: "AI template customization & history"
+      section: 'marketing-campaigns' as AdminSection,
+      description: "Settings, templates & analytics"
     },
     {
       title: "Customer Data",
@@ -4487,6 +4469,59 @@ function CustomerDataSection() {
   );
 }
 
+// Referral System Section (Combined: Tracking + Email Templates)
+function ReferralSystemSection() {
+  const [activeTab, setActiveTab] = useState<'tracking' | 'emails'>('tracking');
+  
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList>
+          <TabsTrigger value="tracking" data-testid="tab-tracking">Referral Tracking</TabsTrigger>
+          <TabsTrigger value="emails" data-testid="tab-emails">Email Templates</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="tracking" className="mt-6">
+          <ReferralTrackingSection />
+        </TabsContent>
+        
+        <TabsContent value="emails" className="mt-6">
+          <ReferralEmailTemplatesSection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+// Marketing Campaigns Section (Combined: Settings + Templates + Analytics)
+function MarketingCampaignsSection() {
+  const [activeTab, setActiveTab] = useState<'settings' | 'templates' | 'analytics'>('settings');
+  
+  return (
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+        <TabsList>
+          <TabsTrigger value="settings" data-testid="tab-settings">Campaign Settings</TabsTrigger>
+          <TabsTrigger value="templates" data-testid="tab-templates">Email Templates</TabsTrigger>
+          <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="settings" className="mt-6">
+          <ReviewRequestsSection />
+        </TabsContent>
+        
+        <TabsContent value="templates" className="mt-6">
+          <EmailTemplatesSection />
+        </TabsContent>
+        
+        <TabsContent value="analytics" className="mt-6">
+          <CampaignAnalyticsSection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
 // Referral Tracking Section
 function ReferralTrackingSection() {
   const { data, isLoading } = useQuery<{referrals: any[], stats: any}>({
@@ -6793,15 +6828,9 @@ export default function UnifiedAdminDashboard() {
       case 'review-platforms':
         return <ReviewPlatformsSection />;
       case 'referrals':
-        return <ReferralTrackingSection />;
-      case 'marketing-automation':
-        return <ReviewRequestsSection />;
-      case 'campaign-analytics':
-        return <CampaignAnalyticsSection />;
-      case 'email-templates':
-        return <EmailTemplatesSection />;
-      case 'referral-email-templates':
-        return <ReferralEmailTemplatesSection />;
+        return <ReferralSystemSection />;
+      case 'marketing-campaigns':
+        return <MarketingCampaignsSection />;
       case 'customer-data':
         return <CustomerDataSection />;
       case 'chatbot':
@@ -6822,12 +6851,8 @@ export default function UnifiedAdminDashboard() {
       'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
-      'referrals': 'Referral Tracking',
-      'review-requests': 'Review Requests',
-      'marketing-automation': 'Marketing Automation',
-      'campaign-analytics': 'Campaign Analytics',
-      'email-templates': 'Email Templates',
-      'referral-email-templates': 'Referral Email Templates',
+      'referrals': 'Referral System',
+      'marketing-campaigns': 'Marketing Campaigns',
       'customer-data': 'Customer Data',
       'chatbot': 'AI Chatbot',
     };
