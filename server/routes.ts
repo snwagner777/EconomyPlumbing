@@ -2343,6 +2343,494 @@ ${rssItems}
     }
   });
 
+  // ====== CUSTOM EMAIL CAMPAIGNS ======
+
+  // Customer Segments - List all segments
+  app.get("/api/admin/customer-segments", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerSegments } = await import('@shared/schema');
+      const segments = await db.select().from(customerSegments).orderBy(desc(customerSegments.createdAt));
+      
+      // Get member counts for each segment
+      const { segmentMembership } = await import('@shared/schema');
+      const segmentsWithCounts = await Promise.all(segments.map(async (segment) => {
+        const [countResult] = await db
+          .select({ count: sql<number>`count(*)::int` })
+          .from(segmentMembership)
+          .where(eq(segmentMembership.segmentId, segment.id));
+        
+        return {
+          ...segment,
+          memberCount: countResult?.count || 0
+        };
+      }));
+
+      res.json(segmentsWithCounts);
+    } catch (error: any) {
+      console.error("Error fetching customer segments:", error);
+      res.status(500).json({ error: "Failed to fetch segments" });
+    }
+  });
+
+  // Customer Segments - Create new segment
+  app.post("/api/admin/customer-segments", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerSegments, insertCustomerSegmentSchema } = await import('@shared/schema');
+      const validated = insertCustomerSegmentSchema.parse(req.body);
+      
+      const [segment] = await db.insert(customerSegments).values(validated).returning();
+      res.json(segment);
+    } catch (error: any) {
+      console.error("Error creating customer segment:", error);
+      res.status(500).json({ error: "Failed to create segment" });
+    }
+  });
+
+  // Customer Segments - Get single segment with members
+  app.get("/api/admin/customer-segments/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerSegments, segmentMembership } = await import('@shared/schema');
+      const segmentId = parseInt(req.params.id);
+      
+      const [segment] = await db.select().from(customerSegments).where(eq(customerSegments.id, segmentId));
+      if (!segment) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+
+      // Get members
+      const members = await db.select().from(segmentMembership).where(eq(segmentMembership.segmentId, segmentId));
+      
+      res.json({ ...segment, members });
+    } catch (error: any) {
+      console.error("Error fetching customer segment:", error);
+      res.status(500).json({ error: "Failed to fetch segment" });
+    }
+  });
+
+  // Customer Segments - Update segment
+  app.put("/api/admin/customer-segments/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerSegments } = await import('@shared/schema');
+      const segmentId = parseInt(req.params.id);
+      
+      const [updated] = await db
+        .update(customerSegments)
+        .set(req.body)
+        .where(eq(customerSegments.id, segmentId))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ error: "Segment not found" });
+      }
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating customer segment:", error);
+      res.status(500).json({ error: "Failed to update segment" });
+    }
+  });
+
+  // Customer Segments - Delete segment
+  app.delete("/api/admin/customer-segments/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customerSegments, segmentMembership } = await import('@shared/schema');
+      const segmentId = parseInt(req.params.id);
+      
+      // Delete memberships first
+      await db.delete(segmentMembership).where(eq(segmentMembership.segmentId, segmentId));
+      
+      // Delete segment
+      await db.delete(customerSegments).where(eq(customerSegments.id, segmentId));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting customer segment:", error);
+      res.status(500).json({ error: "Failed to delete segment" });
+    }
+  });
+
+  // Customer Segments - Add/remove members
+  app.post("/api/admin/customer-segments/:id/members", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { segmentMembership } = await import('@shared/schema');
+      const segmentId = parseInt(req.params.id);
+      const { customerIds } = req.body;
+      
+      if (!Array.isArray(customerIds)) {
+        return res.status(400).json({ error: "customerIds must be an array" });
+      }
+
+      // Batch insert memberships
+      const memberships = customerIds.map(customerId => ({
+        segmentId,
+        customerId
+      }));
+
+      await db.insert(segmentMembership).values(memberships).onConflictDoNothing();
+      
+      res.json({ success: true, added: customerIds.length });
+    } catch (error: any) {
+      console.error("Error adding segment members:", error);
+      res.status(500).json({ error: "Failed to add members" });
+    }
+  });
+
+  // Custom Campaigns - List all campaigns
+  app.get("/api/admin/custom-campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customEmailCampaigns } = await import('@shared/schema');
+      const campaigns = await db.select().from(customEmailCampaigns).orderBy(desc(customEmailCampaigns.createdAt));
+      
+      res.json(campaigns);
+    } catch (error: any) {
+      console.error("Error fetching custom campaigns:", error);
+      res.status(500).json({ error: "Failed to fetch campaigns" });
+    }
+  });
+
+  // Custom Campaigns - Create new campaign
+  app.post("/api/admin/custom-campaigns", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customEmailCampaigns, insertCustomEmailCampaignSchema } = await import('@shared/schema');
+      const validated = insertCustomEmailCampaignSchema.parse(req.body);
+      
+      const [campaign] = await db.insert(customEmailCampaigns).values(validated).returning();
+      res.json(campaign);
+    } catch (error: any) {
+      console.error("Error creating custom campaign:", error);
+      res.status(500).json({ error: "Failed to create campaign" });
+    }
+  });
+
+  // Custom Campaigns - Get single campaign with emails
+  app.get("/api/admin/custom-campaigns/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customEmailCampaigns, customCampaignEmails } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      
+      const [campaign] = await db.select().from(customEmailCampaigns).where(eq(customEmailCampaigns.id, campaignId));
+      if (!campaign) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      // Get emails in sequence
+      const emails = await db
+        .select()
+        .from(customCampaignEmails)
+        .where(eq(customCampaignEmails.campaignId, campaignId))
+        .orderBy(customCampaignEmails.sequenceNumber);
+      
+      res.json({ ...campaign, emails });
+    } catch (error: any) {
+      console.error("Error fetching custom campaign:", error);
+      res.status(500).json({ error: "Failed to fetch campaign" });
+    }
+  });
+
+  // Custom Campaigns - Update campaign
+  app.put("/api/admin/custom-campaigns/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customEmailCampaigns } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      
+      const [updated] = await db
+        .update(customEmailCampaigns)
+        .set(req.body)
+        .where(eq(customEmailCampaigns.id, campaignId))
+        .returning();
+
+      if (!updated) {
+        return res.status(404).json({ error: "Campaign not found" });
+      }
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating custom campaign:", error);
+      res.status(500).json({ error: "Failed to update campaign" });
+    }
+  });
+
+  // Custom Campaigns - Delete campaign
+  app.delete("/api/admin/custom-campaigns/:id", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customEmailCampaigns, customCampaignEmails, customCampaignSendLog } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      
+      // Delete send logs first
+      await db.delete(customCampaignSendLog).where(eq(customCampaignSendLog.campaignId, campaignId));
+      
+      // Delete emails
+      await db.delete(customCampaignEmails).where(eq(customCampaignEmails.campaignId, campaignId));
+      
+      // Delete campaign
+      await db.delete(customEmailCampaigns).where(eq(customEmailCampaigns.id, campaignId));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting custom campaign:", error);
+      res.status(500).json({ error: "Failed to delete campaign" });
+    }
+  });
+
+  // Campaign Emails - Create email in sequence
+  app.post("/api/admin/custom-campaigns/:id/emails", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customCampaignEmails, insertCustomCampaignEmailSchema } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      
+      const validated = insertCustomCampaignEmailSchema.parse({
+        ...req.body,
+        campaignId
+      });
+      
+      const [email] = await db.insert(customCampaignEmails).values(validated).returning();
+      res.json(email);
+    } catch (error: any) {
+      console.error("Error creating campaign email:", error);
+      res.status(500).json({ error: "Failed to create email" });
+    }
+  });
+
+  // Campaign Emails - Update email
+  app.put("/api/admin/custom-campaigns/:id/emails/:emailId", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customCampaignEmails } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      const emailId = parseInt(req.params.emailId);
+      
+      // Verify email belongs to this campaign
+      const [existing] = await db
+        .select()
+        .from(customCampaignEmails)
+        .where(and(
+          eq(customCampaignEmails.id, emailId),
+          eq(customCampaignEmails.campaignId, campaignId)
+        ));
+
+      if (!existing) {
+        return res.status(404).json({ error: "Email not found in this campaign" });
+      }
+
+      const [updated] = await db
+        .update(customCampaignEmails)
+        .set(req.body)
+        .where(eq(customCampaignEmails.id, emailId))
+        .returning();
+
+      res.json(updated);
+    } catch (error: any) {
+      console.error("Error updating campaign email:", error);
+      res.status(500).json({ error: "Failed to update email" });
+    }
+  });
+
+  // Campaign Emails - Delete email
+  app.delete("/api/admin/custom-campaigns/:id/emails/:emailId", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customCampaignEmails } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      const emailId = parseInt(req.params.emailId);
+      
+      // Verify email belongs to this campaign before deleting
+      const [existing] = await db
+        .select()
+        .from(customCampaignEmails)
+        .where(and(
+          eq(customCampaignEmails.id, emailId),
+          eq(customCampaignEmails.campaignId, campaignId)
+        ));
+
+      if (!existing) {
+        return res.status(404).json({ error: "Email not found in this campaign" });
+      }
+
+      await db.delete(customCampaignEmails).where(eq(customCampaignEmails.id, emailId));
+      
+      res.json({ success: true });
+    } catch (error: any) {
+      console.error("Error deleting campaign email:", error);
+      res.status(500).json({ error: "Failed to delete email" });
+    }
+  });
+
+  // Campaign Send Logs - Get logs for campaign
+  app.get("/api/admin/custom-campaigns/:id/send-log", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { customCampaignSendLog } = await import('@shared/schema');
+      const campaignId = parseInt(req.params.id);
+      
+      const logs = await db
+        .select()
+        .from(customCampaignSendLog)
+        .where(eq(customCampaignSendLog.campaignId, campaignId))
+        .orderBy(desc(customCampaignSendLog.sentAt));
+      
+      res.json(logs);
+    } catch (error: any) {
+      console.error("Error fetching campaign send logs:", error);
+      res.status(500).json({ error: "Failed to fetch send logs" });
+    }
+  });
+
+  // Custom Campaigns - Generate AI Email
+  app.post("/api/admin/custom-campaigns/generate-email", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { campaignId, strategy, campaignDescription } = req.body;
+
+      if (!campaignId || !campaignDescription) {
+        return res.status(400).json({ error: "Campaign ID and description are required" });
+      }
+
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      // Build prompt based on strategy
+      let strategyGuide = '';
+      switch (strategy) {
+        case 'value':
+          strategyGuide = 'Focus on the unique value proposition and benefits for the customer.';
+          break;
+        case 'trust':
+          strategyGuide = 'Build trust through credibility, testimonials, and reliability messaging.';
+          break;
+        case 'urgency':
+          strategyGuide = 'Create urgency with time-sensitive offers or limited availability.';
+          break;
+        case 'social_proof':
+          strategyGuide = 'Highlight customer success stories, reviews, and social proof.';
+          break;
+        case 'educational':
+          strategyGuide = 'Provide educational content that helps customers make informed decisions.';
+          break;
+        default:
+          strategyGuide = 'Use best practices for engagement and conversion.';
+      }
+
+      const prompt = `You are an expert email marketing copywriter for Economy Plumbing Services, a professional plumbing company in Austin, TX.
+
+Campaign Goal: ${campaignDescription}
+Strategy: ${strategyGuide}
+
+Generate a professional, engaging email that:
+1. Has a compelling subject line (40-60 characters)
+2. Includes a preheader text (80-120 characters)
+3. Uses professional but friendly tone
+4. Is mobile-friendly and scannable
+5. Includes a clear call-to-action
+6. Follows email marketing best practices
+7. Uses proper HTML formatting with responsive design
+
+Business Context:
+- Company: Economy Plumbing Services
+- Location: Austin, TX (serving Central Texas)
+- Specialties: Residential & commercial plumbing, water heaters, drain cleaning, leak detection
+- Brand Voice: Professional, trustworthy, customer-focused
+
+Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
+{
+  "subject": "Your compelling subject line",
+  "preheader": "Your preheader text",
+  "htmlContent": "Full HTML email body with inline CSS",
+  "plainTextContent": "Plain text version of the email"
+}`;
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert email marketing copywriter. Return ONLY valid JSON, no markdown formatting."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.8,
+        max_tokens: 2000,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("No content generated");
+      }
+
+      // Parse JSON response
+      const cleanedContent = content.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '');
+      const emailData = JSON.parse(cleanedContent);
+
+      res.json(emailData);
+    } catch (error: any) {
+      console.error("Error generating AI email:", error);
+      res.status(500).json({ error: "Failed to generate email with AI" });
+    }
+  });
+
+  // ====== END CUSTOM EMAIL CAMPAIGNS ======
+
   // Customer Success Story submission with spam protection and photo upload
   app.post("/api/success-stories", async (req, res) => {
     try {
