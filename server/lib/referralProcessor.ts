@@ -403,25 +403,27 @@ Thank you for trusting us with your plumbing needs!`;
                   
                   const totalBalance = allCredits.length * CREDIT_AMOUNT; // Each credit is $25
                   
-                  // Get phone number and custom settings
-                  const phoneNumber = settingsMap.get('referral_nurture_phone_number');
-                  const phoneStr = phoneNumber || undefined;
+                  // Get custom settings
                   const customPrompt = settingsMap.get('referral_success_custom_prompt') || undefined;
                   const brandGuidelines = settingsMap.get('referral_email_brand_guidelines') || undefined;
                   
-                  // Generate AI-powered success email
+                  // Generate AI-powered success email (with {{trackingNumber}} placeholder)
                   const emailContent = await generateReferrerSuccessEmail({
                     referrerName: referral.referrerName || 'Valued Customer',
                     refereeName: referral.refereeName,
                     creditAmount: CREDIT_AMOUNT / 100, // $25.00
                     creditExpiresAt: expirationDate,
                     currentBalance: totalBalance / 100, // Total balance in dollars
-                    phoneNumber: phoneStr,
                   }, customPrompt, brandGuidelines);
                   
+                  // Replace {{trackingNumber}} with actual tracking phone number
+                  const trackingPhoneNumber = settingsMap.get('referral_success_phone_formatted') || '(512) 395-2847';
+                  const htmlWithTracking = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+                  const plainWithTracking = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+                  
                   // Add unsubscribe footer
-                  const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
-                  const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
+                  const htmlWithFooter = addUnsubscribeFooter(htmlWithTracking, prefCheck.unsubscribeUrl!);
+                  const plainWithFooter = addUnsubscribeFooterPlainText(plainWithTracking, prefCheck.unsubscribeUrl!);
                   
                   // Save to database and send automatically
                   const [successEmail] = await db.insert(referrerSuccessEmails).values({

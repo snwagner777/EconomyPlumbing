@@ -1462,21 +1462,24 @@ ${rssItems}
             } else {
               console.log(`[Referral] Generating thank you email for ${referrerName}...`);
               
-              // Get referral nurture phone number and custom settings
-              const phoneNumber = settingsMap.get('referral_nurture_phone_number') || undefined;
+              // Get custom settings
               const customPrompt = settingsMap.get('referral_thank_you_custom_prompt') || undefined;
               const brandGuidelines = settingsMap.get('referral_email_brand_guidelines') || undefined;
               
-              // Generate AI-powered thank you email
+              // Generate AI-powered thank you email (with {{trackingNumber}} placeholder)
               const emailContent = await generateReferrerThankYouEmail({
                 referrerName,
                 refereeName,
-                phoneNumber,
               }, customPrompt, brandGuidelines);
               
+              // Replace {{trackingNumber}} with actual tracking phone number
+              const trackingPhoneNumber = settingsMap.get('referral_thank_you_phone_formatted') || '(512) 276-1690';
+              const htmlWithTracking = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+              const plainWithTracking = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
+              
               // Add unsubscribe footer
-              const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
-              const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
+              const htmlWithFooter = addUnsubscribeFooter(htmlWithTracking, prefCheck.unsubscribeUrl!);
+              const plainWithFooter = addUnsubscribeFooterPlainText(plainWithTracking, prefCheck.unsubscribeUrl!);
               
               // Save to database and send automatically
               const [thankYouEmail] = await db.insert(referrerThankYouEmails).values({
