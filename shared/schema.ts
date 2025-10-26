@@ -1356,7 +1356,92 @@ export const serviceTitanJobForms = pgTable("service_titan_job_forms", {
   formIdIdx: index("st_job_forms_form_id_idx").on(table.formId),
 }));
 
+// ServiceTitan Estimates - Quotes/estimates from jobs (enhanced for AI analytics)
+export const serviceTitanEstimates = pgTable("service_titan_estimates", {
+  id: bigint("id", { mode: 'number' }).primaryKey(), // ServiceTitan estimate ID
+  jobId: bigint("job_id", { mode: 'number' }), // Optional: linked job ID
+  customerId: integer("customer_id").notNull(), // References serviceTitanCustomers.id
+  
+  // Estimate details
+  name: text("name"),
+  summary: text("summary"),
+  status: varchar("status").notNull(), // 'Open', 'Sold', 'Dismissed'
+  soldBy: text("sold_by"), // Salesperson name
+  soldOn: timestamp("sold_on"), // When estimate was sold
+  dismissedBy: text("dismissed_by"),
+  dismissedOn: timestamp("dismissed_on"),
+  
+  // Financial data
+  subtotal: integer("subtotal").notNull().default(0), // Subtotal in cents
+  tax: integer("tax").notNull().default(0), // Tax amount in cents
+  total: integer("total").notNull().default(0), // Total amount in cents
+  
+  // Metadata
+  createdBy: text("created_by"), // Who created the estimate
+  createdOn: timestamp("created_on").notNull(),
+  modifiedOn: timestamp("modified_on"),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  jobIdIdx: index("st_estimates_job_id_idx").on(table.jobId),
+  customerIdIdx: index("st_estimates_customer_id_idx").on(table.customerId),
+  statusIdx: index("st_estimates_status_idx").on(table.status),
+  soldOnIdx: index("st_estimates_sold_on_idx").on(table.soldOn),
+  createdOnIdx: index("st_estimates_created_on_idx").on(table.createdOn),
+}));
+
+// ServiceTitan Line Items - Individual services, materials, equipment from estimates
+export const serviceTitanLineItems = pgTable("service_titan_line_items", {
+  id: bigint("id", { mode: 'number' }).primaryKey(), // ServiceTitan line item ID
+  estimateId: bigint("estimate_id", { mode: 'number' }).notNull(), // References serviceTitanEstimates.id
+  jobId: bigint("job_id", { mode: 'number' }), // Optional: job ID if booked
+  customerId: integer("customer_id").notNull(), // References serviceTitanCustomers.id
+  
+  // Line item details
+  itemType: varchar("item_type").notNull(), // 'Service', 'Material', 'Equipment'
+  skuId: bigint("sku_id", { mode: 'number' }), // Pricebook SKU ID
+  skuName: text("sku_name"), // SKU display name
+  description: text("description"),
+  
+  // Equipment-specific fields (for water heater analytics)
+  equipmentManufacturer: text("equipment_manufacturer"), // e.g., 'Rheem', 'Bradford White'
+  equipmentModel: text("equipment_model"), // Model number
+  equipmentSize: text("equipment_size"), // e.g., '50 gallon', '75,000 BTU'
+  equipmentType: text("equipment_type"), // e.g., 'Tankless', 'Tank', 'Heat Pump'
+  
+  // Pricing
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: integer("unit_price").notNull().default(0), // Price per unit in cents
+  totalPrice: integer("total_price").notNull().default(0), // Total price in cents
+  cost: integer("cost").notNull().default(0), // Cost to business in cents
+  memberPrice: integer("member_price"), // Member discount price in cents
+  
+  // Status
+  sold: boolean("sold").notNull().default(false),
+  soldBy: text("sold_by"),
+  soldOn: timestamp("sold_on"),
+  
+  // Metadata
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  estimateIdIdx: index("st_line_items_estimate_id_idx").on(table.estimateId),
+  jobIdIdx: index("st_line_items_job_id_idx").on(table.jobId),
+  customerIdIdx: index("st_line_items_customer_id_idx").on(table.customerId),
+  itemTypeIdx: index("st_line_items_item_type_idx").on(table.itemType),
+  skuIdIdx: index("st_line_items_sku_id_idx").on(table.skuId),
+  equipmentTypeIdx: index("st_line_items_equipment_type_idx").on(table.equipmentType),
+  soldIdx: index("st_line_items_sold_idx").on(table.sold),
+  soldOnIdx: index("st_line_items_sold_on_idx").on(table.soldOn),
+}));
+
 // Marketing tables removed - all marketing infrastructure has been removed from the system
+
+export const insertServiceTitanEstimateSchema = createInsertSchema(serviceTitanEstimates).omit({
+  lastSyncedAt: true,
+});
+
+export const insertServiceTitanLineItemSchema = createInsertSchema(serviceTitanLineItems).omit({
+  lastSyncedAt: true,
+});
 
 export const insertReviewPlatformSchema = createInsertSchema(reviewPlatforms).omit({
   id: true,
@@ -1405,6 +1490,10 @@ export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
 export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
+export type ServiceTitanEstimate = typeof serviceTitanEstimates.$inferSelect;
+export type InsertServiceTitanEstimate = z.infer<typeof insertServiceTitanEstimateSchema>;
+export type ServiceTitanLineItem = typeof serviceTitanLineItems.$inferSelect;
+export type InsertServiceTitanLineItem = z.infer<typeof insertServiceTitanLineItemSchema>;
 export type MailgunWebhookLog = typeof mailgunWebhookLogs.$inferSelect;
 export type InsertMailgunWebhookLog = z.infer<typeof insertMailgunWebhookLogSchema>;
 export type CustomerDataImport = typeof customerDataImports.$inferSelect;
