@@ -6199,15 +6199,12 @@ function ReferralEmailTemplatesSection() {
   // Save settings mutation
   const saveMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/referral-email-settings', {
-        method: 'PUT',
-        body: JSON.stringify({
-          brandGuidelines,
-          thankYouCustomPrompt: thankYouPrompt,
-          successCustomPrompt: successPrompt,
-        }),
+      const response = await apiRequest('PUT', '/api/admin/referral-email-settings', {
+        brandGuidelines,
+        thankYouCustomPrompt: thankYouPrompt,
+        successCustomPrompt: successPrompt,
       });
-      return response;
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/referral-email-settings'] });
@@ -6228,15 +6225,12 @@ function ReferralEmailTemplatesSection() {
   // Preview mutation
   const previewMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('/api/admin/referral-email-preview', {
-        method: 'POST',
-        body: JSON.stringify({
-          emailType: previewType,
-          customPrompt: previewType === 'thank_you' ? thankYouPrompt : successPrompt,
-          brandGuidelines,
-        }),
+      const response = await apiRequest('POST', '/api/admin/referral-email-preview', {
+        emailType: previewType,
+        customPrompt: previewType === 'thank_you' ? thankYouPrompt : successPrompt,
+        brandGuidelines,
       });
-      return response;
+      return response.json();
     },
     onSuccess: (data) => {
       setPreviewEmail(data);
