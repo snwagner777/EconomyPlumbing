@@ -6129,8 +6129,6 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           recipientName: referrerThankYouEmails.referrerName,
           subject: referrerThankYouEmails.subject,
           sentAt: referrerThankYouEmails.sentAt,
-          openedAt: referrerThankYouEmails.openedAt,
-          clickedAt: referrerThankYouEmails.clickedAt,
         })
           .from(referrerThankYouEmails)
           .orderBy(desc(referrerThankYouEmails.sentAt))
@@ -6144,18 +6142,20 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           recipientName: referrerSuccessEmails.referrerName,
           subject: referrerSuccessEmails.subject,
           sentAt: referrerSuccessEmails.sentAt,
-          openedAt: referrerSuccessEmails.openedAt,
-          clickedAt: referrerSuccessEmails.clickedAt,
         })
           .from(referrerSuccessEmails)
           .orderBy(desc(referrerSuccessEmails.sentAt))
           .limit(50);
         
-        // Combine and add emailType field
+        // Combine and add emailType field with tracking fields (set to null for referrer emails)
         const combinedEmails = [
-          ...thankYouEmails.map(e => ({ ...e, emailType: 'referrer_thank_you' })),
-          ...successEmails.map(e => ({ ...e, emailType: 'referrer_success' }))
-        ].sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+          ...thankYouEmails.map(e => ({ ...e, emailType: 'referrer_thank_you', openedAt: null, clickedAt: null })),
+          ...successEmails.map(e => ({ ...e, emailType: 'referrer_success', openedAt: null, clickedAt: null }))
+        ].sort((a, b) => {
+          const dateA = a.sentAt ? new Date(a.sentAt).getTime() : 0;
+          const dateB = b.sentAt ? new Date(b.sentAt).getTime() : 0;
+          return dateB - dateA;
+        })
          .slice(0, 100);
         
         res.json({ emails: combinedEmails });

@@ -4630,9 +4630,10 @@ function ReviewRequestsSection() {
   // Update settings mutation
   const updateSettingsMutation = useMutation({
     mutationFn: async (updates: Partial<SystemSettings>) => {
-      return await apiRequest("PUT", "/api/admin/review-requests/settings", updates);
+      const response = await apiRequest("PUT", "/api/admin/review-requests/settings", updates);
+      return await response.json();
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
       toast({
         title: "Settings Updated",
@@ -4649,7 +4650,8 @@ function ReviewRequestsSection() {
         'referral_nurture': '/api/admin/referral-nurture/phone',
         'quote_followup': '/api/admin/quote-followup/phone'
       };
-      return await apiRequest("POST", endpointMap[editingCampaign], { phoneNumber: phone });
+      const response = await apiRequest("POST", endpointMap[editingCampaign], { phoneNumber: phone });
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/review-requests/settings'] });
@@ -4671,7 +4673,8 @@ function ReviewRequestsSection() {
   // AI Email Generation Mutation
   const generateMutation = useMutation({
     mutationFn: async (params: any) => {
-      return await apiRequest("POST", "/api/admin/emails/generate", params);
+      const response = await apiRequest("POST", "/api/admin/emails/generate", params);
+      return await response.json();
     },
     onSuccess: (data: any) => {
       setGeneratedEmail(data);
@@ -4692,7 +4695,8 @@ function ReviewRequestsSection() {
   // Save generated email as template
   const saveGeneratedMutation = useMutation({
     mutationFn: async (params: any) => {
-      return await apiRequest("POST", "/api/admin/emails/save-template", params);
+      const response = await apiRequest("POST", "/api/admin/emails/save-template", params);
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/emails/templates'] });
@@ -4742,11 +4746,20 @@ function ReviewRequestsSection() {
       location: "Austin, TX"
     };
 
+    if (!settings?.reviewRequestPhoneNumber) {
+      toast({
+        title: "Phone Number Required",
+        description: "Please configure the Review Request phone number in Campaign Settings before generating emails.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     generateMutation.mutate({
       campaignType: generateCampaignType,
       emailNumber: generateEmailNumber,
       jobDetails: mockJobDetails,
-      phoneNumber: settings?.reviewRequestPhoneNumber || "(512) 276-1690",
+      phoneNumber: settings.reviewRequestPhoneNumber,
       strategy: generateStrategy || undefined
     });
   };
@@ -5109,16 +5122,6 @@ function ReviewRequestsSection() {
 
         {/* Settings Tab */}
         <TabsContent value="settings" className="space-y-6">
-          <div className="flex justify-end mb-4">
-            <Button
-              onClick={() => setGenerateDialogOpen(true)}
-              data-testid="button-generate-email"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Generate Email with AI
-            </Button>
-          </div>
-          
           <Card>
             <CardHeader>
               <CardTitle>Campaign Settings</CardTitle>
