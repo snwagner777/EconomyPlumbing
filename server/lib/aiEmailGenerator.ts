@@ -694,10 +694,11 @@ CRITICAL RULES:
 4. Remind them they can refer multiple people
 5. Keep it short, warm, and personal (not salesy)
 6. Use Austin/Texas-friendly language
-7. Include clear contact info
+7. Include clear contact info using the placeholder {{trackingNumber}} for phone number
 8. Make them feel valued and appreciated
 9. Professional but friendly tone
 10. Mobile-optimized HTML (works on all devices)
+11. IMPORTANT: Always use {{trackingNumber}} as the phone number placeholder - it will be replaced with the campaign-specific tracking number
 
 Email Structure:
 - Subject line: Personal, grateful, clear benefit mentioned
@@ -728,7 +729,7 @@ Key Details:
 - Referrer: ${referrerName}
 - Person they referred: ${refereeName}
 - Reward: $25 credit for each successful referral (when referred friend becomes a customer)
-- Phone: ${phoneNumber || '(512) 368-9159'}
+- Phone: {{trackingNumber}} (use this exact placeholder - do not replace it)
 - Website: plumbersthatcare.com
 - Current Season: ${season}
 
@@ -812,6 +813,7 @@ CRITICAL RULES:
 8. Professional but exciting tone
 9. Mobile-optimized HTML
 10. Create urgency to use credits before expiration
+11. IMPORTANT: Always use {{trackingNumber}} as the phone number placeholder - it will be replaced with the campaign-specific tracking number
 
 Email Structure:
 - Subject: Exciting news, credit confirmed
@@ -844,7 +846,7 @@ Key Details:
 - Credit earned: $${creditAmount.toFixed(2)}
 ${currentBalance !== undefined ? `- Total available credits: $${currentBalance.toFixed(2)}` : ''}
 - Credit expires: ${creditExpiresAt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-- Phone: ${phoneNumber || '(512) 368-9159'}
+- Phone: {{trackingNumber}} (use this exact placeholder - do not replace it)
 - Website: plumbersthatcare.com
 - Current Season: ${season}
 
