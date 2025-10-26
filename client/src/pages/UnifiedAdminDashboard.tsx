@@ -81,7 +81,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
-type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-automation' | 'campaign-analytics' | 'email-templates' | 'chatbot';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-automation' | 'campaign-analytics' | 'email-templates' | 'referral-email-templates' | 'chatbot';
 
 interface EmailTemplate {
   id: string;
@@ -309,6 +309,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: FileText,
       section: 'email-templates' as AdminSection,
       description: "Manage email templates"
+    },
+    {
+      title: "Referral Email Templates",
+      icon: Sparkles,
+      section: 'referral-email-templates' as AdminSection,
+      description: "AI template customization & history"
     },
     {
       title: "Customer Data",
@@ -6108,6 +6114,349 @@ function EmailTemplatesSection() {
   );
 }
 
+// Referral Email Templates Section
+function ReferralEmailTemplatesSection() {
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState<'settings' | 'preview' | 'history'>('settings');
+  
+  // Settings state
+  const [brandGuidelines, setBrandGuidelines] = useState('');
+  const [thankYouPrompt, setThankYouPrompt] = useState('');
+  const [successPrompt, setSuccessPrompt] = useState('');
+  
+  // Preview state
+  const [previewType, setPreviewType] = useState<'thank_you' | 'success'>('thank_you');
+  const [previewEmail, setPreviewEmail] = useState<any>(null);
+  
+  // Load settings
+  const { data: settings, isLoading: settingsLoading } = useQuery({
+    queryKey: ['/api/admin/referral-email-settings'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/referral-email-settings', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to load settings');
+      return response.json();
+    },
+  });
+  
+  // Load email history
+  const { data: history, isLoading: historyLoading } = useQuery({
+    queryKey: ['/api/admin/email-send-log'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/email-send-log?type=referral', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to load history');
+      return response.json();
+    },
+  });
+  
+  // Update form when settings load
+  useEffect(() => {
+    if (settings) {
+      setBrandGuidelines(settings.brandGuidelines || '');
+      setThankYouPrompt(settings.thankYouCustomPrompt || '');
+      setSuccessPrompt(settings.successCustomPrompt || '');
+    }
+  }, [settings]);
+  
+  // Save settings mutation
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/referral-email-settings', {
+        method: 'PUT',
+        body: JSON.stringify({
+          brandGuidelines,
+          thankYouCustomPrompt: thankYouPrompt,
+          successCustomPrompt: successPrompt,
+        }),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/referral-email-settings'] });
+      toast({
+        title: "Settings Saved",
+        description: "Template customizations will apply to all future emails.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Save Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  // Preview mutation
+  const previewMutation = useMutation({
+    mutationFn: async () => {
+      const response = await apiRequest('/api/admin/referral-email-preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          emailType: previewType,
+          customPrompt: previewType === 'thank_you' ? thankYouPrompt : successPrompt,
+          brandGuidelines,
+        }),
+      });
+      return response;
+    },
+    onSuccess: (data) => {
+      setPreviewEmail(data);
+      toast({
+        title: "Preview Generated",
+        description: "Review the AI-generated email below.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Preview Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+  
+  if (settingsLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+  
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Email Template Customization</CardTitle>
+          <CardDescription>
+            Customize how AI generates referral emails (thank-you & success notifications)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="settings" data-testid="tab-settings">Settings</TabsTrigger>
+              <TabsTrigger value="preview" data-testid="tab-preview">Preview</TabsTrigger>
+              <TabsTrigger value="history" data-testid="tab-history">Email History</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="settings" className="space-y-6 mt-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="brand-guidelines">Brand Guidelines (applies to both email types)</Label>
+                  <Textarea
+                    id="brand-guidelines"
+                    value={brandGuidelines}
+                    onChange={(e) => setBrandGuidelines(e.target.value)}
+                    placeholder="e.g., Always mention our 100% satisfaction guarantee, emphasize family-owned business, use friendly Austin-area references..."
+                    rows={4}
+                    data-testid="input-brand-guidelines"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    These guidelines augment the default professional tone
+                  </p>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <Label htmlFor="thank-you-prompt">Thank You Email Custom Instructions</Label>
+                  <Textarea
+                    id="thank-you-prompt"
+                    value={thankYouPrompt}
+                    onChange={(e) => setThankYouPrompt(e.target.value)}
+                    placeholder="e.g., Extra emphasis on how much we appreciate their trust, mention our referral program details..."
+                    rows={4}
+                    data-testid="input-thank-you-prompt"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Sent when customer submits a referral
+                  </p>
+                </div>
+                
+                <Separator />
+                
+                <div className="space-y-2">
+                  <Label htmlFor="success-prompt">Success Notification Custom Instructions</Label>
+                  <Textarea
+                    id="success-prompt"
+                    value={successPrompt}
+                    onChange={(e) => setSuccessPrompt(e.target.value)}
+                    placeholder="e.g., Celebrate their success, remind them they can refer more people, suggest seasonal services..."
+                    rows={4}
+                    data-testid="input-success-prompt"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Sent when referral becomes a customer ($25 credit issued)
+                  </p>
+                </div>
+                
+                <div className="flex justify-end pt-4">
+                  <Button
+                    onClick={() => saveMutation.mutate()}
+                    disabled={saveMutation.isPending}
+                    data-testid="button-save-settings"
+                  >
+                    {saveMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Settings
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="preview" className="space-y-6 mt-6">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Label>Email Type:</Label>
+                  <Select value={previewType} onValueChange={(v: any) => setPreviewType(v)}>
+                    <SelectTrigger className="w-[250px]" data-testid="select-preview-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="thank_you">Thank You (Referral Submitted)</SelectItem>
+                      <SelectItem value="success">Success (Referral Converted)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={() => previewMutation.mutate()}
+                    disabled={previewMutation.isPending}
+                    data-testid="button-generate-preview"
+                  >
+                    {previewMutation.isPending ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Generate Preview
+                      </>
+                    )}
+                  </Button>
+                </div>
+                
+                {previewEmail && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Subject Line</Label>
+                      <div className="p-3 bg-muted rounded-md" data-testid="preview-subject">
+                        {previewEmail.subject}
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>HTML Preview</Label>
+                      <div
+                        className="border rounded-md p-4 bg-background max-h-[500px] overflow-y-auto"
+                        dangerouslySetInnerHTML={{ __html: previewEmail.bodyHtml }}
+                        data-testid="preview-html"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label>Plain Text Version</Label>
+                      <div className="p-3 bg-muted rounded-md whitespace-pre-wrap font-mono text-sm max-h-[300px] overflow-y-auto" data-testid="preview-plain">
+                        {previewEmail.bodyPlain}
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {!previewEmail && (
+                  <div className="text-center p-12 text-muted-foreground">
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 opacity-50" />
+                    <p>Select an email type and click Generate Preview</p>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="history" className="space-y-4 mt-6">
+              {historyLoading ? (
+                <div className="flex items-center justify-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm text-muted-foreground">
+                      Showing {history?.emails?.length || 0} referral emails sent
+                    </p>
+                  </div>
+                  
+                  <div className="border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Date</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Recipient</TableHead>
+                          <TableHead>Subject</TableHead>
+                          <TableHead>Status</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {history?.emails?.length > 0 ? (
+                          history.emails.map((email: any) => (
+                            <TableRow key={email.id} data-testid={`history-row-${email.id}`}>
+                              <TableCell className="text-sm">
+                                {format(new Date(email.sentAt), 'MMM d, yyyy HH:mm')}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="outline">
+                                  {email.emailType === 'referrer_thank_you' ? 'Thank You' : 'Success'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-sm">{email.recipientEmail}</TableCell>
+                              <TableCell className="text-sm max-w-[300px] truncate">{email.subject}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="w-4 h-4 text-green-600" />
+                                  <span className="text-sm">Sent</span>
+                                  {email.openedAt && (
+                                    <Badge variant="secondary" className="text-xs">Opened</Badge>
+                                  )}
+                                  {email.clickedAt && (
+                                    <Badge variant="secondary" className="text-xs">Clicked</Badge>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={5} className="text-center text-muted-foreground py-12">
+                              No referral emails sent yet
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
 // Campaign Analytics Section
 function CampaignAnalyticsSection() {
   const [dateRange, setDateRange] = useState<string>('30');
@@ -6451,6 +6800,8 @@ export default function UnifiedAdminDashboard() {
         return <CampaignAnalyticsSection />;
       case 'email-templates':
         return <EmailTemplatesSection />;
+      case 'referral-email-templates':
+        return <ReferralEmailTemplatesSection />;
       case 'customer-data':
         return <CustomerDataSection />;
       case 'chatbot':
@@ -6476,6 +6827,7 @@ export default function UnifiedAdminDashboard() {
       'marketing-automation': 'Marketing Automation',
       'campaign-analytics': 'Campaign Analytics',
       'email-templates': 'Email Templates',
+      'referral-email-templates': 'Referral Email Templates',
       'customer-data': 'Customer Data',
       'chatbot': 'AI Chatbot',
     };
