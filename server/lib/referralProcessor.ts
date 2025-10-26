@@ -416,8 +416,11 @@ Thank you for trusting us with your plumbing needs!`;
                     currentBalance: totalBalance / 100, // Total balance in dollars
                   }, customPrompt, brandGuidelines);
                   
-                  // Replace {{trackingNumber}} with actual tracking phone number
-                  const trackingPhoneNumber = settingsMap.get('referral_success_phone_formatted') || '(512) 395-2847';
+                  // Replace {{trackingNumber}} with actual tracking phone number from admin panel
+                  const trackingPhoneNumber = settingsMap.get('referral_nurture_phone_formatted');
+                  if (!trackingPhoneNumber) {
+                    throw new Error('Referral Nurture tracking phone number not configured in admin panel. Please configure it in Marketing Automation settings before sending referral emails.');
+                  }
                   const htmlWithTracking = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
                   const plainWithTracking = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
                   

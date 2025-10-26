@@ -1472,8 +1472,11 @@ ${rssItems}
                 refereeName,
               }, customPrompt, brandGuidelines);
               
-              // Replace {{trackingNumber}} with actual tracking phone number
-              const trackingPhoneNumber = settingsMap.get('referral_thank_you_phone_formatted') || '(512) 276-1690';
+              // Replace {{trackingNumber}} with actual tracking phone number from admin panel
+              const trackingPhoneNumber = settingsMap.get('referral_nurture_phone_formatted');
+              if (!trackingPhoneNumber) {
+                throw new Error('Referral Nurture tracking phone number not configured in admin panel. Please configure it in Marketing Automation settings before sending referral emails.');
+              }
               const htmlWithTracking = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
               const plainWithTracking = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
               
@@ -6065,8 +6068,11 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           refereeName: 'Jane Doe',
         }, customPrompt, brandGuidelines);
         
-        // Replace {{trackingNumber}} with actual tracking phone number
-        const trackingPhoneNumber = settingsMap.get('referral_thank_you_phone_formatted') || '(512) 276-1690';
+        // Replace {{trackingNumber}} with actual tracking phone number from admin panel
+        const trackingPhoneNumber = settingsMap.get('referral_nurture_phone_formatted');
+        if (!trackingPhoneNumber) {
+          throw new Error('Referral Nurture tracking phone number not configured in admin panel. Please configure it in Marketing Automation settings before previewing referral emails.');
+        }
         emailContent.bodyHtml = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
         emailContent.bodyPlain = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
       } else {
@@ -6078,8 +6084,11 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           currentBalance: 75,
         }, customPrompt, brandGuidelines);
         
-        // Replace {{trackingNumber}} with actual tracking phone number
-        const trackingPhoneNumber = settingsMap.get('referral_success_phone_formatted') || '(512) 395-2847';
+        // Replace {{trackingNumber}} with actual tracking phone number from admin panel
+        const trackingPhoneNumber = settingsMap.get('referral_nurture_phone_formatted');
+        if (!trackingPhoneNumber) {
+          throw new Error('Referral Nurture tracking phone number not configured in admin panel. Please configure it in Marketing Automation settings before previewing referral emails.');
+        }
         emailContent.bodyHtml = emailContent.bodyHtml.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
         emailContent.bodyPlain = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
       }
