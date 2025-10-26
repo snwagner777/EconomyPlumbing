@@ -5308,7 +5308,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
 
       const settings = {
-        masterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
+        reviewMasterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
         reviewDripEnabled: settingsMap.get('review_drip_enabled') === 'true',
         referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
         autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',
@@ -5338,7 +5338,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       const updates = req.body;
 
       // SERVER-SIDE VALIDATION: Prevent enabling master switch without phone number
-      if (updates.masterEmailSwitch === true) {
+      if (updates.reviewMasterEmailSwitch === true) {
         // Check if phone number is configured
         const dbSettings = await db.select().from(systemSettings);
         const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
@@ -5377,7 +5377,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
       
       const currentSettings = {
-        masterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
+        reviewMasterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
         reviewDripEnabled: settingsMap.get('review_drip_enabled') === 'true',
         referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
         autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',

@@ -97,7 +97,7 @@ interface EmailTemplate {
 }
 
 interface SystemSettings {
-  masterEmailSwitch: boolean;
+  reviewMasterEmailSwitch: boolean;
   reviewDripEnabled: boolean;
   referralDripEnabled: boolean;
   autoSendReviewRequests: boolean;
@@ -5148,10 +5148,10 @@ function ReviewRequestsSection() {
                 <Switch
                   id="master-email-switch"
                   data-testid="switch-master-email"
-                  checked={settings?.masterEmailSwitch || false}
+                  checked={settings?.reviewMasterEmailSwitch || false}
                   disabled={!settings?.reviewRequestPhoneNumber}
                   onCheckedChange={(checked) =>
-                    updateSettingsMutation.mutate({ masterEmailSwitch: checked })
+                    updateSettingsMutation.mutate({ reviewMasterEmailSwitch: checked })
                   }
                 />
               </div>
@@ -5167,7 +5167,7 @@ function ReviewRequestsSection() {
                   id="review-drip-enabled"
                   data-testid="switch-review-drip-enabled"
                   checked={settings?.reviewDripEnabled || false}
-                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  disabled={!settings?.reviewMasterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                   onCheckedChange={(checked) =>
                     updateSettingsMutation.mutate({ reviewDripEnabled: checked })
                   }
@@ -5185,7 +5185,7 @@ function ReviewRequestsSection() {
                   id="referral-drip-enabled"
                   data-testid="switch-referral-drip-enabled"
                   checked={settings?.referralDripEnabled || false}
-                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  disabled={!settings?.reviewMasterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                   onCheckedChange={(checked) =>
                     updateSettingsMutation.mutate({ referralDripEnabled: checked })
                   }
@@ -5203,7 +5203,7 @@ function ReviewRequestsSection() {
                   id="auto-send-reviews"
                   data-testid="switch-auto-send-reviews"
                   checked={settings?.autoSendReviewRequests || false}
-                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  disabled={!settings?.reviewMasterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                   onCheckedChange={(checked) =>
                     updateSettingsMutation.mutate({ autoSendReviewRequests: checked })
                   }
@@ -5221,7 +5221,7 @@ function ReviewRequestsSection() {
                   id="auto-start-referrals"
                   data-testid="switch-auto-start-referrals"
                   checked={settings?.autoStartReferralCampaigns || false}
-                  disabled={!settings?.masterEmailSwitch || !settings?.reviewRequestPhoneNumber}
+                  disabled={!settings?.reviewMasterEmailSwitch || !settings?.reviewRequestPhoneNumber}
                   onCheckedChange={(checked) =>
                     updateSettingsMutation.mutate({ autoStartReferralCampaigns: checked })
                   }
