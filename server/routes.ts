@@ -1560,10 +1560,10 @@ ${rssItems}
       const [customer] = await db
         .select({
           name: customersXlsx.name,
-          customerId: customersXlsx.customerId,
+          customerId: customersXlsx.id,
         })
         .from(customersXlsx)
-        .where(sql`${customersXlsx.customerId} = ${customerId}`)
+        .where(sql`${customersXlsx.id} = ${customerId}`)
         .limit(1);
 
       if (!customer) {
@@ -1596,7 +1596,7 @@ ${rssItems}
           name: customersXlsx.name,
         })
         .from(customersXlsx)
-        .where(sql`${customersXlsx.customerId} = ${referrerCustomerId}`)
+        .where(sql`${customersXlsx.id} = ${referrerCustomerId}`)
         .limit(1);
 
       if (!referrer) {
