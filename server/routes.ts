@@ -6073,20 +6073,20 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   app.get("/api/admin/email-send-log", requireAdmin, async (req, res) => {
     try {
       const { emailSendLog } = await import("@shared/schema");
-      const { desc } = await import("drizzle-orm");
+      const { desc, inArray } = await import("drizzle-orm");
       const { type } = req.query;
       
-      // Build query
-      let query = db.select().from(emailSendLog);
-      
-      // Filter by type if specified
-      if (type === 'referral') {
-        const { inArray } = await import("drizzle-orm");
-        query = query.where(inArray(emailSendLog.emailType, ['referrer_thank_you', 'referrer_success']));
-      }
-      
-      // Order by most recent first and limit to 100
-      const emails = await query.orderBy(desc(emailSendLog.sentAt)).limit(100);
+      // Build query with conditional filter
+      const emails = type === 'referral'
+        ? await db.select()
+            .from(emailSendLog)
+            .where(inArray(emailSendLog.emailType, ['referrer_thank_you', 'referrer_success']))
+            .orderBy(desc(emailSendLog.sentAt))
+            .limit(100)
+        : await db.select()
+            .from(emailSendLog)
+            .orderBy(desc(emailSendLog.sentAt))
+            .limit(100);
       
       res.json({ emails });
     } catch (error: any) {
