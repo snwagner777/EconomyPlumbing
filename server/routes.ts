@@ -2271,6 +2271,78 @@ ${rssItems}
     }
   });
 
+  // Conversion Tracking endpoints
+  app.post("/api/conversions/track", async (req, res) => {
+    try {
+      const { eventType, source, utm, metadata, customerId, email } = req.body;
+      
+      if (!eventType || !['scheduler_open', 'phone_click', 'form_submission'].includes(eventType)) {
+        return res.status(400).json({ error: "Invalid event type" });
+      }
+
+      const { conversionEvents } = await import('@shared/schema');
+      
+      const [event] = await db.insert(conversionEvents).values({
+        eventType,
+        source,
+        utmSource: utm?.source,
+        utmMedium: utm?.medium,
+        utmCampaign: utm?.campaign,
+        utmContent: utm?.content,
+        metadata,
+        customerId,
+        email,
+      }).returning();
+
+      res.json({ success: true, event });
+    } catch (error: any) {
+      console.error("Error tracking conversion:", error);
+      res.status(500).json({ error: "Failed to track conversion" });
+    }
+  });
+
+  app.get("/api/admin/conversion-stats", async (req, res) => {
+    try {
+      if (!req.isAuthenticated?.()) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const { conversionEvents } = await import('@shared/schema');
+      const { startDate, endDate } = req.query;
+      
+      // Build date filter
+      const conditions = [];
+      if (startDate) {
+        conditions.push(sql`${conversionEvents.createdAt} >= ${new Date(startDate as string)}`);
+      }
+      if (endDate) {
+        conditions.push(sql`${conversionEvents.createdAt} <= ${new Date(endDate as string)}`);
+      }
+
+      // Get counts by event type
+      const stats = await db
+        .select({
+          eventType: conversionEvents.eventType,
+          count: sql<number>`count(*)::int`,
+        })
+        .from(conversionEvents)
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .groupBy(conversionEvents.eventType);
+
+      // Format response
+      const result = {
+        schedulerOpens: stats.find(s => s.eventType === 'scheduler_open')?.count || 0,
+        phoneClicks: stats.find(s => s.eventType === 'phone_click')?.count || 0,
+        formSubmissions: stats.find(s => s.eventType === 'form_submission')?.count || 0,
+      };
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("Error getting conversion stats:", error);
+      res.status(500).json({ error: "Failed to fetch conversion stats" });
+    }
+  });
+
   // Customer Success Story submission with spam protection and photo upload
   app.post("/api/success-stories", async (req, res) => {
     try {

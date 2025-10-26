@@ -407,6 +407,16 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
+  // Fetch conversion stats
+  const { data: conversionStats, isLoading: conversionLoading } = useQuery<{
+    schedulerOpens: number;
+    phoneClicks: number;
+    formSubmissions: number;
+  }>({
+    queryKey: ['/api/admin/conversion-stats'],
+    refetchInterval: 60000, // Refresh every 60 seconds
+  });
+
   // Manual sync trigger mutation - FIXED ENDPOINT
   const syncMutation = useMutation({
     mutationFn: async () => {
@@ -688,7 +698,9 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 <Calendar className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Scheduler Opens</p>
               </div>
-              <p className="text-2xl font-bold">-</p>
+              <p className="text-2xl font-bold">
+                {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.schedulerOpens || 0)}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 ServiceTitan scheduler clicks
               </p>
@@ -699,7 +711,9 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 <Phone className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Phone Clicks</p>
               </div>
-              <p className="text-2xl font-bold">-</p>
+              <p className="text-2xl font-bold">
+                {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.phoneClicks || 0)}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Click-to-call conversions
               </p>
@@ -710,7 +724,9 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
                 <Mail className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Form Submissions</p>
               </div>
-              <p className="text-2xl font-bold">-</p>
+              <p className="text-2xl font-bold">
+                {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.formSubmissions || 0)}
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 Contact form completions
               </p>

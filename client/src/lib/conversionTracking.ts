@@ -1,7 +1,45 @@
 // Conversion tracking for all marketing platforms
-// Tracks key user actions across GA, Meta Pixel, and GTM
+// Tracks key user actions across GA, Meta Pixel, GTM, and internal database
 
 import { trackEvent, trackMetaEvent, trackGTMEvent } from './analytics';
+
+/**
+ * Internal database conversion tracking
+ */
+async function trackInternalConversion(
+  eventType: 'scheduler_open' | 'phone_click' | 'form_submission',
+  metadata?: Record<string, any>
+): Promise<void> {
+  try {
+    // Extract UTM parameters from URL
+    const params = new URLSearchParams(window.location.search);
+    const utm = {
+      source: params.get('utm_source') || undefined,
+      medium: params.get('utm_medium') || undefined,
+      campaign: params.get('utm_campaign') || undefined,
+      content: params.get('utm_content') || undefined,
+    };
+    
+    await fetch('/api/conversions/track', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        eventType,
+        source: window.location.pathname,
+        utm,
+        metadata: {
+          ...metadata,
+          timestamp: new Date().toISOString(),
+        },
+      }),
+    });
+  } catch (error) {
+    // Silent fail - don't interrupt user experience
+    console.error('Failed to track internal conversion:', error);
+  }
+}
 
 /**
  * Track when a user submits the contact form
@@ -20,6 +58,11 @@ export const trackContactFormSubmission = (formType: string = 'general') => {
   trackGTMEvent('contact_form_submit', {
     form_type: formType,
     event_category: 'engagement'
+  });
+  
+  // Internal database tracking
+  trackInternalConversion('form_submission', {
+    formType,
   });
 };
 
@@ -43,6 +86,12 @@ export const trackPhoneClick = (phoneNumber: string, source: string = 'website')
     source: source,
     event_category: 'conversion'
   });
+  
+  // Internal database tracking
+  trackInternalConversion('phone_click', {
+    phoneNumber,
+    source,
+  });
 };
 
 /**
@@ -62,6 +111,11 @@ export const trackSchedulerOpen = (source: string = 'website') => {
   trackGTMEvent('scheduler_open', {
     source: source,
     event_category: 'conversion'
+  });
+  
+  // Internal database tracking
+  trackInternalConversion('scheduler_open', {
+    source,
   });
 };
 

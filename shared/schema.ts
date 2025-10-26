@@ -435,6 +435,35 @@ export const pendingReferrals = pgTable("pending_referrals", {
   convertedIdx: index("pending_referrals_converted_idx").on(table.convertedToReferral),
 }));
 
+// Conversion Events - Track key conversion actions on the website
+export const conversionEvents = pgTable("conversion_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Event type
+  eventType: text("event_type").notNull(), // 'scheduler_open', 'phone_click', 'form_submission'
+  
+  // Source information
+  source: text("source"), // Where the event happened (page URL, email campaign, etc.)
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  utmContent: text("utm_content"),
+  
+  // Additional context
+  metadata: jsonb("metadata"), // Additional event data (form type, phone number clicked, etc.)
+  
+  // User identification (optional)
+  customerId: integer("customer_id"), // ServiceTitan customer ID if known
+  email: text("email"), // Email if provided
+  
+  // Timestamp
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  eventTypeIdx: index("conversion_events_event_type_idx").on(table.eventType),
+  createdAtIdx: index("conversion_events_created_at_idx").on(table.createdAt),
+  customerIdIdx: index("conversion_events_customer_id_idx").on(table.customerId),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
@@ -1828,6 +1857,11 @@ export const insertPendingReferralSchema = createInsertSchema(pendingReferrals).
   convertedAt: true,
 });
 
+export const insertConversionEventSchema = createInsertSchema(conversionEvents).omit({
+  id: true,
+  createdAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1854,3 +1888,5 @@ export type EmailPreference = typeof emailPreferences.$inferSelect;
 export type InsertEmailPreference = z.infer<typeof insertEmailPreferencesSchema>;
 export type PendingReferral = typeof pendingReferrals.$inferSelect;
 export type InsertPendingReferral = z.infer<typeof insertPendingReferralSchema>;
+export type ConversionEvent = typeof conversionEvents.$inferSelect;
+export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
