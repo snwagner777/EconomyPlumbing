@@ -421,8 +421,8 @@ Thank you for trusting us with your plumbing needs!`;
                   const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
                   const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
                   
-                  // Save to database for admin review
-                  await db.insert(referrerSuccessEmails).values({
+                  // Save to database and send automatically
+                  const [successEmail] = await db.insert(referrerSuccessEmails).values({
                     referralId: referral.id,
                     referrerName: referral.referrerName || 'Valued Customer',
                     referrerEmail,
@@ -434,12 +434,36 @@ Thank you for trusting us with your plumbing needs!`;
                     subject: emailContent.subject,
                     htmlContent: htmlWithFooter,
                     plainTextContent: plainWithFooter,
-                    status: 'queued', // Admin must approve before sending
+                    status: 'queued',
                     generatedByAI: true,
                     aiPrompt: `Success notification for ${referral.referrerName} - ${referral.refereeName} became a customer`,
+                  }).returning();
+                  
+                  // Send via Resend with unsubscribe headers
+                  const { getResendClient } = await import('./resendClient');
+                  const { client: resend, fromEmail } = await getResendClient();
+                  
+                  await resend.emails.send({
+                    from: fromEmail,
+                    to: referrerEmail,
+                    subject: emailContent.subject,
+                    html: htmlWithFooter,
+                    text: plainWithFooter,
+                    headers: {
+                      'List-Unsubscribe': prefCheck.listUnsubscribeHeader!,
+                      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                    },
                   });
                   
-                  console.log(`[Referral Processor] ✅ Success email queued for admin review`);
+                  // Mark as sent
+                  await db.update(referrerSuccessEmails)
+                    .set({ 
+                      status: 'sent',
+                      sentAt: new Date(),
+                    })
+                    .where(sqlRaw`${referrerSuccessEmails.id} = ${successEmail.id}`);
+                  
+                  console.log(`[Referral Processor] ✅ Success email sent to ${referral.referrerName} (${referrerEmail})`);
                 }
               }
             }

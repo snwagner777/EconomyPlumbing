@@ -1476,7 +1476,7 @@ ${rssItems}
               const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
               const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, prefCheck.unsubscribeUrl!);
               
-              // Save to database for admin review
+              // Save to database and send automatically
               const [thankYouEmail] = await db.insert(referrerThankYouEmails).values({
                 referralId: referral.id,
                 referrerName,
@@ -1486,12 +1486,36 @@ ${rssItems}
                 subject: emailContent.subject,
                 htmlContent: htmlWithFooter,
                 plainTextContent: plainWithFooter,
-                status: 'queued', // Admin must approve before sending
+                status: 'queued',
                 generatedByAI: true,
                 aiPrompt: `Thank you email for referrer ${referrerName} who referred ${refereeName}`,
               }).returning();
               
-              console.log(`[Referral] ✅ Thank you email queued for admin review (ID: ${thankYouEmail.id})`);
+              // Send via Resend with unsubscribe headers
+              const { getResendClient } = await import('./lib/resendClient');
+              const { client: resend, fromEmail } = await getResendClient();
+              
+              await resend.emails.send({
+                from: fromEmail,
+                to: referrerEmail,
+                subject: emailContent.subject,
+                html: htmlWithFooter,
+                text: plainWithFooter,
+                headers: {
+                  'List-Unsubscribe': prefCheck.listUnsubscribeHeader!,
+                  'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                },
+              });
+              
+              // Mark as sent
+              await db.update(referrerThankYouEmails)
+                .set({ 
+                  status: 'sent',
+                  sentAt: new Date(),
+                })
+                .where(sql`${referrerThankYouEmails.id} = ${thankYouEmail.id}`);
+              
+              console.log(`[Referral] ✅ Thank you email sent to ${referrerName} (${referrerEmail})`);
             }
           }
         } catch (emailError: any) {
@@ -1980,28 +2004,7 @@ ${rssItems}
     }
   });
 
-  // Get all referrals (Admin Dashboard)
-  app.get("/api/admin/referrals", async (req, res) => {
-    try {
-      // Check authentication
-      if (!req.isAuthenticated?.()) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const { referrals } = await import('@shared/schema');
-      
-      const allReferrals = await db
-        .select()
-        .from(referrals)
-        .orderBy(sql`${referrals.submittedAt} DESC`)
-        .limit(1000); // Limit to last 1000 referrals
-
-      res.json({ referrals: allReferrals });
-    } catch (error: any) {
-      console.error('[Admin] Error fetching referrals:', error);
-      res.status(500).json({ message: "Error fetching referrals" });
-    }
-  });
+  // REMOVED: Duplicate endpoint - use comprehensive version at line ~5521 instead
 
   // Update referral status (Admin Dashboard)
   app.patch("/api/admin/referrals/:referralId", async (req, res) => {
