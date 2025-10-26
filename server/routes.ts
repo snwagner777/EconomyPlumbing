@@ -5369,8 +5369,26 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
           });
       }
       
-      console.log("[Review Requests] Settings updated:", updates);
-      res.json({ success: true, settings: updates });
+      // Re-query database to get actual current state
+      const dbSettings = await db.select().from(systemSettings);
+      const settingsMap = new Map(dbSettings.map(s => [s.key, s.value]));
+      
+      const currentSettings = {
+        masterEmailSwitch: settingsMap.get('review_master_email_switch') === 'true',
+        reviewDripEnabled: settingsMap.get('review_drip_enabled') === 'true',
+        referralDripEnabled: settingsMap.get('referral_drip_enabled') === 'true',
+        autoSendReviewRequests: settingsMap.get('auto_send_review_requests') === 'true',
+        autoStartReferralCampaigns: settingsMap.get('auto_start_referral_campaigns') === 'true',
+        reviewRequestPhoneNumber: settingsMap.get('review_request_phone_number') || '',
+        reviewRequestPhoneFormatted: settingsMap.get('review_request_phone_formatted') || '',
+        referralNurturePhoneNumber: settingsMap.get('referral_nurture_phone_number') || '',
+        referralNurturePhoneFormatted: settingsMap.get('referral_nurture_phone_formatted') || '',
+        quoteFollowupPhoneNumber: settingsMap.get('quote_followup_phone_number') || '',
+        quoteFollowupPhoneFormatted: settingsMap.get('quote_followup_phone_formatted') || ''
+      };
+      
+      console.log("[Review Requests] Settings updated:", currentSettings);
+      res.json({ success: true, settings: currentSettings });
     } catch (error: any) {
       console.error("[Review Requests] Error updating settings:", error);
       res.status(500).json({ error: error.message });
@@ -5676,10 +5694,14 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
 
       console.log(`[Referral Emails] Successfully generated: "${emailContent.subject}"`);
       
+      // Add CAN-SPAM compliant unsubscribe footer for preview
+      const { addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+      const sampleUnsubscribeUrl = `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'https://plumbersthatcare.com'}/email-preferences/sample-token-preview`;
+      
       res.json({
         subject: emailContent.subject,
-        htmlContent: emailContent.bodyHtml,
-        plainTextContent: emailContent.bodyPlain
+        htmlContent: addUnsubscribeFooter(emailContent.bodyHtml, sampleUnsubscribeUrl),
+        plainTextContent: addUnsubscribeFooterPlainText(emailContent.bodyPlain, sampleUnsubscribeUrl)
       });
     } catch (error: any) {
       console.error("[Referral Emails] Error generating thank you email:", error);
@@ -5718,10 +5740,14 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
 
       console.log(`[Referral Emails] Successfully generated: "${emailContent.subject}"`);
       
+      // Add CAN-SPAM compliant unsubscribe footer for preview
+      const { addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+      const sampleUnsubscribeUrl = `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'https://plumbersthatcare.com'}/email-preferences/sample-token-preview`;
+      
       res.json({
         subject: emailContent.subject,
-        htmlContent: emailContent.bodyHtml,
-        plainTextContent: emailContent.bodyPlain
+        htmlContent: addUnsubscribeFooter(emailContent.bodyHtml, sampleUnsubscribeUrl),
+        plainTextContent: addUnsubscribeFooterPlainText(emailContent.bodyPlain, sampleUnsubscribeUrl)
       });
     } catch (error: any) {
       console.error("[Referral Emails] Error generating success email:", error);
@@ -6058,10 +6084,17 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         emailContent.bodyPlain = emailContent.bodyPlain.replace(/\{\{trackingNumber\}\}/g, trackingPhoneNumber);
       }
       
+      // Add CAN-SPAM compliant unsubscribe footer to preview
+      const { addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+      const sampleUnsubscribeUrl = `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'https://plumbersthatcare.com'}/email-preferences/sample-token-preview`;
+      
+      const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, sampleUnsubscribeUrl);
+      const plainWithFooter = addUnsubscribeFooterPlainText(emailContent.bodyPlain, sampleUnsubscribeUrl);
+      
       res.json({
         subject: emailContent.subject,
-        bodyHtml: emailContent.bodyHtml,
-        bodyPlain: emailContent.bodyPlain,
+        bodyHtml: htmlWithFooter,
+        bodyPlain: plainWithFooter,
       });
     } catch (error: any) {
       console.error("[Referral Email Preview] Error generating preview:", error);
@@ -6177,12 +6210,16 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
 
       console.log(`[AI Email Generator] Successfully generated email: "${generatedEmail.subject}"`);
       
+      // Add CAN-SPAM compliant unsubscribe footer for preview
+      const { addUnsubscribeFooter, addUnsubscribeFooterPlainText } = await import("./lib/emailPreferenceEnforcer");
+      const sampleUnsubscribeUrl = `${process.env.REPL_SLUG ? `https://${process.env.REPL_SLUG}.${process.env.REPL_OWNER}.repl.co` : 'https://plumbersthatcare.com'}/email-preferences/sample-token-preview`;
+      
       // Map field names: AI returns bodyHtml/bodyPlain, frontend expects htmlContent/plainTextContent
       res.json({
         subject: generatedEmail.subject,
         preheader: generatedEmail.preheader,
-        htmlContent: generatedEmail.bodyHtml,
-        plainTextContent: generatedEmail.bodyPlain,
+        htmlContent: addUnsubscribeFooter(generatedEmail.bodyHtml, sampleUnsubscribeUrl),
+        plainTextContent: addUnsubscribeFooterPlainText(generatedEmail.bodyPlain, sampleUnsubscribeUrl),
         strategy: generatedEmail.strategy,
         seasonalContext: generatedEmail.seasonalContext
       });
