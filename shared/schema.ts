@@ -464,6 +464,208 @@ export const conversionEvents = pgTable("conversion_events", {
   customerIdIdx: index("conversion_events_customer_id_idx").on(table.customerId),
 }));
 
+// =====================================================
+// CUSTOM EMAIL CAMPAIGN SYSTEM (5 TABLES)
+// Complete system for custom one-time blasts and drip campaigns
+// AI-powered content generation, audience segmentation, tracking
+// =====================================================
+
+// Customer Segments - Target audiences for campaigns
+export const customerSegments = pgTable("customer_segments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Segment identification
+  name: text("name").notNull().unique(), // "VIP Customers", "Recent Water Heater Installs", etc.
+  description: text("description"),
+  
+  // Segment type
+  segmentType: text("segment_type").notNull(), // 'static' (manual), 'dynamic' (auto-updated), 'ai_generated'
+  
+  // AI-generated segments
+  aiPrompt: text("ai_prompt"), // "Customers who spent >$5000 in last 6 months"
+  aiCriteria: jsonb("ai_criteria"), // Parsed criteria from AI
+  
+  // Static criteria (for manual/dynamic segments)
+  criteria: jsonb("criteria"), // {minLifetimeValue: 5000, lastServiceWithin: 180, tags: ['VIP']}
+  
+  // Statistics
+  customerCount: integer("customer_count").notNull().default(0),
+  lastRefreshedAt: timestamp("last_refreshed_at"), // When dynamic segment was last recalculated
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  nameIdx: index("customer_segments_name_idx").on(table.name),
+  typeIdx: index("customer_segments_type_idx").on(table.segmentType),
+}));
+
+// Segment Membership - Links customers to segments
+export const segmentMembership = pgTable("segment_membership", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }),
+  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  
+  // Metadata
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+  addedBy: varchar("added_by"), // 'manual', 'ai', 'dynamic_refresh'
+}, (table) => ({
+  segmentCustomerIdx: uniqueIndex("segment_membership_segment_customer_idx").on(table.segmentId, table.customerId),
+  customerIdIdx: index("segment_membership_customer_id_idx").on(table.customerId),
+}));
+
+// Custom Email Campaigns - Campaign definitions
+export const customEmailCampaigns = pgTable("custom_email_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign identification
+  name: text("name").notNull().unique(),
+  description: text("description"),
+  
+  // Campaign type
+  campaignType: text("campaign_type").notNull(), // 'one_time' (single blast), 'drip' (multi-email sequence)
+  
+  // Target audience
+  segmentId: varchar("segment_id").references(() => customerSegments.id, { onDelete: 'set null' }),
+  targetCustomerIds: integer("target_customer_ids").array(), // Manual customer selection (overrides segment)
+  
+  // Tracking & Attribution
+  trackingPhoneNumber: text("tracking_phone_number"), // Campaign-specific phone number
+  utmCampaign: text("utm_campaign"), // Auto-generated from campaign name
+  utmSource: text("utm_source").default('email'),
+  utmMedium: text("utm_medium").default('campaign'),
+  
+  // Status & Approval
+  status: text("status").notNull().default('draft'), // 'draft', 'pending_approval', 'scheduled', 'sending', 'completed', 'paused', 'cancelled'
+  approvedBy: varchar("approved_by"), // Admin user who approved
+  approvedAt: timestamp("approved_at"),
+  
+  // Scheduling (for one-time campaigns)
+  scheduledFor: timestamp("scheduled_for"), // When to send (null = send immediately)
+  
+  // Drip sequence settings (for drip campaigns)
+  dripIntervalDays: integer("drip_interval_days").array(), // [1, 7, 14, 21] - days between emails
+  pauseOnEngagement: boolean("pause_on_engagement").notNull().default(false), // Stop if customer engages
+  
+  // AI generation metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiPrompt: text("ai_prompt"),
+  aiGoal: text("ai_goal"), // "Promote spring maintenance", "Water heater replacement offers"
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalDelivered: integer("total_delivered").notNull().default(0),
+  totalOpened: integer("total_opened").notNull().default(0),
+  totalClicked: integer("total_clicked").notNull().default(0),
+  totalUnsubscribed: integer("total_unsubscribed").notNull().default(0),
+  totalBounced: integer("total_bounced").notNull().default(0),
+  
+  // Attribution
+  totalCalls: integer("total_calls").notNull().default(0), // Tracking phone clicks
+  totalJobsBooked: integer("total_jobs_booked").notNull().default(0),
+  totalRevenue: integer("total_revenue").notNull().default(0), // In cents
+  
+  // Send limits & safety
+  dailySendLimit: integer("daily_send_limit").notNull().default(500),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"), // When campaign started sending
+  completedAt: timestamp("completed_at"), // When all emails sent
+}, (table) => ({
+  nameIdx: index("custom_campaigns_name_idx").on(table.name),
+  statusIdx: index("custom_campaigns_status_idx").on(table.status),
+  segmentIdIdx: index("custom_campaigns_segment_id_idx").on(table.segmentId),
+  scheduledForIdx: index("custom_campaigns_scheduled_for_idx").on(table.scheduledFor),
+}));
+
+// Campaign Emails - Individual emails in a campaign
+export const customCampaignEmails = pgTable("custom_campaign_emails", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull().references(() => customEmailCampaigns.id, { onDelete: 'cascade' }),
+  
+  // Email position in sequence (for drip campaigns)
+  sequenceNumber: integer("sequence_number").notNull().default(1), // 1, 2, 3, 4...
+  
+  // Email content
+  subject: text("subject").notNull(),
+  preheader: text("preheader"), // Preview text
+  htmlContent: text("html_content").notNull(), // HTML email body
+  plainTextContent: text("plain_text_content").notNull(), // Plain text fallback
+  
+  // AI generation metadata
+  generatedByAI: boolean("generated_by_ai").notNull().default(false),
+  aiStrategy: text("ai_strategy"), // 'value', 'urgency', 'social_proof', 'seasonal'
+  aiPrompt: text("ai_prompt"),
+  
+  // A/B testing
+  isVariant: boolean("is_variant").notNull().default(false),
+  variantOf: varchar("variant_of"), // ID of email this is a variant of
+  testPercentage: integer("test_percentage"), // 50 = send to 50% of audience
+  
+  // Performance metrics
+  totalSent: integer("total_sent").notNull().default(0),
+  totalOpened: integer("total_opened").notNull().default(0),
+  totalClicked: integer("total_clicked").notNull().default(0),
+  
+  // Status
+  enabled: boolean("enabled").notNull().default(true),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignSequenceIdx: index("custom_campaign_emails_campaign_sequence_idx").on(table.campaignId, table.sequenceNumber),
+  variantOfIdx: index("custom_campaign_emails_variant_of_idx").on(table.variantOf),
+}));
+
+// Campaign Send Log - Track every email sent in custom campaigns
+export const customCampaignSendLog = pgTable("custom_campaign_send_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Campaign and email references
+  campaignId: varchar("campaign_id").notNull().references(() => customEmailCampaigns.id, { onDelete: 'cascade' }),
+  campaignEmailId: varchar("campaign_email_id").notNull().references(() => customCampaignEmails.id, { onDelete: 'cascade' }),
+  
+  // Recipient
+  customerId: integer("customer_id").notNull(), // ServiceTitan customer ID
+  recipientEmail: text("recipient_email").notNull(),
+  recipientName: text("recipient_name").notNull(),
+  
+  // Email provider tracking
+  resendEmailId: text("resend_email_id"), // Resend's email ID for tracking
+  resendStatus: text("resend_status"), // 'queued', 'sent', 'delivered', 'bounced', 'complained'
+  
+  // Tracking events (timestamps)
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  openedAt: timestamp("opened_at"),
+  clickedAt: timestamp("clicked_at"),
+  bouncedAt: timestamp("bounced_at"),
+  complainedAt: timestamp("complained_at"),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+  
+  // Engagement counters (for webhooks that fire multiple times)
+  openCount: integer("open_count").notNull().default(0),
+  clickCount: integer("click_count").notNull().default(0),
+  
+  // Attribution
+  leadToJobBooking: boolean("lead_to_job_booking").notNull().default(false),
+  jobId: bigint("job_id", { mode: 'number' }), // ServiceTitan job ID if booked
+  revenueAttributed: integer("revenue_attributed").notNull().default(0), // In cents
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+}, (table) => ({
+  campaignCustomerIdx: index("custom_send_log_campaign_customer_idx").on(table.campaignId, table.customerId),
+  campaignEmailIdx: index("custom_send_log_campaign_email_idx").on(table.campaignEmailId),
+  sentAtIdx: index("custom_send_log_sent_at_idx").on(table.sentAt),
+  resendEmailIdIdx: index("custom_send_log_resend_id_idx").on(table.resendEmailId),
+  openedAtIdx: index("custom_send_log_opened_at_idx").on(table.openedAt),
+  clickedAtIdx: index("custom_send_log_clicked_at_idx").on(table.clickedAt),
+}));
+
 export const customerSuccessStories = pgTable("customer_success_stories", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   customerName: text("customer_name").notNull(),
@@ -1951,6 +2153,34 @@ export const insertConversionEventSchema = createInsertSchema(conversionEvents).
   createdAt: true,
 });
 
+export const insertCustomerSegmentSchema = createInsertSchema(customerSegments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSegmentMembershipSchema = createInsertSchema(segmentMembership).omit({
+  id: true,
+  addedAt: true,
+});
+
+export const insertCustomEmailCampaignSchema = createInsertSchema(customEmailCampaigns).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCustomCampaignEmailSchema = createInsertSchema(customCampaignEmails).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertCustomCampaignSendLogSchema = createInsertSchema(customCampaignSendLog).omit({
+  id: true,
+  sentAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
@@ -1979,3 +2209,13 @@ export type PendingReferral = typeof pendingReferrals.$inferSelect;
 export type InsertPendingReferral = z.infer<typeof insertPendingReferralSchema>;
 export type ConversionEvent = typeof conversionEvents.$inferSelect;
 export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
+export type CustomerSegment = typeof customerSegments.$inferSelect;
+export type InsertCustomerSegment = z.infer<typeof insertCustomerSegmentSchema>;
+export type SegmentMembership = typeof segmentMembership.$inferSelect;
+export type InsertSegmentMembership = z.infer<typeof insertSegmentMembershipSchema>;
+export type CustomEmailCampaign = typeof customEmailCampaigns.$inferSelect;
+export type InsertCustomEmailCampaign = z.infer<typeof insertCustomEmailCampaignSchema>;
+export type CustomCampaignEmail = typeof customCampaignEmails.$inferSelect;
+export type InsertCustomCampaignEmail = z.infer<typeof insertCustomCampaignEmailSchema>;
+export type CustomCampaignSendLog = typeof customCampaignSendLog.$inferSelect;
+export type InsertCustomCampaignSendLog = z.infer<typeof insertCustomCampaignSendLogSchema>;
