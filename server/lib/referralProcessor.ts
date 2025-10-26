@@ -403,9 +403,11 @@ Thank you for trusting us with your plumbing needs!`;
                   
                   const totalBalance = allCredits.length * CREDIT_AMOUNT; // Each credit is $25
                   
-                  // Get phone number from settings
+                  // Get phone number and custom settings
                   const phoneNumber = settingsMap.get('referral_nurture_phone_number');
                   const phoneStr = phoneNumber || undefined;
+                  const customPrompt = settingsMap.get('referral_success_custom_prompt') || undefined;
+                  const brandGuidelines = settingsMap.get('referral_email_brand_guidelines') || undefined;
                   
                   // Generate AI-powered success email
                   const emailContent = await generateReferrerSuccessEmail({
@@ -415,7 +417,7 @@ Thank you for trusting us with your plumbing needs!`;
                     creditExpiresAt: expirationDate,
                     currentBalance: totalBalance / 100, // Total balance in dollars
                     phoneNumber: phoneStr,
-                  });
+                  }, customPrompt, brandGuidelines);
                   
                   // Add unsubscribe footer
                   const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);

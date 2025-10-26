@@ -671,15 +671,19 @@ Return as JSON:
 /**
  * Generate AI-powered thank you email for referrer (sent when they submit a referral)
  */
-export async function generateReferrerThankYouEmail(options: {
-  referrerName: string;
-  refereeName: string;
-  phoneNumber?: string;
-}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+export async function generateReferrerThankYouEmail(
+  options: {
+    referrerName: string;
+    refereeName: string;
+    phoneNumber?: string;
+  },
+  customPrompt?: string,
+  brandGuidelines?: string
+): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
   const { referrerName, refereeName, phoneNumber } = options;
   const { season, context: seasonalContext } = getSeasonalContext();
 
-  const systemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
+  const defaultSystemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
 
 Your task is to generate a warm, appreciative thank you email to a customer who just submitted a referral.
 
@@ -711,7 +715,11 @@ Brand Voice:
 
 Seasonal Context (${season}):
 ${seasonalContext}
-- Use this to add a timely seasonal touch if relevant`;
+- Use this to add a timely seasonal touch if relevant
+
+${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}`;
+
+  const systemPrompt = customPrompt || defaultSystemPrompt;
 
   const userPrompt = `Generate a thank you email for ${referrerName} who just referred ${refereeName}.
 
@@ -773,18 +781,22 @@ Return as JSON:
 /**
  * Generate AI-powered success notification for referrer (sent when referee completes first job)
  */
-export async function generateReferrerSuccessEmail(options: {
-  referrerName: string;
-  refereeName: string;
-  creditAmount: number; // In dollars (e.g., 25.00)
-  creditExpiresAt: Date;
-  currentBalance?: number; // Total available credits in dollars
-  phoneNumber?: string;
-}): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
+export async function generateReferrerSuccessEmail(
+  options: {
+    referrerName: string;
+    refereeName: string;
+    creditAmount: number; // In dollars (e.g., 25.00)
+    creditExpiresAt: Date;
+    currentBalance?: number; // Total available credits in dollars
+    phoneNumber?: string;
+  },
+  customPrompt?: string,
+  brandGuidelines?: string
+): Promise<{ subject: string; bodyHtml: string; bodyPlain: string }> {
   const { referrerName, refereeName, creditAmount, creditExpiresAt, currentBalance, phoneNumber } = options;
   const { season, context: seasonalContext } = getSeasonalContext();
 
-  const systemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
+  const defaultSystemPrompt = `You are an AI email writer for Economy Plumbing Services, a trusted Austin-area plumbing company.
 
 Your task is to generate an exciting congratulatory email to a customer whose referral just converted (their friend became a customer).
 
@@ -816,7 +828,11 @@ Brand Voice:
 
 Seasonal Context (${season}):
 ${seasonalContext}
-- Use this to suggest seasonal services they could use their credit on`;
+- Use this to suggest seasonal services they could use their credit on
+
+${brandGuidelines ? `\nADDITIONAL BRAND GUIDELINES:\n${brandGuidelines}` : ''}`;
+
+  const systemPrompt = customPrompt || defaultSystemPrompt;
 
   const userPrompt = `Generate a success notification for ${referrerName} - their referral (${refereeName}) just became a customer!
 

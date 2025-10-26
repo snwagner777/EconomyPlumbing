@@ -1462,15 +1462,17 @@ ${rssItems}
             } else {
               console.log(`[Referral] Generating thank you email for ${referrerName}...`);
               
-              // Get referral nurture phone number
+              // Get referral nurture phone number and custom settings
               const phoneNumber = settingsMap.get('referral_nurture_phone_number') || undefined;
+              const customPrompt = settingsMap.get('referral_thank_you_custom_prompt') || undefined;
+              const brandGuidelines = settingsMap.get('referral_email_brand_guidelines') || undefined;
               
               // Generate AI-powered thank you email
               const emailContent = await generateReferrerThankYouEmail({
                 referrerName,
                 refereeName,
                 phoneNumber,
-              });
+              }, customPrompt, brandGuidelines);
               
               // Add unsubscribe footer
               const htmlWithFooter = addUnsubscribeFooter(emailContent.bodyHtml, prefCheck.unsubscribeUrl!);
@@ -5948,6 +5950,105 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
         console.error("[Referral Emails] Error updating email status:", updateError);
       }
       
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // REFERRAL EMAIL TEMPLATE CUSTOMIZATION
+  
+  // Get current referral email template settings (admin only)
+  app.get("/api/admin/referral-email-settings", requireAdmin, async (req, res) => {
+    try {
+      const { systemSettings } = await import("@shared/schema");
+      
+      const settings = await db.select().from(systemSettings);
+      const settingsMap = new Map(settings.map(s => [s.key, s.value]));
+      
+      res.json({
+        thankYouCustomPrompt: settingsMap.get('referral_thank_you_custom_prompt') || '',
+        successCustomPrompt: settingsMap.get('referral_success_custom_prompt') || '',
+        brandGuidelines: settingsMap.get('referral_email_brand_guidelines') || '',
+      });
+    } catch (error: any) {
+      console.error("[Referral Email Settings] Error fetching settings:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Update referral email template settings (admin only)
+  app.put("/api/admin/referral-email-settings", requireAdmin, async (req, res) => {
+    try {
+      const { systemSettings } = await import("@shared/schema");
+      const { thankYouCustomPrompt, successCustomPrompt, brandGuidelines } = req.body;
+      
+      // Update or insert settings
+      const updates = [
+        { key: 'referral_thank_you_custom_prompt', value: thankYouCustomPrompt || '' },
+        { key: 'referral_success_custom_prompt', value: successCustomPrompt || '' },
+        { key: 'referral_email_brand_guidelines', value: brandGuidelines || '' },
+      ];
+      
+      for (const setting of updates) {
+        const existing = await db
+          .select()
+          .from(systemSettings)
+          .where(eq(systemSettings.key, setting.key))
+          .limit(1);
+        
+        if (existing.length > 0) {
+          await db
+            .update(systemSettings)
+            .set({ value: setting.value })
+            .where(eq(systemSettings.key, setting.key));
+        } else {
+          await db.insert(systemSettings).values(setting);
+        }
+      }
+      
+      console.log("[Referral Email Settings] Settings updated successfully");
+      res.json({ success: true, message: 'Settings updated successfully' });
+    } catch (error: any) {
+      console.error("[Referral Email Settings] Error updating settings:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+  
+  // Generate preview email with custom settings (admin only)
+  app.post("/api/admin/referral-email-preview", requireAdmin, async (req, res) => {
+    try {
+      const { generateReferrerThankYouEmail, generateReferrerSuccessEmail } = await import("./lib/aiEmailGenerator");
+      const { emailType, customPrompt, brandGuidelines } = req.body;
+      
+      if (!emailType || !['thank_you', 'success'].includes(emailType)) {
+        return res.status(400).json({ error: "Invalid emailType. Must be 'thank_you' or 'success'" });
+      }
+      
+      // Use sample data for preview
+      let emailContent;
+      if (emailType === 'thank_you') {
+        emailContent = await generateReferrerThankYouEmail({
+          referrerName: 'John Smith',
+          refereeName: 'Jane Doe',
+          phoneNumber: '(512) 368-9159',
+        }, customPrompt, brandGuidelines);
+      } else {
+        emailContent = await generateReferrerSuccessEmail({
+          referrerName: 'John Smith',
+          refereeName: 'Jane Doe',
+          creditAmount: 25,
+          creditExpiresAt: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
+          currentBalance: 75,
+          phoneNumber: '(512) 368-9159',
+        }, customPrompt, brandGuidelines);
+      }
+      
+      res.json({
+        subject: emailContent.subject,
+        bodyHtml: emailContent.bodyHtml,
+        bodyPlain: emailContent.bodyPlain,
+      });
+    } catch (error: any) {
+      console.error("[Referral Email Preview] Error generating preview:", error);
       res.status(500).json({ error: error.message });
     }
   });
