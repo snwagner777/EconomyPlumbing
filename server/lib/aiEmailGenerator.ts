@@ -201,6 +201,16 @@ ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email
 
 Include a clear CTA button with text like "Leave a Review" that links to: https://plumbersthatcare.com/leave-review
 
+CRITICAL UTM TRACKING REQUIREMENT:
+ALL links in the email MUST include UTM parameters for attribution tracking:
+- utm_source=review_request_email
+- utm_medium=email
+- utm_campaign=review_drip_email_${emailNumber}
+
+Example: https://plumbersthatcare.com/leave-review?utm_source=review_request_email&utm_medium=email&utm_campaign=review_drip_email_${emailNumber}
+
+Apply these UTM parameters to ALL website links in the email (buttons, text links, footer links, etc.).
+
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused)
 2. Preheader text (40-80 chars)
@@ -274,6 +284,17 @@ Instructions for including the referral link:
 - Make the link easy to copy and share (formatted as clickable button and also plain text)
 - Include a clear CTA button that links to: ${referralLink}` : `CRITICAL: Tell them to visit https://plumbersthatcare.com/customer-portal to get their personalized referral link. Include a CTA button that links to: https://plumbersthatcare.com/customer-portal`}
 
+CRITICAL UTM TRACKING REQUIREMENT:
+ALL links to plumbersthatcare.com in the email MUST include UTM parameters for attribution tracking:
+- utm_source=referral_nurture_email
+- utm_medium=email
+- utm_campaign=referral_drip_email_${emailNumber}
+
+Example for customer portal link: https://plumbersthatcare.com/customer-portal?utm_source=referral_nurture_email&utm_medium=email&utm_campaign=referral_drip_email_${emailNumber}
+
+Apply these UTM parameters to ALL plumbersthatcare.com links (buttons, text links, footer links, etc.).
+NOTE: Do NOT add UTM parameters to the unique referral link ${referralLink || ''} - only to regular website links.
+
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused)
 2. Preheader text (40-80 chars)
@@ -342,6 +363,16 @@ ${emailNumber === 1 ? `
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}
 
 Include a clear CTA button with text like "Get a Quote" or "Schedule Service" that links to: https://plumbersthatcare.com/contact
+
+CRITICAL UTM TRACKING REQUIREMENT:
+ALL links in the email MUST include UTM parameters for attribution tracking:
+- utm_source=quote_followup_email
+- utm_medium=email
+- utm_campaign=quote_followup_drip_email_${emailNumber}
+
+Example: https://plumbersthatcare.com/contact?utm_source=quote_followup_email&utm_medium=email&utm_campaign=quote_followup_drip_email_${emailNumber}
+
+Apply these UTM parameters to ALL website links in the email (buttons, text links, footer links, etc.).
 
 Generate:
 1. Subject line (under 50 chars, ${strategy} focused, NOT pushy)
@@ -744,6 +775,16 @@ Requirements:
 8. Add a subtle seasonal touch based on current season (${season})
 9. Keep it warm and personal, not corporate
 
+CRITICAL UTM TRACKING REQUIREMENT:
+ALL links to plumbersthatcare.com in the email MUST include UTM parameters for attribution tracking:
+- utm_source=referral_thank_you_email
+- utm_medium=email
+- utm_campaign=referral_thankyou
+
+Example: https://plumbersthatcare.com/customer-portal?utm_source=referral_thank_you_email&utm_medium=email&utm_campaign=referral_thankyou
+
+Apply these UTM parameters to ALL website links in the email (buttons, text links, footer links, etc.).
+
 Return as JSON:
 {
   "subject": "Thank you for referring ${refereeName}!",
@@ -863,6 +904,16 @@ Requirements:
 8. Add seasonal context for services they could use credit on
 9. Create gentle urgency about credit expiration without being pushy
 10. Make referring more friends easy and appealing
+
+CRITICAL UTM TRACKING REQUIREMENT:
+ALL links to plumbersthatcare.com in the email MUST include UTM parameters for attribution tracking:
+- utm_source=referral_success_email
+- utm_medium=email
+- utm_campaign=referral_success
+
+Example: https://plumbersthatcare.com/schedule?utm_source=referral_success_email&utm_medium=email&utm_campaign=referral_success
+
+Apply these UTM parameters to ALL website links in the email (buttons, text links, footer links, etc.).
 
 Tone: Celebratory, grateful, encouraging
 
