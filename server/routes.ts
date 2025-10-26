@@ -6072,23 +6072,63 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
   // Get referral email send history (admin only)
   app.get("/api/admin/email-send-log", requireAdmin, async (req, res) => {
     try {
-      const { emailSendLog } = await import("@shared/schema");
-      const { desc, inArray } = await import("drizzle-orm");
       const { type } = req.query;
       
-      // Build query with conditional filter
-      const emails = type === 'referral'
-        ? await db.select()
-            .from(emailSendLog)
-            .where(inArray(emailSendLog.emailType, ['referrer_thank_you', 'referrer_success']))
-            .orderBy(desc(emailSendLog.sentAt))
-            .limit(100)
-        : await db.select()
-            .from(emailSendLog)
-            .orderBy(desc(emailSendLog.sentAt))
-            .limit(100);
-      
-      res.json({ emails });
+      if (type === 'referral') {
+        // Fetch from referrer-specific tables
+        const { referrerThankYouEmails, referrerSuccessEmails } = await import("@shared/schema");
+        const { desc } = await import("drizzle-orm");
+        
+        // Get thank you emails
+        const thankYouEmails = await db.select({
+          id: referrerThankYouEmails.id,
+          emailType: referrerThankYouEmails.id, // dummy, will override below
+          recipientEmail: referrerThankYouEmails.referrerEmail,
+          recipientName: referrerThankYouEmails.referrerName,
+          subject: referrerThankYouEmails.subject,
+          sentAt: referrerThankYouEmails.sentAt,
+          openedAt: referrerThankYouEmails.openedAt,
+          clickedAt: referrerThankYouEmails.clickedAt,
+        })
+          .from(referrerThankYouEmails)
+          .orderBy(desc(referrerThankYouEmails.sentAt))
+          .limit(50);
+        
+        // Get success emails
+        const successEmails = await db.select({
+          id: referrerSuccessEmails.id,
+          emailType: referrerSuccessEmails.id, // dummy, will override below
+          recipientEmail: referrerSuccessEmails.referrerEmail,
+          recipientName: referrerSuccessEmails.referrerName,
+          subject: referrerSuccessEmails.subject,
+          sentAt: referrerSuccessEmails.sentAt,
+          openedAt: referrerSuccessEmails.openedAt,
+          clickedAt: referrerSuccessEmails.clickedAt,
+        })
+          .from(referrerSuccessEmails)
+          .orderBy(desc(referrerSuccessEmails.sentAt))
+          .limit(50);
+        
+        // Combine and add emailType field
+        const combinedEmails = [
+          ...thankYouEmails.map(e => ({ ...e, emailType: 'referrer_thank_you' })),
+          ...successEmails.map(e => ({ ...e, emailType: 'referrer_success' }))
+        ].sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+         .slice(0, 100);
+        
+        res.json({ emails: combinedEmails });
+      } else {
+        // Fetch from general emailSendLog table
+        const { emailSendLog } = await import("@shared/schema");
+        const { desc } = await import("drizzle-orm");
+        
+        const emails = await db.select()
+          .from(emailSendLog)
+          .orderBy(desc(emailSendLog.sentAt))
+          .limit(100);
+        
+        res.json({ emails });
+      }
     } catch (error: any) {
       console.error("[Email Send Log] Error fetching history:", error);
       res.status(500).json({ error: error.message });
