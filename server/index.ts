@@ -490,6 +490,10 @@ async function refreshReviewsPeriodically() {
     });
   }, 10000);
   
+  // Start custom campaign scheduler (runs every 30 minutes)
+  const { startCustomCampaignScheduler } = await import('./lib/customCampaignScheduler');
+  startCustomCampaignScheduler();
+  
   // Start referral processor (runs every hour to match referees, detect completed jobs, and issue credits)
   const referralProcessor = getReferralProcessor();
   

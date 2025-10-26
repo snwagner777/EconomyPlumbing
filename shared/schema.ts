@@ -587,6 +587,7 @@ export const customCampaignEmails = pgTable("custom_campaign_emails", {
   
   // Email position in sequence (for drip campaigns)
   sequenceNumber: integer("sequence_number").notNull().default(1), // 1, 2, 3, 4...
+  daysAfterStart: integer("days_after_start").notNull().default(0), // Days after campaign start to send this email (for drip)
   
   // Email content
   subject: text("subject").notNull(),
