@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, type LucideIcon } from "lucide-react";
-import { Link } from "@/lib/routing";
+import { Link } from "wouter";
 
 interface ServiceCardProps {
   icon: LucideIcon;

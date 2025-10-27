@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, ArrowRight } from "lucide-react";
-import { Link } from "@/lib/routing";
+import { Link } from "wouter";
 import type { BlogPost } from "@shared/schema";
 
 interface InlineBlogCardProps {

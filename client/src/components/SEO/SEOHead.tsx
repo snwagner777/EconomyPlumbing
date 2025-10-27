@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "@/lib/routing";
+import { useLocation } from "wouter";
 import { generateCanonicalUrl } from "@/lib/canonicalUrl";
 
 export interface SEOProps {

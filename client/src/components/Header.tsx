@@ -1,7 +1,5 @@
-'use client';
-
 import { useState } from "react";
-import { Link, useLocation } from "@/lib/routing";
+import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";

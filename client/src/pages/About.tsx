@@ -1,5 +1,3 @@
-'use client';
-
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -7,7 +5,7 @@ import { CheckCircle2, Users, Award, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openScheduler } from "@/lib/scheduler";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { Link } from "@/lib/routing";
+import { Link } from "wouter";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 export default function About() {

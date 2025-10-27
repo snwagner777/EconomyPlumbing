@@ -1,8 +1,6 @@
-'use client';
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useLocation } from "@/lib/routing";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -957,10 +955,5 @@ export default function AIChatbot() {
   }
 
   // Render using portal to avoid SidebarProvider transform issues
-  // Only render portal on client side (after hydration)
-  if (typeof document === 'undefined') {
-    return null;
-  }
-  
   return createPortal(chatbotUI, document.body);
 }

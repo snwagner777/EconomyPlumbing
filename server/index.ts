@@ -1,18 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import compression from "compression";
 import { registerRoutes } from "./routes";
+import { setupVite, serveStatic, log } from "./vite";
 import * as path from "path";
-
-// Logging function
-function log(message: string, source = "express") {
-  const formattedTime = new Date().toLocaleTimeString("en-US", {
-    hour: "numeric",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true,
-  });
-  console.log(`${formattedTime} [${source}] ${message}`);
-}
 import * as fs from "fs";
 import { fetchGoogleReviews } from "./lib/googleReviews";
 import { storage } from "./storage";
@@ -562,11 +552,19 @@ async function refreshReviewsPeriodically() {
     });
   }
   
-  // Setup Next.js integration for SSR/ISR
-  // Next.js handles all public pages with server-side rendering and ISR
-  // Express continues to handle API routes and background jobs
-  const { setupNextIntegration } = await import("./nextIntegration");
-  await setupNextIntegration(app, server);
+  // Server-side metadata injection
+  // Injects title, description, and canonical tags into initial HTML
+  // This ensures crawlers see correct metadata WITHOUT JavaScript execution
+  app.use(createMetadataInjector(storage));
+  
+  // importantly only setup vite in development and after
+  // setting up all the other routes so the catch-all route
+  // doesn't interfere with the other routes
+  if (app.get("env") === "development") {
+    await setupVite(app, server);
+  } else {
+    serveStatic(app);
+  }
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
