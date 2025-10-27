@@ -1,8 +1,10 @@
+'use client';
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link } from "@/lib/routing";
 import { 
   Droplets, 
   Wind, 
