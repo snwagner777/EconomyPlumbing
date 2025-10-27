@@ -19,11 +19,18 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend
+### Frontend Architecture: Hybrid SSR + SPA
+- **Public Marketing Site (Astro SSR):** Homepage and public pages transitioning from React CSR to Astro SSR for improved SEO with full HTML rendering. Server-rendered Astro components (Header.astro, Footer.astro) replace React Islands for core SEO content.
+- **Admin/Portal (React SPA):** Customer portal and admin panel remain as React single-page applications served via Vite middleware (scoped to /admin, /customer-portal, /@vite routes).
+- **Routing:** Hybrid Express router → Astro middleware (public pages) OR Vite middleware (admin/portal only). Production serves React SPA from dist/public correctly.
+
+### Frontend Stack
 - **Framework & UI:** React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation.
-- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
+- **Key Pages:** Home (Astro), About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
+- **ServiceTitan Scheduler:** Integrated into both React and Astro pages via dynamic script loading (window.STWidgetManager). Global openScheduler() function available on all pages.
+- **Dynamic Phone Numbers:** Client-side detection in Astro pages via inline JavaScript that fetches /api/tracking-numbers, detects UTM parameters, stores in 90-day cookies, and updates all elements with data-phone="austin" attribute.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
 - **Admin Panels:** Unified admin with Marketing Automation section (campaign-specific phone numbers, email templates, settings), ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
 
