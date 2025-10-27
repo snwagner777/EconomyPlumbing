@@ -3,4 +3,14 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gz
+*.tar.gz# Next.js
+/.next/
+/out/
+
+# Turbopack
+.turbo/
+
+# Next.js build outputs
+next-env.d.ts
+.next
+dist-next
