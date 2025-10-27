@@ -19,19 +19,23 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture: Next.js 15 App Router + Express Hybrid
-- **Public Marketing Site (Next.js 15 SSR/ISR):** Homepage and blog migrated to Next.js App Router with Server Components for optimal SEO. ISR caching with 60s homepage revalidation and 3600s blog revalidation. Server Components for static content, Client Components for interactivity only.
-- **Admin/Portal (React SPA - Migration Pending):** Customer portal and admin panel currently remain as React single-page applications served via Vite middleware, planned for Next.js migration.
-- **Routing:** Hybrid Express router delegates to Next.js request handler (public pages like /, /blog/*) OR Vite middleware (admin/portal at /admin, /customer-portal, /@vite routes). Express handles all /api/* and /attached_assets/* routes directly.
+### Frontend Architecture: Next.js 15 App Router + React SPA Hybrid (✅ MIGRATION COMPLETE)
+- **Public Marketing Site (Next.js 15 SSR/ISR):** All public-facing pages migrated to Next.js App Router with Server Components for optimal SEO. ISR caching with 60s homepage revalidation and 3600s blog/service pages revalidation. Server Components for static content, Client Components for interactivity only.
+- **Admin/Portal (React SPA - Preserved):** Customer portal and admin panel remain as React single-page applications served via Vite middleware (development) and built static assets (production). No migration planned - intentionally preserved as SPA for optimal admin UX.
+- **Routing:** Production-ready hybrid Express router with clean separation:
+  - **Next.js SSR/ISR:** All public pages (/, /blog, /blog/[slug], /about, /contact, /services)
+  - **Vite/SPA:** Admin and portal (/admin, /customer-portal) via Vite middleware (dev) or static bundles (prod)
+  - **Express:** API routes (/api/*), static assets (/attached_assets, /assets)
+- **Routing Adapter:** Wouter-compatible routing layer (client/src/lib/routing.tsx) using Next.js hooks enables seamless component reuse between Next.js pages and React SPA.
 - **Environment Variables:** NEXT_INTERNAL_URL for server-side fetches (avoids CDN loops), NEXT_PUBLIC_API_URL for client-side API calls, REVALIDATION_SECRET for on-demand cache invalidation.
-- **Migration Status:** Homepage ✅, Blog ✅, ServiceTitan Script ✅, JSON-LD Schemas ✅. Remaining: Services, About, Contact, Admin Dashboard, Customer Portal.
+- **Migration Status:** Homepage ✅, Blog (listing & posts) ✅, About ✅, Contact ✅, Services ✅, ServiceTitan Script ✅, JSON-LD Schemas ✅. Admin/Portal intentionally preserved as React SPA ✅.
 
 ### Frontend Stack
 - **Framework & UI:** Next.js 15 App Router (public pages) + React 18 SPA (admin/portal) with TypeScript. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Next.js Metadata API, comprehensive JSON-LD structured data (LocalBusiness, Organization, FAQPage), ISR caching (60s homepage, 3600s blog), resource preconnect, image lazy loading via Next.js Image, font optimization, code splitting, WebP conversion, dynamic sitemap generation (planned).
 - **JSON-LD Schemas:** Implemented for LocalBusiness (Austin + Marble Falls), Organization, and FAQPage with visible content matching schema for Google compliance. Schemas in `app/lib/jsonLd.ts`.
-- **Key Pages:** Home (Next.js SSR ✅), Blog (Next.js ISR ✅), About (React SPA), Contact (React SPA), Services (React SPA), Service Areas, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and Customer Portal with ServiceTitan integration.
+- **Key Pages:** Home (Next.js SSR ✅), Blog (Next.js ISR ✅), About (Next.js ISR ✅), Contact (Next.js ISR ✅), Services (Next.js ISR ✅), Service Areas, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, Admin Dashboard (React SPA ✅), and Customer Portal (React SPA ✅) with ServiceTitan integration.
 - **ServiceTitan Scheduler:** Integrated into Next.js pages via Script component with afterInteractive strategy. Widget ID: 3ce4a586-8427-4716-9ac6-46cb8bf7ac4f. Client Components (ScheduleButton) trigger window.STWidgetManager.
 - **Dynamic Phone Numbers:** Client-side detection via inline JavaScript in Next.js pages that fetches /api/tracking-numbers, detects UTM parameters, stores in 90-day cookies, and updates all elements with data-phone="austin" attribute (pending implementation in Next.js).
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
