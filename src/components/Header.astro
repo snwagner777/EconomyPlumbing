@@ -1,0 +1,371 @@
+---
+// Header component for Astro - fully server-rendered for SEO
+interface Props {
+  phoneNumber?: string;
+  phoneDisplay?: string;
+}
+
+const { 
+  phoneNumber = "tel:+15124865511",
+  phoneDisplay = "(512) 486-5511"
+} = Astro.props;
+
+const currentPath = Astro.url.pathname;
+
+const services = [
+  { name: "All Services", path: "/services", featured: true },
+  { name: "Water Heater Services", path: "/water-heater-services" },
+  { name: "Water Heater Guide", path: "/water-heater-guide" },
+  { name: "Drain Cleaning", path: "/drain-cleaning" },
+  { name: "Hydro Jetting", path: "/hydro-jetting-services" },
+  { name: "Rooter Services", path: "/rooter-services" },
+  { name: "Leak Repair", path: "/leak-repair" },
+  { name: "Toilet & Faucet", path: "/toilet-faucet" },
+  { name: "Faucet Installation", path: "/faucet-installation" },
+  { name: "Garbage Disposal", path: "/garbage-disposal-repair" },
+  { name: "Gas Line Services", path: "/gas-line-services" },
+  { name: "Gas Leak Detection", path: "/gas-leak-detection" },
+  { name: "Backflow Testing", path: "/backflow" },
+  { name: "Drainage Solutions", path: "/drainage-solutions" },
+  { name: "Sump & Sewage Pumps", path: "/sewage-pump-services" },
+  { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+  { name: "Permit Resolution", path: "/permit-resolution-services" },
+  { name: "Commercial Services", path: "/commercial-services", section: "Commercial" },
+  { name: "Restaurant Plumbing", path: "/commercial/restaurants", indent: true },
+  { name: "Retail Plumbing", path: "/commercial/retail", indent: true },
+  { name: "Office Buildings", path: "/commercial/office-buildings", indent: true },
+  { name: "Property Management", path: "/commercial/property-management", indent: true },
+  { name: "Winter Freeze Protection", path: "/winter-freeze-protection", section: "Seasonal" },
+  { name: "Summer Plumbing Prep", path: "/summer-plumbing-prep", section: "Seasonal" },
+];
+
+const serviceAreas = [
+  { name: "All Service Areas", path: "/service-area", featured: true },
+  { name: "Austin", path: "/plumber-austin" },
+  { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
+  { name: "Leander", path: "/plumber-leander" },
+  { name: "Round Rock", path: "/round-rock-plumber" },
+  { name: "Georgetown", path: "/plumber-georgetown" },
+  { name: "Pflugerville", path: "/plumber-pflugerville" },
+  { name: "Liberty Hill", path: "/plumber-liberty-hill" },
+  { name: "Buda", path: "/plumber-buda" },
+  { name: "Kyle", path: "/plumber-kyle" },
+  { name: "Marble Falls", path: "/plumber-marble-falls" },
+  { name: "Burnet", path: "/plumber-burnet" },
+  { name: "Horseshoe Bay", path: "/plumber-horseshoe-bay" },
+  { name: "Kingsland", path: "/plumber-kingsland" },
+  { name: "Granite Shoals", path: "/plumber-granite-shoals" },
+  { name: "Bertram", path: "/plumber-bertram" },
+  { name: "Spicewood", path: "/plumber-spicewood" },
+];
+---
+
+<header class="sticky top-0 z-50 bg-background border-b">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex items-center justify-between h-20">
+      <a href="/" class="flex items-center">
+        <img 
+          src="/optimized/Economy_Plumbing_Services_logo_1759801055079.webp"
+          alt="Economy Plumbing Services logo" 
+          width="85"
+          height="48"
+          decoding="async"
+          class="h-12 w-auto"
+          data-testid="logo-image"
+        />
+      </a>
+
+      <nav class="hidden lg:flex items-center gap-2 xl:gap-4">
+        <a 
+          href="/" 
+          class={`text-sm font-medium hover-elevate px-2 py-2 rounded-md ${currentPath === "/" ? "bg-accent text-accent-foreground" : "text-foreground"}`}
+          data-testid="link-home"
+        >
+          Home
+        </a>
+        
+        <div class="relative group">
+          <button
+            class="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+            data-testid="button-contact-menu"
+          >
+            Contact
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all absolute top-full left-0 pt-2 w-56">
+            <div class="bg-card border border-card-border rounded-md shadow-lg py-2">
+              <a href="/contact" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-contact">Contact Form</a>
+              <a href="/schedule-appointment" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-schedule">Schedule Appointment</a>
+              <a href="/faq" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-faq-contact">FAQ</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <button
+            class="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+            data-testid="button-about-menu"
+          >
+            About
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all absolute top-full left-0 pt-2 w-56">
+            <div class="bg-card border border-card-border rounded-md shadow-lg py-2">
+              <a href="/about" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-about">About Us</a>
+              <a href="/success-stories" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-success-stories">Success Stories</a>
+              <a href="/blog" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-blog">Blog</a>
+              <a href="/membership-benefits" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-membership">Membership Benefits</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative group">
+          <button
+            class="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+            data-testid="button-services-menu"
+          >
+            Services
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all absolute top-full left-0 pt-2 w-72">
+            <div class="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
+              {services.map((service) => (
+                <a
+                  href={service.path}
+                  class={`block py-2 text-sm hover-elevate ${
+                    service.featured ? 'font-semibold border-b border-border mb-1 px-4' : 
+                    service.indent ? 'pl-8 pr-4 text-muted-foreground' : 'px-4'
+                  }`}
+                  data-testid={`link-service-${service.path.slice(1)}`}
+                >
+                  {service.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <button
+            class="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+            data-testid="button-service-areas-menu"
+          >
+            Areas
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all absolute top-full left-0 pt-2 w-64">
+            <div class="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
+              {serviceAreas.map((area) => (
+                <a
+                  href={area.path}
+                  class={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold border-b border-border mb-1' : ''}`}
+                  data-testid={`link-area-${area.path.slice(1)}`}
+                >
+                  {area.name}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div class="relative group">
+          <button
+            class="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+            data-testid="button-store-menu"
+          >
+            Portal
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </button>
+          
+          <div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all absolute top-full left-0 pt-2 w-64">
+            <div class="bg-card border border-card-border rounded-md shadow-lg py-2">
+              <a href="/customer-portal" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-customer-portal">Customer Portal</a>
+              <a href="/refer-a-friend" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-referral-program">Referral Program</a>
+              <a href="/plumbing-cost-estimator" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-cost-estimator">Plumbing Cost Estimator</a>
+              <a href="/water-heater-calculator" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-water-heater-calc">Water Heater Calculator</a>
+              <a href="/membership-benefits" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-vip-membership">VIP Membership</a>
+              <a href="/store" class="block px-4 py-2 text-sm hover-elevate" data-testid="link-store">Products</a>
+              <div class="border-t border-border my-2"></div>
+              <a href="/privacy-policy" class="block px-4 py-2 text-sm hover-elevate text-muted-foreground" data-testid="link-privacy">Privacy Policy</a>
+              <a href="/refund_returns" class="block px-4 py-2 text-sm hover-elevate text-muted-foreground" data-testid="link-refunds">Refund & Returns</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div class="hidden lg:flex items-center gap-2 xl:gap-3">
+        <a 
+          href={phoneNumber}
+          class="flex items-center gap-1.5 text-foreground font-poppins font-bold text-base xl:text-lg hover-elevate px-2 py-1 rounded-md whitespace-nowrap"
+          data-testid="link-phone-austin"
+        >
+          <svg class="w-4 h-4 xl:w-5 xl:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+          </svg>
+          <span class="hidden xl:inline">{phoneDisplay}</span>
+          <span class="xl:hidden">{phoneDisplay.replace(/\s/g, '')}</span>
+        </a>
+        <a 
+          href="/schedule-appointment"
+          class="inline-flex items-center justify-center bg-primary text-primary-foreground whitespace-nowrap px-4 py-2 text-sm font-medium rounded-md hover-elevate active-elevate-2"
+          data-testid="button-schedule-header"
+        >
+          <span class="hidden xl:inline">Schedule Service</span>
+          <span class="xl:hidden">Schedule</span>
+        </a>
+      </div>
+
+      <button
+        id="mobile-menu-toggle"
+        class="lg:hidden p-2"
+        aria-label="Open mobile menu"
+        aria-expanded="false"
+        data-testid="button-mobile-menu"
+      >
+        <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div id="mobile-menu" class="hidden lg:hidden border-t bg-card">
+    <div class="px-4 py-4 space-y-1 max-h-[80vh] overflow-y-auto">
+      <a href="/" class="block py-3 text-sm font-medium border-b border-border" data-testid="mobile-link-home">Home</a>
+      
+      <details class="border-b border-border">
+        <summary class="flex items-center justify-between w-full py-3 text-sm font-medium cursor-pointer" data-testid="mobile-button-contact">
+          Contact Us
+          <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </summary>
+        <div class="pb-2 space-y-1">
+          <a href="/contact" class="block py-2 pl-4 text-sm" data-testid="mobile-link-contact">Contact Form</a>
+          <a href="/schedule-appointment" class="block py-2 pl-4 text-sm" data-testid="mobile-link-schedule">Schedule Appointment</a>
+          <a href="/faq" class="block py-2 pl-4 text-sm" data-testid="mobile-link-faq">FAQ</a>
+        </div>
+      </details>
+      
+      <details class="border-b border-border">
+        <summary class="flex items-center justify-between w-full py-3 text-sm font-medium cursor-pointer" data-testid="mobile-button-about">
+          About Us
+          <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </summary>
+        <div class="pb-2 space-y-1">
+          <a href="/about" class="block py-2 pl-4 text-sm" data-testid="mobile-link-about">About Us</a>
+          <a href="/success-stories" class="block py-2 pl-4 text-sm" data-testid="mobile-link-success-stories">Success Stories</a>
+          <a href="/blog" class="block py-2 pl-4 text-sm" data-testid="mobile-link-blog">Blog</a>
+          <a href="/membership-benefits" class="block py-2 pl-4 text-sm" data-testid="mobile-link-membership">Membership Benefits</a>
+        </div>
+      </details>
+
+      <details class="border-b border-border">
+        <summary class="flex items-center justify-between w-full py-3 text-sm font-medium cursor-pointer" data-testid="mobile-button-services">
+          Services
+          <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </summary>
+        <div class="pb-2 space-y-1">
+          {services.map((service) => (
+            <a
+              href={service.path}
+              class={`block py-2 pl-4 text-sm ${service.featured ? 'font-semibold' : ''}`}
+              data-testid={`mobile-link-${service.path.slice(1)}`}
+            >
+              {service.name}
+            </a>
+          ))}
+        </div>
+      </details>
+
+      <details class="border-b border-border">
+        <summary class="flex items-center justify-between w-full py-3 text-sm font-medium cursor-pointer" data-testid="mobile-button-areas">
+          Service Areas
+          <svg class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </summary>
+        <div class="pb-2 space-y-1">
+          {serviceAreas.map((area) => (
+            <a
+              href={area.path}
+              class={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
+              data-testid={`mobile-link-area-${area.path.slice(1)}`}
+            >
+              {area.name}
+            </a>
+          ))}
+        </div>
+      </details>
+      
+      <div class="pt-4 space-y-3">
+        <a 
+          href={phoneNumber}
+          class="flex items-center justify-center gap-2 w-full py-3 bg-accent text-accent-foreground font-semibold rounded-md"
+          data-testid="mobile-link-phone"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+          </svg>
+          {phoneDisplay}
+        </a>
+        <a 
+          href="/schedule-appointment"
+          class="block w-full py-3 bg-primary text-primary-foreground font-semibold text-center rounded-md"
+          data-testid="mobile-button-schedule"
+        >
+          Schedule Service
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Mobile menu toggle
+  const toggle = document.getElementById('mobile-menu-toggle');
+  const menu = document.getElementById('mobile-menu');
+  const menuIcon = document.getElementById('menu-icon');
+  const closeIcon = document.getElementById('close-icon');
+
+  if (toggle && menu && menuIcon && closeIcon) {
+    toggle.addEventListener('click', () => {
+      const isOpen = menu.classList.contains('hidden');
+      
+      if (isOpen) {
+        menu.classList.remove('hidden');
+        menuIcon.classList.add('hidden');
+        closeIcon.classList.remove('hidden');
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.setAttribute('aria-label', 'Close mobile menu');
+      } else {
+        menu.classList.add('hidden');
+        menuIcon.classList.remove('hidden');
+        closeIcon.classList.add('hidden');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.setAttribute('aria-label', 'Open mobile menu');
+      }
+    });
+  }
+</script>
