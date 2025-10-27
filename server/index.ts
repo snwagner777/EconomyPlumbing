@@ -557,14 +557,9 @@ async function refreshReviewsPeriodically() {
   // This ensures crawlers see correct metadata WITHOUT JavaScript execution
   app.use(createMetadataInjector(storage));
   
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
-  } else {
-    serveStatic(app);
-  }
+  // Setup hybrid routing: Astro for public pages, React for /admin and /customer-portal
+  const { setupHybridRouting } = await import("./astroIntegration");
+  await setupHybridRouting(app, server);
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
