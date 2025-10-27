@@ -19,18 +19,21 @@ Preferred communication style: Simple, everyday language.
 
 ## System Architecture
 
-### Frontend Architecture: Hybrid SSR + SPA
-- **Public Marketing Site (Astro SSR):** Homepage and public pages transitioning from React CSR to Astro SSR for improved SEO with full HTML rendering. Server-rendered Astro components (Header.astro, Footer.astro) replace React Islands for core SEO content.
-- **Admin/Portal (React SPA):** Customer portal and admin panel remain as React single-page applications served via Vite middleware (scoped to /admin, /customer-portal, /@vite routes).
-- **Routing:** Hybrid Express router → Astro middleware (public pages) OR Vite middleware (admin/portal only). Production serves React SPA from dist/public correctly.
+### Frontend Architecture: Next.js 15 App Router + Express Hybrid
+- **Public Marketing Site (Next.js 15 SSR/ISR):** Homepage and blog migrated to Next.js App Router with Server Components for optimal SEO. ISR caching with 60s homepage revalidation and 3600s blog revalidation. Server Components for static content, Client Components for interactivity only.
+- **Admin/Portal (React SPA - Migration Pending):** Customer portal and admin panel currently remain as React single-page applications served via Vite middleware, planned for Next.js migration.
+- **Routing:** Hybrid Express router delegates to Next.js request handler (public pages like /, /blog/*) OR Vite middleware (admin/portal at /admin, /customer-portal, /@vite routes). Express handles all /api/* and /attached_assets/* routes directly.
+- **Environment Variables:** NEXT_INTERNAL_URL for server-side fetches (avoids CDN loops), NEXT_PUBLIC_API_URL for client-side API calls, REVALIDATION_SECRET for on-demand cache invalidation.
+- **Migration Status:** Homepage ✅, Blog ✅, ServiceTitan Script ✅, JSON-LD Schemas ✅. Remaining: Services, About, Contact, Admin Dashboard, Customer Portal.
 
 ### Frontend Stack
-- **Framework & UI:** React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
+- **Framework & UI:** Next.js 15 App Router (public pages) + React 18 SPA (admin/portal) with TypeScript. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation.
-- **Key Pages:** Home (Astro), About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
-- **ServiceTitan Scheduler:** Integrated into both React and Astro pages via dynamic script loading (window.STWidgetManager). Global openScheduler() function available on all pages.
-- **Dynamic Phone Numbers:** Client-side detection in Astro pages via inline JavaScript that fetches /api/tracking-numbers, detects UTM parameters, stores in 90-day cookies, and updates all elements with data-phone="austin" attribute.
+- **SEO & Performance:** Next.js Metadata API, comprehensive JSON-LD structured data (LocalBusiness, Organization, FAQPage), ISR caching (60s homepage, 3600s blog), resource preconnect, image lazy loading via Next.js Image, font optimization, code splitting, WebP conversion, dynamic sitemap generation (planned).
+- **JSON-LD Schemas:** Implemented for LocalBusiness (Austin + Marble Falls), Organization, and FAQPage with visible content matching schema for Google compliance. Schemas in `app/lib/jsonLd.ts`.
+- **Key Pages:** Home (Next.js SSR ✅), Blog (Next.js ISR ✅), About (React SPA), Contact (React SPA), Services (React SPA), Service Areas, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and Customer Portal with ServiceTitan integration.
+- **ServiceTitan Scheduler:** Integrated into Next.js pages via Script component with afterInteractive strategy. Widget ID: 3ce4a586-8427-4716-9ac6-46cb8bf7ac4f. Client Components (ScheduleButton) trigger window.STWidgetManager.
+- **Dynamic Phone Numbers:** Client-side detection via inline JavaScript in Next.js pages that fetches /api/tracking-numbers, detects UTM parameters, stores in 90-day cookies, and updates all elements with data-phone="austin" attribute (pending implementation in Next.js).
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
 - **Admin Panels:** Unified admin with Marketing Automation section (campaign-specific phone numbers, email templates, settings), ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
 
@@ -69,9 +72,11 @@ Preferred communication style: Simple, everyday language.
 - **Privacy:** Cookie consent integration.
 
 ### Development Standards
-- **Rendering:** Client-Side Rendering (CSR) with server-side metadata injection.
-- **URL Normalization:** 301 redirects for trailing-slash URLs.
+- **Rendering:** Hybrid architecture - Server-Side Rendering (SSR) + Incremental Static Regeneration (ISR) for public pages via Next.js 15, Client-Side Rendering (CSR) for admin/portal.
+- **Migration Pattern:** Server Components for SEO-critical static content, Client Components ('use client') only for interactivity (buttons, forms, dynamic widgets).
+- **URL Normalization:** 301 redirects for trailing-slash URLs (handled by Express middleware in `server/index.ts`).
 - **Security:** `/src/*` files blocked with 403 Forbidden.
+- **Cache Strategy:** ISR with on-demand revalidation endpoint at `/_revalidate` (protected by REVALIDATION_SECRET). Homepage: 60s revalidation, Blog posts: 3600s revalidation.
 
 ## External Dependencies
 
