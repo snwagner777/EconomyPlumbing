@@ -117,15 +117,16 @@ const heroImage = "/attached_assets/optimized/modern_luxury_bathro_0f267931.webp
         </p>
 
         <div class="flex flex-wrap gap-4 mb-12">
-          <a 
-            href="/schedule-appointment"
+          <button 
+            onclick="window.openScheduler()"
             class="inline-flex items-center justify-center bg-primary text-primary-foreground text-lg px-8 py-3 font-medium rounded-md hover-elevate active-elevate-2"
             data-testid="button-schedule-hero"
           >
             Schedule Service
-          </a>
+          </button>
           <a 
             href={phoneNumber}
+            data-phone="austin"
             class="inline-flex items-center justify-center gap-2 text-white border-2 border-white bg-white/10 backdrop-blur-sm hover:bg-white/20 text-lg px-8 py-3 font-medium rounded-md"
             data-testid="button-call-hero"
           >
@@ -253,6 +254,7 @@ const heroImage = "/attached_assets/optimized/modern_luxury_bathro_0f267931.webp
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
         <a 
           href={phoneNumber}
+          data-phone="austin"
           class="inline-flex items-center justify-center gap-2 bg-white text-primary px-8 py-4 text-lg font-semibold rounded-md hover-elevate active-elevate-2"
           data-testid="button-call-cta"
         >
@@ -261,13 +263,13 @@ const heroImage = "/attached_assets/optimized/modern_luxury_bathro_0f267931.webp
           </svg>
           {phoneDisplay}
         </a>
-        <a 
-          href="/schedule-appointment"
+        <button 
+          onclick="window.openScheduler()"
           class="inline-flex items-center justify-center bg-white/10 backdrop-blur-sm border-2 border-white text-white px-8 py-4 text-lg font-semibold rounded-md hover:bg-white/20"
           data-testid="button-schedule-cta"
         >
           Schedule Online
-        </a>
+        </button>
       </div>
     </div>
   </section>
