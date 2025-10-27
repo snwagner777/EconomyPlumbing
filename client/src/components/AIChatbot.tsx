@@ -957,5 +957,10 @@ export default function AIChatbot() {
   }
 
   // Render using portal to avoid SidebarProvider transform issues
+  // Only render portal on client side (after hydration)
+  if (typeof document === 'undefined') {
+    return null;
+  }
+  
   return createPortal(chatbotUI, document.body);
 }
