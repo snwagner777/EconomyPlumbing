@@ -90,9 +90,18 @@ export async function setupHybridRouting(app: Express, server: Server) {
       appType: "custom",
     });
 
-    // Mount Vite middleware for asset handling (JS, CSS, etc.)
-    app.use(vite.middlewares);
-    log("✓ Vite middleware mounted");
+    // Mount Vite middleware only for React routes (/admin, /customer-portal)
+    // and Vite's internal routes (/@vite, /node_modules, etc.)
+    app.use((req, res, next) => {
+      const pathname = req.path;
+      // Allow Vite middleware for React routes and Vite internal routes
+      if (isReactRoute(pathname) || pathname.startsWith('/@') || pathname.startsWith('/node_modules') || pathname.startsWith('/src/')) {
+        vite.middlewares(req, res, next);
+      } else {
+        next();
+      }
+    });
+    log("✓ Vite middleware mounted (scoped to React routes)");
   } else {
     // In production, serve static React build
     const reactDistPath = path.resolve(import.meta.dirname, "..", "dist", "public");
