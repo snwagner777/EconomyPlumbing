@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '../../client/src/components/ui/button';
+import { Button } from './Button';
 
 // Extend window type for ServiceTitan
 declare global {

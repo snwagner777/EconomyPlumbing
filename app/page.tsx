@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { ScheduleButton } from './components/ScheduleButton';
 import { PhoneLink } from './components/PhoneLink';
 import { CheckCircle, Droplets, Wind, Wrench, Bath, Building2, Flame } from 'lucide-react';
-import { Card } from '../client/src/components/ui/card';
 import Link from 'next/link';
 import { localBusinessSchema, marbleFallsLocationSchema, organizationSchema, faqSchema } from './lib/jsonLd';
 
@@ -162,13 +161,13 @@ export default function HomePage() {
               const Icon = service.icon;
               return (
                 <Link key={service.title} href={service.link}>
-                  <Card className="p-6 h-full hover:shadow-xl transition-shadow cursor-pointer">
+                  <div className="bg-card text-card-foreground rounded-lg border p-6 h-full hover:shadow-xl transition-shadow cursor-pointer">
                     <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 text-primary mb-4">
                       <Icon className="w-8 h-8" />
                     </div>
                     <h3 className="text-2xl font-semibold mb-3">{service.title}</h3>
                     <p className="text-muted-foreground">{service.description}</p>
-                  </Card>
+                  </div>
                 </Link>
               );
             })}
@@ -199,10 +198,10 @@ export default function HomePage() {
 
           <div className="space-y-6">
             {faqs.map((faq, index) => (
-              <Card key={index} className="p-6">
+              <div key={index} className="bg-card text-card-foreground rounded-lg border p-6">
                 <h3 className="text-xl font-semibold mb-3">{faq.question}</h3>
                 <p className="text-muted-foreground">{faq.answer}</p>
-              </Card>
+              </div>
             ))}
           </div>
         </div>
@@ -221,7 +220,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-12">
-            <Card className="p-8">
+            <div className="bg-card text-card-foreground rounded-lg border p-8">
               <h3 className="text-2xl font-bold mb-4">Austin Metro Area</h3>
               <p className="text-muted-foreground mb-4">701 Tillery St #12, Austin, TX 78702</p>
               <PhoneLink location="austin" variant="default" className="mb-6" />
@@ -230,9 +229,9 @@ export default function HomePage() {
                   <div key={city} className="text-muted-foreground">• {city}</div>
                 ))}
               </div>
-            </Card>
+            </div>
 
-            <Card className="p-8">
+            <div className="bg-card text-card-foreground rounded-lg border p-8">
               <h3 className="text-2xl font-bold mb-4">Marble Falls Area</h3>
               <p className="text-muted-foreground mb-4">2409 Commerce Street, Marble Falls, TX 78654</p>
               <PhoneLink location="marble-falls" variant="default" className="mb-6" />
@@ -241,7 +240,7 @@ export default function HomePage() {
                   <div key={city} className="text-muted-foreground">• {city}</div>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </section>

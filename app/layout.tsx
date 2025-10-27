@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter, Poppins } from 'next/font/google';
 import './globals.css';
-import { Toaster } from '../client/src/components/ui/toaster';
-import { TooltipProvider } from '../client/src/components/ui/tooltip';
 import { Providers } from './providers';
 import { ServiceTitanScript } from './components/ServiceTitanScript';
 
@@ -82,10 +80,7 @@ export default function RootLayout({
     <html lang="en" className={`${inter.variable} ${poppins.variable}`} suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
         <Providers>
-          <TooltipProvider>
-            {children}
-            <Toaster />
-          </TooltipProvider>
+          {children}
         </Providers>
         <ServiceTitanScript />
       </body>

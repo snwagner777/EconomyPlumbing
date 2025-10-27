@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from '../../client/src/components/ui/button';
+import { Button } from './Button';
 import { Phone } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
