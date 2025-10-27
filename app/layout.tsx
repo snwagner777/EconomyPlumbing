@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '../client/src/components/ui/toaster';
 import { TooltipProvider } from '../client/src/components/ui/tooltip';
 import { Providers } from './providers';
+import { ServiceTitanScript } from './components/ServiceTitanScript';
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -86,6 +87,7 @@ export default function RootLayout({
             <Toaster />
           </TooltipProvider>
         </Providers>
+        <ServiceTitanScript />
       </body>
     </html>
   );
