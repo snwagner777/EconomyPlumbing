@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";

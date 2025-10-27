@@ -1,18 +1,21 @@
-import Header from "./components/Header";
-import Hero from "./components/Hero";
-import ServiceCard from "./components/ServiceCard";
-import WhyChooseCard from "./components/WhyChooseCard";
-import ServiceAreaCard from "./components/ServiceAreaCard";
-import ReviewsSection from "./components/ReviewsSection";
-import ContactFormSection from "./components/ContactFormSection";
-import Footer from "./components/Footer";
-import Link from "next/link";
+import Header from "@/components/Header";
+import Hero from "@/components/Hero";
+import ServiceCard from "@/components/ServiceCard";
+import WhyChooseCard from "@/components/WhyChooseCard";
+import ServiceAreaCard from "@/components/ServiceAreaCard";
+import ReviewsSection from "@/components/ReviewsSection";
+import ContactFormSection from "@/components/ContactFormSection";
+import Footer from "@/components/Footer";
+import SMSOptInWidget from "@/components/SMSOptInWidget";
+import AIChatbot from "@/components/AIChatbot";
 import {
   Droplets,
   Wind,
   Wrench,
   Bath,
   Building2,
+  Flame,
+  Shield,
   ArrowRight,
   DollarSign,
   BadgeCheck,
@@ -21,20 +24,28 @@ import {
   CheckCircle,
   Truck,
 } from "lucide-react";
-import { Button } from "./components/Button";
-import Script from "next/script";
 import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
 import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec30d.webp";
 import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
-import { faqSchema, marbleFallsLocationSchema, organizationSchema } from "./lib/jsonLd";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import Script from "next/script";
+import {
+  localBusinessSchema,
+  createFAQSchema,
+  createMarbleFallsLocationSchema,
+  createOrganizationSchema,
+} from "@/components/SEO/JsonLd";
 import type { Metadata } from "next";
+import { Link } from "@/lib/routing";
 
 const INTERNAL_URL = process.env.NEXT_INTERNAL_URL || "http://localhost:5000";
 
-const phoneConfig = { display: "(512) 368-9159", tel: "tel:+15123689159" };
-const marbleFallsPhoneConfig = { display: "(830) 265-7383", tel: "tel:+18302657383" };
+// Hardcoded fallback phone numbers (DO NOT USE - these are just for build/SSR defaults)
+const DEFAULT_PHONE_CONFIG = { display: "(512) 368-9159", tel: "tel:+15123689159" };
+const DEFAULT_MF_PHONE_CONFIG = { display: "(830) 265-7383", tel: "tel:+18302657383" };
 
 export const metadata: Metadata = {
   title: "Economy Plumbing Austin TX | Licensed Experts Since 2005",
@@ -53,24 +64,25 @@ async function fetchPhoneConfig() {
   try {
     const response = await fetch(`${INTERNAL_URL}/api/tracking-numbers`, {
       next: { revalidate: 60 },
+      cache: 'no-store'
     });
     if (response.ok) {
       const data = await response.json();
-      if (data.austin) {
-        return data.austin;
+      if (data.austin && data.marbleFalls) {
+        return { austin: data.austin, marbleFalls: data.marbleFalls };
       }
     }
   } catch (error) {
     console.error("Failed to fetch phone config:", error);
   }
-  return phoneConfig;
+  return { austin: DEFAULT_PHONE_CONFIG, marbleFalls: DEFAULT_MF_PHONE_CONFIG };
 }
 
 export default async function HomePage() {
   const phoneData = await fetchPhoneConfig();
-  const marbleFallsSchemaData = marbleFallsLocationSchema();
-  const organizationSchemaData = organizationSchema();
-  const faqSchemaData = faqSchema([
+  const marbleFallsSchemaData = createMarbleFallsLocationSchema();
+  const organizationSchemaData = createOrganizationSchema();
+  const faqSchemaData = createFAQSchema([
     {
       question: "What areas do you serve in Texas?",
       answer: "We serve Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, Kyle, Marble Falls, Burnet, Horseshoe Bay, Kingsland, Granite Shoals, Bertram, and Spicewood.",
@@ -130,6 +142,20 @@ export default async function HomePage() {
       link: "/commercial-plumbing",
       image: commercialImage.src,
     },
+    {
+      icon: Flame,
+      title: "Gas Services",
+      description: "Professional gas line installation, repair, and safety inspections.",
+      features: ["Licensed gas technicians", "Safety inspections", "New installations"],
+      link: "/gas-line-services",
+    },
+    {
+      icon: Shield,
+      title: "Backflow Services",
+      description: "Backflow prevention testing, repair, and certification services.",
+      features: ["Annual testing", "Certified technicians", "City compliance"],
+      link: "/backflow",
+    },
   ];
 
   const whyChoose = [
@@ -167,6 +193,7 @@ export default async function HomePage() {
 
   return (
     <>
+      {/* Inject phone config into window for client components */}
       <Script
         id="phone-config"
         strategy="afterInteractive"
@@ -175,12 +202,18 @@ export default async function HomePage() {
         }}
       />
       
+      {/* ServiceTitan scheduler widget */}
       <Script
         id="servicetitan-widget"
         src="https://st-titan-api-prod-us-east-1.titan-us-east-1.aws.stg-titan.com/js-api/v1/client/st-widgets.js?id=3ce4a586-8427-4716-9ac6-46cb8bf7ac4f"
         strategy="afterInteractive"
       />
 
+      {/* JSON-LD Schemas */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(marbleFallsSchemaData) }}
@@ -198,6 +231,7 @@ export default async function HomePage() {
         <Header />
         <Hero />
 
+        {/* Our Plumbing Services Section */}
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -214,7 +248,7 @@ export default async function HomePage() {
                 <ServiceCard key={service.title} {...service} />
               ))}
               
-              <div className="p-6 hover:shadow-xl transition-shadow border border-card-border bg-primary/5 rounded-md">
+              <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border bg-primary/5">
                 <div className="flex items-center justify-center w-16 h-16 rounded-full bg-primary text-white mb-4">
                   <ArrowRight className="w-8 h-8" />
                 </div>
@@ -244,11 +278,12 @@ export default async function HomePage() {
                   View All Services
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-              </div>
+              </Card>
             </div>
           </div>
         </section>
 
+        {/* Why Choose Section */}
         <section className="py-16 lg:py-24 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -278,7 +313,7 @@ export default async function HomePage() {
                   className="bg-primary"
                   data-testid="button-call-austin-cta"
                 >
-                  <a href={phoneData.tel}>Call Austin: {phoneData.display}</a>
+                  <a href={phoneData.austin.tel}>Call Austin: {phoneData.austin.display}</a>
                 </Button>
                 <Button
                   asChild
@@ -286,15 +321,17 @@ export default async function HomePage() {
                   variant="outline"
                   data-testid="button-call-marble-falls-cta"
                 >
-                  <a href={marbleFallsPhoneConfig.tel}>Call Marble Falls: {marbleFallsPhoneConfig.display}</a>
+                  <a href={phoneData.marbleFalls.tel}>Call Marble Falls: {phoneData.marbleFalls.display}</a>
                 </Button>
               </div>
             </div>
           </div>
         </section>
 
+        {/* Reviews Section */}
         <ReviewsSection />
 
+        {/* Service Areas Section */}
         <section className="py-16 lg:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
@@ -310,7 +347,7 @@ export default async function HomePage() {
               <ServiceAreaCard
                 title="Austin Metro Area"
                 address="701 Tillery St #12, Austin, TX 78702"
-                phone={phoneData.display}
+                phone={phoneData.austin.display}
                 cities={[
                   "Austin",
                   "Cedar Park",
@@ -326,7 +363,7 @@ export default async function HomePage() {
               <ServiceAreaCard
                 title="Marble Falls Area"
                 address="2409 Commerce Street, Marble Falls, TX 78654"
-                phone={marbleFallsPhoneConfig.display}
+                phone={phoneData.marbleFalls.display}
                 cities={[
                   "Marble Falls",
                   "Burnet",
@@ -341,7 +378,16 @@ export default async function HomePage() {
           </div>
         </section>
 
+        {/* Contact Form Section */}
         <ContactFormSection />
+        
+        {/* SMS Opt-In Widget */}
+        <SMSOptInWidget />
+        
+        {/* AI Chatbot */}
+        <AIChatbot />
+
+        {/* Footer */}
         <Footer />
       </div>
     </>

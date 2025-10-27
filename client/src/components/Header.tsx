@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import { Link, useLocation } from "@/lib/routing";
 import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
