@@ -4,6 +4,7 @@ import { PhoneLink } from './components/PhoneLink';
 import { CheckCircle, Droplets, Wind, Wrench, Bath, Building2, Flame } from 'lucide-react';
 import { Card } from '../client/src/components/ui/card';
 import Link from 'next/link';
+import { localBusinessSchema, marbleFallsLocationSchema, organizationSchema, faqSchema } from './lib/jsonLd';
 
 export const metadata: Metadata = {
   title: 'Economy Plumbing Austin TX | Licensed Experts Since 2012',
@@ -17,6 +18,26 @@ export const metadata: Metadata = {
 };
 
 export default function HomePage() {
+  // JSON-LD structured data for SEO
+  const faqs = [
+    {
+      question: "What areas do you serve in Texas?",
+      answer: "We serve Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, Kyle, Marble Falls, Burnet, Horseshoe Bay, Kingsland, Granite Shoals, Bertram, and Spicewood."
+    },
+    {
+      question: "Do you offer emergency plumbing services?",
+      answer: "Yes, we offer 24/7 emergency plumbing services throughout Central Texas. Call us anytime for urgent plumbing issues."
+    },
+    {
+      question: "Are your plumbers licensed and insured?",
+      answer: "Absolutely. All our plumbers are fully licensed and insured to protect you and your property."
+    },
+    {
+      question: "Do you provide upfront pricing?",
+      answer: "Yes, we believe in transparent pricing. We provide upfront estimates with no hidden fees before we begin any work."
+    }
+  ];
+
   const services = [
     {
       icon: Droplets,
@@ -57,8 +78,27 @@ export default function HomePage() {
   ];
 
   return (
-    <main className="min-h-screen">
-      {/* Hero Section */}
+    <>
+      {/* JSON-LD Structured Data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(marbleFallsLocationSchema()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema()) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema(faqs)) }}
+      />
+
+      <main className="min-h-screen">
+        {/* Hero Section */}
       <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center bg-gradient-to-br from-blue-600 to-blue-800">
         <div className="absolute inset-0 bg-[url('/hero-pattern.svg')] opacity-10" />
         
@@ -141,6 +181,29 @@ export default function HomePage() {
             >
               Schedule Service Today
             </ScheduleButton>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 lg:py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Got questions? We've got answers.
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            {faqs.map((faq, index) => (
+              <Card key={index} className="p-6">
+                <h3 className="text-xl font-semibold mb-3">{faq.question}</h3>
+                <p className="text-muted-foreground">{faq.answer}</p>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -240,6 +303,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
-    </main>
+      </main>
+    </>
   );
 }
