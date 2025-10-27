@@ -6,6 +6,7 @@ export default {
     "./client/index.html", 
     "./client/src/**/*.{js,jsx,ts,tsx}",
     "./src/**/*.{astro,js,jsx,ts,tsx}",
+    "./app/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
