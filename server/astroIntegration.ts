@@ -21,10 +21,40 @@ export function log(message: string, source = "express") {
 
 /**
  * Routes that should use React SPA (Vite) instead of Astro
+ * 
+ * Blog routes must stay with React because:
+ * 1. Blog posts are dynamically generated via AI
+ * 2. They're fetched from /api/blog endpoints, not statically built
+ * 3. New posts are created without republishing/rebuilding
  */
 const REACT_ROUTES = [
   '/admin',
-  '/customer-portal'
+  '/customer-portal',
+  '/blog',           // Blog listing page
+  '/about',          // Keep all existing React pages
+  '/contact',
+  '/services',
+  '/service-area',
+  '/faq',
+  '/store',
+  '/membership-benefits',
+  '/plumber-',       // All service area pages start with /plumber-
+  '/water-heater',   // Service pages
+  '/drain-cleaning',
+  '/leak-repair',
+  '/toilet-faucet',
+  '/gas-line',
+  '/backflow',
+  '/commercial',
+  '/winter-freeze',
+  '/summer-plumbing',
+  '/refer-a-friend',
+  '/schedule-appointment',
+  '/privacy-policy',
+  '/refund_returns',
+  '/success-stories',
+  '/plumbing-cost-estimator',
+  '/water-heater-calculator'
 ];
 
 /**
