@@ -1,5 +1,7 @@
+'use client';
+
 import { useQuery } from "@tanstack/react-query";
-import { useRoute, Link } from "wouter";
+import { useRoute, Link } from "@/lib/routing";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
@@ -172,7 +174,7 @@ export default function BlogPost() {
                 width="1200"
                 height="630"
                 loading="eager"
-                fetchpriority="high"
+                fetchPriority="high"
                 decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
                 style={{
