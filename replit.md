@@ -14,6 +14,33 @@ Preferred communication style: Simple, everyday language.
 - Before implementing any new feature, search the codebase to verify it doesn't already exist
 - Consolidation over separation: One unified interface is better than multiple scattered pages
 
+## Next.js Migration Status
+
+**Status:** Complete migration roadmap approved by architect (Oct 28, 2025)
+**Timeline:** 40-60 hours (1-2 weeks of focused work)
+**Approach:** Dual-process architecture (Next.js App Router + worker.ts for background jobs)
+
+### Migration Plan Overview
+- **Phase 1:** Infrastructure & worker.ts setup (6-8 hours)
+- **Phase 2:** Middleware & global behavior (4-5 hours)
+- **Phase 3:** Core API routes & webhooks (10-12 hours)
+- **Phase 4:** Background schedulers (6-8 hours)
+- **Phase 5:** Public pages & SEO (8-10 hours)
+- **Phase 6:** Customer portal (4-5 hours)
+- **Phase 7:** Admin dashboard (10-12 hours)
+- **Phase 8:** Object storage & AI features (4-5 hours)
+- **Phase 9:** Analytics, testing & cutover (6-8 hours)
+
+**Full Details:** See `MIGRATION_V2.md` for complete roadmap
+
+### Key Architectural Decisions
+- Next.js 15 App Router for all pages and API routes
+- Separate worker.ts process for 14 background schedulers
+- Hybrid static assets strategy (critical assets in public/, large assets in object storage)
+- All OAuth callbacks preserved (ServiceTitan, Replit)
+- Incremental cutover with rollback plan
+- No database schema changes (use existing DB as-is)
+
 ## TODO: Referral Nurture Campaign Auto-Enrollment
 **PENDING IMPLEMENTATION:** Referral nurture campaigns need to be auto-created when customers submit 4+ star reviews. The `createCampaignForReviewer()` function exists in `referralNurtureScheduler.ts` but is not currently called anywhere. This should be wired into the review feedback handler so customers are automatically enrolled in the referral nurture sequence after leaving positive feedback.
 
