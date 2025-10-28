@@ -28,16 +28,17 @@ export default function CommercialPlumbingPage() {
             <h2 className="text-2xl font-semibold mb-6">Industries We Serve</h2>
             <div className="grid md:grid-cols-2 gap-6">
               {[
-                { title: 'Restaurants', href: '/commercial/restaurants' },
-                { title: 'Office Buildings', href: '/commercial/office-buildings' },
-                { title: 'Retail Stores', href: '/commercial/retail' },
-                { title: 'Property Management', href: '/commercial/property-management' },
-                { title: 'Medical Facilities', href: '/commercial-plumbing' },
-                { title: 'Schools & Universities', href: '/commercial-plumbing' },
+                { title: 'Restaurants', href: '/commercial/restaurants', id: 'restaurants' },
+                { title: 'Office Buildings', href: '/commercial/office-buildings', id: 'office' },
+                { title: 'Retail Stores', href: '/commercial/retail', id: 'retail' },
+                { title: 'Property Management', href: '/commercial/property-management', id: 'property' },
+                { title: 'Medical Facilities', href: '/commercial-plumbing', id: 'medical' },
+                { title: 'Schools & Universities', href: '/commercial-plumbing', id: 'schools' },
               ].map((industry) => (
                 <a
                   key={industry.title}
                   href={industry.href}
+                  data-testid={`link-industry-${industry.id}`}
                   className="bg-card p-6 rounded-lg hover:bg-accent transition"
                 >
                   <h3 className="font-semibold">{industry.title}</h3>
