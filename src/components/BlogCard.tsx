@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, ArrowRight } from "lucide-react";
-import { Link } from "wouter";
+import Link from "next/link";
 import { format } from "date-fns";
 import type { BlogPost } from "@shared/schema";
 
