@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
+import { PhoneConfigProvider } from '@/contexts/PhoneConfigProvider';
 
 export const metadata: Metadata = {
   title: 'Economy Plumbing Services - Austin & Marble Falls',
@@ -16,8 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        {children}
-        <Toaster />
+        <PhoneConfigProvider>
+          {children}
+          <Toaster />
+        </PhoneConfigProvider>
       </body>
     </html>
   );
