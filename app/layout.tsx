@@ -1,13 +1,11 @@
-import type { Metadata } from 'next';
+'use client';
+
 import type { ReactNode } from 'react';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { PhoneConfigProvider } from '@/contexts/PhoneConfigProvider';
-
-export const metadata: Metadata = {
-  title: 'Economy Plumbing Services - Austin & Marble Falls',
-  description: 'Professional plumbing services in Austin, Cedar Park, Round Rock, Georgetown, Marble Falls, and surrounding areas. 24/7 emergency service available.',
-};
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
 
 export default function RootLayout({
   children,
@@ -17,10 +15,12 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <PhoneConfigProvider>
-          {children}
-          <Toaster />
-        </PhoneConfigProvider>
+        <QueryClientProvider client={queryClient}>
+          <PhoneConfigProvider>
+            {children}
+            <Toaster />
+          </PhoneConfigProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );
