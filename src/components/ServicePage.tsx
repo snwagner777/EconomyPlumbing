@@ -152,7 +152,7 @@ export default function ServicePage({
             alt={heroImageAlt}
             width="1920"
             height="1080"
-            fetchpriority="high"
+            fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover"
           />

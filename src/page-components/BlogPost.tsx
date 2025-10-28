@@ -172,7 +172,7 @@ export default function BlogPost() {
                 width="1200"
                 height="630"
                 loading="eager"
-                fetchpriority="high"
+                fetchPriority="high"
                 decoding="async"
                 className="w-full h-96 object-cover rounded-lg mb-8"
                 style={{

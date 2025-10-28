@@ -1853,7 +1853,7 @@ function Hero() {
                         alt: "Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX",
                         width: "1920",
                         height: "1080",
-                        fetchpriority: "high",
+                        fetchPriority: "high",
                         decoding: "async",
                         className: "w-full h-full object-cover"
                     }, void 0, false, {
