@@ -277,11 +277,17 @@ body {
 
 .container {
   width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 @media (min-width: 640px) {
   .container {
     max-width: 640px;
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 }
 
@@ -294,18 +300,24 @@ body {
 @media (min-width: 1024px) {
   .container {
     max-width: 1024px;
+    padding-left: 4rem;
+    padding-right: 4rem;
   }
 }
 
 @media (min-width: 1280px) {
   .container {
     max-width: 1280px;
+    padding-left: 5rem;
+    padding-right: 5rem;
   }
 }
 
 @media (min-width: 1536px) {
   .container {
     max-width: 1536px;
+    padding-left: 6rem;
+    padding-right: 6rem;
   }
 }
 
