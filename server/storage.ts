@@ -66,6 +66,8 @@ import {
   customReviews,
   reviewPlatforms,
   customersXlsx,
+  emailSendLog,
+  emailSuppressionList,
   type JobCompletion,
   type InsertJobCompletion,
   type ReviewRequest,
@@ -263,10 +265,20 @@ export interface IStorage {
   
   // Email Suppression List
   isEmailSuppressed(email: string): Promise<boolean>;
+  addToSuppressionList(data: { email: string; reason: string; source: string }): Promise<void>;
   removeFromSuppressionList(email: string): Promise<void>;
   getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }>;
   
-  // Email Send Log
+  // Email Send Log (Resend webhook tracking)
+  logEmailSend(data: { emailId: string; recipientEmail: string; subject?: string; campaignType: string; sentAt: Date }): Promise<void>;
+  getEmailLogByEmailId(emailId: string): Promise<any | undefined>;
+  updateEmailLog(emailId: string, updates: { deliveredAt?: Date; openedAt?: Date; clickedAt?: Date; bouncedAt?: Date; complainedAt?: Date }): Promise<void>;
+  incrementCampaignEngagement(campaignId: string, campaignType: string, metric: 'opened' | 'clicked'): Promise<void>;
+  
+  // Customer XLSX (Mailgun XLSX imports)
+  getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined>;
+  createCustomerXlsx(data: any): Promise<any>;
+  updateCustomerXlsx(id: number, updates: any): Promise<any>;
   
   // Email Templates - removed with marketing automation
   
@@ -2472,9 +2484,29 @@ Call (512) 368-9159 or schedule service online.`,
   async isEmailSuppressed(email: string): Promise<boolean> {
     return false;
   }
+  async addToSuppressionList(data: { email: string; reason: string; source: string }): Promise<void> {}
   async removeFromSuppressionList(email: string): Promise<void> {}
   async getSuppressionStats(): Promise<{ total: number; hardBounces: number; spamComplaints: number; manual: number }> {
     return { total: 0, hardBounces: 0, spamComplaints: 0, manual: 0 };
+  }
+  
+  // Email Send Log
+  async logEmailSend(data: { emailId: string; recipientEmail: string; subject?: string; campaignType: string; sentAt: Date }): Promise<void> {}
+  async getEmailLogByEmailId(emailId: string): Promise<any | undefined> {
+    return undefined;
+  }
+  async updateEmailLog(emailId: string, updates: { deliveredAt?: Date; openedAt?: Date; clickedAt?: Date; bouncedAt?: Date; complainedAt?: Date }): Promise<void> {}
+  async incrementCampaignEngagement(campaignId: string, campaignType: string, metric: 'opened' | 'clicked'): Promise<void> {}
+  
+  // Customer XLSX
+  async getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined> {
+    return undefined;
+  }
+  async createCustomerXlsx(data: any): Promise<any> {
+    return data;
+  }
+  async updateCustomerXlsx(id: number, updates: any): Promise<any> {
+    return updates;
   }
   
   // Email Templates - removed with marketing automation
@@ -3546,6 +3578,95 @@ export class DatabaseStorage implements IStorage {
       spamComplaints: all.filter(s => s.reason === 'spam_complaint').length,
       manual: all.filter(s => s.reason === 'manual_suppression').length
     };
+  }
+
+  async addToSuppressionList(data: { email: string; reason: string; source: string }): Promise<void> {
+    await db
+      .insert(emailSuppressionList)
+      .values({
+        email: data.email,
+        reason: data.reason,
+        source: data.source,
+        addedAt: new Date(),
+      })
+      .onConflictDoNothing();
+  }
+
+  // Email Send Log (Resend webhook tracking)
+  async logEmailSend(data: { emailId: string; recipientEmail: string; subject?: string; campaignType: string; sentAt: Date }): Promise<void> {
+    await db
+      .insert(emailSendLog)
+      .values({
+        resendEmailId: data.emailId,
+        recipientEmail: data.recipientEmail,
+        campaignType: data.campaignType,
+        campaignRecordId: '', // Will be set by caller
+        emailNumber: 1, // Will be set by caller
+        customerId: 0, // Will be set by caller
+        sentAt: data.sentAt,
+      });
+  }
+
+  async getEmailLogByEmailId(emailId: string): Promise<any | undefined> {
+    const [result] = await db
+      .select()
+      .from(emailSendLog)
+      .where(eq(emailSendLog.resendEmailId, emailId));
+    return result;
+  }
+
+  async updateEmailLog(emailId: string, updates: { deliveredAt?: Date; openedAt?: Date; clickedAt?: Date; bouncedAt?: Date; complainedAt?: Date }): Promise<void> {
+    await db
+      .update(emailSendLog)
+      .set(updates)
+      .where(eq(emailSendLog.resendEmailId, emailId));
+  }
+
+  async incrementCampaignEngagement(campaignId: string, campaignType: string, metric: 'opened' | 'clicked'): Promise<void> {
+    // Update engagement counters in campaign tables based on type
+    if (campaignType === 'review_request') {
+      const field = metric === 'opened' ? 'emailsOpened' : 'emailsClicked';
+      await db
+        .update(reviewRequests)
+        .set({
+          [field]: sql`${reviewRequests[field as keyof typeof reviewRequests]} + 1`,
+        })
+        .where(eq(reviewRequests.id, campaignId));
+    } else if (campaignType === 'referral_nurture') {
+      const field = metric === 'opened' ? 'emailsOpened' : 'emailsClicked';
+      await db
+        .update(referralNurtureCampaigns)
+        .set({
+          [field]: sql`${referralNurtureCampaigns[field as keyof typeof referralNurtureCampaigns]} + 1`,
+        })
+        .where(eq(referralNurtureCampaigns.id, campaignId));
+    }
+  }
+
+  // Customer XLSX (Mailgun XLSX imports)
+  async getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined> {
+    const [result] = await db
+      .select()
+      .from(customersXlsx)
+      .where(eq(customersXlsx.id, serviceTitanId));
+    return result;
+  }
+
+  async createCustomerXlsx(data: any): Promise<any> {
+    const [result] = await db
+      .insert(customersXlsx)
+      .values(data)
+      .returning();
+    return result;
+  }
+
+  async updateCustomerXlsx(id: number, updates: any): Promise<any> {
+    const [result] = await db
+      .update(customersXlsx)
+      .set(updates)
+      .where(eq(customersXlsx.id, id))
+      .returning();
+    return result;
   }
 
 
