@@ -96,8 +96,16 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run dev"
+args = "./start.sh"
 waitForPort = 5000
 
 [agent]
-integrations = ["javascript_google_analytics:1.0.0", "javascript_stripe:1.0.0", "resend:1.0.0", "javascript_openai:1.0.0", "google-drive:1.0.0", "javascript_object_storage:1.0.0", "javascript_log_in_with_replit:1.0.0"]
+integrations = [
+  "javascript_google_analytics:1.0.0",
+  "javascript_stripe:1.0.0",
+  "resend:1.0.0",
+  "javascript_openai:1.0.0",
+  "google-drive:1.0.0",
+  "javascript_object_storage:1.0.0",
+  "javascript_log_in_with_replit:1.0.0",
+]
