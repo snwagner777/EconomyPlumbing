@@ -27,8 +27,8 @@ export async function GET(req: NextRequest) {
     const jobs = await db
       .select()
       .from(jobCompletions)
-      .where(eq(jobCompletions.serviceTitanCustomerId, customerId))
-      .orderBy(desc(jobCompletions.completedDate));
+      .where(eq(jobCompletions.customerId, customerId))
+      .orderBy(desc(jobCompletions.completionDate));
 
     return NextResponse.json({
       jobs,

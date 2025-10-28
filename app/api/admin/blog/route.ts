@@ -15,7 +15,7 @@ const blogPostSchema = z.object({
   content: z.string().min(1),
   metaDescription: z.string().max(160).optional(),
   publishDate: z.string().datetime().optional(),
-  category: z.string().optional(),
+  category: z.string().min(1), // Required field
   tags: z.array(z.string()).optional(),
   featuredImageUrl: z.string().url().optional(),
 });
