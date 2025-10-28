@@ -1,6 +1,8 @@
+'use client';
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { useLocation } from "wouter";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -132,7 +134,7 @@ const ICON_MAP: { [key: string]: any } = {
 };
 
 export default function AIChatbot() {
-  const [location] = useLocation();
+  const location = usePathname() || '/';
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);

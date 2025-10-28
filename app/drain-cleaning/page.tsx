@@ -1,72 +1,86 @@
-/**
- * Drain Cleaning Services Page
- */
+'use client';
 
-import type { Metadata } from 'next';
+import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
+import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
-export const metadata: Metadata = {
-  title: 'Drain Cleaning Austin TX | Professional Drain Service | Economy Plumbing',
-  description: 'Professional drain cleaning in Austin. Hydro jetting, rooter service, camera inspection. Clear stubborn clogs fast. 24/7 emergency service. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Drain Cleaning Austin TX',
-    description: 'Professional drain cleaning services. Clear stubborn clogs fast with hydro jetting.',
-  },
-};
-
-export default function DrainCleaningPage() {
+export default function DrainCleaning() {
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Drain Cleaning Services</h1>
-          
-          <p className="text-xl text-muted-foreground mb-12">
-            Professional drain cleaning to clear even the toughest clogs.
-          </p>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">What We Clean</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                'Kitchen Sink Drains',
-                'Bathroom Drains',
-                'Main Sewer Lines',
-                'Floor Drains',
-                'Storm Drains',
-                'Commercial Drains',
-              ].map((drain) => (
-                <div key={drain} className="flex items-center gap-3">
-                  <span className="text-primary">✓</span>
-                  <span>{drain}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-muted/30 p-8 rounded-lg mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Our Methods</h2>
-            <ul className="space-y-3">
-              <li><strong>Hydro Jetting:</strong> High-pressure water clears stubborn blockages</li>
-              <li><strong>Rooter Service:</strong> Remove tree roots from sewer lines</li>
-              <li><strong>Camera Inspection:</strong> See exactly what's causing the clog</li>
-              <li><strong>Preventive Maintenance:</strong> Keep drains flowing smoothly</li>
-            </ul>
-          </section>
-
-          <section className="bg-primary text-primary-foreground p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4">Clogged Drain Emergency?</h2>
-            <p className="mb-6">
-              We're available 24/7 for drain emergencies
-            </p>
-            <a 
-              href="tel:512-368-9159"
-              className="inline-block bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-            >
-              Call Now: (512) 368-9159
-            </a>
-          </section>
-        </div>
-      </div>
-    </div>
+    <ServicePage
+      title="Drain Cleaning Austin TX | Video Inspection & Hydro"
+      metaDescription="Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service. Call (512) 368-9159."
+      canonical="https://www.plumbersthatcare.com/drain-cleaning"
+      heroImage={drainImage}
+      heroImageAlt="Professional drain cleaning and sewer line service in Austin and Marble Falls TX"
+      heroTitle="Drain Cleaning Services"
+      heroSubtitle="Professional Drain & Sewer Line Solutions in Central Texas"
+      overviewTitle="Expert Drain Cleaning Solutions"
+      overviewDescription="From simple clogs to complex sewer line issues, our professional drain cleaning services keep your plumbing flowing smoothly. We use advanced equipment including video inspection and hydro jetting for thorough, lasting results."
+      customSection={<CommercialCustomersShowcase />}
+      blogCategory="Drain Cleaning"
+      benefits={[
+        "Video camera inspection",
+        "Hydro jetting technology",
+        "Root removal specialists",
+        "Sewer line cleaning & repair",
+        "Same-day service available",
+        "Environmentally safe methods",
+        "Preventive maintenance plans",
+        "Emergency drain cleaning"
+      ]}
+      featuresTitle="Our Drain Cleaning Services"
+      features={[
+        {
+          title: "Video Camera Inspection",
+          description: "State-of-the-art camera inspection to identify the exact location and cause of clogs or damage in your drain lines. See exactly what's happening inside your pipes."
+        },
+        {
+          title: "Hydro Jetting",
+          description: "High-pressure water jetting thoroughly cleans pipes and removes stubborn blockages, grease buildup, and tree roots. More effective and longer-lasting than traditional snaking."
+        },
+        {
+          title: "Root Removal",
+          description: "Specialized equipment and techniques to remove tree roots that have invaded your sewer lines. We can also recommend preventive solutions to stop future root intrusion."
+        },
+        {
+          title: "Sewer Line Services",
+          description: "Complete sewer line cleaning, repair, and replacement services. We handle everything from minor clogs to major sewer line failures with minimal disruption to your property."
+        }
+      ]}
+      faqs={[
+        {
+          question: "How do I know if I need professional drain cleaning?",
+          answer: "Signs include slow drains, recurring clogs, gurgling sounds, multiple clogged fixtures, sewage odors, or water backing up. If DIY methods don't work or clogs keep returning, it's time for professional service."
+        },
+        {
+          question: "What's the difference between snaking and hydro jetting?",
+          answer: "Snaking uses a cable to break through clogs, which is effective for simple blockages. Hydro jetting uses high-pressure water to completely clean pipe walls, removing all buildup and providing longer-lasting results. We recommend the best method for your specific situation."
+        },
+        {
+          question: "How often should drains be professionally cleaned?",
+          answer: "For preventive maintenance, we recommend professional cleaning every 18-24 months. Homes with older plumbing, large trees nearby, or frequent clogs may benefit from annual service."
+        },
+        {
+          question: "Can tree roots really damage my sewer line?",
+          answer: "Yes, tree roots are one of the leading causes of sewer line problems. Roots seek out water and can infiltrate even small cracks in pipes, eventually causing major blockages and pipe damage."
+        },
+        {
+          question: "Do you offer emergency drain cleaning?",
+          answer: "Absolutely! We provide emergency drain cleaning services for urgent situations like sewage backups or completely blocked drains. Contact us anytime for fast response."
+        },
+        {
+          question: "Is hydro jetting safe for old pipes?",
+          answer: "When performed by trained professionals, hydro jetting is safe for most pipes. We first inspect pipes with a camera to assess their condition and adjust pressure accordingly. For severely deteriorated pipes, we'll recommend alternative solutions."
+        }
+      ]}
+      relatedServices={[
+        { title: "Water Heater Services", path: "/water-heater-services" },
+        { title: "Leak Repair", path: "/leak-repair" },
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" },
+        { title: "Hydro Jetting", path: "/hydro-jetting-services" }
+      ]}
+      reviewsCategory="drain"
+      reviewsTitle="Drain Cleaning Customer Reviews"
+    />
   );
 }

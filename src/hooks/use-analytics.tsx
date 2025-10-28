@@ -1,12 +1,14 @@
+'use client';
+
 // Analytics hook for tracking page views on route changes
 // Reference: blueprint:javascript_google_analytics
 
 import { useEffect, useRef } from 'react';
-import { useLocation } from 'wouter';
+import { usePathname } from 'next/navigation';
 import { trackPageView } from '../lib/analytics';
 
 export const useAnalytics = () => {
-  const [location] = useLocation();
+  const location = usePathname() || '/';
   const prevLocationRef = useRef<string>(location);
   
   useEffect(() => {

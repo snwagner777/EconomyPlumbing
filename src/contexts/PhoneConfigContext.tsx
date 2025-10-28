@@ -1,5 +1,7 @@
+'use client';
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useLocation } from 'wouter';
+import { usePathname } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 
 interface PhoneConfig {
@@ -150,7 +152,7 @@ function getPhoneNumberFromTracking(trackingNumbers: TrackingNumber[]): PhoneCon
 }
 
 export function PhoneConfigProvider({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
+  const location = usePathname() || '/';
   const [phoneConfig, setPhoneConfig] = useState<PhoneConfig>(() => {
     // Initialize window globals immediately to avoid race conditions
     if (!window.__PHONE_CONFIG__) {

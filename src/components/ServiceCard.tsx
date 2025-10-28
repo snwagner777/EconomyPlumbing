@@ -1,7 +1,9 @@
+'use client';
+
 import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, type LucideIcon } from "lucide-react";
-import { Link } from "wouter";
+import Link from "next/link";
 
 interface ServiceCardProps {
   icon: LucideIcon;

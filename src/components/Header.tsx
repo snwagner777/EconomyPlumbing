@@ -1,5 +1,8 @@
+'use client';
+
 import { useState } from "react";
-import { Link, useLocation } from "wouter";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
@@ -33,7 +36,7 @@ export default function Header({ isPortalAuthenticated = false, onPortalLogout }
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStoreOpen, setMobileStoreOpen] = useState(false);
   
-  const [location] = useLocation();
+  const location = usePathname() || '/';
   
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhoneConfig = useMarbleFallsPhone();

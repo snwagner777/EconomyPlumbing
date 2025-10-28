@@ -1,6 +1,8 @@
+'use client';
+
 import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
+import { usePathname } from "next/navigation";
 import { generateCanonicalUrl } from "@/lib/canonicalUrl";
 
 export interface SEOProps {
@@ -32,7 +34,7 @@ export function SEOHead({
   articlePublishedTime,
   articleAuthor
 }: SEOProps) {
-  const [location] = useLocation();
+  const location = usePathname() || '/';
   
   // Query database for custom metadata for this path
   const { data: dbMetadata } = useQuery({

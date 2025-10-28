@@ -1,3 +1,0 @@
-{
-  "/api/webhooks/mailgun/customer-data/route": "app/api/webhooks/mailgun/customer-data/route.js"
-}

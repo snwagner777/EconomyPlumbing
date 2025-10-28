@@ -1,109 +1,84 @@
-/**
- * Commercial Plumbing Services Page
- */
+'use client';
 
-import type { Metadata } from 'next';
+import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
+import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
 
-export const metadata: Metadata = {
-  title: 'Commercial Plumbing Austin TX | Business Plumbing Experts',
-  description: 'Professional commercial plumbing for Austin businesses. Restaurants, offices, retail, property management. 24/7 emergency service. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Commercial Plumbing Austin TX',
-    description: 'Professional commercial plumbing for Austin businesses. 24/7 emergency service.',
-  },
-};
-
-export default function CommercialPlumbingPage() {
+export default function CommercialPlumbing() {
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Commercial Plumbing Services</h1>
-          
-          <p className="text-xl text-muted-foreground mb-12">
-            Professional plumbing solutions for Austin businesses
-          </p>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Industries We Serve</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                { title: 'Restaurants', href: '/commercial/restaurants', id: 'restaurants' },
-                { title: 'Office Buildings', href: '/commercial/office-buildings', id: 'office' },
-                { title: 'Retail Stores', href: '/commercial/retail', id: 'retail' },
-                { title: 'Property Management', href: '/commercial/property-management', id: 'property' },
-                { title: 'Medical Facilities', href: '/commercial-plumbing', id: 'medical' },
-                { title: 'Schools & Universities', href: '/commercial-plumbing', id: 'schools' },
-              ].map((industry) => (
-                <a
-                  key={industry.title}
-                  href={industry.href}
-                  data-testid={`link-industry-${industry.id}`}
-                  className="bg-card p-6 rounded-lg hover:bg-accent transition"
-                >
-                  <h3 className="font-semibold">{industry.title}</h3>
-                </a>
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Commercial Services</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                'Emergency Plumbing Repair',
-                'Grease Trap Service',
-                'Backflow Testing & Certification',
-                'Commercial Water Heaters',
-                'Drain & Sewer Cleaning',
-                'Pipe Repair & Replacement',
-                'Fixture Installation',
-                'Preventive Maintenance Plans',
-              ].map((service) => (
-                <div key={service} className="flex items-center gap-3">
-                  <span className="text-primary">✓</span>
-                  <span>{service}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-muted/30 p-8 rounded-lg mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Why Businesses Choose Us</h2>
-            <ul className="space-y-2">
-              <li>• 24/7 emergency response to minimize downtime</li>
-              <li>• After-hours and weekend service available</li>
-              <li>• Preventive maintenance plans to reduce costs</li>
-              <li>• Licensed, insured commercial plumbers</li>
-              <li>• Code compliance expertise</li>
-              <li>• Fast, professional service</li>
-            </ul>
-          </section>
-
-          <section className="bg-primary text-primary-foreground p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4">Need Commercial Plumbing Service?</h2>
-            <p className="mb-6">
-              Contact us for a customized service plan for your business
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <a 
-                href="tel:512-368-9159"
-                data-testid="link-phone-commercial"
-                className="bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                Call: (512) 368-9159
-              </a>
-              <a 
-                href="/contact"
-                data-testid="link-contact-commercial"
-                className="bg-accent text-accent-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                Request Service Plan
-              </a>
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
+    <ServicePage
+      title="Commercial Plumbing Austin TX | Business Solutions 24/7"
+      metaDescription="Minimize downtime with 24/7 commercial plumbing in Austin. Preventive maintenance, emergency repairs and code compliance for businesses. Call (512) 368-9159."
+      canonical="https://www.plumbersthatcare.com/commercial-plumbing"
+      heroImage={commercialImage}
+      heroImageAlt="Professional commercial plumbing services for businesses in Austin and Marble Falls TX"
+      heroTitle="Commercial Plumbing Services"
+      heroSubtitle="Professional Plumbing Solutions for Central Texas Businesses"
+      overviewTitle="Comprehensive Commercial Plumbing"
+      overviewDescription="Keep your business running smoothly with reliable commercial plumbing services. From routine maintenance to emergency repairs, we provide fast, professional service that minimizes downtime and keeps your operations flowing."
+      customSection={<CommercialCustomersShowcase />}
+      benefits={[
+        "24/7 emergency service",
+        "Scheduled maintenance plans",
+        "Licensed & insured",
+        "Code compliance expertise",
+        "Minimal business disruption",
+        "Preventive maintenance",
+        "Multi-location service",
+        "Detailed documentation"
+      ]}
+      featuresTitle="Our Commercial Plumbing Services"
+      features={[
+        {
+          title: "Emergency Commercial Repairs",
+          description: "24/7 emergency response for commercial plumbing failures. We understand downtime costs money, so we respond quickly to minimize disruption to your business operations."
+        },
+        {
+          title: "Preventive Maintenance",
+          description: "Scheduled maintenance programs designed to prevent costly breakdowns and extend equipment life. Regular inspections identify issues before they become emergencies."
+        },
+        {
+          title: "Code Compliance",
+          description: "Expert knowledge of commercial plumbing codes and regulations. We ensure all work meets or exceeds local codes, passing inspections the first time."
+        },
+        {
+          title: "Multi-Tenant & Multi-Location",
+          description: "Coordinated service for multi-unit buildings and businesses with multiple locations. Consistent quality and service across all your properties."
+        }
+      ]}
+      faqs={[
+        {
+          question: "What types of commercial properties do you service?",
+          answer: "We service all types of commercial properties including restaurants, retail stores, office buildings, medical facilities, schools, hotels, apartment complexes, and industrial facilities. Our experience spans all commercial applications."
+        },
+        {
+          question: "Do you offer after-hours service?",
+          answer: "Yes, we provide 24/7 emergency service for commercial clients. We understand that plumbing emergencies don't follow business hours, and we're always available when you need us."
+        },
+        {
+          question: "Can you work around our business hours?",
+          answer: "Absolutely. We schedule non-emergency work to minimize disruption, including evenings, weekends, or during your slow periods. For occupied buildings, we work quietly and efficiently to not disturb tenants or customers."
+        },
+        {
+          question: "Do you offer preventive maintenance contracts?",
+          answer: "Yes, we offer customized preventive maintenance programs with scheduled inspections and service. Regular maintenance prevents emergencies, extends equipment life, and provides priority emergency service when needed."
+        },
+        {
+          question: "Are you licensed for commercial plumbing work?",
+          answer: "Yes, we hold all required licenses and insurance for commercial plumbing work in Texas. Our Master Plumber license (#M-41147) covers both residential and commercial applications."
+        },
+        {
+          question: "How quickly can you respond to commercial emergencies?",
+          answer: "We prioritize commercial emergencies and typically respond within 1-2 hours. For critical situations affecting business operations, we often arrive even faster. Our fully-stocked trucks allow us to complete most repairs immediately."
+        }
+      ]}
+      relatedServices={[
+        { title: "Drain Cleaning", path: "/drain-cleaning" },
+        { title: "Backflow Services", path: "/backflow" },
+        { title: "Gas Services", path: "/gas-line-services" },
+        { title: "Water Heater Services", path: "/water-heater-services" }
+      ]}
+      blogCategory="Commercial"
+    />
   );
 }

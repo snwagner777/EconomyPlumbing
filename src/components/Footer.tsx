@@ -1,4 +1,6 @@
-import { Link } from "wouter";
+'use client';
+
+import Link from "next/link";
 import { Facebook, Instagram, MapPin } from "lucide-react";
 import { SiYelp, SiNextdoor, SiGooglemaps } from "react-icons/si";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
