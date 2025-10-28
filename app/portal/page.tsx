@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Mail, Phone, CheckCircle, Calendar, FileText, Gift, 
   DollarSign, MapPin, User, Shield, LogOut, Loader2 
@@ -44,6 +45,13 @@ export default function CustomerPortal() {
   // Customer data
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  
+  // Referral submission state
+  const [showReferralModal, setShowReferralModal] = useState(false);
+  const [referralName, setReferralName] = useState('');
+  const [referralPhone, setReferralPhone] = useState('');
+  const [referralEmail, setReferralEmail] = useState('');
+  const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
   
   // Check for existing session on mount
   useEffect(() => {
@@ -120,6 +128,8 @@ export default function CustomerPortal() {
         body: JSON.stringify({
           contactValue: lookupValue.trim(),
           code: verificationCode.trim(),
+          token: lookupToken,
+          lookupType,
         }),
       });
       
@@ -193,6 +203,63 @@ export default function CustomerPortal() {
       });
     } catch (error) {
       console.error('[Portal] Logout error:', error);
+    }
+  };
+  
+  const handleSubmitReferral = async () => {
+    if (!referralName.trim() || !referralPhone.trim()) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please provide at least a name and phone number.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsSubmittingReferral(true);
+    try {
+      const response = await fetch('/api/referrals/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // Referrer info (logged-in customer)
+          referrerName: customerData?.name || 'Customer',
+          referrerEmail: customerData?.email || '',
+          referrerPhone: customerData?.phone || '',
+          // Referee info (friend being referred)
+          refereeName: referralName.trim(),
+          refereePhone: referralPhone.trim(),
+          refereeEmail: referralEmail.trim() || '',
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to submit referral');
+      }
+      
+      toast({
+        title: 'Referral Submitted!',
+        description: 'Thank you for referring a friend. We\'ll contact them soon!',
+      });
+      
+      // Reset form and close modal
+      setReferralName('');
+      setReferralPhone('');
+      setReferralEmail('');
+      setShowReferralModal(false);
+      
+      // Reload customer data to refresh referrals list
+      loadCustomerData();
+    } catch (error: any) {
+      toast({
+        title: 'Submission Failed',
+        description: error.message || 'Failed to submit referral. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmittingReferral(false);
     }
   };
   
@@ -375,7 +442,8 @@ export default function CustomerPortal() {
   
   // Dashboard UI (authenticated)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
         {/* Header */}
         <div className="bg-card border-b">
           <div className="container mx-auto px-4 py-4">
@@ -591,7 +659,10 @@ export default function CustomerPortal() {
                           <p className="text-sm text-muted-foreground mb-4">
                             Get $25 off your next service for every referral
                           </p>
-                          <Button data-testid="button-submit-referral">
+                          <Button 
+                            onClick={() => setShowReferralModal(true)}
+                            data-testid="button-submit-referral"
+                          >
                             Submit a Referral
                           </Button>
                         </div>
@@ -629,5 +700,88 @@ export default function CustomerPortal() {
           )}
         </div>
       </div>
+      
+      {/* Referral Submission Modal */}
+      <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
+        <DialogContent data-testid="dialog-referral-submission">
+          <DialogHeader>
+            <DialogTitle data-testid="text-referral-modal-title">Submit a Referral</DialogTitle>
+            <DialogDescription data-testid="text-referral-modal-description">
+              Refer a friend and earn $25 off your next service!
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="referral-name" data-testid="label-referral-name">
+                Friend's Name *
+              </Label>
+              <Input
+                id="referral-name"
+                placeholder="John Doe"
+                value={referralName}
+                onChange={(e) => setReferralName(e.target.value)}
+                data-testid="input-referral-name"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="referral-phone" data-testid="label-referral-phone">
+                Friend's Phone *
+              </Label>
+              <Input
+                id="referral-phone"
+                type="tel"
+                placeholder="(512) 555-0123"
+                value={referralPhone}
+                onChange={(e) => setReferralPhone(e.target.value)}
+                data-testid="input-referral-phone"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="referral-email" data-testid="label-referral-email">
+                Friend's Email (Optional)
+              </Label>
+              <Input
+                id="referral-email"
+                type="email"
+                placeholder="friend@example.com"
+                value={referralEmail}
+                onChange={(e) => setReferralEmail(e.target.value)}
+                data-testid="input-referral-email"
+              />
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => setShowReferralModal(false)}
+                disabled={isSubmittingReferral}
+                className="flex-1"
+                data-testid="button-cancel-referral"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleSubmitReferral}
+                disabled={isSubmittingReferral || !referralName.trim() || !referralPhone.trim()}
+                className="flex-1"
+                data-testid="button-submit-referral-form"
+              >
+                {isSubmittingReferral ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Referral'
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

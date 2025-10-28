@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { contactValue, code } = body;
+    const { contactValue, code, token, lookupType } = body;
     
     if (!contactValue || !code) {
       return NextResponse.json(
@@ -12,7 +12,11 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // TODO: Implement actual OTP verification
+    // TODO: Implement actual OTP verification using token and lookupType
+    // - Verify the token matches the lookup session
+    // - Verify the code against stored OTP
+    // - Return actual customer data from ServiceTitan
+    
     // For now, return placeholder customer
     const mockCustomer = {
       id: 12345,
