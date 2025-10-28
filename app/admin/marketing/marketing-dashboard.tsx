@@ -12,8 +12,11 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { AlertCircle, Loader2 } from 'lucide-react';
 
 export function MarketingDashboard() {
   const router = useRouter();
@@ -42,70 +45,86 @@ export function MarketingDashboard() {
   };
 
   // Fetch stats
-  const { data: reviewRequests } = useQuery({
+  const { data: reviewRequests, isLoading: reviewRequestsLoading, isError: reviewRequestsError } = useQuery<{ requests?: any[] }>({
     queryKey: ['/api/admin/review-requests'],
   });
 
-  const { data: referralCampaigns } = useQuery({
+  const { data: referralCampaigns, isLoading: referralCampaignsLoading, isError: referralCampaignsError } = useQuery<{ campaigns?: any[] }>({
     queryKey: ['/api/admin/referral-campaigns'],
   });
 
-  const { data: trackingNumbers } = useQuery({
+  const { data: trackingNumbers, isLoading: trackingNumbersLoading, isError: trackingNumbersError } = useQuery<{ numbers?: any[] }>({
     queryKey: ['/api/admin/tracking-numbers'],
   });
 
-  const { data: emailTemplates } = useQuery({
+  const { data: emailTemplates, isLoading: emailTemplatesLoading, isError: emailTemplatesError } = useQuery<{ templates?: any[] }>({
     queryKey: ['/api/admin/email-templates'],
   });
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className="flex justify-between items-start mb-8">
-            <div>
-              <Link 
-                href="/admin"
-                className="text-sm text-muted-foreground hover:text-foreground mb-2 inline-block"
-                data-testid="link-back-admin"
-              >
-                ← Back to Dashboard
-              </Link>
-              <h1 className="text-4xl font-bold mb-2">Marketing Automation</h1>
-              <p className="text-muted-foreground">
-                Manage campaigns, email templates, and phone tracking
-              </p>
-            </div>
-          </div>
+    <div className="p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2" data-testid="heading-marketing">
+            Marketing Automation
+          </h1>
+          <p className="text-muted-foreground" data-testid="text-description">
+            Manage campaigns, email templates, and phone tracking
+          </p>
+        </div>
 
-          {/* Quick Stats */}
-          <div className="grid md:grid-cols-4 gap-6 mb-8">
-            <Card className="p-6" data-testid="stat-review-requests">
-              <div className="text-sm text-muted-foreground mb-1">Active Review Requests</div>
+        {/* Quick Stats */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6" data-testid="stat-review-requests">
+            <div className="text-sm text-muted-foreground mb-1">Active Review Requests</div>
+            {reviewRequestsLoading ? (
+              <Skeleton className="h-9 w-12" data-testid="skeleton-review-requests" />
+            ) : reviewRequestsError ? (
+              <div className="text-3xl font-bold text-destructive">—</div>
+            ) : (
               <div className="text-3xl font-bold" data-testid="text-review-requests-count">
                 {reviewRequests?.requests?.filter((r: any) => r.status === 'sent').length || 0}
               </div>
-            </Card>
-            <Card className="p-6" data-testid="stat-referral-campaigns">
-              <div className="text-sm text-muted-foreground mb-1">Referral Campaigns</div>
+            )}
+          </Card>
+          <Card className="p-6" data-testid="stat-referral-campaigns">
+            <div className="text-sm text-muted-foreground mb-1">Referral Campaigns</div>
+            {referralCampaignsLoading ? (
+              <Skeleton className="h-9 w-12" data-testid="skeleton-referral-campaigns" />
+            ) : referralCampaignsError ? (
+              <div className="text-3xl font-bold text-destructive">—</div>
+            ) : (
               <div className="text-3xl font-bold" data-testid="text-referral-campaigns-count">
                 {referralCampaigns?.campaigns?.length || 0}
               </div>
-            </Card>
-            <Card className="p-6" data-testid="stat-tracking-numbers">
-              <div className="text-sm text-muted-foreground mb-1">Tracking Numbers</div>
+            )}
+          </Card>
+          <Card className="p-6" data-testid="stat-tracking-numbers">
+            <div className="text-sm text-muted-foreground mb-1">Tracking Numbers</div>
+            {trackingNumbersLoading ? (
+              <Skeleton className="h-9 w-12" data-testid="skeleton-tracking-numbers" />
+            ) : trackingNumbersError ? (
+              <div className="text-3xl font-bold text-destructive">—</div>
+            ) : (
               <div className="text-3xl font-bold" data-testid="text-tracking-numbers-count">
                 {trackingNumbers?.numbers?.length || 0}
               </div>
-            </Card>
-            <Card className="p-6" data-testid="stat-email-templates">
-              <div className="text-sm text-muted-foreground mb-1">Email Templates</div>
+            )}
+          </Card>
+          <Card className="p-6" data-testid="stat-email-templates">
+            <div className="text-sm text-muted-foreground mb-1">Email Templates</div>
+            {emailTemplatesLoading ? (
+              <Skeleton className="h-9 w-12" data-testid="skeleton-email-templates" />
+            ) : emailTemplatesError ? (
+              <div className="text-3xl font-bold text-destructive">—</div>
+            ) : (
               <div className="text-3xl font-bold" data-testid="text-email-templates-count">
                 {emailTemplates?.templates?.length || 0}
               </div>
-            </Card>
-          </div>
+            )}
+          </Card>
+        </div>
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={handleTabChange}>
@@ -140,9 +159,15 @@ export function MarketingDashboard() {
                         4-email sequence to gather customer reviews after job completion
                       </p>
                       <div className="mt-4 text-sm">
-                        <span className="font-medium">
-                          {reviewRequests?.requests?.filter((r: any) => r.status === 'sent').length || 0} active campaigns
-                        </span>
+                        {reviewRequestsLoading ? (
+                          <Skeleton className="h-5 w-32" data-testid="skeleton-overview-review-requests" />
+                        ) : reviewRequestsError ? (
+                          <span className="font-medium text-destructive">—</span>
+                        ) : (
+                          <span className="font-medium">
+                            {reviewRequests?.requests?.filter((r: any) => r.status === 'sent').length || 0} active campaigns
+                          </span>
+                        )}
                       </div>
                     </Link>
 
@@ -156,9 +181,15 @@ export function MarketingDashboard() {
                         4-email sequence over 6 months to encourage referrals from happy customers
                       </p>
                       <div className="mt-4 text-sm">
-                        <span className="font-medium">
-                          {referralCampaigns?.campaigns?.length || 0} enrolled customers
-                        </span>
+                        {referralCampaignsLoading ? (
+                          <Skeleton className="h-5 w-32" data-testid="skeleton-overview-referral-campaigns" />
+                        ) : referralCampaignsError ? (
+                          <span className="font-medium text-destructive">—</span>
+                        ) : (
+                          <span className="font-medium">
+                            {referralCampaigns?.campaigns?.length || 0} enrolled customers
+                          </span>
+                        )}
                       </div>
                     </Link>
 
@@ -172,9 +203,15 @@ export function MarketingDashboard() {
                         Dedicated tracking phone numbers for each email campaign type
                       </p>
                       <div className="mt-4 text-sm">
-                        <span className="font-medium">
-                          {trackingNumbers?.numbers?.length || 0} tracking numbers configured
-                        </span>
+                        {trackingNumbersLoading ? (
+                          <Skeleton className="h-5 w-32" data-testid="skeleton-overview-tracking-numbers" />
+                        ) : trackingNumbersError ? (
+                          <span className="font-medium text-destructive">—</span>
+                        ) : (
+                          <span className="font-medium">
+                            {trackingNumbers?.numbers?.length || 0} tracking numbers configured
+                          </span>
+                        )}
                       </div>
                     </Link>
 
@@ -188,9 +225,15 @@ export function MarketingDashboard() {
                         GPT-4o generated email templates with preview/edit workflow
                       </p>
                       <div className="mt-4 text-sm">
-                        <span className="font-medium">
-                          {emailTemplates?.templates?.length || 0} templates ready
-                        </span>
+                        {emailTemplatesLoading ? (
+                          <Skeleton className="h-5 w-32" data-testid="skeleton-overview-email-templates" />
+                        ) : emailTemplatesError ? (
+                          <span className="font-medium text-destructive">—</span>
+                        ) : (
+                          <span className="font-medium">
+                            {emailTemplates?.templates?.length || 0} templates ready
+                          </span>
+                        )}
                       </div>
                     </Link>
                   </div>
@@ -210,7 +253,24 @@ export function MarketingDashboard() {
                   4-email drip campaign sent over 21 days to request customer reviews after job completion.
                   Each campaign has a dedicated tracking phone number for attribution.
                 </p>
-                {reviewRequests?.requests && reviewRequests.requests.length > 0 ? (
+                
+                {reviewRequestsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 border rounded-lg">
+                        <Skeleton className="h-6 w-48 mb-2" data-testid={`skeleton-review-request-${i}`} />
+                        <Skeleton className="h-4 w-64" data-testid={`skeleton-review-request-desc-${i}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : reviewRequestsError ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Failed to load review request campaigns. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : reviewRequests?.requests && reviewRequests.requests.length > 0 ? (
                   <div className="space-y-3">
                     {reviewRequests.requests.map((request: any) => (
                       <div
@@ -253,7 +313,9 @@ export function MarketingDashboard() {
                   </div>
                 ) : (
                   <div className="bg-muted/30 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">No active review request campaigns</p>
+                    <p className="text-muted-foreground" data-testid="text-empty-review-requests">
+                      No active review request campaigns
+                    </p>
                   </div>
                 )}
               </Card>
@@ -271,7 +333,24 @@ export function MarketingDashboard() {
                   4-email sequence sent over 6 months (days 14, 60, 150, 210) to encourage referrals.
                   Auto-pauses after 2 consecutive unopened emails. Each campaign has dedicated tracking number.
                 </p>
-                {referralCampaigns?.campaigns && referralCampaigns.campaigns.length > 0 ? (
+                
+                {referralCampaignsLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 border rounded-lg">
+                        <Skeleton className="h-6 w-48 mb-2" data-testid={`skeleton-referral-campaign-${i}`} />
+                        <Skeleton className="h-4 w-64" data-testid={`skeleton-referral-campaign-desc-${i}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : referralCampaignsError ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Failed to load referral nurture campaigns. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : referralCampaigns?.campaigns && referralCampaigns.campaigns.length > 0 ? (
                   <div className="space-y-3">
                     {referralCampaigns.campaigns.map((campaign: any) => (
                       <div
@@ -315,7 +394,9 @@ export function MarketingDashboard() {
                   </div>
                 ) : (
                   <div className="bg-muted/30 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">No active referral nurture campaigns</p>
+                    <p className="text-muted-foreground" data-testid="text-empty-referral-campaigns">
+                      No active referral nurture campaigns
+                    </p>
                   </div>
                 )}
               </Card>
@@ -333,7 +414,24 @@ export function MarketingDashboard() {
                   Each email campaign type has its own dedicated tracking phone number for accurate attribution.
                   All email links include automatic UTM parameters.
                 </p>
-                {trackingNumbers?.numbers && trackingNumbers.numbers.length > 0 ? (
+                
+                {trackingNumbersLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="p-4 border rounded-lg">
+                        <Skeleton className="h-6 w-40 mb-2" data-testid={`skeleton-tracking-number-${i}`} />
+                        <Skeleton className="h-4 w-56" data-testid={`skeleton-tracking-number-desc-${i}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : trackingNumbersError ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Failed to load tracking numbers. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : trackingNumbers?.numbers && trackingNumbers.numbers.length > 0 ? (
                   <div className="space-y-3">
                     {trackingNumbers.numbers.map((number: any) => (
                       <div
@@ -372,7 +470,9 @@ export function MarketingDashboard() {
                   </div>
                 ) : (
                   <div className="bg-muted/30 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">No tracking numbers configured</p>
+                    <p className="text-muted-foreground" data-testid="text-empty-tracking-numbers">
+                      No tracking numbers configured
+                    </p>
                   </div>
                 )}
               </Card>
@@ -390,7 +490,24 @@ export function MarketingDashboard() {
                   GPT-4o powered email template generation with visual HTML preview and edit/approve workflow.
                   Templates support dynamic variables and campaign-specific phone numbers.
                 </p>
-                {emailTemplates?.templates && emailTemplates.templates.length > 0 ? (
+                
+                {emailTemplatesLoading ? (
+                  <div className="space-y-3">
+                    {[1, 2, 3].map((i) => (
+                      <div key={i} className="p-4 border rounded-lg">
+                        <Skeleton className="h-6 w-64 mb-2" data-testid={`skeleton-email-template-${i}`} />
+                        <Skeleton className="h-4 w-48" data-testid={`skeleton-email-template-desc-${i}`} />
+                      </div>
+                    ))}
+                  </div>
+                ) : emailTemplatesError ? (
+                  <Alert variant="destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertDescription>
+                      Failed to load email templates. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : emailTemplates?.templates && emailTemplates.templates.length > 0 ? (
                   <div className="space-y-3">
                     {emailTemplates.templates.map((template: any) => (
                       <div
@@ -445,7 +562,9 @@ export function MarketingDashboard() {
                   </div>
                 ) : (
                   <div className="bg-muted/30 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">No email templates yet</p>
+                    <p className="text-muted-foreground" data-testid="text-empty-templates">
+                      No email templates yet
+                    </p>
                     <p className="text-sm text-muted-foreground mt-2">
                       Generate your first AI-powered email template
                     </p>
@@ -455,7 +574,6 @@ export function MarketingDashboard() {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
     </div>
   );
 }
