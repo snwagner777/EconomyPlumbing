@@ -11,7 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Busboy from 'busboy';
 import { Readable } from 'stream';
 import { createHmac } from 'crypto';
-import xlsx from 'xlsx';
+import * as xlsx from 'xlsx';
 import { storage } from '@/server/storage';
 
 interface BusboyFile {

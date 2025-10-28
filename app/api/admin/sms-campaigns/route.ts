@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
 import { db } from '@/server/db';
-import { smsCampaigns } from '@shared/schema';
+import { customCampaignEmails } from '@shared/schema';
 import { desc } from 'drizzle-orm';
 import { z } from 'zod';
 
@@ -26,10 +26,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // TODO: SMS campaigns table not yet created
+    // Using customCampaignEmails temporarily
     const campaigns = await db
       .select()
-      .from(smsCampaigns)
-      .orderBy(desc(smsCampaigns.createdAt));
+      .from(customCampaignEmails)
+      .orderBy(desc(customCampaignEmails.createdAt));
 
     return NextResponse.json({
       campaigns,
@@ -59,12 +61,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const [campaign] = await db
-      .insert(smsCampaigns)
-      .values(result.data)
-      .returning();
-
-    return NextResponse.json({ campaign }, { status: 201 });
+    // TODO: SMS campaigns table not yet created
+    return NextResponse.json({ error: 'SMS campaigns temporarily unavailable' }, { status: 503 });
   } catch (error) {
     console.error('[Admin SMS Campaigns API] Error:', error);
     return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });

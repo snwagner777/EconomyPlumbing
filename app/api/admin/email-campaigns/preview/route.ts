@@ -33,19 +33,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Import email generator dynamically
-    const { generateEmailPreview } = await import('@/server/lib/emailGenerator');
-    
-    const preview = await generateEmailPreview(result.data);
-
-    return NextResponse.json({
-      success: true,
-      preview: {
-        html: preview.html,
-        subject: preview.subject,
-        preheader: preview.preheader,
-      },
-    });
+    // TODO: Email preview not yet migrated to Next.js
+    // Will use emailTemplates.ts logic  
+    return NextResponse.json(
+      { error: 'Email preview temporarily unavailable during migration' },
+      { status: 503 }
+    );
   } catch (error) {
     console.error('[Admin Email Preview API] Error:', error);
     return NextResponse.json(

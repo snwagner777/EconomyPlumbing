@@ -14,10 +14,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Import sync function dynamically to avoid circular deps
-    const { syncGoogleReviews } = await import('@/server/lib/googleReviewsSync');
+    // Import from correct module
+    const { fetchGoogleReviews } = await import('@/server/lib/googleReviews');
     
-    const result = await syncGoogleReviews();
+    const result = await fetchGoogleReviews();
 
     return NextResponse.json({
       success: true,

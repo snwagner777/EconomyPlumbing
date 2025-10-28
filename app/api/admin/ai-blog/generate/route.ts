@@ -33,15 +33,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Import AI blog generator dynamically
-    const { generateBlogPost } = await import('@/server/lib/aiBlogGenerator');
-    
-    const blogPost = await generateBlogPost(result.data);
-
-    return NextResponse.json({
-      success: true,
-      blogPost,
-    }, { status: 201 });
+    // TODO: AI blog generation not yet migrated to Next.js
+    // Will use autoBlogGenerator.ts logic
+    return NextResponse.json(
+      { error: 'AI blog generation temporarily unavailable during migration' },
+      { status: 503 }
+    );
   } catch (error) {
     console.error('[Admin AI Blog Generation API] Error:', error);
     return NextResponse.json(
