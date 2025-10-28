@@ -1,73 +1,86 @@
-/**
- * Backflow Testing & Prevention Page
- */
+'use client';
 
-import type { Metadata } from 'next';
+import ServicePage from "@/components/ServicePage";
+import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
+import backflowImage from "@assets/optimized/backflow_preventer_p_c5a67665.webp";
 
-export const metadata: Metadata = {
-  title: 'Backflow Testing Austin TX | Certified Backflow Prevention',
-  description: 'Certified backflow testing and prevention in Austin. Annual testing, installation, repair. Licensed backflow testers. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Backflow Testing Austin TX',
-    description: 'Certified backflow testing and prevention services',
-  },
-};
-
-export default function BackflowPage() {
+export default function BackflowTesting() {
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Backflow Testing & Prevention</h1>
-          
-          <p className="text-xl text-muted-foreground mb-12">
-            Certified backflow testing to protect your water supply
-          </p>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Our Backflow Services</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                'Annual Backflow Testing',
-                'Backflow Device Installation',
-                'Backflow Repair & Replacement',
-                'Certified Testing Reports',
-                'City Compliance Certification',
-                'Commercial & Residential',
-              ].map((service) => (
-                <div key={service} className="flex items-center gap-3">
-                  <span className="text-primary">✓</span>
-                  <span>{service}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-muted/30 p-8 rounded-lg mb-12">
-            <h2 className="text-2xl font-semibold mb-4">What is Backflow?</h2>
-            <p className="mb-4">
-              Backflow occurs when contaminated water flows backward into your clean water supply. This can happen due to back pressure or back siphonage.
-            </p>
-            <p>
-              Backflow prevention devices protect your water supply from contamination. Texas law requires annual testing by a certified backflow tester.
-            </p>
-          </section>
-
-          <section className="bg-primary text-primary-foreground p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4">Need Backflow Testing?</h2>
-            <p className="mb-6">
-              Our certified testers provide fast, compliant testing and reporting
-            </p>
-            <a 
-              href="tel:512-368-9159"
-              data-testid="link-phone-backflow"
-              className="inline-block bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-            >
-              Call: (512) 368-9159
-            </a>
-          </section>
-        </div>
-      </div>
-    </div>
+    <ServicePage
+      title="Backflow Testing Austin TX | State Certified Annual"
+      metaDescription="State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests. Call (512) 368-9159."
+      canonical="https://www.plumbersthatcare.com/backflow"
+      heroImage={backflowImage}
+      heroImageAlt="Certified backflow testing and prevention service in Central Texas"
+      heroTitle="Backflow Testing & Prevention"
+      heroSubtitle="Certified Backflow Testing, Installation & Annual Inspections"
+      overviewTitle="Professional Backflow Testing Services"
+      overviewDescription="Our certified backflow testers provide comprehensive testing, inspection, and certification services to keep your water supply safe and compliant with local regulations. We handle everything from annual testing to new device installation."
+      customSection={<CommercialCustomersShowcase />}
+      benefits={[
+        "Certified backflow testers",
+        "Annual testing & certification",
+        "City-compliant reports",
+        "Backflow preventer installation",
+        "Repair & replacement",
+        "Fast turnaround",
+        "Online scheduling",
+        "Direct city filing"
+      ]}
+      featuresTitle="Our Backflow Services"
+      features={[
+        {
+          title: "Annual Backflow Testing",
+          description: "State-certified testing of backflow prevention devices as required by local water utilities. We test all types of backflow preventers including RPZ, DCVA, PVB, and atmospheric vacuum breakers."
+        },
+        {
+          title: "Backflow Device Installation",
+          description: "Professional installation of backflow prevention assemblies for residential, commercial, and irrigation systems. We ensure proper sizing, placement, and compliance with all local codes."
+        },
+        {
+          title: "Backflow Repair & Replacement",
+          description: "Expert repair of failed backflow devices or complete replacement when necessary. We stock common parts and can often complete repairs during the same visit."
+        },
+        {
+          title: "Compliance & Reporting",
+          description: "We handle all paperwork and submit test results directly to your local water utility. Receive copies of your certification for your records. Never worry about missing deadlines."
+        }
+      ]}
+      faqs={[
+        {
+          question: "What is backflow and why is testing required?",
+          answer: "Backflow occurs when contaminated water flows backward into the clean water supply. Annual testing is required by law to ensure backflow prevention devices are working properly and protecting your drinking water from contamination."
+        },
+        {
+          question: "How often do I need backflow testing?",
+          answer: "Most municipalities require annual backflow testing. You'll receive a notice from your water utility when testing is due. It's important to complete testing by the deadline to avoid fines or water service interruption."
+        },
+        {
+          question: "How long does backflow testing take?",
+          answer: "Most backflow tests take 15-30 minutes per device. We'll test the device, make minor adjustments if needed, and provide you with immediate results and certification paperwork."
+        },
+        {
+          question: "What if my backflow device fails testing?",
+          answer: "If your device fails, we'll explain the issue and provide repair options. Many failures can be fixed on the spot with minor repairs or part replacements. If replacement is needed, we'll provide a detailed estimate."
+        },
+        {
+          question: "Do you file the test results with the city?",
+          answer: "Yes! We submit all test results directly to your local water utility and provide you with copies for your records. You don't have to worry about any paperwork or filing deadlines."
+        },
+        {
+          question: "Can you test commercial backflow devices?",
+          answer: "Absolutely. Our certified testers work on all types of commercial and industrial backflow prevention assemblies, including large RPZ valves, fire line backflow preventers, and complex irrigation systems."
+        }
+      ]}
+      relatedServices={[
+        { title: "Backflow Services", path: "/backflow" },
+        { title: "Commercial Plumbing", path: "/commercial-plumbing" },
+        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+        { title: "Permit Resolution", path: "/permit-resolution-services" }
+      ]}
+      reviewsCategory="backflow"
+      reviewsTitle="Backflow Testing Customer Reviews"
+      blogCategory="Backflow Testing"
+    />
   );
 }

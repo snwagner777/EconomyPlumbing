@@ -1,74 +1,95 @@
-/**
- * Leak Repair Services Page
- */
+'use client';
 
-import type { Metadata } from 'next';
+import { usePathname } from "next/navigation";
+import ServicePage from "@/components/ServicePage";
+import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 
-export const metadata: Metadata = {
-  title: 'Leak Repair Austin TX | Fast Leak Detection & Repair | Economy Plumbing',
-  description: 'Professional leak detection and repair in Austin. Slab leaks, pipe leaks, water heater leaks. Advanced leak detection technology. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Leak Repair Austin TX',
-    description: 'Professional leak detection and repair. Advanced technology to find and fix leaks fast.',
-  },
-};
-
-export default function LeakRepairPage() {
+export default function LeakRepair() {
+  const pathname = usePathname();
+  
+  const isWaterLeakRepair = pathname === "/water-leak-repair";
+  const title = isWaterLeakRepair 
+    ? "Water Leak Repair Austin TX | Fast Leak Detection" 
+    : "Leak Detection & Slab Leak Repair Austin TX | 24/7";
+  const canonical = isWaterLeakRepair
+    ? "https://www.plumbersthatcare.com/water-leak-repair"
+    : "https://www.plumbersthatcare.com/leak-repair";
+  
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Leak Detection & Repair</h1>
-          
-          <p className="text-xl text-muted-foreground mb-12">
-            Fast, accurate leak detection and professional repair services.
-          </p>
-
-          <section className="mb-12">
-            <h2 className="text-2xl font-semibold mb-6">Types of Leaks We Fix</h2>
-            <div className="grid md:grid-cols-2 gap-6">
-              {[
-                'Slab Leaks',
-                'Pipe Leaks',
-                'Water Heater Leaks',
-                'Toilet Leaks',
-                'Faucet Leaks',
-                'Hidden Leaks',
-              ].map((leak) => (
-                <div key={leak} className="flex items-center gap-3">
-                  <span className="text-primary">✓</span>
-                  <span>{leak}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-muted/30 p-8 rounded-lg mb-12">
-            <h2 className="text-2xl font-semibold mb-4">Signs You Have a Leak</h2>
-            <ul className="space-y-2">
-              <li>• Unexplained water bill increases</li>
-              <li>• Wet spots on walls, floors, or ceilings</li>
-              <li>• Musty odors or mold growth</li>
-              <li>• Sound of running water when nothing is on</li>
-              <li>• Reduced water pressure</li>
-              <li>• Warm spots on floor (slab leak)</li>
-            </ul>
-          </section>
-
-          <section className="bg-primary text-primary-foreground p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-4">Suspect a Leak?</h2>
-            <p className="mb-6">
-              Early detection saves money. Call us for professional leak detection.
-            </p>
-            <a 
-              href="tel:512-368-9159"
-              className="inline-block bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-            >
-              Call: (512) 368-9159
-            </a>
-          </section>
-        </div>
-      </div>
-    </div>
+    <ServicePage
+      title={title}
+      metaDescription="Fast leak detection with electronic equipment. Slab leak specialists, pipe & hidden leak repair. 24/7 emergency service available. Call (512) 368-9159."
+      canonical={canonical}
+      heroImage={leakImage}
+      heroImageAlt="Professional leak detection and repair service in Austin and Marble Falls TX"
+      heroTitle="Leak Repair Services"
+      heroSubtitle="Fast, Professional Leak Detection & Repair in Central Texas"
+      overviewTitle="Expert Leak Detection & Repair"
+      overviewDescription="Don't let a small leak become a major problem. Our experienced technicians use advanced leak detection equipment to quickly locate and repair all types of leaks, from visible faucet drips to hidden slab leaks."
+      blogCategory="Leak Repair"
+      benefits={[
+        "Fast leak detection",
+        "Advanced leak detection technology",
+        "Slab leak specialists",
+        "Pipe leak repair",
+        "Faucet & fixture leaks",
+        "Insurance claim assistance",
+        "Permanent solutions",
+        "Emergency leak repair"
+      ]}
+      featuresTitle="Our Leak Repair Services"
+      features={[
+        {
+          title: "Leak Detection",
+          description: "State-of-the-art electronic leak detection equipment locates hidden leaks in walls, under slabs, and underground without destructive exploration. We find leaks quickly and accurately."
+        },
+        {
+          title: "Slab Leak Repair",
+          description: "Specialized repair of leaks in pipes beneath concrete slabs. We use the least invasive methods possible and can reroute pipes when necessary to provide permanent solutions."
+        },
+        {
+          title: "Pipe Leak Repair",
+          description: "Expert repair or replacement of leaking pipes including copper, PEX, CPVC, and galvanized pipes. We recommend the best repair method based on pipe age, condition, and location."
+        },
+        {
+          title: "Insurance Claims Assistance",
+          description: "We provide detailed documentation and work directly with insurance companies to help you file claims for leak damage. Our reports include photos, findings, and repair recommendations."
+        }
+      ]}
+      faqs={[
+        {
+          question: "How do I know if I have a hidden leak?",
+          answer: "Signs include unexplained increases in water bills, sound of running water when nothing is on, damp spots on floors or walls, musty odors, foundation cracks, or warm spots on floors (hot water leaks). We offer professional leak detection services to confirm and locate hidden leaks."
+        },
+        {
+          question: "What is a slab leak and why is it serious?",
+          answer: "A slab leak is a leak in water lines running beneath your home's concrete foundation. They're serious because they can cause foundation damage, high water bills, and mold growth. Early detection and repair are crucial to minimize damage and costs."
+        },
+        {
+          question: "How do you find hidden leaks without tearing up my home?",
+          answer: "We use electronic leak detection equipment including acoustic listening devices, infrared cameras, and pressure testing. These non-invasive methods pinpoint leak locations without unnecessary demolition."
+        },
+        {
+          question: "Will my insurance cover leak repairs?",
+          answer: "Many homeowner policies cover sudden and accidental leaks and resulting damage. Coverage varies by policy and situation. We provide detailed documentation to support your claim and can work directly with your insurance adjuster."
+        },
+        {
+          question: "How quickly can you respond to a leak emergency?",
+          answer: "We offer same-day service for leak emergencies. For severe leaks causing active damage, we can often respond within hours. We'll also guide you on immediate steps to minimize damage while we're en route."
+        },
+        {
+          question: "Should I repair or replace leaking pipes?",
+          answer: "It depends on the pipe's age, material, and overall condition. A single leak in old or corroded pipes may indicate more failures soon. We'll assess the situation and provide honest recommendations for both short-term fixes and long-term solutions."
+        }
+      ]}
+      relatedServices={[
+        { title: "Water Heater Services", path: "/water-heater-services" },
+        { title: "Drain Cleaning", path: "/drain-cleaning" },
+        { title: "Toilet & Faucet Services", path: "/toilet-faucet" },
+        { title: "Water Pressure Solutions", path: "/water-pressure-solutions" }
+      ]}
+      reviewsCategory="leak"
+      reviewsTitle="Leak Repair Customer Reviews"
+    />
   );
 }
