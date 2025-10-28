@@ -1,4 +1,4 @@
 'use client';
-import ReviewRequest from "@/pages/ReviewRequest";
+import ReviewRequest from "@/page-components/ReviewRequest";
 
 export default ReviewRequest;

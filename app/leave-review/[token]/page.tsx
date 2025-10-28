@@ -1,4 +1,4 @@
 'use client';
-import LeaveReview from "@/pages/LeaveReview";
+import LeaveReview from "@/page-components/LeaveReview";
 
 export default LeaveReview;

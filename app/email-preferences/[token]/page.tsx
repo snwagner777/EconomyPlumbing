@@ -1,4 +1,4 @@
 'use client';
-import EmailPreferences from "@/pages/EmailPreferences";
+import EmailPreferences from "@/page-components/EmailPreferences";
 
 export default EmailPreferences;

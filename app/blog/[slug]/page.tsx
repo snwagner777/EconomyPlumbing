@@ -1,4 +1,4 @@
 'use client';
-import BlogPost from "@/pages/BlogPost";
+import BlogPost from "@/page-components/BlogPost";
 
 export default BlogPost;
