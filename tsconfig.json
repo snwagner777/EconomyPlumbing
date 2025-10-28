@@ -61,6 +61,9 @@
       ],
       "@client/*": [
         "./client/src/*"
+      ],
+      "@assets/*": [
+        "./attached_assets/*"
       ]
     },
     "allowJs": true

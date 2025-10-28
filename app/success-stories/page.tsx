@@ -1,0 +1,464 @@
+'use client';
+import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Filter, Search, ExternalLink, Phone, Calendar, Gift, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import SuccessStoryForm from "@/components/SuccessStoryForm";
+import { CustomerWallOfFame } from "@/components/CustomerWallOfFame";
+import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import type { BeforeAfterComposite, CustomerSuccessStory } from "@shared/schema";
+
+export default function SuccessStories() {
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const phoneConfig = usePhoneConfig();
+
+  // Load NiceJob widget script
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.nicejob.co/js/sdk.min.js?id=af0b88b8-5c68-4702-83f4-085ac673376f';
+    script.async = true;
+    script.defer = true;
+    document.body.appendChild(script);
+
+    return () => {
+      // Cleanup script on unmount
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, []);
+
+  const { data: composites, isLoading: compositesLoading } = useQuery<BeforeAfterComposite[]>({
+    queryKey: ["/api/before-after-composites"],
+  });
+
+  const { data: customerStoriesData, isLoading: storiesLoading } = useQuery<{ stories: CustomerSuccessStory[] }>({
+    queryKey: ["/api/customer-success-stories"],
+  });
+
+  const customerStories = customerStoriesData?.stories || [];
+  const isLoading = compositesLoading || storiesLoading;
+
+  // Filter composites
+  const filteredComposites = composites?.filter((composite) => {
+    const matchesCategory = selectedCategory === "all" || composite.category === selectedCategory;
+    const matchesSearch = !searchQuery || 
+      composite.caption?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      composite.category.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  // Filter customer stories
+  const filteredCustomerStories = customerStories?.filter((story) => {
+    const matchesCategory = selectedCategory === "all" || story.serviceCategory === selectedCategory;
+    const matchesSearch = !searchQuery || 
+      story.story.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      story.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      story.serviceCategory.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+
+  // Get unique categories from both sources
+  const compositeCategories = composites?.map(c => c.category) || [];
+  const storyCategories = customerStories?.map(s => s.serviceCategory) || [];
+  const categories = Array.from(new Set([...compositeCategories, ...storyCategories]));
+
+  // Use first available composite image as OG image, or logo as fallback
+  const ogImage = composites && composites.length > 0 && composites[0].jpegCompositeUrl
+    ? `https://www.plumbersthatcare.com${composites[0].jpegCompositeUrl}`
+    : "https://www.plumbersthatcare.com/attached_assets/logo.jpg";
+
+  return (
+    <>
+      <SEOHead
+        title="Success Stories | Economy Plumbing Services"
+        description="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more."
+        canonical="https://www.plumbersthatcare.com/success-stories"
+        ogImage={ogImage}
+        ogImageAlt="Economy Plumbing Services - Real plumbing project transformations"
+      />
+
+      <Header />
+
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <div className="bg-primary text-primary-foreground py-16 px-4">
+          <div className="container mx-auto max-w-6xl">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4" data-testid="text-page-title">
+              Success Stories
+            </h1>
+            <p className="text-xl text-primary-foreground/90 max-w-3xl" data-testid="text-page-description">
+              Real transformations from real customers. See the quality craftsmanship that makes Economy Plumbing Services the trusted choice in Austin and Marble Falls.
+            </p>
+          </div>
+        </div>
+
+        {/* Filters & Search */}
+        <div className="sticky top-0 z-10 bg-background border-b shadow-sm">
+          <div className="container mx-auto max-w-6xl px-4 py-4">
+            <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
+              {/* Search */}
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search success stories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                  data-testid="input-search-stories"
+                />
+              </div>
+
+              {/* Category Filter */}
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="w-[200px]" data-testid="select-category-filter">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* RSS Feed Link */}
+              <Button variant="outline" asChild data-testid="button-rss-feed">
+                <a href="/api/success-stories/rss.xml" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  RSS Feed
+                </a>
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Hall of Fame */}
+        <div className="container mx-auto max-w-6xl px-4 py-12">
+          <CustomerWallOfFame />
+        </div>
+
+        {/* Gallery */}
+        <div className="container mx-auto max-w-6xl px-4 py-12 pt-0">
+          {isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="aspect-square w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (filteredComposites && filteredComposites.length > 0) || (filteredCustomerStories && filteredCustomerStories.length > 0) ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {/* Professional Before/After Composites */}
+              {filteredComposites?.map((composite) => (
+                <Card 
+                  key={composite.id} 
+                  className="overflow-hidden hover-elevate transition-all"
+                  data-testid={`card-composite-${composite.id}`}
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="secondary" data-testid={`badge-category-${composite.id}`}>
+                        {composite.category}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground" data-testid={`text-date-${composite.id}`}>
+                        {new Date(composite.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <CardTitle className="text-lg line-clamp-2" data-testid={`text-caption-${composite.id}`}>
+                      {composite.caption || "Before & After Transformation"}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="p-0 pb-4">
+                    <img
+                      src={composite.compositeUrl}
+                      alt={composite.caption || "Before and after comparison"}
+                      className="w-full aspect-square object-cover"
+                      loading="lazy"
+                      data-testid={`img-composite-${composite.id}`}
+                    />
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Customer Success Stories with Review Schema */}
+              {filteredCustomerStories?.map((story) => (
+                <Card 
+                  key={story.id} 
+                  className="overflow-hidden hover-elevate transition-all"
+                  data-testid={`card-story-${story.id}`}
+                  itemScope 
+                  itemType="https://schema.org/Review"
+                >
+                  {/* Hidden schema data */}
+                  <meta itemProp="author" content={story.customerName} />
+                  <meta itemProp="datePublished" content={new Date(story.submittedAt).toISOString()} />
+                  <meta itemProp="reviewBody" content={story.story} />
+                  <div itemProp="itemReviewed" itemScope itemType="https://schema.org/LocalBusiness">
+                    <meta itemProp="name" content="Economy Plumbing Services" />
+                  </div>
+                  
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge variant="default" data-testid={`badge-category-${story.id}`}>
+                        {story.serviceCategory}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground" data-testid={`text-date-${story.id}`}>
+                        {new Date(story.submittedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <CardTitle className="text-lg" data-testid={`text-customer-${story.id}`}>
+                      {story.customerName} - {story.location}
+                    </CardTitle>
+                  </CardHeader>
+                  
+                  <CardContent className="space-y-4">
+                    {story.collagePhotoUrl && (
+                      <img
+                        src={story.collagePhotoUrl}
+                        alt={`Before and after: ${story.story}`}
+                        className="w-full h-auto rounded-md"
+                        loading="lazy"
+                        data-testid={`img-collage-${story.id}`}
+                      />
+                    )}
+                    <p className="text-sm text-muted-foreground line-clamp-3" itemProp="reviewBody" data-testid={`text-story-${story.id}`}>
+                      "{story.story}"
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <p className="text-muted-foreground text-lg" data-testid="text-no-results">
+                {searchQuery || selectedCategory !== "all" 
+                  ? "No success stories match your filters. Try adjusting your search or category."
+                  : "Images coming soon! We're currently preparing amazing before & after transformations from our recent projects. Check back soon!"}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* CTA to Submit Story */}
+        <div className="container mx-auto max-w-6xl px-4 py-8">
+          <div className="text-center">
+            <Button
+              size="lg"
+              variant="default"
+              asChild
+              data-testid="button-share-your-story"
+            >
+              <a 
+                href="#share-your-story"
+                onClick={(e) => {
+                  e.preventDefault();
+                  document.getElementById('share-your-story')?.scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'start'
+                  });
+                }}
+              >
+                Share Your Success Story
+              </a>
+            </Button>
+          </div>
+        </div>
+
+        {/* NiceJob Reviews Section */}
+        <div className="container mx-auto max-w-6xl px-4 py-16">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              What Our Customers Say
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+              Read reviews from real customers who've experienced our exceptional service firsthand.
+            </p>
+          </div>
+          
+          {/* 
+            NICEJOB WIDGET SETUP INSTRUCTIONS:
+            
+            To display your NiceJob reviews widget here:
+            1. Log into your NiceJob admin panel (app.nicejob.com)
+            2. Navigate to Settings > Integrations > Website Widgets
+            3. Select "Reviews Widget" or "Success Stories Widget"
+            4. Copy the embed code provided
+            5. Replace this comment block with the embed code
+            
+            The SDK script is already loaded in the useEffect hook above.
+            You just need to add the widget container div with the correct class/data attributes.
+            
+            Example embed code format:
+            <div class="nj-widget" data-widget-id="YOUR_WIDGET_ID"></div>
+          */}
+          <div className="bg-muted rounded-lg p-12 text-center">
+            <p className="text-muted-foreground">
+              NiceJob reviews widget will display here once configured in your NiceJob admin panel.
+              <br />
+              <span className="text-sm">See instructions in source code above.</span>
+            </p>
+          </div>
+        </div>
+
+        {/* Submit Your Success Story */}
+        <div id="share-your-story" className="bg-muted py-16 px-4">
+          <div className="container mx-auto max-w-2xl">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl md:text-3xl text-center">
+                  Share Your Success Story
+                </CardTitle>
+                <p className="text-center text-muted-foreground mt-2">
+                  Had a great experience with Economy Plumbing? Share your before and after photos and tell us about it!
+                </p>
+              </CardHeader>
+              <CardContent>
+                <SuccessStoryForm />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Referral Program Callout */}
+        <div className="py-16 px-4">
+          <div className="container mx-auto max-w-4xl">
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
+              <CardContent className="pt-8 pb-8">
+                <div className="grid md:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Gift className="w-8 h-8 text-primary" />
+                      <h3 className="text-2xl md:text-3xl font-bold">
+                        Love Our Service?
+                      </h3>
+                    </div>
+                    <p className="text-lg text-muted-foreground mb-4">
+                      Share Economy Plumbing with friends and family! You'll both get $25 off your next service.
+                    </p>
+                    <p className="text-muted-foreground mb-6">
+                      Check out our referral leaderboard to see who's leading the pack and start earning rewards today!
+                    </p>
+                    <div className="flex gap-3">
+                      <Button asChild data-testid="button-view-leaderboard">
+                        <a href="/refer-a-friend">
+                          <Trophy className="w-4 h-4 mr-2" />
+                          View Leaderboard
+                        </a>
+                      </Button>
+                      <Button asChild variant="outline" data-testid="button-get-referral-link">
+                        <a href="/customer-portal">
+                          <Gift className="w-4 h-4 mr-2" />
+                          Get Your Link
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="bg-background p-6 rounded-lg border">
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Gift className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">$25 for You</p>
+                          <p className="text-sm text-muted-foreground">Per successful referral</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Gift className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">$25 for Them</p>
+                          <p className="text-sm text-muted-foreground">First service discount</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Trophy className="w-5 h-5 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-semibold">Compete & Win</p>
+                          <p className="text-sm text-muted-foreground">Climb the leaderboard</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="bg-primary text-white py-16 px-4">
+          <div className="container mx-auto max-w-4xl text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Ready for Your Own Success Story?
+            </h2>
+            <p className="text-xl text-white/90 mb-8">
+              Join hundreds of satisfied customers in Austin and Marble Falls who trust Economy Plumbing for quality work and exceptional service.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
+                asChild
+                data-testid="button-cta-call"
+              >
+                <a href={`tel:${phoneConfig.tel}`}>
+                  <Phone className="w-5 h-5 mr-2" />
+                  Call {phoneConfig.display} Now
+                </a>
+              </Button>
+              
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
+                onClick={openScheduler}
+                data-testid="button-cta-schedule"
+              >
+                <Calendar className="w-5 h-5 mr-2" />
+                Schedule Service Online
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Footer />
+    </>
+  );
+}

@@ -9,5 +9,5 @@ R.c("server/chunks/_fae4203f._.js")
 R.c("server/chunks/[root-of-the-server]__7cedc5c8._.js")
 R.c("server/chunks/shared_schema_ts_d3bfe82c._.js")
 R.c("server/chunks/_next-internal_server_app_api_products_[slug]_route_actions_9167092c.js")
-R.m(72747)
-module.exports=R.m(72747).exports
+R.m(272747)
+module.exports=R.m(272747).exports

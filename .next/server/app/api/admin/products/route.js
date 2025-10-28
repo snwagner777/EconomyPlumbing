@@ -10,5 +10,5 @@ R.c("server/chunks/node_modules_@neondatabase_serverless_index_mjs_2c73916b._.js
 R.c("server/chunks/[root-of-the-server]__7cedc5c8._.js")
 R.c("server/chunks/node_modules_zod_v3_external_d1e61c8a.js")
 R.c("server/chunks/_next-internal_server_app_api_admin_products_route_actions_d5c72fbf.js")
-R.m(85145)
-module.exports=R.m(85145).exports
+R.m(285145)
+module.exports=R.m(285145).exports
