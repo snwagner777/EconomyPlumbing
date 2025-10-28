@@ -8,6 +8,19 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { isAdmin } from '@/lib/session';
 import Link from 'next/link';
+import { 
+  Users, 
+  Mail, 
+  FileText, 
+  Phone, 
+  ImageIcon, 
+  Settings,
+  Star,
+  Database,
+  PlusCircle,
+  Upload,
+  ArrowRight
+} from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Admin Dashboard | Economy Plumbing Services',
@@ -42,136 +55,180 @@ export default async function AdminDashboardPage() {
       title: 'Customers',
       href: '/admin/customers',
       count: stats.totalCustomers || 0,
+      icon: Users,
+      description: 'Customer database and ServiceTitan sync',
     },
     {
       title: 'Marketing',
       href: '/admin/marketing',
-      count: stats.activeReviewRequests + stats.activeReferralCampaigns || 0,
+      count: (stats.activeReviewRequests || 0) + (stats.activeReferralCampaigns || 0),
+      icon: Mail,
+      description: 'Email campaigns and automation',
     },
     {
       title: 'Blog',
       href: '/admin/blog',
       count: stats.totalBlogPosts || 0,
+      icon: FileText,
+      description: 'Content management system',
     },
     {
       title: 'Contacts',
       href: '/admin/contacts',
       count: stats.recentContacts || 0,
+      icon: Mail,
+      description: 'Form submissions and leads',
     },
     {
       title: 'Photos',
       href: '/admin/photos',
       count: 0,
+      icon: ImageIcon,
+      description: 'Photo library management',
     },
     {
       title: 'Settings',
       href: '/admin/settings',
       count: null,
+      icon: Settings,
+      description: 'Site configuration',
     },
   ];
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex justify-between items-start mb-12">
-            <div>
-              <h1 className="text-4xl font-bold mb-2">Admin Dashboard</h1>
-              <p className="text-muted-foreground">
-                Economy Plumbing Services Management
-              </p>
+    <div className="p-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2" data-testid="heading-dashboard">
+            Dashboard
+          </h1>
+          <p className="text-muted-foreground" data-testid="text-description">
+            Overview and analytics for Economy Plumbing Services
+          </p>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-card p-6 rounded-lg border">
+            <div className="text-sm text-muted-foreground mb-1" data-testid="label-total-customers">
+              Total Customers
             </div>
-            <a 
-              href="/api/auth/logout" 
-              className="text-sm text-muted-foreground hover:text-foreground"
+            <div className="text-3xl font-bold" data-testid="stat-total-customers">
+              {stats.totalCustomers || 0}
+            </div>
+          </div>
+          <div className="bg-card p-6 rounded-lg border">
+            <div className="text-sm text-muted-foreground mb-1" data-testid="label-active-campaigns">
+              Active Campaigns
+            </div>
+            <div className="text-3xl font-bold" data-testid="stat-active-campaigns">
+              {(stats.activeReviewRequests || 0) + (stats.activeReferralCampaigns || 0)}
+            </div>
+          </div>
+          <div className="bg-card p-6 rounded-lg border">
+            <div className="text-sm text-muted-foreground mb-1" data-testid="label-blog-posts">
+              Blog Posts
+            </div>
+            <div className="text-3xl font-bold" data-testid="stat-blog-posts">
+              {stats.totalBlogPosts || 0}
+            </div>
+          </div>
+          <div className="bg-card p-6 rounded-lg border">
+            <div className="text-sm text-muted-foreground mb-1" data-testid="label-recent-contacts">
+              Recent Contacts
+            </div>
+            <div className="text-3xl font-bold" data-testid="stat-recent-contacts">
+              {stats.recentContacts || 0}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Sections */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {sections.map((section) => (
+            <Link
+              key={section.href}
+              href={section.href}
+              className="block p-6 bg-card hover:bg-accent rounded-lg border transition group"
+              data-testid={`card-admin-${section.title.toLowerCase()}`}
             >
-              Logout
-            </a>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="grid md:grid-cols-4 gap-6 mb-12">
-            <div className="bg-card p-6 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Total Customers</div>
-              <div className="text-3xl font-bold">{stats.totalCustomers || 0}</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Active Campaigns</div>
-              <div className="text-3xl font-bold">
-                {(stats.activeReviewRequests || 0) + (stats.activeReferralCampaigns || 0)}
+              <div className="flex items-start justify-between mb-3">
+                <section.icon className="h-8 w-8 text-primary" />
+                {section.count !== null && (
+                  <span className="text-2xl font-bold text-muted-foreground" data-testid={`count-${section.title.toLowerCase()}`}>
+                    {section.count}
+                  </span>
+                )}
               </div>
-            </div>
-            <div className="bg-card p-6 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Blog Posts</div>
-              <div className="text-3xl font-bold">{stats.totalBlogPosts || 0}</div>
-            </div>
-            <div className="bg-card p-6 rounded-lg">
-              <div className="text-sm text-muted-foreground mb-1">Recent Contacts</div>
-              <div className="text-3xl font-bold">{stats.recentContacts || 0}</div>
-            </div>
-          </div>
+              <h2 className="text-xl font-semibold mb-1 flex items-center gap-2" data-testid={`heading-${section.title.toLowerCase()}`}>
+                {section.title}
+                <ArrowRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition" />
+              </h2>
+              <p className="text-sm text-muted-foreground" data-testid={`description-${section.title.toLowerCase()}`}>
+                {section.description}
+              </p>
+            </Link>
+          ))}
+        </div>
 
-          {/* Navigation Sections */}
-          <div className="grid md:grid-cols-3 gap-6">
-            {sections.map((section) => (
-              <Link
-                key={section.href}
-                href={section.href}
-                className="block p-6 bg-card hover:bg-accent rounded-lg transition"
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold">{section.title}</h2>
-                  {section.count !== null && (
-                    <span className="text-2xl font-bold text-muted-foreground">
-                      {section.count}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Quick Actions */}
-          <div className="mt-12 bg-muted/30 p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-6">Quick Actions</h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              <a 
-                href="/admin/blog/new"
-                className="p-4 bg-card hover:bg-accent rounded-lg transition"
-              >
-                <div className="font-semibold">Create Blog Post</div>
+        {/* Quick Actions */}
+        <div className="bg-muted/30 p-8 rounded-lg border">
+          <h2 className="text-2xl font-bold mb-6" data-testid="heading-quick-actions">
+            Quick Actions
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Link 
+              href="/admin/blog/new"
+              className="flex items-start gap-4 p-4 bg-card hover:bg-accent rounded-lg border transition"
+              data-testid="action-create-blog"
+            >
+              <PlusCircle className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold mb-1">Create Blog Post</div>
                 <div className="text-sm text-muted-foreground">
                   Write a new blog article
                 </div>
-              </a>
-              <a 
-                href="/admin/google-reviews/sync"
-                className="p-4 bg-card hover:bg-accent rounded-lg transition"
-              >
-                <div className="font-semibold">Sync Google Reviews</div>
+              </div>
+            </Link>
+            <Link 
+              href="/admin/google-reviews/sync"
+              className="flex items-start gap-4 p-4 bg-card hover:bg-accent rounded-lg border transition"
+              data-testid="action-sync-reviews"
+            >
+              <Star className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold mb-1">Sync Google Reviews</div>
                 <div className="text-sm text-muted-foreground">
                   Update reviews from Google
                 </div>
-              </a>
-              <a 
-                href="/admin/customers/import"
-                className="p-4 bg-card hover:bg-accent rounded-lg transition"
-              >
-                <div className="font-semibold">Import Customers</div>
+              </div>
+            </Link>
+            <Link 
+              href="/admin/customers/import"
+              className="flex items-start gap-4 p-4 bg-card hover:bg-accent rounded-lg border transition"
+              data-testid="action-import-customers"
+            >
+              <Upload className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold mb-1">Import Customers</div>
                 <div className="text-sm text-muted-foreground">
                   Upload ServiceTitan XLSX file
                 </div>
-              </a>
-              <a 
-                href="/admin/campaigns/create"
-                className="p-4 bg-card hover:bg-accent rounded-lg transition"
-              >
-                <div className="font-semibold">New Campaign</div>
+              </div>
+            </Link>
+            <Link 
+              href="/admin/campaigns/create"
+              className="flex items-start gap-4 p-4 bg-card hover:bg-accent rounded-lg border transition"
+              data-testid="action-new-campaign"
+            >
+              <Mail className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+              <div>
+                <div className="font-semibold mb-1">New Campaign</div>
                 <div className="text-sm text-muted-foreground">
                   Start email or SMS campaign
                 </div>
-              </a>
-            </div>
+              </div>
+            </Link>
           </div>
         </div>
       </div>
