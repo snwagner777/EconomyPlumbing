@@ -20,15 +20,42 @@ const nextConfig: NextConfig = {
     },
   },
   
-  // Proxy API requests to Express server during development
-  async rewrites() {
-    const expressPort = process.env.EXPRESS_PORT || '5000';
-    const expressUrl = process.env.EXPRESS_URL || `http://localhost:${expressPort}`;
-    
+  // Asset optimization
+  compress: true,
+  
+  // Production optimizations
+  poweredByHeader: false,
+  generateEtags: true,
+  
+  // Redirects for SEO
+  async redirects() {
     return [
       {
-        source: '/api/:path*',
-        destination: `${expressUrl}/api/:path*`,
+        source: '/home-old',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/index',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/products',
+        destination: '/store',
+        permanent: true,
+      },
+      // Toilet repair canonical URL
+      {
+        source: '/toilet-repair-services',
+        destination: '/toilet-faucet',
+        permanent: true,
+      },
+      // Leander canonical URL
+      {
+        source: '/plumber-in-leander--tx524c3ae3',
+        destination: '/plumber-leander',
+        permanent: true,
       },
     ];
   },
