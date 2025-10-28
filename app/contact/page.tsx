@@ -1,125 +1,166 @@
-/**
- * Contact Page
- */
+'use client';
 
-import type { Metadata } from 'next';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ContactForm from "@/components/ContactForm";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Phone, MapPin, Clock, Mail } from "lucide-react";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
-export const metadata: Metadata = {
-  title: 'Contact Economy Plumbing | Austin TX Plumber',
-  description: 'Contact Economy Plumbing Services for plumbing service in Austin. Call (512) 368-9159 or request a free quote online. Fast, reliable service.',
-  openGraph: {
-    title: 'Contact Economy Plumbing Services',
-    description: 'Get in touch for plumbing service in Austin. Call or request a quote online.',
-  },
-};
-
-export default function ContactPage() {
+export default function Contact() {
+  const austinPhone = usePhoneConfig();
+  const marbleFallsPhone = useMarbleFallsPhone();
+  
+  const contactPageSchema = {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    "name": "Contact Economy Plumbing Services",
+    "description": "Contact Economy Plumbing for plumbing services in Austin and Marble Falls, Texas. Schedule online or call for 24/7 emergency service.",
+    "url": "https://www.plumbersthatcare.com/contact",
+    "mainEntity": {
+      "@type": "Plumber",
+      "name": "Economy Plumbing Services",
+      "telephone": ["+15123689159", "+18304603565"],
+      "address": [
+        {
+          "@type": "PostalAddress",
+          "streetAddress": "701 Tillery St #12",
+          "addressLocality": "Austin",
+          "addressRegion": "TX",
+          "postalCode": "78702",
+          "addressCountry": "US"
+        },
+        {
+          "@type": "PostalAddress",
+          "addressLocality": "Marble Falls",
+          "addressRegion": "TX",
+          "addressCountry": "US"
+        }
+      ],
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "07:30",
+          "closes": "17:30"
+        }
+      ]
+    }
+  };
+  
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-6xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6 text-center">Contact Us</h1>
-          
-          <p className="text-xl text-muted-foreground mb-12 text-center">
-            Get in touch for fast, reliable plumbing service
+    <div className="min-h-screen">
+      <SEOHead
+        title="Contact Us | Schedule Plumbing Service | Austin TX"
+        description="Schedule service online or call for 24/7 emergency plumbing. Serving Austin, Marble Falls & Central TX. Call Austin: (512) 368-9159 or (830) 460-3565."
+        canonical="https://www.plumbersthatcare.com/contact"
+        schema={contactPageSchema}
+      />
+
+      <Header />
+
+      <section className="bg-primary text-primary-foreground py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6">Contact Us</h1>
+          <p className="text-xl opacity-90 max-w-3xl mx-auto">
+            Get in touch with Economy Plumbing Services. We're here to help with all your plumbing needs.
           </p>
+        </div>
+      </section>
 
-          <div className="grid md:grid-cols-2 gap-12">
-            {/* Contact Info */}
+      <section className="py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-12">
             <div>
-              <h2 className="text-2xl font-semibold mb-6">Get In Touch</h2>
+              <h2 className="text-3xl font-bold mb-8">Get in Touch</h2>
               
-              <div className="space-y-6 mb-8">
-                <div>
-                  <h3 className="font-semibold mb-2">Phone</h3>
-                  <a href="tel:512-368-9159" className="text-lg text-primary hover:underline">
-                    (512) 368-9159
-                  </a>
-                  <p className="text-sm text-muted-foreground">Available 24/7 for emergencies</p>
-                </div>
+              <div className="space-y-6">
+                <Card className="p-6">
+                  <h3 className="text-2xl font-bold mb-4">Austin Area Office</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Phone className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Phone</p>
+                        <a href={austinPhone.tel} className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">{austinPhone.display}</a>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Address</p>
+                        <p className="text-muted-foreground">701 Tillery St #12<br />Austin, TX 78702</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Hours</p>
+                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:30 AM - 5:30 PM<br />Sat-Sun: By Appointment</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Service Areas</h3>
-                  <p className="text-muted-foreground">
-                    Austin, Cedar Park, Round Rock, Georgetown, Pflugerville, 
-                    Leander, Liberty Hill, Marble Falls, and surrounding areas
-                  </p>
-                </div>
+                <Card className="p-6">
+                  <h3 className="text-2xl font-bold mb-4">Marble Falls Area Office</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-start gap-3">
+                      <Phone className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Phone</p>
+                        <a href={marbleFallsPhone.tel} className="text-foreground text-lg font-poppins font-bold hover-elevate inline-block px-2 py-1 rounded-md">{marbleFallsPhone.display}</a>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Address</p>
+                        <p className="text-muted-foreground">2409 Commerce Street<br />Marble Falls, TX 78654</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <Clock className="w-5 h-5 text-primary mt-1" />
+                      <div>
+                        <p className="font-semibold">Hours</p>
+                        <p className="text-muted-foreground">24/7 Emergency Service<br />Mon-Fri: 7:30 AM - 5:30 PM<br />Sat-Sun: By Appointment</p>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
 
-                <div>
-                  <h3 className="font-semibold mb-2">Business Hours</h3>
-                  <p className="text-muted-foreground">
-                    Monday-Friday: 8:00 AM - 6:00 PM<br />
-                    Saturday: 9:00 AM - 4:00 PM<br />
-                    Sunday: Emergency Service Only<br />
-                    <span className="text-primary">24/7 Emergency Service</span>
-                  </p>
+                <div className="flex flex-wrap gap-4">
+                  <Button 
+                    onClick={() => openScheduler()}
+                    size="lg"
+                    data-testid="button-schedule"
+                  >
+                    Schedule Service Online
+                  </Button>
+                  <Button 
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    data-testid="button-emergency"
+                  >
+                    <a href={austinPhone.tel}>24/7 Emergency Service</a>
+                  </Button>
                 </div>
               </div>
             </div>
 
-            {/* Contact Form */}
-            <div className="bg-card p-8 rounded-lg">
-              <h2 className="text-2xl font-semibold mb-6">Request a Quote</h2>
-              
-              <form className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">Name</label>
-                  <input 
-                    type="text" 
-                    className="w-full px-4 py-2 border rounded-lg"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Phone</label>
-                  <input 
-                    type="tel" 
-                    className="w-full px-4 py-2 border rounded-lg"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Email</label>
-                  <input 
-                    type="email" 
-                    className="w-full px-4 py-2 border rounded-lg"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Service Needed</label>
-                  <select className="w-full px-4 py-2 border rounded-lg">
-                    <option>Water Heater</option>
-                    <option>Drain Cleaning</option>
-                    <option>Leak Repair</option>
-                    <option>Emergency Service</option>
-                    <option>Other</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Message</label>
-                  <textarea 
-                    className="w-full px-4 py-2 border rounded-lg"
-                    rows={4}
-                  />
-                </div>
-
-                <button 
-                  type="submit"
-                  className="w-full bg-primary text-primary-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-                >
-                  Send Message
-                </button>
-              </form>
+            <div>
+              <h2 className="text-3xl font-bold mb-8">Send Us a Message</h2>
+              <ContactForm />
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      <Footer />
     </div>
   );
 }
