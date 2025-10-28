@@ -37,7 +37,22 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(url, { status: 301 });
   }
 
-  // 3. Create response with security headers
+  // 3. Rewrite legacy object storage URLs
+  // /replit-objstore-{bucketId}/public/* → /public-objects/*
+  // Preserves query strings for signed URLs and versioning
+  if (pathname.match(/^\/replit-objstore-[^/]+\/public\//)) {
+    const filePathMatch = pathname.match(/^\/replit-objstore-[^/]+\/public\/(.*)$/);
+    if (filePathMatch) {
+      const filePath = filePathMatch[1];
+      const url = request.nextUrl.clone();
+      url.pathname = `/public-objects/${filePath}`;
+      // Query strings (search) are automatically preserved by clone()
+      // but explicitly ensuring parity for signed URLs: url.search remains unchanged
+      return NextResponse.rewrite(url);
+    }
+  }
+
+  // 4. Create response with security headers
   const response = NextResponse.next();
 
   // Security headers (matching Express implementation)
