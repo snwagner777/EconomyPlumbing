@@ -1,6 +1,6 @@
 'use client';
 import { useEffect } from "react";
-import { useLocation } from "wouter";
+import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
@@ -12,9 +12,8 @@ import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function MembershipSuccess() {
   const phoneConfig = usePhoneConfig();
-  const [location] = useLocation();
-  const params = new URLSearchParams(location.split('?')[1]);
-  const productSlug = params.get('product');
+  const searchParams = useSearchParams();
+  const productSlug = searchParams?.get('product');
 
   useEffect(() => {
     // Track membership purchase conversion

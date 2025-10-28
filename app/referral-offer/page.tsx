@@ -1,6 +1,6 @@
 'use client';
-import { useState } from "react";
-import { useRoute, useLocation } from "wouter";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,18 +30,25 @@ const refereeFormSchema = z.object({
 type RefereeForm = z.infer<typeof refereeFormSchema>;
 
 export default function ReferralOffer() {
-  const [, params] = useRoute("/referral-offer");
-  const [, setLocation] = useLocation();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [submitted, setSubmitted] = useState(false);
   
-  const referralCode = (params as { code?: string })?.code || new URLSearchParams(window.location.search).get("code") || "";
+  const referralCode = searchParams?.get("code") || "";
   
   // Convert code to readable name (JOHN-SMITH → John Smith)
   const referrerName = referralCode
     .split('-')
     .map((word: string) => word.charAt(0) + word.slice(1).toLowerCase())
     .join(' ');
+
+  // Redirect if no referral code
+  useEffect(() => {
+    if (!referralCode) {
+      router.push("/");
+    }
+  }, [referralCode, router]);
 
   const form = useForm<RefereeForm>({
     resolver: zodResolver(refereeFormSchema),
@@ -83,9 +90,15 @@ export default function ReferralOffer() {
     submitMutation.mutate(data);
   };
 
+  // Show loading state while redirecting
   if (!referralCode) {
-    setLocation("/");
-    return null;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
   const schedulerUrl = "https://go.servicetitan.com/";

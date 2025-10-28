@@ -1,13 +1,13 @@
 'use client';
 import { useEffect, useState } from "react";
-import { useRoute, useLocation } from "wouter";
+import { useParams, useRouter } from "next/navigation";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Loader2 } from "lucide-react";
 
 export default function ReferralLanding() {
-  const [, params] = useRoute("/ref/:code");
-  const [, setLocation] = useLocation();
+  const params = useParams();
+  const router = useRouter();
   const [isTracking, setIsTracking] = useState(true);
   
   const trackClickMutation = useMutation({
@@ -17,11 +17,11 @@ export default function ReferralLanding() {
   });
 
   useEffect(() => {
-    const code = params?.code;
+    const code = params?.code as string;
     
     if (!code) {
       // No code, redirect to home
-      setLocation("/");
+      router.push("/");
       return;
     }
 
@@ -42,11 +42,11 @@ export default function ReferralLanding() {
         // Redirect to referral offer page after tracking
         setTimeout(() => {
           setIsTracking(false);
-          setLocation(`/referral-offer?code=${code}`);
+          router.push(`/referral-offer?code=${code}`);
         }, 500);
       }
     });
-  }, [params?.code]);
+  }, [params?.code, router]);
 
   if (isTracking) {
     return (

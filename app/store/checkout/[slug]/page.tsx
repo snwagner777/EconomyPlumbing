@@ -1,5 +1,6 @@
 'use client';
-import { useParams, useLocation } from "wouter";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -85,7 +86,7 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
   const stripe = useStripe();
   const elements = useElements();
   const { toast } = useToast();
-  const [, setLocation] = useLocation();
+  const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,7 +176,8 @@ function CheckoutForm({ product, isTestMode, customerInfo }: { product: Product;
 }
 
 export default function MembershipCheckout() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params?.slug as string;
   const { toast } = useToast();
   const [step, setStep] = useState<'info' | 'payment'>('info');
   const [clientSecret, setClientSecret] = useState("");

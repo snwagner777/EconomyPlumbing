@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -42,8 +43,9 @@ interface ReferrerInfo {
 }
 
 export default function ReferredBy() {
-  const { referrerCustomerId } = useParams<{ referrerCustomerId: string }>();
-  const [, setLocation] = useLocation();
+  const params = useParams();
+  const referrerCustomerId = params?.referrerCustomerId as string;
+  const router = useRouter();
   const [submitted, setSubmitted] = useState(false);
   const { toast } = useToast();
 
@@ -54,10 +56,10 @@ export default function ReferredBy() {
       // Already submitted, redirect to homepage after showing message
       setSubmitted(true);
       setTimeout(() => {
-        setLocation("/");
+        router.push("/");
       }, 3000);
     }
-  }, [referrerCustomerId, setLocation]);
+  }, [referrerCustomerId, router]);
 
   // Fetch referrer info
   const { data: referrerData, isLoading: loadingReferrer } = useQuery<ReferrerInfo>({
@@ -106,7 +108,7 @@ export default function ReferredBy() {
 
       // Redirect after 3 seconds
       setTimeout(() => {
-        setLocation("/");
+        router.push("/");
       }, 3000);
     },
     onError: (error: Error) => {
@@ -141,7 +143,7 @@ export default function ReferredBy() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={() => setLocation("/")} className="w-full" data-testid="button-go-home">
+            <Button onClick={() => router.push("/")} className="w-full" data-testid="button-go-home">
               Go to Homepage
             </Button>
           </CardContent>
