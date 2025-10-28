@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useRoute, Link } from "wouter";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import Header from "@/components/Header";
@@ -31,8 +32,8 @@ const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
 };
 
 export default function BlogPost() {
-  const [match, params] = useRoute("/:slug");
-  const slug = params?.slug || "";
+  const params = useParams();
+  const slug = (params?.slug as string) || "";
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhoneConfig = useMarbleFallsPhone();
 

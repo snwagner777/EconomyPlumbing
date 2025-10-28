@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useRoute } from 'wouter';
+import { useParams } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,8 +11,8 @@ import { CheckCircle2, Mail, Settings } from 'lucide-react';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 
 export default function EmailPreferences() {
-  const [, params] = useRoute('/email-preferences/:token');
-  const token = params?.token;
+  const params = useParams();
+  const token = params?.token as string | undefined;
   const [updateSuccess, setUpdateSuccess] = useState(false);
 
   // Fetch current preferences
