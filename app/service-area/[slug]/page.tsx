@@ -1,8 +1,8 @@
 'use client';
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams } from "next/navigation";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { Link } from "wouter";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +30,8 @@ const SERVICES = [
 ];
 
 export default function ServiceAreaPage() {
-  const { slug } = useParams();
+  const params = useParams();
+  const slug = params?.slug as string;
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhone = useMarbleFallsPhone();
   
@@ -105,7 +106,7 @@ export default function ServiceAreaPage() {
             <h1 className="text-2xl font-bold mb-4">Service Area Not Found</h1>
             <p className="text-muted-foreground mb-6">We couldn't find information for this service area.</p>
             <Button asChild>
-              <Link href="/service-area">View All Service Areas</Link>
+              <Link href="/service-areas">View All Service Areas</Link>
             </Button>
           </Card>
         </div>
@@ -116,7 +117,7 @@ export default function ServiceAreaPage() {
 
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
-    { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-area" },
+    { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
     { name: cityName, url: `https://www.plumbersthatcare.com/service-area/${slug}` }
   ]);
 
@@ -147,7 +148,7 @@ export default function ServiceAreaPage() {
               </li>
               <li aria-hidden="true">/</li>
               <li>
-                <Link href="/service-area" className="hover:text-foreground" data-testid="link-breadcrumb-service-areas">
+                <Link href="/service-areas" className="hover:text-foreground" data-testid="link-breadcrumb-service-areas">
                   Service Areas
                 </Link>
               </li>
@@ -165,7 +166,7 @@ export default function ServiceAreaPage() {
             alt={`Professional plumbing services in ${cityName}, Texas`}
             width="1920"
             height="1080"
-            fetchpriority="high"
+            fetchPriority="high"
             decoding="async"
             className="w-full h-full object-cover"
           />
