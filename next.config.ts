@@ -1,13 +1,9 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  // Use standalone output for production
-  output: 'standalone',
-  
-  // Custom server handles Express integration
   reactStrictMode: true,
   
-  // Image optimization for attached_assets
+  // Image optimization
   images: {
     remotePatterns: [
       {
@@ -17,14 +13,11 @@ const nextConfig: NextConfig = {
     ],
   },
   
-  // Rewrites to handle legacy Express routes
-  async rewrites() {
-    return [
-      {
-        source: '/api/legacy/:path*',
-        destination: '/api/express/:path*',
-      },
-    ];
+  // Experimental features
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
 };
 
