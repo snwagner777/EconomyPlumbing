@@ -23,6 +23,12 @@ export interface SessionData {
   isAdmin?: boolean;
   oauthState?: string;
   oauthCodeVerifier?: string;
+  customerPortalAuth?: {
+    customerId: number;
+    email: string;
+    phone: string;
+    verifiedAt: number;
+  };
 }
 
 if (!process.env.SESSION_SECRET) {
