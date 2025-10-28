@@ -12,5 +12,5 @@ npx concurrently \
   --names "NEXT,WORKER" \
   --prefix-colors "blue,green" \
   --kill-others \
-  "npx next dev -p 5000" \
+  "npx next start -p 5000" \
   "npx tsx server/worker.ts"
