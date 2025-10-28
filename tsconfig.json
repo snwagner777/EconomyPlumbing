@@ -54,7 +54,7 @@
         "./src/lib/*"
       ],
       "@/server/*": [
-        "./src/server/*"
+        "./server/*"
       ],
       "@shared/*": [
         "./shared/*"

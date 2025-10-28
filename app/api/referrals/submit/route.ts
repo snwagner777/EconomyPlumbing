@@ -11,10 +11,10 @@ import { z } from 'zod';
 
 const referralSchema = z.object({
   referrerName: z.string().min(1).max(200),
-  referrerEmail: z.string().email(),
-  referrerPhone: z.string().optional(),
+  referrerEmail: z.string().email().optional().or(z.literal('')),
+  referrerPhone: z.string().min(1),
   refereeName: z.string().min(1).max(200),
-  refereeEmail: z.string().email().optional(),
+  refereeEmail: z.string().email().optional().or(z.literal('')),
   refereePhone: z.string().min(1),
   refereeAddress: z.string().optional(),
   refereeCity: z.string().optional(),

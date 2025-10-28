@@ -7,8 +7,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '../../../server/db';
-import { contactSubmissions } from '../../../shared/schema';
+import { db } from '@/server/db';
+import { contactSubmissions } from '@shared/schema';
 import { z } from 'zod';
 
 const smsSubscribeSchema = z.object({
