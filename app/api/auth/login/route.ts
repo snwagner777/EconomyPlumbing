@@ -2,10 +2,13 @@
  * OAuth Login Route
  * 
  * Initiates Replit OAuth flow for admin authentication
+ * with CSRF protection via session-stored state and PKCE
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import * as client from 'openid-client';
+import { getSession } from '@/lib/session';
+import { randomBytes } from 'crypto';
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,12 +20,26 @@ export async function GET(req: NextRequest) {
       process.env.REPL_ID!
     );
 
-    // Generate authorization URL
+    // Generate CSRF state and PKCE code verifier
+    const state = randomBytes(32).toString('hex');
+    const codeVerifier = client.randomPKCECodeVerifier();
+    const codeChallenge = await client.calculatePKCECodeChallenge(codeVerifier);
+
+    // Store state and code verifier in session for callback verification
+    const session = await getSession();
+    session.oauthState = state;
+    session.oauthCodeVerifier = codeVerifier;
+    await session.save();
+
+    // Generate authorization URL with PKCE
     const authUrl = client.buildAuthorizationUrl(config, {
       client_id: process.env.REPL_ID!,
       redirect_uri: `https://${hostname}/api/auth/callback`,
       scope: 'openid email profile offline_access',
       prompt: 'login consent',
+      state,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'S256',
     });
 
     // Redirect to Replit OAuth

@@ -21,6 +21,8 @@ export interface SessionData {
     expires_at?: number;
   };
   isAdmin?: boolean;
+  oauthState?: string;
+  oauthCodeVerifier?: string;
 }
 
 if (!process.env.SESSION_SECRET) {
