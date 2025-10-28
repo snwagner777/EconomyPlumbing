@@ -1,132 +1,235 @@
-/**
- * FAQ Page
- * 
- * Frequently asked questions about plumbing services
- */
+'use client';
 
-import type { Metadata } from 'next';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import ContactFormSection from "@/components/ContactFormSection";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Phone } from "lucide-react";
+import { openScheduler } from "@/lib/scheduler";
+import { SEOHead } from "@/components/SEO/SEOHead";
+import { createFAQSchema } from "@/components/SEO/JsonLd";
+import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
-export const metadata: Metadata = {
-  title: 'Frequently Asked Questions | Economy Plumbing Services',
-  description: 'Common questions about our plumbing services, pricing, emergency service, and more.',
-};
-
-const faqs = [
+const faqCategories = [
   {
-    category: 'Services',
-    questions: [
+    category: "General Plumbing",
+    faqs: [
       {
-        q: 'Do you offer 24/7 emergency plumbing service?',
-        a: 'Yes, we provide 24/7 emergency plumbing services for urgent issues like burst pipes, major leaks, and sewer backups. Call our emergency line anytime.',
+        question: "What areas do you serve?",
+        answer: "We serve Austin and the surrounding areas including Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, and Kyle. We also serve the Marble Falls area including Burnet, Horseshoe Bay, Kingsland, and surrounding Highland Lakes communities."
       },
       {
-        q: 'What services do you provide?',
-        a: 'We offer comprehensive plumbing services including repairs, installations, drain cleaning, water heater service, leak detection, sewer line work, and preventive maintenance.',
+        question: "Are you licensed and insured?",
+        answer: "Yes, we are fully licensed and insured. Our plumbers hold all required certifications including Master Plumber licenses, gas fitting certifications, and backflow tester certifications."
       },
       {
-        q: 'Are you licensed and insured?',
-        a: 'Yes, all our plumbers are fully licensed, insured, and background-checked. We carry comprehensive liability insurance for your protection.',
+        question: "Do you offer emergency services?",
+        answer: "Yes, we provide 24/7 emergency plumbing service throughout our service area. Call (512) 368-9159 for Austin area or (830) 460-3565 for Marble Falls area for immediate assistance."
       },
-    ],
+      {
+        question: "How quickly can you respond to an emergency?",
+        answer: "Our goal is to respond to emergency calls within 60-90 minutes. Response times may vary based on location and current demand, but we prioritize emergencies and dispatch the nearest available technician."
+      },
+      {
+        question: "Do you provide free estimates?",
+        answer: "Yes, we provide free estimates for most plumbing projects. For service calls and repairs, there's a diagnostic fee that's applied toward the repair if you proceed with our recommended service."
+      }
+    ]
   },
   {
-    category: 'Pricing & Payment',
-    questions: [
+    category: "Water Heaters",
+    faqs: [
       {
-        q: 'Do you charge for estimates?',
-        a: 'We provide free estimates for most services. For complex projects, we may charge a diagnostic fee that will be credited toward the repair if you choose to proceed.',
+        question: "How long do water heaters typically last?",
+        answer: "Traditional tank water heaters last 10-15 years on average, while tankless water heaters can last 20+ years. Lifespan depends on water quality, maintenance, and usage patterns."
       },
       {
-        q: 'What payment methods do you accept?',
-        a: 'We accept cash, checks, all major credit cards, and digital payments. Financing options are available for larger projects.',
+        question: "Should I choose a tank or tankless water heater?",
+        answer: "Tank water heaters cost less upfront and provide large volumes of hot water. Tankless heaters save energy, last longer, and provide endless hot water but have higher upfront costs. We'll help you choose based on your needs, budget, and usage."
       },
       {
-        q: 'Do you offer senior or military discounts?',
-        a: 'Yes, we offer special discounts for seniors and active/retired military personnel. Ask about current promotions when you call.',
+        question: "How often should I maintain my water heater?",
+        answer: "We recommend annual maintenance for all water heaters. This includes flushing sediment, checking the anode rod, testing pressure relief valves, and inspecting connections. Regular maintenance extends heater life and improves efficiency."
       },
-    ],
+      {
+        question: "What size water heater do I need?",
+        answer: "For tank heaters: 30-40 gallons for 1-2 people, 50 gallons for 2-3 people, 75+ gallons for 4+ people. For tankless heaters, we calculate based on simultaneous hot water demand. We'll assess your specific needs during the consultation."
+      }
+    ]
   },
   {
-    category: 'Scheduling',
-    questions: [
+    category: "Drains & Clogs",
+    faqs: [
       {
-        q: 'How quickly can you get here?',
-        a: 'For emergencies, we typically arrive within 1-2 hours. For scheduled appointments, we offer same-day or next-day service in most cases.',
+        question: "Why do my drains keep clogging?",
+        answer: "Recurring clogs usually indicate buildup in pipes (grease, soap scum, hair), tree root intrusion in sewer lines, or pipe problems like sagging or bellies. Video inspection can identify the root cause for permanent solutions."
       },
       {
-        q: 'Do I need to be home for the service?',
-        a: 'Yes, someone 18 or older should be present during service. If you cannot be home, we can arrange special accommodations.',
+        question: "Are chemical drain cleaners safe to use?",
+        answer: "We don't recommend chemical drain cleaners. They can damage pipes, especially older ones, and are harmful to the environment. They often provide only temporary relief. Professional drain cleaning is safer and more effective."
       },
       {
-        q: 'What are your business hours?',
-        a: 'Our office is open Monday-Friday 8am-6pm, Saturday 9am-4pm. Emergency service is available 24/7 including holidays.',
+        question: "What's the difference between snaking and hydro jetting?",
+        answer: "Snaking uses a cable to punch through clogs, providing quick relief. Hydro jetting uses high-pressure water to completely clean pipe walls, removing all buildup. Hydro jetting is more thorough and provides longer-lasting results."
       },
-    ],
+      {
+        question: "Can tree roots damage my sewer line?",
+        answer: "Yes, tree roots seek water and can penetrate sewer lines through tiny cracks or joints. Once inside, they grow and can completely block the line. We can clear roots with hydro jetting and recommend solutions to prevent recurrence."
+      }
+    ]
   },
   {
-    category: 'Warranties & Guarantees',
-    questions: [
+    category: "Leaks & Repairs",
+    faqs: [
       {
-        q: 'Do you warranty your work?',
-        a: 'Yes, we provide a 1-year warranty on all labor and use manufacturer warranties for parts. VIP members receive extended 2-year warranties.',
+        question: "How do I know if I have a hidden water leak?",
+        answer: "Signs include unexplained water bill increases, water meter running when no water is being used, damp spots on floors/walls/ceilings, musty odors, or the sound of running water when fixtures are off. We offer leak detection services to locate hidden leaks."
       },
       {
-        q: 'What if I\'m not satisfied with the service?',
-        a: 'Your satisfaction is guaranteed. If you\'re not completely satisfied with our work, we\'ll make it right at no additional charge.',
+        question: "Should I repair or replace a leaking faucet?",
+        answer: "For faucets less than 10 years old, repair is usually cost-effective. For older faucets or when repair costs exceed 50% of replacement, we recommend replacement with a new, more efficient model."
       },
-    ],
+      {
+        question: "What causes pipes to burst?",
+        answer: "Common causes include freezing temperatures, corrosion, excessive water pressure, physical damage, and age. Regular maintenance, proper insulation, and pressure regulation can prevent most burst pipes."
+      },
+      {
+        question: "Does homeowners insurance cover plumbing leaks?",
+        answer: "Most policies cover sudden, accidental damage from burst pipes but may not cover gradual leaks or poor maintenance. Check your specific policy. We can provide detailed documentation for insurance claims."
+      }
+    ]
   },
+  {
+    category: "Gas Services",
+    faqs: [
+      {
+        question: "How do I know if I have a gas leak?",
+        answer: "Signs include the smell of rotten eggs (added to gas for detection), hissing sounds near gas lines, dead vegetation near lines, and physical symptoms like dizziness or nausea. If you suspect a leak, evacuate immediately, call 911, then contact us."
+      },
+      {
+        question: "Can I install a gas line myself?",
+        answer: "No. Gas line work must be performed by licensed professionals for safety and code compliance. Improper installation can cause leaks, fires, explosions, and carbon monoxide poisoning. Our certified technicians ensure safe, code-compliant installations."
+      },
+      {
+        question: "Do you work with both natural gas and propane?",
+        answer: "Yes, we service both natural gas and propane (LP) systems. Our technicians are trained on both fuel types and understand the specific requirements and safety considerations for each."
+      }
+    ]
+  },
+  {
+    category: "Pricing & Payment",
+    faqs: [
+      {
+        question: "How much do plumbing services cost?",
+        answer: "Costs vary widely based on the service needed. Simple repairs may cost $150-300, while major installations can run several thousand. We provide upfront pricing before starting work so there are no surprises."
+      },
+      {
+        question: "Do you offer financing?",
+        answer: "Yes, we offer financing options for larger projects. Contact us for details on current financing programs and to see if you qualify."
+      },
+      {
+        question: "What payment methods do you accept?",
+        answer: "We accept cash, checks, and all major credit cards. Payment is due upon completion of service unless other arrangements have been made in advance."
+      },
+      {
+        question: "Do you offer service agreements or maintenance plans?",
+        answer: "Yes, we offer VIP membership plans with priority scheduling, discounted rates, and regular maintenance visits. These plans help prevent problems and save money over time."
+      }
+    ]
+  }
 ];
 
-export default function FAQPage() {
-  return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Frequently Asked Questions</h1>
-          <p className="text-xl text-muted-foreground mb-12">
-            Find answers to common questions about our plumbing services
-          </p>
+export default function FAQ() {
+  const phoneConfig = usePhoneConfig();
+  
+  // Flatten all FAQs for schema
+  const allFAQs = faqCategories.flatMap(category => category.faqs);
+  const faqSchema = createFAQSchema(allFAQs);
 
-          {faqs.map((category, i) => (
-            <div key={i} className="mb-12">
-              <h2 className="text-2xl font-semibold mb-6 text-primary">
-                {category.category}
-              </h2>
-              <div className="space-y-8">
-                {category.questions.map((faq, j) => (
-                  <div key={j} className="border-l-4 border-primary pl-6 py-2">
-                    <h3 className="font-semibold text-lg mb-3">{faq.q}</h3>
-                    <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
-                  </div>
+  return (
+    <div className="min-h-screen">
+      <SEOHead
+        title="Plumbing FAQ Austin TX | Your Questions Answered Here"
+        description="Expert answers to common plumbing questions. Water heater advice, emergency services, pricing and service areas. 20+ years experience. Call (512) 368-9159."
+        canonical="https://www.plumbersthatcare.com/faq"
+        schema={faqSchema}
+      />
+
+      <Header />
+
+      <section className="bg-primary text-primary-foreground py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-4xl lg:text-5xl font-bold mb-6">Frequently Asked Questions</h1>
+          <p className="text-xl opacity-90 max-w-3xl mx-auto">
+            Find answers to common plumbing questions. Don't see your question? Give us a call!
+          </p>
+        </div>
+      </section>
+
+      <section className="py-16 lg:py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          {faqCategories.map((category, idx) => (
+            <div key={idx} className="mb-12">
+              <h2 className="text-2xl font-bold mb-6">{category.category}</h2>
+              <Accordion type="single" collapsible className="space-y-4">
+                {category.faqs.map((faq, faqIdx) => (
+                  <AccordionItem 
+                    key={faqIdx} 
+                    value={`${idx}-${faqIdx}`}
+                    className="border rounded-lg px-6"
+                  >
+                    <AccordionTrigger className="text-left font-semibold hover:text-primary">
+                      {faq.question}
+                    </AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground pt-2">
+                      {faq.answer}
+                    </AccordionContent>
+                  </AccordionItem>
                 ))}
-              </div>
+              </Accordion>
             </div>
           ))}
+        </div>
+      </section>
 
-          {/* Still have questions CTA */}
-          <div className="mt-16 bg-muted/30 p-8 rounded-lg text-center">
-            <h2 className="text-2xl font-bold mb-4">Still Have Questions?</h2>
-            <p className="text-muted-foreground mb-6">
-              We're here to help! Contact us anytime for answers to your plumbing questions.
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <a 
-                href="/contact"
-                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                Contact Us
+      <section className="py-16 lg:py-20 bg-muted/30">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">Still Have Questions?</h2>
+          <p className="text-lg text-muted-foreground mb-8">
+            Our friendly team is here to help. Contact us for personalized assistance with your plumbing needs.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <Button 
+              onClick={openScheduler}
+              size="lg"
+              data-testid="button-schedule"
+            >
+              Schedule Service
+            </Button>
+            <Button 
+              asChild
+              size="lg"
+              variant="outline"
+              data-testid="button-call"
+            >
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
+                <Phone className="w-5 h-5" />
+                {phoneConfig.display}
               </a>
-              <a 
-                href="tel:555-555-5555"
-                className="bg-accent text-accent-foreground px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
-              >
-                Call: (555) 555-5555
-              </a>
-            </div>
+            </Button>
           </div>
         </div>
-      </div>
+      </section>
+
+      <ContactFormSection />
+
+      <Footer />
     </div>
   );
 }
