@@ -26,6 +26,7 @@ export async function GET() {
     '/backflow',
     '/sewer-line-repair',
     '/repiping',
+    '/hydro-jetting-services',
     '/commercial-plumbing',
     '/fixture-installation',
     '/gas-line-services',
@@ -39,7 +40,9 @@ export async function GET() {
     '/service-areas/cedar-park',
     '/service-areas/round-rock',
     '/privacy-policy',
+    '/terms-of-service',
     '/refund_returns',
+    '/water-heater-cost-calculator',
   ];
 
   // Fetch dynamic content from API routes

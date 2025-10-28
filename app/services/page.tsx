@@ -18,11 +18,16 @@ export const metadata: Metadata = {
 export default function AllServicesPage() {
   const services = [
     { title: 'Water Heater Services', href: '/water-heater-services', desc: 'Repair, installation, tankless systems' },
-    { title: 'Drain Cleaning', href: '/drain-cleaning', desc: 'Hydro jetting, rooter service, camera inspection' },
+    { title: 'Drain Cleaning', href: '/drain-cleaning', desc: 'Clog removal, rooter service, camera inspection' },
+    { title: 'Hydro Jetting', href: '/hydro-jetting-services', desc: 'High-pressure water jetting for stubborn clogs' },
+    { title: 'Gas Line Services', href: '/gas-line-services', desc: 'Installation, repair, and safety inspections' },
+    { title: 'Sewer Line Repair', href: '/sewer-line-repair', desc: 'Main line repair and replacement' },
+    { title: 'Repiping', href: '/repiping', desc: 'Complete home repiping and pipe replacement' },
     { title: 'Leak Repair', href: '/leak-repair', desc: 'Detection and repair of all types of leaks' },
     { title: 'Emergency Plumbing', href: '/emergency', desc: '24/7 emergency service for urgent issues' },
-    { title: 'Commercial Plumbing', href: '/commercial-plumbing', desc: 'Business plumbing solutions' },
+    { title: 'Fixture Installation', href: '/fixture-installation', desc: 'Faucets, toilets, sinks, and more' },
     { title: 'Backflow Testing', href: '/backflow', desc: 'Testing and certification services' },
+    { title: 'Commercial Plumbing', href: '/commercial-plumbing', desc: 'Business plumbing solutions' },
   ];
 
   return (
