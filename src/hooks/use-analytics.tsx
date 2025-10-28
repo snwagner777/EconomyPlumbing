@@ -4,17 +4,24 @@
 // Reference: blueprint:javascript_google_analytics
 
 import { useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { trackPageView } from '../lib/analytics';
 
 export const useAnalytics = () => {
-  const location = usePathname() || '/';
-  const prevLocationRef = useRef<string>(location);
+  const pathname = usePathname() || '/';
+  const searchParams = useSearchParams();
+  
+  // Reconstruct full URL with query string for UTM tracking
+  const fullUrl = searchParams?.toString() 
+    ? `${pathname}?${searchParams.toString()}` 
+    : pathname;
+  
+  const prevLocationRef = useRef<string>(fullUrl);
   
   useEffect(() => {
-    if (location !== prevLocationRef.current) {
-      trackPageView(location);
-      prevLocationRef.current = location;
+    if (fullUrl !== prevLocationRef.current) {
+      trackPageView(fullUrl);
+      prevLocationRef.current = fullUrl;
     }
-  }, [location]);
+  }, [fullUrl]);
 };
