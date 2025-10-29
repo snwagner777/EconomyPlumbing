@@ -2,10 +2,9 @@
  * Next.js Middleware - Runs before every request
  * 
  * Handles:
- * 1. Trailing slash redirects (301)
- * 2. Security headers
- * 3. .replit.app domain redirect to custom domain
- * 4. URL normalization
+ * 1. Legacy object storage URL rewrites
+ * 2. Security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * 3. .replit.app domain redirect (disabled in development)
  */
 
 import { NextResponse } from 'next/server';
@@ -15,29 +14,16 @@ export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get('host') || '';
 
-  // 1. Redirect .replit.app domain to custom domain
-  if (host.includes('.replit.app')) {
-    const customDomain = 'https://www.plumbersthatcare.com';
-    const redirectUrl = `${customDomain}${pathname}${search}`;
-    return NextResponse.redirect(redirectUrl, { status: 301 });
-  }
+  // 1. Redirect .replit.app domain to custom domain (DISABLED IN DEVELOPMENT)
+  // In production, this will redirect to custom domain
+  // In development, we allow both .replit.app and localhost
+  // if (host.includes('.replit.app') && process.env.NODE_ENV === 'production') {
+  //   const customDomain = 'https://www.plumbersthatcare.com';
+  //   const redirectUrl = `${customDomain}${pathname}${search}`;
+  //   return NextResponse.redirect(redirectUrl, { status: 301 });
+  // }
 
-  // 2. Trailing slash redirect (301 permanent)
-  // Add trailing slash to all paths except:
-  // - API routes (/api/*)
-  // - Static files (with extensions)
-  // - Paths that already have trailing slash
-  const hasTrailingSlash = pathname.endsWith('/');
-  const isApiRoute = pathname.startsWith('/api');
-  const hasExtension = /\.[a-z]+$/i.test(pathname);
-  
-  if (!hasTrailingSlash && !isApiRoute && !hasExtension && pathname !== '/') {
-    const url = request.nextUrl.clone();
-    url.pathname = `${pathname}/`;
-    return NextResponse.redirect(url, { status: 301 });
-  }
-
-  // 3. Rewrite legacy object storage URLs
+  // 2. Rewrite legacy object storage URLs
   // /replit-objstore-{bucketId}/public/* → /public-objects/*
   // Preserves query strings for signed URLs and versioning
   if (pathname.match(/^\/replit-objstore-[^/]+\/public\//)) {
@@ -52,7 +38,7 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 4. Create response with security headers
+  // 3. Set security headers on response
   const response = NextResponse.next();
 
   // Security headers (matching Express implementation)
