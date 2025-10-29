@@ -88,7 +88,7 @@ export default function Home() {
         "Energy-efficient options",
       ],
       link: "/water-heater-services",
-      image: waterHeaterImage,
+      image: waterHeaterImage.src,
     },
     {
       icon: Wind,
@@ -97,7 +97,7 @@ export default function Home() {
         "Professional drain cleaning and sewer line services to keep your pipes flowing.",
       features: ["Video inspection", "Hydro jetting", "Root removal"],
       link: "/drain-cleaning",
-      image: drainImage,
+      image: drainImage.src,
     },
     {
       icon: Wrench,
@@ -110,7 +110,7 @@ export default function Home() {
         "Insurance claims help",
       ],
       link: "/leak-repair",
-      image: leakImage,
+      image: leakImage.src,
     },
     {
       icon: Bath,
@@ -119,7 +119,7 @@ export default function Home() {
         "Complete toilet and faucet installation, repair, and replacement services.",
       features: ["Modern fixtures", "Water-saving options", "Quick repairs"],
       link: "/toilet-faucet",
-      image: toiletImage,
+      image: toiletImage.src,
     },
     {
       icon: Building2,
@@ -132,7 +132,7 @@ export default function Home() {
         "Code compliance",
       ],
       link: "/commercial-plumbing",
-      image: commercialImage,
+      image: commercialImage.src,
     },
     {
       icon: Flame,
@@ -203,7 +203,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Sean was honest, communicated well and helped me understand the problem and solutions. Thanks Sean.",
-      image: testimonial1,
+      image: testimonial1.src,
     },
     {
       name: "Bill Farrior",
@@ -212,7 +212,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "I've always been happy with Sean's work. He earned my trust about 7 years ago when he showed up on a holiday to fix a backed up drain, and I've been using Economy Plumbing ever since!",
-      image: testimonial1,
+      image: testimonial1.src,
     },
     {
       name: "Jen Wall",
@@ -221,7 +221,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Sean from Economy Plumbing was quick, efficient, and very helpful. He serviced my tankless water heater and did a routine checkup, found a small issue and was able to repair it same day.",
-      image: testimonial2,
+      image: testimonial2.src,
     },
     {
       name: "Georgia Coleman",
@@ -230,7 +230,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Great customer service from start to finish. Reasonable prices and great work.",
-      image: testimonial2,
+      image: testimonial2.src,
     },
     {
       name: "Glenn Prescott",
@@ -239,7 +239,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Stayed very late in order to Finish Job which helped my wife out big time! She needed to leave next morning. Just a fantastic job!!",
-      image: testimonial3,
+      image: testimonial3.src,
     },
     {
       name: "Krista Pettengill",
@@ -247,7 +247,7 @@ export default function Home() {
       service: "Plumbing Service",
       rating: 5,
       testimonial: "Great service and very knowledgeable!",
-      image: testimonial2,
+      image: testimonial2.src,
     },
   ];
 

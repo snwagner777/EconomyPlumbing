@@ -655,7 +655,7 @@ function Header({ isPortalAuthenticated = false, onPortalLogout }) {
                             href: "/",
                             className: "flex items-center",
                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"],
+                                src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src,
                                 alt: "Economy Plumbing Services logo",
                                 width: "85",
                                 height: "48",
@@ -1803,7 +1803,7 @@ function Hero() {
                 className: "absolute inset-0",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                        src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$modern_luxury_bathro_0f267931$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$modern_luxury_bathro_0f267931$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"],
+                        src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$modern_luxury_bathro_0f267931$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$modern_luxury_bathro_0f267931$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src,
                         alt: "Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX",
                         width: "1920",
                         height: "1080",
@@ -4921,7 +4921,7 @@ function Footer() {
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                    src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"],
+                                    src: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Economy_Plumbing_Services_logo_1759801055079$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src,
                                     alt: "Economy Plumbing Services",
                                     width: "85",
                                     height: "48",
@@ -6086,7 +6086,7 @@ function Home() {
                 "Energy-efficient options"
             ],
             link: "/water-heater-services",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Tankless_water_heater_closeup_7279af49$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Tankless_water_heater_closeup_7279af49$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Tankless_water_heater_closeup_7279af49$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Tankless_water_heater_closeup_7279af49$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$wind$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Wind$3e$__["Wind"],
@@ -6098,7 +6098,7 @@ function Home() {
                 "Root removal"
             ],
             link: "/drain-cleaning",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Drain_cleaning_professional_service_e8a953c5$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Drain_cleaning_professional_service_e8a953c5$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Drain_cleaning_professional_service_e8a953c5$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Drain_cleaning_professional_service_e8a953c5$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$wrench$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Wrench$3e$__["Wrench"],
@@ -6110,7 +6110,7 @@ function Home() {
                 "Insurance claims help"
             ],
             link: "/leak-repair",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Leak_repair_service_work_cb3145cc$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Leak_repair_service_work_cb3145cc$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Leak_repair_service_work_cb3145cc$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Leak_repair_service_work_cb3145cc$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$bath$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Bath$3e$__["Bath"],
@@ -6122,7 +6122,7 @@ function Home() {
                 "Quick repairs"
             ],
             link: "/toilet-faucet",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Toilet_and_faucet_installation_18dec30d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Toilet_and_faucet_installation_18dec30d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Toilet_and_faucet_installation_18dec30d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Toilet_and_faucet_installation_18dec30d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$building$2d$2$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Building2$3e$__["Building2"],
@@ -6134,7 +6134,7 @@ function Home() {
                 "Code compliance"
             ],
             link: "/commercial-plumbing",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Commercial_plumbing_services_bd7b6306$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Commercial_plumbing_services_bd7b6306$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Commercial_plumbing_services_bd7b6306$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Commercial_plumbing_services_bd7b6306$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             icon: __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$flame$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Flame$3e$__["Flame"],
@@ -6198,7 +6198,7 @@ function Home() {
             service: "Water Heater Repair",
             rating: 5,
             testimonial: "Sean was honest, communicated well and helped me understand the problem and solutions. Thanks Sean.",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             name: "Bill Farrior",
@@ -6206,7 +6206,7 @@ function Home() {
             service: "Emergency Service",
             rating: 5,
             testimonial: "I've always been happy with Sean's work. He earned my trust about 7 years ago when he showed up on a holiday to fix a backed up drain, and I've been using Economy Plumbing ever since!",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Customer_testimonial_portrait_f033b456$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             name: "Jen Wall",
@@ -6214,7 +6214,7 @@ function Home() {
             service: "Water Heater Service",
             rating: 5,
             testimonial: "Sean from Economy Plumbing was quick, efficient, and very helpful. He serviced my tankless water heater and did a routine checkup, found a small issue and was able to repair it same day.",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             name: "Georgia Coleman",
@@ -6222,7 +6222,7 @@ function Home() {
             service: "Plumbing Repair",
             rating: 5,
             testimonial: "Great customer service from start to finish. Reasonable prices and great work.",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             name: "Glenn Prescott",
@@ -6230,7 +6230,7 @@ function Home() {
             service: "Emergency Repair",
             rating: 5,
             testimonial: "Stayed very late in order to Finish Job which helped my wife out big time! She needed to leave next morning. Just a fantastic job!!",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Senior_customer_testimonial_027f5302$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Senior_customer_testimonial_027f5302$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Senior_customer_testimonial_027f5302$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Senior_customer_testimonial_027f5302$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         },
         {
             name: "Krista Pettengill",
@@ -6238,7 +6238,7 @@ function Home() {
             service: "Plumbing Service",
             rating: 5,
             testimonial: "Great service and very knowledgeable!",
-            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"]
+            image: __TURBOPACK__imported__module__$5b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp$2e$mjs__$7b$__IMAGE__$3d3e$__$225b$project$5d2f$attached_assets$2f$optimized$2f$Female_customer_testimonial_f29d918d$2e$webp__$28$static__in__ecmascript$2c$__tag__client$2922$__$7d$__$5b$app$2d$ssr$5d$__$28$structured__image__object__with__data__url$2c$__ecmascript$29$__["default"].src
         }
     ];
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {

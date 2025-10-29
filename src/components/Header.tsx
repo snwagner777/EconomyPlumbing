@@ -94,7 +94,7 @@ export default function Header({ isPortalAuthenticated = false, onPortalLogout }
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center">
             <img 
-              src={logoImage} 
+              src={logoImage.src} 
               alt="Economy Plumbing Services logo" 
               width="85"
               height="48"

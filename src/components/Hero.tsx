@@ -11,7 +11,7 @@ export default function Hero() {
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       <div className="absolute inset-0">
         <img
-          src={heroImage}
+          src={heroImage.src}
           alt="Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services Austin TX"
           width="1920"
           height="1080"
