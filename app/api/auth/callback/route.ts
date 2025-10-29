@@ -39,6 +39,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.redirect(new URL('/admin-login?error=verifier_missing', req.url));
     }
 
+    // Use REPLIT_DEV_DOMAIN for proper OAuth redirect (must match login route)
+    const callbackHostname = process.env.REPLIT_DEV_DOMAIN || req.headers.get('host') || '';
+    const redirectUri = `https://${callbackHostname}/api/auth/callback`;
+    
+    console.log('[OAuth] Using redirect_uri for token exchange:', redirectUri);
+
     // Get OIDC configuration
     const config = await client.discovery(
       new URL(process.env.ISSUER_URL ?? 'https://replit.com/oidc'),
