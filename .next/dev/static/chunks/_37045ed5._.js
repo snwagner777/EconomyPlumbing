@@ -3820,10 +3820,10 @@ __turbopack_context__.s([
     ()=>SEOHead
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-helmet/es/Helmet.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useQuery.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$canonicalUrl$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/canonicalUrl.ts [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
 'use client';
@@ -3865,203 +3865,82 @@ function SEOHead({ title, description, canonical, ogType = "website", ogImage, o
     // Use site logo as default fallback for OpenGraph images
     // Blog posts and success stories should pass their hero/featured images
     const fullOgImage = ogImage ? ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}` : `${productionUrl}/attached_assets/logo.jpg`;
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Helmet"], {
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("title", {
-                children: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 76,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                name: "title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 77,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("link", {
-                rel: "alternate",
-                type: "application/rss+xml",
-                title: "Economy Plumbing Services Blog RSS Feed",
-                href: "https://www.plumbersthatcare.com/rss.xml"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 82,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:type",
-                content: ogType
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 90,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:url",
-                content: canonicalUrl
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 91,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 92,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:description",
-                content: finalDescription
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 93,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image",
-                content: fullOgImage
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 94,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:alt",
-                content: ogImageAlt
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 95,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:width",
-                content: ogImageWidth
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 96,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:height",
-                content: ogImageHeight
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 97,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:site_name",
-                content: siteName
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 98,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:locale",
-                content: "en_US"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 99,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:card",
-                content: twitterCard
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 102,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:url",
-                content: canonicalUrl
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 103,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 104,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:description",
-                content: finalDescription
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 105,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:image",
-                content: fullOgImage
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 106,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:image:alt",
-                content: ogImageAlt
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 107,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                name: "twitter:site",
-                content: "@plumbersthatcare"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 108,
-                columnNumber: 7
-            }, this),
-            ogType === "article" && articlePublishedTime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "article:published_time",
-                content: articlePublishedTime
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 112,
-                columnNumber: 9
-            }, this),
-            ogType === "article" && articleAuthor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "article:author",
-                content: articleAuthor
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 115,
-                columnNumber: 9
-            }, this),
-            schema && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
-                type: "application/ld+json",
-                children: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [
+    // Update document head dynamically (client-side only for OpenGraph/meta)
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "SEOHead.useEffect": ()=>{
+            if ("TURBOPACK compile-time truthy", 1) {
+                document.title = finalTitle;
+                // Update or create meta tags
+                const updateMeta = {
+                    "SEOHead.useEffect.updateMeta": (name, content, isProperty = false)=>{
+                        const attr = isProperty ? 'property' : 'name';
+                        let element = document.querySelector(`meta[${attr}="${name}"]`);
+                        if (!element) {
+                            element = document.createElement('meta');
+                            element.setAttribute(attr, name);
+                            document.head.appendChild(element);
+                        }
+                        element.setAttribute('content', content);
+                    }
+                }["SEOHead.useEffect.updateMeta"];
+                // OpenGraph
+                updateMeta('og:type', ogType, true);
+                updateMeta('og:url', canonicalUrl, true);
+                updateMeta('og:title', finalTitle, true);
+                updateMeta('og:description', finalDescription, true);
+                updateMeta('og:image', fullOgImage, true);
+                updateMeta('og:image:alt', ogImageAlt, true);
+                updateMeta('og:image:width', ogImageWidth, true);
+                updateMeta('og:image:height', ogImageHeight, true);
+                updateMeta('og:site_name', siteName, true);
+                updateMeta('og:locale', 'en_US', true);
+                // Twitter
+                updateMeta('twitter:card', twitterCard, true);
+                updateMeta('twitter:url', canonicalUrl, true);
+                updateMeta('twitter:title', finalTitle, true);
+                updateMeta('twitter:description', finalDescription, true);
+                updateMeta('twitter:image', fullOgImage, true);
+                updateMeta('twitter:image:alt', ogImageAlt, true);
+                updateMeta('twitter:site', '@plumbersthatcare');
+                // Article-specific
+                if (ogType === 'article' && articlePublishedTime) {
+                    updateMeta('article:published_time', articlePublishedTime, true);
+                }
+                if (ogType === 'article' && articleAuthor) {
+                    updateMeta('article:author', articleAuthor, true);
+                }
+            }
+        }
+    }["SEOHead.useEffect"], [
+        finalTitle,
+        finalDescription,
+        canonicalUrl,
+        ogType,
+        fullOgImage,
+        ogImageAlt,
+        ogImageWidth,
+        ogImageHeight,
+        siteName,
+        twitterCard,
+        articlePublishedTime,
+        articleAuthor
+    ]);
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+        children: schema && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
+            type: "application/ld+json",
+            dangerouslySetInnerHTML: {
+                __html: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [
                     schema
                 ])
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 120,
-                columnNumber: 9
-            }, this)
-        ]
-    }, void 0, true, {
-        fileName: "[project]/src/components/SEO/SEOHead.tsx",
-        lineNumber: 74,
-        columnNumber: 5
-    }, this);
+            }
+        }, void 0, false, {
+            fileName: "[project]/src/components/SEO/SEOHead.tsx",
+            lineNumber: 125,
+            columnNumber: 9
+        }, this)
+    }, void 0, false);
 }
-_s(SEOHead, "FdlaIkWW98nCMqaERIZSAFeAXm8=", false, function() {
+_s(SEOHead, "ighHop0Qg3sqc8WMhVQpx601jS4=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"],
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useQuery"]
