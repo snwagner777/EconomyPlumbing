@@ -651,7 +651,7 @@ export default function AIChatbot() {
                 
                 {/* Feedback buttons for assistant messages */}
                 {message.role === "assistant" && (
-                  <div className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} mt-2 gap-2 ml-2`}>
+                  <div className="flex justify-start mt-2 gap-2 ml-2">
                     <Button
                       variant={message.feedback === "positive" ? "default" : "ghost"}
                       size="icon"
@@ -807,7 +807,7 @@ export default function AIChatbot() {
                 AI responses may vary. For urgent issues, call us.
               </p>
               <Button
-                variant="link"
+                variant="ghost"
                 size="sm"
                 onClick={handleEndConversation}
                 className="text-xs h-auto p-0"
@@ -942,7 +942,7 @@ export default function AIChatbot() {
             data-testid="input-chat-message"
           />
           <Button
-            onClick={handleSendMessage}
+            onClick={() => handleSendMessage()}
             disabled={!input.trim() || isLoading}
             size="icon"
             data-testid="button-send-message"
