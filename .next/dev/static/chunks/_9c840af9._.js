@@ -1459,6 +1459,8 @@ function useIsMobile() {
     const [isMobile, setIsMobile] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "useIsMobile.useEffect": ()=>{
+            if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+            ;
             const checkMobile = {
                 "useIsMobile.useEffect.checkMobile": ()=>{
                     setIsMobile(window.innerWidth < 768);
@@ -1545,6 +1547,9 @@ const ICON_MAP = {
 };
 function AIChatbot() {
     _s1();
+    // SSR guard - MUST be first to prevent hydration issues
+    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+    ;
     const location = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["usePathname"])() || '/';
     const [isOpen, setIsOpen] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [isMinimized, setIsMinimized] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
@@ -1895,20 +1900,20 @@ function AIChatbot() {
                             children: "How was your experience?"
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 464,
+                            lineNumber: 471,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["DialogDescription"], {
                             children: "Please rate your conversation to help us improve our service"
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 465,
+                            lineNumber: 472,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 463,
+                    lineNumber: 470,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1927,28 +1932,28 @@ function AIChatbot() {
                                 className: (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$utils$2e$ts__$5b$app$2d$client$5d$__$28$ecmascript$29$__["cn"])("w-8 h-8", star <= rating ? "fill-yellow-400 text-yellow-400" : "text-muted-foreground")
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 477,
+                                lineNumber: 484,
                                 columnNumber: 15
                             }, this)
                         }, star, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 471,
+                            lineNumber: 478,
                             columnNumber: 13
                         }, this))
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 469,
+                    lineNumber: 476,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/AIChatbot.tsx",
-            lineNumber: 462,
+            lineNumber: 469,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/AIChatbot.tsx",
-        lineNumber: 461,
+        lineNumber: 468,
         columnNumber: 5
     }, this);
     // Build chatbot UI
@@ -1972,12 +1977,12 @@ function AIChatbot() {
                         className: "w-6 h-6"
                     }, void 0, false, {
                         fileName: "[project]/src/components/AIChatbot.tsx",
-                        lineNumber: 510,
+                        lineNumber: 517,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 504,
+                    lineNumber: 511,
                     columnNumber: 9
                 }, this),
                 unreadCount > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -1985,13 +1990,13 @@ function AIChatbot() {
                     children: unreadCount
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 513,
+                    lineNumber: 520,
                     columnNumber: 11
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/AIChatbot.tsx",
-            lineNumber: 495,
+            lineNumber: 502,
             columnNumber: 7
         }, this);
     } else if (isMinimized) {
@@ -2009,12 +2014,12 @@ function AIChatbot() {
                         className: "w-4 h-4 text-primary-foreground"
                     }, void 0, false, {
                         fileName: "[project]/src/components/AIChatbot.tsx",
-                        lineNumber: 531,
+                        lineNumber: 538,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 530,
+                    lineNumber: 537,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2025,7 +2030,7 @@ function AIChatbot() {
                             children: "Economy Plumbing AI"
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 534,
+                            lineNumber: 541,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2033,13 +2038,13 @@ function AIChatbot() {
                             children: "Click to expand"
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 535,
+                            lineNumber: 542,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 533,
+                    lineNumber: 540,
                     columnNumber: 9
                 }, this),
                 unreadCount > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Badge"], {
@@ -2050,7 +2055,7 @@ function AIChatbot() {
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 538,
+                    lineNumber: 545,
                     columnNumber: 11
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2067,18 +2072,18 @@ function AIChatbot() {
                         className: "w-4 h-4"
                     }, void 0, false, {
                         fileName: "[project]/src/components/AIChatbot.tsx",
-                        lineNumber: 553,
+                        lineNumber: 560,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 542,
+                    lineNumber: 549,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/AIChatbot.tsx",
-            lineNumber: 522,
+            lineNumber: 529,
             columnNumber: 7
         }, this);
     } else if (isMobile && !isMinimized) {
@@ -2114,12 +2119,12 @@ function AIChatbot() {
                                                     className: "w-5 h-5 text-primary-foreground"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                    lineNumber: 581,
+                                                    lineNumber: 588,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 580,
+                                                lineNumber: 587,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2129,7 +2134,7 @@ function AIChatbot() {
                                                         children: "Economy Plumbing AI"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 584,
+                                                        lineNumber: 591,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -2139,7 +2144,7 @@ function AIChatbot() {
                                                                 className: "w-2 h-2 bg-green-500 rounded-full animate-pulse"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                lineNumber: 586,
+                                                                lineNumber: 593,
                                                                 columnNumber: 21
                                                             }, this),
                                                             "Online ",
@@ -2147,19 +2152,19 @@ function AIChatbot() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 585,
+                                                        lineNumber: 592,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 583,
+                                                lineNumber: 590,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 579,
+                                        lineNumber: 586,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2175,12 +2180,12 @@ function AIChatbot() {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                    lineNumber: 599,
+                                                    lineNumber: 606,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 592,
+                                                lineNumber: 599,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2193,12 +2198,12 @@ function AIChatbot() {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                    lineNumber: 608,
+                                                    lineNumber: 615,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 601,
+                                                lineNumber: 608,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2211,29 +2216,29 @@ function AIChatbot() {
                                                     className: "w-4 h-4"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                    lineNumber: 617,
+                                                    lineNumber: 624,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 610,
+                                                lineNumber: 617,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 591,
+                                        lineNumber: 598,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 578,
+                                lineNumber: 585,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 577,
+                            lineNumber: 584,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2252,7 +2257,7 @@ function AIChatbot() {
                                                             children: message.content
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                            lineNumber: 639,
+                                                            lineNumber: 646,
                                                             columnNumber: 21
                                                         }, this),
                                                         message.imageUrl && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
@@ -2261,18 +2266,18 @@ function AIChatbot() {
                                                             className: "mt-2 rounded-md max-w-full h-auto"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                            lineNumber: 641,
+                                                            lineNumber: 648,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                    lineNumber: 630,
+                                                    lineNumber: 637,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 627,
+                                                lineNumber: 634,
                                                 columnNumber: 17
                                             }, this),
                                             message.role === "assistant" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2288,12 +2293,12 @@ function AIChatbot() {
                                                             className: "w-3 h-3"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                            lineNumber: 660,
+                                                            lineNumber: 667,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 653,
+                                                        lineNumber: 660,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2306,24 +2311,24 @@ function AIChatbot() {
                                                             className: "w-3 h-3"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                            lineNumber: 669,
+                                                            lineNumber: 676,
                                                             columnNumber: 23
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 662,
+                                                        lineNumber: 669,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 652,
+                                                lineNumber: 659,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, message.id || index, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 626,
+                                        lineNumber: 633,
                                         columnNumber: 15
                                     }, this)),
                                 isTyping && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2341,7 +2346,7 @@ function AIChatbot() {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 681,
+                                                        lineNumber: 688,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2351,7 +2356,7 @@ function AIChatbot() {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 682,
+                                                        lineNumber: 689,
                                                         columnNumber: 21
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2361,13 +2366,13 @@ function AIChatbot() {
                                                         }
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 683,
+                                                        lineNumber: 690,
                                                         columnNumber: 21
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 680,
+                                                lineNumber: 687,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2375,18 +2380,18 @@ function AIChatbot() {
                                                 children: "Typing..."
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 685,
+                                                lineNumber: 692,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 679,
+                                        lineNumber: 686,
                                         columnNumber: 17
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 678,
+                                    lineNumber: 685,
                                     columnNumber: 15
                                 }, this),
                                 showHandoff && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2398,7 +2403,7 @@ function AIChatbot() {
                                                 className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 694,
+                                                lineNumber: 701,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2409,7 +2414,7 @@ function AIChatbot() {
                                                         children: "Ready to Connect?"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 696,
+                                                        lineNumber: 703,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2417,7 +2422,7 @@ function AIChatbot() {
                                                         children: "Text us for personalized help from our team. We respond within minutes!"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 697,
+                                                        lineNumber: 704,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2432,7 +2437,7 @@ function AIChatbot() {
                                                                         className: "w-4 h-4 mr-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                        lineNumber: 706,
+                                                                        lineNumber: 713,
                                                                         columnNumber: 23
                                                                     }, this),
                                                                     "Text Us: ",
@@ -2440,7 +2445,7 @@ function AIChatbot() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                lineNumber: 701,
+                                                                lineNumber: 708,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2455,7 +2460,7 @@ function AIChatbot() {
                                                                             className: "w-4 h-4 mr-2"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                            lineNumber: 716,
+                                                                            lineNumber: 723,
                                                                             columnNumber: 25
                                                                         }, this),
                                                                         "Or Call: ",
@@ -2463,48 +2468,48 @@ function AIChatbot() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                    lineNumber: 715,
+                                                                    lineNumber: 722,
                                                                     columnNumber: 23
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                lineNumber: 709,
+                                                                lineNumber: 716,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 700,
+                                                        lineNumber: 707,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 695,
+                                                lineNumber: 702,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 693,
+                                        lineNumber: 700,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 692,
+                                    lineNumber: 699,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     ref: messagesEndRef
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 726,
+                                    lineNumber: 733,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 624,
+                            lineNumber: 631,
                             columnNumber: 11
                         }, this),
                         quickResponses.length > 0 && !isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2524,25 +2529,25 @@ function AIChatbot() {
                                                 className: "w-3 h-3 mr-1"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 744,
+                                                lineNumber: 751,
                                                 columnNumber: 32
                                             }, this),
                                             qr.label
                                         ]
                                     }, index, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 736,
+                                        lineNumber: 743,
                                         columnNumber: 21
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 732,
+                                lineNumber: 739,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 731,
+                            lineNumber: 738,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2556,7 +2561,7 @@ function AIChatbot() {
                                             children: uploadedImage.name
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 757,
+                                            lineNumber: 764,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2568,18 +2573,18 @@ function AIChatbot() {
                                                 className: "w-3 h-3"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 764,
+                                                lineNumber: 771,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 758,
+                                            lineNumber: 765,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 756,
+                                    lineNumber: 763,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2595,7 +2600,7 @@ function AIChatbot() {
                                             "data-testid": "input-chat-message"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 769,
+                                            lineNumber: 776,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2606,7 +2611,7 @@ function AIChatbot() {
                                             className: "hidden"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 778,
+                                            lineNumber: 785,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2619,12 +2624,12 @@ function AIChatbot() {
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 792,
+                                                lineNumber: 799,
                                                 columnNumber: 17
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 785,
+                                            lineNumber: 792,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2636,24 +2641,24 @@ function AIChatbot() {
                                                 className: "w-4 h-4 animate-spin"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 800,
+                                                lineNumber: 807,
                                                 columnNumber: 32
                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$send$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Send$3e$__["Send"], {
                                                 className: "w-4 h-4"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 800,
+                                                lineNumber: 807,
                                                 columnNumber: 79
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 794,
+                                            lineNumber: 801,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 768,
+                                    lineNumber: 775,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2664,7 +2669,7 @@ function AIChatbot() {
                                             children: "AI responses may vary. For urgent issues, call us."
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 804,
+                                            lineNumber: 811,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2676,25 +2681,25 @@ function AIChatbot() {
                                             children: "End Chat"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 807,
+                                            lineNumber: 814,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 803,
+                                    lineNumber: 810,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 754,
+                            lineNumber: 761,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 560,
+                    lineNumber: 567,
                     columnNumber: 9
                 }, this),
                 ratingDialog
@@ -2727,12 +2732,12 @@ function AIChatbot() {
                                             className: "w-5 h-5 text-primary-foreground"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                            lineNumber: 841,
+                                            lineNumber: 848,
                                             columnNumber: 15
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 840,
+                                        lineNumber: 847,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2742,7 +2747,7 @@ function AIChatbot() {
                                                 children: "Economy Plumbing AI"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 844,
+                                                lineNumber: 851,
                                                 columnNumber: 15
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -2752,26 +2757,26 @@ function AIChatbot() {
                                                         className: "w-2 h-2 bg-green-500 rounded-full animate-pulse"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 846,
+                                                        lineNumber: 853,
                                                         columnNumber: 17
                                                     }, this),
                                                     "Online"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 845,
+                                                lineNumber: 852,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 843,
+                                        lineNumber: 850,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 839,
+                                lineNumber: 846,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2783,23 +2788,23 @@ function AIChatbot() {
                                     className: "w-4 h-4"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 857,
+                                    lineNumber: 864,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 851,
+                                lineNumber: 858,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/AIChatbot.tsx",
-                        lineNumber: 838,
+                        lineNumber: 845,
                         columnNumber: 9
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 837,
+                    lineNumber: 844,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2815,17 +2820,17 @@ function AIChatbot() {
                                         children: message.content
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 877,
+                                        lineNumber: 884,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 869,
+                                    lineNumber: 876,
                                     columnNumber: 13
                                 }, this)
                             }, index, false, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 865,
+                                lineNumber: 872,
                                 columnNumber: 11
                             }, this)),
                         isLoading && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2837,7 +2842,7 @@ function AIChatbot() {
                                         className: "w-4 h-4 animate-spin"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 885,
+                                        lineNumber: 892,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2845,18 +2850,18 @@ function AIChatbot() {
                                         children: "Thinking..."
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 886,
+                                        lineNumber: 893,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 884,
+                                lineNumber: 891,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 883,
+                            lineNumber: 890,
                             columnNumber: 11
                         }, this),
                         showHandoff && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2868,7 +2873,7 @@ function AIChatbot() {
                                         className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 895,
+                                        lineNumber: 902,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2879,7 +2884,7 @@ function AIChatbot() {
                                                 children: "Ready to Connect?"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 897,
+                                                lineNumber: 904,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2887,7 +2892,7 @@ function AIChatbot() {
                                                 children: "Text us for personalized help from our team. We respond within minutes!"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 898,
+                                                lineNumber: 905,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2902,7 +2907,7 @@ function AIChatbot() {
                                                                 className: "w-4 h-4 mr-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                lineNumber: 907,
+                                                                lineNumber: 914,
                                                                 columnNumber: 21
                                                             }, this),
                                                             "Text Us: ",
@@ -2910,7 +2915,7 @@ function AIChatbot() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 902,
+                                                        lineNumber: 909,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2925,7 +2930,7 @@ function AIChatbot() {
                                                                     className: "w-4 h-4 mr-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                                                    lineNumber: 917,
+                                                                    lineNumber: 924,
                                                                     columnNumber: 23
                                                                 }, this),
                                                                 "Or Call: ",
@@ -2933,48 +2938,48 @@ function AIChatbot() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/src/components/AIChatbot.tsx",
-                                                            lineNumber: 916,
+                                                            lineNumber: 923,
                                                             columnNumber: 21
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                                        lineNumber: 910,
+                                                        lineNumber: 917,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                                lineNumber: 901,
+                                                lineNumber: 908,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 896,
+                                        lineNumber: 903,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AIChatbot.tsx",
-                                lineNumber: 894,
+                                lineNumber: 901,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 893,
+                            lineNumber: 900,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             ref: messagesEndRef
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 927,
+                            lineNumber: 934,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 863,
+                    lineNumber: 870,
                     columnNumber: 7
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2993,7 +2998,7 @@ function AIChatbot() {
                                     "data-testid": "input-chat-message"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 933,
+                                    lineNumber: 940,
                                     columnNumber: 11
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -3005,18 +3010,18 @@ function AIChatbot() {
                                         className: "w-4 h-4"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AIChatbot.tsx",
-                                        lineNumber: 948,
+                                        lineNumber: 955,
                                         columnNumber: 13
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/AIChatbot.tsx",
-                                    lineNumber: 942,
+                                    lineNumber: 949,
                                     columnNumber: 11
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 932,
+                            lineNumber: 939,
                             columnNumber: 9
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3024,26 +3029,23 @@ function AIChatbot() {
                             children: "AI responses may be inaccurate. For urgent issues, text or call us directly."
                         }, void 0, false, {
                             fileName: "[project]/src/components/AIChatbot.tsx",
-                            lineNumber: 951,
+                            lineNumber: 958,
                             columnNumber: 9
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/AIChatbot.tsx",
-                    lineNumber: 931,
+                    lineNumber: 938,
                     columnNumber: 7
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/AIChatbot.tsx",
-            lineNumber: 825,
+            lineNumber: 832,
             columnNumber: 7
         }, this);
     }
     // Render using portal to avoid SidebarProvider transform issues
-    // Only render on client-side to avoid SSR issues
-    if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
-    ;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2d$dom$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["createPortal"])(chatbotUI, document.body);
 }
 _s1(AIChatbot, "Eqv8XPnF6/4MNUVW9HTU4nSxPDU=", false, function() {

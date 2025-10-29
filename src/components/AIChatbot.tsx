@@ -41,6 +41,8 @@ function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -957,10 +959,5 @@ export default function AIChatbot() {
   }
 
   // Render using portal to avoid SidebarProvider transform issues
-  // Only render on client-side to avoid SSR issues
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  
   return createPortal(chatbotUI, document.body);
 }
