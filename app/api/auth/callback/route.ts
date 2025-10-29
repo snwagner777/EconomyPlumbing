@@ -16,12 +16,20 @@ export async function GET(req: NextRequest) {
     const hostname = req.headers.get('host') || '';
     const returnedState = searchParams.get('state');
 
+    console.log('[OAuth] Callback received');
+    console.log('[OAuth] Returned state:', returnedState?.substring(0, 10) + '...');
+
     // Get session to verify OAuth state and code verifier
     const session = await getSession();
+    
+    console.log('[OAuth] Session state:', session.oauthState?.substring(0, 10) + '...');
+    console.log('[OAuth] Has code verifier:', !!session.oauthCodeVerifier);
     
     // Verify CSRF state token
     if (!session.oauthState || !returnedState || session.oauthState !== returnedState) {
       console.error('[OAuth] State mismatch or missing - possible CSRF attack');
+      console.error('[OAuth] Session state:', session.oauthState);
+      console.error('[OAuth] Returned state:', returnedState);
       return NextResponse.redirect(new URL('/admin-login?error=csrf_failed', req.url));
     }
 

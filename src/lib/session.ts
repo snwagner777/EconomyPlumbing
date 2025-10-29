@@ -41,7 +41,7 @@ const sessionOptions = {
   ttl: 7 * 24 * 60 * 60, // 1 week (in seconds)
   cookieOptions: {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: true, // Always use secure cookies (Replit uses HTTPS)
     sameSite: 'lax' as const,
     maxAge: 7 * 24 * 60 * 60, // 1 week (in seconds)
     path: '/',

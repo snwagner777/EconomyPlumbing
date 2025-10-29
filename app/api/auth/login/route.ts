@@ -12,7 +12,8 @@ import { randomBytes } from 'crypto';
 
 export async function GET(req: NextRequest) {
   try {
-    const hostname = req.headers.get('host') || '';
+    // Use REPLIT_DEV_DOMAIN for proper OAuth redirect (not localhost)
+    const hostname = process.env.REPLIT_DEV_DOMAIN || req.headers.get('host') || '';
     
     // Get OIDC configuration
     const config = await client.discovery(
@@ -30,6 +31,10 @@ export async function GET(req: NextRequest) {
     session.oauthState = state;
     session.oauthCodeVerifier = codeVerifier;
     await session.save();
+
+    console.log('[OAuth] Login initiated for hostname:', hostname);
+    console.log('[OAuth] Redirect URI:', `https://${hostname}/api/auth/callback`);
+    console.log('[OAuth] State stored in session:', state.substring(0, 10) + '...');
 
     // Generate authorization URL with PKCE
     const authUrl = client.buildAuthorizationUrl(config, {
