@@ -2604,6 +2604,10 @@ body {
   border-left-width: 1px;
 }
 
+.border-l-2 {
+  border-left-width: 2px;
+}
+
 .border-r {
   border-right-width: 1px;
 }
@@ -3615,6 +3619,10 @@ body {
 
 .pl-2\.5 {
   padding-left: .625rem;
+}
+
+.pl-3 {
+  padding-left: .75rem;
 }
 
 .pl-4 {
