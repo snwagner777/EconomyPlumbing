@@ -18,7 +18,7 @@ export default async function CustomersAdminPage() {
   const admin = await isAdmin();
   
   if (!admin) {
-    redirect('/admin/oauth-login');
+    redirect('/admin-login');
   }
 
   return <CustomersDashboard />;

@@ -46,6 +46,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(authUrl.href);
   } catch (error) {
     console.error('[OAuth] Error initiating login:', error);
-    return NextResponse.redirect('/admin/oauth-login?error=failed');
+    return NextResponse.redirect('/admin-login?error=failed');
   }
 }

@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 4, "column": 0}, "map": {"version":3,"sources":["file:///home/runner/workspace/app/admin/oauth-login/layout.tsx"],"sourcesContent":["/**\n * OAuth Login Layout\n * \n * Bypasses the parent admin layout's auth check\n * since this IS the login page\n */\n\nexport default function OAuthLoginLayout({\n  children,\n}: {\n  children: React.ReactNode;\n}) {\n  return <>{children}</>;\n}\n"],"names":[],"mappings":"AAAA;;;;;CAKC;;;;;;AAEc,SAAS,iBAAiB,EACvC,QAAQ,EAGT;IACC,qBAAO;kBAAG;;AACZ","debugId":null}}]
+}

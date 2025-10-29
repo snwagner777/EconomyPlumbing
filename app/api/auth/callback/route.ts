@@ -22,13 +22,13 @@ export async function GET(req: NextRequest) {
     // Verify CSRF state token
     if (!session.oauthState || !returnedState || session.oauthState !== returnedState) {
       console.error('[OAuth] State mismatch or missing - possible CSRF attack');
-      return NextResponse.redirect(new URL('/admin/oauth-login?error=csrf_failed', req.url));
+      return NextResponse.redirect(new URL('/admin-login?error=csrf_failed', req.url));
     }
 
     // Verify code verifier exists in session
     if (!session.oauthCodeVerifier) {
       console.error('[OAuth] Code verifier missing from session');
-      return NextResponse.redirect(new URL('/admin/oauth-login?error=verifier_missing', req.url));
+      return NextResponse.redirect(new URL('/admin-login?error=verifier_missing', req.url));
     }
 
     // Get OIDC configuration
@@ -59,19 +59,19 @@ export async function GET(req: NextRequest) {
     // Verify email is whitelisted
     if (!claims || !claims.email || typeof claims.email !== 'string') {
       console.error('[OAuth] No email in claims');
-      return NextResponse.redirect(new URL('/admin/oauth-login?error=no_email', req.url));
+      return NextResponse.redirect(new URL('/admin-login?error=no_email', req.url));
     }
 
     if (!claims.sub || typeof claims.sub !== 'string') {
       console.error('[OAuth] Invalid subject in claims');
-      return NextResponse.redirect(new URL('/admin/oauth-login?error=invalid_claims', req.url));
+      return NextResponse.redirect(new URL('/admin-login?error=invalid_claims', req.url));
     }
 
     const isWhitelisted = await storage.isEmailWhitelisted(claims.email);
     
     if (!isWhitelisted) {
       console.error('[OAuth] Email not whitelisted:', claims.email);
-      return NextResponse.redirect(new URL('/admin/oauth-login?error=unauthorized', req.url));
+      return NextResponse.redirect(new URL('/admin-login?error=unauthorized', req.url));
     }
 
     // Upsert OAuth user in database
@@ -103,6 +103,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL('/admin', req.url));
   } catch (error) {
     console.error('[OAuth] Error processing callback:', error);
-    return NextResponse.redirect(new URL('/admin/oauth-login?error=callback_failed', req.url));
+    return NextResponse.redirect(new URL('/admin-login?error=callback_failed', req.url));
   }
 }
