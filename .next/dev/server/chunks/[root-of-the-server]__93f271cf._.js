@@ -80,7 +80,7 @@ const sessionOptions = {
     ttl: 7 * 24 * 60 * 60,
     cookieOptions: {
         httpOnly: true,
-        secure: ("TURBOPACK compile-time value", "development") === 'production',
+        secure: true,
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/'
@@ -5497,11 +5497,17 @@ async function GET(req) {
         const { searchParams } = new URL(req.url);
         const hostname = req.headers.get('host') || '';
         const returnedState = searchParams.get('state');
+        console.log('[OAuth] Callback received');
+        console.log('[OAuth] Returned state:', returnedState?.substring(0, 10) + '...');
         // Get session to verify OAuth state and code verifier
         const session = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$session$2e$ts__$5b$app$2d$route$5d$__$28$ecmascript$29$__["getSession"])();
+        console.log('[OAuth] Session state:', session.oauthState?.substring(0, 10) + '...');
+        console.log('[OAuth] Has code verifier:', !!session.oauthCodeVerifier);
         // Verify CSRF state token
         if (!session.oauthState || !returnedState || session.oauthState !== returnedState) {
             console.error('[OAuth] State mismatch or missing - possible CSRF attack');
+            console.error('[OAuth] Session state:', session.oauthState);
+            console.error('[OAuth] Returned state:', returnedState);
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/admin-login?error=csrf_failed', req.url));
         }
         // Verify code verifier exists in session

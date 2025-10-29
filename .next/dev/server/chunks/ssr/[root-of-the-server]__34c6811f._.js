@@ -38,7 +38,7 @@ const sessionOptions = {
     ttl: 7 * 24 * 60 * 60,
     cookieOptions: {
         httpOnly: true,
-        secure: ("TURBOPACK compile-time value", "development") === 'production',
+        secure: true,
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/'

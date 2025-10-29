@@ -80,7 +80,7 @@ const sessionOptions = {
     ttl: 7 * 24 * 60 * 60,
     cookieOptions: {
         httpOnly: true,
-        secure: ("TURBOPACK compile-time value", "development") === 'production',
+        secure: true,
         sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60,
         path: '/'
@@ -135,7 +135,8 @@ var __TURBOPACK__imported__module__$5b$externals$5d2f$crypto__$5b$external$5d$__
 ;
 async function GET(req) {
     try {
-        const hostname = req.headers.get('host') || '';
+        // Use REPLIT_DEV_DOMAIN for proper OAuth redirect (not localhost)
+        const hostname = process.env.REPLIT_DEV_DOMAIN || req.headers.get('host') || '';
         // Get OIDC configuration
         const config = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$openid$2d$client$2f$build$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["discovery"](new URL(process.env.ISSUER_URL ?? 'https://replit.com/oidc'), process.env.REPL_ID);
         // Generate CSRF state and PKCE code verifier
@@ -147,6 +148,9 @@ async function GET(req) {
         session.oauthState = state;
         session.oauthCodeVerifier = codeVerifier;
         await session.save();
+        console.log('[OAuth] Login initiated for hostname:', hostname);
+        console.log('[OAuth] Redirect URI:', `https://${hostname}/api/auth/callback`);
+        console.log('[OAuth] State stored in session:', state.substring(0, 10) + '...');
         // Generate authorization URL with PKCE
         const authUrl = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$openid$2d$client$2f$build$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["buildAuthorizationUrl"](config, {
             client_id: process.env.REPL_ID,
