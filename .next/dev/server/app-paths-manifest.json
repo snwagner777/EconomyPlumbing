@@ -1,20 +1,6 @@
 {
-  "/about/page": "app/about/page.js",
+  "/[slug]/page": "app/[slug]/page.js",
   "/api/page-metadata/route": "app/api/page-metadata/route.js",
   "/api/tracking-numbers/route": "app/api/tracking-numbers/route.js",
-  "/blog/page": "app/blog/page.js",
-  "/commercial-plumbing/page": "app/commercial-plumbing/page.js",
-  "/commercial/office-buildings/page": "app/commercial/office-buildings/page.js",
-  "/commercial/restaurants/page": "app/commercial/restaurants/page.js",
-  "/contact/page": "app/contact/page.js",
-  "/customer-portal/page": "app/customer-portal/page.js",
-  "/drain-cleaning/page": "app/drain-cleaning/page.js",
-  "/faq/page": "app/faq/page.js",
-  "/page": "app/page.js",
-  "/service-area/[slug]/page": "app/service-area/[slug]/page.js",
-  "/services/page": "app/services/page.js",
-  "/summer-plumbing-prep/page": "app/summer-plumbing-prep/page.js",
-  "/vip-membership/page": "app/vip-membership/page.js",
-  "/water-heater-services/page": "app/water-heater-services/page.js",
-  "/winter-freeze-protection/page": "app/winter-freeze-protection/page.js"
+  "/page": "app/page.js"
 }
