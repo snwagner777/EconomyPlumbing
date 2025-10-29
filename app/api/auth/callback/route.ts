@@ -114,7 +114,10 @@ export async function GET(req: NextRequest) {
     await session.save();
 
     console.log('[OAuth] Login successful, redirecting to /admin');
-    return NextResponse.redirect(new URL('/admin', req.url));
+    // Use the actual request hostname (not localhost)
+    const adminUrl = new URL('/admin', req.url);
+    console.log('[OAuth] Redirect URL:', adminUrl.href);
+    return NextResponse.redirect(adminUrl);
   } catch (error) {
     console.error('[OAuth] Error processing callback:', error);
     return NextResponse.redirect(new URL('/admin-login?error=callback_failed', req.url));
