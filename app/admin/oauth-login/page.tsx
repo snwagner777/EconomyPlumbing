@@ -14,12 +14,12 @@ export const metadata: Metadata = {
   robots: 'noindex',
 };
 
-export default function AdminOAuthLoginPage({
+export default async function AdminOAuthLoginPage({
   searchParams,
 }: {
-  searchParams: { error?: string };
+  searchParams: Promise<{ error?: string }>;
 }) {
-  const error = searchParams.error;
+  const { error } = await searchParams;
 
   const errorMessages: Record<string, string> = {
     failed: 'Failed to initiate login. Please try again.',
