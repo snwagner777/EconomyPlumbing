@@ -2846,7 +2846,12 @@ function AIChatbot() {
         }, this);
     }
     // Render using portal to avoid SidebarProvider transform issues
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$dom$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createPortal"])(chatbotUI, document.body);
+    // Only render on client-side to avoid SSR issues
+    if ("TURBOPACK compile-time truthy", 1) {
+        return null;
+    }
+    //TURBOPACK unreachable
+    ;
 }
 }),
 "[project]/app/layout.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {

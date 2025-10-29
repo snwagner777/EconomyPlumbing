@@ -204,8 +204,8 @@ const metadata = {
     title: 'Admin Login | Economy Plumbing Services',
     robots: 'noindex'
 };
-function AdminOAuthLoginPage({ searchParams }) {
-    const error = searchParams.error;
+async function AdminOAuthLoginPage({ searchParams }) {
+    const { error } = await searchParams;
     const errorMessages = {
         failed: 'Failed to initiate login. Please try again.',
         no_email: 'No email found in your account. Please contact support.',
