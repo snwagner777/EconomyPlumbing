@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e  # Exit on any error
 
 echo "🚀 Starting Economy Plumbing Services (Next.js)"
 echo "================================================"
