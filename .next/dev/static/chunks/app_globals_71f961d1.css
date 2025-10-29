@@ -1725,12 +1725,12 @@ body {
   max-height: var(--radix-dropdown-menu-content-available-height);
 }
 
-.max-h-screen {
-  max-height: 100vh;
-}
-
 .max-h-full {
   max-height: 100%;
+}
+
+.max-h-screen {
+  max-height: 100vh;
 }
 
 .min-h-0 {
@@ -2881,8 +2881,16 @@ body {
   background-color: #00000080;
 }
 
+.bg-black\/60 {
+  background-color: #0009;
+}
+
 .bg-black\/80 {
   background-color: #000c;
+}
+
+.bg-black\/90 {
+  background-color: #000000e6;
 }
 
 .bg-blue-100 {
@@ -3131,14 +3139,6 @@ body {
 
 .bg-yellow-500\/10 {
   background-color: #eab3081a;
-}
-
-.bg-black\/60 {
-  background-color: #0009;
-}
-
-.bg-black\/90 {
-  background-color: #000000e6;
 }
 
 .bg-gradient-to-b {
@@ -5025,12 +5025,12 @@ input[type="search"]::-webkit-search-cancel-button {
   cursor: not-allowed;
 }
 
-.disabled\:opacity-50:disabled {
-  opacity: .5;
-}
-
 .disabled\:opacity-30:disabled {
   opacity: .3;
+}
+
+.disabled\:opacity-50:disabled {
+  opacity: .5;
 }
 
 .group\/menu-item:focus-within .group-focus-within\/menu-item\:opacity-100 {
