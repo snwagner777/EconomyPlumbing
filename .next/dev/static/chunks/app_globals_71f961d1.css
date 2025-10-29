@@ -1729,6 +1729,10 @@ body {
   max-height: 100vh;
 }
 
+.max-h-full {
+  max-height: 100%;
+}
+
 .min-h-0 {
   min-height: 0;
 }
@@ -3127,6 +3131,14 @@ body {
 
 .bg-yellow-500\/10 {
   background-color: #eab3081a;
+}
+
+.bg-black\/60 {
+  background-color: #0009;
+}
+
+.bg-black\/90 {
+  background-color: #000000e6;
 }
 
 .bg-gradient-to-b {
@@ -5015,6 +5027,10 @@ input[type="search"]::-webkit-search-cancel-button {
 
 .disabled\:opacity-50:disabled {
   opacity: .5;
+}
+
+.disabled\:opacity-30:disabled {
+  opacity: .3;
 }
 
 .group\/menu-item:focus-within .group-focus-within\/menu-item\:opacity-100 {

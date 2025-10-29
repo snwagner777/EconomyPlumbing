@@ -3,10 +3,12 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
+import { useState } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import InlineReviewCard from "@/components/InlineReviewCard";
+import { ClickableImage, ImageLightbox } from "@/components/ImageLightbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home } from "lucide-react";
@@ -36,6 +38,18 @@ export default function BlogPost() {
   const slug = (params?.slug as string) || "";
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhoneConfig = useMarbleFallsPhone();
+  
+  // State for markdown images lightbox
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
+
+  const handleImageClick = (src: string, allImages: string[]) => {
+    const index = allImages.indexOf(src);
+    setLightboxImages(allImages);
+    setLightboxIndex(index >= 0 ? index : 0);
+    setLightboxOpen(true);
+  };
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
@@ -167,7 +181,7 @@ export default function BlogPost() {
             </div>
 
             {post.featuredImage && (
-              <img
+              <ClickableImage
                 src={post.featuredImage}
                 alt={post.title}
                 width="1200"
@@ -214,9 +228,43 @@ export default function BlogPost() {
                   </div>
                 )}
                 
-                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                <ReactMarkdown 
+                  rehypePlugins={[rehypeRaw]}
+                  components={{
+                    img: ({ node, src, alt, ...props }) => {
+                      if (!src) return null;
+                      
+                      // Extract all image URLs from the markdown content
+                      const imageUrls: string[] = [];
+                      const imgRegex = /!\[.*?\]\((.*?)\)/g;
+                      let match;
+                      while ((match = imgRegex.exec(post.content)) !== null) {
+                        imageUrls.push(match[1]);
+                      }
+                      
+                      return (
+                        <img
+                          src={src}
+                          alt={alt || ''}
+                          {...props}
+                          className="cursor-pointer rounded-lg"
+                          onClick={() => handleImageClick(src, imageUrls)}
+                        />
+                      );
+                    }
+                  }}
+                >
                   {post.content}
                 </ReactMarkdown>
+                
+                {lightboxOpen && (
+                  <ImageLightbox
+                    images={lightboxImages}
+                    currentIndex={lightboxIndex}
+                    onClose={() => setLightboxOpen(false)}
+                    onNavigate={setLightboxIndex}
+                  />
+                )}
               </div>
             </div>
 
