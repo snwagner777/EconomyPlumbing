@@ -45,7 +45,7 @@ module.exports = mod;
 "use strict";
 
 /**
- * Replit OAuth Login - Redirect to Replit's auth page
+ * Replit OAuth Login - Redirect to OAuth route
  * This mimics the old Express route for compatibility
  */ __turbopack_context__.s([
     "GET",
@@ -53,10 +53,10 @@ module.exports = mod;
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/server.js [app-route] (ecmascript)");
 ;
-async function GET() {
-    // For now, redirect to the Next.js OAuth route
-    // TODO: Replace with proper Replit Auth connector setup
-    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/api/auth/login', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5000'));
+async function GET(req) {
+    // Redirect to the actual OAuth login route
+    const url = new URL('/api/oauth/login', req.url);
+    return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(url);
 }
 }),
 ];
