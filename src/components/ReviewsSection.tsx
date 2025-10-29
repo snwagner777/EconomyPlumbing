@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Helmet } from "react-helmet";
 import { createReviewSchema } from "@/components/SEO/JsonLd";
 
 interface ReviewsSectionProps {
@@ -209,13 +208,15 @@ export default function ReviewsSection({
   return (
     <>
       {/* Review Schema Markup */}
-      <Helmet>
-        {displayReviews.map((review) => (
-          <script key={review.id} type="application/ld+json">
-            {JSON.stringify(createReviewSchema(review))}
-          </script>
-        ))}
-      </Helmet>
+      {displayReviews.map((review) => (
+        <script
+          key={review.id}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(createReviewSchema(review))
+          }}
+        />
+      ))}
       
       <section ref={sectionRef} className="relative py-20 overflow-hidden">
         {/* Gradient Background */}

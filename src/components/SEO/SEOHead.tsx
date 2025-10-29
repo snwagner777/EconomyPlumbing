@@ -1,9 +1,9 @@
 'use client';
 
-import { Helmet } from "react-helmet";
 import { useQuery } from "@tanstack/react-query";
 import { usePathname } from "next/navigation";
 import { generateCanonicalUrl } from "@/lib/canonicalUrl";
+import { useEffect } from "react";
 
 export interface SEOProps {
   title: string;
@@ -70,57 +70,65 @@ export function SEOHead({
     ? (ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}`)
     : `${productionUrl}/attached_assets/logo.jpg`;
 
-  return (
-    <Helmet>
-      {/* Primary Meta Tags */}
-      <title>{finalTitle}</title>
-      <meta name="title" content={finalTitle} />
-      {/* Description is handled server-side by metadataInjector to avoid duplicates */}
-      {/* Canonical is handled server-side by metadataInjector for better SEO */}
+  // Update document head dynamically (client-side only for OpenGraph/meta)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.title = finalTitle;
       
-      {/* RSS Feed */}
-      <link 
-        rel="alternate" 
-        type="application/rss+xml" 
-        title="Economy Plumbing Services Blog RSS Feed" 
-        href="https://www.plumbersthatcare.com/rss.xml" 
-      />
+      // Update or create meta tags
+      const updateMeta = (name: string, content: string, isProperty = false) => {
+        const attr = isProperty ? 'property' : 'name';
+        let element = document.querySelector(`meta[${attr}="${name}"]`);
+        if (!element) {
+          element = document.createElement('meta');
+          element.setAttribute(attr, name);
+          document.head.appendChild(element);
+        }
+        element.setAttribute('content', content);
+      };
 
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={ogType} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:title" content={finalTitle} />
-      <meta property="og:description" content={finalDescription} />
-      <meta property="og:image" content={fullOgImage} />
-      <meta property="og:image:alt" content={ogImageAlt} />
-      <meta property="og:image:width" content={ogImageWidth} />
-      <meta property="og:image:height" content={ogImageHeight} />
-      <meta property="og:site_name" content={siteName} />
-      <meta property="og:locale" content="en_US" />
+      // OpenGraph
+      updateMeta('og:type', ogType, true);
+      updateMeta('og:url', canonicalUrl, true);
+      updateMeta('og:title', finalTitle, true);
+      updateMeta('og:description', finalDescription, true);
+      updateMeta('og:image', fullOgImage, true);
+      updateMeta('og:image:alt', ogImageAlt, true);
+      updateMeta('og:image:width', ogImageWidth, true);
+      updateMeta('og:image:height', ogImageHeight, true);
+      updateMeta('og:site_name', siteName, true);
+      updateMeta('og:locale', 'en_US', true);
 
-      {/* Twitter */}
-      <meta property="twitter:card" content={twitterCard} />
-      <meta property="twitter:url" content={canonicalUrl} />
-      <meta property="twitter:title" content={finalTitle} />
-      <meta property="twitter:description" content={finalDescription} />
-      <meta property="twitter:image" content={fullOgImage} />
-      <meta property="twitter:image:alt" content={ogImageAlt} />
-      <meta name="twitter:site" content="@plumbersthatcare" />
+      // Twitter
+      updateMeta('twitter:card', twitterCard, true);
+      updateMeta('twitter:url', canonicalUrl, true);
+      updateMeta('twitter:title', finalTitle, true);
+      updateMeta('twitter:description', finalDescription, true);
+      updateMeta('twitter:image', fullOgImage, true);
+      updateMeta('twitter:image:alt', ogImageAlt, true);
+      updateMeta('twitter:site', '@plumbersthatcare');
 
-      {/* Article-specific meta tags */}
-      {ogType === "article" && articlePublishedTime && (
-        <meta property="article:published_time" content={articlePublishedTime} />
-      )}
-      {ogType === "article" && articleAuthor && (
-        <meta property="article:author" content={articleAuthor} />
-      )}
+      // Article-specific
+      if (ogType === 'article' && articlePublishedTime) {
+        updateMeta('article:published_time', articlePublishedTime, true);
+      }
+      if (ogType === 'article' && articleAuthor) {
+        updateMeta('article:author', articleAuthor, true);
+      }
+    }
+  }, [finalTitle, finalDescription, canonicalUrl, ogType, fullOgImage, ogImageAlt, ogImageWidth, ogImageHeight, siteName, twitterCard, articlePublishedTime, articleAuthor]);
 
+  return (
+    <>
       {/* Schema.org JSON-LD */}
       {schema && (
-        <script type="application/ld+json">
-          {JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [schema])}
-        </script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [schema])
+          }}
+        />
       )}
-    </Helmet>
+    </>
   );
 }

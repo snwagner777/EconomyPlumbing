@@ -3068,9 +3068,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/avatar.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/badge.tsx [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-helmet/es/Helmet.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$SEO$2f$JsonLd$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/SEO/JsonLd.tsx [app-ssr] (ecmascript)");
-;
 ;
 ;
 ;
@@ -3192,7 +3190,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                     className: "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
                 }, void 0, false, {
                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                    lineNumber: 137,
+                    lineNumber: 136,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3207,7 +3205,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                     children: "Customer Testimonials"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 140,
+                                    lineNumber: 139,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3215,7 +3213,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                     children: title
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 143,
+                                    lineNumber: 142,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3227,7 +3225,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                 className: "w-6 h-6 fill-primary text-primary"
                                             }, i, false, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 148,
+                                                lineNumber: 147,
                                                 columnNumber: 17
                                             }, this)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3235,19 +3233,19 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             children: "5.0 Rating"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 150,
+                                            lineNumber: 149,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 146,
+                                    lineNumber: 145,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                            lineNumber: 139,
+                            lineNumber: 138,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3263,44 +3261,44 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             className: "h-32 bg-muted/30 rounded mb-4 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 156,
+                                            lineNumber: 155,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "h-4 bg-muted/30 rounded w-3/4 mb-2 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 157,
+                                            lineNumber: 156,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "h-4 bg-muted/30 rounded w-1/2 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 158,
+                                            lineNumber: 157,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, i, true, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 155,
+                                    lineNumber: 154,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                            lineNumber: 153,
+                            lineNumber: 152,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                    lineNumber: 138,
+                    lineNumber: 137,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/ReviewsSection.tsx",
-            lineNumber: 136,
+            lineNumber: 135,
             columnNumber: 7
         }, this);
     }
@@ -3313,7 +3311,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                     className: "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
                 }, void 0, false, {
                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                    lineNumber: 170,
+                    lineNumber: 169,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3328,7 +3326,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                     children: "Customer Testimonials"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 173,
+                                    lineNumber: 172,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3336,7 +3334,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                     children: title
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 176,
+                                    lineNumber: 175,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3348,7 +3346,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                 className: "w-6 h-6 fill-primary text-primary"
                                             }, i, false, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 181,
+                                                lineNumber: 180,
                                                 columnNumber: 17
                                             }, this)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3356,19 +3354,19 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             children: "5.0 Rating"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 183,
+                                            lineNumber: 182,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 179,
+                                    lineNumber: 178,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                            lineNumber: 172,
+                            lineNumber: 171,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3384,44 +3382,44 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             className: "h-32 bg-muted rounded mb-4 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 189,
+                                            lineNumber: 188,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "h-4 bg-muted rounded w-3/4 mb-2 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 190,
+                                            lineNumber: 189,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                             className: "h-4 bg-muted rounded w-1/2 animate-pulse"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 191,
+                                            lineNumber: 190,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, i, true, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 188,
+                                    lineNumber: 187,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                            lineNumber: 186,
+                            lineNumber: 185,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                    lineNumber: 171,
+                    lineNumber: 170,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/ReviewsSection.tsx",
-            lineNumber: 169,
+            lineNumber: 168,
             columnNumber: 7
         }, this);
     }
@@ -3432,20 +3430,16 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
     const avgRating = displayReviewsSource.length > 0 ? (displayReviewsSource.reduce((sum, r)=>sum + r.rating, 0) / displayReviewsSource.length).toFixed(1) : "5.0";
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Helmet"], {
-                children: displayReviews.map((review)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
-                        type: "application/ld+json",
-                        children: JSON.stringify((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$SEO$2f$JsonLd$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createReviewSchema"])(review))
-                    }, review.id, false, {
-                        fileName: "[project]/src/components/ReviewsSection.tsx",
-                        lineNumber: 214,
-                        columnNumber: 11
-                    }, this))
-            }, void 0, false, {
-                fileName: "[project]/src/components/ReviewsSection.tsx",
-                lineNumber: 212,
-                columnNumber: 7
-            }, this),
+            displayReviews.map((review)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
+                    type: "application/ld+json",
+                    dangerouslySetInnerHTML: {
+                        __html: JSON.stringify((0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$SEO$2f$JsonLd$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["createReviewSchema"])(review))
+                    }
+                }, review.id, false, {
+                    fileName: "[project]/src/components/ReviewsSection.tsx",
+                    lineNumber: 212,
+                    columnNumber: 9
+                }, this)),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
                 ref: sectionRef,
                 className: "relative py-20 overflow-hidden",
@@ -3454,7 +3448,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                         className: "absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5"
                     }, void 0, false, {
                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                        lineNumber: 222,
+                        lineNumber: 223,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3470,7 +3464,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                         children: "Customer Testimonials"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                        lineNumber: 227,
+                                        lineNumber: 228,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -3478,7 +3472,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                         children: title
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                        lineNumber: 230,
+                                        lineNumber: 231,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3491,7 +3485,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                     "data-testid": `star-header-${i}`
                                                 }, i, false, {
                                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                    lineNumber: 235,
+                                                    lineNumber: 236,
                                                     columnNumber: 15
                                                 }, this)),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3503,13 +3497,13 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 241,
+                                                lineNumber: 242,
                                                 columnNumber: 13
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                        lineNumber: 233,
+                                        lineNumber: 234,
                                         columnNumber: 11
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3517,13 +3511,13 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                         children: "Trusted by hundreds of homeowners across Central Texas"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                        lineNumber: 245,
+                                        lineNumber: 246,
                                         columnNumber: 11
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                lineNumber: 226,
+                                lineNumber: 227,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3541,12 +3535,12 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                     className: "w-6 h-6 text-primary"
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                    lineNumber: 264,
+                                                    lineNumber: 265,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 263,
+                                                lineNumber: 264,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3559,19 +3553,19 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                             className: "w-3.5 h-3.5"
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                            lineNumber: 273,
+                                                            lineNumber: 274,
                                                             columnNumber: 21
                                                         }, this),
                                                         platform.name
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                    lineNumber: 269,
+                                                    lineNumber: 270,
                                                     columnNumber: 19
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 268,
+                                                lineNumber: 269,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3583,12 +3577,12 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                         "data-testid": `star-${review.id}-${i}`
                                                     }, i, false, {
                                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                        lineNumber: 281,
+                                                        lineNumber: 282,
                                                         columnNumber: 21
                                                     }, this))
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 279,
+                                                lineNumber: 280,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3600,7 +3594,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 294,
+                                                lineNumber: 295,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3615,7 +3609,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                                 loading: "lazy"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                                lineNumber: 302,
+                                                                lineNumber: 303,
                                                                 columnNumber: 23
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$avatar$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AvatarFallback"], {
@@ -3623,13 +3617,13 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                                 children: review.authorName === 'Anonymous' ? 'GC' : review.authorName.split(' ').map((n)=>n[0]).join('').toUpperCase()
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                                lineNumber: 308,
+                                                                lineNumber: 309,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                        lineNumber: 300,
+                                                        lineNumber: 301,
                                                         columnNumber: 19
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3640,7 +3634,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                                 children: review.authorName === 'Anonymous' ? 'Google Customer' : review.authorName
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                                lineNumber: 316,
+                                                                lineNumber: 317,
                                                                 columnNumber: 21
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3648,31 +3642,31 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                                                 children: review.relativeTime
                                                             }, void 0, false, {
                                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                                lineNumber: 319,
+                                                                lineNumber: 320,
                                                                 columnNumber: 21
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                        lineNumber: 315,
+                                                        lineNumber: 316,
                                                         columnNumber: 19
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                                lineNumber: 299,
+                                                lineNumber: 300,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, review.id, true, {
                                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                                        lineNumber: 257,
+                                        lineNumber: 258,
                                         columnNumber: 15
                                     }, this);
                                 })
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                lineNumber: 251,
+                                lineNumber: 252,
                                 columnNumber: 9
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3688,7 +3682,7 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             className: "w-5 h-5 fill-current"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 336,
+                                            lineNumber: 337,
                                             columnNumber: 13
                                         }, this),
                                         "Read All Google Reviews",
@@ -3696,30 +3690,30 @@ function ReviewsSection({ category, minRating = 4, title = "What Our Customers S
                                             className: "w-5 h-5"
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/ReviewsSection.tsx",
-                                            lineNumber: 338,
+                                            lineNumber: 339,
                                             columnNumber: 13
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/components/ReviewsSection.tsx",
-                                    lineNumber: 329,
+                                    lineNumber: 330,
                                     columnNumber: 11
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                                lineNumber: 328,
+                                lineNumber: 329,
                                 columnNumber: 9
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/ReviewsSection.tsx",
-                        lineNumber: 224,
+                        lineNumber: 225,
                         columnNumber: 7
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/ReviewsSection.tsx",
-                lineNumber: 220,
+                lineNumber: 221,
                 columnNumber: 7
             }, this)
         ]
@@ -5741,10 +5735,10 @@ __turbopack_context__.s([
     ()=>SEOHead
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react-jsx-dev-runtime.js [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-helmet/es/Helmet.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useQuery.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$canonicalUrl$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/canonicalUrl.ts [app-ssr] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/server/route-modules/app-page/vendored/ssr/react.js [app-ssr] (ecmascript)");
 'use client';
 ;
 ;
@@ -5782,201 +5776,38 @@ function SEOHead({ title, description, canonical, ogType = "website", ogImage, o
     // Use site logo as default fallback for OpenGraph images
     // Blog posts and success stories should pass their hero/featured images
     const fullOgImage = ogImage ? ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}` : `${productionUrl}/attached_assets/logo.jpg`;
-    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$helmet$2f$es$2f$Helmet$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Helmet"], {
-        children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("title", {
-                children: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 76,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                name: "title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 77,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("link", {
-                rel: "alternate",
-                type: "application/rss+xml",
-                title: "Economy Plumbing Services Blog RSS Feed",
-                href: "https://www.plumbersthatcare.com/rss.xml"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 82,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:type",
-                content: ogType
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 90,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:url",
-                content: canonicalUrl
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 91,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 92,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:description",
-                content: finalDescription
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 93,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image",
-                content: fullOgImage
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 94,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:alt",
-                content: ogImageAlt
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 95,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:width",
-                content: ogImageWidth
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 96,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:image:height",
-                content: ogImageHeight
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 97,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:site_name",
-                content: siteName
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 98,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "og:locale",
-                content: "en_US"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 99,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:card",
-                content: twitterCard
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 102,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:url",
-                content: canonicalUrl
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 103,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:title",
-                content: finalTitle
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 104,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:description",
-                content: finalDescription
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 105,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:image",
-                content: fullOgImage
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 106,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "twitter:image:alt",
-                content: ogImageAlt
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 107,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                name: "twitter:site",
-                content: "@plumbersthatcare"
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 108,
-                columnNumber: 7
-            }, this),
-            ogType === "article" && articlePublishedTime && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "article:published_time",
-                content: articlePublishedTime
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 112,
-                columnNumber: 9
-            }, this),
-            ogType === "article" && articleAuthor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("meta", {
-                property: "article:author",
-                content: articleAuthor
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 115,
-                columnNumber: 9
-            }, this),
-            schema && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
-                type: "application/ld+json",
-                children: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [
+    // Update document head dynamically (client-side only for OpenGraph/meta)
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if ("TURBOPACK compile-time falsy", 0) //TURBOPACK unreachable
+        ;
+    }, [
+        finalTitle,
+        finalDescription,
+        canonicalUrl,
+        ogType,
+        fullOgImage,
+        ogImageAlt,
+        ogImageWidth,
+        ogImageHeight,
+        siteName,
+        twitterCard,
+        articlePublishedTime,
+        articleAuthor
+    ]);
+    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
+        children: schema && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("script", {
+            type: "application/ld+json",
+            dangerouslySetInnerHTML: {
+                __html: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [
                     schema
                 ])
-            }, void 0, false, {
-                fileName: "[project]/src/components/SEO/SEOHead.tsx",
-                lineNumber: 120,
-                columnNumber: 9
-            }, this)
-        ]
-    }, void 0, true, {
-        fileName: "[project]/src/components/SEO/SEOHead.tsx",
-        lineNumber: 74,
-        columnNumber: 5
-    }, this);
+            }
+        }, void 0, false, {
+            fileName: "[project]/src/components/SEO/SEOHead.tsx",
+            lineNumber: 125,
+            columnNumber: 9
+        }, this)
+    }, void 0, false);
 }
 }),
 "[project]/app/page.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
