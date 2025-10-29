@@ -1,0 +1,13 @@
+var R=require("../../../../chunks/[turbopack]_runtime.js")("server/app/api/chatbot/feedback/route.js")
+R.c("server/chunks/[root-of-the-server]__165d86d9._.js")
+R.c("server/chunks/node_modules_drizzle-orm_33f28023._.js")
+R.c("server/chunks/node_modules_drizzle-orm_6548a903._.js")
+R.c("server/chunks/node_modules_next_0700e68e._.js")
+R.c("server/chunks/_fae4203f._.js")
+R.c("server/chunks/node_modules_@neondatabase_serverless_index_mjs_2c73916b._.js")
+R.c("server/chunks/shared_schema_ts_d3bfe82c._.js")
+R.c("server/chunks/[root-of-the-server]__7cedc5c8._.js")
+R.c("server/chunks/node_modules_zod_v3_external_d1e61c8a.js")
+R.c("server/chunks/_next-internal_server_app_api_chatbot_feedback_route_actions_a144925a.js")
+R.m(602567)
+module.exports=R.m(602567).exports

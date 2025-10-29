@@ -182,11 +182,17 @@ All required tables exist and accessible:
 
 ## Deployment Readiness
 
+### ✅ Production Build Configuration
+- **start.sh Updated:** Now uses `next build && next start` when NODE_ENV=production
+- **Type Declarations:** Created types/assets.d.ts for @assets imports
+- **Build Process:** Configured for production optimization
+- **Worker Process:** Runs independently alongside Next.js
+
 ### ✅ Production Checklist Created
 See `PRODUCTION_CHECKLIST.md` for complete deployment guide including:
 - Environment variables verification
 - Database backup procedures
-- Deployment steps
+- Deployment steps (updated for production build)
 - Post-deployment verification
 - Monitoring setup
 - Rollback procedures
@@ -195,14 +201,20 @@ See `PRODUCTION_CHECKLIST.md` for complete deployment guide including:
 
 1. **Admin OAuth Configuration**  
    - Add callback URL to Replit OAuth app
+   - Set REPLIT_DEV_DOMAIN to production domain
    - Test admin login flow end-to-end
 
-2. **End-to-End Testing**  
+2. **Production Build Verification**  
+   - Run `NODE_ENV=production ./start.sh` in production
+   - Verify build completes successfully
+   - Test application under production runtime
+
+3. **End-to-End Testing**  
    - Customer portal login flow
    - Email delivery (review requests, referral nurture)
    - Webhook processing (Stripe, Resend)
 
-3. **Final Verification**  
+4. **Final Verification**  
    - Load test critical endpoints
    - Verify all environment variables in production
    - Test background scheduler error handling

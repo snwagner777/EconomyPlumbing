@@ -1,0 +1,3 @@
+{
+  "/api/portal/customer-stats/[customerId]/route": "app/api/portal/customer-stats/[customerId]/route.js"
+}
