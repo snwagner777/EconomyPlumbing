@@ -7,8 +7,8 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
-build = ["npm", "run", "build"]
-run = ["npm", "run", "start"]
+build = ["npx", "next", "build"]
+run = ["sh", "-c", "./start-production.sh"]
 publicDir = "dist"
 
 [[ports]]
