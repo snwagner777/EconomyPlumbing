@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { upsertCampaignPhoneNumber } from '@/server/lib/trackingPhoneNumbers';
+import { upsertCampaignPhoneNumber } from '@/server/lib/campaignPhoneNumbers';
 
 export async function POST(req: NextRequest) {
   try {
