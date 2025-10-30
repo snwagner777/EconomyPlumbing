@@ -5515,6 +5515,10 @@ async function GET(req) {
             console.error('[OAuth] Code verifier missing from session');
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/admin-login?error=verifier_missing', req.url));
         }
+        // Always use actual request host for OAuth redirect
+        const callbackHostname = req.headers.get('host') || '';
+        const redirectUri = `https://${callbackHostname}/api/auth/callback`;
+        console.log('[OAuth] Using redirect_uri for token exchange:', redirectUri);
         // Get OIDC configuration
         const config = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$openid$2d$client$2f$build$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__$3c$locals$3e$__["discovery"](new URL(process.env.ISSUER_URL ?? 'https://replit.com/oidc'), process.env.REPL_ID);
         // Exchange authorization code for tokens with session-stored verifiers
@@ -5565,7 +5569,10 @@ async function GET(req) {
         session.isAdmin = true;
         await session.save();
         console.log('[OAuth] Login successful, redirecting to /admin');
-        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/admin', req.url));
+        // Use the actual request hostname (not localhost)
+        const adminUrl = new URL('/admin', req.url);
+        console.log('[OAuth] Redirect URL:', adminUrl.href);
+        return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(adminUrl);
     } catch (error) {
         console.error('[OAuth] Error processing callback:', error);
         return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$server$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__["NextResponse"].redirect(new URL('/admin-login?error=callback_failed', req.url));
