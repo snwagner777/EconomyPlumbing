@@ -6,7 +6,6 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,11 +154,6 @@ export default function ReferredBy() {
   if (submitted) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/10 via-primary/5 to-background p-4">
-        <SEOHead
-          title="Welcome! | Economy Plumbing Austin"
-          description="Thanks for visiting Economy Plumbing through a referral"
-          canonical="/referred-by"
-        />
         
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
@@ -178,11 +172,6 @@ export default function ReferredBy() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-primary/10 via-primary/5 to-background p-4">
-      <SEOHead
-        title={`${referrerData.name} Referred You | Economy Plumbing Austin`}
-        description="A friend referred you to Economy Plumbing! Get $25 off your first service."
-        canonical="/referred-by"
-      />
 
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">

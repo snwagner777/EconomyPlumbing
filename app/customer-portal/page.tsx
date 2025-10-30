@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1050,10 +1049,6 @@ export default function CustomerPortal() {
 
   return (
     <>
-      <SEOHead
-        title="Customer Portal - Economy Plumbing Services"
-        description="Access your service history, appointments, and invoices. View your Economy Plumbing Services account information and upcoming appointments."
-      />
       <Header 
         isPortalAuthenticated={verificationStep === 'authenticated'} 
         onPortalLogout={handleLogout} 

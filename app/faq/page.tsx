@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Phone } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { createFAQSchema } from "@/components/SEO/JsonLd";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
@@ -154,12 +153,6 @@ export default function FAQ() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="Plumbing FAQ Austin TX | Your Questions Answered Here"
-        description="Expert answers to common plumbing questions. Water heater advice, emergency services, pricing and service areas. 20+ years experience. Call (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/faq"
-        schema={faqSchema}
-      />
 
       <Header />
 

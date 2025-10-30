@@ -5,7 +5,6 @@ import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { 
   Phone, Clock, Shield, Award, MapPin, Star, CheckCircle2, 
   Wrench, Droplet, Flame, DollarSign, ThumbsUp, AlertCircle,
@@ -259,12 +258,6 @@ export default function PlumberNearMe() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead
-        title="Plumber Near Me Austin TX | 4.9★ Rated | 495+ Reviews"
-        description="Austin's highest-rated plumber with 495+ 5-star reviews. Same-day emergency, water heater & drain experts. Family-owned since 2005. Call (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/plumber-near-me"
-        schema={localBusinessSchema}
-      />
 
       <Header />
 

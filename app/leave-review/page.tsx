@@ -13,7 +13,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SEOHead } from "@/components/SEO/SEOHead";
 
 const reviewFormSchema = z.object({
   customerName: z.string().min(2, "Name must be at least 2 characters"),
@@ -113,10 +112,6 @@ export default function LeaveReview() {
   if (isSubmitted) {
     return (
       <>
-        <SEOHead
-          title="Review Submitted - Economy Plumbing Services"
-          description="Thank you for submitting your review! Your feedback helps us serve you better."
-        />
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center px-4 py-12">
           <Card className="max-w-md w-full">
             <CardContent className="pt-12 pb-8 text-center">
@@ -145,10 +140,6 @@ export default function LeaveReview() {
   if (token && isLoadingRequest) {
     return (
       <>
-        <SEOHead
-          title="Leave a Review - Economy Plumbing Services"
-          description="Share your experience with Economy Plumbing Services. Your feedback helps us improve and helps others make informed decisions."
-        />
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center px-4 py-12">
           <Card className="max-w-md w-full">
             <CardContent className="pt-12 pb-8 text-center">
@@ -169,10 +160,6 @@ export default function LeaveReview() {
   if (token && requestError && !requestData) {
     return (
       <>
-        <SEOHead
-          title="Review Request Not Found - Economy Plumbing Services"
-          description="The review request link you followed is invalid or has expired."
-        />
         <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center px-4 py-12">
           <Card className="max-w-md w-full">
             <CardContent className="pt-12 pb-8 text-center">
@@ -194,10 +181,6 @@ export default function LeaveReview() {
 
   return (
     <>
-      <SEOHead
-        title="Leave a Review - Economy Plumbing Services"
-        description="Share your experience with Economy Plumbing Services. Your feedback helps us improve and helps others make informed decisions."
-      />
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 px-4 py-12">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">

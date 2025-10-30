@@ -1,7 +1,6 @@
 'use client';
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,11 +55,6 @@ export default function ReferAFriend() {
 
   return (
     <>
-      <SEOHead
-        title="Referral Leaderboard - Win Rewards | Economy Plumbing Austin"
-        description="Join our referral leaderboard! Refer friends to Economy Plumbing and earn $25 per completed job. See who's leading and climb the ranks for exclusive rewards."
-        canonical="/refer-a-friend"
-      />
 
       <Header />
 

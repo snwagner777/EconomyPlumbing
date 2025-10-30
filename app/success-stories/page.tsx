@@ -20,7 +20,6 @@ import SuccessStoryForm from "@/components/SuccessStoryForm";
 import { CustomerWallOfFame } from "@/components/CustomerWallOfFame";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import type { BeforeAfterComposite, CustomerSuccessStory } from "@shared/schema";
 
 export default function SuccessStories() {
@@ -86,13 +85,6 @@ export default function SuccessStories() {
 
   return (
     <>
-      <SEOHead
-        title="Success Stories | Economy Plumbing Services"
-        description="See real before and after photos from our plumbing projects in Austin and Marble Falls. Water heater installations, leak repairs, drain cleaning, and more."
-        canonical="https://www.plumbersthatcare.com/success-stories"
-        ogImage={ogImage}
-        ogImageAlt="Economy Plumbing Services - Real plumbing project transformations"
-      />
 
       <Header />
 

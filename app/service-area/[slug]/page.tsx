@@ -1,7 +1,6 @@
 'use client';
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -123,11 +122,6 @@ export default function ServiceAreaPage() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title={`${cityName} Plumber | Licensed Plumbing Services | Texas`}
-        description={serviceArea.metaDescription}
-        canonical={`https://www.plumbersthatcare.com/service-area/${slug}`}
-      />
 
       <JsonLd data={localBusinessSchema} />
       {faqs.length > 0 && <JsonLd data={createFAQSchema(faqs)} />}

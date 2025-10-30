@@ -13,7 +13,6 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Loader2, TestTube, Building2, Home } from "lucide-react";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -361,11 +360,6 @@ export default function MembershipCheckout() {
   if (isLoading || !product) {
     return (
       <>
-        <SEOHead
-          title="Checkout | Economy Plumbing Services"
-          description="Complete your VIP membership purchase for Economy Plumbing Services in Austin & Marble Falls, Texas."
-          canonical={`https://www.plumbersthatcare.com/store/checkout/${slug}`}
-        />
         <div className="min-h-screen flex flex-col">
           <Header />
           <main className="flex-1 flex items-center justify-center">
@@ -382,11 +376,6 @@ export default function MembershipCheckout() {
 
   return (
     <>
-      <SEOHead
-        title={`${product.name} Checkout | Economy Plumbing`}
-        description={`Purchase ${product.name} for ${priceDisplay}. Priority service, discounts & peace of mind. Austin & Marble Falls. Call (512) 368-9159!`}
-        canonical={`https://www.plumbersthatcare.com/store/checkout/${slug}`}
-      />
 
       <div className="min-h-screen flex flex-col">
         <Header />

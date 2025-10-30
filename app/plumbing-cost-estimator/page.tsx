@@ -4,7 +4,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -151,11 +150,6 @@ export default function PlumbingCostEstimator() {
 
   return (
     <>
-      <SEOHead
-        title="Plumbing Cost Estimator - Get Instant Price Estimates | Economy Plumbing"
-        description="Use our free plumbing cost estimator to get instant price ranges for water heater installation, drain cleaning, leak repair, and more. Serving Austin and Marble Falls, Texas."
-        canonical="/plumbing-cost-estimator"
-      />
 
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-6xl mx-auto">

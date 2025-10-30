@@ -7,7 +7,6 @@ import { z } from "zod";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -107,11 +106,6 @@ export default function ReferralOffer() {
 
   return (
     <>
-      <SEOHead
-        title={`Special Referral Offer - $25 Off Your Service | Economy Plumbing`}
-        description={`You've been referred to Economy Plumbing! Get $25 off your first service. Professional plumbing services in Austin and Marble Falls, TX.`}
-        canonical="/referral-offer"
-      />
       
       <div className="min-h-screen bg-gradient-to-b from-background to-accent/5 py-12 px-4">
         <div className="max-w-2xl mx-auto space-y-6">

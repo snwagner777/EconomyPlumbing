@@ -6,7 +6,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import BlogCard from "@/components/BlogCard";
 import { Button } from "@/components/ui/button";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { Rss, ChevronLeft, ChevronRight } from "lucide-react";
 import type { BlogPost } from "@shared/schema";
 
@@ -89,12 +88,6 @@ export default function Blog() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead
-        title="Plumbing Tips & Advice Blog | Economy Plumbing"
-        description="Austin & Marble Falls plumbing tips: water heater maintenance, drain care, leak prevention & home maintenance guides. Expert advice from Economy Plumbing."
-        canonical="https://www.plumbersthatcare.com/blog"
-        schema={blogSchema}
-      />
 
       <Header />
 

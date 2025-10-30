@@ -4,16 +4,10 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Calendar, Shield, Bell } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEO/SEOHead";
 
 export default function ScheduleAppointment() {
   return (
     <>
-      <SEOHead
-        title="Schedule Your Appointment | Economy Plumbing"
-        description="Book plumbing service online. Choose your preferred date & time for same-day service. Austin & Marble Falls. Licensed plumbers 24/7. Call (512) 368-9159!"
-        canonical="https://www.plumbersthatcare.com/schedule-appointment"
-      />
 
       <Header />
       

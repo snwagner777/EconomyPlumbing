@@ -19,7 +19,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { format } from "date-fns";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
@@ -114,19 +113,6 @@ export default function BlogPostPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead
-        title={post.title}
-        description={post.metaDescription || ""}
-        canonical={canonicalUrl}
-        ogType="article"
-        ogImage={post.featuredImage ? 
-          (post.featuredImage.startsWith('http') ? post.featuredImage : `https://www.plumbersthatcare.com${post.featuredImage}`) : 
-          "https://www.plumbersthatcare.com/attached_assets/logo.jpg"}
-        ogImageAlt={`Featured image for: ${post.title}`}
-        schema={blogPostSchema && breadcrumbSchema ? [blogPostSchema, breadcrumbSchema] : undefined}
-        articlePublishedTime={new Date(post.publishDate).toISOString()}
-        articleAuthor={post.author}
-      />
 
       <Header />
 

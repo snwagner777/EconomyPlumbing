@@ -9,7 +9,6 @@ import { Phone, MapPin, Clock, Users, Award, Home as HomeIcon } from "lucide-rea
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { openScheduler } from "@/lib/scheduler";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 function getCities(austinPhone: string, marbleFallsPhone: string) {
@@ -140,11 +139,6 @@ export default function ServiceAreas() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="Our Service Area | Economy Plumbing Central Texas"
-        description="Central Texas plumber serving Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & more. Same-day service. (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/service-areas"
-      />
 
       <Header />
 

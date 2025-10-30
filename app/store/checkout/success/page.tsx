@@ -6,7 +6,6 @@ import Footer from "@/components/Footer";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Phone } from "lucide-react";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { trackEvent } from "@/lib/analytics";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
@@ -22,11 +21,6 @@ export default function MembershipSuccess() {
 
   return (
     <>
-      <SEOHead
-        title="Purchase Successful | Economy Plumbing Services"
-        description="Thank you for your VIP membership purchase! Welcome to priority plumbing service in Austin & Marble Falls, Texas."
-        canonical="https://www.plumbersthatcare.com/store/checkout/success"
-      />
 
       <div className="min-h-screen flex flex-col">
         <Header />
