@@ -24,6 +24,11 @@ export default function StorePage() {
     
     // Initialize Ecwid once script loads
     script.onload = () => {
+      // Initialize Ecwid first
+      if (window.Ecwid) {
+        window.Ecwid.init();
+      }
+      // Then load the product browser
       if (window.xProductBrowser) {
         window.xProductBrowser(`id=my-store-${ECWID_STORE_ID}`);
       }
