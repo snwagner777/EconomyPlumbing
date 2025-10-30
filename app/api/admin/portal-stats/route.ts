@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { sessionOptions, SessionData } from 'src/lib/session';
-import { cookies } from 'next/headers';
+import { getSession } from 'src/lib/session';
 import { db } from '@/server/db';
 import { portalAnalytics } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getIronSession<SessionData>(await cookies(), sessionOptions);
+    const session = await getSession();
     
     if (!session.user) {
       return NextResponse.json(
