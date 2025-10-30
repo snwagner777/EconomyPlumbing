@@ -76,7 +76,7 @@ export default async function AdminOAuthLoginPage({
               size="lg"
               data-testid="button-login"
             >
-              <a href="/api/login">
+              <a href="/api/auth/login">
                 <LogIn className="mr-2 h-5 w-5" />
                 Sign in with Replit
               </a>
