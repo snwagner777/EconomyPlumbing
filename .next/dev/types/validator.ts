@@ -1361,10 +1361,28 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/admin/reviews/[id]/generate-reply/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/reviews/[id]/generate-reply">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/reviews/[id]/generate-reply/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/admin/reviews/[id]/moderate/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/reviews/[id]/moderate">> = Specific
   const handler = {} as typeof import("../../../app/api/admin/reviews/[id]/moderate/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/admin/reviews/[id]/post-reply/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/reviews/[id]/post-reply">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/reviews/[id]/post-reply/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check

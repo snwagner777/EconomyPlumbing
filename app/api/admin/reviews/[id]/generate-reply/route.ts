@@ -13,7 +13,7 @@ const requestSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ reviewId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAdmin();
@@ -24,7 +24,7 @@ export async function POST(
       );
     }
 
-    const { reviewId } = await params;
+    const { id } = await params;
     const body = await req.json();
     const { type } = requestSchema.parse(body);
     
@@ -32,7 +32,7 @@ export async function POST(
     let review: any;
     if (type === 'custom') {
       const reviews = await storage.getAllReviews();
-      review = reviews.find((r: any) => r.id === reviewId);
+      review = reviews.find((r: any) => r.id === id);
       if (!review) {
         return NextResponse.json(
           { message: "Review not found" },
@@ -43,7 +43,7 @@ export async function POST(
       const result = await db
         .select()
         .from(googleReviews)
-        .where(eq(googleReviews.id, reviewId))
+        .where(eq(googleReviews.id, id))
         .execute();
       
       if (!result || result.length === 0) {
@@ -92,7 +92,7 @@ Generate ONLY the reply text, no explanations or meta-commentary.`;
       );
     }
     
-    console.log(`[Review Reply] Generated AI reply for review ${reviewId}`);
+    console.log(`[Review Reply] Generated AI reply for review ${id}`);
     return NextResponse.json({ reply: aiReply });
   } catch (error: any) {
     console.error('[Review Reply] AI generation error:', error);

@@ -13,7 +13,7 @@ const requestSchema = z.object({
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ reviewId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const auth = await requireAdmin();
@@ -24,14 +24,14 @@ export async function POST(
       );
     }
 
-    const { reviewId } = await params;
+    const { id } = await params;
     const body = await req.json();
     const { replyText, type } = requestSchema.parse(body);
     
     // Save reply to database and post to external platform
     let result: any;
     if (type === 'custom') {
-      result = await storage.replyToReview(reviewId, replyText);
+      result = await storage.replyToReview(id, replyText);
       if (!result) {
         return NextResponse.json(
           { message: "Review not found" },
@@ -43,7 +43,7 @@ export async function POST(
       const [review] = await db
         .select()
         .from(googleReviews)
-        .where(eq(googleReviews.id, reviewId))
+        .where(eq(googleReviews.id, id))
         .limit(1);
       
       if (!review) {
@@ -62,7 +62,7 @@ export async function POST(
         postedToGoogle = await postReplyToGoogleReview(review.reviewId, replyText);
         
         if (!postedToGoogle) {
-          console.warn(`[Review Reply] Failed to post reply to Google for review ${reviewId}`);
+          console.warn(`[Review Reply] Failed to post reply to Google for review ${id}`);
         }
       }
       
@@ -73,7 +73,7 @@ export async function POST(
           replyText: replyText.trim(),
           repliedAt: new Date(),
         })
-        .where(eq(googleReviews.id, reviewId))
+        .where(eq(googleReviews.id, id))
         .returning();
       
       result = updated;
@@ -88,7 +88,7 @@ export async function POST(
       }
     }
     
-    console.log(`[Review Reply] Reply posted for review ${reviewId}`);
+    console.log(`[Review Reply] Reply posted for review ${id}`);
     return NextResponse.json({ 
       success: true, 
       message: "Reply posted successfully", 
