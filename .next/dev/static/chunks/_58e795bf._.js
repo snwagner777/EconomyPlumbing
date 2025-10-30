@@ -2594,6 +2594,11 @@ function StorePage() {
             // Initialize Ecwid once script loads
             script.onload = ({
                 "StorePage.useEffect": ()=>{
+                    // Initialize Ecwid first
+                    if (window.Ecwid) {
+                        window.Ecwid.init();
+                    }
+                    // Then load the product browser
                     if (window.xProductBrowser) {
                         window.xProductBrowser(`id=my-store-${ECWID_STORE_ID}`);
                     }
@@ -2615,7 +2620,7 @@ function StorePage() {
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Header$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                 fileName: "[project]/app/store/page.tsx",
-                lineNumber: 44,
+                lineNumber: 49,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -2633,7 +2638,7 @@ function StorePage() {
                                         children: "Plumbing Products"
                                     }, void 0, false, {
                                         fileName: "[project]/app/store/page.tsx",
-                                        lineNumber: 51,
+                                        lineNumber: 56,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2641,23 +2646,23 @@ function StorePage() {
                                         children: "Quality plumbing products and supplies delivered to your door"
                                     }, void 0, false, {
                                         fileName: "[project]/app/store/page.tsx",
-                                        lineNumber: 52,
+                                        lineNumber: 57,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/store/page.tsx",
-                                lineNumber: 50,
+                                lineNumber: 55,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/store/page.tsx",
-                            lineNumber: 49,
+                            lineNumber: 54,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/store/page.tsx",
-                        lineNumber: 48,
+                        lineNumber: 53,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2671,22 +2676,22 @@ function StorePage() {
                                     "data-testid": "ecwid-store-container"
                                 }, void 0, false, {
                                     fileName: "[project]/app/store/page.tsx",
-                                    lineNumber: 64,
+                                    lineNumber: 69,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/store/page.tsx",
-                                lineNumber: 62,
+                                lineNumber: 67,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/store/page.tsx",
-                            lineNumber: 61,
+                            lineNumber: 66,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/store/page.tsx",
-                        lineNumber: 60,
+                        lineNumber: 65,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2701,12 +2706,12 @@ function StorePage() {
                                         children: "Why Shop With Us?"
                                     }, void 0, false, {
                                         fileName: "[project]/app/store/page.tsx",
-                                        lineNumber: 76,
+                                        lineNumber: 81,
                                         columnNumber: 15
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/store/page.tsx",
-                                    lineNumber: 75,
+                                    lineNumber: 80,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2721,12 +2726,12 @@ function StorePage() {
                                                         className: "w-8 h-8 text-primary"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/store/page.tsx",
-                                                        lineNumber: 82,
+                                                        lineNumber: 87,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 81,
+                                                    lineNumber: 86,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2734,7 +2739,7 @@ function StorePage() {
                                                     children: "Quality Products"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 84,
+                                                    lineNumber: 89,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2742,13 +2747,13 @@ function StorePage() {
                                                     children: "Professional-grade plumbing supplies and products we trust and use ourselves"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 85,
+                                                    lineNumber: 90,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 80,
+                                            lineNumber: 85,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2760,12 +2765,12 @@ function StorePage() {
                                                         className: "w-8 h-8 text-primary"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/store/page.tsx",
-                                                        lineNumber: 92,
+                                                        lineNumber: 97,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 91,
+                                                    lineNumber: 96,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2773,7 +2778,7 @@ function StorePage() {
                                                     children: "Fast Shipping"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 94,
+                                                    lineNumber: 99,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2781,13 +2786,13 @@ function StorePage() {
                                                     children: "Drop-shipped directly to your door in Austin and Marble Falls areas"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 95,
+                                                    lineNumber: 100,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 90,
+                                            lineNumber: 95,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2799,12 +2804,12 @@ function StorePage() {
                                                         className: "w-8 h-8 text-primary"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/store/page.tsx",
-                                                        lineNumber: 102,
+                                                        lineNumber: 107,
                                                         columnNumber: 19
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 101,
+                                                    lineNumber: 106,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2812,7 +2817,7 @@ function StorePage() {
                                                     children: "Expert Support"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 104,
+                                                    lineNumber: 109,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2820,30 +2825,30 @@ function StorePage() {
                                                     children: "Questions about installation? Our team is here to help you succeed"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 105,
+                                                    lineNumber: 110,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 100,
+                                            lineNumber: 105,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/store/page.tsx",
-                                    lineNumber: 79,
+                                    lineNumber: 84,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/store/page.tsx",
-                            lineNumber: 74,
+                            lineNumber: 79,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/store/page.tsx",
-                        lineNumber: 73,
+                        lineNumber: 78,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -2860,7 +2865,7 @@ function StorePage() {
                                             children: "Need Help Finding Something?"
                                         }, void 0, false, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 118,
+                                            lineNumber: 123,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2868,7 +2873,7 @@ function StorePage() {
                                             children: "Our team can help you find the right product or answer installation questions"
                                         }, void 0, false, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 119,
+                                            lineNumber: 124,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2882,7 +2887,7 @@ function StorePage() {
                                                     children: "Schedule Consultation"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 123,
+                                                    lineNumber: 128,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2898,56 +2903,56 @@ function StorePage() {
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/store/page.tsx",
-                                                        lineNumber: 137,
+                                                        lineNumber: 142,
                                                         columnNumber: 21
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/store/page.tsx",
-                                                    lineNumber: 131,
+                                                    lineNumber: 136,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/store/page.tsx",
-                                            lineNumber: 122,
+                                            lineNumber: 127,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/store/page.tsx",
-                                    lineNumber: 117,
+                                    lineNumber: 122,
                                     columnNumber: 15
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/store/page.tsx",
-                                lineNumber: 116,
+                                lineNumber: 121,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/store/page.tsx",
-                            lineNumber: 115,
+                            lineNumber: 120,
                             columnNumber: 11
                         }, this)
                     }, void 0, false, {
                         fileName: "[project]/app/store/page.tsx",
-                        lineNumber: 114,
+                        lineNumber: 119,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/store/page.tsx",
-                lineNumber: 46,
+                lineNumber: 51,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Footer$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                 fileName: "[project]/app/store/page.tsx",
-                lineNumber: 146,
+                lineNumber: 151,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/app/store/page.tsx",
-        lineNumber: 43,
+        lineNumber: 48,
         columnNumber: 5
     }, this);
 }
