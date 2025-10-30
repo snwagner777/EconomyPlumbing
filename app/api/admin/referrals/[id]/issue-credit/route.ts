@@ -3,21 +3,22 @@ import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { referrals } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
+import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
+
 export async function POST(
   req: NextRequest,
-  { params }: { params: { referralId: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getIronSession(cookies(), sessionOptions);
-    
-    if (!session.userId) {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
       return NextResponse.json(
-        { message: "Unauthorized" },
+        { error: auth.error },
         { status: 401 }
       );
     }
 
-    const { referralId } = params;
+    const { id } = await params;
     const { amount, memo } = await req.json();
     
     if (!amount || amount <= 0) {
@@ -31,7 +32,7 @@ export async function POST(
     const [referral] = await db
       .select()
       .from(referrals)
-      .where(eq(referrals.id, referralId))
+      .where(eq(referrals.id, parseInt(id, 10)))
       .limit(1);
 
     if (!referral) {
@@ -49,7 +50,6 @@ export async function POST(
     }
 
     // Issue credit via ServiceTitan API
-    const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
     const serviceTitan = getServiceTitanAPI();
     
     const credit = await serviceTitan.createCustomerCredit(
@@ -69,7 +69,7 @@ export async function POST(
         creditNotes: `Manual credit issued: ServiceTitan adjustment #${credit.id}`,
         updatedAt: new Date()
       })
-      .where(eq(referrals.id, referralId))
+      .where(eq(referrals.id, parseInt(id, 10)))
       .returning();
 
     return NextResponse.json({ referral: updatedReferral, credit });

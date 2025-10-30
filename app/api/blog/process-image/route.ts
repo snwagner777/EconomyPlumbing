@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { processBlogImage } from '@/server/lib/imageProcessor';
+import { processBlogImage } from '@/server/lib/blogImageProcessor';
 
 export async function POST(req: NextRequest) {
   try {

@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { referrals } from '@shared/schema';
 import { eq } from 'drizzle-orm';
@@ -23,9 +23,12 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
     }
 
     const { id } = await params;

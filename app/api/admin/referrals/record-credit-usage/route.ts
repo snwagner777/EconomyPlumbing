@@ -3,13 +3,13 @@ import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { referralCreditUsage } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
+
 export async function POST(req: NextRequest) {
   try {
-    const session = await getIronSession(cookies(), sessionOptions);
-    
-    if (!session.userId) {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
       return NextResponse.json(
-        { message: "Unauthorized" },
+        { error: auth.error },
         { status: 401 }
       );
     }
