@@ -6,7 +6,6 @@ import ContactForm from "@/components/ContactForm";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Phone, MapPin, Clock, Mail } from "lucide-react";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
@@ -53,12 +52,6 @@ export default function Contact() {
   
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="Contact Us | Schedule Plumbing Service | Austin TX"
-        description="Schedule service online or call for 24/7 emergency plumbing. Serving Austin, Marble Falls & Central TX. Call Austin: (512) 368-9159 or (830) 460-3565."
-        canonical="https://www.plumbersthatcare.com/contact"
-        schema={contactPageSchema}
-      />
 
       <Header />
 

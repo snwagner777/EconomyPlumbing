@@ -12,8 +12,8 @@ import { randomBytes } from 'crypto';
 
 export async function GET(req: NextRequest) {
   try {
-    // Use actual request host for OAuth redirect (REPLIT_DEV_DOMAIN only for local dev)
-    const hostname = (process.env.NODE_ENV === 'development' ? process.env.REPLIT_DEV_DOMAIN : null) || req.headers.get('host') || '';
+    // Always use actual request host for OAuth redirect
+    const hostname = req.headers.get('host') || '';
     
     // Get OIDC configuration
     const config = await client.discovery(

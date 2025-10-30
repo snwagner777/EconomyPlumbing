@@ -38,7 +38,6 @@ import testimonial2 from "@assets/optimized/Female_customer_testimonial_f29d918d
 import testimonial3 from "@assets/optimized/Senior_customer_testimonial_027f5302.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
 import {
   localBusinessSchema,
@@ -253,12 +252,6 @@ export default function Home() {
 
   return (
     <>
-      <SEOHead
-        title="Economy Plumbing Austin TX | Licensed Experts Since 2005"
-        description="Trusted Austin plumbing experts since 2005. Water heater specialists, drain cleaning & emergency service. Licensed, insured, same-day. Call (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/"
-        schema={[localBusinessSchema, marbleFallsSchema, organizationSchema, faqSchema]}
-      />
 
       <div className="min-h-screen">
         <Header />

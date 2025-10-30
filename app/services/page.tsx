@@ -17,7 +17,6 @@ import {
   CheckCircle,
   ArrowRight
 } from "lucide-react";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import { openScheduler } from "@/lib/scheduler";
 import ReviewsSection from "@/components/ReviewsSection";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
@@ -100,11 +99,6 @@ export default function Services() {
   
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="Plumbing Services Austin TX | Complete Expert Solutions"
-        description="Complete plumbing services: water heaters, drain cleaning, leak repair, gas lines and backflow testing. Licensed plumbers available 24/7. Call (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/services"
-      />
 
       <Header />
 

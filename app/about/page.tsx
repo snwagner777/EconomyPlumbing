@@ -6,7 +6,6 @@ import { Card } from "@/components/ui/card";
 import { CheckCircle2, Users, Award, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { openScheduler } from "@/lib/scheduler";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import Link from "next/link";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
@@ -82,12 +81,6 @@ export default function About() {
 
   return (
     <>
-      <SEOHead
-        title="About Us | Family-Owned Plumbing Company | Austin TX"
-        description={`Family-owned plumbing company serving Central Texas since 2005. Licensed professionals specializing in water heaters and drain cleaning. Call ${phoneConfig.display}.`}
-        canonical="https://www.plumbersthatcare.com/about"
-        schema={organizationSchema}
-      />
       
       <div className="min-h-screen flex flex-col">
         <Header />
