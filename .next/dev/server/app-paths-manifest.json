@@ -1,8 +1,1 @@
-{
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/customers/leaderboard/route": "app/api/customers/leaderboard/route.js",
-  "/api/page-metadata/route": "app/api/page-metadata/route.js",
-  "/api/tracking-numbers/route": "app/api/tracking-numbers/route.js",
-  "/page": "app/page.js",
-  "/success-stories/page": "app/success-stories/page.js"
-}
+{}
