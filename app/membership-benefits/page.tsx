@@ -16,7 +16,7 @@ export default function MembershipBenefits() {
     queryKey: ['/api/products'],
   });
 
-  const memberships = products?.filter(p => p.category === 'membership') || [];
+  const memberships = Array.isArray(products) ? products.filter(p => p.category === 'membership') : [];
 
   const benefits = [
     {
