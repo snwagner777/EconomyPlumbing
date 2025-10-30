@@ -7,7 +7,6 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Shield, Clock, Phone } from "lucide-react";
-import { SEOHead } from "@/components/SEO/SEOHead";
 import type { Product } from "@shared/schema";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
@@ -61,12 +60,6 @@ export default function MembershipBenefits() {
 
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title="Membership Benefits | Economy Plumbing TX"
-        description={`VIP plumbing membership: priority service, 10-15% discounts, annual maintenance, 24/7 support. Save on repairs. Austin & Marble Falls. ${phoneConfig.display}.`}
-        canonical="https://www.plumbersthatcare.com/membership-benefits"
-      />
-
       <Header />
 
       <section className="bg-primary text-primary-foreground py-16 lg:py-20">

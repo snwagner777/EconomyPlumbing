@@ -5,7 +5,7 @@ import { Building2, Lock } from "lucide-react";
 export default function OAuthAdminLogin() {
   const handleOAuthLogin = () => {
     // Redirect to OAuth login endpoint
-    window.location.href = "/api/oauth/login";
+    window.location.href = "/api/auth/login";
   };
 
   return (
