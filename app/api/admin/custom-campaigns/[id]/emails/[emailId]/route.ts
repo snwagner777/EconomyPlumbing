@@ -1,11 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { customCampaignEmails } from '@/shared/schema';
 import { eq, and } from 'drizzle-orm';
-import { getIronSession } from 'iron-session';
-import { sessionOptions } from '@/server/lib/session';
-import { cookies } from 'next/headers';
-
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string; emailId: string } }

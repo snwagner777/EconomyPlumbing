@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import OpenAI from 'openai';
-import { getIronSession } from 'iron-session';
-import { sessionOptions } from '@/server/lib/session';
-import { cookies } from 'next/headers';
-
 export async function POST(req: NextRequest) {
   try {
     const session = await getIronSession(cookies(), sessionOptions);

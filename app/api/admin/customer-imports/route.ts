@@ -2,17 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { customerDataImports } from '@/shared/schema';
 import { sql } from 'drizzle-orm';
-import { getIronSession } from 'iron-session';
-import { sessionOptions } from '@/server/lib/session';
-import { cookies } from 'next/headers';
+import { requireAdmin } from '@/server/lib/nextAuth';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getIronSession(cookies(), sessionOptions);
-    
-    if (!session.userId) {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
       return NextResponse.json(
-        { message: "Unauthorized" },
+        { error: auth.error },
         { status: 401 }
       );
     }
