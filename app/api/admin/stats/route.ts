@@ -1,54 +1,43 @@
 /**
- * Admin API - Dashboard Statistics
+ * Admin API - Photo Statistics
  * 
- * Get overview statistics for admin dashboard
+ * Get photo usage statistics for admin dashboard
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
-import { db } from '@/server/db';
-import { customersXlsx, reviewRequests, referralNurtureCampaigns, blogPosts, contactSubmissions } from '@shared/schema';
-import { sql, gte } from 'drizzle-orm';
+import { requireAdmin } from '@/server/lib/nextAuth';
+import { storage } from '@/server/storage';
 
 export async function GET(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
     }
 
-    // Get various counts in parallel
-    const [
-      [{ customerCount }],
-      [{ activeReviewRequestCount }],
-      [{ activeReferralCampaignCount }],
-      [{ blogPostCount }],
-      [{ recentContactsCount }],
-    ] = await Promise.all([
-      db.select({ customerCount: sql<number>`count(*)` }).from(customersXlsx),
-      db.select({ activeReviewRequestCount: sql<number>`count(*)` })
-        .from(reviewRequests)
-        .where(sql`${reviewRequests.status} IN ('active', 'pending')`),
-      db.select({ activeReferralCampaignCount: sql<number>`count(*)` })
-        .from(referralNurtureCampaigns)
-        .where(sql`${referralNurtureCampaigns.status} = 'active'`),
-      db.select({ blogPostCount: sql<number>`count(*)` }).from(blogPosts),
-      db.select({ recentContactsCount: sql<number>`count(*)` })
-        .from(contactSubmissions)
-        .where(gte(contactSubmissions.submittedAt, new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))),
-    ]);
-
-    return NextResponse.json({
-      stats: {
-        totalCustomers: Number(customerCount),
-        activeReviewRequests: Number(activeReviewRequestCount),
-        activeReferralCampaigns: Number(activeReferralCampaignCount),
-        totalBlogPosts: Number(blogPostCount),
-        recentContacts: Number(recentContactsCount),
-      },
-    });
-  } catch (error) {
-    console.error('[Admin Stats API] Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
+    const photos = await storage.getAllPhotos();
+    
+    const stats = {
+      total: photos.length,
+      unused: photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl).length,
+      used: photos.filter((p: any) => p.usedInBlogPostId || p.usedInPageUrl).length,
+      goodQuality: photos.filter((p: any) => p.isGoodQuality).length,
+      poorQuality: photos.filter((p: any) => !p.isGoodQuality).length,
+      byCategory: photos.reduce((acc: any, p: any) => {
+        acc[p.category] = (acc[p.category] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>)
+    };
+    
+    return NextResponse.json({ stats });
+  } catch (error: any) {
+    console.error("[Admin] Error fetching stats:", error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 }

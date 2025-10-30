@@ -1,43 +1,57 @@
 /**
  * Admin API - Photo Management
  * 
- * Manage CompanyCam and ServiceTitan photos
+ * Manage CompanyCam and ServiceTitan photos with filtering
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 
 export async function GET(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
-    const jobId = searchParams.get('jobId');
-    const unused = searchParams.get('unused') === 'true';
-
-    let photos;
+    const quality = searchParams.get('quality');
+    const status = searchParams.get('status');
     
-    if (jobId) {
-      photos = await storage.getPhotosByJob(jobId);
-    } else if (category) {
-      photos = await storage.getPhotosByCategory(category);
-    } else if (unused) {
-      photos = await storage.getUnusedPhotos();
-    } else {
-      photos = await storage.getAllPhotos();
+    let photos = await storage.getAllPhotos();
+    
+    // Apply filters
+    if (category && category !== 'all') {
+      photos = photos.filter((p: any) => p.category === category);
     }
-
-    return NextResponse.json({
-      photos,
-      count: photos.length,
-    });
-  } catch (error) {
-    console.error('[Admin Photos API] Error:', error);
-    return NextResponse.json({ error: 'Failed to fetch photos' }, { status: 500 });
+    
+    if (quality && quality !== 'all') {
+      if (quality === 'good') {
+        photos = photos.filter((p: any) => p.isGoodQuality);
+      } else if (quality === 'poor') {
+        photos = photos.filter((p: any) => !p.isGoodQuality);
+      }
+    }
+    
+    if (status && status !== 'all') {
+      if (status === 'used') {
+        photos = photos.filter((p: any) => p.usedInBlogPostId || p.usedInPageUrl);
+      } else if (status === 'unused') {
+        photos = photos.filter((p: any) => !p.usedInBlogPostId && !p.usedInPageUrl);
+      }
+    }
+    
+    return NextResponse.json({ photos });
+  } catch (error: any) {
+    console.error("[Admin] Error fetching photos:", error);
+    return NextResponse.json(
+      { error: error.message },
+      { status: 500 }
+    );
   }
 }
