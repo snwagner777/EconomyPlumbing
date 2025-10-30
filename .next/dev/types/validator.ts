@@ -1361,6 +1361,15 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
   type __Unused = __Check
 }
 
+// Validate ../../../app/api/admin/portal-stats/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/portal-stats">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/portal-stats/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
 // Validate ../../../app/api/admin/products/route.ts
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/products">> = Specific
@@ -1383,6 +1392,24 @@ type RouteHandlerConfig<Route extends AppRouteHandlerRoutes = AppRouteHandlerRou
 {
   type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/referral-campaigns">> = Specific
   const handler = {} as typeof import("../../../app/api/admin/referral-campaigns/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/admin/referral-email-preview/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/referral-email-preview">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/referral-email-preview/route.js")
+  type __Check = __IsExpected<typeof handler>
+  // @ts-ignore
+  type __Unused = __Check
+}
+
+// Validate ../../../app/api/admin/referral-email-settings/route.ts
+{
+  type __IsExpected<Specific extends RouteHandlerConfig<"/api/admin/referral-email-settings">> = Specific
+  const handler = {} as typeof import("../../../app/api/admin/referral-email-settings/route.js")
   type __Check = __IsExpected<typeof handler>
   // @ts-ignore
   type __Unused = __Check
