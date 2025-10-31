@@ -2,9 +2,12 @@
   "/admin/login/page": "app/admin/login/page.js",
   "/admin/page": "app/admin/page.js",
   "/api/portal/session/route": "app/api/portal/session/route.js",
+  "/api/products/route": "app/api/products/route.js",
   "/api/servicetitan/arrival-windows/route": "app/api/servicetitan/arrival-windows/route.js",
   "/api/tracking-numbers/route": "app/api/tracking-numbers/route.js",
   "/blog/page": "app/blog/page.js",
   "/customer-portal/page": "app/customer-portal/page.js",
-  "/page": "app/page.js"
+  "/membership-benefits/page": "app/membership-benefits/page.js",
+  "/page": "app/page.js",
+  "/store/page": "app/store/page.js"
 }
