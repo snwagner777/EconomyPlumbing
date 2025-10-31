@@ -18,7 +18,7 @@ export default async function BlogAdminPage() {
   const admin = await isAdmin();
   
   if (!admin) {
-    redirect('/admin-login');
+    redirect('/admin/login');
   }
 
   return <BlogDashboard />;

@@ -100,7 +100,7 @@ export default function UnifiedAdminClient() {
   // Redirect if not admin
   useEffect(() => {
     if (authData && !authData.isAdmin) {
-      router.push('/admin-login');
+      router.push('/admin/login');
     }
   }, [authData, router]);
 

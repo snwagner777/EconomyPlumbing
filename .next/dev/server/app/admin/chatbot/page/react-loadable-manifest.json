@@ -1,0 +1,10 @@
+{
+  "[project]/src/components/AIChatbot.tsx [app-client] (ecmascript, next/dynamic entry)": {
+    "id": "[project]/src/components/AIChatbot.tsx [app-client] (ecmascript, next/dynamic entry)",
+    "files": [
+      "static/chunks/src_3b707a7a._.js",
+      "static/chunks/node_modules_3404bb6d._.js",
+      "static/chunks/src_components_AIChatbot_tsx_16c1040a._.js"
+    ]
+  }
+}
