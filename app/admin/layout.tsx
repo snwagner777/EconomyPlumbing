@@ -2,28 +2,18 @@
  * Admin Layout with Sidebar Navigation
  * 
  * Wraps all admin pages with unified sidebar navigation
- * Uses Clerk for authentication - middleware handles redirect if not authenticated
+ * Uses session-based authentication - middleware handles redirect if not authenticated
  */
 
-import { auth } from '@clerk/nextjs/server';
-import { redirect } from 'next/navigation';
 import { AdminSidebar } from '@/components/admin-sidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { UserButton } from '@clerk/nextjs';
+import { LogoutButton } from '@/components/LogoutButton';
 
-export default async function AdminLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Get auth state from Clerk
-  const { userId } = await auth();
-  
-  // This shouldn't happen due to middleware protection, but safety check
-  if (!userId) {
-    redirect('/sign-in');
-  }
-
   const style = {
     "--sidebar-width": "16rem",
     "--sidebar-width-icon": "3rem",
@@ -36,14 +26,7 @@ export default async function AdminLayout({
         <div className="flex flex-col flex-1 overflow-hidden">
           <header className="flex items-center justify-between p-4 border-b shrink-0">
             <SidebarTrigger data-testid="button-sidebar-toggle" />
-            <UserButton 
-              appearance={{
-                elements: {
-                  userButtonAvatarBox: 'w-8 h-8',
-                }
-              }}
-              afterSignOutUrl="/"
-            />
+            <LogoutButton />
           </header>
           <main className="flex-1 overflow-auto">
             {children}
