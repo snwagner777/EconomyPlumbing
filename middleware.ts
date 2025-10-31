@@ -13,8 +13,13 @@ import type { NextRequest } from 'next/server';
 import { getIronSession } from 'iron-session';
 import type { SessionData } from '@/lib/auth';
 
+// Validate SESSION_SECRET at runtime
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  throw new Error('SESSION_SECRET must be set and at least 32 characters long');
+}
+
 const sessionOptions = {
-  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long_for_production',
+  password: process.env.SESSION_SECRET,
   cookieName: 'admin_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
@@ -29,11 +34,20 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is an admin route (except login page and API routes)
   if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !pathname.startsWith('/api/')) {
-    // Check for session cookie
-    const sessionCookie = request.cookies.get('admin_session');
+    // Validate session using iron-session
+    const response = NextResponse.next();
     
-    if (!sessionCookie) {
-      // No session cookie - redirect to login
+    try {
+      const session = await getIronSession<SessionData>(request.cookies, response.cookies, sessionOptions);
+      
+      if (!session.isAuthenticated) {
+        // Not authenticated - redirect to login
+        const loginUrl = new URL('/admin/login', request.url);
+        loginUrl.searchParams.set('from', pathname);
+        return NextResponse.redirect(loginUrl);
+      }
+    } catch (error) {
+      // Session validation failed - redirect to login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);

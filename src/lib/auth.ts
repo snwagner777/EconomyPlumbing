@@ -6,8 +6,13 @@ export interface SessionData {
   username?: string;
 }
 
+// Validate SESSION_SECRET at runtime
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+  throw new Error('SESSION_SECRET must be set and at least 32 characters long');
+}
+
 const sessionOptions = {
-  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long_for_production',
+  password: process.env.SESSION_SECRET,
   cookieName: 'admin_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',

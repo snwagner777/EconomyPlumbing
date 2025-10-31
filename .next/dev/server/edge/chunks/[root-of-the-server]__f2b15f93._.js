@@ -30,9 +30,15 @@ module.exports = mod;
 ]);
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$api$2f$server$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/api/server.js [middleware-edge] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/web/exports/index.js [middleware-edge] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$iron$2d$session$2f$dist$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/iron-session/dist/index.js [middleware-edge] (ecmascript)");
 ;
+;
+// Validate SESSION_SECRET at runtime
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+    throw new Error('SESSION_SECRET must be set and at least 32 characters long');
+}
 const sessionOptions = {
-    password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long_for_production',
+    password: process.env.SESSION_SECRET,
     cookieName: 'admin_session',
     cookieOptions: {
         secure: ("TURBOPACK compile-time value", "development") === 'production',
@@ -45,10 +51,18 @@ async function middleware(request) {
     const { pathname } = request.nextUrl;
     // Check if this is an admin route (except login page and API routes)
     if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !pathname.startsWith('/api/')) {
-        // Check for session cookie
-        const sessionCookie = request.cookies.get('admin_session');
-        if (!sessionCookie) {
-            // No session cookie - redirect to login
+        // Validate session using iron-session
+        const response = __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].next();
+        try {
+            const session = await (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$iron$2d$session$2f$dist$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["getIronSession"])(request.cookies, response.cookies, sessionOptions);
+            if (!session.isAuthenticated) {
+                // Not authenticated - redirect to login
+                const loginUrl = new URL('/admin/login', request.url);
+                loginUrl.searchParams.set('from', pathname);
+                return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(loginUrl);
+            }
+        } catch (error) {
+            // Session validation failed - redirect to login
             const loginUrl = new URL('/admin/login', request.url);
             loginUrl.searchParams.set('from', pathname);
             return __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["NextResponse"].redirect(loginUrl);
