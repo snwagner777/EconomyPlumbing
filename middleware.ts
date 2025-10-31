@@ -27,13 +27,13 @@ const sessionOptions = {
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if this is an admin route (except login page)
-  if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
-    const response = NextResponse.next();
-    const session = await getIronSession<SessionData>(request.cookies, response.cookies, sessionOptions);
-
-    if (!session.isAuthenticated) {
-      // Redirect to login page
+  // Check if this is an admin route (except login page and API routes)
+  if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !pathname.startsWith('/api/')) {
+    // Check for session cookie
+    const sessionCookie = request.cookies.get('admin_session');
+    
+    if (!sessionCookie) {
+      // No session cookie - redirect to login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);
