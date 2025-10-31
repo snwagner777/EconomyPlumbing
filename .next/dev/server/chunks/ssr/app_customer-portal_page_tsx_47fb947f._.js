@@ -11,7 +11,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$tanstack$2f$react$2d$query$2f$build$2f$modern$2f$useQuery$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@tanstack/react-query/build/modern/useQuery.js [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$queryClient$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/lib/queryClient.ts [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$hooks$2f$use$2d$toast$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/hooks/use-toast.ts [app-ssr] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$SEO$2f$SEOHead$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/SEO/SEOHead.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Header$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/Header.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Footer$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/Footer.tsx [app-ssr] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/card.tsx [app-ssr] (ecmascript)");
@@ -55,7 +54,6 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$briefcase$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Briefcase$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/briefcase.js [app-ssr] (ecmascript) <export default as Briefcase>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$react$2d$icons$2f$si$2f$index$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/react-icons/si/index.mjs [app-ssr] (ecmascript)");
 'use client';
-;
 ;
 ;
 ;
@@ -870,14 +868,14 @@ function CustomerPortal() {
                         className: "w-3 h-3 mr-1"
                     }, void 0, false, {
                         fileName: "[project]/app/customer-portal/page.tsx",
-                        lineNumber: 1010,
+                        lineNumber: 1009,
                         columnNumber: 80
                     }, this),
                     status
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1010,
+                lineNumber: 1009,
                 columnNumber: 14
             }, this);
         }
@@ -889,14 +887,14 @@ function CustomerPortal() {
                         className: "w-3 h-3 mr-1"
                     }, void 0, false, {
                         fileName: "[project]/app/customer-portal/page.tsx",
-                        lineNumber: 1013,
+                        lineNumber: 1012,
                         columnNumber: 60
                     }, this),
                     status
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1013,
+                lineNumber: 1012,
                 columnNumber: 14
             }, this);
         }
@@ -909,14 +907,14 @@ function CustomerPortal() {
                         className: "w-3 h-3 mr-1"
                     }, void 0, false, {
                         fileName: "[project]/app/customer-portal/page.tsx",
-                        lineNumber: 1016,
+                        lineNumber: 1015,
                         columnNumber: 82
                     }, this),
                     status
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1016,
+                lineNumber: 1015,
                 columnNumber: 14
             }, this);
         }
@@ -926,7 +924,7 @@ function CustomerPortal() {
             children: status
         }, void 0, false, {
             fileName: "[project]/app/customer-portal/page.tsx",
-            lineNumber: 1018,
+            lineNumber: 1017,
             columnNumber: 12
         }, this);
     };
@@ -941,14 +939,14 @@ function CustomerPortal() {
                         className: "w-3 h-3 mr-1"
                     }, void 0, false, {
                         fileName: "[project]/app/customer-portal/page.tsx",
-                        lineNumber: 1027,
+                        lineNumber: 1026,
                         columnNumber: 11
                     }, this),
                     "Expired"
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1026,
+                lineNumber: 1025,
                 columnNumber: 9
             }, this);
         }
@@ -961,7 +959,7 @@ function CustomerPortal() {
                         className: "w-3 h-3 mr-1"
                     }, void 0, false, {
                         fileName: "[project]/app/customer-portal/page.tsx",
-                        lineNumber: 1035,
+                        lineNumber: 1034,
                         columnNumber: 11
                     }, this),
                     "Expires in ",
@@ -970,7 +968,7 @@ function CustomerPortal() {
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1034,
+                lineNumber: 1033,
                 columnNumber: 9
             }, this);
         }
@@ -986,7 +984,7 @@ function CustomerPortal() {
                 ]
             }, void 0, true, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1043,
+                lineNumber: 1042,
                 columnNumber: 9
             }, this);
         }
@@ -994,20 +992,12 @@ function CustomerPortal() {
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
         children: [
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$SEO$2f$SEOHead$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SEOHead"], {
-                title: "Customer Portal - Economy Plumbing Services",
-                description: "Access your service history, appointments, and invoices. View your Economy Plumbing Services account information and upcoming appointments."
-            }, void 0, false, {
-                fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1053,
-                columnNumber: 7
-            }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Header$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                 isPortalAuthenticated: verificationStep === 'authenticated',
                 onPortalLogout: handleLogout
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1057,
+                lineNumber: 1052,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
@@ -1097,7 +1087,7 @@ function CustomerPortal() {
                                     })() : 'Customer Portal'
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1065,
+                                    lineNumber: 1060,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1105,13 +1095,13 @@ function CustomerPortal() {
                                     children: verificationStep === 'authenticated' ? 'Your service history, appointments, and account details' : 'Access your service history, appointments, and invoices'
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1149,
+                                    lineNumber: 1144,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1064,
+                            lineNumber: 1059,
                             columnNumber: 11
                         }, this),
                         !customerId ? verificationStep === 'lookup' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -1123,20 +1113,20 @@ function CustomerPortal() {
                                             children: "Find Your Account"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1161,
+                                            lineNumber: 1156,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "Enter your email address to access your account"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1162,
+                                            lineNumber: 1157,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1160,
+                                    lineNumber: 1155,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1150,7 +1140,7 @@ function CustomerPortal() {
                                                     children: "Email Address"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1169,
+                                                    lineNumber: 1164,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -1163,13 +1153,13 @@ function CustomerPortal() {
                                                     "data-testid": "input-lookup"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1172,
+                                                    lineNumber: 1167,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1168,
+                                            lineNumber: 1163,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1180,7 +1170,7 @@ function CustomerPortal() {
                                             children: isSearching ? 'Searching...' : 'Access My Account'
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1183,
+                                            lineNumber: 1178,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1192,12 +1182,12 @@ function CustomerPortal() {
                                                         className: "w-full border-t"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1194,
+                                                        lineNumber: 1189,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1193,
+                                                    lineNumber: 1188,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1207,18 +1197,18 @@ function CustomerPortal() {
                                                         children: "Or"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1197,
+                                                        lineNumber: 1192,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1196,
+                                                    lineNumber: 1191,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1192,
+                                            lineNumber: 1187,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1231,14 +1221,14 @@ function CustomerPortal() {
                                                     className: "w-4 h-4 mr-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1209,
+                                                    lineNumber: 1204,
                                                     columnNumber: 21
                                                 }, this),
                                                 "Login with Phone Number"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1203,
+                                            lineNumber: 1198,
                                             columnNumber: 19
                                         }, this),
                                         lookupSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1250,7 +1240,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1216,
+                                                        lineNumber: 1211,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1261,31 +1251,31 @@ function CustomerPortal() {
                                                                 children: "Success"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1218,
+                                                                lineNumber: 1213,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupSuccess
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1219,
+                                                                lineNumber: 1214,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1217,
+                                                        lineNumber: 1212,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1215,
+                                                lineNumber: 1210,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1214,
+                                            lineNumber: 1209,
                                             columnNumber: 21
                                         }, this),
                                         lookupError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1297,7 +1287,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-destructive flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1228,
+                                                        lineNumber: 1223,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1308,43 +1298,43 @@ function CustomerPortal() {
                                                                 children: "Error"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1230,
+                                                                lineNumber: 1225,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupError
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1231,
+                                                                lineNumber: 1226,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1229,
+                                                        lineNumber: 1224,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1227,
+                                                lineNumber: 1222,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1226,
+                                            lineNumber: 1221,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1166,
+                                    lineNumber: 1161,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1159,
+                            lineNumber: 1154,
                             columnNumber: 15
                         }, this) : verificationStep === 'phone-lookup' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                             className: "max-w-md mx-auto",
@@ -1355,20 +1345,20 @@ function CustomerPortal() {
                                             children: "Login with Phone Number"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1241,
+                                            lineNumber: 1236,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "Enter your phone number and we'll send a login link to your email"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1242,
+                                            lineNumber: 1237,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1240,
+                                    lineNumber: 1235,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1382,7 +1372,7 @@ function CustomerPortal() {
                                                     children: "Phone Number"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1248,
+                                                    lineNumber: 1243,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -1395,13 +1385,13 @@ function CustomerPortal() {
                                                     "data-testid": "input-phone-lookup"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1251,
+                                                    lineNumber: 1246,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1247,
+                                            lineNumber: 1242,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1412,7 +1402,7 @@ function CustomerPortal() {
                                             children: isLookingUp ? 'Looking up...' : 'Find My Account'
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1262,
+                                            lineNumber: 1257,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1423,7 +1413,7 @@ function CustomerPortal() {
                                             children: "Back to Email Login"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1271,
+                                            lineNumber: 1266,
                                             columnNumber: 19
                                         }, this),
                                         lookupSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1435,7 +1425,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1283,
+                                                        lineNumber: 1278,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1446,31 +1436,31 @@ function CustomerPortal() {
                                                                 children: "Success"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1285,
+                                                                lineNumber: 1280,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupSuccess
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1286,
+                                                                lineNumber: 1281,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1284,
+                                                        lineNumber: 1279,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1282,
+                                                lineNumber: 1277,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1281,
+                                            lineNumber: 1276,
                                             columnNumber: 21
                                         }, this),
                                         lookupError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1482,7 +1472,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-destructive flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1295,
+                                                        lineNumber: 1290,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1493,43 +1483,43 @@ function CustomerPortal() {
                                                                 children: "Error"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1297,
+                                                                lineNumber: 1292,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupError
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1298,
+                                                                lineNumber: 1293,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1296,
+                                                        lineNumber: 1291,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1294,
+                                                lineNumber: 1289,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1293,
+                                            lineNumber: 1288,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1246,
+                                    lineNumber: 1241,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1239,
+                            lineNumber: 1234,
                             columnNumber: 15
                         }, this) : verificationStep === 'phone-email-found' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                             className: "max-w-md mx-auto",
@@ -1540,20 +1530,20 @@ function CustomerPortal() {
                                             children: "Account Found!"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1308,
+                                            lineNumber: 1303,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "We'll send a login link to your email address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1309,
+                                            lineNumber: 1304,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1307,
+                                    lineNumber: 1302,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1568,7 +1558,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1316,
+                                                        lineNumber: 1311,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1578,7 +1568,7 @@ function CustomerPortal() {
                                                                 children: "Email Address"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1318,
+                                                                lineNumber: 1313,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1586,7 +1576,7 @@ function CustomerPortal() {
                                                                 children: maskedEmail
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1319,
+                                                                lineNumber: 1314,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1594,24 +1584,24 @@ function CustomerPortal() {
                                                                 children: "For security, we've hidden part of your email address"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1322,
+                                                                lineNumber: 1317,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1317,
+                                                        lineNumber: 1312,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1315,
+                                                lineNumber: 1310,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1314,
+                                            lineNumber: 1309,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1622,7 +1612,7 @@ function CustomerPortal() {
                                             children: isSendingLink ? 'Sending...' : 'Send Login Link'
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1329,
+                                            lineNumber: 1324,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1633,7 +1623,7 @@ function CustomerPortal() {
                                             children: "Use Different Method"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1338,
+                                            lineNumber: 1333,
                                             columnNumber: 19
                                         }, this),
                                         lookupSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1645,7 +1635,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1350,
+                                                        lineNumber: 1345,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1656,31 +1646,31 @@ function CustomerPortal() {
                                                                 children: "Success"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1352,
+                                                                lineNumber: 1347,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupSuccess
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1353,
+                                                                lineNumber: 1348,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1351,
+                                                        lineNumber: 1346,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1349,
+                                                lineNumber: 1344,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1348,
+                                            lineNumber: 1343,
                                             columnNumber: 21
                                         }, this),
                                         lookupError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1692,7 +1682,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-destructive flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1362,
+                                                        lineNumber: 1357,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1703,43 +1693,43 @@ function CustomerPortal() {
                                                                 children: "Error"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1364,
+                                                                lineNumber: 1359,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupError
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1365,
+                                                                lineNumber: 1360,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1363,
+                                                        lineNumber: 1358,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1361,
+                                                lineNumber: 1356,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1360,
+                                            lineNumber: 1355,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1313,
+                                    lineNumber: 1308,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1306,
+                            lineNumber: 1301,
                             columnNumber: 15
                         }, this) : verificationStep === 'verify-code' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                             className: "max-w-md mx-auto",
@@ -1750,20 +1740,20 @@ function CustomerPortal() {
                                             children: "Enter Verification Code"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1375,
+                                            lineNumber: 1370,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: verificationMessage
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1376,
+                                            lineNumber: 1371,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1374,
+                                    lineNumber: 1369,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -1777,7 +1767,7 @@ function CustomerPortal() {
                                                     children: lookupType === 'phone' ? '6-Digit Code' : 'Check your email for the access link'
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1382,
+                                                    lineNumber: 1377,
                                                     columnNumber: 21
                                                 }, this),
                                                 lookupType === 'phone' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -1793,7 +1783,7 @@ function CustomerPortal() {
                                                             "data-testid": "input-verification-code"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1387,
+                                                            lineNumber: 1382,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1804,7 +1794,7 @@ function CustomerPortal() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1397,
+                                                            lineNumber: 1392,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
@@ -1818,7 +1808,7 @@ function CustomerPortal() {
                                                                 className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1405,
+                                                                lineNumber: 1400,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1828,7 +1818,7 @@ function CustomerPortal() {
                                                                         children: "Check your email"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1407,
+                                                                        lineNumber: 1402,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1840,30 +1830,30 @@ function CustomerPortal() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1408,
+                                                                        lineNumber: 1403,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1406,
+                                                                lineNumber: 1401,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1404,
+                                                        lineNumber: 1399,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1403,
+                                                    lineNumber: 1398,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1381,
+                                            lineNumber: 1376,
                                             columnNumber: 19
                                         }, this),
                                         lookupType === 'phone' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1874,7 +1864,7 @@ function CustomerPortal() {
                                             children: isVerifying ? 'Verifying...' : 'Verify Code'
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1418,
+                                            lineNumber: 1413,
                                             columnNumber: 21
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -1885,7 +1875,7 @@ function CustomerPortal() {
                                             children: "Try Another Method"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1428,
+                                            lineNumber: 1423,
                                             columnNumber: 19
                                         }, this),
                                         lookupSuccess && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1897,7 +1887,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1440,
+                                                        lineNumber: 1435,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1908,31 +1898,31 @@ function CustomerPortal() {
                                                                 children: "Success"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1442,
+                                                                lineNumber: 1437,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupSuccess
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1443,
+                                                                lineNumber: 1438,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1441,
+                                                        lineNumber: 1436,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1439,
+                                                lineNumber: 1434,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1438,
+                                            lineNumber: 1433,
                                             columnNumber: 21
                                         }, this),
                                         lookupError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1944,7 +1934,7 @@ function CustomerPortal() {
                                                         className: "w-5 h-5 text-destructive flex-shrink-0 mt-0.5"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1452,
+                                                        lineNumber: 1447,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1955,43 +1945,43 @@ function CustomerPortal() {
                                                                 children: "Error"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1454,
+                                                                lineNumber: 1449,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                                 children: lookupError
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1455,
+                                                                lineNumber: 1450,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1453,
+                                                        lineNumber: 1448,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1451,
+                                                lineNumber: 1446,
                                                 columnNumber: 23
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1450,
+                                            lineNumber: 1445,
                                             columnNumber: 21
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1380,
+                                    lineNumber: 1375,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1373,
+                            lineNumber: 1368,
                             columnNumber: 15
                         }, this) : verificationStep === 'select-account' ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                             className: "max-w-2xl mx-auto",
@@ -2002,20 +1992,20 @@ function CustomerPortal() {
                                             children: "Select Your Account"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1465,
+                                            lineNumber: 1460,
                                             columnNumber: 19
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                             children: "We found multiple accounts associated with your contact information. Please select which account you'd like to access."
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1466,
+                                            lineNumber: 1461,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1464,
+                                    lineNumber: 1459,
                                     columnNumber: 17
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2034,13 +2024,13 @@ function CustomerPortal() {
                                                                 className: "w-6 h-6 text-primary flex-shrink-0 mt-0.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1481,
+                                                                lineNumber: 1476,
                                                                 columnNumber: 29
                                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$house$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Home$3e$__["Home"], {
                                                                 className: "w-6 h-6 text-primary flex-shrink-0 mt-0.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1483,
+                                                                lineNumber: 1478,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2054,7 +2044,7 @@ function CustomerPortal() {
                                                                                 children: account.name
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 1487,
+                                                                                lineNumber: 1482,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -2063,13 +2053,13 @@ function CustomerPortal() {
                                                                                 children: account.type
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 1488,
+                                                                                lineNumber: 1483,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1486,
+                                                                        lineNumber: 1481,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     account.address && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2079,36 +2069,36 @@ function CustomerPortal() {
                                                                                 className: "w-3 h-3 flex-shrink-0 mt-0.5"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 1494,
+                                                                                lineNumber: 1489,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             account.address
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1493,
+                                                                        lineNumber: 1488,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1485,
+                                                                lineNumber: 1480,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1479,
+                                                        lineNumber: 1474,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1478,
+                                                    lineNumber: 1473,
                                                     columnNumber: 23
                                                 }, this)
                                             }, account.id, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1472,
+                                                lineNumber: 1467,
                                                 columnNumber: 21
                                             }, this)),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2119,19 +2109,19 @@ function CustomerPortal() {
                                             children: "Back"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1504,
+                                            lineNumber: 1499,
                                             columnNumber: 19
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1470,
+                                    lineNumber: 1465,
                                     columnNumber: 17
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1463,
+                            lineNumber: 1458,
                             columnNumber: 15
                         }, this) : null : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "space-y-6",
@@ -2147,7 +2137,7 @@ function CustomerPortal() {
                                                     className: "animate-spin rounded-full h-16 w-16 border-4 border-primary border-t-transparent mx-auto"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1522,
+                                                    lineNumber: 1517,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2158,7 +2148,7 @@ function CustomerPortal() {
                                                             children: "Loading Your Account"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1524,
+                                                            lineNumber: 1519,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2166,24 +2156,24 @@ function CustomerPortal() {
                                                             children: "We're fetching your service history, appointments, and account details..."
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1525,
+                                                            lineNumber: 1520,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1523,
+                                                    lineNumber: 1518,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 1521,
+                                            lineNumber: 1516,
                                             columnNumber: 21
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 1520,
+                                        lineNumber: 1515,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2201,7 +2191,7 @@ function CustomerPortal() {
                                                                         className: "h-8 w-8 rounded-full"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1537,
+                                                                        lineNumber: 1532,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2210,26 +2200,26 @@ function CustomerPortal() {
                                                                                 className: "h-6 w-32 mb-2"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 1539,
+                                                                                lineNumber: 1534,
                                                                                 columnNumber: 29
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                                 className: "h-4 w-24"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 1540,
+                                                                                lineNumber: 1535,
                                                                                 columnNumber: 29
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1538,
+                                                                        lineNumber: 1533,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1536,
+                                                                lineNumber: 1531,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2239,33 +2229,33 @@ function CustomerPortal() {
                                                                         className: "h-10 w-32"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1544,
+                                                                        lineNumber: 1539,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                         className: "h-10 w-28"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1545,
+                                                                        lineNumber: 1540,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                         className: "h-10 w-24"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1546,
+                                                                        lineNumber: 1541,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1543,
+                                                                lineNumber: 1538,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1535,
+                                                        lineNumber: 1530,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2276,11 +2266,41 @@ function CustomerPortal() {
                                                                     className: "h-4 w-32"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1551,
+                                                                    lineNumber: 1546,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                     className: "grid md:grid-cols-2 gap-4",
+                                                                    children: [
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
+                                                                            className: "h-20"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/customer-portal/page.tsx",
+                                                                            lineNumber: 1548,
+                                                                            columnNumber: 29
+                                                                        }, this),
+                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
+                                                                            className: "h-20"
+                                                                        }, void 0, false, {
+                                                                            fileName: "[project]/app/customer-portal/page.tsx",
+                                                                            lineNumber: 1549,
+                                                                            columnNumber: 29
+                                                                        }, this)
+                                                                    ]
+                                                                }, void 0, true, {
+                                                                    fileName: "[project]/app/customer-portal/page.tsx",
+                                                                    lineNumber: 1547,
+                                                                    columnNumber: 27
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
+                                                                    className: "h-4 w-32 mt-6"
+                                                                }, void 0, false, {
+                                                                    fileName: "[project]/app/customer-portal/page.tsx",
+                                                                    lineNumber: 1551,
+                                                                    columnNumber: 27
+                                                                }, this),
+                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                                                    className: "space-y-2",
                                                                     children: [
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                             className: "h-20"
@@ -2301,52 +2321,22 @@ function CustomerPortal() {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
                                                                     lineNumber: 1552,
                                                                     columnNumber: 27
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
-                                                                    className: "h-4 w-32 mt-6"
-                                                                }, void 0, false, {
-                                                                    fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1556,
-                                                                    columnNumber: 27
-                                                                }, this),
-                                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "space-y-2",
-                                                                    children: [
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
-                                                                            className: "h-20"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1558,
-                                                                            columnNumber: 29
-                                                                        }, this),
-                                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
-                                                                            className: "h-20"
-                                                                        }, void 0, false, {
-                                                                            fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1559,
-                                                                            columnNumber: 29
-                                                                        }, this)
-                                                                    ]
-                                                                }, void 0, true, {
-                                                                    fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1557,
-                                                                    columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1550,
+                                                            lineNumber: 1545,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1549,
+                                                        lineNumber: 1544,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1534,
+                                                lineNumber: 1529,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2360,20 +2350,20 @@ function CustomerPortal() {
                                                                         className: "h-6 w-48"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1568,
+                                                                        lineNumber: 1563,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                         className: "h-4 w-32 mt-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1569,
+                                                                        lineNumber: 1564,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1567,
+                                                                lineNumber: 1562,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2384,31 +2374,31 @@ function CustomerPortal() {
                                                                             className: "h-32"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1573,
+                                                                            lineNumber: 1568,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                             className: "h-32"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1574,
+                                                                            lineNumber: 1569,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1572,
+                                                                    lineNumber: 1567,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1571,
+                                                                lineNumber: 1566,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1566,
+                                                        lineNumber: 1561,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -2419,20 +2409,20 @@ function CustomerPortal() {
                                                                         className: "h-6 w-40"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1581,
+                                                                        lineNumber: 1576,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                         className: "h-4 w-28 mt-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1582,
+                                                                        lineNumber: 1577,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1580,
+                                                                lineNumber: 1575,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2443,37 +2433,37 @@ function CustomerPortal() {
                                                                             className: "h-32"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1586,
+                                                                            lineNumber: 1581,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                             className: "h-32"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1587,
+                                                                            lineNumber: 1582,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1585,
+                                                                    lineNumber: 1580,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1584,
+                                                                lineNumber: 1579,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1579,
+                                                        lineNumber: 1574,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1565,
+                                                lineNumber: 1560,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -2484,20 +2474,20 @@ function CustomerPortal() {
                                                                 className: "h-6 w-36"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1595,
+                                                                lineNumber: 1590,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                 className: "h-4 w-48 mt-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1596,
+                                                                lineNumber: 1591,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1594,
+                                                        lineNumber: 1589,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2508,43 +2498,43 @@ function CustomerPortal() {
                                                                     className: "h-40"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1600,
+                                                                    lineNumber: 1595,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$skeleton$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Skeleton"], {
                                                                     className: "h-40"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1601,
+                                                                    lineNumber: 1596,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1599,
+                                                            lineNumber: 1594,
                                                             columnNumber: 25
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1598,
+                                                        lineNumber: 1593,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1593,
+                                                lineNumber: 1588,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 1533,
+                                        lineNumber: 1528,
                                         columnNumber: 19
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                lineNumber: 1518,
+                                lineNumber: 1513,
                                 columnNumber: 17
                             }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2556,7 +2546,7 @@ function CustomerPortal() {
                                                 className: "w-12 h-12 mx-auto mb-4 text-destructive"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1611,
+                                                lineNumber: 1606,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
@@ -2564,7 +2554,7 @@ function CustomerPortal() {
                                                 children: "Error Loading Data"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1612,
+                                                lineNumber: 1607,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2572,7 +2562,7 @@ function CustomerPortal() {
                                                 children: "We couldn't load your account information. Please try again."
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1613,
+                                                lineNumber: 1608,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2581,23 +2571,23 @@ function CustomerPortal() {
                                                 children: "Try Again"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1616,
+                                                lineNumber: 1611,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 1610,
+                                        lineNumber: 1605,
                                         columnNumber: 21
                                     }, this)
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 1609,
+                                    lineNumber: 1604,
                                     columnNumber: 19
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                lineNumber: 1608,
+                                lineNumber: 1603,
                                 columnNumber: 17
                             }, this) : customerData ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
                                 children: [
@@ -2613,7 +2603,7 @@ function CustomerPortal() {
                                                                 className: "w-8 h-8 text-primary"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1627,
+                                                                lineNumber: 1622,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2622,26 +2612,26 @@ function CustomerPortal() {
                                                                         children: customerData.customer.name
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1629,
+                                                                        lineNumber: 1624,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                                         children: "Customer Account"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1630,
+                                                                        lineNumber: 1625,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1628,
+                                                                lineNumber: 1623,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1626,
+                                                        lineNumber: 1621,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2655,14 +2645,14 @@ function CustomerPortal() {
                                                                         className: "w-4 h-4 mr-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1638,
+                                                                        lineNumber: 1633,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     "Schedule Appointment"
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1634,
+                                                                lineNumber: 1629,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2676,7 +2666,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 mr-2"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1647,
+                                                                            lineNumber: 1642,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         "Call ",
@@ -2684,12 +2674,12 @@ function CustomerPortal() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1646,
+                                                                    lineNumber: 1641,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1641,
+                                                                lineNumber: 1636,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2703,19 +2693,19 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 mr-2"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1657,
+                                                                            lineNumber: 1652,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         "Text Us"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1656,
+                                                                    lineNumber: 1651,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1651,
+                                                                lineNumber: 1646,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2735,14 +2725,14 @@ function CustomerPortal() {
                                                                         className: "w-4 h-4 mr-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1674,
+                                                                        lineNumber: 1669,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     "Email Us"
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1661,
+                                                                lineNumber: 1656,
                                                                 columnNumber: 25
                                                             }, this),
                                                             availableCustomerIds.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2754,26 +2744,26 @@ function CustomerPortal() {
                                                                         className: "w-4 h-4 mr-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1683,
+                                                                        lineNumber: 1678,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     "Switch Account"
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1678,
+                                                                lineNumber: 1673,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1633,
+                                                        lineNumber: 1628,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1625,
+                                                lineNumber: 1620,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -2788,7 +2778,7 @@ function CustomerPortal() {
                                                                     children: "Contact Information"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1692,
+                                                                    lineNumber: 1687,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2799,13 +2789,13 @@ function CustomerPortal() {
                                                                     children: "Edit"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1693,
+                                                                    lineNumber: 1688,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1691,
+                                                            lineNumber: 1686,
                                                             columnNumber: 25
                                                         }, this),
                                                         customerData.customer.contacts && customerData.customer.contacts.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2821,13 +2811,13 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0 mt-0.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1714,
+                                                                            lineNumber: 1709,
                                                                             columnNumber: 37
                                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$phone$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Phone$3e$__["Phone"], {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0 mt-0.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1716,
+                                                                            lineNumber: 1711,
                                                                             columnNumber: 37
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2838,7 +2828,7 @@ function CustomerPortal() {
                                                                                     children: contact.type === 'MobilePhone' ? 'Mobile' : contact.type
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 1719,
+                                                                                    lineNumber: 1714,
                                                                                     columnNumber: 37
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2847,7 +2837,7 @@ function CustomerPortal() {
                                                                                     children: contact.value
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 1722,
+                                                                                    lineNumber: 1717,
                                                                                     columnNumber: 37
                                                                                 }, this),
                                                                                 contact.memo && contact.memo !== 'email' && contact.memo !== 'Phone' && contact.memo !== 'mobile' && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2855,13 +2845,13 @@ function CustomerPortal() {
                                                                                     children: contact.memo
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 1726,
+                                                                                    lineNumber: 1721,
                                                                                     columnNumber: 39
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1718,
+                                                                            lineNumber: 1713,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -2880,19 +2870,19 @@ function CustomerPortal() {
                                                                             children: "Delete"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1731,
+                                                                            lineNumber: 1726,
                                                                             columnNumber: 35
                                                                         }, this)
                                                                     ]
                                                                 }, contact.id, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1712,
+                                                                    lineNumber: 1707,
                                                                     columnNumber: 33
                                                                 }, this);
                                                             })
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1704,
+                                                            lineNumber: 1699,
                                                             columnNumber: 27
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             className: "grid md:grid-cols-2 gap-4",
@@ -2904,7 +2894,7 @@ function CustomerPortal() {
                                                                             children: "Phone"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1754,
+                                                                            lineNumber: 1749,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2913,13 +2903,13 @@ function CustomerPortal() {
                                                                             children: customerData.customer.phoneNumber || 'Not provided'
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1755,
+                                                                            lineNumber: 1750,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1753,
+                                                                    lineNumber: 1748,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2929,7 +2919,7 @@ function CustomerPortal() {
                                                                             children: "Email"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1758,
+                                                                            lineNumber: 1753,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2938,36 +2928,36 @@ function CustomerPortal() {
                                                                             children: customerData.customer.email || 'Not provided'
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1759,
+                                                                            lineNumber: 1754,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1757,
+                                                                    lineNumber: 1752,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1752,
+                                                            lineNumber: 1747,
                                                             columnNumber: 27
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1690,
+                                                    lineNumber: 1685,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1689,
+                                                lineNumber: 1684,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 1624,
+                                        lineNumber: 1619,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3039,7 +3029,7 @@ function CustomerPortal() {
                                                                     className: `w-8 h-8 mb-2 ${variant.iconClass}`
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1828,
+                                                                    lineNumber: 1823,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 isActive ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -3052,7 +3042,7 @@ function CustomerPortal() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1831,
+                                                                            lineNumber: 1826,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3060,7 +3050,7 @@ function CustomerPortal() {
                                                                             children: membership.membershipType
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1834,
+                                                                            lineNumber: 1829,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         membership.expirationDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3074,7 +3064,7 @@ function CustomerPortal() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1838,
+                                                                            lineNumber: 1833,
                                                                             columnNumber: 37
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3083,7 +3073,7 @@ function CustomerPortal() {
                                                                             children: "Active"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1842,
+                                                                            lineNumber: 1837,
                                                                             columnNumber: 35
                                                                         }, this)
                                                                     ]
@@ -3094,7 +3084,7 @@ function CustomerPortal() {
                                                                             children: "Membership Expired"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1846,
+                                                                            lineNumber: 1841,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3102,7 +3092,7 @@ function CustomerPortal() {
                                                                             children: membership.membershipType
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1849,
+                                                                            lineNumber: 1844,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         membership.expirationDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3116,7 +3106,7 @@ function CustomerPortal() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1853,
+                                                                            lineNumber: 1848,
                                                                             columnNumber: 37
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3130,7 +3120,7 @@ function CustomerPortal() {
                                                                             children: "Renew Now"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1857,
+                                                                            lineNumber: 1852,
                                                                             columnNumber: 35
                                                                         }, this)
                                                                     ]
@@ -3141,7 +3131,7 @@ function CustomerPortal() {
                                                                             children: "Not a Member"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1866,
+                                                                            lineNumber: 1861,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3149,7 +3139,7 @@ function CustomerPortal() {
                                                                             children: "Join our VIP Program"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1869,
+                                                                            lineNumber: 1864,
                                                                             columnNumber: 35
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3163,7 +3153,7 @@ function CustomerPortal() {
                                                                             children: "Start Membership"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1872,
+                                                                            lineNumber: 1867,
                                                                             columnNumber: 35
                                                                         }, this)
                                                                     ]
@@ -3173,24 +3163,24 @@ function CustomerPortal() {
                                                                     children: "View Details →"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1880,
+                                                                    lineNumber: 1875,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1827,
+                                                            lineNumber: 1822,
                                                             columnNumber: 29
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1823,
+                                                        lineNumber: 1818,
                                                         columnNumber: 27
                                                     }, this);
                                                 })()
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1770,
+                                                lineNumber: 1765,
                                                 columnNumber: 21
                                             }, this),
                                             customerStats && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$aspect$2d$ratio$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AspectRatio"], {
@@ -3215,7 +3205,7 @@ function CustomerPortal() {
                                                                         className: "w-8 h-8 text-primary mb-2"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1899,
+                                                                        lineNumber: 1894,
                                                                         columnNumber: 35
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3223,7 +3213,7 @@ function CustomerPortal() {
                                                                         children: "Welcome!"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1900,
+                                                                        lineNumber: 1895,
                                                                         columnNumber: 35
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3231,7 +3221,7 @@ function CustomerPortal() {
                                                                         children: "New to Economy Plumbing"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1903,
+                                                                        lineNumber: 1898,
                                                                         columnNumber: 35
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3240,7 +3230,7 @@ function CustomerPortal() {
                                                                         children: "🎉 First Time Customer"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1906,
+                                                                        lineNumber: 1901,
                                                                         columnNumber: 35
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3248,7 +3238,7 @@ function CustomerPortal() {
                                                                         children: "We're excited to serve you! Schedule your first service or call us at (512) 259-7222 for any plumbing needs."
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1909,
+                                                                        lineNumber: 1904,
                                                                         columnNumber: 35
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3256,18 +3246,18 @@ function CustomerPortal() {
                                                                         children: "Get Started →"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 1912,
+                                                                        lineNumber: 1907,
                                                                         columnNumber: 35
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1898,
+                                                                lineNumber: 1893,
                                                                 columnNumber: 33
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1894,
+                                                            lineNumber: 1889,
                                                             columnNumber: 31
                                                         }, this);
                                                     }
@@ -3321,7 +3311,7 @@ function CustomerPortal() {
                                                                     className: "w-8 h-8 text-primary mb-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1961,
+                                                                    lineNumber: 1956,
                                                                     columnNumber: 33
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3329,7 +3319,7 @@ function CustomerPortal() {
                                                                     children: customerStats.topPercentile <= 5 ? 'Elite Customer!' : customerStats.topPercentile <= 25 ? 'Valued Customer!' : customerStats.topPercentile <= 50 ? 'Thank You!' : 'We Miss You!'
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1962,
+                                                                    lineNumber: 1957,
                                                                     columnNumber: 33
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3342,7 +3332,7 @@ function CustomerPortal() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1967,
+                                                                    lineNumber: 1962,
                                                                     columnNumber: 33
                                                                 }, this),
                                                                 customerStats.topPercentile <= 50 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3356,7 +3346,7 @@ function CustomerPortal() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1971,
+                                                                    lineNumber: 1966,
                                                                     columnNumber: 35
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3364,7 +3354,7 @@ function CustomerPortal() {
                                                                     children: message
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1975,
+                                                                    lineNumber: 1970,
                                                                     columnNumber: 33
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3372,24 +3362,24 @@ function CustomerPortal() {
                                                                     children: "View History →"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 1978,
+                                                                    lineNumber: 1973,
                                                                     columnNumber: 33
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 1960,
+                                                            lineNumber: 1955,
                                                             columnNumber: 31
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1956,
+                                                        lineNumber: 1951,
                                                         columnNumber: 29
                                                     }, this);
                                                 })()
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1889,
+                                                lineNumber: 1884,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$aspect$2d$ratio$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AspectRatio"], {
@@ -3411,7 +3401,7 @@ function CustomerPortal() {
                                                                 className: "w-8 h-8 text-primary mb-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 1993,
+                                                                lineNumber: 1988,
                                                                 columnNumber: 27
                                                             }, this),
                                                             (()=>{
@@ -3425,7 +3415,7 @@ function CustomerPortal() {
                                                                             children: formatCurrency(totalCredit / 100)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 1999,
+                                                                            lineNumber: 1994,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3433,7 +3423,7 @@ function CustomerPortal() {
                                                                             children: "Account Credit"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2002,
+                                                                            lineNumber: 1997,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3445,7 +3435,7 @@ function CustomerPortal() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2005,
+                                                                            lineNumber: 2000,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     ]
@@ -3456,23 +3446,23 @@ function CustomerPortal() {
                                                                 children: "View Details →"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2011,
+                                                                lineNumber: 2006,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 1992,
+                                                        lineNumber: 1987,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 1988,
+                                                    lineNumber: 1983,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 1987,
+                                                lineNumber: 1982,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$aspect$2d$ratio$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["AspectRatio"], {
@@ -3494,7 +3484,7 @@ function CustomerPortal() {
                                                                 className: "w-8 h-8 text-primary mb-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2023,
+                                                                lineNumber: 2018,
                                                                 columnNumber: 27
                                                             }, this),
                                                             upcomingAppointments.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -3508,7 +3498,7 @@ function CustomerPortal() {
                                                                         })
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2026,
+                                                                        lineNumber: 2021,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3516,7 +3506,7 @@ function CustomerPortal() {
                                                                         children: formatTime(upcomingAppointments[0].start)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2029,
+                                                                        lineNumber: 2024,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     upcomingAppointments[0].businessUnitName && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3524,7 +3514,7 @@ function CustomerPortal() {
                                                                         children: upcomingAppointments[0].businessUnitName
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2033,
+                                                                        lineNumber: 2028,
                                                                         columnNumber: 33
                                                                     }, this),
                                                                     upcomingAppointments.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3537,7 +3527,7 @@ function CustomerPortal() {
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2038,
+                                                                        lineNumber: 2033,
                                                                         columnNumber: 33
                                                                     }, this)
                                                                 ]
@@ -3548,7 +3538,7 @@ function CustomerPortal() {
                                                                         children: "None Scheduled"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2045,
+                                                                        lineNumber: 2040,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3556,7 +3546,7 @@ function CustomerPortal() {
                                                                         children: "No upcoming appointments"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2048,
+                                                                        lineNumber: 2043,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 ]
@@ -3566,29 +3556,29 @@ function CustomerPortal() {
                                                                 children: "View All →"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2053,
+                                                                lineNumber: 2048,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2022,
+                                                        lineNumber: 2017,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2018,
+                                                    lineNumber: 2013,
                                                     columnNumber: 23
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2017,
+                                                lineNumber: 2012,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 1768,
+                                        lineNumber: 1763,
                                         columnNumber: 19
                                     }, this),
                                     (()=>{
@@ -3617,12 +3607,12 @@ function CustomerPortal() {
                                                                             className: `w-6 h-6 ${isVIPMember ? 'text-primary' : 'text-amber-600 dark:text-amber-500'}`
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2082,
+                                                                            lineNumber: 2077,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2081,
+                                                                        lineNumber: 2076,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3637,7 +3627,7 @@ function CustomerPortal() {
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2087,
+                                                                                    lineNumber: 2082,
                                                                                     columnNumber: 37
                                                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     className: "text-amber-600 dark:text-amber-500",
@@ -3647,12 +3637,12 @@ function CustomerPortal() {
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2089,
+                                                                                    lineNumber: 2084,
                                                                                     columnNumber: 37
                                                                                 }, this)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2085,
+                                                                                lineNumber: 2080,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -3660,19 +3650,19 @@ function CustomerPortal() {
                                                                                 children: isVIPMember ? 'with your VIP membership' : 'by becoming a VIP member'
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2092,
+                                                                                lineNumber: 2087,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2084,
+                                                                        lineNumber: 2079,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2080,
+                                                                lineNumber: 2075,
                                                                 columnNumber: 29
                                                             }, this),
                                                             !isVIPMember && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3681,18 +3671,18 @@ function CustomerPortal() {
                                                                 children: "Opportunity"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2098,
+                                                                lineNumber: 2093,
                                                                 columnNumber: 31
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2079,
+                                                        lineNumber: 2074,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2078,
+                                                    lineNumber: 2073,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -3708,7 +3698,7 @@ function CustomerPortal() {
                                                                             children: "Total Services"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2107,
+                                                                            lineNumber: 2102,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3717,26 +3707,26 @@ function CustomerPortal() {
                                                                             children: formatCurrency(totalPaid)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2108,
+                                                                            lineNumber: 2103,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2106,
+                                                                    lineNumber: 2101,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$dollar$2d$sign$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__DollarSign$3e$__["DollarSign"], {
                                                                     className: "w-8 h-8 text-muted-foreground/30"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2110,
+                                                                    lineNumber: 2105,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2105,
+                                                            lineNumber: 2100,
                                                             columnNumber: 27
                                                         }, this),
                                                         isVIPMember ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3751,14 +3741,14 @@ function CustomerPortal() {
                                                                             children: "member-only discounts"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2116,
+                                                                            lineNumber: 2111,
                                                                             columnNumber: 65
                                                                         }, this),
                                                                         " on every service call, plus priority scheduling, no trip charges, and waived diagnostic fees."
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2115,
+                                                                    lineNumber: 2110,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3768,7 +3758,7 @@ function CustomerPortal() {
                                                                             className: "w-5 h-5 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2119,
+                                                                            lineNumber: 2114,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3776,19 +3766,19 @@ function CustomerPortal() {
                                                                             children: "Your membership is saving you money on every visit!"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2120,
+                                                                            lineNumber: 2115,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2118,
+                                                                    lineNumber: 2113,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2114,
+                                                            lineNumber: 2109,
                                                             columnNumber: 29
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             className: "space-y-3",
@@ -3802,14 +3792,14 @@ function CustomerPortal() {
                                                                             children: formatCurrency(estimatedSavings)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2128,
+                                                                            lineNumber: 2123,
                                                                             columnNumber: 93
                                                                         }, this),
                                                                         " per year as a VIP member, plus enjoy priority scheduling, no trip charges, and waived diagnostic fees."
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2127,
+                                                                    lineNumber: 2122,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -3817,7 +3807,7 @@ function CustomerPortal() {
                                                                     children: "*Estimated savings based on typical 15% member discount applied to your historical spending"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2130,
+                                                                    lineNumber: 2125,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -3832,37 +3822,37 @@ function CustomerPortal() {
                                                                                 className: "w-4 h-4 mr-2"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2140,
+                                                                                lineNumber: 2135,
                                                                                 columnNumber: 35
                                                                             }, this),
                                                                             "Start Saving with VIP Membership"
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2139,
+                                                                        lineNumber: 2134,
                                                                         columnNumber: 33
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2133,
+                                                                    lineNumber: 2128,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2126,
+                                                            lineNumber: 2121,
                                                             columnNumber: 29
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2104,
+                                                    lineNumber: 2099,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2077,
+                                            lineNumber: 2072,
                                             columnNumber: 23
                                         }, this);
                                     })(),
@@ -3882,7 +3872,7 @@ function CustomerPortal() {
                                                                         className: "w-6 h-6 text-primary"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2158,
+                                                                        lineNumber: 2153,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3891,7 +3881,7 @@ function CustomerPortal() {
                                                                                 children: "VIP Member"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2160,
+                                                                                lineNumber: 2155,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -3899,19 +3889,19 @@ function CustomerPortal() {
                                                                                 children: customerData.memberships[0].membershipType
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2161,
+                                                                                lineNumber: 2156,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2159,
+                                                                        lineNumber: 2154,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2157,
+                                                                lineNumber: 2152,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -3920,18 +3910,18 @@ function CustomerPortal() {
                                                                 children: customerData.memberships[0].status
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2166,
+                                                                lineNumber: 2161,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2156,
+                                                        lineNumber: 2151,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2155,
+                                                    lineNumber: 2150,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -3948,7 +3938,7 @@ function CustomerPortal() {
                                                                             children: "Member Since"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2175,
+                                                                            lineNumber: 2170,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3959,13 +3949,13 @@ function CustomerPortal() {
                                                                             })
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2176,
+                                                                            lineNumber: 2171,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2174,
+                                                                    lineNumber: 2169,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 customerData.memberships[0].expirationDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -3976,7 +3966,7 @@ function CustomerPortal() {
                                                                             children: "Expires"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2186,
+                                                                            lineNumber: 2181,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -3988,13 +3978,13 @@ function CustomerPortal() {
                                                                             })
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2187,
+                                                                            lineNumber: 2182,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2185,
+                                                                    lineNumber: 2180,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 customerData.memberships[0].renewalDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4005,7 +3995,7 @@ function CustomerPortal() {
                                                                             children: "Next Renewal"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2198,
+                                                                            lineNumber: 2193,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4017,19 +4007,19 @@ function CustomerPortal() {
                                                                             })
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2199,
+                                                                            lineNumber: 2194,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2197,
+                                                                    lineNumber: 2192,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2172,
+                                                            lineNumber: 2167,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4040,7 +4030,7 @@ function CustomerPortal() {
                                                                     children: "Your Benefits"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2212,
+                                                                    lineNumber: 2207,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4053,20 +4043,20 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2215,
+                                                                                    lineNumber: 2210,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Savings on EVERY service call"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2216,
+                                                                                    lineNumber: 2211,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2214,
+                                                                            lineNumber: 2209,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4076,20 +4066,20 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2219,
+                                                                                    lineNumber: 2214,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Priority same-day service"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2220,
+                                                                                    lineNumber: 2215,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2218,
+                                                                            lineNumber: 2213,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4099,20 +4089,20 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2223,
+                                                                                    lineNumber: 2218,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "No trip charges"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2224,
+                                                                                    lineNumber: 2219,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2222,
+                                                                            lineNumber: 2217,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4122,20 +4112,20 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2227,
+                                                                                    lineNumber: 2222,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Annual plumbing inspection included"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2228,
+                                                                                    lineNumber: 2223,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2226,
+                                                                            lineNumber: 2221,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4145,20 +4135,20 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2231,
+                                                                                    lineNumber: 2226,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "After-hours service at regular rates"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2232,
+                                                                                    lineNumber: 2227,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2230,
+                                                                            lineNumber: 2225,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4168,44 +4158,44 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4 text-primary flex-shrink-0"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2235,
+                                                                                    lineNumber: 2230,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                     children: "Waived diagnostic fees"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2236,
+                                                                                    lineNumber: 2231,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2234,
+                                                                            lineNumber: 2229,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2213,
+                                                                    lineNumber: 2208,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2211,
+                                                            lineNumber: 2206,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2171,
+                                                    lineNumber: 2166,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2154,
+                                            lineNumber: 2149,
                                             columnNumber: 21
                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
                                             className: "border-primary/20 bg-gradient-to-br from-primary/5 to-background",
@@ -4221,7 +4211,7 @@ function CustomerPortal() {
                                                                         className: "w-6 h-6 text-primary"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2247,
+                                                                        lineNumber: 2242,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4230,7 +4220,7 @@ function CustomerPortal() {
                                                                                 children: "VIP Membership"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2249,
+                                                                                lineNumber: 2244,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -4238,19 +4228,19 @@ function CustomerPortal() {
                                                                                 children: "Not a VIP member yet"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2250,
+                                                                                lineNumber: 2245,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2248,
+                                                                        lineNumber: 2243,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2246,
+                                                                lineNumber: 2241,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -4259,18 +4249,18 @@ function CustomerPortal() {
                                                                 children: "Available"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2255,
+                                                                lineNumber: 2250,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2245,
+                                                        lineNumber: 2240,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2244,
+                                                    lineNumber: 2239,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -4281,7 +4271,7 @@ function CustomerPortal() {
                                                             children: "Join our VIP Membership program and save on every service call, plus enjoy priority same-day service, no trip charges, and more!"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2261,
+                                                            lineNumber: 2256,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4294,7 +4284,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2268,
+                                                                            lineNumber: 2263,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4302,13 +4292,13 @@ function CustomerPortal() {
                                                                             children: "Savings on EVERY service call"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2269,
+                                                                            lineNumber: 2264,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2267,
+                                                                    lineNumber: 2262,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4318,7 +4308,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2272,
+                                                                            lineNumber: 2267,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4326,13 +4316,13 @@ function CustomerPortal() {
                                                                             children: "Priority same-day service"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2273,
+                                                                            lineNumber: 2268,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2271,
+                                                                    lineNumber: 2266,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4342,7 +4332,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2276,
+                                                                            lineNumber: 2271,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4350,13 +4340,13 @@ function CustomerPortal() {
                                                                             children: "No trip charges"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2277,
+                                                                            lineNumber: 2272,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2275,
+                                                                    lineNumber: 2270,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4366,7 +4356,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2280,
+                                                                            lineNumber: 2275,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4374,13 +4364,13 @@ function CustomerPortal() {
                                                                             children: "Annual plumbing inspection"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2281,
+                                                                            lineNumber: 2276,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2279,
+                                                                    lineNumber: 2274,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4390,7 +4380,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2284,
+                                                                            lineNumber: 2279,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4398,13 +4388,13 @@ function CustomerPortal() {
                                                                             children: "After-hours service at regular rates"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2285,
+                                                                            lineNumber: 2280,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2283,
+                                                                    lineNumber: 2278,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4414,7 +4404,7 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 text-primary flex-shrink-0"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2288,
+                                                                            lineNumber: 2283,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4422,19 +4412,19 @@ function CustomerPortal() {
                                                                             children: "Waived diagnostic fees"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2289,
+                                                                            lineNumber: 2284,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2287,
+                                                                    lineNumber: 2282,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2266,
+                                                            lineNumber: 2261,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4450,41 +4440,41 @@ function CustomerPortal() {
                                                                             className: "w-4 h-4 mr-2"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2300,
+                                                                            lineNumber: 2295,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         "Learn About VIP Membership"
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2299,
+                                                                    lineNumber: 2294,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2294,
+                                                                lineNumber: 2289,
                                                                 columnNumber: 27
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2293,
+                                                            lineNumber: 2288,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2260,
+                                                    lineNumber: 2255,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2243,
+                                            lineNumber: 2238,
                                             columnNumber: 21
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2152,
+                                        lineNumber: 2147,
                                         columnNumber: 19
                                     }, this),
                                     customerLocations.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -4498,7 +4488,7 @@ function CustomerPortal() {
                                                                 className: "w-6 h-6 text-primary"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2315,
+                                                                lineNumber: 2310,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
@@ -4509,26 +4499,26 @@ function CustomerPortal() {
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2316,
+                                                                lineNumber: 2311,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2314,
+                                                        lineNumber: 2309,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                         children: customerLocations.length === 1 ? "Your service address" : "All your service addresses"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2318,
+                                                        lineNumber: 2313,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2313,
+                                                lineNumber: 2308,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -4542,7 +4532,7 @@ function CustomerPortal() {
                                                                     className: "w-5 h-5 text-primary flex-shrink-0 mt-1"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2331,
+                                                                    lineNumber: 2326,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4553,7 +4543,7 @@ function CustomerPortal() {
                                                                             children: location.name
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2334,
+                                                                            lineNumber: 2329,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4562,7 +4552,7 @@ function CustomerPortal() {
                                                                             children: location.address.street
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2338,
+                                                                            lineNumber: 2333,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4576,7 +4566,7 @@ function CustomerPortal() {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2341,
+                                                                            lineNumber: 2336,
                                                                             columnNumber: 31
                                                                         }, this),
                                                                         index === 0 && customerLocations.length > 1 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -4585,19 +4575,19 @@ function CustomerPortal() {
                                                                             children: "Primary"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2345,
+                                                                            lineNumber: 2340,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2332,
+                                                                    lineNumber: 2327,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, location.id, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2326,
+                                                            lineNumber: 2321,
                                                             columnNumber: 27
                                                         }, this)),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4605,19 +4595,19 @@ function CustomerPortal() {
                                                         children: "Service addresses are managed by our team for security"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2353,
+                                                        lineNumber: 2348,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2324,
+                                                lineNumber: 2319,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2312,
+                                        lineNumber: 2307,
                                         columnNumber: 21
                                     }, this),
                                     (()=>{
@@ -4635,33 +4625,33 @@ function CustomerPortal() {
                                                                     className: "w-6 h-6 text-primary"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2371,
+                                                                    lineNumber: 2366,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
                                                                     children: "Open Estimates"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2372,
+                                                                    lineNumber: 2367,
                                                                     columnNumber: 29
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2370,
+                                                            lineNumber: 2365,
                                                             columnNumber: 27
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                             children: "Your pending estimates and quotes (valid for 30 days)"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2374,
+                                                            lineNumber: 2369,
                                                             columnNumber: 27
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2369,
+                                                    lineNumber: 2364,
                                                     columnNumber: 25
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -4693,7 +4683,7 @@ function CustomerPortal() {
                                                                                                 ]
                                                                                             }, void 0, true, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2394,
+                                                                                                lineNumber: 2389,
                                                                                                 columnNumber: 41
                                                                                             }, this),
                                                                                             estimate.summary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4701,13 +4691,13 @@ function CustomerPortal() {
                                                                                                 children: estimate.summary
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2396,
+                                                                                                lineNumber: 2391,
                                                                                                 columnNumber: 43
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2393,
+                                                                                        lineNumber: 2388,
                                                                                         columnNumber: 39
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4718,13 +4708,13 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2399,
+                                                                                        lineNumber: 2394,
                                                                                         columnNumber: 39
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2392,
+                                                                                lineNumber: 2387,
                                                                                 columnNumber: 37
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4738,7 +4728,7 @@ function CustomerPortal() {
                                                                                                 children: "Total:"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2406,
+                                                                                                lineNumber: 2401,
                                                                                                 columnNumber: 41
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -4746,13 +4736,13 @@ function CustomerPortal() {
                                                                                                 children: formatCurrency(estimate.total)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2407,
+                                                                                                lineNumber: 2402,
                                                                                                 columnNumber: 41
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2405,
+                                                                                        lineNumber: 2400,
                                                                                         columnNumber: 39
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4763,20 +4753,20 @@ function CustomerPortal() {
                                                                                                 children: "Created:"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2410,
+                                                                                                lineNumber: 2405,
                                                                                                 columnNumber: 41
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                 children: formatDate(estimate.createdOn)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2411,
+                                                                                                lineNumber: 2406,
                                                                                                 columnNumber: 41
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2409,
+                                                                                        lineNumber: 2404,
                                                                                         columnNumber: 39
                                                                                     }, this),
                                                                                     estimate.expiresOn && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4787,58 +4777,58 @@ function CustomerPortal() {
                                                                                                 children: "Expires:"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2415,
+                                                                                                lineNumber: 2410,
                                                                                                 columnNumber: 43
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                                 children: formatDate(estimate.expiresOn)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2416,
+                                                                                                lineNumber: 2411,
                                                                                                 columnNumber: 43
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2414,
+                                                                                        lineNumber: 2409,
                                                                                         columnNumber: 41
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2404,
+                                                                                lineNumber: 2399,
                                                                                 columnNumber: 37
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2391,
+                                                                        lineNumber: 2386,
                                                                         columnNumber: 35
                                                                     }, this)
                                                                 }, estimate.id, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2382,
+                                                                    lineNumber: 2377,
                                                                     columnNumber: 33
                                                                 }, this))
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2380,
+                                                            lineNumber: 2375,
                                                             columnNumber: 29
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2379,
+                                                        lineNumber: 2374,
                                                         columnNumber: 27
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2378,
+                                                    lineNumber: 2373,
                                                     columnNumber: 25
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2368,
+                                            lineNumber: 2363,
                                             columnNumber: 23
                                         }, this);
                                     })(),
@@ -4855,33 +4845,33 @@ function CustomerPortal() {
                                                                     className: "w-6 h-6 text-primary"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2435,
+                                                                    lineNumber: 2430,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
                                                                     children: "Upcoming Appointments"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2436,
+                                                                    lineNumber: 2431,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2434,
+                                                            lineNumber: 2429,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                             children: "Your scheduled service appointments"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2438,
+                                                            lineNumber: 2433,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2433,
+                                                    lineNumber: 2428,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -4891,7 +4881,7 @@ function CustomerPortal() {
                                                         children: "No upcoming appointments"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2444,
+                                                        lineNumber: 2439,
                                                         columnNumber: 25
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "space-y-4",
@@ -4903,7 +4893,7 @@ function CustomerPortal() {
                                                                         className: "w-5 h-5 text-primary mt-1"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2455,
+                                                                        lineNumber: 2450,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4919,7 +4909,7 @@ function CustomerPortal() {
                                                                                                 children: appointment.jobType
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2459,
+                                                                                                lineNumber: 2454,
                                                                                                 columnNumber: 37
                                                                                             }, this),
                                                                                             appointment.summary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4927,13 +4917,13 @@ function CustomerPortal() {
                                                                                                 children: appointment.summary
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2461,
+                                                                                                lineNumber: 2456,
                                                                                                 columnNumber: 39
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2458,
+                                                                                        lineNumber: 2453,
                                                                                         columnNumber: 35
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4950,26 +4940,26 @@ function CustomerPortal() {
                                                                                                         className: "w-4 h-4 mr-1"
                                                                                                     }, void 0, false, {
                                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                        lineNumber: 2472,
+                                                                                                        lineNumber: 2467,
                                                                                                         columnNumber: 39
                                                                                                     }, this),
                                                                                                     "Reschedule"
                                                                                                 ]
                                                                                             }, void 0, true, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2466,
+                                                                                                lineNumber: 2461,
                                                                                                 columnNumber: 37
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2464,
+                                                                                        lineNumber: 2459,
                                                                                         columnNumber: 35
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2457,
+                                                                                lineNumber: 2452,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -4981,7 +4971,7 @@ function CustomerPortal() {
                                                                                                 children: "Date:"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2479,
+                                                                                                lineNumber: 2474,
                                                                                                 columnNumber: 37
                                                                                             }, this),
                                                                                             " ",
@@ -4989,7 +4979,7 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2478,
+                                                                                        lineNumber: 2473,
                                                                                         columnNumber: 35
                                                                                     }, this),
                                                                                     appointment.arrivalWindowStart && appointment.arrivalWindowEnd && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -4998,7 +4988,7 @@ function CustomerPortal() {
                                                                                                 children: "Arrival Window:"
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2483,
+                                                                                                lineNumber: 2478,
                                                                                                 columnNumber: 39
                                                                                             }, this),
                                                                                             " ",
@@ -5008,7 +4998,7 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2482,
+                                                                                        lineNumber: 2477,
                                                                                         columnNumber: 37
                                                                                     }, this),
                                                                                     appointment.jobNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5019,46 +5009,46 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2487,
+                                                                                        lineNumber: 2482,
                                                                                         columnNumber: 37
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2477,
+                                                                                lineNumber: 2472,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2456,
+                                                                        lineNumber: 2451,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 ]
                                                             }, appointment.id, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2450,
+                                                                lineNumber: 2445,
                                                                 columnNumber: 29
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2448,
+                                                        lineNumber: 2443,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2442,
+                                                    lineNumber: 2437,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2432,
+                                            lineNumber: 2427,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2431,
+                                        lineNumber: 2426,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5074,33 +5064,33 @@ function CustomerPortal() {
                                                                     className: "w-6 h-6 text-primary"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2506,
+                                                                    lineNumber: 2501,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
                                                                     children: "Invoices"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2507,
+                                                                    lineNumber: 2502,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2505,
+                                                            lineNumber: 2500,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                             children: "Your service invoices and payment history"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2509,
+                                                            lineNumber: 2504,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2504,
+                                                    lineNumber: 2499,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -5110,7 +5100,7 @@ function CustomerPortal() {
                                                         children: "No invoices found"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2515,
+                                                        lineNumber: 2510,
                                                         columnNumber: 25
                                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                         className: "space-y-4",
@@ -5122,7 +5112,7 @@ function CustomerPortal() {
                                                                         className: "w-5 h-5 text-primary mt-1"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2526,
+                                                                        lineNumber: 2521,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5141,7 +5131,7 @@ function CustomerPortal() {
                                                                                                 ]
                                                                                             }, void 0, true, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2530,
+                                                                                                lineNumber: 2525,
                                                                                                 columnNumber: 37
                                                                                             }, this),
                                                                                             invoice.summary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5149,20 +5139,20 @@ function CustomerPortal() {
                                                                                                 children: invoice.summary
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2532,
+                                                                                                lineNumber: 2527,
                                                                                                 columnNumber: 39
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2529,
+                                                                                        lineNumber: 2524,
                                                                                         columnNumber: 35
                                                                                     }, this),
                                                                                     getStatusBadge(invoice.status)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2528,
+                                                                                lineNumber: 2523,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5176,12 +5166,12 @@ function CustomerPortal() {
                                                                                                     children: "Total:"
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                    lineNumber: 2539,
+                                                                                                    lineNumber: 2534,
                                                                                                     columnNumber: 43
                                                                                                 }, this)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2539,
+                                                                                                lineNumber: 2534,
                                                                                                 columnNumber: 37
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -5189,13 +5179,13 @@ function CustomerPortal() {
                                                                                                 children: formatCurrency(invoice.total)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2540,
+                                                                                                lineNumber: 2535,
                                                                                                 columnNumber: 37
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2538,
+                                                                                        lineNumber: 2533,
                                                                                         columnNumber: 35
                                                                                     }, this),
                                                                                     invoice.balance > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5206,12 +5196,12 @@ function CustomerPortal() {
                                                                                                     children: "Balance Due:"
                                                                                                 }, void 0, false, {
                                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                    lineNumber: 2544,
+                                                                                                    lineNumber: 2539,
                                                                                                     columnNumber: 45
                                                                                                 }, this)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2544,
+                                                                                                lineNumber: 2539,
                                                                                                 columnNumber: 39
                                                                                             }, this),
                                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -5219,13 +5209,13 @@ function CustomerPortal() {
                                                                                                 children: formatCurrency(invoice.balance)
                                                                                             }, void 0, false, {
                                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                                lineNumber: 2545,
+                                                                                                lineNumber: 2540,
                                                                                                 columnNumber: 39
                                                                                             }, this)
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2543,
+                                                                                        lineNumber: 2538,
                                                                                         columnNumber: 37
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5236,7 +5226,7 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2548,
+                                                                                        lineNumber: 2543,
                                                                                         columnNumber: 35
                                                                                     }, this),
                                                                                     invoice.dueDate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5247,7 +5237,7 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2552,
+                                                                                        lineNumber: 2547,
                                                                                         columnNumber: 37
                                                                                     }, this),
                                                                                     invoice.jobNumber && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5258,13 +5248,13 @@ function CustomerPortal() {
                                                                                         ]
                                                                                     }, void 0, true, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2557,
+                                                                                        lineNumber: 2552,
                                                                                         columnNumber: 37
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2537,
+                                                                                lineNumber: 2532,
                                                                                 columnNumber: 33
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5283,52 +5273,52 @@ function CustomerPortal() {
                                                                                             className: "w-4 h-4 mr-2"
                                                                                         }, void 0, false, {
                                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                            lineNumber: 2573,
+                                                                                            lineNumber: 2568,
                                                                                             columnNumber: 37
                                                                                         }, this),
                                                                                         "Request PDF Copy"
                                                                                     ]
                                                                                 }, void 0, true, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2563,
+                                                                                    lineNumber: 2558,
                                                                                     columnNumber: 35
                                                                                 }, this)
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2562,
+                                                                                lineNumber: 2557,
                                                                                 columnNumber: 33
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2527,
+                                                                        lineNumber: 2522,
                                                                         columnNumber: 31
                                                                     }, this)
                                                                 ]
                                                             }, invoice.id, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2521,
+                                                                lineNumber: 2516,
                                                                 columnNumber: 29
                                                             }, this))
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2519,
+                                                        lineNumber: 2514,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2513,
+                                                    lineNumber: 2508,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2503,
+                                            lineNumber: 2498,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2502,
+                                        lineNumber: 2497,
                                         columnNumber: 19
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5349,12 +5339,12 @@ function CustomerPortal() {
                                                                             className: "w-6 h-6 text-primary"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2594,
+                                                                            lineNumber: 2589,
                                                                             columnNumber: 31
                                                                         }, this)
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2593,
+                                                                        lineNumber: 2588,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5363,7 +5353,7 @@ function CustomerPortal() {
                                                                                 children: "Referral Rewards Program"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2597,
+                                                                                lineNumber: 2592,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
@@ -5371,19 +5361,19 @@ function CustomerPortal() {
                                                                                 children: referralsData?.referrals.length === 0 ? "Start earning rewards today! Share your link below." : `You've referred ${referralsData?.referrals.length} ${referralsData?.referrals.length === 1 ? 'friend' : 'friends'} - thank you for spreading the word!`
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2598,
+                                                                                lineNumber: 2593,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2596,
+                                                                        lineNumber: 2591,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2592,
+                                                                lineNumber: 2587,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -5392,18 +5382,18 @@ function CustomerPortal() {
                                                                 children: "Active"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2606,
+                                                                lineNumber: 2601,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2591,
+                                                        lineNumber: 2586,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2590,
+                                                    lineNumber: 2585,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -5417,7 +5407,7 @@ function CustomerPortal() {
                                                                     children: "Your Referral Code"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2614,
+                                                                    lineNumber: 2609,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5426,13 +5416,13 @@ function CustomerPortal() {
                                                                     children: referralLinkData.code
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2615,
+                                                                    lineNumber: 2610,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2613,
+                                                            lineNumber: 2608,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5443,7 +5433,7 @@ function CustomerPortal() {
                                                                     children: "Your Unique Referral Link"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2622,
+                                                                    lineNumber: 2617,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5457,7 +5447,7 @@ function CustomerPortal() {
                                                                             "data-testid": "input-referral-link"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2624,
+                                                                            lineNumber: 2619,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -5470,30 +5460,30 @@ function CustomerPortal() {
                                                                                 className: "w-4 h-4"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2638,
+                                                                                lineNumber: 2633,
                                                                                 columnNumber: 41
                                                                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$copy$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Copy$3e$__["Copy"], {
                                                                                 className: "w-4 h-4"
                                                                             }, void 0, false, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2638,
+                                                                                lineNumber: 2633,
                                                                                 columnNumber: 73
                                                                             }, this)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2631,
+                                                                            lineNumber: 2626,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2623,
+                                                                    lineNumber: 2618,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2621,
+                                                            lineNumber: 2616,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5507,7 +5497,7 @@ function CustomerPortal() {
                                                                             children: "Total Referrals"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2646,
+                                                                            lineNumber: 2641,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5516,13 +5506,13 @@ function CustomerPortal() {
                                                                             children: referralsData?.referrals.length || 0
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2647,
+                                                                            lineNumber: 2642,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2645,
+                                                                    lineNumber: 2640,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5533,7 +5523,7 @@ function CustomerPortal() {
                                                                             children: "Conversions"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2652,
+                                                                            lineNumber: 2647,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5542,13 +5532,13 @@ function CustomerPortal() {
                                                                             children: referralLinkData.conversions
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2653,
+                                                                            lineNumber: 2648,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2651,
+                                                                    lineNumber: 2646,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5559,7 +5549,7 @@ function CustomerPortal() {
                                                                             children: "Clicks"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2658,
+                                                                            lineNumber: 2653,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5568,19 +5558,19 @@ function CustomerPortal() {
                                                                             children: referralLinkData.clicks
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2659,
+                                                                            lineNumber: 2654,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2657,
+                                                                    lineNumber: 2652,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2644,
+                                                            lineNumber: 2639,
                                                             columnNumber: 25
                                                         }, this),
                                                         referralsData && referralsData.referrals.length > 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5591,7 +5581,7 @@ function CustomerPortal() {
                                                                     children: "Your Referrals"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2668,
+                                                                    lineNumber: 2663,
                                                                     columnNumber: 29
                                                                 }, this),
                                                                 referralsData.referrals.slice(0, 5).map((referral)=>{
@@ -5613,7 +5603,7 @@ function CustomerPortal() {
                                                                                         children: isReferrer ? referral.refereeName : referral.referrerName
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2681,
+                                                                                        lineNumber: 2676,
                                                                                         columnNumber: 37
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -5622,13 +5612,13 @@ function CustomerPortal() {
                                                                                         children: referral.status.replace('_', ' ').replace(/\b\w/g, (l)=>l.toUpperCase())
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2684,
+                                                                                        lineNumber: 2679,
                                                                                         columnNumber: 37
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2680,
+                                                                                lineNumber: 2675,
                                                                                 columnNumber: 35
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5639,7 +5629,7 @@ function CustomerPortal() {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2688,
+                                                                                lineNumber: 2683,
                                                                                 columnNumber: 35
                                                                             }, this),
                                                                             referral.status === 'credited' && referral.creditAmount && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5650,13 +5640,13 @@ function CustomerPortal() {
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2692,
+                                                                                lineNumber: 2687,
                                                                                 columnNumber: 37
                                                                             }, this)
                                                                         ]
                                                                     }, referral.id, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2679,
+                                                                        lineNumber: 2674,
                                                                         columnNumber: 33
                                                                     }, this);
                                                                 }),
@@ -5669,13 +5659,13 @@ function CustomerPortal() {
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2700,
+                                                                    lineNumber: 2695,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2667,
+                                                            lineNumber: 2662,
                                                             columnNumber: 27
                                                         }, this) : referralsData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                             className: "p-6 bg-gradient-to-r from-primary/5 via-primary/10 to-primary/5 rounded-lg border border-primary/20 text-center space-y-4",
@@ -5686,12 +5676,12 @@ function CustomerPortal() {
                                                                         className: "w-12 h-12 text-primary animate-pulse"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2709,
+                                                                        lineNumber: 2704,
                                                                         columnNumber: 33
                                                                     }, this)
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2708,
+                                                                    lineNumber: 2703,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5702,7 +5692,7 @@ function CustomerPortal() {
                                                                             children: "Be the First to Start Earning!"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2712,
+                                                                            lineNumber: 2707,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5710,7 +5700,7 @@ function CustomerPortal() {
                                                                             children: "You haven't made any referrals yet, but there's great potential waiting! Share your unique link with friends and family to start earning $25 rewards."
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2713,
+                                                                            lineNumber: 2708,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5718,13 +5708,13 @@ function CustomerPortal() {
                                                                             children: "It's simple: they save $25, you earn $25. Everyone wins!"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2717,
+                                                                            lineNumber: 2712,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2711,
+                                                                    lineNumber: 2706,
                                                                     columnNumber: 31
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5745,14 +5735,14 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2733,
+                                                                                    lineNumber: 2728,
                                                                                     columnNumber: 35
                                                                                 }, this),
                                                                                 "Share on X"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2722,
+                                                                            lineNumber: 2717,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -5770,14 +5760,14 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2747,
+                                                                                    lineNumber: 2742,
                                                                                     columnNumber: 35
                                                                                 }, this),
                                                                                 "Share on Facebook"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2736,
+                                                                            lineNumber: 2731,
                                                                             columnNumber: 33
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -5795,26 +5785,26 @@ function CustomerPortal() {
                                                                                     className: "w-4 h-4"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2761,
+                                                                                    lineNumber: 2756,
                                                                                     columnNumber: 35
                                                                                 }, this),
                                                                                 "Share via Email"
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2750,
+                                                                            lineNumber: 2745,
                                                                             columnNumber: 33
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2721,
+                                                                    lineNumber: 2716,
                                                                     columnNumber: 31
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2707,
+                                                            lineNumber: 2702,
                                                             columnNumber: 29
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5827,7 +5817,7 @@ function CustomerPortal() {
                                                                             className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2772,
+                                                                            lineNumber: 2767,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5837,7 +5827,7 @@ function CustomerPortal() {
                                                                                     children: "You Get $25"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2774,
+                                                                                    lineNumber: 2769,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5845,19 +5835,19 @@ function CustomerPortal() {
                                                                                     children: "When your referral completes a service of $200+"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2775,
+                                                                                    lineNumber: 2770,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2773,
+                                                                            lineNumber: 2768,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2771,
+                                                                    lineNumber: 2766,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5867,7 +5857,7 @@ function CustomerPortal() {
                                                                             className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2781,
+                                                                            lineNumber: 2776,
                                                                             columnNumber: 29
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -5877,7 +5867,7 @@ function CustomerPortal() {
                                                                                     children: "They Get $25"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2783,
+                                                                                    lineNumber: 2778,
                                                                                     columnNumber: 31
                                                                                 }, this),
                                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -5885,25 +5875,25 @@ function CustomerPortal() {
                                                                                     children: "Your friend saves on their first service call"
                                                                                 }, void 0, false, {
                                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                    lineNumber: 2784,
+                                                                                    lineNumber: 2779,
                                                                                     columnNumber: 31
                                                                                 }, this)
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                                            lineNumber: 2782,
+                                                                            lineNumber: 2777,
                                                                             columnNumber: 29
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2780,
+                                                                    lineNumber: 2775,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2770,
+                                                            lineNumber: 2765,
                                                             columnNumber: 25
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -5916,31 +5906,31 @@ function CustomerPortal() {
                                                                     className: "w-4 h-4 mr-2"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 2798,
+                                                                    lineNumber: 2793,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 "Share Referral Link"
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2792,
+                                                            lineNumber: 2787,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2611,
+                                                    lineNumber: 2606,
                                                     columnNumber: 23
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2589,
+                                            lineNumber: 2584,
                                             columnNumber: 21
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2587,
+                                        lineNumber: 2582,
                                         columnNumber: 19
                                     }, this),
                                     completedAppointments.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Card"], {
@@ -5955,33 +5945,33 @@ function CustomerPortal() {
                                                                 className: "w-6 h-6 text-primary fill-primary"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2811,
+                                                                lineNumber: 2806,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardTitle"], {
                                                                 children: "Love Our Service?"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2812,
+                                                                lineNumber: 2807,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2810,
+                                                        lineNumber: 2805,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardDescription"], {
                                                         children: "Share your experience and help others find great plumbing service"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2814,
+                                                        lineNumber: 2809,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2809,
+                                                lineNumber: 2804,
                                                 columnNumber: 23
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -5994,7 +5984,7 @@ function CustomerPortal() {
                                                                 className: "w-5 h-5 text-primary flex-shrink-0 mt-0.5"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2820,
+                                                                lineNumber: 2815,
                                                                 columnNumber: 27
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6004,7 +5994,7 @@ function CustomerPortal() {
                                                                         children: "Your Review Matters"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2822,
+                                                                        lineNumber: 2817,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6012,19 +6002,19 @@ function CustomerPortal() {
                                                                         children: "Help your neighbors find reliable plumbing service. Your honest feedback helps us improve and helps others make informed decisions."
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2823,
+                                                                        lineNumber: 2818,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2821,
+                                                                lineNumber: 2816,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2819,
+                                                        lineNumber: 2814,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6041,14 +6031,14 @@ function CustomerPortal() {
                                                                 className: "w-4 h-4 mr-2"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2839,
+                                                                lineNumber: 2834,
                                                                 columnNumber: 27
                                                             }, this),
                                                             "Leave a Review"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2829,
+                                                        lineNumber: 2824,
                                                         columnNumber: 25
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6056,42 +6046,42 @@ function CustomerPortal() {
                                                         children: "Choose from Google, Facebook, BBB, or Yelp - takes just 2 minutes!"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2843,
+                                                        lineNumber: 2838,
                                                         columnNumber: 25
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2818,
+                                                lineNumber: 2813,
                                                 columnNumber: 23
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 2808,
+                                        lineNumber: 2803,
                                         columnNumber: 21
                                     }, this)
                                 ]
                             }, void 0, true) : null
                         }, void 0, false, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 1516,
+                            lineNumber: 1511,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 1063,
+                    lineNumber: 1058,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 1062,
+                lineNumber: 1057,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$Footer$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 2856,
+                lineNumber: 2851,
                 columnNumber: 7
             }, this),
             customerData && referralLinkData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ReferralModal$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["ReferralModal"], {
@@ -6103,7 +6093,7 @@ function CustomerPortal() {
                 referralCode: referralLinkData.code
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 2860,
+                lineNumber: 2855,
                 columnNumber: 9
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -6119,20 +6109,20 @@ function CustomerPortal() {
                                     children: "Estimate Details"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 2874,
+                                    lineNumber: 2869,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Complete breakdown of your estimate"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 2875,
+                                    lineNumber: 2870,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 2873,
+                            lineNumber: 2868,
                             columnNumber: 11
                         }, this),
                         selectedEstimate && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6155,7 +6145,7 @@ function CustomerPortal() {
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2886,
+                                                            lineNumber: 2881,
                                                             columnNumber: 21
                                                         }, this),
                                                         selectedEstimate.summary && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6163,13 +6153,13 @@ function CustomerPortal() {
                                                             children: selectedEstimate.summary
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2888,
+                                                            lineNumber: 2883,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2885,
+                                                    lineNumber: 2880,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6180,13 +6170,13 @@ function CustomerPortal() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2891,
+                                                    lineNumber: 2886,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2884,
+                                            lineNumber: 2879,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6199,7 +6189,7 @@ function CustomerPortal() {
                                                             children: "Total:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2898,
+                                                            lineNumber: 2893,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6207,13 +6197,13 @@ function CustomerPortal() {
                                                             children: formatCurrency(selectedEstimate.total)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2899,
+                                                            lineNumber: 2894,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2897,
+                                                    lineNumber: 2892,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6223,7 +6213,7 @@ function CustomerPortal() {
                                                             children: "Created:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2902,
+                                                            lineNumber: 2897,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6231,13 +6221,13 @@ function CustomerPortal() {
                                                             children: formatDate(selectedEstimate.createdOn)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2903,
+                                                            lineNumber: 2898,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2901,
+                                                    lineNumber: 2896,
                                                     columnNumber: 19
                                                 }, this),
                                                 selectedEstimate.expiresOn && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -6248,7 +6238,7 @@ function CustomerPortal() {
                                                                 children: "Expires:"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2908,
+                                                                lineNumber: 2903,
                                                                 columnNumber: 25
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6256,13 +6246,13 @@ function CustomerPortal() {
                                                                 children: formatDate(selectedEstimate.expiresOn)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2909,
+                                                                lineNumber: 2904,
                                                                 columnNumber: 25
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2907,
+                                                        lineNumber: 2902,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false),
@@ -6273,7 +6263,7 @@ function CustomerPortal() {
                                                             children: "Job #:"
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2915,
+                                                            lineNumber: 2910,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6281,25 +6271,25 @@ function CustomerPortal() {
                                                             children: selectedEstimate.jobNumber
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 2916,
+                                                            lineNumber: 2911,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2914,
+                                                    lineNumber: 2909,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2896,
+                                            lineNumber: 2891,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 2883,
+                                    lineNumber: 2878,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6310,7 +6300,7 @@ function CustomerPortal() {
                                             children: "Items"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2924,
+                                            lineNumber: 2919,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6327,7 +6317,7 @@ function CustomerPortal() {
                                                                 className: "w-16 h-16 object-cover rounded"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2931,
+                                                                lineNumber: 2926,
                                                                 columnNumber: 29
                                                             }, this),
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6338,7 +6328,7 @@ function CustomerPortal() {
                                                                         children: item.pricebookDetails?.name || item.sku?.name || 'Service Item'
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2938,
+                                                                        lineNumber: 2933,
                                                                         columnNumber: 29
                                                                     }, this),
                                                                     item.description && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6348,7 +6338,7 @@ function CustomerPortal() {
                                                                         }
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2942,
+                                                                        lineNumber: 2937,
                                                                         columnNumber: 31
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6362,20 +6352,20 @@ function CustomerPortal() {
                                                                                         children: "Quantity:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2949,
+                                                                                        lineNumber: 2944,
                                                                                         columnNumber: 33
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                         children: item.quantity || item.qty || 1
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2952,
+                                                                                        lineNumber: 2947,
                                                                                         columnNumber: 33
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2948,
+                                                                                lineNumber: 2943,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6386,20 +6376,20 @@ function CustomerPortal() {
                                                                                         children: "Unit Price:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2955,
+                                                                                        lineNumber: 2950,
                                                                                         columnNumber: 33
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                                         children: formatCurrency(item.unitRate || 0)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2958,
+                                                                                        lineNumber: 2953,
                                                                                         columnNumber: 33
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2954,
+                                                                                lineNumber: 2949,
                                                                                 columnNumber: 31
                                                                             }, this),
                                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6410,7 +6400,7 @@ function CustomerPortal() {
                                                                                         children: "Line Total:"
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2961,
+                                                                                        lineNumber: 2956,
                                                                                         columnNumber: 33
                                                                                     }, this),
                                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -6418,54 +6408,54 @@ function CustomerPortal() {
                                                                                         children: formatCurrency(item.total || 0)
                                                                                     }, void 0, false, {
                                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                        lineNumber: 2964,
+                                                                                        lineNumber: 2959,
                                                                                         columnNumber: 33
                                                                                     }, this)
                                                                                 ]
                                                                             }, void 0, true, {
                                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                                lineNumber: 2960,
+                                                                                lineNumber: 2955,
                                                                                 columnNumber: 31
                                                                             }, this)
                                                                         ]
                                                                     }, void 0, true, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 2947,
+                                                                        lineNumber: 2942,
                                                                         columnNumber: 29
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 2937,
+                                                                lineNumber: 2932,
                                                                 columnNumber: 27
                                                             }, this)
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 2929,
+                                                        lineNumber: 2924,
                                                         columnNumber: 25
                                                     }, this)
                                                 }, index, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 2928,
+                                                    lineNumber: 2923,
                                                     columnNumber: 23
                                                 }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                                 className: "text-center text-muted-foreground py-8",
                                                 children: "No items found"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 2974,
+                                                lineNumber: 2969,
                                                 columnNumber: 21
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2925,
+                                            lineNumber: 2920,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 2923,
+                                    lineNumber: 2918,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6479,7 +6469,7 @@ function CustomerPortal() {
                                             children: "Close"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2981,
+                                            lineNumber: 2976,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6498,37 +6488,37 @@ function CustomerPortal() {
                                                     className: "w-4 h-4 mr-2"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3001,
+                                                    lineNumber: 2996,
                                                     columnNumber: 19
                                                 }, this),
                                                 "Request PDF Copy"
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 2989,
+                                            lineNumber: 2984,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 2980,
+                                    lineNumber: 2975,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 2881,
+                            lineNumber: 2876,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 2872,
+                    lineNumber: 2867,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 2871,
+                lineNumber: 2866,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -6543,20 +6533,20 @@ function CustomerPortal() {
                                     children: "Reschedule Appointment"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3014,
+                                    lineNumber: 3009,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Choose a new date and time window for your appointment. We'll update your schedule right away."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3015,
+                                    lineNumber: 3010,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3013,
+                            lineNumber: 3008,
                             columnNumber: 11
                         }, this),
                         appointmentToReschedule && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6570,7 +6560,7 @@ function CustomerPortal() {
                                             children: "Current Appointment:"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3024,
+                                            lineNumber: 3019,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6578,7 +6568,7 @@ function CustomerPortal() {
                                             children: appointmentToReschedule.jobType
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3025,
+                                            lineNumber: 3020,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6590,13 +6580,13 @@ function CustomerPortal() {
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3028,
+                                            lineNumber: 3023,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3023,
+                                    lineNumber: 3018,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6610,7 +6600,7 @@ function CustomerPortal() {
                                                     children: "New Date"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3036,
+                                                    lineNumber: 3031,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -6622,13 +6612,13 @@ function CustomerPortal() {
                                                     "data-testid": "input-new-date"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3037,
+                                                    lineNumber: 3032,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3035,
+                                            lineNumber: 3030,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6639,7 +6629,7 @@ function CustomerPortal() {
                                                     children: "Time Window"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3047,
+                                                    lineNumber: 3042,
                                                     columnNumber: 19
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Select"], {
@@ -6653,12 +6643,12 @@ function CustomerPortal() {
                                                                 placeholder: "Select a time window"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 3053,
+                                                                lineNumber: 3048,
                                                                 columnNumber: 23
                                                             }, this)
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 3052,
+                                                            lineNumber: 3047,
                                                             columnNumber: 21
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$select$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["SelectContent"], {
@@ -6668,30 +6658,30 @@ function CustomerPortal() {
                                                                     children: window1.label
                                                                 }, `${window1.start}-${window1.end}`, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3057,
+                                                                    lineNumber: 3052,
                                                                     columnNumber: 25
                                                                 }, this))
                                                         }, void 0, false, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 3055,
+                                                            lineNumber: 3050,
                                                             columnNumber: 21
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3048,
+                                                    lineNumber: 3043,
                                                     columnNumber: 19
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3046,
+                                            lineNumber: 3041,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3034,
+                                    lineNumber: 3029,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6703,13 +6693,13 @@ function CustomerPortal() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3070,
+                                    lineNumber: 3065,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3021,
+                            lineNumber: 3016,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -6722,7 +6712,7 @@ function CustomerPortal() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3077,
+                                    lineNumber: 3072,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6732,24 +6722,24 @@ function CustomerPortal() {
                                     children: isRescheduling ? "Rescheduling..." : "Confirm Reschedule"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3085,
+                                    lineNumber: 3080,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3076,
+                            lineNumber: 3071,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3012,
+                    lineNumber: 3007,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3011,
+                lineNumber: 3006,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -6764,20 +6754,20 @@ function CustomerPortal() {
                                     children: "Update Contact Information"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3100,
+                                    lineNumber: 3095,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Update your phone number and email address. This will be reflected in our system."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3101,
+                                    lineNumber: 3096,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3099,
+                            lineNumber: 3094,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6791,7 +6781,7 @@ function CustomerPortal() {
                                             children: "Phone Number"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3108,
+                                            lineNumber: 3103,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -6803,13 +6793,13 @@ function CustomerPortal() {
                                             "data-testid": "input-edit-phone"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3109,
+                                            lineNumber: 3104,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3107,
+                                    lineNumber: 3102,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6820,7 +6810,7 @@ function CustomerPortal() {
                                             children: "Email Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3119,
+                                            lineNumber: 3114,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -6832,13 +6822,13 @@ function CustomerPortal() {
                                             "data-testid": "input-edit-email"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3120,
+                                            lineNumber: 3115,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3118,
+                                    lineNumber: 3113,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6846,13 +6836,13 @@ function CustomerPortal() {
                                     children: "Note: Changes will update your contact information across all our systems."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3130,
+                                    lineNumber: 3125,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3106,
+                            lineNumber: 3101,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -6865,7 +6855,7 @@ function CustomerPortal() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3136,
+                                    lineNumber: 3131,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6875,24 +6865,24 @@ function CustomerPortal() {
                                     children: isUpdatingContacts ? "Updating..." : "Save Changes"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3144,
+                                    lineNumber: 3139,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3135,
+                            lineNumber: 3130,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3098,
+                    lineNumber: 3093,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3097,
+                lineNumber: 3092,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -6907,20 +6897,20 @@ function CustomerPortal() {
                                     children: "Delete Contact?"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3159,
+                                    lineNumber: 3154,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Are you sure you want to delete this contact information? This action cannot be undone."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3160,
+                                    lineNumber: 3155,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3158,
+                            lineNumber: 3153,
                             columnNumber: 11
                         }, this),
                         contactToDelete && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -6933,7 +6923,7 @@ function CustomerPortal() {
                                         children: contactToDelete.type === 'MobilePhone' ? 'Mobile' : contactToDelete.type
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 3168,
+                                        lineNumber: 3163,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -6941,18 +6931,18 @@ function CustomerPortal() {
                                         children: contactToDelete.value
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 3171,
+                                        lineNumber: 3166,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                lineNumber: 3167,
+                                lineNumber: 3162,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3166,
+                            lineNumber: 3161,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -6968,7 +6958,7 @@ function CustomerPortal() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3179,
+                                    lineNumber: 3174,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -6979,24 +6969,24 @@ function CustomerPortal() {
                                     children: isDeletingContact ? "Deleting..." : "Delete Contact"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3190,
+                                    lineNumber: 3185,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3178,
+                            lineNumber: 3173,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3157,
+                    lineNumber: 3152,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3156,
+                lineNumber: 3151,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -7011,20 +7001,20 @@ function CustomerPortal() {
                                     children: "Update Service Address"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3206,
+                                    lineNumber: 3201,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Update your service address where we provide plumbing services."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3207,
+                                    lineNumber: 3202,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3205,
+                            lineNumber: 3200,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7038,7 +7028,7 @@ function CustomerPortal() {
                                             children: "Street Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3214,
+                                            lineNumber: 3209,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7050,13 +7040,13 @@ function CustomerPortal() {
                                             "data-testid": "input-edit-street"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3215,
+                                            lineNumber: 3210,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3213,
+                                    lineNumber: 3208,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7070,7 +7060,7 @@ function CustomerPortal() {
                                                     children: "City"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3226,
+                                                    lineNumber: 3221,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7082,13 +7072,13 @@ function CustomerPortal() {
                                                     "data-testid": "input-edit-city"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3227,
+                                                    lineNumber: 3222,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3225,
+                                            lineNumber: 3220,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7099,7 +7089,7 @@ function CustomerPortal() {
                                                     children: "State"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3237,
+                                                    lineNumber: 3232,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7112,19 +7102,19 @@ function CustomerPortal() {
                                                     "data-testid": "input-edit-state"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3238,
+                                                    lineNumber: 3233,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3236,
+                                            lineNumber: 3231,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3224,
+                                    lineNumber: 3219,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7135,7 +7125,7 @@ function CustomerPortal() {
                                             children: "ZIP Code"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3250,
+                                            lineNumber: 3245,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7148,13 +7138,13 @@ function CustomerPortal() {
                                             "data-testid": "input-edit-zip"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3251,
+                                            lineNumber: 3246,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3249,
+                                    lineNumber: 3244,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7162,13 +7152,13 @@ function CustomerPortal() {
                                     children: "Note: This updates your primary service address in our system."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3262,
+                                    lineNumber: 3257,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3212,
+                            lineNumber: 3207,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -7181,7 +7171,7 @@ function CustomerPortal() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3268,
+                                    lineNumber: 3263,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7191,24 +7181,24 @@ function CustomerPortal() {
                                     children: isUpdatingAddress ? "Updating..." : "Save Changes"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3276,
+                                    lineNumber: 3271,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3267,
+                            lineNumber: 3262,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3204,
+                    lineNumber: 3199,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3203,
+                lineNumber: 3198,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -7223,20 +7213,20 @@ function CustomerPortal() {
                                     children: "Email Us"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3291,
+                                    lineNumber: 3286,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Send us a message and we'll get back to you as soon as possible."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3292,
+                                    lineNumber: 3287,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3290,
+                            lineNumber: 3285,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7253,7 +7243,7 @@ function CustomerPortal() {
                                                     children: "Name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3300,
+                                                    lineNumber: 3295,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7265,13 +7255,13 @@ function CustomerPortal() {
                                                     "data-testid": "input-email-name"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3301,
+                                                    lineNumber: 3296,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3299,
+                                            lineNumber: 3294,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7282,7 +7272,7 @@ function CustomerPortal() {
                                                     children: "Phone"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3311,
+                                                    lineNumber: 3306,
                                                     columnNumber: 17
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7294,19 +7284,19 @@ function CustomerPortal() {
                                                     "data-testid": "input-email-phone"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3312,
+                                                    lineNumber: 3307,
                                                     columnNumber: 17
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3310,
+                                            lineNumber: 3305,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3298,
+                                    lineNumber: 3293,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7317,7 +7307,7 @@ function CustomerPortal() {
                                             children: "Email Address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3324,
+                                            lineNumber: 3319,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7329,13 +7319,13 @@ function CustomerPortal() {
                                             "data-testid": "input-email-address"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3325,
+                                            lineNumber: 3320,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3323,
+                                    lineNumber: 3318,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7346,7 +7336,7 @@ function CustomerPortal() {
                                             children: "Subject"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3336,
+                                            lineNumber: 3331,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -7358,13 +7348,13 @@ function CustomerPortal() {
                                             "data-testid": "input-email-subject"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3337,
+                                            lineNumber: 3332,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3335,
+                                    lineNumber: 3330,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7375,7 +7365,7 @@ function CustomerPortal() {
                                             children: "Message"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3348,
+                                            lineNumber: 3343,
                                             columnNumber: 15
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -7387,19 +7377,19 @@ function CustomerPortal() {
                                             "data-testid": "input-email-message"
                                         }, void 0, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3349,
+                                            lineNumber: 3344,
                                             columnNumber: 15
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3347,
+                                    lineNumber: 3342,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3297,
+                            lineNumber: 3292,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -7412,7 +7402,7 @@ function CustomerPortal() {
                                     children: "Cancel"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3361,
+                                    lineNumber: 3356,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7469,24 +7459,24 @@ function CustomerPortal() {
                                     children: isSendingEmail ? "Sending..." : "Send Message"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3369,
+                                    lineNumber: 3364,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3360,
+                            lineNumber: 3355,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3289,
+                    lineNumber: 3284,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3288,
+                lineNumber: 3283,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -7502,20 +7492,20 @@ function CustomerPortal() {
                                     children: reviewRating === 0 ? "How was your experience?" : reviewRating >= 4 ? "Thank you for your feedback!" : "We appreciate your feedback"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3433,
+                                    lineNumber: 3428,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: reviewRating === 0 ? "Please rate your recent service" : reviewRating >= 4 ? "Share your positive experience with others" : "Help us improve our service"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3438,
+                                    lineNumber: 3433,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3432,
+                            lineNumber: 3427,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7537,17 +7527,17 @@ function CustomerPortal() {
                                                 className: `w-10 h-10 ${star <= reviewRating ? "fill-yellow-400 text-yellow-400" : "text-gray-300 hover:text-yellow-400"}`
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3455,
+                                                lineNumber: 3450,
                                                 columnNumber: 19
                                             }, this)
                                         }, star, false, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3449,
+                                            lineNumber: 3444,
                                             columnNumber: 17
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3447,
+                                    lineNumber: 3442,
                                     columnNumber: 13
                                 }, this),
                                 reviewRating > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Fragment"], {
@@ -7560,7 +7550,7 @@ function CustomerPortal() {
                                                 children: "Please share your experience on one of these platforms:"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3472,
+                                                lineNumber: 3467,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7588,7 +7578,7 @@ function CustomerPortal() {
                                                                         d: "M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 3491,
+                                                                        lineNumber: 3486,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -7596,7 +7586,7 @@ function CustomerPortal() {
                                                                         d: "M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 3492,
+                                                                        lineNumber: 3487,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -7604,7 +7594,7 @@ function CustomerPortal() {
                                                                         d: "M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 3493,
+                                                                        lineNumber: 3488,
                                                                         columnNumber: 27
                                                                     }, this),
                                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("path", {
@@ -7612,20 +7602,20 @@ function CustomerPortal() {
                                                                         d: "M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                                                                     }, void 0, false, {
                                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                                        lineNumber: 3494,
+                                                                        lineNumber: 3489,
                                                                         columnNumber: 27
                                                                     }, this)
                                                                 ]
                                                             }, void 0, true, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 3490,
+                                                                lineNumber: 3485,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Google Reviews"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3477,
+                                                        lineNumber: 3472,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7645,14 +7635,14 @@ function CustomerPortal() {
                                                                 className: "w-5 h-5 text-[#1877F2]"
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 3512,
+                                                                lineNumber: 3507,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Facebook Reviews"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3499,
+                                                        lineNumber: 3494,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7676,19 +7666,19 @@ function CustomerPortal() {
                                                                     d: "M12.062 17.662c.038-.934-.008-.889.002-2.393.007-.9.527-.991.756-.635.052.081 1.518 2.368 1.541 2.449.156.557-.194.683-.774.619-.651-.072-1.245-.166-1.249-.166-.265-.049-.368-.146-.276-.51zm2.167-4.142c.011-.908.012-.908.021-1.823.011-1.103-.746-1.098-1.069-.501-.073.135-1.164 2.443-1.212 2.553-.175.408.254.578.663.556l1.27-.069c.17-.009.333-.065.327-.716zm-3.192.955c.901-.111.91-.148 1.75-.291.508-.087.546-.567.087-.752-.105-.042-2.634-.912-2.728-.951-.599-.247-.772.292-.548.867.251.646.497 1.222.497 1.227.103.224.256.215.585-.065zm-3.834 5.558c.347-.778.347-.801.651-1.479.365-.815-.397-1.139-.856-.595-.099.125-1.912 2.317-1.939 2.383-.231.576.271.876.687.803.682-.125 1.162-.239 1.166-.244.178-.108.24-.243.291-.868zm.901-2.701c.793-.448.808-.457 1.522-.874.86-.502.429-1.155-.342-1.176-.177-.005-3.057-.029-3.163-.036-.671-.043-.819.503-.438.929.427.478.823.912.827.917.163.175.36.14.698-.09z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3530,
+                                                                    lineNumber: 3525,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 3529,
+                                                                lineNumber: 3524,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "Yelp Reviews"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3516,
+                                                        lineNumber: 3511,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7712,31 +7702,31 @@ function CustomerPortal() {
                                                                     d: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3549,
+                                                                    lineNumber: 3544,
                                                                     columnNumber: 27
                                                                 }, this)
                                                             }, void 0, false, {
                                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                                lineNumber: 3548,
+                                                                lineNumber: 3543,
                                                                 columnNumber: 25
                                                             }, this),
                                                             "BBB Reviews"
                                                         ]
                                                     }, void 0, true, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3535,
+                                                        lineNumber: 3530,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3476,
+                                                lineNumber: 3471,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 3471,
+                                        lineNumber: 3466,
                                         columnNumber: 19
                                     }, this) : // Negative review - collect private feedback
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7747,7 +7737,7 @@ function CustomerPortal() {
                                                 children: "We're sorry to hear about your experience. Please tell us how we can improve:"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3558,
+                                                lineNumber: 3553,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7758,7 +7748,7 @@ function CustomerPortal() {
                                                         children: "Your Feedback"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3563,
+                                                        lineNumber: 3558,
                                                         columnNumber: 23
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
@@ -7770,13 +7760,13 @@ function CustomerPortal() {
                                                         "data-testid": "input-review-feedback"
                                                     }, void 0, false, {
                                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                                        lineNumber: 3564,
+                                                        lineNumber: 3559,
                                                         columnNumber: 23
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3562,
+                                                lineNumber: 3557,
                                                 columnNumber: 21
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
@@ -7823,20 +7813,20 @@ function CustomerPortal() {
                                                 children: isSubmittingReview ? "Submitting..." : "Submit Feedback"
                                             }, void 0, false, {
                                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                                lineNumber: 3574,
+                                                lineNumber: 3569,
                                                 columnNumber: 21
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 3557,
+                                        lineNumber: 3552,
                                         columnNumber: 19
                                     }, this)
                                 }, void 0, false)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3445,
+                            lineNumber: 3440,
                             columnNumber: 11
                         }, this),
                         reviewRating === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -7847,23 +7837,23 @@ function CustomerPortal() {
                                 children: "Cancel"
                             }, void 0, false, {
                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                lineNumber: 3625,
+                                lineNumber: 3620,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3624,
+                            lineNumber: 3619,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3431,
+                    lineNumber: 3426,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3430,
+                lineNumber: 3425,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Dialog"], {
@@ -7879,20 +7869,20 @@ function CustomerPortal() {
                                     children: "Switch Account"
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3641,
+                                    lineNumber: 3636,
                                     columnNumber: 13
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogDescription"], {
                                     children: "Select which account you'd like to view. You have access to multiple accounts."
                                 }, void 0, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3642,
+                                    lineNumber: 3637,
                                     columnNumber: 13
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3640,
+                            lineNumber: 3635,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7910,13 +7900,13 @@ function CustomerPortal() {
                                                     className: "w-6 h-6 text-primary flex-shrink-0 mt-0.5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3658,
+                                                    lineNumber: 3653,
                                                     columnNumber: 23
                                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$house$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Home$3e$__["Home"], {
                                                     className: "w-6 h-6 text-primary flex-shrink-0 mt-0.5"
                                                 }, void 0, false, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3660,
+                                                    lineNumber: 3655,
                                                     columnNumber: 23
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -7930,7 +7920,7 @@ function CustomerPortal() {
                                                                     children: account.name
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3664,
+                                                                    lineNumber: 3659,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$badge$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Badge"], {
@@ -7939,13 +7929,13 @@ function CustomerPortal() {
                                                                     children: account.type
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3665,
+                                                                    lineNumber: 3660,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 3663,
+                                                            lineNumber: 3658,
                                                             columnNumber: 23
                                                         }, this),
                                                         account.address && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -7955,41 +7945,41 @@ function CustomerPortal() {
                                                                     className: "w-3 h-3 flex-shrink-0 mt-0.5"
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                                    lineNumber: 3671,
+                                                                    lineNumber: 3666,
                                                                     columnNumber: 27
                                                                 }, this),
                                                                 account.address
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                                            lineNumber: 3670,
+                                                            lineNumber: 3665,
                                                             columnNumber: 25
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                                    lineNumber: 3662,
+                                                    lineNumber: 3657,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/app/customer-portal/page.tsx",
-                                            lineNumber: 3656,
+                                            lineNumber: 3651,
                                             columnNumber: 19
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/app/customer-portal/page.tsx",
-                                        lineNumber: 3655,
+                                        lineNumber: 3650,
                                         columnNumber: 17
                                     }, this)
                                 }, account.id, false, {
                                     fileName: "[project]/app/customer-portal/page.tsx",
-                                    lineNumber: 3649,
+                                    lineNumber: 3644,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3647,
+                            lineNumber: 3642,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$dialog$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["DialogFooter"], {
@@ -8000,23 +7990,23 @@ function CustomerPortal() {
                                 children: "Cancel"
                             }, void 0, false, {
                                 fileName: "[project]/app/customer-portal/page.tsx",
-                                lineNumber: 3683,
+                                lineNumber: 3678,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/app/customer-portal/page.tsx",
-                            lineNumber: 3682,
+                            lineNumber: 3677,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/customer-portal/page.tsx",
-                    lineNumber: 3639,
+                    lineNumber: 3634,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/app/customer-portal/page.tsx",
-                lineNumber: 3638,
+                lineNumber: 3633,
                 columnNumber: 7
             }, this)
         ]
