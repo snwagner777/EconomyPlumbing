@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///home/runner/workspace/app/layout.tsx"],"sourcesContent":["import type { ReactNode } from 'react';\nimport './globals.css';\nimport { ClerkProvider } from '@clerk/nextjs';\nimport { ClientProviders } from '@/components/ClientProviders';\n\nexport default function RootLayout({\n  children,\n}: {\n  children: ReactNode;\n}) {\n  return (\n    <ClerkProvider>\n      <html lang=\"en\" suppressHydrationWarning>\n        <body className=\"min-h-screen bg-background font-sans antialiased\">\n          <ClientProviders>\n            {children}\n          </ClientProviders>\n        </body>\n      </html>\n    </ClerkProvider>\n  );\n}\n"],"names":[],"mappings":";;;;;AAEA;;;;;;;;;;AAGe,SAAS,WAAW,EACjC,QAAQ,EAGT;IACC,qBACE,8OAAC,0LAAa;kBACZ,cAAA,8OAAC;YAAK,MAAK;YAAK,wBAAwB;sBACtC,cAAA,8OAAC;gBAAK,WAAU;0BACd,cAAA,8OAAC;8BACE;;;;;;;;;;;;;;;;;;;;;AAMb","debugId":null}}]
+}
