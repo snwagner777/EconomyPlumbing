@@ -3907,10 +3907,6 @@ body {
   color: hsl(var(--destructive-foreground) / var(--tw-text-opacity, 1));
 }
 
-.text-destructive\/90 {
-  color: hsl(var(--destructive) / .9);
-}
-
 .text-foreground {
   --tw-text-opacity: 1;
   color: hsl(var(--foreground) / var(--tw-text-opacity, 1));

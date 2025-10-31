@@ -18,19 +18,33 @@ module.exports = mod;
  * Next.js Middleware - Runs before every request
  * 
  * Handles:
- * 1. Legacy object storage URL rewrites
- * 2. Security headers (CSP, HSTS, X-Frame-Options, etc.)
- * 3. .replit.app domain redirect (disabled in development)
+ * 1. Clerk authentication for admin routes
+ * 2. Legacy object storage URL rewrites
+ * 3. Security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * 4. .replit.app domain redirect (disabled in development)
  */ __turbopack_context__.s([
     "config",
     ()=>config,
-    "middleware",
-    ()=>middleware
+    "default",
+    ()=>__TURBOPACK__default__export__
 ]);
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$nextjs$2f$dist$2f$esm$2f$server$2f$clerkMiddleware$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@clerk/nextjs/dist/esm/server/clerkMiddleware.js [middleware-edge] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$nextjs$2f$dist$2f$esm$2f$server$2f$routeMatcher$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/@clerk/nextjs/dist/esm/server/routeMatcher.js [middleware-edge] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$api$2f$server$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/api/server.js [middleware-edge] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$esm$2f$server$2f$web$2f$exports$2f$index$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/esm/server/web/exports/index.js [middleware-edge] (ecmascript)");
 ;
-function middleware(request) {
+;
+const isAdminRoute = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$nextjs$2f$dist$2f$esm$2f$server$2f$routeMatcher$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["createRouteMatcher"])([
+    '/admin(.*)'
+]);
+const __TURBOPACK__default__export__ = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f40$clerk$2f$nextjs$2f$dist$2f$esm$2f$server$2f$clerkMiddleware$2e$js__$5b$middleware$2d$edge$5d$__$28$ecmascript$29$__["clerkMiddleware"])(async (auth, request)=>{
+    // Protect admin routes - require authentication
+    if (isAdminRoute(request)) {
+        await auth.protect();
+    }
+    return handleMiddleware(request);
+});
+function handleMiddleware(request) {
     const { pathname, search } = request.nextUrl;
     const host = request.headers.get('host') || '';
     // 1. Redirect .replit.app domain to custom domain (DISABLED IN DEVELOPMENT)

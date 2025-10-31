@@ -2,15 +2,28 @@
  * Next.js Middleware - Runs before every request
  * 
  * Handles:
- * 1. Legacy object storage URL rewrites
- * 2. Security headers (CSP, HSTS, X-Frame-Options, etc.)
- * 3. .replit.app domain redirect (disabled in development)
+ * 1. Clerk authentication for admin routes
+ * 2. Legacy object storage URL rewrites
+ * 3. Security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * 4. .replit.app domain redirect (disabled in development)
  */
 
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-export function middleware(request: NextRequest) {
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
+export default clerkMiddleware(async (auth, request: NextRequest) => {
+  // Protect admin routes - require authentication
+  if (isAdminRoute(request)) {
+    await auth.protect();
+  }
+  
+  return handleMiddleware(request);
+});
+
+function handleMiddleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get('host') || '';
 
