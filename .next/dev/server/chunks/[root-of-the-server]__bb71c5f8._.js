@@ -64,8 +64,12 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$head
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$iron$2d$session$2f$dist$2f$index$2e$js__$5b$app$2d$route$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/iron-session/dist/index.js [app-route] (ecmascript)");
 ;
 ;
+// Validate SESSION_SECRET at runtime
+if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+    throw new Error('SESSION_SECRET must be set and at least 32 characters long');
+}
 const sessionOptions = {
-    password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long_for_production',
+    password: process.env.SESSION_SECRET,
     cookieName: 'admin_session',
     cookieOptions: {
         secure: ("TURBOPACK compile-time value", "development") === 'production',

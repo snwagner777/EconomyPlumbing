@@ -1,5 +1,6 @@
 {
   "/admin/login/page": "app/admin/login/page.js",
-  "/api/tracking-numbers/route": "app/api/tracking-numbers/route.js",
-  "/page": "app/page.js"
+  "/api/auth/login/route": "app/api/auth/login/route.js",
+  "/api/auth/logout/route": "app/api/auth/logout/route.js",
+  "/api/tracking-numbers/route": "app/api/tracking-numbers/route.js"
 }
