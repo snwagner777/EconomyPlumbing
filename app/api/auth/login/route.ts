@@ -12,18 +12,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    console.log('[Login API] Attempting login for user:', username);
     const success = await login(username, password);
 
     if (success) {
+      console.log('[Login API] Login successful, session saved');
       return NextResponse.json({ success: true });
     } else {
+      console.log('[Login API] Login failed - invalid credentials');
       return NextResponse.json(
         { error: 'Invalid credentials' },
         { status: 401 }
       );
     }
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('[Login API] Login error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

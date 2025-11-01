@@ -37,8 +37,11 @@ export async function middleware(request: NextRequest) {
     // Get session cookie
     const cookie = request.cookies.get('admin_session')?.value;
     
+    console.log('[Middleware]', pathname, 'Cookie exists:', !!cookie);
+    
     if (!cookie) {
       // No session cookie - redirect to login
+      console.log('[Middleware] No cookie, redirecting to login');
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);
@@ -50,17 +53,21 @@ export async function middleware(request: NextRequest) {
         password: sessionOptions.password,
       });
       
+      console.log('[Middleware] Session unsealed:', { isAuthenticated: session?.isAuthenticated, username: session?.username });
+      
       if (!session?.isAuthenticated) {
         // Not authenticated - redirect to login
+        console.log('[Middleware] Session not authenticated, redirecting to login');
         const loginUrl = new URL('/admin/login', request.url);
         loginUrl.searchParams.set('from', pathname);
         return NextResponse.redirect(loginUrl);
       }
       
       // Session is valid, continue to the requested page
+      console.log('[Middleware] Session valid, allowing access to', pathname);
       return NextResponse.next();
     } catch (error) {
-      console.error('Session validation error:', error);
+      console.error('[Middleware] Session validation error:', error);
       // Session validation failed - redirect to login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);

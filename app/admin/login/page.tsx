@@ -27,24 +27,32 @@ export default function AdminLoginPage() {
       });
 
       if (response.ok) {
+        console.log('[Login Page] Login successful, checking cookies...');
+        console.log('[Login Page] All cookies:', document.cookie);
+        
         toast({
           title: 'Success',
           description: 'Logged in successfully',
         });
         
-        // Use window.location for full page reload to ensure cookie propagates
-        // Validate redirect to prevent open redirect vulnerability
-        const params = new URLSearchParams(window.location.search);
-        const fromParam = params.get('from');
-        
-        // Only allow relative paths starting with /
-        let redirectTo = '/admin';
-        if (fromParam && fromParam.startsWith('/') && !fromParam.startsWith('//')) {
-          // Ensure it's a relative path and not a protocol-relative URL
-          redirectTo = fromParam;
-        }
-        
-        window.location.href = redirectTo;
+        // Wait a moment for cookie to be set, then redirect
+        setTimeout(() => {
+          console.log('[Login Page] About to redirect, cookies:', document.cookie);
+          
+          // Use window.location for full page reload to ensure cookie propagates
+          // Validate redirect to prevent open redirect vulnerability
+          const params = new URLSearchParams(window.location.search);
+          const fromParam = params.get('from');
+          
+          // Only allow relative paths starting with /
+          let redirectTo = '/admin';
+          if (fromParam && fromParam.startsWith('/') && !fromParam.startsWith('//')) {
+            // Ensure it's a relative path and not a protocol-relative URL
+            redirectTo = fromParam;
+          }
+          
+          window.location.href = redirectTo;
+        }, 100);
       } else {
         toast({
           title: 'Error',
