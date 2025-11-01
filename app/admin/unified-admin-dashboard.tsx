@@ -7831,7 +7831,7 @@ export default function UnifiedAdminDashboard() {
       'customer-data': 'Customer Data',
       'chatbot': 'AI Chatbot',
     };
-    return titles[activeSection];
+    return titles[activeSection] || 'Admin Dashboard';
   };
 
   return (
