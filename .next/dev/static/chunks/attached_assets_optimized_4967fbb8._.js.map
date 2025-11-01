@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 7, "column": 0}, "map": {"version":3,"sources":["file:///home/runner/workspace/attached_assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp.mjs%20%28structured%20image%20object%20with%20data%20url%29"],"sourcesContent":["import src from \"IMAGE\";\nexport default { src, width: 200, height: 113, blurWidth: 8, blurHeight: 5, blurDataURL: \"data:image/webp;base64,UklGRtYAAABXRUJQVlA4TMoAAAAvBwABAM1VICICHgiACQMAAICOakY7oUABAAAAAAAAAAAAAAAAAAAAAAAAAAAQfgAAUgKcO1xtAgAA8EBQVhgAAADO/11pEIgEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAw0+2Lg+EoAYAAADg/C+ZAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAhPGRG4z/YhhYKR4VXW3Y9xO86IZtfd8Dw9rM9bmPB+udGU9AAqNSlhMSV36sBwTlfELiiL7CFlYD\"};\n"],"names":[],"mappings":";;;;AAAA;;uCACe;IAAE,KAAA,kMAAG;IAAE,OAAO;IAAK,QAAQ;IAAK,WAAW;IAAG,YAAY;IAAG,aAAa;AAAiU","debugId":null}}]
-}
