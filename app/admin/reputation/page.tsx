@@ -5,6 +5,8 @@
  */
 
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+import { isAuthenticated } from '@/lib/auth';
 import ReputationDashboard from './reputation-dashboard';
 
 export const metadata: Metadata = {
@@ -12,6 +14,12 @@ export const metadata: Metadata = {
   robots: 'noindex',
 };
 
-export default function ReputationPage() {
+export default async function ReputationPage() {
+  const authenticated = await isAuthenticated();
+  
+  if (!authenticated) {
+    redirect('/admin/login');
+  }
+
   return <ReputationDashboard />;
 }
