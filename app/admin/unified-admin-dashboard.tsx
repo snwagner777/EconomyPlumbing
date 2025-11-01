@@ -2650,9 +2650,11 @@ function ProductsSection() {
   const [editingProduct, setEditingProduct] = useState<any | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const { data: products, isLoading } = useQuery<any[]>({
+  const { data, isLoading } = useQuery<{ products: any[]; count: number }>({
     queryKey: ['/api/products'],
   });
+  
+  const products = data?.products || [];
 
   const updateProductMutation = useMutation({
     mutationFn: async (data: { id: string; updates: any }) => {
@@ -3173,7 +3175,7 @@ function ReviewsSection() {
               {filteredReviews.map((review) => (
                 <div key={review.id} className="p-6 hover-elevate" data-testid={`review-${review.id}`}>
                   <div className="flex items-start gap-4">
-                    {review.profilePhotoUrl ? (
+                    {('profilePhotoUrl' in review && review.profilePhotoUrl) ? (
                       <img
                         src={review.profilePhotoUrl}
                         alt={review.authorName}
@@ -4177,7 +4179,13 @@ function ReviewPlatformsSection() {
 function CustomerDataSection() {
   const [timePeriod, setTimePeriod] = useState<'all' | '1year' | '2years' | '3years'>('all');
 
-  const { data: customerMetrics, isLoading: metricsLoading } = useQuery({
+  const { data: customerMetrics, isLoading: metricsLoading } = useQuery<{
+    totalCustomers: number;
+    customersWithRevenue: number;
+    totalLifetimeRevenue: number;
+    avgLifetimeRevenue: number;
+    maxLifetimeRevenue: number;
+  }>({
     queryKey: ['/api/admin/customer-metrics'],
   });
 
@@ -4205,8 +4213,14 @@ function CustomerDataSection() {
     );
   }
 
-  const metrics = customerMetrics || {};
-  const imports = importHistory || [];
+  const metrics = customerMetrics || {
+    totalCustomers: 0,
+    customersWithRevenue: 0,
+    totalLifetimeRevenue: 0,
+    avgLifetimeRevenue: 0,
+    maxLifetimeRevenue: 0,
+  };
+  const imports = (importHistory as any[]) || [];
   const latestImport = imports[0];
   const topCustomers = topCustomersData?.topCustomers || [];
 
@@ -6504,8 +6518,13 @@ function EmailTemplatesSection() {
   const [generateEmailNumber, setGenerateEmailNumber] = useState<1 | 2 | 3 | 4>(1);
   const [generateStrategy, setGenerateStrategy] = useState("");
 
+  // Fetch system settings
+  const { data: settings } = useQuery<SystemSettings>({
+    queryKey: ['/api/admin/review-requests/settings'],
+  });
+
   // Fetch all templates
-  const { data: templatesData, isLoading } = useQuery<{ templates: EmailTemplate[] }>({
+  const { data: templatesData, isLoading } = useQuery<{ templates: EmailTemplate [] }>({
     queryKey: ['/api/admin/emails/templates'],
   });
 
