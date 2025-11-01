@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { referralCreditUsage } from '@/shared/schema';
+import { referralCreditUsage } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {

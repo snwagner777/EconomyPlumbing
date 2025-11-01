@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { referrals } from '@/shared/schema';
+import { referrals } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 import { requireAdmin } from '@/server/lib/nextAuth';
 

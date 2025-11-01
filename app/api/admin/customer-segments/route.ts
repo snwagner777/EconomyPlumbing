@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { customerSegments, segmentMembership, insertCustomerSegmentSchema } from '@/shared/schema';
+import { customerSegments, segmentMembership, insertCustomerSegmentSchema } from '@shared/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { requireAdmin } from '@/server/lib/nextAuth';
 

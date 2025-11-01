@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { customEmailCampaigns, insertCustomEmailCampaignSchema } from '@/shared/schema';
+import { customEmailCampaigns, insertCustomEmailCampaignSchema } from '@shared/schema';
 import { desc } from 'drizzle-orm';
 import { requireAdmin } from '@/server/lib/nextAuth';
 

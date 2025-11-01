@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { db } from '@/server/db';
-import { googleReviews } from '@/shared/schema';
+import { googleReviews } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 

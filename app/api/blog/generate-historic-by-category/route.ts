@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '@/server/storage';
 import { db } from '@/server/db';
-import { blogPosts } from '@/shared/schema';
+import { blogPosts } from '@shared/schema';
 import { ObjectStorageService } from '@/server/objectStorage';
 import { generateH1FromTitle } from '@/server/lib/seoUtils';
 

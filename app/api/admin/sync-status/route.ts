@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { customersXlsx, contactsXlsx } from '@/shared/schema';
+import { customersXlsx, contactsXlsx } from '@shared/schema';
 import { sql } from 'drizzle-orm';
+
 export async function GET(req: NextRequest) {
   try {
-    const session = await getIronSession(cookies(), sessionOptions);
-    
-    if (!session.userId) {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { error: auth.error },
         { status: 401 }
       );
     }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { referrals } from '@/shared/schema';
+import { referrals } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
 

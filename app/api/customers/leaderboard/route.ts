@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { customersXlsx } from '@/shared/schema';
+import { customersXlsx } from '@shared/schema';
 import { desc, gt } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {

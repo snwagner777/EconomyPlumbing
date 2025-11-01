@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { customCampaignEmails } from '@/shared/schema';
+import { customCampaignEmails } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 export async function PUT(
   req: NextRequest,

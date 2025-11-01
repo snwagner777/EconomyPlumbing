@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { contactSubmissions } from '@/shared/schema';
+import { contactSubmissions } from '@shared/schema';
 
 export async function POST(req: NextRequest) {
   try {

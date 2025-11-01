@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { segmentMembership } from '@/shared/schema';
+import { segmentMembership } from '@shared/schema';
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }

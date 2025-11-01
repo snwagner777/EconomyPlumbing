@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { phoneLoginLookups, portalVerifications } from '@/shared/schema';
+import { phoneLoginLookups, portalVerifications } from '@shared/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 

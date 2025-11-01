@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
-import { insertCommercialCustomerSchema } from '@/shared/schema';
+import { insertCommercialCustomerSchema } from '@shared/schema';
 
 export async function PUT(
   req: NextRequest,
