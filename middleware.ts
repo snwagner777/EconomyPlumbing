@@ -10,7 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { getIronSession } from 'iron-session';
+import { unsealData } from 'iron-session';
 import type { SessionData } from '@/lib/auth';
 
 // Validate SESSION_SECRET at runtime
@@ -34,18 +34,23 @@ export async function middleware(request: NextRequest) {
 
   // Check if this is an admin route (except login page and API routes)
   if (pathname.startsWith('/admin') && pathname !== '/admin/login' && !pathname.startsWith('/api/')) {
-    // Validate session using iron-session
-    const response = NextResponse.next();
+    // Get session cookie
+    const cookie = request.cookies.get('admin_session')?.value;
+    
+    if (!cookie) {
+      // No session cookie - redirect to login
+      const loginUrl = new URL('/admin/login', request.url);
+      loginUrl.searchParams.set('from', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
     
     try {
-      // IMPORTANT: Use request and response cookies together for proper iron-session handling
-      const session = await getIronSession<SessionData>(
-        request,
-        response,
-        sessionOptions
-      );
+      // Unseal the session data from the cookie
+      const session = await unsealData<SessionData>(cookie, {
+        password: sessionOptions.password,
+      });
       
-      if (!session.isAuthenticated) {
+      if (!session?.isAuthenticated) {
         // Not authenticated - redirect to login
         const loginUrl = new URL('/admin/login', request.url);
         loginUrl.searchParams.set('from', pathname);
@@ -53,7 +58,7 @@ export async function middleware(request: NextRequest) {
       }
       
       // Session is valid, continue to the requested page
-      return response;
+      return NextResponse.next();
     } catch (error) {
       console.error('Session validation error:', error);
       // Session validation failed - redirect to login
