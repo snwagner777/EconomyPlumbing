@@ -6,7 +6,7 @@
 
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
-import { isAdmin } from '@/lib/session';
+import { isAuthenticated } from '@/lib/auth';
 import { BlogDashboard } from './blog-dashboard';
 
 export const metadata: Metadata = {
@@ -15,9 +15,9 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogAdminPage() {
-  const admin = await isAdmin();
+  const authenticated = await isAuthenticated();
   
-  if (!admin) {
+  if (!authenticated) {
     redirect('/admin/login');
   }
 
