@@ -194,8 +194,17 @@ function AdminLoginPage() {
                     title: 'Success',
                     description: 'Logged in successfully'
                 });
-                router.push('/admin');
-                router.refresh();
+                // Use window.location for full page reload to ensure cookie propagates
+                // Validate redirect to prevent open redirect vulnerability
+                const params = new URLSearchParams(window.location.search);
+                const fromParam = params.get('from');
+                // Only allow relative paths starting with /
+                let redirectTo = '/admin';
+                if (fromParam && fromParam.startsWith('/') && !fromParam.startsWith('//')) {
+                    // Ensure it's a relative path and not a protocol-relative URL
+                    redirectTo = fromParam;
+                }
+                window.location.href = redirectTo;
             } else {
                 toast({
                     title: 'Error',
@@ -224,20 +233,20 @@ function AdminLoginPage() {
                             children: "Admin Login"
                         }, void 0, false, {
                             fileName: "[project]/app/admin/login/page.tsx",
-                            lineNumber: 58,
+                            lineNumber: 70,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardDescription"], {
                             children: "Enter your credentials to access the admin panel"
                         }, void 0, false, {
                             fileName: "[project]/app/admin/login/page.tsx",
-                            lineNumber: 59,
+                            lineNumber: 71,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/app/admin/login/page.tsx",
-                    lineNumber: 57,
+                    lineNumber: 69,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$card$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["CardContent"], {
@@ -253,7 +262,7 @@ function AdminLoginPage() {
                                         children: "Username"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/login/page.tsx",
-                                        lineNumber: 64,
+                                        lineNumber: 76,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -266,13 +275,13 @@ function AdminLoginPage() {
                                         "data-testid": "input-username"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/login/page.tsx",
-                                        lineNumber: 65,
+                                        lineNumber: 77,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/admin/login/page.tsx",
-                                lineNumber: 63,
+                                lineNumber: 75,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -283,7 +292,7 @@ function AdminLoginPage() {
                                         children: "Password"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/login/page.tsx",
-                                        lineNumber: 76,
+                                        lineNumber: 88,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Input"], {
@@ -296,13 +305,13 @@ function AdminLoginPage() {
                                         "data-testid": "input-password"
                                     }, void 0, false, {
                                         fileName: "[project]/app/admin/login/page.tsx",
-                                        lineNumber: 77,
+                                        lineNumber: 89,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/app/admin/login/page.tsx",
-                                lineNumber: 75,
+                                lineNumber: 87,
                                 columnNumber: 13
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -313,29 +322,29 @@ function AdminLoginPage() {
                                 children: isLoading ? 'Logging in...' : 'Login'
                             }, void 0, false, {
                                 fileName: "[project]/app/admin/login/page.tsx",
-                                lineNumber: 87,
+                                lineNumber: 99,
                                 columnNumber: 13
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/app/admin/login/page.tsx",
-                        lineNumber: 62,
+                        lineNumber: 74,
                         columnNumber: 11
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/app/admin/login/page.tsx",
-                    lineNumber: 61,
+                    lineNumber: 73,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/app/admin/login/page.tsx",
-            lineNumber: 56,
+            lineNumber: 68,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/app/admin/login/page.tsx",
-        lineNumber: 55,
+        lineNumber: 67,
         columnNumber: 5
     }, this);
 }
