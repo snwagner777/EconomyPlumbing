@@ -80,8 +80,10 @@ export async function POST(req: NextRequest) {
       });
     } else {
       const { sendEmail } = await import('@/server/email');
-      const host = req.headers.get('host') || 'localhost:5000';
-      const protocol = req.headers.get('x-forwarded-proto') || 'http';
+      
+      // Get the proper domain - Replit automatically sets 'host' header correctly
+      const host = req.headers.get('host') || req.headers.get('x-forwarded-host') || 'plumbersthatcare.com';
+      const protocol = req.headers.get('x-forwarded-proto') || (host.includes('localhost') ? 'http' : 'https');
       const magicLink = `${protocol}://${host}/customer-portal?token=${uuid}`;
       
       await sendEmail({
