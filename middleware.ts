@@ -38,7 +38,12 @@ export async function middleware(request: NextRequest) {
     const response = NextResponse.next();
     
     try {
-      const session = await getIronSession<SessionData>(request.cookies, response.cookies, sessionOptions);
+      // IMPORTANT: Use request and response cookies together for proper iron-session handling
+      const session = await getIronSession<SessionData>(
+        request,
+        response,
+        sessionOptions
+      );
       
       if (!session.isAuthenticated) {
         // Not authenticated - redirect to login
@@ -46,7 +51,11 @@ export async function middleware(request: NextRequest) {
         loginUrl.searchParams.set('from', pathname);
         return NextResponse.redirect(loginUrl);
       }
+      
+      // Session is valid, continue to the requested page
+      return response;
     } catch (error) {
+      console.error('Session validation error:', error);
       // Session validation failed - redirect to login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
