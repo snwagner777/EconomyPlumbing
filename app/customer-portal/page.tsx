@@ -158,7 +158,7 @@ export default function CustomerPortal() {
   const [showAccountSelection, setShowAccountSelection] = useState(false);
   
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('phone-lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
