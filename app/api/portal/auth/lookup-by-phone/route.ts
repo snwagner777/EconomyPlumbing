@@ -91,11 +91,34 @@ export async function POST(req: NextRequest) {
     const emails = emailContact.value.split(',').map((e: string) => e.trim());
     const primaryEmail = emails[0];
 
+    // Mask the email for privacy (show first 2 chars and domain)
+    const maskEmail = (email: string) => {
+      const [localPart, domain] = email.split('@');
+      if (!localPart || !domain) return email;
+      
+      const visibleChars = Math.min(2, localPart.length);
+      const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+      return `${maskedLocal}@${domain}`;
+    };
+
+    const maskedEmail = maskEmail(primaryEmail);
+
+    // Generate a simple lookup token (customerId-phone-timestamp)
+    const lookupToken = Buffer.from(
+      JSON.stringify({
+        customerId: phoneContact.customerId,
+        email: primaryEmail,
+        timestamp: Date.now()
+      })
+    ).toString('base64');
+
     console.log("[Portal Phone Auth] SUCCESS: Found customer", phoneContact.customerId, "with email", primaryEmail);
 
     return NextResponse.json({
       customerId: phoneContact.customerId,
-      email: primaryEmail
+      email: primaryEmail,
+      maskedEmail: maskedEmail,
+      lookupToken: lookupToken
     });
   } catch (error: any) {
     console.error("[Portal Phone Auth] Error:", error);
