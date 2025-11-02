@@ -6,6 +6,7 @@
  * Handles individual blog post URLs (/:slug)
  */
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import ReactMarkdown from "react-markdown";
@@ -17,7 +18,8 @@ import BlogCard from "@/components/BlogCard";
 import InlineReviewCard from "@/components/InlineReviewCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home, X } from "lucide-react";
 import { format } from "date-fns";
 import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
@@ -43,6 +45,7 @@ export default function BlogPostPage() {
   const slug = params?.slug as string || "";
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhoneConfig = useMarbleFallsPhone();
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
@@ -163,21 +166,25 @@ export default function BlogPostPage() {
             </div>
 
             {post.featuredImage && (
-              <img
-                src={post.featuredImage}
-                alt={post.title}
-                width="1200"
-                height="630"
-                loading="eager"
-                fetchPriority="high"
-                className="w-full h-96 object-cover rounded-lg mb-8"
-                style={{
-                  objectPosition: post.focalPointX && post.focalPointY 
-                    ? `${post.focalPointX}% ${post.focalPointY}%`
-                    : 'center center'
-                }}
-                data-testid="img-featured"
-              />
+              <div className="mb-8">
+                <img
+                  src={post.featuredImage}
+                  alt={post.title}
+                  width="1200"
+                  height="630"
+                  loading="eager"
+                  fetchPriority="high"
+                  onClick={() => setLightboxOpen(true)}
+                  className="w-full h-96 object-cover rounded-lg cursor-pointer hover-elevate active-elevate-2 transition-all"
+                  style={{
+                    objectPosition: post.focalPointX && post.focalPointY 
+                      ? `${post.focalPointX}% ${post.focalPointY}%`
+                      : 'center center'
+                  }}
+                  data-testid="img-featured"
+                />
+                <p className="text-xs text-muted-foreground text-center mt-2">Click image to view full size</p>
+              </div>
             )}
 
             {/* Blog content wrapper with floating review card */}
@@ -295,6 +302,29 @@ export default function BlogPostPage() {
       </main>
 
       <Footer />
+
+      {/* Image Lightbox */}
+      {post?.featuredImage && (
+        <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+          <DialogContent className="max-w-7xl w-full p-0 bg-black/95 border-0">
+            <button
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover-elevate active-elevate-2"
+              data-testid="button-close-lightbox"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <div className="relative w-full h-[90vh] flex items-center justify-center p-8">
+              <img
+                src={post.featuredImage}
+                alt={post.title}
+                className="max-w-full max-h-full object-contain"
+                data-testid="img-lightbox"
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
