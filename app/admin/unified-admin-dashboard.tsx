@@ -2894,13 +2894,24 @@ function SerpApiStatusCard() {
     }
   };
 
-  if (isLoading) return null;
-
   const configured = (serpStats as any)?.configured ?? false;
   const bySource = (serpStats as any)?.bySource || [];
   const googleStats = bySource.find((s: any) => s.source === 'google_serpapi');
   const yelpStats = bySource.find((s: any) => s.source === 'yelp');
   const facebookStats = bySource.find((s: any) => s.source === 'facebook');
+
+  if (isLoading) {
+    return (
+      <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+            <p className="text-sm text-blue-700 dark:text-blue-300">Loading review sync status...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
@@ -2913,7 +2924,7 @@ function SerpApiStatusCard() {
             <div className="flex-1">
               <h3 className="font-semibold text-blue-900 dark:text-blue-100">Multi-Platform Review Sync - Active</h3>
               <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                Automatically fetching reviews from Google ({googleStats?.count || 0}), Yelp ({yelpStats?.count || 0}), and Facebook ({facebookStats?.count || 0}) every 6 hours via SerpAPI
+                Automatically fetching reviews from Google ({googleStats?.count || 0}), Yelp ({yelpStats?.count || 0}), and Facebook ({facebookStats?.count || 0}) daily via SerpAPI
               </p>
             </div>
           </div>
