@@ -3,9 +3,10 @@
  * 
  * Handles:
  * 1. Session-based authentication for admin routes
- * 2. Legacy object storage URL rewrites
- * 3. Security headers (CSP, HSTS, X-Frame-Options, etc.)
- * 4. .replit.app domain redirect (disabled in development)
+ * 2. Non-www to www redirect (301 permanent)
+ * 3. Legacy object storage URL rewrites
+ * 4. Security headers (CSP, HSTS, X-Frame-Options, etc.)
+ * 5. .replit.app domain redirect (disabled in development)
  */
 
 import { NextResponse } from 'next/server';
@@ -82,7 +83,13 @@ function handleMiddleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get('host') || '';
 
-  // 1. Redirect .replit.app domain to custom domain (DISABLED IN DEVELOPMENT)
+  // 1. Redirect non-www to www (301 permanent redirect)
+  if (host === 'plumbersthatcare.com') {
+    const wwwUrl = `https://www.plumbersthatcare.com${pathname}${search}`;
+    return NextResponse.redirect(wwwUrl, { status: 301 });
+  }
+
+  // 2. Redirect .replit.app domain to custom domain (DISABLED IN DEVELOPMENT)
   // In production, this will redirect to custom domain
   // In development, we allow both .replit.app and localhost
   // if (host.includes('.replit.app') && process.env.NODE_ENV === 'production') {
@@ -91,7 +98,7 @@ function handleMiddleware(request: NextRequest) {
   //   return NextResponse.redirect(redirectUrl, { status: 301 });
   // }
 
-  // 2. Rewrite legacy object storage URLs
+  // 3. Rewrite legacy object storage URLs
   // /replit-objstore-{bucketId}/public/* → /public-objects/*
   // Preserves query strings for signed URLs and versioning
   if (pathname.match(/^\/replit-objstore-[^/]+\/public\//)) {
@@ -106,7 +113,7 @@ function handleMiddleware(request: NextRequest) {
     }
   }
 
-  // 3. Set security headers on response
+  // 4. Set security headers on response
   const response = NextResponse.next();
 
   // Security headers (matching Express implementation)
