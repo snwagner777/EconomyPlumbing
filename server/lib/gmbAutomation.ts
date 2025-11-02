@@ -12,36 +12,37 @@ export async function autoFetchGMBReviews(): Promise<void> {
   try {
     console.log('[Review Automation] Starting automatic review sync...');
     
-    // Clear old SerpAPI-sourced reviews
-    console.log('[Review Automation] Clearing old SerpAPI reviews...');
-    await db.delete(googleReviews).where(
-      or(
-        eq(googleReviews.source, 'google_serpapi'),
-        eq(googleReviews.source, 'yelp'),
-        eq(googleReviews.source, 'facebook')
-      )
-    );
-    console.log('[Review Automation] Old SerpAPI reviews cleared');
-    
-    // Fetch fresh reviews from all platforms
+    // Fetch fresh reviews from all platforms FIRST
     const results = await fetchAllReviewsViaSerpApi();
     
     const totalReviews = results.google + results.yelp + results.facebook;
     
-    if (totalReviews === 0) {
-      console.log('[Review Automation] No reviews found');
-    } else {
+    // Only clear old reviews if we successfully fetched new ones
+    if (totalReviews > 0) {
+      console.log('[Review Automation] Clearing old SerpAPI reviews before replacing...');
+      await db.delete(googleReviews).where(
+        or(
+          eq(googleReviews.source, 'google_serpapi'),
+          eq(googleReviews.source, 'yelp'),
+          eq(googleReviews.source, 'facebook')
+        )
+      );
+      
       console.log(
         `[Review Automation] Synced ${totalReviews} fresh reviews ` +
         `(Google: ${results.google}, Yelp: ${results.yelp}, Facebook: ${results.facebook})`
       );
+    } else {
+      console.log('[Review Automation] No new reviews fetched - keeping existing reviews in database');
     }
     
     if (results.errors.length > 0) {
       console.warn('[Review Automation] Errors during fetch:', results.errors);
+      console.warn('[Review Automation] Preserving existing reviews due to fetch errors');
     }
   } catch (error: any) {
     console.error('[Review Automation] Error in auto-fetch:', error.message);
+    console.error('[Review Automation] Preserving existing reviews due to error');
   }
 }
 
