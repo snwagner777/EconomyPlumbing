@@ -32,6 +32,12 @@ Preferred communication style: Simple, everyday language.
   - 8 core endpoints verified working via live polling: check, stats, conversion-stats, sync-status, portal-stats, photos, tracking-numbers, commercial-customers
   - Real-time dashboard polling confirmed: sync-status (every 5s), portal-stats (every 15s), conversion-stats (every 30s)
   - Commercial logo serving working: /commercial-logos/*.svg returns 200
+- ✅ **SEO Enhancement - Server-Side Dynamic Phone Tracking (Nov 2, 2025):**
+  - **Homepage fully server-rendered** with campaign-specific tracking numbers based on UTM parameters
+  - **Crawlers see correct phone numbers** in HTML before JavaScript loads (verified with curl tests)
+  - **Hybrid phone system:** Server-side UTM resolution + client-side cookie/referrer enhancement
+  - **Live verification:** `?utm_source=google` → (512) 368-9159, `?utm_source=facebook` → (512) 575-3157, default → (512) 649-2811
+  - **Implementation:** `server/lib/phoneNumbers.ts` with `getPhoneNumberForSSR()` + URLSearchParams detection
 - ⚠️ **Google OAuth:** Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for GMB review management
 - 🔄 **Remaining Testing:** 107 admin API endpoints need systematic verification through UI interaction
 
@@ -90,7 +96,13 @@ Preferred communication style: Simple, everyday language.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **E-commerce:** Ecwid integration with Printful and Spocket.
 - **AI Blog Generation System:** OpenAI GPT-4o for SEO-optimized and seasonally aware blog posts.
-- **Dynamic Phone Number Tracking:** Database-driven system with automatic UTM parameter generation for marketing campaigns. Each email campaign type (review requests, referral nurture, quote follow-up) has its own dedicated tracking phone number. All email links include proper UTM parameters for attribution tracking. Phone numbers sync automatically to centralized tracking number management page.
+- **Dynamic Phone Number Tracking (Enhanced Nov 2, 2025):** 
+  - **Server-Side Resolution:** UTM parameters detected during SSR, correct tracking number rendered in HTML for SEO
+  - **Database-Driven:** All tracking numbers stored with detection rules (utmSources, urlParams, referrerIncludes arrays)
+  - **Campaign-Specific Numbers:** Each email campaign has dedicated tracking number (review requests, referral nurture, quote follow-up)
+  - **Hybrid Detection:** Server reads URL params → Client enhances with cookies/referrer → 90-day cookie persistence
+  - **Attribution Tracking:** All email links include proper UTM parameters, phone numbers sync to centralized admin page
+  - **SEO Benefit:** Crawlers see campaign-appropriate phone numbers in HTML before JavaScript loads
 - **Security & Type Safety:** OAuth-only admin authentication, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript, Stripe PaymentIntents.
 - **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Includes automated imports, data safety measures, and specific fixes for search and login security.
 - **Marketing Automation:** AI-powered system with comprehensive email engagement tracking:
@@ -119,7 +131,11 @@ Preferred communication style: Simple, everyday language.
 - **Privacy:** Cookie consent integration.
 
 ### Development Standards
-- **Rendering:** Client-Side Rendering (CSR) with server-side metadata injection.
+- **Rendering Strategy (Nov 2, 2025):** 
+  - **Server-Side Rendering (SSR)** for homepage with dynamic metadata and UTM-based phone tracking
+  - **Hybrid Phone System:** Server detects tracking number from URL parameters → Client enhances with cookies/referrer
+  - **SEO-First Architecture:** All content and campaign-specific phone numbers in initial HTML for crawlers
+  - **Progressive Enhancement:** Client-side PhoneConfigProvider can update numbers after hydration based on cookies/referrer
 - **URL Normalization:** 301 redirects for trailing-slash URLs.
 - **Security:** `/src/*` files blocked with 403 Forbidden.
 
