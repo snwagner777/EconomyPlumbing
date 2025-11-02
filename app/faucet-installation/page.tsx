@@ -44,8 +44,12 @@ const faqs = [
 ];
 
 export default async function FaucetInstallation({ searchParams }: FaucetInstallationPageProps) {
-  await searchParams;
-  const { phoneConfig, marbleFallsPhoneConfig } = await getPhoneNumbers();
+  const search = await searchParams;
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers(urlParams);
 
   const serviceSchema = createServiceSchema({
     name: "Faucet Installation & Repair Services",
@@ -63,8 +67,8 @@ export default async function FaucetInstallation({ searchParams }: FaucetInstall
   const faqSchema = createFAQSchema(faqs);
 
   const breadcrumbSchema = createBreadcrumbListSchema([
-    { name: "Home", item: "https://www.plumbersthatcare.com" },
-    { name: "Faucet Installation", item: "https://www.plumbersthatcare.com/faucet-installation" }
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Faucet Installation", url: "https://www.plumbersthatcare.com/faucet-installation" }
   ]);
 
   return (
