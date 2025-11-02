@@ -7783,16 +7783,16 @@ export default function UnifiedAdminDashboard() {
         credentials: 'include',
       }).then(res => res.json());
     },
+    enabled: authData?.isAdmin === true, // Only fetch if authenticated
   });
 
+  const stats = statsData?.stats || {};
+  const photos = photosData?.photos || [];
 
   // Show nothing while checking auth or if not admin (redirect happens via useEffect above)
   if (!authData?.isAdmin) {
     return null;
   }
-
-  const stats = statsData?.stats || {};
-  const photos = photosData?.photos || [];
 
   const sidebarStyle = {
     "--sidebar-width": "280px",
