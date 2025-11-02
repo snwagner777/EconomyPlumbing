@@ -9,6 +9,7 @@ import { storage } from '@/server/storage';
 
 // Mark as dynamic route since we use request.headers
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   try {
@@ -28,12 +29,25 @@ export async function GET(req: NextRequest) {
       { url: '/faq', changefreq: 'monthly', priority: 0.7 },
     ];
 
-    // Get dynamic content with proper null checks
-    const [blogPosts, serviceAreas, products] = await Promise.all([
-      storage.getBlogPosts(),
-      storage.getAllServiceAreas(),
-      storage.getProducts(),
-    ]);
+    // Get dynamic content with proper error handling
+    let blogPosts: any[] = [];
+    let serviceAreas: any[] = [];
+    let products: any[] = [];
+
+    try {
+      const results = await Promise.allSettled([
+        storage.getBlogPosts(),
+        storage.getAllServiceAreas(),
+        storage.getProducts(),
+      ]);
+
+      blogPosts = results[0].status === 'fulfilled' ? (results[0].value || []) : [];
+      serviceAreas = results[1].status === 'fulfilled' ? (results[1].value || []) : [];
+      products = results[2].status === 'fulfilled' ? (results[2].value || []) : [];
+    } catch (error) {
+      console.warn('[Sitemap] Error fetching dynamic content:', error);
+      // Continue with empty arrays
+    }
 
     // Build XML
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
