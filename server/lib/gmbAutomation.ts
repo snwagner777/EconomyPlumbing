@@ -1,7 +1,8 @@
-import { fetchAllGoogleMyBusinessReviews, postReplyToGoogleReview } from "./googleMyBusinessReviews";
+import { postReplyToGoogleReview } from "./googleMyBusinessReviews";
+import { fetchAllReviewsViaSerpApi } from "./serpApiReviews";
 import { db } from "../db";
 import { googleReviews } from "@shared/schema";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, or } from "drizzle-orm";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
@@ -9,37 +10,45 @@ const openai = new OpenAI({
 });
 
 /**
- * Automatically fetch GMB reviews and save to database
+ * Automatically fetch reviews from Google, Yelp, and Facebook via SerpAPI
+ * Clears old SerpAPI reviews first to ensure fresh, complete data
+ * Preserves GMB API reviews (which have reply capability)
  * Runs on a schedule (every 6 hours)
  */
 export async function autoFetchGMBReviews(): Promise<void> {
   try {
-    console.log('[GMB Automation] Starting automatic review fetch...');
+    console.log('[Review Automation] Starting automatic review sync...');
     
-    const gmbReviews = await fetchAllGoogleMyBusinessReviews();
+    // Clear only SerpAPI-sourced reviews (preserve GMB API reviews with replies)
+    console.log('[Review Automation] Clearing old SerpAPI reviews...');
+    await db.delete(googleReviews).where(
+      or(
+        eq(googleReviews.source, 'google_serpapi'),
+        eq(googleReviews.source, 'yelp'),
+        eq(googleReviews.source, 'facebook')
+      )
+    );
+    console.log('[Review Automation] Old SerpAPI reviews cleared (GMB API reviews preserved)');
     
-    if (gmbReviews.length === 0) {
-      console.log('[GMB Automation] No reviews fetched');
-      return;
+    // Fetch fresh reviews from all platforms
+    const results = await fetchAllReviewsViaSerpApi();
+    
+    const totalReviews = results.google + results.yelp + results.facebook;
+    
+    if (totalReviews === 0) {
+      console.log('[Review Automation] No reviews found');
+    } else {
+      console.log(
+        `[Review Automation] Synced ${totalReviews} fresh reviews ` +
+        `(Google: ${results.google}, Yelp: ${results.yelp}, Facebook: ${results.facebook})`
+      );
     }
-
-    // Save reviews to database
-    let inserted = 0;
-    for (const review of gmbReviews) {
-      try {
-        await db.insert(googleReviews).values({
-          ...review,
-          source: 'gmb_api', // Mark as GMB API source so replies work
-        }).onConflictDoNothing();
-        inserted++;
-      } catch (err) {
-        console.error('[GMB Automation] Error inserting review:', err);
-      }
-    }
     
-    console.log(`[GMB Automation] Review fetch complete: ${inserted}/${gmbReviews.length} new reviews saved`);
+    if (results.errors.length > 0) {
+      console.warn('[Review Automation] Errors during fetch:', results.errors);
+    }
   } catch (error: any) {
-    console.error('[GMB Automation] Error in auto-fetch:', error.message);
+    console.error('[Review Automation] Error in auto-fetch:', error.message);
   }
 }
 

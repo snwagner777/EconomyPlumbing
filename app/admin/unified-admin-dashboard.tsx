@@ -2850,6 +2850,101 @@ function ProductsSection() {
   );
 }
 
+function SerpApiStatusCard() {
+  const { toast } = useToast();
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  const { data: serpStats, isLoading } = useQuery({
+    queryKey: ['/api/admin/reviews/serpapi/stats'],
+    refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const handleManualSync = async (clearFirst: boolean = false) => {
+    setIsSyncing(true);
+    try {
+      const response = await fetch('/api/admin/reviews/serpapi/sync', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clearFirst }),
+      });
+
+      if (!response.ok) throw new Error('Sync failed');
+
+      const data = await response.json();
+      
+      toast({
+        title: "Success",
+        description: clearFirst 
+          ? `Cleared old reviews and synced ${data.newReviews.total} fresh reviews (Google: ${data.newReviews.google}, Yelp: ${data.newReviews.yelp}, Facebook: ${data.newReviews.facebook})`
+          : `Synced ${data.newReviews.total} new reviews (Google: ${data.newReviews.google}, Yelp: ${data.newReviews.yelp}, Facebook: ${data.newReviews.facebook})`,
+      });
+
+      // Refresh stats
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/reviews/serpapi/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/google-reviews'] });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sync reviews",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  if (isLoading) return null;
+
+  const configured = (serpStats as any)?.configured ?? false;
+  const bySource = (serpStats as any)?.bySource || [];
+  const googleStats = bySource.find((s: any) => s.source === 'google_serpapi');
+  const yelpStats = bySource.find((s: any) => s.source === 'yelp');
+  const facebookStats = bySource.find((s: any) => s.source === 'facebook');
+
+  return (
+    <Card className="border-blue-500/50 bg-blue-50 dark:bg-blue-950/20">
+      <CardContent className="p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-500/20 rounded-lg">
+              <CheckCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-blue-900 dark:text-blue-100">Multi-Platform Review Sync - Active</h3>
+              <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
+                Automatically fetching reviews from Google ({googleStats?.count || 0}), Yelp ({yelpStats?.count || 0}), and Facebook ({facebookStats?.count || 0}) every 6 hours via SerpAPI
+              </p>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={() => handleManualSync(false)}
+              disabled={isSyncing}
+              variant="outline"
+              className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+              data-testid="button-sync-reviews"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Syncing...' : 'Sync Now'}
+            </Button>
+            <Button
+              onClick={() => handleManualSync(true)}
+              disabled={isSyncing}
+              variant="outline"
+              className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+              data-testid="button-clear-and-sync"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
+              {isSyncing ? 'Clearing & Syncing...' : 'Clear & Sync'}
+            </Button>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function ReviewsSection() {
   const { toast } = useToast();
   const [selectedSource, setSelectedSource] = useState<string>('all');
@@ -3064,6 +3159,9 @@ function ReviewsSection() {
           </CardContent>
         </Card>
       )}
+
+      {/* SerpAPI Multi-Platform Review Sync */}
+      <SerpApiStatusCard />
 
       {/* Header Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

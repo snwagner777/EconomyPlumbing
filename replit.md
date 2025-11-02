@@ -74,7 +74,8 @@ Preferred communication style: Simple, everyday language.
 - ✅ ADMIN_USERNAME - Admin login username
 - ✅ ADMIN_PASSWORD - Admin login password
 - ✅ SESSION_SECRET - Session encryption key (32+ characters)
-- ⚠️ GOOGLE_CLIENT_ID - Google OAuth for GMB review management (optional)
+- ✅ SERPAPI_API_KEY - SerpAPI key for automated Google/Yelp review fetching (read-only)
+- ⚠️ GOOGLE_CLIENT_ID - Google OAuth for GMB review management with reply capability (optional)
 - ⚠️ GOOGLE_CLIENT_SECRET - Google OAuth secret (optional)
 
 ## TODO: Referral Nurture Campaign Auto-Enrollment
@@ -115,7 +116,7 @@ Preferred communication style: Simple, everyday language.
   - **Schedulers:** Review request and referral nurture schedulers run every 30 minutes, checking suppression list and email preferences before every send
   - Features: AI customer segmentation (GPT-4o), visual HTML preview/approval workflow, campaign-specific phone tracking, automatic UTM parameter generation for all email links
 - **SMS Marketing System:** Complete platform with AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out, and multi-channel coordination.
-- **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests.
+- **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests. Includes hybrid review fetching via SerpAPI (Google: 582 reviews, Yelp: 125 reviews) for read-only display with complete customer names, plus GMB OAuth for reply-capable reviews. Auto-syncs every 6 hours while preserving GMB API reviews with reply metadata.
 - **Referral System:** Database-first referral management with ServiceTitan integration for pre-submission validation, hourly processing, job completion tracking, ServiceTitan notes integration, and credit management. Features AI-generated emails: referee welcome emails (sent to new referrals), referrer thank you emails (sent when referral is submitted), and referrer success notifications (sent when referred customer converts and credit is issued). Referrer emails auto-send with customizable AI templates via admin-configurable prompts and brand guidelines (stored in system_settings table). Template customization includes preview API for testing before deployment. All referral emails have full engagement tracking and suppression list compliance.
 - **Email Preference Center:** Granular subscription management for CAN-SPAM compliance, with token-based public UI and API endpoints for category-specific opt-outs and one-click unsubscribe.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
