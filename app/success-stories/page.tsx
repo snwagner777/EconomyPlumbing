@@ -20,7 +20,7 @@ import SuccessStoryForm from "@/components/SuccessStoryForm";
 import { CustomerWallOfFame } from "@/components/CustomerWallOfFame";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
-import type { BeforeAfterComposite, CustomerSuccessStory } from "@shared/schema";
+import type { BeforeAfterComposite, CustomerSuccessStory, GoogleReview } from "@shared/schema";
 
 export default function SuccessStories() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -51,8 +51,13 @@ export default function SuccessStories() {
     queryKey: ["/api/customer-success-stories"],
   });
 
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery<GoogleReview[]>({
+    queryKey: ["/api/reviews", { minRating: 4 }],
+  });
+
   const customerStories = customerStoriesData?.stories || [];
-  const isLoading = compositesLoading || storiesLoading;
+  const reviews = reviewsData || [];
+  const isLoading = compositesLoading || storiesLoading || reviewsLoading;
 
   // Filter composites
   const filteredComposites = composites?.filter((composite) => {
@@ -286,10 +291,10 @@ export default function SuccessStories() {
           </div>
         </div>
 
-        {/* NiceJob Reviews Section */}
+        {/* Customer Reviews Section */}
         <div className="container mx-auto max-w-6xl px-4 py-16">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-reviews-heading">
               What Our Customers Say
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -297,29 +302,81 @@ export default function SuccessStories() {
             </p>
           </div>
           
-          {/* 
-            NICEJOB WIDGET SETUP INSTRUCTIONS:
-            
-            To display your NiceJob reviews widget here:
-            1. Log into your NiceJob admin panel (app.nicejob.com)
-            2. Navigate to Settings > Integrations > Website Widgets
-            3. Select "Reviews Widget" or "Success Stories Widget"
-            4. Copy the embed code provided
-            5. Replace this comment block with the embed code
-            
-            The SDK script is already loaded in the useEffect hook above.
-            You just need to add the widget container div with the correct class/data attributes.
-            
-            Example embed code format:
-            <div class="nj-widget" data-widget-id="YOUR_WIDGET_ID"></div>
-          */}
-          <div className="bg-muted rounded-lg p-12 text-center">
-            <p className="text-muted-foreground">
-              NiceJob reviews widget will display here once configured in your NiceJob admin panel.
-              <br />
-              <span className="text-sm">See instructions in source code above.</span>
-            </p>
-          </div>
+          {reviewsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Card key={i}>
+                  <CardHeader>
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-6 w-full" />
+                  </CardHeader>
+                  <CardContent>
+                    <Skeleton className="h-20 w-full" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : reviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {reviews.slice(0, 12).map((review) => (
+                <Card
+                  key={review.id}
+                  className="hover-elevate transition-all"
+                  data-testid={`card-review-${review.id}`}
+                  itemScope
+                  itemType="https://schema.org/Review"
+                >
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-5 h-5 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                            fill="currentColor"
+                            data-testid={`star-${i}-${review.id}`}
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <Badge variant="secondary" className="text-xs" data-testid={`badge-source-${review.id}`}>
+                        {review.source === 'google' ? 'Google' : review.source === 'yelp' ? 'Yelp' : 'Facebook'}
+                      </Badge>
+                    </div>
+                    <CardTitle className="text-lg" data-testid={`text-reviewer-${review.id}`}>
+                      {review.authorName}
+                    </CardTitle>
+                    <meta itemProp="author" content={review.authorName} />
+                    <meta itemProp="datePublished" content={new Date(review.timestamp * 1000).toISOString()} />
+                    <div itemProp="reviewRating" itemScope itemType="https://schema.org/Rating">
+                      <meta itemProp="ratingValue" content={review.rating.toString()} />
+                      <meta itemProp="bestRating" content="5" />
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground line-clamp-4" itemProp="reviewBody" data-testid={`text-review-${review.id}`}>
+                      "{review.text}"
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-3" data-testid={`text-time-${review.id}`}>
+                      {review.relativeTime}
+                    </p>
+                  </CardContent>
+                  <div itemProp="itemReviewed" itemScope itemType="https://schema.org/LocalBusiness">
+                    <meta itemProp="name" content="Economy Plumbing Services" />
+                  </div>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="bg-muted rounded-lg p-12 text-center">
+              <p className="text-muted-foreground">
+                No reviews available at the moment. Check back soon!
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Submit Your Success Story */}
