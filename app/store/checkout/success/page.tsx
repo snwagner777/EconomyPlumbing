@@ -1,5 +1,5 @@
 'use client';
-import { useEffect } from "react";
+import { useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -9,7 +9,7 @@ import { CheckCircle, Phone } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
-export default function MembershipSuccess() {
+function MembershipSuccessContent() {
   const phoneConfig = usePhoneConfig();
   const searchParams = useSearchParams();
   const productSlug = searchParams?.get('product');
@@ -91,5 +91,19 @@ export default function MembershipSuccess() {
         <Footer />
       </div>
     </>
+  );
+}
+
+export default function MembershipSuccess() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <MembershipSuccessContent />
+    </Suspense>
   );
 }

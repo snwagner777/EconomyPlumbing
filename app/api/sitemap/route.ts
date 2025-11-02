@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
       { url: '/faq', changefreq: 'monthly', priority: 0.7 },
     ];
 
-    // Get dynamic content
+    // Get dynamic content with proper null checks
     const [blogPosts, serviceAreas, products] = await Promise.all([
       storage.getBlogPosts(),
       storage.getAllServiceAreas(),
@@ -48,32 +48,38 @@ export async function GET(req: NextRequest) {
       xml += `  </url>\n`;
     }
 
-    // Add blog posts
-    for (const post of blogPosts) {
-      xml += `  <url>\n`;
-      xml += `    <loc>${baseUrl}/blog/${post.slug}</loc>\n`;
-      xml += `    <lastmod>${new Date(post.publishDate).toISOString().split('T')[0]}</lastmod>\n`;
-      xml += `    <changefreq>monthly</changefreq>\n`;
-      xml += `    <priority>0.7</priority>\n`;
-      xml += `  </url>\n`;
+    // Add blog posts (with null check)
+    if (Array.isArray(blogPosts)) {
+      for (const post of blogPosts) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${baseUrl}/blog/${post.slug}</loc>\n`;
+        xml += `    <lastmod>${new Date(post.publishDate).toISOString().split('T')[0]}</lastmod>\n`;
+        xml += `    <changefreq>monthly</changefreq>\n`;
+        xml += `    <priority>0.7</priority>\n`;
+        xml += `  </url>\n`;
+      }
     }
 
-    // Add service areas
-    for (const area of serviceAreas) {
-      xml += `  <url>\n`;
-      xml += `    <loc>${baseUrl}/service-areas/${area.slug}</loc>\n`;
-      xml += `    <changefreq>monthly</changefreq>\n`;
-      xml += `    <priority>0.8</priority>\n`;
-      xml += `  </url>\n`;
+    // Add service areas (with null check)
+    if (Array.isArray(serviceAreas)) {
+      for (const area of serviceAreas) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${baseUrl}/service-areas/${area.slug}</loc>\n`;
+        xml += `    <changefreq>monthly</changefreq>\n`;
+        xml += `    <priority>0.8</priority>\n`;
+        xml += `  </url>\n`;
+      }
     }
 
-    // Add products
-    for (const product of products.filter(p => p.active)) {
-      xml += `  <url>\n`;
-      xml += `    <loc>${baseUrl}/products/${product.slug}</loc>\n`;
-      xml += `    <changefreq>weekly</changefreq>\n`;
-      xml += `    <priority>0.7</priority>\n`;
-      xml += `  </url>\n`;
+    // Add products (with null check)
+    if (Array.isArray(products)) {
+      for (const product of products.filter(p => p.active)) {
+        xml += `  <url>\n`;
+        xml += `    <loc>${baseUrl}/products/${product.slug}</loc>\n`;
+        xml += `    <changefreq>weekly</changefreq>\n`;
+        xml += `    <priority>0.7</priority>\n`;
+        xml += `  </url>\n`;
+      }
     }
 
     xml += '</urlset>';
