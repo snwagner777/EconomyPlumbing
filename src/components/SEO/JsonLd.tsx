@@ -11,9 +11,21 @@ export function JsonLd({ data }: JsonLdProps) {
   );
 }
 
-// Primary Austin location - main LocalBusiness schema
-export function createLocalBusinessSchema(aggregateRating?: { ratingValue: string; reviewCount: string }) {
-  return {
+interface Review {
+  authorName: string;
+  rating: number;
+  text: string;
+  relativeTime?: string;
+  timestamp?: number;
+  reviewId?: string;
+}
+
+// Primary Austin location - main LocalBusiness schema with reviews
+export function createLocalBusinessSchema(
+  aggregateRating?: { ratingValue: string; reviewCount: string },
+  reviews?: Review[]
+) {
+  const schema: any = {
     "@context": "https://schema.org",
     "@type": "Plumber",
     "@id": "https://www.plumbersthatcare.com/#austin",
@@ -156,11 +168,34 @@ export function createLocalBusinessSchema(aggregateRating?: { ratingValue: strin
     } : {
       "@type": "AggregateRating",
       "ratingValue": "4.8",
-      "reviewCount": "89",
+      "reviewCount": "495",
       "bestRating": "5",
       "worstRating": "1"
     }
   };
+
+  // Add reviews if provided
+  if (reviews && reviews.length > 0) {
+    schema.review = reviews.map(review => ({
+      "@type": "Review",
+      "author": {
+        "@type": "Person",
+        "name": review.authorName === 'Anonymous' ? 'Google Customer' : review.authorName
+      },
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": review.rating.toString(),
+        "bestRating": "5",
+        "worstRating": "1"
+      },
+      "reviewBody": review.text,
+      "datePublished": review.timestamp 
+        ? new Date(review.timestamp * 1000).toISOString()
+        : new Date().toISOString()
+    }));
+  }
+
+  return schema;
 }
 
 // Secondary Marble Falls location

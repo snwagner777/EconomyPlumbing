@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { getPageMetadata } from '@/server/lib/metadata';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
+import { storage } from '@/server/storage';
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Footer from "@/components/Footer";
@@ -109,6 +110,18 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   // Crawlers will see the correct tracking number in the HTML!
   const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
+  // Fetch recent 5-star reviews for enhanced SEO
+  let reviews: any[] = [];
+  try {
+    const allReviews = await storage.getGoogleReviews();
+    reviews = allReviews
+      .filter(r => r.rating >= 4 && r.text && r.text.trim().length > 0)
+      .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+      .slice(0, 10);
+  } catch (error) {
+    console.error('[Homepage] Error fetching reviews for SEO:', error);
+  }
+  
   const services = [
     {
       icon: Droplets,
@@ -190,9 +203,9 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     },
   ];
 
-  // Prepare JSON-LD schemas for SEO
+  // Prepare JSON-LD schemas for SEO with real reviews
   const schemas = [
-    localBusinessSchema,
+    createLocalBusinessSchema(undefined, reviews.slice(0, 5)),
     createMarbleFallsLocationSchema(),
     createOrganizationSchema(),
     createFAQSchema([
