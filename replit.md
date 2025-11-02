@@ -39,7 +39,7 @@ Preferred communication style: Simple, everyday language.
   - **Live verification:** `?utm_source=google` → (512) 368-9159, `?utm_source=facebook` → (512) 575-3157, default → (512) 649-2811
   - **Implementation:** `server/lib/phoneNumbers.ts` with `getPhoneNumberForSSR()` + URLSearchParams detection
 - ✅ **Review System (Nov 2, 2025):**
-  - **SerpAPI Integration:** Automated fetching of Google (582) and Yelp (125) reviews every 6 hours
+  - **SerpAPI Integration:** Automated fetching of Google (582) and Yelp (125) reviews daily
   - **Read-Only Display:** Reviews shown with complete customer names, no reply functionality
   - **GMB Reply System Removed:** Auto-reply functions deleted, database fields remain unused
 - 🔄 **Remaining Testing:** 107 admin API endpoints need systematic verification through UI interaction

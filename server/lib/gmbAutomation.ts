@@ -52,13 +52,13 @@ export async function autoFetchGMBReviews(): Promise<void> {
 export function startGMBAutomation(): void {
   console.log('[Review Automation] Starting scheduler...');
   
-  // Fetch reviews every 6 hours
-  const FETCH_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+  // Fetch reviews once per day
+  const FETCH_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours (daily)
   setInterval(autoFetchGMBReviews, FETCH_INTERVAL);
   
   // Run immediately on startup
   setTimeout(autoFetchGMBReviews, 5000); // Wait 5 seconds after startup
   
   console.log('[Review Automation] Scheduler started:');
-  console.log(`  - Review fetch: every ${FETCH_INTERVAL / 1000 / 60 / 60} hours`);
+  console.log(`  - Review fetch: every ${FETCH_INTERVAL / 1000 / 60 / 60} hours (daily)`);
 }
