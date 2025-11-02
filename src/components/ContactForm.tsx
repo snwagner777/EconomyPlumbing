@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,15 +10,20 @@ import { Phone, Mail, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
-
 interface ContactFormProps {
   pageContext?: string;
+  austinPhone?: { display: string; tel: string };
+  marbleFallsPhone?: { display: string; tel: string };
 }
 
-export default function ContactForm({ pageContext = "Contact Page" }: ContactFormProps) {
-  const phoneConfig = usePhoneConfig();
-  const marbleFallsPhoneConfig = useMarbleFallsPhone();
+export default function ContactForm({ 
+  pageContext = "Contact Page",
+  austinPhone,
+  marbleFallsPhone
+}: ContactFormProps) {
+  // Use server-provided phone numbers or fallback
+  const phoneConfig = austinPhone || { display: '(512) 368-9159', tel: '+15123689159' };
+  const marbleFallsPhoneConfig = marbleFallsPhone || { display: '(830) 460-3565', tel: '+18304603565' };
   const { toast } = useToast();
   const [formStartTime] = useState(Date.now()); // Track when form was loaded
   const [formData, setFormData] = useState({

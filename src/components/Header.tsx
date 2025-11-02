@@ -7,8 +7,6 @@ import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
-
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
@@ -19,9 +17,16 @@ declare global {
 interface HeaderProps {
   isPortalAuthenticated?: boolean;
   onPortalLogout?: () => void;
+  austinPhone?: { display: string; tel: string };
+  marbleFallsPhone?: { display: string; tel: string };
 }
 
-export default function Header({ isPortalAuthenticated = false, onPortalLogout }: HeaderProps) {
+export default function Header({ 
+  isPortalAuthenticated = false, 
+  onPortalLogout,
+  austinPhone,
+  marbleFallsPhone
+}: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -38,8 +43,9 @@ export default function Header({ isPortalAuthenticated = false, onPortalLogout }
   
   const location = usePathname() || '/';
   
-  const phoneConfig = usePhoneConfig();
-  const marbleFallsPhoneConfig = useMarbleFallsPhone();
+  // Use server-provided phone numbers or fallback to defaults
+  const phoneConfig = austinPhone || { display: '(512) 368-9159', tel: '+15123689159' };
+  const marbleFallsPhoneConfig = marbleFallsPhone || { display: '(830) 460-3565', tel: '+18304603565' };
 
   const services = [
     { name: "All Services", path: "/services", featured: true },

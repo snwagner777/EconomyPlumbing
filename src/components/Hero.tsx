@@ -1,11 +1,17 @@
+'use client';
+
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
 import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
-export default function Hero() {
-  const phoneConfig = usePhoneConfig();
+interface HeroProps {
+  austinPhone?: { display: string; tel: string };
+}
+
+export default function Hero({ austinPhone }: HeroProps) {
+  // Use server-provided phone or fallback
+  const phone = austinPhone || { display: '(512) 368-9159', tel: '+15123689159' };
   
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
@@ -50,9 +56,9 @@ export default function Hero() {
               asChild
               data-testid="button-call-hero"
             >
-              <a href={phoneConfig.tel} className="flex items-center gap-2">
+              <a href={phone.tel} className="flex items-center gap-2">
                 <Phone className="w-5 h-5" />
-                {phoneConfig.display}
+                {phone.display}
               </a>
             </Button>
           </div>
