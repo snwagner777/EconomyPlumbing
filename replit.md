@@ -38,7 +38,10 @@ Preferred communication style: Simple, everyday language.
   - **Hybrid phone system:** Server-side UTM resolution + client-side cookie/referrer enhancement
   - **Live verification:** `?utm_source=google` → (512) 368-9159, `?utm_source=facebook` → (512) 575-3157, default → (512) 649-2811
   - **Implementation:** `server/lib/phoneNumbers.ts` with `getPhoneNumberForSSR()` + URLSearchParams detection
-- ⚠️ **Google OAuth:** Requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET for GMB review management
+- ✅ **Review System (Nov 2, 2025):**
+  - **SerpAPI Integration:** Automated fetching of Google (582) and Yelp (125) reviews every 6 hours
+  - **Read-Only Display:** Reviews shown with complete customer names, no reply functionality
+  - **GMB Reply System Removed:** Auto-reply functions deleted, database fields remain unused
 - 🔄 **Remaining Testing:** 107 admin API endpoints need systematic verification through UI interaction
 
 ### Authentication Implementation (Oct 31, 2025)
@@ -116,7 +119,7 @@ Preferred communication style: Simple, everyday language.
   - **Schedulers:** Review request and referral nurture schedulers run every 30 minutes, checking suppression list and email preferences before every send
   - Features: AI customer segmentation (GPT-4o), visual HTML preview/approval workflow, campaign-specific phone tracking, automatic UTM parameter generation for all email links
 - **SMS Marketing System:** Complete platform with AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out, and multi-channel coordination.
-- **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests. Includes hybrid review fetching via SerpAPI (Google: 582 reviews, Yelp: 125 reviews) for read-only display with complete customer names, plus GMB OAuth for reply-capable reviews. Auto-syncs every 6 hours while preserving GMB API reviews with reply metadata.
+- **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences, and multi-channel requests. Includes automated review fetching via SerpAPI (Google: 582 reviews, Yelp: 125 reviews) for read-only display with complete customer names. Auto-syncs every 6 hours.
 - **Referral System:** Database-first referral management with ServiceTitan integration for pre-submission validation, hourly processing, job completion tracking, ServiceTitan notes integration, and credit management. Features AI-generated emails: referee welcome emails (sent to new referrals), referrer thank you emails (sent when referral is submitted), and referrer success notifications (sent when referred customer converts and credit is issued). Referrer emails auto-send with customizable AI templates via admin-configurable prompts and brand guidelines (stored in system_settings table). Template customization includes preview API for testing before deployment. All referral emails have full engagement tracking and suppression list compliance.
 - **Email Preference Center:** Granular subscription management for CAN-SPAM compliance, with token-based public UI and API endpoints for category-specific opt-outs and one-click unsubscribe.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).

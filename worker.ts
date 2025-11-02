@@ -302,15 +302,10 @@ async function initializeWorker(): Promise<void> {
     startPhotoCleanupJob();
   });
 
-  // Start GMB automation
+  // Start review fetch automation (SerpAPI)
   registry.start('gmb-fetch', async () => {
     const { autoFetchGMBReviews } = await import('./server/lib/gmbAutomation');
     await autoFetchGMBReviews();
-  });
-
-  registry.start('gmb-reply', async () => {
-    const { autoReplyToGMBReviews } = await import('./server/lib/gmbAutomation');
-    await autoReplyToGMBReviews();
   });
 
   // Start review request scheduler
