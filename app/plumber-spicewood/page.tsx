@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function SpicewoodServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Marble Falls", path: "/plumber-marble-falls" },
@@ -53,7 +53,8 @@ export default async function SpicewoodServiceArea() {
         heroImage="/attached_assets/optimized/plumber_water_heater_57dd8e1a.webp"
         heroSubtitle="Quality plumbing services for Spicewood homes and lake properties. Specialized in water heater installations and emergency repairs."
         cityHighlight="Proudly serving Spicewood and the surrounding Hill Country area. We understand the unique plumbing needs of lakefront properties and rural homes."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

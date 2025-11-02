@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LibertyHillServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Leander", path: "/plumber-leander" },
@@ -53,7 +53,8 @@ export default async function LibertyHillServiceArea() {
         heroImage="/attached_assets/optimized/professional_plumber_07b42e36.webp"
         heroSubtitle="Professional plumbing services for Liberty Hill's growing community. Same-day service, expert technicians, and upfront pricing."
         cityHighlight="As Liberty Hill continues to grow, we're here to serve both established neighborhoods and new developments with top-quality plumbing services."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

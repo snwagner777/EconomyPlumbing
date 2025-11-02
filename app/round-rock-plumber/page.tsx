@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RoundRockServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Georgetown", path: "/plumber-georgetown" },
@@ -54,7 +54,8 @@ export default async function RoundRockServiceArea() {
         heroImage="/attached_assets/optimized/plumber_working_on_p_6dc2075d.webp"
         heroSubtitle="Expert plumbing services for Round Rock residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
         cityHighlight="Serving Round Rock and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

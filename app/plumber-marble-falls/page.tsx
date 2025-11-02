@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function MarbleFallsServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Burnet", path: "/plumber-burnet" },
@@ -55,7 +55,8 @@ export default async function MarbleFallsServiceArea() {
         heroImage="/attached_assets/optimized/plumber_fixing_sink__a8fb92e9.webp"
         heroSubtitle="Marble Falls' trusted plumbing experts since 2012. Specializing in water heaters, drain cleaning, and emergency plumbing services."
         cityHighlight="Serving Marble Falls and the Highland Lakes area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

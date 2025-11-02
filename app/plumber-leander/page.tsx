@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function LeanderServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Cedar Park", path: "/plumber-in-cedar-park--tx" },
@@ -54,7 +54,8 @@ export default async function LeanderServiceArea() {
         heroImage="/attached_assets/optimized/professional_plumber_f5e4b5a9.webp"
         heroSubtitle="Expert plumbing services for Leander residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
         cityHighlight="Serving Leander and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

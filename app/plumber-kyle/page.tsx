@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function KyleServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Buda", path: "/plumber-buda" },
@@ -53,7 +53,8 @@ export default async function KyleServiceArea() {
         heroImage="/attached_assets/optimized/plumber_fixing_sink__ddae57ac.webp"
         heroSubtitle="Expert plumbing services for Kyle residents. Quick response, quality repairs, and exceptional customer service every time."
         cityHighlight="Serving Kyle's rapidly expanding community with reliable plumbing services. We're equipped to handle both residential and commercial projects."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );

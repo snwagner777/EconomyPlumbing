@@ -13,7 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function PflugervilleServiceArea() {
-  const phoneConfig = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
   
   const nearbyCities = [
     { name: "Round Rock", path: "/round-rock-plumber" },
@@ -53,7 +53,8 @@ export default async function PflugervilleServiceArea() {
         heroImage="/attached_assets/optimized/plumber_working_on_p_e4a794f0.webp"
         heroSubtitle="Expert plumbing services for Pflugerville residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
         cityHighlight="Serving Pflugerville and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
-        phoneConfig={phoneConfig}
+        phoneConfig={phoneNumbers.austin}
+        marbleFallsPhoneConfig={phoneNumbers.marbleFalls}
       />
     </>
   );
