@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Phone, CheckCircle } from "lucide-react";
+import Image from "next/image";
 import heroImage from "@assets/optimized/modern_luxury_bathro_0f267931.webp";
 import { openScheduler } from "@/lib/scheduler";
 
@@ -16,14 +17,14 @@ export default function Hero({ austinPhone }: HeroProps) {
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
       <div className="absolute inset-0">
-        <img
-          src={heroImage.src}
+        <Image
+          src={heroImage}
           alt="Modern luxury bathroom with professional plumbing fixtures - Economy Plumbing Services serving Austin, Cedar Park, Leander, Round Rock, Georgetown, Marble Falls TX"
-          width={1920}
-          height={1080}
-          fetchpriority="high"
-          decoding="async"
-          className="w-full h-full object-cover"
+          fill
+          priority
+          sizes="100vw"
+          quality={85}
+          className="object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
       </div>
