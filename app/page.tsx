@@ -8,8 +8,8 @@ import Footer from "@/components/Footer";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
-import { ServiceCardSSR } from '../src/components/ServiceCardSSR';
-import { WhyChooseCardSSR } from '../src/components/WhyChooseCardSSR';
+import { ServiceCardSSR } from '@/components/ServiceCardSSR';
+import { WhyChooseCardSSR } from '@/components/WhyChooseCardSSR';
 import { PhoneLink } from '@/components/PhoneLink';
 import { SchedulerButton } from '@/components/SchedulerButton';
 import Link from "next/link";
@@ -30,7 +30,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import {
-  localBusinessSchema,
+  createLocalBusinessSchema,
   createFAQSchema,
   createMarbleFallsLocationSchema,
   createOrganizationSchema,
@@ -55,42 +55,8 @@ export async function generateMetadata(): Promise<Metadata> {
     ogType: 'website',
   });
   
-  // Add JSON-LD to metadata
-  const marbleFallsSchema = createMarbleFallsLocationSchema();
-  const organizationSchema = createOrganizationSchema();
-  const faqSchema = createFAQSchema([
-    {
-      question: "What areas do you serve in Texas?",
-      answer: "We serve Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, Kyle, Marble Falls, Burnet, Horseshoe Bay, Kingsland, Granite Shoals, Bertram, and Spicewood.",
-    },
-    {
-      question: "Do you offer emergency plumbing services?",
-      answer: "Yes, we offer 24/7 emergency plumbing services throughout Central Texas. Call us anytime for urgent plumbing issues.",
-    },
-    {
-      question: "Are your plumbers licensed and insured?",
-      answer: "Absolutely. All our plumbers are fully licensed and insured to protect you and your property.",
-    },
-    {
-      question: "Do you provide upfront pricing?",
-      answer: "Yes, we believe in transparent pricing. We provide upfront estimates with no hidden fees before we begin any work.",
-    },
-  ]);
-  
-  // Combine JSON-LD schemas into script tags
-  const schemas = [
-    localBusinessSchema,
-    marbleFallsSchema,
-    organizationSchema,
-    faqSchema,
-  ].filter(Boolean);
-
-  return {
-    ...metadata,
-    alternates: {
-      canonical: 'https://plumbersthatcare.com/',
-    },
-  };
+  // Metadata system already provides canonical URL, Open Graph, and Twitter tags
+  return metadata;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
