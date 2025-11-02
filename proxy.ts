@@ -1,5 +1,6 @@
 /**
- * Next.js Middleware - Runs before every request
+ * Next.js 16 Proxy - Runs before every request
+ * (Previously called middleware in Next.js 15)
  * 
  * Handles:
  * 1. Session-based authentication for admin routes
@@ -30,7 +31,7 @@ const sessionOptions = {
   },
 };
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is an admin route (except login page and API routes)
@@ -38,11 +39,11 @@ export async function middleware(request: NextRequest) {
     // Get session cookie
     const cookie = request.cookies.get('admin_session')?.value;
     
-    console.log('[Middleware]', pathname, 'Cookie exists:', !!cookie);
+    console.log('[Proxy]', pathname, 'Cookie exists:', !!cookie);
     
     if (!cookie) {
       // No session cookie - redirect to login
-      console.log('[Middleware] No cookie, redirecting to login');
+      console.log('[Proxy] No cookie, redirecting to login');
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
       return NextResponse.redirect(loginUrl);
@@ -54,21 +55,21 @@ export async function middleware(request: NextRequest) {
         password: sessionOptions.password,
       });
       
-      console.log('[Middleware] Session unsealed:', { isAuthenticated: session?.isAuthenticated, username: session?.username });
+      console.log('[Proxy] Session unsealed:', { isAuthenticated: session?.isAuthenticated, username: session?.username });
       
       if (!session?.isAuthenticated) {
         // Not authenticated - redirect to login
-        console.log('[Middleware] Session not authenticated, redirecting to login');
+        console.log('[Proxy] Session not authenticated, redirecting to login');
         const loginUrl = new URL('/admin/login', request.url);
         loginUrl.searchParams.set('from', pathname);
         return NextResponse.redirect(loginUrl);
       }
       
       // Session is valid, continue to the requested page
-      console.log('[Middleware] Session valid, allowing access to', pathname);
+      console.log('[Proxy] Session valid, allowing access to', pathname);
       return NextResponse.next();
     } catch (error) {
-      console.error('[Middleware] Session validation error:', error);
+      console.error('[Proxy] Session validation error:', error);
       // Session validation failed - redirect to login
       const loginUrl = new URL('/admin/login', request.url);
       loginUrl.searchParams.set('from', pathname);
@@ -76,10 +77,10 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  return handleMiddleware(request);
+  return handleProxy(request);
 }
 
-function handleMiddleware(request: NextRequest) {
+function handleProxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const host = request.headers.get('host') || '';
 
