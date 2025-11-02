@@ -1,6 +1,8 @@
 import { storage } from "../storage";
 import { getServiceTitanAPI } from "./serviceTitan";
-import { log } from "../vite";
+
+// Simple console log function
+const log = (message: string) => console.log(message);
 
 interface SyncResult {
   membershipId: string;
