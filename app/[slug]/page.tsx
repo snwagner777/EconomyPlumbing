@@ -154,7 +154,9 @@ export default function BlogPostPage() {
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span data-testid="text-date">
-                    {format(new Date(post.publishDate), "MMMM dd, yyyy")}
+                    {post.publishDate && !isNaN(new Date(post.publishDate).getTime()) 
+                      ? format(new Date(post.publishDate), "MMMM dd, yyyy")
+                      : format(new Date(), "MMMM dd, yyyy")}
                   </span>
                 </div>
               </div>
