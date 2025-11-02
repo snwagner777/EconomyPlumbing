@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { getPageMetadata } from '@/server/lib/metadata';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import { createServiceSchema, createFAQSchema, createBreadcrumbListSchema } from '@/components/SEO/JsonLd';
@@ -86,18 +85,15 @@ export default async function DrainCleaning({ searchParams }: DrainCleaningPageP
   return (
     <>
       {/* JSON-LD Structured Data for SEO */}
-      <Script
-        id="drain-cleaning-service-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
       />
-      <Script
-        id="drain-cleaning-faq-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Script
-        id="drain-cleaning-breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />

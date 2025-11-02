@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Script from 'next/script';
 import { getPageMetadata } from '@/server/lib/metadata';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import { createServiceSchema, createFAQSchema, createBreadcrumbListSchema } from '@/components/SEO/JsonLd';
@@ -110,18 +109,15 @@ export default async function WaterHeaterServices({ searchParams }: WaterHeaterS
   return (
     <>
       {/* JSON-LD Structured Data for SEO */}
-      <Script
-        id="water-heater-service-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }}
       />
-      <Script
-        id="water-heater-faq-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <Script
-        id="water-heater-breadcrumb-schema"
+      <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />

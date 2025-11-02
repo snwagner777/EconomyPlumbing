@@ -1,6 +1,7 @@
-'use client';
-import { useEffect } from "react";
+import type { Metadata } from 'next';
 import Link from "next/link";
+import { getPageMetadata } from '@/server/lib/metadata';
+import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -18,17 +19,24 @@ import {
   Calendar, FileCheck, Zap, ThumbsUp, Star, MapPin
 } from "lucide-react";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
 
-export default function CommercialServicesLanding() {
-  const phoneConfig = usePhoneConfig();
+interface CommercialServicesPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+export async function generateMetadata(): Promise<Metadata> {
+  return await getPageMetadata('/commercial-services', {
+    title: 'Commercial Plumbing Austin TX | Restaurants & Offices',
+    description: 'Commercial plumbing services for restaurants, offices, and businesses in Austin and Marble Falls. Emergency repairs, grease trap maintenance, water heater service, preventive maintenance.',
+    ogType: 'website',
+  });
+}
 
-  // LocalBusiness Schema for SEO
+export default async function CommercialServicesLanding({ searchParams }: CommercialServicesPageProps) {
+  await searchParams;
+  const { phoneConfig, marbleFallsPhoneConfig } = await getPhoneNumbers();
+
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "Plumber",
@@ -66,7 +74,11 @@ export default function CommercialServicesLanding() {
 
   return (
     <>
-      
+      <script
+
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
+      />
       <div className="min-h-screen bg-background">
         <Header />
 
@@ -76,22 +88,21 @@ export default function CommercialServicesLanding() {
           
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto">
-              {/* Special Offer Badge */}
               <div className="flex justify-center mb-6">
                 <Badge 
                   className="bg-accent text-accent-foreground px-6 py-2 text-sm md:text-base font-semibold animate-pulse whitespace-normal text-center max-w-full"
-                  data-testid="badge-special-offer"
+                  data-test
                 >
                   <Award className="w-4 h-4 mr-2 flex-shrink-0" />
                   <span>NEW BUSINESS CUSTOMER SPECIAL: 25% OFF First Service</span>
                 </Badge>
               </div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6" data-testid="text-hero-title">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-6" data-test>
                 Stop Facility Downtime with Commercial Plumbing You Can Trust
               </h1>
               
-              <p className="text-xl lg:text-2xl text-white/90 text-center mb-8" data-testid="text-hero-subtitle">
+              <p className="text-xl lg:text-2xl text-white/90 text-center mb-8" data-test>
                 Serving restaurants, offices, and businesses in Austin & Marble Falls with 24/7 emergency service, preventive maintenance, and health code compliance
               </p>
 
@@ -101,7 +112,7 @@ export default function CommercialServicesLanding() {
                   variant="outline"
                   className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
                   asChild
-                  data-testid="button-call-now"
+                  data-test
                 >
                   <a href={`tel:${phoneConfig.tel}`}>
                     <Phone className="w-5 h-5 mr-2" />
@@ -114,7 +125,7 @@ export default function CommercialServicesLanding() {
                   variant="outline"
                   className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
                   onClick={openScheduler}
-                  data-testid="button-schedule"
+                  data-test
                 >
                   <Calendar className="w-5 h-5 mr-2" />
                   Schedule Service Online
@@ -215,7 +226,6 @@ export default function CommercialServicesLanding() {
           </div>
         </section>
 
-        {/* Commercial Customers Showcase - Trust Signal */}
         <CommercialCustomersShowcase />
 
         {/* Commercial Services */}
@@ -312,7 +322,7 @@ export default function CommercialServicesLanding() {
               </div>
 
               <div className="text-center">
-                <Button size="lg" onClick={openScheduler} data-testid="button-get-quote">
+                <Button size="lg" onClick={openScheduler} data-test>
                   <Calendar className="w-5 h-5 mr-2" />
                   Get Free Facility Assessment
                 </Button>
@@ -398,7 +408,7 @@ export default function CommercialServicesLanding() {
                       <p className="text-4xl font-bold text-primary mb-2">$119</p>
                       <p className="text-muted-foreground mb-1">One-time annual fee</p>
                       <p className="text-sm text-muted-foreground mb-4">Save on every service call + free annual inspection</p>
-                      <Button className="mt-4" asChild data-testid="button-vip-membership">
+                      <Button className="mt-4" asChild data-test>
                         <Link href="/store/checkout/commercial-vip">
                           Enroll Your Business Today
                         </Link>
@@ -570,13 +580,13 @@ export default function CommercialServicesLanding() {
           </div>
         </section>
 
-        {/* Final CTA with Special Offer */}
+        {/* Final CTA */}
         <section className="py-20 bg-primary text-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
               <Badge 
                 className="bg-accent text-accent-foreground px-6 py-2 text-base font-semibold mb-6"
-                data-testid="badge-offer-reminder"
+                data-test
               >
                 <Award className="w-4 h-4 mr-2" />
                 Limited Time: 25% OFF for New Business Customers
@@ -596,7 +606,7 @@ export default function CommercialServicesLanding() {
                   variant="outline"
                   className="bg-white text-primary border-white text-lg px-8 py-6 h-auto"
                   asChild
-                  data-testid="button-cta-call"
+                  data-test
                 >
                   <a href={`tel:${phoneConfig.tel}`}>
                     <Phone className="w-5 h-5 mr-2" />
@@ -609,7 +619,7 @@ export default function CommercialServicesLanding() {
                   variant="outline"
                   className="bg-transparent text-white border-white text-lg px-8 py-6 h-auto"
                   onClick={openScheduler}
-                  data-testid="button-cta-schedule"
+                  data-test
                 >
                   <Calendar className="w-5 h-5 mr-2" />
                   Schedule Free Assessment

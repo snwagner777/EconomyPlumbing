@@ -12,6 +12,7 @@ import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import defaultHeroImage from "@assets/optimized/plumber_working_resi_a03913c7.webp";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
+import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
 interface NearbyCity {
   name: string;
@@ -29,6 +30,8 @@ interface ServiceAreaPageProps {
   heroImage?: string;
   heroSubtitle?: string;
   cityHighlight?: string;
+  phoneConfig?: PhoneConfig;
+  marbleFallsPhoneConfig?: PhoneConfig;
 }
 
 const SERVICES = [
@@ -52,9 +55,14 @@ export default function ServiceAreaPage({
   heroImage,
   heroSubtitle,
   cityHighlight,
+  phoneConfig: phoneConfigProp,
+  marbleFallsPhoneConfig: marbleFallsPhoneConfigProp,
 }: ServiceAreaPageProps) {
-  const austinPhoneConfig = usePhoneConfig();
-  const marbleFallsPhoneConfig = useMarbleFallsPhone();
+  // Use provided phone configs from server-side, fall back to client hooks for backwards compat
+  const hookAustinPhoneConfig = usePhoneConfig();
+  const hookMarbleFallsPhoneConfig = useMarbleFallsPhone();
+  const austinPhoneConfig = phoneConfigProp || hookAustinPhoneConfig;
+  const marbleFallsPhoneConfig = marbleFallsPhoneConfigProp || hookMarbleFallsPhoneConfig;
   const phone = area === "austin" ? austinPhoneConfig.display : marbleFallsPhoneConfig.display;
   const phoneLink = area === "austin" ? austinPhoneConfig.tel : marbleFallsPhoneConfig.tel;
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";

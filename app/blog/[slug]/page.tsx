@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       };
     }
 
-    const canonicalUrl = `https://www.plumbersthatcare.com/${slug}`;
+    const canonicalUrl = `https://www.plumbersthatcare.com/blog/${slug}`;
     const ogImage = post.featuredImage 
       ? (post.featuredImage.startsWith('http') 
           ? post.featuredImage 
@@ -103,7 +103,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const allPosts = await storage.getBlogPosts();
   
   // Generate JSON-LD schemas for SEO
-  const canonicalUrl = `https://www.plumbersthatcare.com/${slug}`;
+  const canonicalUrl = `https://www.plumbersthatcare.com/blog/${slug}`;
   const blogPostSchema = createBlogPostSchema(post);
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
