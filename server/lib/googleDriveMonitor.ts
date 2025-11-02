@@ -189,14 +189,13 @@ export async function monitorGoogleDriveFolder() {
           
           console.log(`[Google Drive] ✓ Marked ${file.name} as rejected in database`);
           
-          // DISABLED: Delete rejected photo from Google Drive
-          // Keeping photos in Google Drive for manual review
-          // try {
-          //   await drive.files.delete({ fileId: file.id! });
-          //   console.log(`[Google Drive] 🗑️  Deleted rejected photo ${file.name} from Google Drive`);
-          // } catch (deleteError) {
-          //   console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
-          // }
+          // Delete rejected photo from Google Drive
+          try {
+            await drive.files.delete({ fileId: file.id! });
+            console.log(`[Google Drive] 🗑️  Deleted rejected photo ${file.name} from Google Drive`);
+          } catch (deleteError) {
+            console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
+          }
           
           continue;
         }
