@@ -53,8 +53,8 @@ export default function BlogPostPage() {
   });
 
   // Fetch original photo for lightbox if imageId exists
-  const { data: originalPhoto } = useQuery<{ photoUrl: string }>({
-    queryKey: ["/api/admin/photos", post?.imageId],
+  const { data: originalPhoto } = useQuery<{ photoUrl: string; thumbnailUrl?: string }>({
+    queryKey: ["/api/photos", post?.imageId],
     enabled: !!post?.imageId && lightboxOpen,
   });
 
@@ -328,6 +328,16 @@ export default function BlogPostPage() {
                 className="max-w-full max-h-full object-contain"
                 data-testid="img-lightbox"
               />
+              {originalPhoto?.photoUrl && (
+                <p className="absolute bottom-2 right-2 text-white/60 text-xs">
+                  Full resolution original
+                </p>
+              )}
+              {!originalPhoto?.photoUrl && post.imageId && (
+                <p className="absolute bottom-2 right-2 text-white/60 text-xs">
+                  Original not available
+                </p>
+              )}
             </div>
           </DialogContent>
         </Dialog>
