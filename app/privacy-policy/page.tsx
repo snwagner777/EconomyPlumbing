@@ -23,7 +23,7 @@ export default function PrivacyPolicyPage() {
       <div className="min-h-screen py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
+            <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
           <p className="text-muted-foreground mb-8">
             Last Updated: October 28, 2025
           </p>
@@ -102,6 +102,7 @@ export default function PrivacyPolicyPage() {
                 Email: info@plumbersthatcare.com
               </p>
             </section>
+          </div>
           </div>
         </div>
       </div>

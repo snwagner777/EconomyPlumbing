@@ -19,7 +19,7 @@ export default function RefundReturnsPage() {
       <div className="min-h-screen py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold mb-6">Refund & Returns Policy</h1>
+            <h1 className="text-4xl font-bold mb-6">Refund & Returns Policy</h1>
           <p className="text-muted-foreground mb-8">
             Last Updated: October 28, 2025
           </p>
@@ -82,6 +82,7 @@ export default function RefundReturnsPage() {
                 We'll work with you to resolve any concerns quickly and fairly.
               </p>
             </section>
+          </div>
           </div>
         </div>
       </div>

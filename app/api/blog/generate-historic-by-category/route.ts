@@ -3,7 +3,7 @@ import { storage } from '@/server/storage';
 import { db } from '@/server/db';
 import { blogPosts } from '@shared/schema';
 import { ObjectStorageService } from '@/server/objectStorage';
-import { generateH1FromTitle } from '@/server/lib/seoUtils';
+import { generateH1FromTitle } from '@/server/lib/generateH1';
 
 export async function POST(req: NextRequest) {
   try {
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
           if (photo.photoUrl) {
             try {
               console.log(`[Historic Blog Generation] Processing image for: ${blogPost.title}`);
-              const { processBlogImage } = await import('@/server/lib/imageProcessor');
+              const { processBlogImage } = await import('@/server/lib/blogImageProcessor');
               const processedImage = await processBlogImage(photo.photoUrl, blogPost.title);
               featuredImage = processedImage.imagePath;
               jpegFeaturedImage = processedImage.jpegImagePath;
