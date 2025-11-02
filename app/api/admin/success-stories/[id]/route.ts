@@ -12,19 +12,19 @@ import { eq } from 'drizzle-orm';
 
 const sessionOptions = {
   password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-  cookieName: 'plumbing_session',
+  cookieName: 'admin_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 30,
+    maxAge: 60 * 60 * 24 * 7,
   },
 };
 
 async function checkAdmin() {
   const cookieStore = await cookies();
   const session = await getIronSession(cookieStore, sessionOptions);
-  return !!(session as any).isAdmin && !!(session as any).user?.claims?.email;
+  return !!(session as any).isAuthenticated;
 }
 
 export async function PUT(
