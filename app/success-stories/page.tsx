@@ -52,7 +52,7 @@ export default function SuccessStories() {
   });
 
   const { data: reviewsData, isLoading: reviewsLoading } = useQuery<GoogleReview[]>({
-    queryKey: ["/api/reviews", { minRating: 4 }],
+    queryKey: ["/api/reviews?minRating=4"],
   });
 
   const customerStories = customerStoriesData?.stories || [];

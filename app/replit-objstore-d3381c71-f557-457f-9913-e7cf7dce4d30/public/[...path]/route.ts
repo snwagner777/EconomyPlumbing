@@ -3,11 +3,12 @@ import { ObjectStorageService } from '@/server/objectStorage';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { path: string[] } }
+  { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
     const objectStorage = new ObjectStorageService();
-    const filePath = params.path.join('/');
+    const resolvedParams = await params;
+    const filePath = resolvedParams.path.join('/');
     
     // Search for the file in public object storage
     const file = await objectStorage.searchPublicObject(filePath);
