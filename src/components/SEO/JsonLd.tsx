@@ -388,7 +388,10 @@ export function createBlogPostSchema(post: any) {
     (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
     `${baseUrl}/attached_assets/logo.jpg`;
   
-  const publishDate = new Date(post.publishDate);
+  // Validate and parse publish date with fallback
+  const publishDate = post.publishDate ? new Date(post.publishDate) : new Date();
+  const isValidDate = publishDate instanceof Date && !isNaN(publishDate.getTime());
+  const dateString = isValidDate ? publishDate.toISOString() : new Date().toISOString();
   
   // Calculate word count from content
   const wordCount = post.content ? post.content.split(/\s+/).filter((word: string) => word.length > 0).length : 0;
@@ -406,8 +409,8 @@ export function createBlogPostSchema(post: any) {
       "height": "630",
       "caption": post.title
     },
-    "datePublished": publishDate.toISOString(),
-    "dateModified": publishDate.toISOString(),
+    "datePublished": dateString,
+    "dateModified": dateString,
     "author": {
       "@type": "Organization",
       "@id": `${baseUrl}/#organization`,
