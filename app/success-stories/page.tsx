@@ -382,38 +382,116 @@ export default function SuccessStories() {
             
             {/* Pagination Controls */}
             {totalReviewPages > 1 && (
-              <div className="flex justify-center items-center gap-2 mt-8">
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-3 mt-8">
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={() => setCurrentReviewPage(prev => Math.max(1, prev - 1))}
                   disabled={currentReviewPage === 1}
                   data-testid="button-prev-page"
+                  className="w-full sm:w-auto"
                 >
                   Previous
                 </Button>
                 
-                <div className="flex gap-2">
-                  {Array.from({ length: totalReviewPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant={currentReviewPage === page ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setCurrentReviewPage(page)}
-                      data-testid={`button-page-${page}`}
-                      className="min-w-[2.5rem]"
-                    >
-                      {page}
-                    </Button>
-                  ))}
+                <div className="flex gap-2 flex-wrap justify-center">
+                  {/* Show condensed pagination on mobile, full on desktop */}
+                  {totalReviewPages <= 7 ? (
+                    // Show all pages if 7 or fewer
+                    Array.from({ length: totalReviewPages }, (_, i) => i + 1).map((page) => (
+                      <Button
+                        key={page}
+                        variant={currentReviewPage === page ? "default" : "outline"}
+                        size="default"
+                        onClick={() => setCurrentReviewPage(page)}
+                        data-testid={`button-page-${page}`}
+                        className="min-w-[2.5rem]"
+                      >
+                        {page}
+                      </Button>
+                    ))
+                  ) : (
+                    // Show condensed pagination for many pages
+                    <>
+                      {/* First page */}
+                      <Button
+                        variant={currentReviewPage === 1 ? "default" : "outline"}
+                        size="default"
+                        onClick={() => setCurrentReviewPage(1)}
+                        data-testid="button-page-1"
+                        className="min-w-[2.5rem]"
+                      >
+                        1
+                      </Button>
+                      
+                      {/* Show ellipsis if needed */}
+                      {currentReviewPage > 3 && (
+                        <span className="flex items-center px-2 text-muted-foreground">...</span>
+                      )}
+                      
+                      {/* Pages around current */}
+                      {currentReviewPage > 2 && (
+                        <Button
+                          variant="outline"
+                          size="default"
+                          onClick={() => setCurrentReviewPage(currentReviewPage - 1)}
+                          data-testid={`button-page-${currentReviewPage - 1}`}
+                          className="min-w-[2.5rem]"
+                        >
+                          {currentReviewPage - 1}
+                        </Button>
+                      )}
+                      
+                      {currentReviewPage !== 1 && currentReviewPage !== totalReviewPages && (
+                        <Button
+                          variant="default"
+                          size="default"
+                          onClick={() => setCurrentReviewPage(currentReviewPage)}
+                          data-testid={`button-page-${currentReviewPage}`}
+                          className="min-w-[2.5rem]"
+                        >
+                          {currentReviewPage}
+                        </Button>
+                      )}
+                      
+                      {currentReviewPage < totalReviewPages - 1 && (
+                        <Button
+                          variant="outline"
+                          size="default"
+                          onClick={() => setCurrentReviewPage(currentReviewPage + 1)}
+                          data-testid={`button-page-${currentReviewPage + 1}`}
+                          className="min-w-[2.5rem]"
+                        >
+                          {currentReviewPage + 1}
+                        </Button>
+                      )}
+                      
+                      {/* Show ellipsis if needed */}
+                      {currentReviewPage < totalReviewPages - 2 && (
+                        <span className="flex items-center px-2 text-muted-foreground">...</span>
+                      )}
+                      
+                      {/* Last page */}
+                      <Button
+                        variant={currentReviewPage === totalReviewPages ? "default" : "outline"}
+                        size="default"
+                        onClick={() => setCurrentReviewPage(totalReviewPages)}
+                        data-testid={`button-page-${totalReviewPages}`}
+                        className="min-w-[2.5rem]"
+                      >
+                        {totalReviewPages}
+                      </Button>
+                    </>
+                  )}
                 </div>
                 
                 <Button
                   variant="outline"
-                  size="sm"
+                  size="default"
                   onClick={() => setCurrentReviewPage(prev => Math.min(totalReviewPages, prev + 1))}
                   disabled={currentReviewPage === totalReviewPages}
                   data-testid="button-next-page"
+                  className="w-full sm:w-auto"
                 >
                   Next
                 </Button>
