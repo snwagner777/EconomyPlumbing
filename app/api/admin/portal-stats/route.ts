@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from 'src/lib/session';
+import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
 import { portalAnalytics } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getSession();
-    
-    if (!session.user) {
+    // Check admin authentication
+    const authenticated = await isAuthenticated();
+    if (!authenticated) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        { error: 'Authentication required' },
         { status: 401 }
       );
     }
