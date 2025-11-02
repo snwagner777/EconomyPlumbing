@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { ObjectStorageService } from '@/server/objectStorage';
 import sharp from 'sharp';
 
 export async function POST(req: NextRequest) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const objectStorageService = new ObjectStorageService();
     
     // Get all success stories without JPEG versions but with WebP collages

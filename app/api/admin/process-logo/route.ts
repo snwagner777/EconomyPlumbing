@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { processLogoToWhiteMonochrome } from '@/server/lib/logoProcessor';
 
 export async function POST(req: NextRequest) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const { logoUrl, customerName } = await req.json();
 
     if (!logoUrl) {

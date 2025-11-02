@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { chatbotQuickResponses } from '@shared/schema';
 import { eq } from 'drizzle-orm';
@@ -8,10 +8,15 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const updates = await req.json();
     
@@ -34,10 +39,15 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     
     await db

@@ -1,14 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
 import { chatbotConversations } from '@shared/schema';
 import { eq, desc, sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const page = Number(searchParams.get('page') || '1');
     const archived = searchParams.get('archived') || 'false';

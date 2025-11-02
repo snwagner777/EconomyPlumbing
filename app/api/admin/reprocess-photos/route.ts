@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { analyzePhotoQuality } from '@/server/lib/photoQualityAnalyzer';
 import { db } from '@/server/db';
@@ -7,10 +7,15 @@ import { companyCamPhotos } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     console.log("[Admin] Starting photo reprocessing with improved AI analysis...");
     
     const photos = await storage.getAllPhotos();
@@ -23,12 +28,16 @@ export async function POST(req: NextRequest) {
       try {
         const analysis = await analyzePhotoQuality(photo.photoUrl, photo.aiDescription || '');
         
-        // Update photo with analysis results (simplified for compatibility)
+        // Update photo with analysis results
         await db.update(companyCamPhotos)
           .set({
-            aiDescription: analysis.aiDescription,
-            category: analysis.aiCategory,
+            isGoodQuality: analysis.isGoodQuality,
+            shouldKeep: analysis.shouldKeep,
             qualityScore: analysis.qualityScore || 0,
+            qualityReasoning: analysis.reasoning,
+            category: analysis.categories[0] || 'general',
+            qualityAnalyzed: true,
+            analyzedAt: new Date(),
           })
           .where(eq(companyCamPhotos.id, photo.id));
         

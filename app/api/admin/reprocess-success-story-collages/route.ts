@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/middleware/authMiddleware';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { createBeforeAfterComposite } from '@/server/lib/beforeAfterComposer';
 import { ObjectStorageService } from '@/server/objectStorage';
@@ -8,10 +8,15 @@ import { promises as fs } from 'fs';
 import os from 'os';
 
 export async function POST(req: NextRequest) {
-  const authError = await requireAdmin();
-  if (authError) return authError;
-
   try {
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
+    }
+
     const objectStorageService = new ObjectStorageService();
     const publicSearchPaths = objectStorageService.getPublicObjectSearchPaths();
     const publicPath = publicSearchPaths[0];
