@@ -159,12 +159,12 @@ export default function ServicePage({
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="max-w-3xl">
-            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-4">
+            <h1 className="text-3xl lg:text-4xl font-bold text-white mb-3">
               {heroTitle}
             </h1>
-            <p className="text-xl text-white/90 mb-8">
+            <p className="text-lg text-white/90 mb-6">
               {heroSubtitle}
             </p>
             <div className="flex flex-wrap gap-4">
@@ -193,11 +193,11 @@ export default function ServicePage({
         </div>
       </section>
 
-      <section className="py-16 lg:py-24">
+      <section className="py-10 lg:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-3xl lg:text-4xl font-bold mb-6">{overviewTitle}</h2>
-            <p className="text-lg text-muted-foreground">
+          <div className="max-w-3xl mx-auto text-center mb-8">
+            <h2 className="text-2xl lg:text-3xl font-bold mb-4">{overviewTitle}</h2>
+            <p className="text-base text-muted-foreground">
               {overviewDescription}
             </p>
           </div>
@@ -219,16 +219,16 @@ export default function ServicePage({
         </div>
       </section>
 
-      <section className="py-16 lg:py-24 bg-muted/30">
+      <section className="py-10 lg:py-14 bg-muted/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+          <h2 className="text-2xl lg:text-3xl font-bold text-center mb-8">
             {featuresTitle}
           </h2>
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6">
-                <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
+              <Card key={index} className="p-4">
+                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
+                <p className="text-sm text-muted-foreground">{feature.description}</p>
               </Card>
             ))}
           </div>
@@ -236,16 +236,16 @@ export default function ServicePage({
       </section>
 
       {signs && signs.length > 0 && (
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-10 lg:py-14 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-center mb-8">
               {signsTitle || "Signs You Need Service"}
             </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 max-w-5xl mx-auto">
               {signs.map((sign, index) => (
-                <Card key={index} className="p-6">
-                  <h3 className="text-lg font-semibold mb-2 flex items-start gap-2">
-                    <CheckCircle className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <Card key={index} className="p-4">
+                  <h3 className="text-base font-semibold mb-2 flex items-start gap-2">
+                    <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
                     {sign.title}
                   </h3>
                   <p className="text-muted-foreground text-sm">{sign.description}</p>
@@ -257,14 +257,14 @@ export default function ServicePage({
       )}
 
       {additionalContent && (
-        <section className="py-16 lg:py-24">
+        <section className="py-10 lg:py-14">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-8">
+            <h2 className="text-2xl lg:text-3xl font-bold text-center mb-6">
               {additionalContent.title}
             </h2>
-            <div className="prose prose-lg max-w-none text-muted-foreground">
+            <div className="prose max-w-none text-muted-foreground text-sm">
               {additionalContent.content.split('\n\n').map((paragraph, index) => (
-                <p key={index} className="mb-4">{paragraph}</p>
+                <p key={index} className="mb-3">{paragraph}</p>
               ))}
             </div>
           </div>
@@ -272,16 +272,16 @@ export default function ServicePage({
       )}
 
       {maintenanceTips && maintenanceTips.length > 0 && (
-        <section className="py-16 lg:py-24 bg-muted/30">
+        <section className="py-10 lg:py-14 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+            <h2 className="text-2xl lg:text-3xl font-bold text-center mb-8">
               {maintenanceTitle || "Maintenance Tips"}
             </h2>
-            <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+            <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
               {maintenanceTips.map((tip, index) => (
-                <Card key={index} className="p-6">
-                  <h3 className="text-lg font-semibold mb-3">{tip.title}</h3>
-                  <p className="text-muted-foreground">{tip.description}</p>
+                <Card key={index} className="p-4">
+                  <h3 className="text-base font-semibold mb-2">{tip.title}</h3>
+                  <p className="text-sm text-muted-foreground">{tip.description}</p>
                 </Card>
               ))}
             </div>
@@ -291,9 +291,9 @@ export default function ServicePage({
 
       {customSection && customSection}
 
-      <section className="py-16 lg:py-24">
+      <section className="py-10 lg:py-14">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
+          <h2 className="text-2xl lg:text-3xl font-bold text-center mb-8">
             Frequently Asked Questions
           </h2>
           <Accordion type="single" collapsible className="w-full">
