@@ -16,9 +16,14 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   });
 }
 
-export default async function ServiceAreaPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+export default async function ServiceAreaPage({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{[key: string]: string | string[] | undefined}> }) {
+  const resolvedParams = await params;
+  const search = await searchParams;
+  const { slug } = resolvedParams;
   const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
   
   // Fetch data server-side
   const [phoneNumbers, serviceArea] = await Promise.all([

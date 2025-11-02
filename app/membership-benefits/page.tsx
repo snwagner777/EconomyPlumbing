@@ -14,8 +14,12 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function MembershipBenefitsPage() {
+export default async function MembershipBenefitsPage({ searchParams }: { searchParams: Promise<{[key: string]: string | string[] | undefined}> }) {
+  const search = await searchParams;
   const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
   const phoneNumbers = await getPhoneNumbers(urlParams);
   
   return <MembershipBenefitsClient phoneConfig={phoneNumbers.austin} />;
