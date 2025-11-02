@@ -138,11 +138,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       description: "All our plumbers are fully licensed and insured. We meet and exceed all state requirements.",
     },
     {
-      icon: BadgeCheck,
-      title: "Veteran Owned",
-      description: "Proud to be a veteran-owned business serving our community with integrity and excellence.",
-    },
-    {
       icon: Award,
       title: "Quality Workmanship",
       description: "We take pride in delivering top-quality workmanship on every job, big or small.",
