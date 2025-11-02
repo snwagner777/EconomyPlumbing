@@ -5,13 +5,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata('/blog');
   
   if (metadata) {
-    return {
-      title: metadata.title,
-      description: metadata.description,
-      alternates: {
-        canonical: metadata.canonical || undefined,
-      },
-    };
+    return metadata;
   }
   
   return {
