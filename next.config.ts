@@ -1,4 +1,5 @@
 import type { NextConfig } from 'next';
+import path from 'path';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -26,6 +27,13 @@ const nextConfig: NextConfig = {
   // Production optimizations
   poweredByHeader: false,
   generateEtags: true,
+  
+  // Turbopack configuration for @assets alias
+  turbopack: {
+    resolveAlias: {
+      '@assets': path.resolve(process.cwd(), 'attached_assets'),
+    },
+  },
   
   // Redirects for SEO
   async redirects() {
