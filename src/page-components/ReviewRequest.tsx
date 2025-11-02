@@ -1,3 +1,5 @@
+'use client';
+
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Star, ExternalLink, Facebook, Shield, Heart, Clock, TrendingUp, CheckCircle, Award, Users, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
