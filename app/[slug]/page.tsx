@@ -328,16 +328,6 @@ export default function BlogPostPage() {
                 className="max-w-full max-h-full object-contain"
                 data-testid="img-lightbox"
               />
-              {originalPhoto?.photoUrl && (
-                <p className="absolute bottom-2 right-2 text-white/60 text-xs">
-                  Full resolution original
-                </p>
-              )}
-              {!originalPhoto?.photoUrl && post.imageId && (
-                <p className="absolute bottom-2 right-2 text-white/60 text-xs">
-                  Original not available
-                </p>
-              )}
             </div>
           </DialogContent>
         </Dialog>
