@@ -17,7 +17,7 @@ export default function AboutClient() {
     "@type": "Organization",
     "name": "Economy Plumbing Services",
     "url": "https://www.plumbersthatcare.com",
-    "logo": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "logo": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Central Texas's trusted water heater experts since 2005. Specializing in tankless water heater installation, water heater repair & replacement. Licensed plumbers serving Austin to Marble Falls.",
     "foundingDate": "2005",
     "address": {

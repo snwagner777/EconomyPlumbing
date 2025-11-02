@@ -44,7 +44,7 @@ export default function PlumberNearMe() {
     "@context": "https://schema.org",
     "@type": "Plumber",
     "name": "Economy Plumbing Services",
-    "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Licensed and insured plumbing services in Austin and Marble Falls, Texas. 24/7 emergency plumber available. Water heater repair, drain cleaning, leak repair, and more.",
     "address": {
       "@type": "PostalAddress",

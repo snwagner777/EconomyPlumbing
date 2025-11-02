@@ -33,7 +33,7 @@ export default function CommercialServicesLanding() {
     "@context": "https://schema.org",
     "@type": "Plumber",
     "name": "Economy Plumbing Services - Commercial Division",
-    "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Commercial plumbing services for restaurants, offices, and businesses in Austin and Marble Falls. Emergency repairs, grease trap best practices, water heater service, preventive maintenance.",
     "address": {
       "@type": "PostalAddress",

@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
       const pubDate = new Date(story.submittedAt).toUTCString();
       
       // Use pre-generated JPEG version for RSS feed
-      let imageUrl = `${baseUrl}/attached_assets/logo.jpg`; // Default fallback
+      let imageUrl = `${baseUrl}/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg`; // Default fallback
       
       if (story.jpegCollagePhotoUrl) {
         // Use the pre-generated JPEG version (created at approval)

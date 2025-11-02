@@ -68,7 +68,7 @@ export function SEOHead({
   // Blog posts and success stories should pass their hero/featured images
   const fullOgImage = ogImage 
     ? (ogImage.startsWith('http') ? ogImage : `${productionUrl}${ogImage}`)
-    : `${productionUrl}/attached_assets/logo.jpg`;
+    : `${productionUrl}/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg`;
 
   // Update document head dynamically (client-side only for OpenGraph/meta)
   useEffect(() => {

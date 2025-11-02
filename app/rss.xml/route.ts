@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
         const postUrl = `${baseUrl}/${post.slug}`;
         
         // Use pre-generated JPEG version for RSS feed
-        let imageUrl = `${baseUrl}/attached_assets/logo.jpg`; // Default fallback
+        let imageUrl = `${baseUrl}/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg`; // Default fallback
         
         if (post.jpegFeaturedImage) {
           // Use the pre-generated JPEG version (created at blog post creation)

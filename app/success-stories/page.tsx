@@ -94,7 +94,7 @@ export default function SuccessStories() {
   // Use first available composite image as OG image, or logo as fallback
   const ogImage = composites && composites.length > 0 && composites[0].jpegCompositeUrl
     ? `https://www.plumbersthatcare.com${composites[0].jpegCompositeUrl}`
-    : "https://www.plumbersthatcare.com/attached_assets/logo.jpg";
+    : "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg";
 
   return (
     <>

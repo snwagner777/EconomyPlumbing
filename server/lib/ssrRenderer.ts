@@ -915,7 +915,7 @@ export async function generateBlogPostSSR(slug: string, storage: any): Promise<S
   // Use featured image for OG, fallback to logo
   const ogImage = post.featuredImage 
     ? `https://www.plumbersthatcare.com${post.featuredImage.replace('.webp', '.jpg')}`
-    : 'https://www.plumbersthatcare.com/attached_assets/logo.jpg';
+    : 'https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg';
   
   // Create SEO-optimized excerpt from content
   const excerpt = post.excerpt || post.content
@@ -1007,7 +1007,7 @@ export function renderPageForCrawler(
   }
   
   // Add OpenGraph tags
-  const ogImage = config.ogImage || 'https://www.plumbersthatcare.com/attached_assets/logo.jpg';
+  const ogImage = config.ogImage || 'https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg';
   const ogImageAlt = config.ogImageAlt || 'Economy Plumbing Services - Professional Plumbers in Austin and Marble Falls, TX';
   const ogTags = `
   <!-- OpenGraph for Social Media -->
