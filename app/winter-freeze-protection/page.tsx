@@ -2,22 +2,24 @@
  * Winter Freeze Protection Page
  */
 
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Winter Freeze Protection | Prevent Frozen Pipes Austin TX',
-  description: 'Protect your Austin home from frozen pipes. Free winter plumbing checklist, freeze prevention tips, and emergency service. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Winter Freeze Protection - Prevent Frozen Pipes',
-    description: 'Protect your home from frozen pipes with our winter plumbing checklist',
-  },
-};
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Phone } from 'lucide-react';
+import { usePhoneConfig } from '@/hooks/usePhoneConfig';
 
 export default function WinterFreezeProtectionPage() {
+  const phoneConfig = usePhoneConfig();
+  
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+    <>
+      <Header />
+      
+      <div className="min-h-screen py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
           <div className="bg-primary text-primary-foreground p-6 rounded-lg mb-8">
             <h1 className="text-3xl font-bold mb-2">Winter Freeze Protection</h1>
             <p className="text-lg">Protect your home from costly frozen pipe damage</p>
@@ -77,15 +79,23 @@ export default function WinterFreezeProtectionPage() {
             <p className="text-lg mb-6">
               24/7 emergency service for frozen and burst pipes
             </p>
-            <a 
-              href="tel:512-368-9159"
-              className="inline-block bg-background text-foreground px-8 py-4 rounded-lg font-bold text-lg hover:opacity-90 transition"
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="bg-white text-primary border-white"
+              asChild
             >
-              CALL NOW: (512) 368-9159
-            </a>
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
+                <Phone className="w-5 h-5" />
+                CALL NOW: {phoneConfig.display}
+              </a>
+            </Button>
           </section>
         </div>
       </div>
     </div>
+    
+    <Footer />
+    </>
   );
 }

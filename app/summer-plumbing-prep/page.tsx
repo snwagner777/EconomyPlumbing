@@ -2,22 +2,24 @@
  * Summer Plumbing Prep Page
  */
 
-import type { Metadata } from 'next';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'Summer Plumbing Prep Checklist | Economy Plumbing Services Austin',
-  description: 'Prepare your plumbing for summer in Austin. AC drain lines, sprinklers, water heaters. Get your free summer plumbing checklist!',
-  openGraph: {
-    title: 'Summer Plumbing Prep Checklist',
-    description: 'Prepare your plumbing for summer with this essential checklist',
-  },
-};
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import { Button } from '@/components/ui/button';
+import { Phone } from 'lucide-react';
+import { usePhoneConfig } from '@/hooks/usePhoneConfig';
 
 export default function SummerPlumbingPrepPage() {
+  const phoneConfig = usePhoneConfig();
+  
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+    <>
+      <Header />
+      
+      <div className="min-h-screen py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6">Summer Plumbing Prep Checklist</h1>
           
           <p className="text-xl text-muted-foreground mb-12">
@@ -68,15 +70,23 @@ export default function SummerPlumbingPrepPage() {
             <p className="mb-6">
               Our technicians can inspect and prepare your plumbing for summer
             </p>
-            <a 
-              href="tel:512-368-9159"
-              className="inline-block bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="bg-white text-primary border-white"
+              asChild
             >
-              Call: (512) 368-9159
-            </a>
+              <a href={phoneConfig.tel} className="flex items-center gap-2">
+                <Phone className="w-5 h-5" />
+                Call: {phoneConfig.display}
+              </a>
+            </Button>
           </section>
         </div>
       </div>
     </div>
+    
+    <Footer />
+    </>
   );
 }
