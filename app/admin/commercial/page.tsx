@@ -14,6 +14,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { LogOut, Plus, Edit, Trash2, Upload, Sparkles, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { CommercialCustomer } from "@shared/schema";
+import type { AdminCheckResponse, ProcessLogoResponse } from "@/lib/auth";
 
 export default function CommercialCustomersAdmin() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function CommercialCustomersAdmin() {
   });
 
   // Check auth status
-  const { data: authData } = useQuery({
+  const { data: authData } = useQuery<AdminCheckResponse>({
     queryKey: ['/api/admin/check'],
   });
 
@@ -227,10 +228,12 @@ export default function CommercialCustomersAdmin() {
       const { logoUrl } = await uploadResponse.json();
 
       // Process with OpenAI for background removal and optimization
-      const { processedLogoUrl } = await apiRequest("POST", "/api/admin/process-logo", {
+      const response = await apiRequest("POST", "/api/admin/process-logo", {
         logoUrl,
         customerName: formData.name || "Logo",
       });
+      
+      const { processedLogoUrl } = await response.json() as ProcessLogoResponse;
 
       setFormData(prev => ({ ...prev, logoUrl: processedLogoUrl }));
       setLogoPreview(processedLogoUrl);

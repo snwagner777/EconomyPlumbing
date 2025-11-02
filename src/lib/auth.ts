@@ -6,6 +6,14 @@ export interface SessionData {
   username?: string;
 }
 
+export interface AdminCheckResponse {
+  isAdmin: boolean;
+}
+
+export interface ProcessLogoResponse {
+  processedLogoUrl: string;
+}
+
 // Validate SESSION_SECRET at runtime
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
   throw new Error('SESSION_SECRET must be set and at least 32 characters long');
