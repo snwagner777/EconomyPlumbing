@@ -1,6 +1,5 @@
 {
   "include": [
-    "client/src/**/*",
     "shared/**/*",
     "server/**/*",
     "app/**/*",
@@ -59,9 +58,6 @@
       ],
       "@shared/*": [
         "./shared/*"
-      ],
-      "@client/*": [
-        "./client/src/*"
       ],
       "@assets/*": [
         "./attached_assets/*"
