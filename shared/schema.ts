@@ -1777,6 +1777,104 @@ export const jobCompletions = pgTable("job_completions", {
   customerIdIdx: index("job_completions_customer_id_idx").on(table.customerId),
 }));
 
+// Invoice Processing Log - Track invoice PDF webhook attempts from ServiceTitan
+export const invoiceProcessingLog = pgTable("invoice_processing_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Email metadata
+  emailSubject: text("email_subject"),
+  emailFrom: text("email_from"),
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+  
+  // PDF details
+  pdfUrl: text("pdf_url"),
+  pdfFilename: text("pdf_filename"),
+  attachmentSize: integer("attachment_size"), // In bytes
+  
+  // Processing status
+  status: text("status").notNull().default('pending'), // 'pending', 'parsed', 'matched', 'completed', 'failed'
+  errorMessage: text("error_message"),
+  
+  // Extracted data (stored as JSON)
+  extractedData: jsonb("extracted_data"), // {customerName, email, phone, invoiceNumber, amount, date, services}
+  
+  // Customer matching result
+  matchedCustomerId: integer("matched_customer_id"),
+  matchMethod: text("match_method"), // 'email', 'phone', 'fuzzy_name', 'manual', 'no_match'
+  matchConfidence: integer("match_confidence"), // 0-100
+  requiresManualReview: boolean("requires_manual_review").notNull().default(false),
+  
+  // Job completion created
+  jobCompletionId: varchar("job_completion_id"), // Links to jobCompletions table
+  jobCompletionCreated: boolean("job_completion_created").notNull().default(false),
+  
+  // Campaign triggered
+  reviewRequestId: varchar("review_request_id"), // Links to reviewRequests table
+  reviewRequestTriggered: boolean("review_request_triggered").notNull().default(false),
+  
+  // Admin actions
+  manuallyLinkedAt: timestamp("manually_linked_at"),
+  manuallyLinkedBy: varchar("manually_linked_by"),
+  adminNotes: text("admin_notes"),
+  
+  // Timestamps
+  processedAt: timestamp("processed_at"),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  receivedAtIdx: index("invoice_processing_log_received_at_idx").on(table.receivedAt),
+  statusIdx: index("invoice_processing_log_status_idx").on(table.status),
+  matchedCustomerIdx: index("invoice_processing_log_matched_customer_idx").on(table.matchedCustomerId),
+  requiresReviewIdx: index("invoice_processing_log_requires_review_idx").on(table.requiresManualReview),
+}));
+
+// Estimate Processing Log - Track estimate PDF webhook attempts from ServiceTitan
+export const estimateProcessingLog = pgTable("estimate_processing_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Email metadata
+  emailSubject: text("email_subject"),
+  emailFrom: text("email_from"),
+  receivedAt: timestamp("received_at").notNull().defaultNow(),
+  
+  // PDF details
+  pdfUrl: text("pdf_url"),
+  pdfFilename: text("pdf_filename"),
+  attachmentSize: integer("attachment_size"), // In bytes
+  
+  // Processing status
+  status: text("status").notNull().default('pending'), // 'pending', 'parsed', 'matched', 'completed', 'skipped', 'failed'
+  errorMessage: text("error_message"),
+  skipReason: text("skip_reason"), // 'zero_amount', 'duplicate', 'invalid_data'
+  
+  // Extracted data (stored as JSON)
+  extractedData: jsonb("extracted_data"), // {customerName, email, phone, estimateNumber, amount, date, services}
+  
+  // Customer matching result
+  matchedCustomerId: integer("matched_customer_id"),
+  matchMethod: text("match_method"), // 'email', 'phone', 'fuzzy_name', 'manual', 'no_match'
+  matchConfidence: integer("match_confidence"), // 0-100
+  requiresManualReview: boolean("requires_manual_review").notNull().default(false),
+  
+  // Quote tracking created
+  quoteFollowupId: varchar("quote_followup_id"), // Links to future quote follow-up campaign table
+  quoteFollowupTriggered: boolean("quote_followup_triggered").notNull().default(false),
+  estimateAmount: integer("estimate_amount"), // Amount in cents
+  
+  // Admin actions
+  manuallyLinkedAt: timestamp("manually_linked_at"),
+  manuallyLinkedBy: varchar("manually_linked_by"),
+  adminNotes: text("admin_notes"),
+  
+  // Timestamps
+  processedAt: timestamp("processed_at"),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  receivedAtIdx: index("estimate_processing_log_received_at_idx").on(table.receivedAt),
+  statusIdx: index("estimate_processing_log_status_idx").on(table.status),
+  matchedCustomerIdx: index("estimate_processing_log_matched_customer_idx").on(table.matchedCustomerId),
+  requiresReviewIdx: index("estimate_processing_log_requires_review_idx").on(table.requiresManualReview),
+}));
+
 // Review Requests - 4-email drip campaign over 21 days
 export const reviewRequests = pgTable("review_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2077,6 +2175,20 @@ export const insertJobCompletionSchema = createInsertSchema(jobCompletions).omit
   createdAt: true,
 });
 
+export const insertInvoiceProcessingLogSchema = createInsertSchema(invoiceProcessingLog).omit({
+  id: true,
+  receivedAt: true,
+  processedAt: true,
+  completedAt: true,
+});
+
+export const insertEstimateProcessingLogSchema = createInsertSchema(estimateProcessingLog).omit({
+  id: true,
+  receivedAt: true,
+  processedAt: true,
+  completedAt: true,
+});
+
 export const insertReviewRequestSchema = createInsertSchema(reviewRequests).omit({
   id: true,
   createdAt: true,
@@ -2184,6 +2296,10 @@ export const insertCustomCampaignSendLogSchema = createInsertSchema(customCampai
 
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
+export type InvoiceProcessingLog = typeof invoiceProcessingLog.$inferSelect;
+export type InsertInvoiceProcessingLog = z.infer<typeof insertInvoiceProcessingLogSchema>;
+export type EstimateProcessingLog = typeof estimateProcessingLog.$inferSelect;
+export type InsertEstimateProcessingLog = z.infer<typeof insertEstimateProcessingLogSchema>;
 export type ReviewRequest = typeof reviewRequests.$inferSelect;
 export type InsertReviewRequest = z.infer<typeof insertReviewRequestSchema>;
 export type ReviewFeedback = typeof reviewFeedback.$inferSelect;
