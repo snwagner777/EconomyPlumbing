@@ -7789,14 +7789,15 @@ export default function UnifiedAdminDashboard() {
   const stats = statsData?.stats || {};
   const photos = photosData?.photos || [];
 
-  // Show nothing while checking auth or if not admin (redirect happens via useEffect above)
-  if (!authData?.isAdmin) {
-    return null;
-  }
-
   const sidebarStyle = {
     "--sidebar-width": "280px",
   };
+
+  // Show nothing while checking auth or if not admin (redirect happens via useEffect above)
+  // IMPORTANT: This check must come AFTER all hooks to avoid hooks rule violation
+  if (!authData?.isAdmin) {
+    return null;
+  }
 
   const renderContent = () => {
     switch (activeSection) {
