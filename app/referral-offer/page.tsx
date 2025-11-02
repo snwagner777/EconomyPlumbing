@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,7 +28,7 @@ const refereeFormSchema = z.object({
 
 type RefereeForm = z.infer<typeof refereeFormSchema>;
 
-export default function ReferralOffer() {
+function ReferralOfferContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -300,5 +300,19 @@ export default function ReferralOffer() {
         </div>
       </div>
     </>
+  );
+}
+
+export default function ReferralOffer() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    }>
+      <ReferralOfferContent />
+    </Suspense>
   );
 }

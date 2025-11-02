@@ -7,6 +7,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '@/server/storage';
 
+// Mark as dynamic route since we use request.headers
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const hostname = req.headers.get('host') || 'www.plumbersthatcare.com';

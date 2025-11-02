@@ -4,19 +4,10 @@ import path from 'path';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   
-  // Skip TypeScript and ESLint checking during production builds for faster deployments
+  // Skip TypeScript checking during production builds for faster deployments
   // Type checking is done in development and by LSP
   typescript: {
     ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  
-  // Optimize build performance for large applications (4,142+ TS files)
-  swcMinify: true,
-  compiler: {
-    removeConsole: process.env.NODE_ENV === 'production',
   },
   
   // Image optimization
