@@ -7,8 +7,8 @@ import Footer from "@/components/Footer";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
-import { ServiceCardSSR } from '@/components/ServiceCardSSR';
-import { WhyChooseCardSSR } from '@/components/WhyChooseCardSSR';
+import { ServiceCardSSR } from '../src/components/ServiceCardSSR';
+import { WhyChooseCardSSR } from '../src/components/WhyChooseCardSSR';
 import { PhoneLink } from '@/components/PhoneLink';
 import { SchedulerButton } from '@/components/SchedulerButton';
 import Link from "next/link";
@@ -76,16 +76,18 @@ export async function generateMetadata(): Promise<Metadata> {
     },
   ]);
   
+  // Combine JSON-LD schemas into script tags
+  const schemas = [
+    localBusinessSchema,
+    marbleFallsSchema,
+    organizationSchema,
+    faqSchema,
+  ].filter(Boolean);
+
   return {
     ...metadata,
-    other: {
-      ...metadata.other,
-      'script:ld+json': JSON.stringify([
-        localBusinessSchema,
-        marbleFallsSchema,
-        organizationSchema,
-        faqSchema,
-      ].filter(Boolean)),
+    alternates: {
+      canonical: 'https://plumbersthatcare.com/',
     },
   };
 }
@@ -188,8 +190,42 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     },
   ];
 
+  // Prepare JSON-LD schemas for SEO
+  const schemas = [
+    localBusinessSchema,
+    createMarbleFallsLocationSchema(),
+    createOrganizationSchema(),
+    createFAQSchema([
+      {
+        question: "What areas do you serve in Texas?",
+        answer: "We serve Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Liberty Hill, Buda, Kyle, Marble Falls, Burnet, Horseshoe Bay, Kingsland, Granite Shoals, Bertram, and Spicewood.",
+      },
+      {
+        question: "Do you offer emergency plumbing services?",
+        answer: "Yes, we offer 24/7 emergency plumbing services throughout Central Texas. Call us anytime for urgent plumbing issues.",
+      },
+      {
+        question: "Are your plumbers licensed and insured?",
+        answer: "Absolutely. All our plumbers are fully licensed and insured to protect you and your property.",
+      },
+      {
+        question: "Do you provide upfront pricing?",
+        answer: "Yes, we believe in transparent pricing. We provide upfront estimates with no hidden fees before we begin any work.",
+      },
+    ]),
+  ];
+
   return (
     <div className="min-h-screen">
+      {/* JSON-LD Structured Data for SEO */}
+      {schemas.map((schema, index) => (
+        <script
+          key={index}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+      ))}
+      
       <Header austinPhone={austin} marbleFallsPhone={marbleFalls} />
       <Hero austinPhone={austin} />
 

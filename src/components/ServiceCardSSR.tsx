@@ -27,10 +27,13 @@ export function ServiceCardSSR({
     <Card className="overflow-hidden hover:shadow-xl transition-shadow border border-card-border">
       <Link href={link} className="block">
         <div className="relative h-48 overflow-hidden">
-          <img
+          <Image
             src={image}
-            alt={title}
+            alt={`${title} - Professional plumbing service in Austin & Central Texas`}
+            width={400}
+            height={300}
             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+            loading="lazy"
           />
         </div>
         <div className="p-6">
