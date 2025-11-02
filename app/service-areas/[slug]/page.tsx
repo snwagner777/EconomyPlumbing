@@ -6,9 +6,11 @@
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 
 type Props = {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{[key: string]: string | string[] | undefined}>;
 };
 
 async function getServiceArea(slug: string) {
@@ -47,13 +49,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-export default async function ServiceAreaPage({ params }: Props) {
+export default async function ServiceAreaPage({ params, searchParams }: Props) {
   const { slug } = await params;
-  const area = await getServiceArea(slug);
+  const search = await searchParams;
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
+  
+  const [area, phoneNumbers] = await Promise.all([
+    getServiceArea(slug),
+    getPhoneNumbers(urlParams)
+  ]);
 
   if (!area) {
     notFound();
   }
+  
+  // Determine which area this belongs to (Austin or Marble Falls) based on region
+  const isMarbleFalls = area.region?.toLowerCase().includes('marble falls') || 
+                        area.area?.toLowerCase() === 'marble falls' ||
+                        slug.includes('marble-falls');
+  const phoneConfig = isMarbleFalls ? phoneNumbers.marbleFalls : phoneNumbers.austin;
 
   return (
     <div className="min-h-screen py-16">
@@ -123,10 +140,10 @@ export default async function ServiceAreaPage({ params }: Props) {
             </p>
             <div className="flex flex-wrap gap-4">
               <a 
-                href="tel:555-555-5555"
+                href={phoneConfig.tel}
                 className="bg-background text-foreground px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition"
               >
-                Call Now: (555) 555-5555
+                Call Now: {phoneConfig.display}
               </a>
               <a 
                 href="/contact"

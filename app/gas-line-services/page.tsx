@@ -45,27 +45,24 @@ const faqs = [
 ];
 
 export default async function GasServices({ searchParams }: GasLineServicesPageProps) {
-  await searchParams;
-  const { phoneConfig, marbleFallsPhoneConfig } = await getPhoneNumbers();
-
-  const serviceSchema = createServiceSchema({
-    name: "Gas Line Services",
-    description: "Professional gas line installation for appliances, outdoor kitchens, fire pits & generators in Austin. Licensed gas fitters providing safe, code-compliant installations.",
-    areaServed: [
-      { name: "Austin", type: "City" },
-      { name: "Marble Falls", type: "City" },
-      { name: "Cedar Park", type: "City" },
-      { name: "Round Rock", type: "City" },
-      { name: "Georgetown", type: "City" },
-      { name: "Leander", type: "City" }
-    ],
+  const search = await searchParams;
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
   });
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers(urlParams);
+
+  const serviceSchema = createServiceSchema(
+    "Gas Line Services",
+    "Professional gas line installation for appliances, outdoor kitchens, fire pits & generators in Austin. Licensed gas fitters providing safe, code-compliant installations.",
+    "https://www.plumbersthatcare.com/gas-line-services"
+  );
 
   const faqSchema = createFAQSchema(faqs);
 
   const breadcrumbSchema = createBreadcrumbListSchema([
-    { name: "Home", item: "https://www.plumbersthatcare.com" },
-    { name: "Gas Line Services", item: "https://www.plumbersthatcare.com/gas-line-services" }
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Gas Line Services", url: "https://www.plumbersthatcare.com/gas-line-services" }
   ]);
 
   return (

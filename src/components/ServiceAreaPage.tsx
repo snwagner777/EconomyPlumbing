@@ -11,7 +11,6 @@ import { JsonLd } from "@/components/SEO/JsonLd";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import defaultHeroImage from "@assets/optimized/plumber_working_resi_a03913c7.webp";
 import { openScheduler } from "@/lib/scheduler";
-import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
 interface NearbyCity {
@@ -58,11 +57,12 @@ export default function ServiceAreaPage({
   phoneConfig: phoneConfigProp,
   marbleFallsPhoneConfig: marbleFallsPhoneConfigProp,
 }: ServiceAreaPageProps) {
-  // Use provided phone configs from server-side, fall back to client hooks for backwards compat
-  const hookAustinPhoneConfig = usePhoneConfig();
-  const hookMarbleFallsPhoneConfig = useMarbleFallsPhone();
-  const austinPhoneConfig = phoneConfigProp || hookAustinPhoneConfig;
-  const marbleFallsPhoneConfig = marbleFallsPhoneConfigProp || hookMarbleFallsPhoneConfig;
+  // Phone configs must be passed from server-side (SSR)
+  if (!phoneConfigProp || !marbleFallsPhoneConfigProp) {
+    throw new Error('ServiceAreaPage requires phoneConfig and marbleFallsPhoneConfig props for SSR');
+  }
+  const austinPhoneConfig = phoneConfigProp;
+  const marbleFallsPhoneConfig = marbleFallsPhoneConfigProp;
   const phone = area === "austin" ? austinPhoneConfig.display : marbleFallsPhoneConfig.display;
   const phoneLink = area === "austin" ? austinPhoneConfig.tel : marbleFallsPhoneConfig.tel;
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";

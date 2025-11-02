@@ -45,27 +45,24 @@ const faqs = [
 ];
 
 export default async function DrainCleaning({ searchParams }: DrainCleaningPageProps) {
-  await searchParams;
-  const { phoneConfig, marbleFallsPhoneConfig } = await getPhoneNumbers();
-
-  const serviceSchema = createServiceSchema({
-    name: "Drain Cleaning Services",
-    description: "Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service available.",
-    areaServed: [
-      { name: "Austin", type: "City" },
-      { name: "Marble Falls", type: "City" },
-      { name: "Cedar Park", type: "City" },
-      { name: "Round Rock", type: "City" },
-      { name: "Georgetown", type: "City" },
-      { name: "Leander", type: "City" }
-    ],
+  const search = await searchParams;
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
   });
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers(urlParams);
+
+  const serviceSchema = createServiceSchema(
+    "Drain Cleaning Services",
+    "Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service available.",
+    "https://www.plumbersthatcare.com/drain-cleaning-services"
+  );
 
   const faqSchema = createFAQSchema(faqs);
 
   const breadcrumbSchema = createBreadcrumbListSchema([
-    { name: "Home", item: "https://www.plumbersthatcare.com" },
-    { name: "Drain Cleaning", item: "https://www.plumbersthatcare.com/drain-cleaning-services" }
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Drain Cleaning", url: "https://www.plumbersthatcare.com/drain-cleaning-services" }
   ]);
 
   return (

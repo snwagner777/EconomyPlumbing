@@ -51,18 +51,11 @@ export default async function FaucetInstallation({ searchParams }: FaucetInstall
   });
   const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers(urlParams);
 
-  const serviceSchema = createServiceSchema({
-    name: "Faucet Installation & Repair Services",
-    description: "Professional faucet installation & repair in Austin for kitchen, bathroom & shower. Touchless faucets, fixture upgrades & leak repairs.",
-    areaServed: [
-      { name: "Austin", type: "City" },
-      { name: "Marble Falls", type: "City" },
-      { name: "Cedar Park", type: "City" },
-      { name: "Round Rock", type: "City" },
-      { name: "Georgetown", type: "City" },
-      { name: "Leander", type: "City" }
-    ],
-  });
+  const serviceSchema = createServiceSchema(
+    "Faucet Installation & Repair Services",
+    "Professional faucet installation & repair in Austin for kitchen, bathroom & shower. Touchless faucets, fixture upgrades & leak repairs.",
+    "https://www.plumbersthatcare.com/faucet-installation"
+  );
 
   const faqSchema = createFAQSchema(faqs);
 
