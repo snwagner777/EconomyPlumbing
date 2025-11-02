@@ -18,7 +18,7 @@ import BlogCard from "@/components/BlogCard";
 import InlineReviewCard from "@/components/InlineReviewCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home, X } from "lucide-react";
 import { format } from "date-fns";
 import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
@@ -50,6 +50,12 @@ export default function BlogPostPage() {
   const { data: post, isLoading } = useQuery<BlogPost>({
     queryKey: ["/api/blog", slug],
     enabled: !!slug,
+  });
+
+  // Fetch original photo for lightbox if imageId exists
+  const { data: originalPhoto } = useQuery<{ photoUrl: string }>({
+    queryKey: ["/api/admin/photos", post?.imageId],
+    enabled: !!post?.imageId && lightboxOpen,
   });
 
   const { data: allPostsData } = useQuery<{ posts: BlogPost[] }>({
@@ -307,6 +313,7 @@ export default function BlogPostPage() {
       {post?.featuredImage && (
         <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
           <DialogContent className="max-w-7xl w-full p-0 bg-black/95 border-0">
+            <DialogTitle className="sr-only">Full size image: {post.title}</DialogTitle>
             <button
               onClick={() => setLightboxOpen(false)}
               className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 text-white hover-elevate active-elevate-2"
@@ -316,7 +323,7 @@ export default function BlogPostPage() {
             </button>
             <div className="relative w-full h-[90vh] flex items-center justify-center p-8">
               <img
-                src={post.featuredImage}
+                src={originalPhoto?.photoUrl || post.featuredImage}
                 alt={post.title}
                 className="max-w-full max-h-full object-contain"
                 data-testid="img-lightbox"
