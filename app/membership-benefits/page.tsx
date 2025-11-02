@@ -12,11 +12,11 @@ import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 
 export default function MembershipBenefits() {
   const phoneConfig = usePhoneConfig();
-  const { data: products } = useQuery<Product[]>({
+  const { data } = useQuery<{ products: Product[]; count: number }>({
     queryKey: ['/api/products'],
   });
 
-  const memberships = Array.isArray(products) ? products.filter(p => p.category === 'membership') : [];
+  const memberships = data?.products?.filter(p => p.category === 'membership') || [];
 
   const benefits = [
     {
