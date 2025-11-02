@@ -16,10 +16,9 @@ import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
-import { SEOHead } from "@/components/SEO/SEOHead";
-import { createFAQSchema, createServiceSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
+import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
 interface FAQ {
   question: string;
@@ -73,6 +72,8 @@ interface ServicePageProps {
     content: string;
   };
   customSection?: React.ReactNode;
+  phoneConfig?: PhoneConfig;
+  marbleFallsPhoneConfig?: PhoneConfig;
 }
 
 export default function ServicePage({
@@ -99,28 +100,17 @@ export default function ServicePage({
   maintenanceTips,
   additionalContent,
   customSection,
+  phoneConfig: phoneConfigProp,
+  marbleFallsPhoneConfig: marbleFallsPhoneConfigProp,
 }: ServicePageProps) {
-  const phoneConfig = usePhoneConfig();
-  const marbleFallsPhoneConfig = useMarbleFallsPhone();
-  const serviceSchema = createServiceSchema(heroTitle, metaDescription, canonical);
-  const breadcrumbSchema = createBreadcrumbListSchema([
-    { name: "Home", url: "https://www.plumbersthatcare.com" },
-    { name: "Services", url: "https://www.plumbersthatcare.com/services" },
-    { name: heroTitle, url: canonical }
-  ]);
-  const schemas = faqs.length > 0 
-    ? [serviceSchema, createFAQSchema(faqs), breadcrumbSchema] 
-    : [serviceSchema, breadcrumbSchema];
+  // Use provided phone configs from server-side, fall back to client hooks for backwards compat
+  const hookPhoneConfig = usePhoneConfig();
+  const hookMarbleFallsPhone = useMarbleFallsPhone();
+  const phoneConfig = phoneConfigProp || hookPhoneConfig;
+  const marbleFallsPhoneConfig = marbleFallsPhoneConfigProp || hookMarbleFallsPhone;
 
   return (
     <div className="min-h-screen">
-      <SEOHead
-        title={title}
-        description={metaDescription}
-        canonical={canonical}
-        schema={schemas}
-      />
-
       <Header />
 
       {/* Breadcrumbs */}
