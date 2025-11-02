@@ -44,7 +44,7 @@ async function processMembershipSync(membershipId: string): Promise<SyncResult> 
       serviceTitanMembershipId: result.membershipId.toString(),
       serviceTitanInvoiceId: result.invoiceId.toString(),
       syncStatus: 'synced',
-      syncedAt: new Date().toISOString(),
+      syncedAt: new Date(),
       syncError: null,
     });
 

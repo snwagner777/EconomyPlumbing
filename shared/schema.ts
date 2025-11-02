@@ -476,28 +476,41 @@ export const customerSegments = pgTable("customer_segments", {
   
   // Segment identification
   name: text("name").notNull().unique(), // "VIP Customers", "Recent Water Heater Installs", etc.
-  description: text("description"),
+  description: text("description").notNull(),
   
   // Segment type
   segmentType: text("segment_type").notNull(), // 'static' (manual), 'dynamic' (auto-updated), 'ai_generated'
   
+  // Criteria for segment membership
+  targetCriteria: jsonb("target_criteria").notNull(), // {minLifetimeValue: 5000, lastServiceWithin: 180, tags: ['VIP']}
+  
   // AI-generated segments
+  generatedByAi: boolean("generated_by_ai").notNull().default(false),
   aiPrompt: text("ai_prompt"), // "Customers who spent >$5000 in last 6 months"
+  aiReasoning: text("ai_reasoning"), // AI's explanation of the criteria
   aiCriteria: jsonb("ai_criteria"), // Parsed criteria from AI
   
-  // Static criteria (for manual/dynamic segments)
-  criteria: jsonb("criteria"), // {minLifetimeValue: 5000, lastServiceWithin: 180, tags: ['VIP']}
+  // Status
+  status: text("status").notNull().default('active'), // 'active', 'archived'
   
   // Statistics
-  customerCount: integer("customer_count").notNull().default(0),
-  lastRefreshedAt: timestamp("last_refreshed_at"), // When dynamic segment was last recalculated
+  memberCount: integer("member_count").notNull().default(0),
+  totalRevenue: integer("total_revenue").notNull().default(0),
+  totalJobsBooked: integer("total_jobs_booked").notNull().default(0),
+  
+  // Auto-management flags
+  autoEntryEnabled: boolean("auto_entry_enabled").notNull().default(true), // Automatically add matching customers
+  autoExitEnabled: boolean("auto_exit_enabled").notNull().default(true), // Automatically remove non-matching customers
   
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  lastRefreshedAt: timestamp("last_refreshed_at"), // When dynamic segment was last recalculated
 }, (table) => ({
   nameIdx: index("customer_segments_name_idx").on(table.name),
   typeIdx: index("customer_segments_type_idx").on(table.segmentType),
+  statusIdx: index("customer_segments_status_idx").on(table.status),
+  aiIdx: index("customer_segments_ai_idx").on(table.generatedByAi),
 }));
 
 // Segment Membership - Links customers to segments
