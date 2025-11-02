@@ -10,8 +10,7 @@
  * - Service details
  */
 
-// TODO: Install pdf-parse package when npm registry is available
-// import pdfParse from 'pdf-parse';
+import * as pdfParse from 'pdf-parse';
 
 export interface ParsedPDFData {
   // Customer information
@@ -56,12 +55,9 @@ export async function parsePDF(
   const errors: string[] = [];
   
   try {
-    // TODO: Uncomment when pdf-parse is installed
-    // const pdfData = await pdfParse(pdfBuffer);
-    // const text = pdfData.text;
-    
-    // TEMPORARY: Return placeholder until pdf-parse is installed
-    const text = "PLACEHOLDER - PDF parsing not yet implemented";
+    // Parse PDF buffer to extract text
+    const pdfData = await pdfParse(pdfBuffer);
+    const text = pdfData.text;
     
     // Extract customer information
     const customerName = extractCustomerName(text, errors);
