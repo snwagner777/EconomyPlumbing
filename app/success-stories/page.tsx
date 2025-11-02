@@ -25,7 +25,9 @@ import type { BeforeAfterComposite, CustomerSuccessStory, GoogleReview } from "@
 export default function SuccessStories() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentReviewPage, setCurrentReviewPage] = useState(1);
   const phoneConfig = usePhoneConfig();
+  const reviewsPerPage = 6;
 
   // Load NiceJob widget script
   useEffect(() => {
@@ -58,6 +60,12 @@ export default function SuccessStories() {
   const customerStories = customerStoriesData?.stories || [];
   const reviews = reviewsData || [];
   const isLoading = compositesLoading || storiesLoading || reviewsLoading;
+  
+  // Calculate pagination for reviews
+  const totalReviewPages = Math.ceil(reviews.length / reviewsPerPage);
+  const startReviewIndex = (currentReviewPage - 1) * reviewsPerPage;
+  const endReviewIndex = startReviewIndex + reviewsPerPage;
+  const paginatedReviews = reviews.slice(startReviewIndex, endReviewIndex);
 
   // Filter composites
   const filteredComposites = composites?.filter((composite) => {
@@ -317,8 +325,9 @@ export default function SuccessStories() {
               ))}
             </div>
           ) : reviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {reviews.slice(0, 12).map((review) => (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {paginatedReviews.map((review) => (
                 <Card
                   key={review.id}
                   className="hover-elevate transition-all"
@@ -370,6 +379,47 @@ export default function SuccessStories() {
                 </Card>
               ))}
             </div>
+            
+            {/* Pagination Controls */}
+            {totalReviewPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentReviewPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentReviewPage === 1}
+                  data-testid="button-prev-page"
+                >
+                  Previous
+                </Button>
+                
+                <div className="flex gap-2">
+                  {Array.from({ length: totalReviewPages }, (_, i) => i + 1).map((page) => (
+                    <Button
+                      key={page}
+                      variant={currentReviewPage === page ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setCurrentReviewPage(page)}
+                      data-testid={`button-page-${page}`}
+                      className="min-w-[2.5rem]"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+                </div>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentReviewPage(prev => Math.min(totalReviewPages, prev + 1))}
+                  disabled={currentReviewPage === totalReviewPages}
+                  data-testid="button-next-page"
+                >
+                  Next
+                </Button>
+              </div>
+            )}
+          </>
           ) : (
             <div className="bg-muted rounded-lg p-12 text-center">
               <p className="text-muted-foreground">
