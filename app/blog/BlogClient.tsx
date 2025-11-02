@@ -78,7 +78,7 @@ export default function Blog() {
       "url": "https://www.plumbersthatcare.com",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+        "url": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
         "width": "1024",
         "height": "1024"
       }
