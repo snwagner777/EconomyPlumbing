@@ -189,13 +189,14 @@ export async function monitorGoogleDriveFolder() {
           
           console.log(`[Google Drive] ✓ Marked ${file.name} as rejected in database`);
           
-          // Delete rejected photo from Google Drive
-          try {
-            await drive.files.delete({ fileId: file.id! });
-            console.log(`[Google Drive] 🗑️  Deleted rejected photo ${file.name} from Google Drive`);
-          } catch (deleteError) {
-            console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
-          }
+          // DISABLED: Delete rejected photo from Google Drive
+          // Keeping photos in Google Drive for manual review
+          // try {
+          //   await drive.files.delete({ fileId: file.id! });
+          //   console.log(`[Google Drive] 🗑️  Deleted rejected photo ${file.name} from Google Drive`);
+          // } catch (deleteError) {
+          //   console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
+          // }
           
           continue;
         }
@@ -386,14 +387,15 @@ export async function monitorGoogleDriveFolder() {
 
         console.log(`[Google Drive] ✓ Saved ${file.name} to ${publicUrl}`);
         
-        // Delete from Google Drive after successful save
-        try {
-          await drive.files.delete({ fileId: file.id! });
-          console.log(`[Google Drive] 🗑️  Deleted ${file.name} from Google Drive`);
-        } catch (deleteError) {
-          console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
-          // Continue even if delete fails - photo is already saved
-        }
+        // DISABLED: Delete from Google Drive after successful save
+        // Keeping photos in Google Drive for backup/reference
+        // try {
+        //   await drive.files.delete({ fileId: file.id! });
+        //   console.log(`[Google Drive] 🗑️  Deleted ${file.name} from Google Drive`);
+        // } catch (deleteError) {
+        //   console.error(`[Google Drive] Warning: Could not delete ${file.name} from Google Drive:`, deleteError);
+        //   // Continue even if delete fails - photo is already saved
+        // }
         
         newPhotosCount++;
 
@@ -402,20 +404,22 @@ export async function monitorGoogleDriveFolder() {
       }
     }
 
-    // STEP 4: Delete skipped duplicate photos from Google Drive
+    // STEP 4: DISABLED - Delete skipped duplicate photos from Google Drive
+    // Keeping duplicates in Google Drive for manual review
     if (photosToSkip.size > 0) {
-      console.log(`[Google Drive] Step 4: Deleting ${photosToSkip.size} duplicate photos from Google Drive...`);
+      console.log(`[Google Drive] Step 4: Found ${photosToSkip.size} duplicate photos (keeping in Google Drive for manual review)`);
       
-      for (const skipIndex of Array.from(photosToSkip)) {
-        const { file } = candidatePhotos[skipIndex];
-        
-        try {
-          await drive.files.delete({ fileId: file.id! });
-          console.log(`[Google Drive] 🗑️  Deleted duplicate ${file.name} from Google Drive`);
-        } catch (deleteError) {
-          console.error(`[Google Drive] Warning: Could not delete duplicate ${file.name} from Google Drive:`, deleteError);
-        }
-      }
+      // DISABLED: Automatic deletion of duplicates
+      // for (const skipIndex of Array.from(photosToSkip)) {
+      //   const { file } = candidatePhotos[skipIndex];
+      //   
+      //   try {
+      //     await drive.files.delete({ fileId: file.id! });
+      //     console.log(`[Google Drive] 🗑️  Deleted duplicate ${file.name} from Google Drive`);
+      //   } catch (deleteError) {
+      //     console.error(`[Google Drive] Warning: Could not delete duplicate ${file.name} from Google Drive:`, deleteError);
+      //   }
+      // }
     }
 
     if (newPhotosCount > 0) {
