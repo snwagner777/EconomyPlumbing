@@ -22,7 +22,7 @@ export async function GET(
       );
     }
     
-    return NextResponse.json({ post });
+    return NextResponse.json(post);
   } catch (error) {
     console.error('[Blog API] Error fetching post:', error);
     return NextResponse.json(
