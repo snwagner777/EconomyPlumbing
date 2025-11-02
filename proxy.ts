@@ -13,7 +13,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { unsealData } from 'iron-session';
-import type { SessionData } from '@/lib/auth';
+import type { SessionData } from './src/lib/auth';
 
 // Validate SESSION_SECRET at runtime
 if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {

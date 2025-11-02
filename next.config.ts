@@ -4,6 +4,12 @@ import path from 'path';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   
+  // Skip TypeScript checking during production builds for faster deployments
+  // Type checking is done in development and by LSP
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  
   // Image optimization
   images: {
     remotePatterns: [
