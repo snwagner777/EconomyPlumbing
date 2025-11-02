@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: 'Economy Plumbing Services',
     images: [
       {
-        url: '/attached_assets/logo.jpg',
+        url: '/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg',
         width: 1200,
         height: 630,
         alt: 'Economy Plumbing Services - Professional Plumbers',

@@ -51,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata('/', {
     title: 'Professional Plumbing Services in Austin & Central Texas | Economy Plumbing',
     description: 'Expert plumbing services in Austin, Cedar Park, Leander, Round Rock, Georgetown, Pflugerville, Marble Falls & surrounding areas. 24/7 emergency service, licensed & insured. Call now for fast, reliable plumbing solutions.',
-    ogImage: 'https://plumbersthatcare.com/attached_assets/logo.jpg',
+    ogImage: 'https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg',
     ogType: 'website',
   });
   

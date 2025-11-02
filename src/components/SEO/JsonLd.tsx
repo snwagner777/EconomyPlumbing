@@ -30,10 +30,10 @@ export function createLocalBusinessSchema(
     "@type": "Plumber",
     "@id": "https://www.plumbersthatcare.com/#austin",
     "name": "Economy Plumbing Services",
-    "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+      "url": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
       "width": "1024",
       "height": "1024"
     },
@@ -205,7 +205,7 @@ export function createMarbleFallsLocationSchema() {
     "@type": "Plumber",
     "name": "Economy Plumbing Services - Marble Falls",
     "@id": "https://www.plumbersthatcare.com/#marblefalls",
-    "image": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Professional plumbing services in Marble Falls and the Highland Lakes area.",
     "telephone": "+18304603565",
     "email": "hello@plumbersthatcare.com",
@@ -248,7 +248,7 @@ export function createOrganizationSchema() {
     "@type": "Organization",
     "name": "Economy Plumbing Services",
     "url": "https://www.plumbersthatcare.com",
-    "logo": "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "logo": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Professional plumbing services serving Austin, Marble Falls, and Central Texas since 2012.",
     "email": "hello@plumbersthatcare.com",
     "sameAs": [
@@ -359,7 +359,7 @@ export function createProductSchema(product: any) {
     "@type": "Product",
     "name": product.name,
     "description": product.description,
-    "image": product.image || "https://www.plumbersthatcare.com/attached_assets/logo.jpg",
+    "image": product.image || "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "brand": {
       "@type": "Brand",
       "name": "Economy Plumbing Services"
@@ -386,7 +386,7 @@ export function createBlogPostSchema(post: any) {
   const postUrl = `${baseUrl}/${post.slug}`;
   const imageUrl = post.featuredImage ? 
     (post.featuredImage.startsWith('http') ? post.featuredImage : `${baseUrl}${post.featuredImage}`) : 
-    `${baseUrl}/attached_assets/logo.jpg`;
+    `${baseUrl}/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg`;
   
   // Validate and parse publish date with fallback
   const publishDate = post.publishDate ? new Date(post.publishDate) : new Date();
@@ -424,7 +424,7 @@ export function createBlogPostSchema(post: any) {
       "url": baseUrl,
       "logo": {
         "@type": "ImageObject",
-        "url": `${baseUrl}/attached_assets/logo.jpg`,
+        "url": `${baseUrl}/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg`,
         "width": "1024",
         "height": "1024"
       }
