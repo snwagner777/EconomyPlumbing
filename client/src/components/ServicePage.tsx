@@ -57,8 +57,8 @@ interface ServicePageProps {
   benefits: string[];
   featuresTitle: string;
   features: ServiceFeature[];
-  faqs: FAQ[];
-  relatedServices: RelatedService[];
+  faqs?: FAQ[];
+  relatedServices?: RelatedService[];
   reviewsCategory?: string;
   reviewsTitle?: string;
   blogCategory?: string;
@@ -106,7 +106,7 @@ export default function ServicePage({
     { name: "Services", url: "https://www.plumbersthatcare.com/services" },
     { name: heroTitle, url: canonical }
   ]);
-  const schemas = faqs.length > 0 
+  const schemas = faqs && faqs.length > 0 
     ? [serviceSchema, createFAQSchema(faqs), breadcrumbSchema] 
     : [serviceSchema, breadcrumbSchema];
 

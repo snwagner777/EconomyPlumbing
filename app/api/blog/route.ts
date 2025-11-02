@@ -73,9 +73,6 @@ export async function POST(req: NextRequest) {
     // Notify search engines about new page
     notifySearchEnginesNewPage('blog post');
     
-    // Invalidate SSR cache (new content published)
-    if (global.invalidateSSRCache) global.invalidateSSRCache();
-    
     return NextResponse.json(newPost, { status: 201 });
   } catch (error) {
     console.error('[Blog API] Error creating blog post:', error);
