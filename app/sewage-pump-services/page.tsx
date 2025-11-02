@@ -1,6 +1,5 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
-import pumpImage from "@assets/optimized/sewage_pump_sump_pum_ab93819a.webp";
 
 export default function SewagePumpServices() {
   return (
@@ -8,7 +7,7 @@ export default function SewagePumpServices() {
       title="Sump Pump Installation Austin TX | Expert Flood Prevention"
       metaDescription="Protect your Austin home with expert sump pump & sewage ejector pump services. Installation, repair & battery backup systems available. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/sewage-pump-services"
-      heroImage={pumpImage}
+      heroImage="/attached_assets/optimized/sewage_pump_sump_pum_ab93819a.webp"
       heroImageAlt="Professional sump pump and sewage pump services in Central Texas"
       heroTitle="Sump & Sewage Pump Services"
       heroSubtitle="Installation, Repair & Maintenance of All Pump Systems"

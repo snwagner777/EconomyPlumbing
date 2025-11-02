@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import spicewoodHero from "@assets/optimized/plumber_water_heater_57dd8e1a.webp";
 
 export default function SpicewoodServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function SpicewoodServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-spicewood"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={spicewoodHero}
+      heroImage="/attached_assets/optimized/plumber_water_heater_57dd8e1a.webp"
       heroSubtitle="Quality plumbing services for Spicewood homes and lake properties. Specialized in water heater installations and emergency repairs."
       cityHighlight="Proudly serving Spicewood and the surrounding Hill Country area. We understand the unique plumbing needs of lakefront properties and rural homes."
     />

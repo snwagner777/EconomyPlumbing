@@ -1,7 +1,6 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import gasImage from "@assets/optimized/gas_line_installatio_9713d531.webp";
 
 export default function GasServices() {
   return (
@@ -9,7 +8,7 @@ export default function GasServices() {
       title="Gas Line Installation & Repair Austin TX | Licensed"
       metaDescription="Professional gas line installation for appliances, outdoor kitchens, fire pits & generators in Austin. Licensed gas fitters. Call (512) 368-9159 today."
       canonical="https://www.plumbersthatcare.com/gas-line-services"
-      heroImage={gasImage}
+      heroImage="/attached_assets/optimized/gas_line_installatio_9713d531.webp"
       heroImageAlt="Licensed gas line installation and repair service in Austin and Marble Falls TX"
       heroTitle="Gas Line Services"
       heroSubtitle="Licensed Gas Line Installation, Repair & Safety Inspections"

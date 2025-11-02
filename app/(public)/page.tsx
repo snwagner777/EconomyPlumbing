@@ -28,14 +28,6 @@ import {
   CheckCircle,
   Truck,
 } from "lucide-react";
-import waterHeaterImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
-import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
-import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
-import toiletImage from "@assets/optimized/Toilet_and_faucet_installation_18dec30d.webp";
-import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
-import testimonial1 from "@assets/optimized/Customer_testimonial_portrait_f033b456.webp";
-import testimonial2 from "@assets/optimized/Female_customer_testimonial_f29d918d.webp";
-import testimonial3 from "@assets/optimized/Senior_customer_testimonial_027f5302.webp";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { openScheduler } from "@/lib/scheduler";
@@ -87,7 +79,7 @@ export default function Home() {
         "Energy-efficient options",
       ],
       link: "/water-heater-services",
-      image: waterHeaterImage,
+      image: "/attached_assets/optimized/Tankless_water_heater_closeup_7279af49.webp",
     },
     {
       icon: Wind,
@@ -96,7 +88,7 @@ export default function Home() {
         "Professional drain cleaning and sewer line services to keep your pipes flowing.",
       features: ["Video inspection", "Hydro jetting", "Root removal"],
       link: "/drain-cleaning",
-      image: drainImage,
+      image: "/attached_assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp",
     },
     {
       icon: Wrench,
@@ -109,7 +101,7 @@ export default function Home() {
         "Insurance claims help",
       ],
       link: "/leak-repair",
-      image: leakImage,
+      image: "/attached_assets/optimized/Leak_repair_service_work_cb3145cc.webp",
     },
     {
       icon: Bath,
@@ -118,7 +110,7 @@ export default function Home() {
         "Complete toilet and faucet installation, repair, and replacement services.",
       features: ["Modern fixtures", "Water-saving options", "Quick repairs"],
       link: "/toilet-faucet",
-      image: toiletImage,
+      image: "/attached_assets/optimized/Toilet_and_faucet_installation_18dec30d.webp",
     },
     {
       icon: Building2,
@@ -131,7 +123,7 @@ export default function Home() {
         "Code compliance",
       ],
       link: "/commercial-plumbing",
-      image: commercialImage,
+      image: "/attached_assets/optimized/Commercial_plumbing_services_bd7b6306.webp",
     },
     {
       icon: Flame,
@@ -202,7 +194,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Sean was honest, communicated well and helped me understand the problem and solutions. Thanks Sean.",
-      image: testimonial1,
+      image: "/attached_assets/optimized/Customer_testimonial_portrait_f033b456.webp",
     },
     {
       name: "Bill Farrior",
@@ -211,7 +203,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "I've always been happy with Sean's work. He earned my trust about 7 years ago when he showed up on a holiday to fix a backed up drain, and I've been using Economy Plumbing ever since!",
-      image: testimonial1,
+      image: "/attached_assets/optimized/Customer_testimonial_portrait_f033b456.webp",
     },
     {
       name: "Jen Wall",
@@ -220,7 +212,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Sean from Economy Plumbing was quick, efficient, and very helpful. He serviced my tankless water heater and did a routine checkup, found a small issue and was able to repair it same day.",
-      image: testimonial2,
+      image: "/attached_assets/optimized/Female_customer_testimonial_f29d918d.webp",
     },
     {
       name: "Georgia Coleman",
@@ -229,7 +221,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Great customer service from start to finish. Reasonable prices and great work.",
-      image: testimonial2,
+      image: "/attached_assets/optimized/Female_customer_testimonial_f29d918d.webp",
     },
     {
       name: "Glenn Prescott",
@@ -238,7 +230,7 @@ export default function Home() {
       rating: 5,
       testimonial:
         "Stayed very late in order to Finish Job which helped my wife out big time! She needed to leave next morning. Just a fantastic job!!",
-      image: testimonial3,
+      image: "/attached_assets/optimized/Senior_customer_testimonial_027f5302.webp",
     },
     {
       name: "Krista Pettengill",
@@ -246,7 +238,7 @@ export default function Home() {
       service: "Plumbing Service",
       rating: 5,
       testimonial: "Great service and very knowledgeable!",
-      image: testimonial2,
+      image: "/attached_assets/optimized/Female_customer_testimonial_f29d918d.webp",
     },
   ];
 

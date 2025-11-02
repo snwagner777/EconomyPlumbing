@@ -1,6 +1,5 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
-import pressureImage from "@assets/optimized/water_pressure_gauge_ba1aafde.webp";
 
 export default function WaterPressureSolutions() {
   return (
@@ -8,7 +7,7 @@ export default function WaterPressureSolutions() {
       title="Water Pressure Solutions Austin TX | Fix Low & High Pressure"
       metaDescription="Solve water pressure problems with expert diagnosis and repair. Pressure regulator installation, booster pump systems to fix weak flow. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/water-pressure-solutions"
-      heroImage={pressureImage}
+      heroImage="/attached_assets/optimized/water_pressure_gauge_ba1aafde.webp"
       heroImageAlt="Professional water pressure solutions and regulation services in Central Texas"
       heroTitle="Water Pressure Solutions"
       heroSubtitle="Fix Low Pressure, Reduce High Pressure & Regulate Flow"

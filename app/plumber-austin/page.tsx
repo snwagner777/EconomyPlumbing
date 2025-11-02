@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/professional_plumber_49e7ef9b.webp";
 
 export default function AustinServiceArea() {
   const nearbyCities = [
@@ -23,7 +22,7 @@ export default function AustinServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-austin"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/professional_plumber_49e7ef9b.webp"
       heroSubtitle="Expert plumbing services for Austin residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Austin Metro and surrounding areas with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />

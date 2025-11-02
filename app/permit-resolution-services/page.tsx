@@ -1,7 +1,6 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import permitImage from "@assets/optimized/Plumber_installing_water_heater_3f7d8a09.webp";
 
 export default function PermitResolution() {
   return (
@@ -9,7 +8,7 @@ export default function PermitResolution() {
       title="Plumbing Permit Resolution Austin TX | Code Experts"
       metaDescription="Resolve plumbing permit issues and code violations in Austin. Fix unpermitted work for home sales, work with city inspectors. Call (512) 368-9159 now."
       canonical="https://www.plumbersthatcare.com/permit-resolution-services"
-      heroImage={permitImage}
+      heroImage="/attached_assets/optimized/Plumber_installing_water_heater_3f7d8a09.webp"
       heroImageAlt="Professional plumbing permit resolution and code compliance service in Central Texas"
       heroTitle="Permit Resolution Services"
       heroSubtitle="Fix Unpermitted Work & Code Violations"

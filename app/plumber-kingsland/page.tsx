@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import kingslandHero from "@assets/optimized/plumber_working_on_p_780517d7.webp";
 
 export default function KingslandServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function KingslandServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-kingsland"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={kingslandHero}
+      heroImage="/attached_assets/optimized/plumber_working_on_p_780517d7.webp"
       heroSubtitle="Kingsland plumbing services with a focus on quality and customer satisfaction. Water heaters, leaks, drains, and more."
       cityHighlight="Your trusted plumber in Kingsland and the Highland Lakes region. Fast service, competitive pricing, and guaranteed satisfaction."
     />

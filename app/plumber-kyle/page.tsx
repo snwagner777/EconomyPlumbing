@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import kyleHero from "@assets/optimized/plumber_fixing_sink__ddae57ac.webp";
 
 export default function KyleServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function KyleServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-kyle"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={kyleHero}
+      heroImage="/attached_assets/optimized/plumber_fixing_sink__ddae57ac.webp"
       heroSubtitle="Expert plumbing services for Kyle residents. Quick response, quality repairs, and exceptional customer service every time."
       cityHighlight="Serving Kyle's rapidly expanding community with reliable plumbing services. We're equipped to handle both residential and commercial projects."
     />

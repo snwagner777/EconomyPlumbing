@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import horseshoeBayHero from "@assets/optimized/plumber_working_bath_98208ff5.webp";
 
 export default function HorseshoeBayServiceArea() {
   const nearbyCities = [
@@ -20,7 +19,7 @@ export default function HorseshoeBayServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-horseshoe-bay"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={horseshoeBayHero}
+      heroImage="/attached_assets/optimized/plumber_working_bath_98208ff5.webp"
       heroSubtitle="Horseshoe Bay's plumbing experts. Specialized service for lakefront properties, residential homes, and vacation rentals."
       cityHighlight="Serving Horseshoe Bay's unique plumbing needs. We understand lakefront properties and provide specialized solutions for this waterfront community."
     />

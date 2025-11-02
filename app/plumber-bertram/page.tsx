@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import bertramHero from "@assets/optimized/plumber_water_heater_1d323d32.webp";
 
 export default function BertramServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function BertramServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-bertram"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={bertramHero}
+      heroImage="/attached_assets/optimized/plumber_water_heater_1d323d32.webp"
       heroSubtitle="Bertram's trusted local plumber for water heater services, drain cleaning, and emergency repairs. Honest pricing, quality work."
       cityHighlight="Proudly serving Bertram and the surrounding Burnet County area with professional plumbing services tailored to your community's needs."
     />

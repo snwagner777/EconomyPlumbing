@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import graniteShoalsHero from "@assets/optimized/plumber_water_heater_89ac0930.webp";
 
 export default function GraniteShoalsServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function GraniteShoalsServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-granite-shoals"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={graniteShoalsHero}
+      heroImage="/attached_assets/optimized/plumber_water_heater_89ac0930.webp"
       heroSubtitle="Granite Shoals plumbing specialists providing water heater services, leak repairs, and drain cleaning. Your local plumbing experts."
       cityHighlight="Located in the heart of the Highland Lakes, we provide specialized plumbing services for Granite Shoals homes and businesses."
     />

@@ -1,7 +1,6 @@
 'use client';
 import { usePathname } from "next/navigation";
 import ServicePage from "@/components/ServicePage";
-import leakImage from "@assets/optimized/Leak_repair_service_work_cb3145cc.webp";
 
 export default function LeakRepair() {
   const pathname = usePathname();
@@ -19,7 +18,7 @@ export default function LeakRepair() {
       title={title}
       metaDescription="Fast leak detection with electronic equipment. Slab leak specialists, pipe & hidden leak repair. 24/7 emergency service available. Call (512) 368-9159."
       canonical={canonical}
-      heroImage={leakImage}
+      heroImage="/attached_assets/optimized/Leak_repair_service_work_cb3145cc.webp"
       heroImageAlt="Professional leak detection and repair service in Austin and Marble Falls TX"
       heroTitle="Leak Repair Services"
       heroSubtitle="Fast, Professional Leak Detection & Repair in Central Texas"

@@ -1,7 +1,6 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import backflowImage from "@assets/optimized/backflow_preventer_p_c5a67665.webp";
 
 export default function BackflowTesting() {
   return (
@@ -9,7 +8,7 @@ export default function BackflowTesting() {
       title="Backflow Testing Austin TX | State Certified Annual"
       metaDescription="State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/backflow"
-      heroImage={backflowImage}
+      heroImage="/attached_assets/optimized/backflow_preventer_p_c5a67665.webp"
       heroImageAlt="Certified backflow testing and prevention service in Central Texas"
       heroTitle="Backflow Testing & Prevention"
       heroSubtitle="Certified Backflow Testing, Installation & Annual Inspections"

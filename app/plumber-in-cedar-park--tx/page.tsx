@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/professional_plumber_d3924ca6.webp";
 
 export default function CedarParkServiceArea() {
   const nearbyCities = [
@@ -21,7 +20,7 @@ export default function CedarParkServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-in-cedar-park--tx"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/professional_plumber_d3924ca6.webp"
       heroSubtitle="Expert plumbing services for Cedar Park residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Cedar Park and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />

@@ -2,7 +2,6 @@
 
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import commercialImage from "@assets/optimized/Commercial_plumbing_services_bd7b6306.webp";
 
 export default function CommercialPlumbing() {
   return (
@@ -10,7 +9,7 @@ export default function CommercialPlumbing() {
       title="Commercial Plumbing Austin TX | Business Solutions 24/7"
       metaDescription="Minimize downtime with 24/7 commercial plumbing in Austin. Preventive maintenance, emergency repairs and code compliance for businesses. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/commercial-plumbing"
-      heroImage={commercialImage}
+      heroImage="/attached_assets/optimized/Commercial_plumbing_services_bd7b6306.webp"
       heroImageAlt="Professional commercial plumbing services for businesses in Austin and Marble Falls TX"
       heroTitle="Commercial Plumbing Services"
       heroSubtitle="Professional Plumbing Solutions for Central Texas Businesses"

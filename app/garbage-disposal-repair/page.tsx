@@ -1,6 +1,5 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
-import disposalImage from "@assets/optimized/kitchen_garbage_disp_6fe0b331.webp";
 
 export default function GarbageDisposalRepair() {
   return (
@@ -8,7 +7,7 @@ export default function GarbageDisposalRepair() {
       title="Garbage Disposal Repair Austin TX | Same-Day Service"
       metaDescription="Fix jammed, leaking or broken garbage disposals in Austin. Expert repair & new disposal installation for all brands serviced. Same-day. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/garbage-disposal-repair"
-      heroImage={disposalImage}
+      heroImage="/attached_assets/optimized/kitchen_garbage_disp_6fe0b331.webp"
       heroImageAlt="Professional garbage disposal repair and installation service in Central Texas"
       heroTitle="Garbage Disposal Services"
       heroSubtitle="Repair, Installation & Replacement of All Disposal Brands"

@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import libertyHillHero from "@assets/optimized/professional_plumber_07b42e36.webp";
 
 export default function LibertyHillServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function LibertyHillServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-liberty-hill"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={libertyHillHero}
+      heroImage="/attached_assets/optimized/professional_plumber_07b42e36.webp"
       heroSubtitle="Professional plumbing services for Liberty Hill's growing community. Same-day service, expert technicians, and upfront pricing."
       cityHighlight="As Liberty Hill continues to grow, we're here to serve both established neighborhoods and new developments with top-quality plumbing services."
     />

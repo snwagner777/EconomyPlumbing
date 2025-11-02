@@ -15,7 +15,6 @@ import { JsonLd, createFAQSchema, createBreadcrumbListSchema } from "@/component
 import { openScheduler } from "@/lib/scheduler";
 import type { ServiceArea } from "@shared/schema";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
-import heroImage from "@assets/optimized/professional_plumber_49e7ef9b.webp";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
 const SERVICES = [
@@ -156,7 +155,7 @@ export default function ServiceAreaPage() {
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
           <img
-            src={heroImage}
+            src="/attached_assets/optimized/professional_plumber_49e7ef9b.webp"
             alt={`Professional plumbing services in ${cityName}, Texas`}
             width="1920"
             height="1080"

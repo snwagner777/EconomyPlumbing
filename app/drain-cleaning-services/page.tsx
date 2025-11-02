@@ -1,7 +1,6 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import drainImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
 export default function DrainCleaning() {
   return (
@@ -9,7 +8,7 @@ export default function DrainCleaning() {
       title="Drain Cleaning Austin TX | Video Inspection & Hydro"
       metaDescription="Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/drain-cleaning"
-      heroImage={drainImage}
+      heroImage="/attached_assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp"
       heroImageAlt="Professional drain cleaning and sewer line service in Austin and Marble Falls TX"
       heroTitle="Drain Cleaning Services"
       heroSubtitle="Professional Drain & Sewer Line Solutions in Central Texas"

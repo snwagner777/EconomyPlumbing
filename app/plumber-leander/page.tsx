@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/professional_plumber_f5e4b5a9.webp";
 
 export default function LeanderServiceArea() {
   const nearbyCities = [
@@ -20,7 +19,7 @@ export default function LeanderServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-leander"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/professional_plumber_f5e4b5a9.webp"
       heroSubtitle="Expert plumbing services for Leander residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Leander and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />

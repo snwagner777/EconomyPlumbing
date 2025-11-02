@@ -1,6 +1,5 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
-import emergencyImage from "@assets/optimized/Emergency_plumbing_service_arrival_3f78c39e.webp";
 
 export default function EmergencyPlumbing() {
   return (
@@ -8,7 +7,7 @@ export default function EmergencyPlumbing() {
       title="24/7 Emergency Plumber Austin TX | Fast Response Service"
       metaDescription="Emergency plumbing service available 24/7 in Austin. Fast response for burst pipes, sewer backups & major leaks. Nights/weekends/holidays. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/emergency"
-      heroImage={emergencyImage}
+      heroImage="/attached_assets/optimized/Emergency_plumbing_service_arrival_3f78c39e.webp"
       heroImageAlt="24/7 emergency plumbing service in Austin and Marble Falls TX"
       heroTitle="Emergency Plumbing Services"
       heroSubtitle="24/7 Fast Response in Austin & Marble Falls"

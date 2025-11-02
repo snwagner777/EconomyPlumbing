@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/plumbing_maintenance_91eba3a0.webp";
 
 export default function GeorgetownServiceArea() {
   const nearbyCities = [
@@ -20,7 +19,7 @@ export default function GeorgetownServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-georgetown"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/plumbing_maintenance_91eba3a0.webp"
       heroSubtitle="Expert plumbing services for Georgetown residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Georgetown and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />

@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/plumber_working_on_p_e4a794f0.webp";
 
 export default function PflugervilleServiceArea() {
   const nearbyCities = [
@@ -19,7 +18,7 @@ export default function PflugervilleServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-pflugerville"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/plumber_working_on_p_e4a794f0.webp"
       heroSubtitle="Expert plumbing services for Pflugerville residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Pflugerville and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />

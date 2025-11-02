@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import burnetHero from "@assets/optimized/plumber_working_bath_2fe77426.webp";
 
 export default function BurnetServiceArea() {
   const nearbyCities = [
@@ -20,7 +19,7 @@ export default function BurnetServiceArea() {
       canonical="https://www.plumbersthatcare.com/plumber-burnet"
       area="marble-falls"
       nearbyCities={nearbyCities}
-      heroImage={burnetHero}
+      heroImage="/attached_assets/optimized/plumber_working_bath_2fe77426.webp"
       heroSubtitle="Burnet's preferred plumbing service provider. Fast, reliable solutions for all your residential and commercial plumbing needs."
       cityHighlight="Serving Burnet County with pride. From routine maintenance to complex installations, we handle all your plumbing requirements."
     />

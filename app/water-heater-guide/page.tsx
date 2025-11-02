@@ -1,6 +1,5 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
-import heaterGuideImage from "@assets/optimized/Tankless_water_heater_closeup_7279af49.webp";
 
 export default function WaterHeaterGuide() {
   return (
@@ -8,7 +7,7 @@ export default function WaterHeaterGuide() {
       title="Water Heater Guide Austin & Marble Falls | Economy Plumbing"
       metaDescription="Austin & Marble Falls water heater buying guide. Compare tank vs tankless, gas vs electric, sizing, efficiency, costs. Expert advice. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/water-heater-guide"
-      heroImage={heaterGuideImage}
+      heroImage="/attached_assets/optimized/Tankless_water_heater_closeup_7279af49.webp"
       heroImageAlt="Water heater buying guide and selection help in Central Texas"
       heroTitle="Water Heater Buying Guide"
       heroSubtitle="Choose the Perfect Water Heater for Your Home"

@@ -1,7 +1,6 @@
 'use client';
 import ServicePage from "@/components/ServicePage";
 import CommercialCustomersShowcase from "@/components/CommercialCustomersShowcase";
-import hydroJetImage from "@assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp";
 
 export default function HydroJetting() {
   return (
@@ -9,7 +8,7 @@ export default function HydroJetting() {
       title="Hydro Jetting Austin TX | 4,000 PSI Power Cleaning Service"
       metaDescription="Power through tough clogs in Austin with hydro jetting up to 4,000 PSI. Clear grease, tree roots & sewer buildup. Video inspection. Call (512) 368-9159."
       canonical="https://www.plumbersthatcare.com/hydro-jetting-services"
-      heroImage={hydroJetImage}
+      heroImage="/attached_assets/optimized/Drain_cleaning_professional_service_e8a953c5.webp"
       heroImageAlt="Professional hydro jetting and high-pressure drain cleaning in Central Texas"
       heroTitle="Hydro Jetting Services"
       heroSubtitle="High-Pressure Drain & Sewer Line Cleaning"

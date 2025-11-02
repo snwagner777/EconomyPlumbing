@@ -1,6 +1,5 @@
 'use client';
 import ServiceAreaPage from "@/components/ServiceAreaPage";
-import heroImage from "@assets/optimized/plumber_working_on_p_6dc2075d.webp";
 
 export default function RoundRockServiceArea() {
   const nearbyCities = [
@@ -20,7 +19,7 @@ export default function RoundRockServiceArea() {
       canonical="https://www.plumbersthatcare.com/round-rock-plumber"
       area="austin"
       nearbyCities={nearbyCities}
-      heroImage={heroImage}
+      heroImage="/attached_assets/optimized/plumber_working_on_p_6dc2075d.webp"
       heroSubtitle="Expert plumbing services for Round Rock residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed."
       cityHighlight="Serving Round Rock and the Austin Metro area with comprehensive plumbing solutions. We're your local plumbing company, backed by years of experience."
     />
