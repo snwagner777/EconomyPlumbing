@@ -24,15 +24,19 @@ import type { Product } from "@shared/schema";
 // Load Stripe with appropriate keys based on test mode
 function getStripePromise(isTestMode: boolean) {
   if (isTestMode) {
-    if (!import.meta.env.VITE_TESTING_STRIPE_PUBLIC_KEY) {
-      throw new Error('Missing required Stripe test key: VITE_TESTING_STRIPE_PUBLIC_KEY');
+    const testKey = process.env.NEXT_PUBLIC_STRIPE_TEST_PUBLIC_KEY;
+    if (!testKey) {
+      console.error('Missing Stripe test key - check NEXT_PUBLIC_STRIPE_TEST_PUBLIC_KEY environment variable');
+      throw new Error('Stripe test key not configured');
     }
-    return loadStripe(import.meta.env.VITE_TESTING_STRIPE_PUBLIC_KEY);
+    return loadStripe(testKey);
   } else {
-    if (!import.meta.env.VITE_STRIPE_PUBLIC_KEY) {
-      throw new Error('Missing required Stripe key: VITE_STRIPE_PUBLIC_KEY');
+    const liveKey = process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY;
+    if (!liveKey) {
+      console.error('Missing Stripe live key - check NEXT_PUBLIC_STRIPE_PUBLIC_KEY environment variable');
+      throw new Error('Stripe live key not configured');
     }
-    return loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+    return loadStripe(liveKey);
   }
 }
 
@@ -182,11 +186,14 @@ export default function MembershipCheckout() {
   const [clientSecret, setClientSecret] = useState("");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
   const [portalCustomerId, setPortalCustomerId] = useState<string | null>(null);
+  const [isTestMode, setIsTestMode] = useState(false);
 
-  // Check for test mode via query parameter
-  const isTestMode = useMemo(() => {
-    const params = new URLSearchParams(window.location.search);
-    return params.has('testmode');
+  // Check for test mode via query parameter (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      setIsTestMode(params.has('testmode'));
+    }
   }, []);
 
   // Load Stripe with appropriate keys
