@@ -42,6 +42,10 @@ import {
  * Phone numbers server-rendered for SEO, upgraded client-side for tracking
  */
 
+interface HomePageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const metadata = await getPageMetadata('/', {
     title: 'Professional Plumbing Services in Austin & Central Texas | Economy Plumbing',
@@ -86,9 +90,22 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function HomePage() {
-  // Fetch phone numbers server-side for SEO
-  const { austin, marbleFalls } = await getPhoneNumbers();
+export default async function HomePage({ searchParams }: HomePageProps) {
+  // Await searchParams (Next.js 15 requirement)
+  const params = await searchParams;
+  
+  // Convert to URLSearchParams for phone number resolution
+  const urlParams = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value) {
+      const stringValue = Array.isArray(value) ? value[0] : value;
+      if (stringValue) urlParams.set(key, stringValue);
+    }
+  });
+  
+  // Fetch phone numbers server-side with UTM-based tracking for SEO
+  // Crawlers will see the correct tracking number in the HTML!
+  const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
   const services = [
     {
