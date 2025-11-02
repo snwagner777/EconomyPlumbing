@@ -18,6 +18,8 @@ import { insertContactSubmissionSchema } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { trackEvent } from "@/lib/analytics";
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 interface ServiceOption {
   id: string;
@@ -150,7 +152,7 @@ export default function PlumbingCostEstimator() {
 
   return (
     <>
-
+      <Header />
       <div className="min-h-screen bg-background py-12 px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
@@ -459,6 +461,7 @@ export default function PlumbingCostEstimator() {
           </div>
         </div>
       </div>
+      <Footer />
     </>
   );
 }
