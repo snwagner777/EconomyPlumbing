@@ -220,7 +220,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
   
-  const phoneConfig = usePhoneConfig();
   const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
