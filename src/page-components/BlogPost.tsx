@@ -1,7 +1,5 @@
 'use client';
 
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -15,8 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, User, Phone, ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { format } from "date-fns";
-import { SEOHead } from "@/components/SEO/SEOHead";
-import { createBlogPostSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import type { BlogPost } from "@shared/schema";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 
@@ -35,9 +31,12 @@ const BLOG_CATEGORY_TO_REVIEW_CATEGORY: Record<string, string> = {
   "Promotions": "general",
 };
 
-export default function BlogPost() {
-  const params = useParams();
-  const slug = (params?.slug as string) || "";
+interface BlogPostClientProps {
+  post: BlogPost;
+  allPosts: BlogPost[];
+}
+
+export default function BlogPostClient({ post, allPosts }: BlogPostClientProps) {
   const phoneConfig = usePhoneConfig();
   const marbleFallsPhoneConfig = useMarbleFallsPhone();
   
@@ -53,24 +52,11 @@ export default function BlogPost() {
     setLightboxOpen(true);
   };
 
-  const { data: post, isLoading } = useQuery<BlogPost>({
-    queryKey: ["/api/blog", slug],
-    enabled: !!slug,
-  });
-
-  const { data: allPostsData } = useQuery<{ posts: BlogPost[] }>({
-    queryKey: ["/api/blog"],
-  });
-
-  const canonicalUrl = `https://www.plumbersthatcare.com/${slug}`;
-
-  const allPosts = allPostsData?.posts || [];
-
   const relatedPosts = allPosts
     .filter(
       (p) =>
-        p.category === post?.category &&
-        p.slug !== post?.slug
+        p.category === post.category &&
+        p.slug !== post.slug
     )
     .slice(0, 3);
 
@@ -78,64 +64,12 @@ export default function BlogPost() {
   const sortedPosts = [...allPosts].sort((a, b) => 
     new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
   );
-  const currentIndex = sortedPosts.findIndex(p => p.id === post?.id) ?? -1;
+  const currentIndex = sortedPosts.findIndex(p => p.id === post.id) ?? -1;
   const prevPost = currentIndex > 0 ? sortedPosts[currentIndex - 1] : null;
-  const nextPost = currentIndex < (sortedPosts.length ?? 0) - 1 ? sortedPosts[currentIndex + 1] : null;
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="h-96 bg-muted animate-pulse rounded-lg" />
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  if (!post) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-1 py-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-3xl font-bold mb-4">Post Not Found</h1>
-            <p className="text-muted-foreground">
-              The blog post you're looking for doesn't exist.
-            </p>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
-  const blogPostSchema = post ? createBlogPostSchema(post) : undefined;
-  const breadcrumbSchema = post ? createBreadcrumbListSchema([
-    { name: "Home", url: "https://www.plumbersthatcare.com" },
-    { name: "Blog", url: "https://www.plumbersthatcare.com/blog" },
-    { name: post.title, url: canonicalUrl }
-  ]) : undefined;
+  const nextPost = currentIndex < sortedPosts.length - 1 ? sortedPosts[currentIndex + 1] : null;
 
   return (
     <div className="min-h-screen flex flex-col">
-      <SEOHead
-        title={post.title}
-        description={post.metaDescription || ""}
-        canonical={canonicalUrl}
-        ogType="article"
-        ogImage={post.featuredImage ? 
-          (post.featuredImage.startsWith('http') ? post.featuredImage : `https://www.plumbersthatcare.com${post.featuredImage}`) : 
-          "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg"}
-        ogImageAlt={`Featured image for: ${post.title}`}
-        schema={blogPostSchema && breadcrumbSchema ? [blogPostSchema, breadcrumbSchema] : undefined}
-        articlePublishedTime={new Date(post.publishDate).toISOString()}
-        articleAuthor={post.author}
-      />
-
       <Header />
 
       <main className="flex-1">
