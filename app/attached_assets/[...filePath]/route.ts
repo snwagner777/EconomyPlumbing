@@ -4,10 +4,11 @@ import fs from 'fs';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { filePath: string[] } }
+  { params }: { params: Promise<{ filePath: string[] }> }
 ) {
   try {
-    const filePath = params.filePath.join('/');
+    const resolvedParams = await params;
+    const filePath = resolvedParams.filePath.join('/');
     const fullPath = path.resolve(process.cwd(), "attached_assets", filePath);
     
     if (fs.existsSync(fullPath)) {
