@@ -13,6 +13,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, AlertCircle } from 'lucide-react';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 export default function WaterHeaterCostCalculatorPage() {
   const [heaterType, setHeaterType] = useState<string>('tank');
@@ -49,9 +51,11 @@ export default function WaterHeaterCostCalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+    <>
+      <Header />
+      <div className="min-h-screen py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6" data-testid="heading-calculator">
             Water Heater Cost Calculator
           </h1>
@@ -304,5 +308,7 @@ export default function WaterHeaterCostCalculatorPage() {
         </div>
       </div>
     </div>
+      <Footer />
+    </>
   );
 }
