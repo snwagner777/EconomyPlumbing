@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Austin, TX | Economy Plumbing',
     description: 'Austin plumber serving Downtown, South Congress, East Austin. Expert water heater repair, drain cleaning, leak detection. Same-day service.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/austin',
   });
 }
 

@@ -11,6 +11,7 @@ interface MetadataDefaults {
   description: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  canonical?: string; // Override canonical URL for duplicate pages
 }
 
 /**
@@ -24,7 +25,7 @@ export async function getPageMetadata(path: string, defaults?: MetadataDefaults)
     
     const title = dbMetadata?.title || defaults?.title || 'Economy Plumbing Services';
     const description = dbMetadata?.description || defaults?.description || 'Professional plumbing services in Austin and Central Texas';
-    const canonicalUrl = dbMetadata?.canonicalUrl || `https://plumbersthatcare.com${path}`;
+    const canonicalUrl = defaults?.canonical || dbMetadata?.canonicalUrl || `https://plumbersthatcare.com${path}`;
     const ogImage = defaults?.ogImage || 'https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg';
     
     return {

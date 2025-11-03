@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Round Rock TX | Expert Plumbing Services',
     description: 'Round Rock plumber for Teravista, Forest Creek, Walsh Ranch. Expert water heater repair, drain cleaning, leak detection. Emergency plumbing.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/round-rock',
   });
 }
 
