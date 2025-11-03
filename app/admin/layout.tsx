@@ -5,9 +5,23 @@
  * Uses session-based authentication - middleware handles redirect if not authenticated
  */
 
+import type { Metadata } from 'next';
 import { AdminSidebar } from '@/components/admin-sidebar';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { LogoutButton } from '@/components/LogoutButton';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard | Economy Plumbing Services',
+  description: 'Admin panel for Economy Plumbing Services',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+};
 
 export default function AdminLayout({
   children,

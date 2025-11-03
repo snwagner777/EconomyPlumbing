@@ -26,11 +26,24 @@ interface CommercialServicesPageProps {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  return await getPageMetadata('/commercial-services', {
+  const metadata = await getPageMetadata('/commercial-services', {
     title: 'Commercial Plumbing Austin TX | Restaurants & Offices',
     description: 'Commercial plumbing services for restaurants, offices, and businesses in Austin and Marble Falls. Emergency repairs, grease trap maintenance, water heater service, preventive maintenance.',
     ogType: 'website',
   });
+  
+  // This is a marketing landing page - noindex to prevent indexing
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
 }
 
 export default async function CommercialServicesLanding({ searchParams }: CommercialServicesPageProps) {

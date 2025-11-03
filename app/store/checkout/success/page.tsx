@@ -4,10 +4,23 @@ import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import CheckoutSuccessClient from './CheckoutSuccessClient';
 
 export async function generateMetadata(): Promise<Metadata> {
-  return getPageMetadata('/store/checkout/success', {
+  const metadata = await getPageMetadata('/store/checkout/success', {
     title: 'Purchase Successful | Economy Plumbing Services',
     description: 'Thank you for your VIP membership purchase. Welcome to the Economy Plumbing VIP program.',
   });
+  
+  // This is a transaction confirmation page - should not be indexed
+  return {
+    ...metadata,
+    robots: {
+      index: false,
+      follow: false,
+      googleBot: {
+        index: false,
+        follow: false,
+      },
+    },
+  };
 }
 
 export default async function CheckoutSuccessPage({ searchParams }: { searchParams: Promise<{[key: string]: string | string[] | undefined}> }) {
