@@ -1,10 +1,15 @@
 #!/bin/bash
-# Build script for deployments
-# This runs BEFORE the app starts
-
 set -e
 
-echo "📦 Building Next.js for production..."
-npx next build
+echo "🏗️  Building Economy Plumbing (Production)"
+echo "=========================================="
 
-echo "✅ Build complete! .next directory ready"
+# Clean previous build
+rm -rf .next
+
+# Run production build with Webpack (not Turbopack)
+NODE_ENV=production npx next build
+
+echo ""
+echo "✅ Production build complete!"
+echo "   JavaScript minified, compressed, and optimized"

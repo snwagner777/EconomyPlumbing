@@ -34,7 +34,14 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   generateEtags: true,
   
-  // Turbopack configuration for @assets alias
+  // Webpack configuration for production builds
+  webpack: (config) => {
+    // Add @assets alias for webpack (production)
+    config.resolve.alias['@assets'] = path.resolve(process.cwd(), 'attached_assets');
+    return config;
+  },
+  
+  // Turbopack configuration for @assets alias (development only)
   turbopack: {
     resolveAlias: {
       '@assets': path.resolve(process.cwd(), 'attached_assets'),
