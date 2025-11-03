@@ -3346,17 +3346,6 @@ function ReviewsSection() {
                         </span>
                       </div>
                       <p className="text-sm leading-relaxed mb-3">{review.text}</p>
-                      
-                      {/* Reply Button */}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleGenerateReply(review)}
-                        data-testid={`button-reply-${review.id}`}
-                      >
-                        <Sparkles className="w-4 h-4 mr-2" />
-                        AI Reply
-                      </Button>
                     </div>
                   </div>
                 </div>

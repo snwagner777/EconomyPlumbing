@@ -68,7 +68,7 @@ export default function ServiceAreaPage({
   const phone = area === "austin" ? austinPhoneConfig.display : marbleFallsPhoneConfig.display;
   const phoneLink = area === "austin" ? austinPhoneConfig.tel : marbleFallsPhoneConfig.tel;
   const areaName = area === "austin" ? "Austin Metro" : "Marble Falls";
-  const displayHeroImage = heroImage || defaultHeroImage.src;
+  const displayHeroImage = heroImage || defaultHeroImage;
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   const coordinates = getCoordinates(slug);
