@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,11 +15,26 @@ interface BookingSummaryStepProps {
   data: SchedulerData;
   updateData: (updates: Partial<SchedulerData>) => void;
   onBack: () => void;
+  initialReferralCode?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
-export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryStepProps) {
+export function BookingSummaryStep({ 
+  data, 
+  updateData, 
+  onBack,
+  initialReferralCode,
+  utmSource,
+  utmMedium,
+  utmCampaign
+}: BookingSummaryStepProps) {
   const [specialInstructions, setSpecialInstructions] = useState(data.specialInstructions || '');
-  const [promoCode, setPromoCode] = useState('');
+  const [promoCode, setPromoCode] = useState(initialReferralCode || '');
+  const [promoCodeValidated, setPromoCodeValidated] = useState(false);
+  const [promoCodeDiscount, setPromoCodeDiscount] = useState(0);
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false);
   const [backflowDeviceCount, setBackflowDeviceCount] = useState(1);
   const [selectedMembership, setSelectedMembership] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
@@ -38,6 +53,78 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
     { id: 'platinum-tank', name: 'Platinum VIP - Tank Type', price: 319, duration: '3 years' },
     { id: 'platinum-tankless', name: 'Platinum VIP - Tankless', price: 599, duration: '3 years' },
   ];
+
+  // Calculate estimated job total (for referral discount validation)
+  const estimatedJobTotal = backflowTotal + (selectedMembership ? membershipOptions.find(m => m.id === selectedMembership)?.price || 0 : 0);
+
+  // Validate referral code
+  const validateReferralCode = async (code: string) => {
+    if (!code || !code.trim()) {
+      setPromoCodeValidated(false);
+      setPromoCodeDiscount(0);
+      return;
+    }
+
+    setIsValidatingPromo(true);
+    try {
+      // Check if it's a valid referral code
+      const response = await fetch(`/api/referrals/code/${encodeURIComponent(code)}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Valid referral code - apply $25 discount if job is $200+
+        if (estimatedJobTotal >= 200) {
+          setPromoCodeValidated(true);
+          setPromoCodeDiscount(25);
+          toast({
+            title: 'Referral Code Applied!',
+            description: `$25 discount applied to your booking. Thank you for using a referral!`,
+          });
+        } else {
+          setPromoCodeValidated(true);
+          setPromoCodeDiscount(0);
+          toast({
+            title: 'Referral Code Valid',
+            description: 'Discount will apply when your total reaches $200 or more.',
+          });
+        }
+      } else {
+        setPromoCodeValidated(false);
+        setPromoCodeDiscount(0);
+        toast({
+          title: 'Invalid Code',
+          description: 'The referral code you entered is not valid.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error validating referral code:', error);
+      setPromoCodeValidated(false);
+      setPromoCodeDiscount(0);
+    } finally {
+      setIsValidatingPromo(false);
+    }
+  };
+
+  // Auto-validate referral code on mount if provided
+  useEffect(() => {
+    if (initialReferralCode && initialReferralCode.trim()) {
+      validateReferralCode(initialReferralCode);
+    }
+  }, [initialReferralCode]);
+
+  // Re-validate discount amount when totals change
+  useEffect(() => {
+    if (promoCodeValidated && promoCode) {
+      // Recalculate discount based on new total
+      if (estimatedJobTotal >= 200) {
+        setPromoCodeDiscount(25);
+      } else {
+        setPromoCodeDiscount(0);
+      }
+    }
+  }, [estimatedJobTotal, promoCodeValidated]);
 
   const handleBook = async () => {
     if (!data.service || !data.customer || !data.location || !data.timeSlot) {
@@ -248,23 +335,75 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
           </CardContent>
         </Card>
 
-        {/* Promo Code */}
+        {/* Promo Code / Referral Code */}
         <Card>
           <CardHeader>
-            <CardTitle>Promo Code</CardTitle>
-            <CardDescription>Have a promo code or Groupon? Enter it here</CardDescription>
+            <CardTitle>Promo or Referral Code</CardTitle>
+            <CardDescription>
+              {initialReferralCode 
+                ? 'Referral code from your link has been applied!' 
+                : 'Have a promo code, referral code, or Groupon? Enter it here'}
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Label htmlFor="promo-code" className="sr-only">
-              Promo Code
-            </Label>
-            <Input
-              id="promo-code"
-              placeholder="Enter promo code (e.g., GROUPON, REFERRAL25)"
-              value={promoCode}
-              onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-              data-testid="input-promo-code"
-            />
+          <CardContent className="space-y-3">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <Label htmlFor="promo-code" className="sr-only">
+                  Promo Code
+                </Label>
+                <Input
+                  id="promo-code"
+                  placeholder="Enter code (e.g., GROUPON, ABC123)"
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase());
+                    setPromoCodeValidated(false);
+                    setPromoCodeDiscount(0);
+                  }}
+                  data-testid="input-promo-code"
+                />
+              </div>
+              <Button
+                onClick={() => validateReferralCode(promoCode)}
+                disabled={!promoCode || isValidatingPromo}
+                variant="outline"
+                data-testid="button-validate-promo"
+              >
+                {isValidatingPromo ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Checking...
+                  </>
+                ) : (
+                  'Validate'
+                )}
+              </Button>
+            </div>
+            
+            {/* Validation Status & Discount Display */}
+            {promoCodeValidated && promoCodeDiscount > 0 && (
+              <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                <div className="flex items-center gap-2 text-green-700 dark:text-green-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="font-medium">Referral Discount Applied: -${promoCodeDiscount}</span>
+                </div>
+                <p className="text-sm text-green-600 dark:text-green-500 mt-1">
+                  You'll save $25 on this booking!
+                </p>
+              </div>
+            )}
+            
+            {promoCodeValidated && promoCodeDiscount === 0 && estimatedJobTotal < 200 && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="font-medium">Referral Code Validated</span>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-500 mt-1">
+                  Add services or memberships to reach $200 minimum for the $25 referral discount
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

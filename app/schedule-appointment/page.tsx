@@ -17,6 +17,9 @@ export default function ScheduleAppointment() {
   const utmMedium = searchParams.get('utm_medium') || undefined;
   const utmCampaign = searchParams.get('utm_campaign') || undefined;
   
+  // Capture referral code for pre-filling and automatic discount
+  const referralCode = searchParams.get('referral') || undefined;
+  
   return (
     <>
 
@@ -88,6 +91,7 @@ export default function ScheduleAppointment() {
                 initialUtmSource={utmSource}
                 initialUtmMedium={utmMedium}
                 initialUtmCampaign={utmCampaign}
+                initialReferralCode={referralCode}
               />
             </div>
           </div>

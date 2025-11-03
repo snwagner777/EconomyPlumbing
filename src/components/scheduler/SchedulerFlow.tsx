@@ -55,12 +55,14 @@ interface SchedulerFlowProps {
   initialUtmSource?: string;
   initialUtmMedium?: string;
   initialUtmCampaign?: string;
+  initialReferralCode?: string;
 }
 
 export function SchedulerFlow({ 
   initialUtmSource = 'website',
   initialUtmMedium,
-  initialUtmCampaign 
+  initialUtmCampaign,
+  initialReferralCode
 }: SchedulerFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<SchedulerData>({
@@ -176,6 +178,10 @@ export function SchedulerFlow({
             data={data}
             updateData={updateData}
             onBack={previousStep}
+            initialReferralCode={initialReferralCode}
+            utmSource={initialUtmSource}
+            utmMedium={initialUtmMedium}
+            utmCampaign={initialUtmCampaign}
           />
         )}
       </div>
