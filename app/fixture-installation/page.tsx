@@ -3,6 +3,7 @@
  */
 
 import type { Metadata } from 'next';
+import { getPageMetadata } from '@/server/lib/metadata';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import FixtureInstallationClient from './FixtureInstallationClient';
 
@@ -10,14 +11,12 @@ interface FixtureInstallationPageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export const metadata: Metadata = {
-  title: 'Plumbing Fixture Installation Austin TX | Faucets, Toilets & More',
-  description: 'Expert plumbing fixture installation in Austin. Faucets, toilets, sinks, showers, bathtubs. Professional installation guaranteed. Call (512) 368-9159.',
-  openGraph: {
-    title: 'Plumbing Fixture Installation Austin TX',
-    description: 'Expert installation of faucets, toilets, sinks, showers and more',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return await getPageMetadata('/fixture-installation', {
+    title: 'Plumbing Fixture Installation Austin TX | Faucets, Toilets & More',
+    description: 'Expert plumbing fixture installation in Austin. Faucets, toilets, sinks, showers, bathtubs. Professional installation guaranteed. Call (512) 368-9159.',
+  });
+}
 
 export default async function FixtureInstallationPage({ searchParams }: FixtureInstallationPageProps) {
   const params = await searchParams;

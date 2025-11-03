@@ -3,17 +3,16 @@
  */
 
 import type { Metadata } from 'next';
+import { getPageMetadata } from '@/server/lib/metadata';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import EmergencyClient from './EmergencyClient';
 
-export const metadata: Metadata = {
-  title: '24/7 Emergency Plumber Austin TX | Fast Response | Economy Plumbing',
-  description: 'Emergency plumbing service available 24/7 in Austin. Fast response for burst pipes, sewer backups & major leaks. Nights/weekends/holidays. Call (512) 368-9159.',
-  openGraph: {
-    title: '24/7 Emergency Plumber Austin TX',
-    description: 'Emergency plumbing service available 24/7. Fast response for plumbing emergencies.',
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return await getPageMetadata('/emergency', {
+    title: '24/7 Emergency Plumber Austin TX | Fast Response | Economy Plumbing',
+    description: 'Emergency plumbing service available 24/7 in Austin. Fast response for burst pipes, sewer backups & major leaks. Nights/weekends/holidays. Call (512) 368-9159.',
+  });
+}
 
 export default async function EmergencyPlumbingPage({ searchParams }: {
   searchParams: Promise<{[key: string]: string | string[] | undefined}>
