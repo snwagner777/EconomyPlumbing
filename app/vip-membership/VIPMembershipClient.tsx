@@ -11,7 +11,7 @@ interface VIPMembershipClientProps {
 export default function VIPMembershipClient({ phoneConfig }: VIPMembershipClientProps) {
   return (
     <>
-      <Header phoneConfig={phoneConfig} />
+      <Header austinPhone={phoneConfig} />
       <div className="min-h-screen py-16">
       <div className="container mx-auto px-4">
         {/* Hero */}

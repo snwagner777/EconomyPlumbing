@@ -97,12 +97,7 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       
-      // Membership page consolidation
-      {
-        source: '/membership-benefits',
-        destination: '/vip-membership',
-        permanent: true,
-      },
+      // Note: Both /membership-benefits (sales page) and /vip-membership (purchase page) kept separate
       
       // Referral page consolidation
       {

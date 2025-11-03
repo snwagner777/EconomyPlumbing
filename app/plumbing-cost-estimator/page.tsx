@@ -37,7 +37,7 @@ export default async function PlumbingCostEstimator({ searchParams }: {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
-      <Header phoneConfig={phoneNumbers.austin} />
+      <Header austinPhone={phoneNumbers.austin} marbleFallsPhone={phoneNumbers.marbleFalls} />
       <PlumbingCostEstimatorClient phoneConfig={phoneNumbers.austin} />
       <Footer />
     </>

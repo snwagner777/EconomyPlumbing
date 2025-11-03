@@ -69,7 +69,7 @@ export async function GET() {
     // Legal pages
     { url: '/privacy-policy', priority: 0.3, changefreq: 'yearly' },
     { url: '/terms-of-service', priority: 0.3, changefreq: 'yearly' },
-    { url: '/refund_returns', priority: 0.3, changefreq: 'yearly' },
+    // Note: /refund_returns excluded (has noindex meta tag)
     
     // Success stories
     { url: '/success-stories', priority: 0.6, changefreq: 'monthly' },
