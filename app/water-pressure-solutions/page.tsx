@@ -1,5 +1,15 @@
-'use client';
+import { Metadata } from 'next';
 import ServicePage from "@/components/ServicePage";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Water Pressure Solutions Austin TX | Fix Low & High Pressure",
+    description: "Solve water pressure problems with expert diagnosis and repair. Pressure regulator installation, booster pump systems to fix weak flow. Call (512) 368-9159.",
+    alternates: {
+      canonical: "https://www.plumbersthatcare.com/water-pressure-solutions",
+    },
+  };
+}
 
 export default function WaterPressureSolutions() {
   return (

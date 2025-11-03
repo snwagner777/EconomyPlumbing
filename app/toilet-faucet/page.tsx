@@ -1,5 +1,15 @@
-'use client';
+import { Metadata } from 'next';
 import ServicePage from "@/components/ServicePage";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Toilet & Faucet Repair Austin TX | All Brands Serviced",
+    description: "Expert toilet & faucet installation, repair & replacement in Austin. Water-efficient fixtures & modern upgrades for all brands serviced. Call (512) 368-9159.",
+    alternates: {
+      canonical: "https://www.plumbersthatcare.com/toilet-faucet",
+    },
+  };
+}
 
 export default function ToiletFaucet() {
   return (

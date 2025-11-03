@@ -1,5 +1,15 @@
-'use client';
+import { Metadata } from 'next';
 import ServicePage from "@/components/ServicePage";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "Water Heater Guide Austin & Marble Falls | Buying Guide & Expert Advice",
+    description: "Austin & Marble Falls water heater buying guide. Compare tank vs tankless, gas vs electric, sizing, efficiency, costs. Expert advice. Call (512) 368-9159.",
+    alternates: {
+      canonical: "https://www.plumbersthatcare.com/water-heater-guide",
+    },
+  };
+}
 
 export default function WaterHeaterGuide() {
   return (
