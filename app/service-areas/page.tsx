@@ -6,7 +6,7 @@ import ServiceAreasClient from './ServiceAreasClient';
 export async function generateMetadata(): Promise<Metadata> {
   return await getPageMetadata('/service-areas', {
     title: 'Service Areas - Plumbers Serving Central Texas | Economy Plumbing Services',
-    description: 'Economy Plumbing Services proudly serves Austin, Cedar Park, Round Rock, Georgetown, Marble Falls, and surrounding Central Texas areas. Find your local plumber today.',
+    description: 'Economy Plumbing serves Austin, Cedar Park, Round Rock, Georgetown, Marble Falls, and surrounding Central Texas communities. Licensed local plumbers.',
     ogType: 'website',
   });
 }

@@ -10,7 +10,7 @@ import FAQClient from './FAQClient';
 export async function generateMetadata(): Promise<Metadata> {
   return await getPageMetadata('/faq', {
     title: 'Frequently Asked Questions | Economy Plumbing Services',
-    description: 'Find answers to common plumbing questions about water heaters, drains, leaks, gas services, pricing, and more. Expert plumbing advice for Austin and Central Texas.',
+    description: 'Answers to common plumbing questions about water heaters, drains, leaks, gas services, and pricing. Expert advice for Austin and Central Texas.',
   });
 }
 

@@ -5,7 +5,7 @@ import ContactClient from './ContactClient';
 export async function generateMetadata(): Promise<Metadata> {
   return await getPageMetadata('/contact', {
     title: 'Contact Us - Get Your Free Plumbing Estimate | Economy Plumbing Services',
-    description: 'Contact Economy Plumbing Services for expert plumbing help in Austin and Central Texas. Call (512) 428-2769 or fill out our online form for a free estimate. 24/7 emergency service available.',
+    description: 'Contact Economy Plumbing for expert plumbing help in Austin and Central Texas. Free estimates, 24/7 emergency service. Call or fill out our form.',
     ogType: 'website',
   });
 }
