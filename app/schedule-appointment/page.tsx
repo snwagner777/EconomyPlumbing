@@ -20,6 +20,11 @@ export default function ScheduleAppointment() {
   // Capture referral code for pre-filling and automatic discount
   const referralCode = searchParams.get('referral') || undefined;
   
+  // Capture customer ID for pre-filling (will fetch details server-side for security)
+  const prefilledCustomerId = searchParams.get('customerId') 
+    ? parseInt(searchParams.get('customerId')!) 
+    : undefined;
+  
   return (
     <>
 
@@ -92,6 +97,7 @@ export default function ScheduleAppointment() {
                 initialUtmMedium={utmMedium}
                 initialUtmCampaign={utmCampaign}
                 initialReferralCode={referralCode}
+                prefilledCustomerId={prefilledCustomerId}
               />
             </div>
           </div>

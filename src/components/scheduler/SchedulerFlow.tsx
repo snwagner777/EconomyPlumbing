@@ -41,6 +41,8 @@ export interface SchedulerData {
   };
   specialInstructions?: string;
   utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 const STEPS = [
@@ -56,17 +58,21 @@ interface SchedulerFlowProps {
   initialUtmMedium?: string;
   initialUtmCampaign?: string;
   initialReferralCode?: string;
+  prefilledCustomerId?: number;
 }
 
 export function SchedulerFlow({ 
   initialUtmSource = 'website',
   initialUtmMedium,
   initialUtmCampaign,
-  initialReferralCode
+  initialReferralCode,
+  prefilledCustomerId
 }: SchedulerFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<SchedulerData>({
     utmSource: initialUtmSource,
+    utmMedium: initialUtmMedium,
+    utmCampaign: initialUtmCampaign,
   });
 
   const updateData = (updates: Partial<SchedulerData>) => {
@@ -155,6 +161,7 @@ export function SchedulerFlow({
             updateData={updateData}
             onNext={nextStep}
             onBack={previousStep}
+            prefilledCustomerId={prefilledCustomerId}
           />
         )}
         {currentStep === 3 && (

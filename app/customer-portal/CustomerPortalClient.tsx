@@ -1698,11 +1698,17 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button
-                          onClick={openScheduler}
+                          asChild
                           data-testid="button-schedule-appointment"
                         >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Schedule Appointment
+                          <a
+                            href={`/schedule-appointment?customerId=${customerId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule Appointment
+                          </a>
                         </Button>
                         <Button
                           asChild

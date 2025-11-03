@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,15 +14,63 @@ interface CustomerInfoStepProps {
   updateData: (updates: Partial<SchedulerData>) => void;
   onNext: () => void;
   onBack: () => void;
+  prefilledCustomerId?: number;
 }
 
-export function CustomerInfoStep({ data, updateData, onNext, onBack }: CustomerInfoStepProps) {
+export function CustomerInfoStep({ data, updateData, onNext, onBack, prefilledCustomerId }: CustomerInfoStepProps) {
   const [phone, setPhone] = useState(data.customer?.phone || '');
   const [email, setEmail] = useState(data.customer?.email || '');
   const [name, setName] = useState(data.customer?.name || '');
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [lookupResult, setLookupResult] = useState<any>(null);
   const { toast } = useToast();
+
+  // Auto-fetch customer data if prefilledCustomerId is provided
+  useEffect(() => {
+    const fetchCustomerData = async () => {
+      if (!prefilledCustomerId) return;
+
+      setIsLookingUp(true);
+      try {
+        const response = await fetch('/api/scheduler/lookup-customer', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ customerId: prefilledCustomerId }),
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.customer) {
+          setLookupResult(result);
+          setName(result.customer.name);
+          setEmail(result.customer.email || '');
+          setPhone(result.customer.phoneNumber || '');
+
+          // Persist customer data in scheduler state so it's available in later steps
+          updateData({
+            customer: {
+              id: result.customer.id,
+              name: result.customer.name,
+              email: result.customer.email || '',
+              phone: result.customer.phoneNumber || '',
+              isExisting: true,
+            },
+          });
+
+          toast({
+            title: 'Welcome Back!',
+            description: `Your information has been pre-filled, ${result.customer.name}!`,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching customer data:', error);
+      } finally {
+        setIsLookingUp(false);
+      }
+    };
+
+    fetchCustomerData();
+  }, [prefilledCustomerId]);
 
   const handleLookup = async () => {
     if (!phone && !email) {

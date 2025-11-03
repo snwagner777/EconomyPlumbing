@@ -169,7 +169,9 @@ export function BookingSummaryStep({
           backflowDeviceCount: isBackflowService ? backflowDeviceCount : undefined,
           selectedMembershipId: selectedMembership || undefined,
           bookingSource: 'website',
-          utm_source: data.utmSource || 'website',
+          utm_source: data.utmSource || utmSource || 'website',
+          utm_medium: data.utmMedium || utmMedium || undefined,
+          utm_campaign: data.utmCampaign || utmCampaign || undefined,
         }),
       });
 
