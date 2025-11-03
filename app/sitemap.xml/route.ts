@@ -76,7 +76,7 @@ export async function GET() {
   ];
 
   // Fetch dynamic content from API routes
-  let blogSlugs: string[] = [];
+  let blogPosts: Array<{ slug: string; publishDate: string }> = [];
   let areaSlugs: string[] = [];
 
   try {
@@ -85,7 +85,12 @@ export async function GET() {
       const data = await blogRes.json();
       // Handle both array responses and object responses with posts property
       const posts = Array.isArray(data) ? data : (data?.posts || []);
-      blogSlugs = posts.map((p: { slug: string }) => p.slug).filter(Boolean);
+      blogPosts = posts
+        .filter((p: any) => p.slug)
+        .map((p: any) => ({
+          slug: p.slug,
+          publishDate: p.publishDate || new Date().toISOString(),
+        }));
     }
 
     const areasRes = await fetch(`${baseUrl}/api/service-areas`);
@@ -100,24 +105,41 @@ export async function GET() {
     // Continue with empty arrays if fetch fails
   }
 
-  // Build sitemap with proper formatting
+  // Helper to format dates as YYYY-MM-DD for sitemap
+  const formatDate = (dateStr: string | Date): string => {
+    try {
+      const date = new Date(dateStr);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return new Date().toISOString().split('T')[0];
+    }
+  };
+
+  // Set lastmod dates for static pages (last known content update)
+  const currentDate = new Date().toISOString().split('T')[0];
+  const recentUpdateDate = '2025-11-03'; // Recent SEO/content updates
+
+  // Build sitemap with proper formatting including lastmod dates
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   ${staticPages.map(page => `
   <url>
     <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${recentUpdateDate}</lastmod>
     <changefreq>${page.changefreq}</changefreq>
     <priority>${page.priority}</priority>
   </url>`).join('')}
-  ${blogSlugs.map(slug => `
+  ${blogPosts.map(post => `
   <url>
-    <loc>${baseUrl}/${slug}</loc>
+    <loc>${baseUrl}/${post.slug}</loc>
+    <lastmod>${formatDate(post.publishDate)}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`).join('')}
   ${areaSlugs.map(slug => `
   <url>
     <loc>${baseUrl}/service-areas/${slug}</loc>
+    <lastmod>${recentUpdateDate}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>`).join('')}
