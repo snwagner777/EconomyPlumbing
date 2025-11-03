@@ -20,7 +20,7 @@
  */
 
 export async function GET() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://plumbersthatcare.com';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.plumbersthatcare.com';
 
   // Static pages - ONLY canonical, indexable URLs
   const staticPages = [

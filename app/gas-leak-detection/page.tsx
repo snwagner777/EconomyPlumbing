@@ -65,7 +65,7 @@ export default async function GasLeakDetection({ searchParams }: GasLeakDetectio
 
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", item: "https://www.plumbersthatcare.com" },
-    { name: "Gas Leak Detection", item: "https://www.plumbersthatcare.com/gas-leak-detection" }
+    { name: "Gas Leak Detection", item: "https://www.plumbersthatcare.com/gas-line-services" }
   ]);
 
   return (
@@ -88,7 +88,7 @@ export default async function GasLeakDetection({ searchParams }: GasLeakDetectio
       <ServicePage
         title="Gas Leak Detection Austin TX | 24/7 Emergency Service"
         metaDescription="Immediate gas leak detection & repair in Austin. Electronic equipment, licensed gas technicians, 24/7 emergency response. Call (512) 368-9159 for safety."
-        canonical="https://www.plumbersthatcare.com/gas-leak-detection"
+        canonical="https://www.plumbersthatcare.com/gas-line-services"
         heroImage="/attached_assets/optimized/gas_line_installatio_9713d531.webp"
         heroImageAlt="Professional gas leak detection and emergency repair service in Central Texas"
         heroTitle="Gas Leak Detection & Repair"

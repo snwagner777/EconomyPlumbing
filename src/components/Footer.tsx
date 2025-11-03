@@ -103,12 +103,15 @@ export default function Footer() {
               <li><Link href="/emergency" className="hover:text-primary" data-testid="footer-link-emergency">Emergency Plumbing</Link></li>
               <li><Link href="/water-heater-services" className="hover:text-primary" data-testid="footer-link-water-heater">Water Heater Services</Link></li>
               <li><Link href="/water-heater-calculator" className="hover:text-primary" data-testid="footer-link-calculator">Water Heater Calculator</Link></li>
-              <li><Link href="/plumbing-cost-estimator" className="hover:text-primary" data-testid="footer-link-estimator">Plumbing Cost Estimator</Link></li>
+              <li><Link href="/plumbing-cost-estimator" className="hover:text-primary" data-testid="footer-link-estimator">Cost Estimator</Link></li>
               <li><Link href="/drain-cleaning" className="hover:text-primary" data-testid="footer-link-drain">Drain Cleaning</Link></li>
               <li><Link href="/leak-repair" className="hover:text-primary" data-testid="footer-link-leak">Leak Repair</Link></li>
+              <li><Link href="/sewer-line-repair" className="hover:text-primary" data-testid="footer-link-sewer">Sewer Line Repair</Link></li>
+              <li><Link href="/repiping" className="hover:text-primary" data-testid="footer-link-repiping">Repiping</Link></li>
+              <li><Link href="/fixture-installation" className="hover:text-primary" data-testid="footer-link-fixtures">Fixture Install</Link></li>
               <li><Link href="/toilet-faucet" className="hover:text-primary" data-testid="footer-link-toilet">Toilet & Faucet</Link></li>
               <li><Link href="/gas-line-services" className="hover:text-primary" data-testid="footer-link-gas">Gas Services</Link></li>
-              <li><Link href="/backflow" className="hover:text-primary" data-testid="footer-link-backflow">Backflow Services</Link></li>
+              <li><Link href="/backflow" className="hover:text-primary" data-testid="footer-link-backflow">Backflow</Link></li>
               <li><Link href="/services" className="hover:text-primary" data-testid="footer-link-all-services">View All Services</Link></li>
             </ul>
           </div>
@@ -131,6 +134,7 @@ export default function Footer() {
               <li><Link href="/blog" className="hover:text-primary" data-testid="footer-link-blog">Blog</Link></li>
               <li><Link href="/success-stories" className="hover:text-primary" data-testid="footer-link-success-stories">Success Stories</Link></li>
               <li><Link href="/vip-membership" className="hover:text-primary" data-testid="footer-link-vip">VIP Membership</Link></li>
+              <li><Link href="/referral" className="hover:text-primary" data-testid="footer-link-referral">Referral Program</Link></li>
               <li><Link href="/customer-portal" className="hover:text-primary" data-testid="footer-link-portal">Customer Portal</Link></li>
               <li><Link href="/store" className="hover:text-primary" data-testid="footer-link-store">Store</Link></li>
               <li><Link href="/contact" className="hover:text-primary" data-testid="footer-link-contact">Contact Us</Link></li>

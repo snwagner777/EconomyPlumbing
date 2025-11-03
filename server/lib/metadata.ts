@@ -25,8 +25,8 @@ export async function getPageMetadata(path: string, defaults?: MetadataDefaults)
     
     const title = dbMetadata?.title || defaults?.title || 'Economy Plumbing Services';
     const description = dbMetadata?.description || defaults?.description || 'Professional plumbing services in Austin and Central Texas';
-    const canonicalUrl = defaults?.canonical || dbMetadata?.canonicalUrl || `https://plumbersthatcare.com${path}`;
-    const ogImage = defaults?.ogImage || 'https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg';
+    const canonicalUrl = defaults?.canonical || dbMetadata?.canonicalUrl || `https://www.plumbersthatcare.com${path}`;
+    const ogImage = defaults?.ogImage || 'https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg';
     
     return {
       title,
