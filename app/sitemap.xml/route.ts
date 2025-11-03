@@ -80,16 +80,21 @@ export async function GET() {
     const blogRes = await fetch(`${baseUrl}/api/blog`);
     if (blogRes.ok) {
       const data = await blogRes.json();
-      blogSlugs = data?.map((p: { slug: string }) => p.slug) || [];
+      // Handle both array responses and object responses with posts property
+      const posts = Array.isArray(data) ? data : (data?.posts || []);
+      blogSlugs = posts.map((p: { slug: string }) => p.slug).filter(Boolean);
     }
 
     const areasRes = await fetch(`${baseUrl}/api/service-areas`);
     if (areasRes.ok) {
       const data = await areasRes.json();
-      areaSlugs = data?.map((a: { slug: string }) => a.slug) || [];
+      // Handle both array responses and object responses with areas property
+      const areas = Array.isArray(data) ? data : (data?.areas || []);
+      areaSlugs = areas.map((a: { slug: string }) => a.slug).filter(Boolean);
     }
   } catch (error) {
     console.error('Error fetching dynamic content for sitemap:', error);
+    // Continue with empty arrays if fetch fails
   }
 
   // Build sitemap with proper formatting
