@@ -105,7 +105,7 @@ export default function BlogPostClient({ phoneConfig, marbleFallsPhoneConfig }: 
         <Header />
         <main className="flex-1 py-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h1 className="text-3xl font-bold mb-4">Post Not Found</h1>
+            <h2 className="text-3xl font-bold mb-4">Post Not Found</h2>
             <p className="text-muted-foreground">
               The blog post you're looking for doesn't exist.
             </p>

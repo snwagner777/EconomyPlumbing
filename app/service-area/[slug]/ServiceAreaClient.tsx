@@ -56,7 +56,7 @@ export default function ServiceAreaClient({
         <Header />
         <div className="flex items-center justify-center py-24">
           <Card className="p-8 text-center">
-            <h1 className="text-2xl font-bold mb-4">Service Area Not Found</h1>
+            <h2 className="text-2xl font-bold mb-4">Service Area Not Found</h2>
             <p className="text-muted-foreground mb-6">We couldn't find information for this service area.</p>
             <Button asChild>
               <Link href="/service-areas">View All Service Areas</Link>

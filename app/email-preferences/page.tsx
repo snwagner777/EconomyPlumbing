@@ -37,7 +37,7 @@ export default async function EmailPreferencesPage({ searchParams }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center py-16 px-4">
         <div className="max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">Invalid Link</h1>
+          <h2 className="text-2xl font-bold mb-4">Invalid Link</h2>
           <p className="text-muted-foreground">
             This email preference link is invalid or expired. Please use the link from your email.
           </p>
@@ -52,7 +52,7 @@ export default async function EmailPreferencesPage({ searchParams }: Props) {
     return (
       <div className="min-h-screen flex items-center justify-center py-16 px-4">
         <div className="max-w-md text-center">
-          <h1 className="text-2xl font-bold mb-4">Not Found</h1>
+          <h2 className="text-2xl font-bold mb-4">Not Found</h2>
           <p className="text-muted-foreground">
             We couldn't find your email preferences. The link may be expired.
           </p>

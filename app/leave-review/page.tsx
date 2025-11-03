@@ -252,9 +252,9 @@ export default function LeaveReview() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 px-4 py-12">
       <div className="max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-3" data-testid="text-page-title">
+          <h2 className="text-4xl font-bold mb-3" data-testid="text-page-title">
             Leave a Review
-          </h1>
+          </h2>
           <p className="text-lg text-muted-foreground" data-testid="text-page-description">
             {showPublicReviewOptions 
               ? "Thank you! We'd love if you shared your experience publicly"
