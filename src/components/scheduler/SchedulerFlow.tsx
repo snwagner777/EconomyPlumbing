@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ServiceCategoryStep } from './ServiceCategoryStep';
+import { ServiceCategoryStep, SERVICE_CATEGORIES } from './ServiceCategoryStep';
 import { CustomerInfoStep } from './CustomerInfoStep';
 import { LocationStep } from './LocationStep';
 import { TimeSelectionStep } from './TimeSelectionStep';
@@ -59,6 +59,7 @@ interface SchedulerFlowProps {
   initialUtmCampaign?: string;
   initialReferralCode?: string;
   prefilledCustomerId?: number;
+  prefilledService?: string;
 }
 
 export function SchedulerFlow({ 
@@ -66,13 +67,31 @@ export function SchedulerFlow({
   initialUtmMedium,
   initialUtmCampaign,
   initialReferralCode,
-  prefilledCustomerId
+  prefilledCustomerId,
+  prefilledService
 }: SchedulerFlowProps = {}) {
+  // Find matching service category if prefilledService is provided
+  const matchedService = prefilledService
+    ? SERVICE_CATEGORIES.find(
+        (cat) => 
+          cat.name.toLowerCase().includes(prefilledService.toLowerCase()) ||
+          prefilledService.toLowerCase().includes(cat.name.toLowerCase())
+      )
+    : undefined;
+
   const [currentStep, setCurrentStep] = useState(1);
   const [data, setData] = useState<SchedulerData>({
     utmSource: initialUtmSource,
     utmMedium: initialUtmMedium,
     utmCampaign: initialUtmCampaign,
+    // Prefill service if matched
+    service: matchedService
+      ? {
+          name: matchedService.name,
+          jobTypeId: matchedService.jobTypeId,
+          category: matchedService.id,
+        }
+      : undefined,
   });
 
   const updateData = (updates: Partial<SchedulerData>) => {
@@ -153,6 +172,7 @@ export function SchedulerFlow({
             data={data}
             updateData={updateData}
             onNext={nextStep}
+            prefilledService={prefilledService}
           />
         )}
         {currentStep === 2 && (

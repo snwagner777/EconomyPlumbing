@@ -18,9 +18,10 @@ interface ServiceCategoryStepProps {
   data: SchedulerData;
   updateData: (updates: Partial<SchedulerData>) => void;
   onNext: () => void;
+  prefilledService?: string;
 }
 
-const SERVICE_CATEGORIES = [
+export const SERVICE_CATEGORIES = [
   {
     id: 'water-heater',
     name: 'Water Heater Services',

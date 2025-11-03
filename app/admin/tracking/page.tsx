@@ -111,7 +111,7 @@ export default function TrackingNumbersAdmin() {
   const { toast } = useToast();
 
   // Check auth status
-  const { data: authData } = useQuery({
+  const { data: authData } = useQuery<{ isAdmin: boolean }>({
     queryKey: ['/api/admin/check'],
   });
 

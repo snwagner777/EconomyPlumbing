@@ -2,33 +2,49 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
+interface SchedulerOptions {
+  prefilledService?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  referralCode?: string;
+  customerId?: number;
+}
+
 interface SchedulerContextType {
   isOpen: boolean;
-  openScheduler: (prefilledService?: string) => void;
+  openScheduler: (optionsOrService?: string | SchedulerOptions) => void;
   closeScheduler: () => void;
-  prefilledService?: string;
+  options: SchedulerOptions;
 }
 
 const SchedulerContext = createContext<SchedulerContextType | undefined>(undefined);
 
 export function SchedulerProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [prefilledService, setPrefilledService] = useState<string>();
+  const [options, setOptions] = useState<SchedulerOptions>({});
 
-  const openScheduler = (service?: string) => {
-    setPrefilledService(service);
+  const openScheduler = (optionsOrService?: string | SchedulerOptions) => {
+    // Backwards compatibility: if string is passed, treat it as prefilledService
+    if (typeof optionsOrService === 'string') {
+      setOptions({ prefilledService: optionsOrService });
+    } else {
+      setOptions(optionsOrService || {});
+    }
     setIsOpen(true);
   };
 
   const closeScheduler = () => {
     setIsOpen(false);
-    setPrefilledService(undefined);
+    // Clear options after animation completes
+    setTimeout(() => setOptions({}), 300);
   };
 
   // Listen for scheduler events from openScheduler() calls
   useEffect(() => {
-    const handleOpenScheduler = (event: CustomEvent<{ prefilledService?: string }>) => {
-      setPrefilledService(event.detail?.prefilledService);
+    const handleOpenScheduler = (event: CustomEvent<SchedulerOptions>) => {
+      const eventOptions = event.detail || {};
+      setOptions(eventOptions);
       setIsOpen(true);
     };
 
@@ -40,7 +56,7 @@ export function SchedulerProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <SchedulerContext.Provider value={{ isOpen, openScheduler, closeScheduler, prefilledService }}>
+    <SchedulerContext.Provider value={{ isOpen, openScheduler, closeScheduler, options }}>
       {children}
     </SchedulerContext.Provider>
   );
