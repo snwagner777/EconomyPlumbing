@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { requireAdmin } from '@/server/lib/nextAuth';
+import { getIronSession } from 'iron-session';
+import { cookies } from 'next/headers';
 import OpenAI from 'openai';
+
+const sessionOptions = {
+  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
+  cookieName: 'admin_session',
+  cookieOptions: {
+    secure: process.env.NODE_ENV === 'production',
+  },
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const session = await getIronSession(cookies(), sessionOptions);
+    const cookieStore = await cookies();
+    const session = await getIronSession(cookieStore, sessionOptions);
     
-    if (!session.userId) {
+    if (!(session as any).userId) {
       return NextResponse.json(
         { message: "Unauthorized" },
         { status: 401 }
