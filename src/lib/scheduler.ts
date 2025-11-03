@@ -1,5 +1,4 @@
-// ServiceTitan scheduler utility - script loaded in layout.tsx
-// CRITICAL: Script MUST be in layout.tsx at end of body tag exactly as ServiceTitan provided
+// Custom scheduler utility - replaces ServiceTitan widget with our custom scheduler
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
@@ -8,19 +7,18 @@ declare global {
   }
 }
 
-// Open scheduler - calls STWidgetManager directly as ServiceTitan specifies
-export const openScheduler = () => {
+// Open custom scheduler - dispatches event that SchedulerContext listens to
+export const openScheduler = (prefilledService?: string) => {
   if (typeof window === 'undefined') return;
   
-  if (typeof window.STWidgetManager === 'function') {
-    try {
-      window.STWidgetManager('ws-open');
-    } catch (error) {
-      console.error('Error opening ServiceTitan scheduler:', error);
-      showSchedulerError();
-    }
-  } else {
-    console.error('STWidgetManager not found - script may not be loaded yet');
+  try {
+    // Dispatch custom event to trigger scheduler modal
+    const event = new CustomEvent('open-scheduler', {
+      detail: { prefilledService },
+    });
+    window.dispatchEvent(event);
+  } catch (error) {
+    console.error('Error opening scheduler:', error);
     showSchedulerError();
   }
 };
