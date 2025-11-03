@@ -112,7 +112,7 @@ export default function Footer() {
               <li><Link href="/toilet-faucet" className="hover:text-primary" data-testid="footer-link-toilet">Toilet & Faucet</Link></li>
               <li><Link href="/gas-line-services" className="hover:text-primary" data-testid="footer-link-gas">Gas Services</Link></li>
               <li><Link href="/backflow" className="hover:text-primary" data-testid="footer-link-backflow">Backflow</Link></li>
-              <li><Link href="/services" className="hover:text-primary" data-testid="footer-link-all-services">View All Services</Link></li>
+              <li><Link href="/services" className="hover:text-primary" data-testid="footer-link-all-services">All Plumbing Services</Link></li>
             </ul>
           </div>
 
@@ -123,7 +123,7 @@ export default function Footer() {
               <li><Link href="/plumber-in-cedar-park--tx" className="hover:text-primary" data-testid="footer-link-cedar-park">Cedar Park</Link></li>
               <li><Link href="/plumber-marble-falls" className="hover:text-primary" data-testid="footer-link-marble-falls">Marble Falls</Link></li>
               <li><Link href="/round-rock-plumber" className="hover:text-primary" data-testid="footer-link-round-rock">Round Rock</Link></li>
-              <li><Link href="/service-areas" className="hover:text-primary" data-testid="footer-link-view-all-areas">View All Areas</Link></li>
+              <li><Link href="/service-areas" className="hover:text-primary" data-testid="footer-link-view-all-areas">All Service Areas</Link></li>
             </ul>
           </div>
 

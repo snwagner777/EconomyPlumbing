@@ -45,7 +45,7 @@ export default function RelatedBlogPosts({
         <div className="flex items-center justify-between mb-8">
           <h2 className="text-3xl font-bold">{title}</h2>
           <Link href="/blog" className="text-primary hover:underline inline-flex items-center gap-1" data-testid="link-view-all-blog">
-            View All
+            View All Plumbing Tips
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>

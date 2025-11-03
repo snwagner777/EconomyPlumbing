@@ -2,9 +2,10 @@
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, Star, Clock, Shield, Phone } from "lucide-react";
+import { CheckCircle, Star, Clock, Shield, Phone, ArrowRight } from "lucide-react";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
 interface OfficeBuildingsClientProps {
@@ -106,6 +107,46 @@ export default function OfficeBuildingsClient({ phoneConfig }: OfficeBuildingsCl
                 </div>
               </CardContent>
             </Card>
+
+            {/* Related Commercial Services */}
+            <section className="mb-12">
+              <h2 className="text-2xl font-semibold mb-6">Other Commercial Services</h2>
+              <div className="grid md:grid-cols-3 gap-4">
+                <Link href="/commercial/restaurants" className="group">
+                  <Card className="hover-elevate h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Restaurants</h3>
+                      <p className="text-sm text-muted-foreground mb-3">Expert commercial kitchen plumbing services</p>
+                      <div className="flex items-center gap-1 text-primary text-sm font-medium">
+                        Learn More <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+                <Link href="/commercial/retail" className="group">
+                  <Card className="hover-elevate h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Retail Stores</h3>
+                      <p className="text-sm text-muted-foreground mb-3">Professional plumbing for retail businesses</p>
+                      <div className="flex items-center gap-1 text-primary text-sm font-medium">
+                        Learn More <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+                <Link href="/commercial/property-management" className="group">
+                  <Card className="hover-elevate h-full">
+                    <CardContent className="p-6">
+                      <h3 className="font-semibold mb-2 group-hover:text-primary transition-colors">Property Management</h3>
+                      <p className="text-sm text-muted-foreground mb-3">Comprehensive plumbing for rental properties</p>
+                      <div className="flex items-center gap-1 text-primary text-sm font-medium">
+                        Learn More <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              </div>
+            </section>
 
             <section className="bg-primary text-primary-foreground p-8 rounded-lg">
               <h2 className="text-2xl font-bold mb-4">Need Commercial Plumbing Service?</h2>
