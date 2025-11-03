@@ -136,6 +136,59 @@ export function BookingSummaryStep({
       return;
     }
 
+    // Handle Stripe payment for VIP membership purchase
+    if (selectedMembership && !isBackflowService) {
+      setIsBooking(true);
+      try {
+        const response = await fetch('/api/scheduler/membership-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            membershipId: selectedMembership,
+            customerName: data.customer.name,
+            customerEmail: data.customer.email,
+            customerPhone: data.customer.phone,
+            location: {
+              address: data.location.address,
+              city: data.location.city,
+              state: data.location.state,
+              zip: data.location.zipCode,
+            },
+            service: {
+              name: data.service.name,
+              category: data.service.category,
+            },
+            preferredDate: data.timeSlot.start,
+            preferredTimeSlot: data.timeSlot.timeLabel,
+            specialInstructions: specialInstructions || undefined,
+            utm_source: data.utmSource || utmSource || 'website',
+            utm_medium: data.utmMedium || utmMedium || undefined,
+            utm_campaign: data.utmCampaign || utmCampaign || undefined,
+            referralCode: promoCodeValidated ? promoCode : undefined,
+            referralDiscount: promoCodeValidated ? promoCodeDiscount : undefined,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.url) {
+          // Redirect to Stripe checkout
+          window.location.href = result.url;
+          return;
+        } else {
+          throw new Error(result.error || 'Failed to create checkout session');
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Checkout Error',
+          description: error.message || 'Unable to process membership payment. Please try again.',
+          variant: 'destructive',
+        });
+        setIsBooking(false);
+        return;
+      }
+    }
+
     // Handle Stripe payment for prepaid backflow testing
     if (isBackflowService && backflowTotal > 0) {
       setIsBooking(true);
@@ -188,7 +241,7 @@ export function BookingSummaryStep({
       }
     }
 
-    // For non-backflow services, proceed with regular booking
+    // For non-prepaid services, proceed with regular booking
     setIsBooking(true);
     try {
       const response = await fetch('/api/scheduler/book', {
