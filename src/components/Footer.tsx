@@ -12,7 +12,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
             <img 
-              src={logoImage.src} 
+              src={typeof logoImage === 'string' ? logoImage : logoImage.src} 
               alt="Economy Plumbing Services" 
               width="85"
               height="48"
@@ -128,8 +128,12 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               <li><Link href="/about" className="hover:text-primary" data-testid="footer-link-about">About Us</Link></li>
               <li><Link href="/blog" className="hover:text-primary" data-testid="footer-link-blog">Blog</Link></li>
+              <li><Link href="/success-stories" className="hover:text-primary" data-testid="footer-link-success-stories">Success Stories</Link></li>
+              <li><Link href="/vip-membership" className="hover:text-primary" data-testid="footer-link-vip">VIP Membership</Link></li>
+              <li><Link href="/customer-portal" className="hover:text-primary" data-testid="footer-link-portal">Customer Portal</Link></li>
               <li><Link href="/store" className="hover:text-primary" data-testid="footer-link-store">Store</Link></li>
               <li><Link href="/contact" className="hover:text-primary" data-testid="footer-link-contact">Contact Us</Link></li>
+              <li><Link href="/faq" className="hover:text-primary" data-testid="footer-link-faq">FAQ</Link></li>
             </ul>
           </div>
         </div>

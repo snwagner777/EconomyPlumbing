@@ -65,8 +65,12 @@ export default function Header({
     { name: "Backflow Testing", path: "/backflow" },
     { name: "Drainage Solutions", path: "/drainage-solutions" },
     { name: "Sump & Sewage Pumps", path: "/sewage-pump-services" },
+    { name: "Water Leak Repair", path: "/water-leak-repair" },
     { name: "Water Pressure Solutions", path: "/water-pressure-solutions" },
+    { name: "Sewer Line Repair", path: "/sewer-line-repair" },
+    { name: "Repiping Services", path: "/repiping" },
     { name: "Permit Resolution", path: "/permit-resolution-services" },
+    { name: "Fixture Installation", path: "/fixture-installation" },
     { name: "Commercial Services", path: "/commercial-services", section: "Commercial" },
     { name: "Restaurant Plumbing", path: "/commercial/restaurants", section: "Commercial", indent: true },
     { name: "Retail Plumbing", path: "/commercial/retail", section: "Commercial", indent: true },
@@ -102,7 +106,7 @@ export default function Header({
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center">
             <img 
-              src={logoImage.src} 
+              src={typeof logoImage === 'string' ? logoImage : logoImage.src} 
               alt="Economy Plumbing Services logo" 
               width="85"
               height="48"
@@ -205,11 +209,18 @@ export default function Header({
                       Blog
                     </Link>
                     <Link
-                      href="/membership-benefits"
+                      href="/vip-membership"
                       className="block px-4 py-2 text-sm hover-elevate"
                       data-testid="link-membership"
                     >
-                      Membership Benefits
+                      VIP Membership
+                    </Link>
+                    <Link
+                      href="/customer-portal"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-portal"
+                    >
+                      Customer Portal
                     </Link>
                   </div>
                 </div>
