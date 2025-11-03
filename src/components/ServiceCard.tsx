@@ -4,6 +4,7 @@ import { memo } from "react";
 import { Card } from "@/components/ui/card";
 import { ArrowRight, type LucideIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface ServiceCardProps {
   icon: LucideIcon;
@@ -18,15 +19,14 @@ const ServiceCard = memo(({ icon: Icon, title, description, features, link, imag
   return (
     <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border">
       {image && (
-        <div className="mb-4 rounded-md overflow-hidden">
-          <img 
+        <div className="mb-4 rounded-md overflow-hidden relative h-48">
+          <Image 
             src={image} 
-            alt={`Economy Plumbing ${title} - professional plumbing service`}
-            width="800"
-            height="400"
+            alt={`Economy Plumbing ${title} - professional plumbing service in Austin & Central Texas`}
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            className="object-cover"
             loading="lazy"
-            decoding="async"
-            className="w-full h-48 object-cover"
           />
         </div>
       )}
