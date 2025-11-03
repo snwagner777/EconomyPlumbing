@@ -249,6 +249,32 @@ export class ServiceTitanCRM {
     // Create new location
     return await this.createLocation({ ...data, customerId });
   }
+
+  /**
+   * Create a pinned note on a location (e.g., gate code)
+   */
+  async createLocationNote(locationId: number, text: string, pinned: boolean = true): Promise<{ id: number }> {
+    try {
+      const payload = {
+        text,
+        pinned,
+      };
+
+      const response = await serviceTitanAuth.makeRequest<{ id: number }>(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/notes`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Created ${pinned ? 'pinned ' : ''}note on location ${locationId}: ${response.id}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error creating note on location ${locationId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const serviceTitanCRM = new ServiceTitanCRM();

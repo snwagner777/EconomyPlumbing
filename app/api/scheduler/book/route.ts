@@ -118,6 +118,16 @@ export async function POST(req: NextRequest) {
         email: validated.customerEmail || undefined,
       });
 
+      // Step 5b: Add gate code as pinned note if provided
+      if (body.gateCode && body.gateCode.trim()) {
+        console.log(`[Scheduler] Adding gate code as pinned note to location ${location.id}`);
+        await serviceTitanCRM.createLocationNote(
+          location.id,
+          `Gate Code: ${body.gateCode.trim()}`,
+          true
+        );
+      }
+
       // Step 6: Create job with real IDs and campaign
       console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}${campaignId ? `, Campaign: ${campaignId}` : ''})`);
       const job = await serviceTitanJobs.createJob({
@@ -143,7 +153,7 @@ export async function POST(req: NextRequest) {
           bookedAt: new Date(),
           updatedAt: new Date(),
         })
-        .where({ id: schedulerRequest.id });
+        .where(eq(schedulerRequests.id, schedulerRequest.id));
 
       console.log(`[Scheduler] Successfully booked job ${job.jobNumber}`);
 
@@ -166,7 +176,7 @@ export async function POST(req: NextRequest) {
           errorMessage: error.message || 'Unknown error during booking',
           updatedAt: new Date(),
         })
-        .where({ id: schedulerRequest.id });
+        .where(eq(schedulerRequests.id, schedulerRequest.id));
 
       return NextResponse.json(
         {
