@@ -100,6 +100,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white font-semibold mb-4">Services</h4>
             <ul className="space-y-2 text-sm">
+              <li><Link href="/emergency" className="hover:text-primary" data-testid="footer-link-emergency">Emergency Plumbing</Link></li>
               <li><Link href="/water-heater-services" className="hover:text-primary" data-testid="footer-link-water-heater">Water Heater Services</Link></li>
               <li><Link href="/water-heater-calculator" className="hover:text-primary" data-testid="footer-link-calculator">Water Heater Calculator</Link></li>
               <li><Link href="/plumbing-cost-estimator" className="hover:text-primary" data-testid="footer-link-estimator">Plumbing Cost Estimator</Link></li>
@@ -144,6 +145,8 @@ export default function Footer() {
           </p>
           <div className="flex gap-6 text-sm">
             <Link href="/privacy-policy" className="hover:text-primary">Privacy Policy</Link>
+            <Link href="/terms-of-service" className="hover:text-primary">Terms of Service</Link>
+            <Link href="/refund_returns" className="hover:text-primary">Refunds</Link>
           </div>
         </div>
       </div>

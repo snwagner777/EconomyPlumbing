@@ -49,6 +49,7 @@ export default function Header({
 
   const services = [
     { name: "All Services", path: "/services", featured: true },
+    { name: "Emergency Plumbing", path: "/emergency", featured: true },
     { name: "Water Heater Services", path: "/water-heater-services" },
     { name: "Water Heater Guide", path: "/water-heater-guide" },
     { name: "Water Heater Calculator", path: "/water-heater-calculator" },
