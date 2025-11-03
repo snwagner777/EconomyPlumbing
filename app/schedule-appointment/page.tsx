@@ -1,4 +1,5 @@
 'use client';
+import { useSearchParams } from 'next/navigation';
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -7,6 +8,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { SchedulerFlow } from "@/components/scheduler/SchedulerFlow";
 
 export default function ScheduleAppointment() {
+  const searchParams = useSearchParams();
+  
+  // Capture UTM parameters for campaign tracking
+  const utmSource = searchParams.get('utm_source') || 
+                    searchParams.get('source') || 
+                    'website';
+  const utmMedium = searchParams.get('utm_medium') || undefined;
+  const utmCampaign = searchParams.get('utm_campaign') || undefined;
+  
   return (
     <>
 
@@ -74,7 +84,11 @@ export default function ScheduleAppointment() {
               </div>
 
               {/* Custom Interactive Scheduler */}
-              <SchedulerFlow />
+              <SchedulerFlow 
+                initialUtmSource={utmSource}
+                initialUtmMedium={utmMedium}
+                initialUtmCampaign={utmCampaign}
+              />
             </div>
           </div>
         </section>

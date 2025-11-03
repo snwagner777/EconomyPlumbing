@@ -51,9 +51,21 @@ const STEPS = [
   { id: 5, name: 'Confirm', label: 'Confirm & Book' },
 ];
 
-export function SchedulerFlow() {
+interface SchedulerFlowProps {
+  initialUtmSource?: string;
+  initialUtmMedium?: string;
+  initialUtmCampaign?: string;
+}
+
+export function SchedulerFlow({ 
+  initialUtmSource = 'website',
+  initialUtmMedium,
+  initialUtmCampaign 
+}: SchedulerFlowProps = {}) {
   const [currentStep, setCurrentStep] = useState(1);
-  const [data, setData] = useState<SchedulerData>({});
+  const [data, setData] = useState<SchedulerData>({
+    utmSource: initialUtmSource,
+  });
 
   const updateData = (updates: Partial<SchedulerData>) => {
     setData((prev) => ({ ...prev, ...updates }));

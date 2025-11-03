@@ -220,6 +220,17 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
   
+  // Add location state
+  const [addLocationOpen, setAddLocationOpen] = useState(false);
+  const [newLocationData, setNewLocationData] = useState({
+    address: '',
+    city: 'Austin',
+    state: 'TX',
+    zipCode: '',
+    gateCode: '',
+  });
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+  
   const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
@@ -942,6 +953,63 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       });
     } finally {
       setIsDeletingContact(false);
+    }
+  };
+
+  const handleAddLocation = async () => {
+    if (!customerId || !newLocationData.address || !newLocationData.zipCode) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please provide the street address and ZIP code.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsAddingLocation(true);
+    try {
+      const response = await fetch('/api/portal/add-location', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId,
+          address: newLocationData.address,
+          city: newLocationData.city,
+          state: newLocationData.state,
+          zipCode: newLocationData.zipCode,
+          gateCode: newLocationData.gateCode || undefined,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to add location');
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', customerId] });
+
+      toast({
+        title: 'Location Added!',
+        description: 'Your new service address has been added successfully.',
+      });
+
+      setAddLocationOpen(false);
+      setNewLocationData({
+        address: '',
+        city: 'Austin',
+        state: 'TX',
+        zipCode: '',
+        gateCode: '',
+      });
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to add location. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsAddingLocation(false);
     }
   };
 
@@ -2309,9 +2377,20 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   {customerLocations.length > 0 && (
                     <Card>
                       <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-6 h-6 text-primary" />
-                          <CardTitle>Service Locations ({customerLocations.length})</CardTitle>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-6 h-6 text-primary" />
+                            <CardTitle>Service Locations ({customerLocations.length})</CardTitle>
+                          </div>
+                          <Button
+                            onClick={() => setAddLocationOpen(true)}
+                            size="sm"
+                            variant="outline"
+                            data-testid="button-add-location"
+                          >
+                            <MapPin className="w-4 h-4 mr-2" />
+                            Add Location
+                          </Button>
                         </div>
                         <CardDescription>
                           {customerLocations.length === 1 
@@ -2345,12 +2424,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                 </Badge>
                               )}
                             </div>
-                            {/* Address editing disabled - addresses cannot be changed for security */}
                           </div>
                         ))}
-                        <p className="text-xs text-muted-foreground text-center pt-2">
-                          Service addresses are managed by our team for security
-                        </p>
                       </CardContent>
                     </Card>
                   )}
@@ -3629,6 +3704,118 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               </Button>
             </DialogFooter>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Location Dialog */}
+      <Dialog open={addLocationOpen} onOpenChange={setAddLocationOpen}>
+        <DialogContent data-testid="dialog-add-location">
+          <DialogHeader>
+            <DialogTitle>Add New Service Location</DialogTitle>
+            <DialogDescription>
+              Add a new address where you need plumbing services
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-address">Street Address *</Label>
+              <Input
+                id="new-address"
+                value={newLocationData.address}
+                onChange={(e) => setNewLocationData({ ...newLocationData, address: e.target.value })}
+                placeholder="123 Main St"
+                data-testid="input-new-address"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-city">City *</Label>
+                <Input
+                  id="new-city"
+                  value={newLocationData.city}
+                  onChange={(e) => setNewLocationData({ ...newLocationData, city: e.target.value })}
+                  placeholder="Austin"
+                  data-testid="input-new-city"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="new-state">State *</Label>
+                <Select
+                  value={newLocationData.state}
+                  onValueChange={(value) => setNewLocationData({ ...newLocationData, state: value })}
+                >
+                  <SelectTrigger id="new-state" data-testid="select-new-state">
+                    <SelectValue placeholder="Select state" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TX">Texas</SelectItem>
+                    <SelectItem value="AL">Alabama</SelectItem>
+                    <SelectItem value="AK">Alaska</SelectItem>
+                    <SelectItem value="AZ">Arizona</SelectItem>
+                    <SelectItem value="AR">Arkansas</SelectItem>
+                    <SelectItem value="CA">California</SelectItem>
+                    <SelectItem value="CO">Colorado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-zip">ZIP Code *</Label>
+              <Input
+                id="new-zip"
+                value={newLocationData.zipCode}
+                onChange={(e) => setNewLocationData({ ...newLocationData, zipCode: e.target.value })}
+                placeholder="78701"
+                maxLength={5}
+                data-testid="input-new-zip"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="new-gate-code">Gate Code (Optional)</Label>
+              <Input
+                id="new-gate-code"
+                value={newLocationData.gateCode}
+                onChange={(e) => setNewLocationData({ ...newLocationData, gateCode: e.target.value })}
+                placeholder="Enter gate code if applicable"
+                data-testid="input-new-gate-code"
+              />
+              <p className="text-xs text-muted-foreground">
+                This will be securely stored for technician access
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAddLocationOpen(false);
+                setNewLocationData({
+                  address: '',
+                  city: 'Austin',
+                  state: 'TX',
+                  zipCode: '',
+                  gateCode: '',
+                });
+              }}
+              disabled={isAddingLocation}
+              data-testid="button-cancel-add-location"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAddLocation}
+              disabled={isAddingLocation || !newLocationData.address || !newLocationData.zipCode}
+              data-testid="button-submit-add-location"
+            >
+              {isAddingLocation ? 'Adding...' : 'Add Location'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
