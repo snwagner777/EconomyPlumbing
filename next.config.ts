@@ -44,6 +44,18 @@ const nextConfig: NextConfig = {
   // SEO-optimized redirects - consolidate duplicate URLs to canonical versions
   async redirects() {
     return [
+      // Fix malformed URLs with phone numbers (404 errors from SE Ranking)
+      {
+        source: '/commercial/+15123689159',
+        destination: '/commercial-plumbing',
+        permanent: true,
+      },
+      {
+        source: '/blog/+15123689159',
+        destination: '/blog',
+        permanent: true,
+      },
+      
       // Legacy URL redirects
       {
         source: '/home-old',
