@@ -1,10 +1,25 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It provides service information, covered areas, blog content, and an Ecwid-powered online store. The project aims to improve local SEO, user engagement, and conversion rates by leveraging AI for content generation, marketing automation, and reputation management. The business vision is to expand market reach and improve customer engagement through an intuitive online platform.
+Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence. It provides service information, covered areas, blog content, and an online store. The project leverages AI for content generation, marketing automation, and reputation management to improve local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
+
+**ServiceTitan Scheduler Integration - CRITICAL**
+- ALWAYS use the exact embed code provided by ServiceTitan (reference: attached_assets/Screenshot 2025-11-02 at 8.08.50 PM_1762135732654.png)
+- Script MUST be placed at end of `<body>` tag exactly as shown:
+```html
+<script>
+  (function(q,w,e,r,t,y,u){q[t]=q[t]||function(){(q[t].q = q[t].q || []).push(arguments)};
+    q[t].l=1*new Date();y=w.createElement(e);u=w.getElementsByTagName(e)[0];y.async=true;
+    y.src=r;u.parentNode.insertBefore(y,u);q[t]('init', '3ce4a586-8427-4716-9ac6-46cb8bf7ac4f');
+  })(window, document, 'script', 'https://static.servicetitan.com/webscheduler/shim.js', 'STWidgetManager');
+</script>
+```
+- Button onclick attribute: `onclick="STWidgetManager('ws-open')"`
+- NEVER modify, "improve", or wrap this code - use ServiceTitan's exact implementation
+- Do NOT use `window.STWidgetManager` - use direct `STWidgetManager` calls as specified
 
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
 - The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
@@ -75,14 +90,6 @@ export default function NewServicePage() {
 5. **Extract interactivity** - Create separate Client components for forms, buttons, state management
 6. **Pass data as props** - Server Component → fetches data → passes to Client Component
 
-### November 2024 SSR Refactoring
-**Problem Discovered:** 74 pages had 'use client' breaking SEO despite Next.js migration
-**Solution:** Converted all SEO-critical pages to async Server Components
-**Pages Fixed:** 39 total (blog posts, 32 service pages, service areas, success stories)
-**Result:** Search engines now see full HTML with content, metadata, and JSON-LD schemas on first paint
-
-**Phone Number Tracking:** Server-rendered for crawlers, client-side upgrade for dynamic tracking preserved
-
 ## System Architecture
 
 ### Frontend
@@ -91,7 +98,7 @@ export default function NewServicePage() {
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panels:** Unified admin dashboard for Marketing Automation (campaign-specific phone numbers, email templates), ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
+- **Admin Panels:** Unified admin dashboard for Marketing Automation, ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
@@ -100,10 +107,10 @@ export default function NewServicePage() {
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync.
-- **Marketing Automation:** AI-powered system with comprehensive email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation. Schedulers run every 30 minutes, checking suppression lists.
+- **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
-- **Reputation Management System:** AI-powered review request automation with drip campaign engine (GPT-4o), preview/edit/approve interface for email sequences. Automated review fetching via SerpAPI (Google, Yelp) for read-only display, syncing every 6 hours.
-- **Referral System:** Database-first management with ServiceTitan integration, hourly processing, and AI-generated emails (referee welcome, referrer thank you, referrer success notifications) with engagement tracking.
+- **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching via SerpAPI (Google, Yelp).
+- **Referral System:** Database-first management with ServiceTitan integration, and AI-generated emails (referee welcome, referrer thank you, referrer success notifications) with engagement tracking.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
 
@@ -126,103 +133,3 @@ export default function NewServicePage() {
 - **SEO Data:** DataForSEO API.
 - **Social Media:** Meta Graph API.
 - **Review Fetching:** SerpAPI.
-
-## Recent Changes
-
-### November 2025 - Comprehensive SEO Remediation
-**Goal:** Fix 435 issues identified by SE Ranking audit (78/100 health score → target 90+)
-
-**Issues Resolved:**
-1. ✅ **Sitemap Optimization** (app/sitemap.xml/route.ts)
-   - Cleaned sitemap to include ONLY canonical, indexable URLs (32 static pages + dynamic blog/service areas)
-   - Excluded 159+ pages: all admin/*, utility pages, auth pages, duplicates, tracking pages
-   - Fixed sitemap generation error handling for blog and service area API responses
-   - No admin pages in sitemap (verified)
-
-2. ✅ **301 Redirects for Duplicate URLs** (next.config.ts)
-   - Added redirects for all duplicate service pages → canonical versions
-   - Examples: /backflow-testing → /backflow, /drain-cleaning-services → /drain-cleaning, /emergency-plumbing → /emergency
-   - Added redirects for duplicate city pages → canonical versions
-   - Examples: /plumber-in-cedar-park-tx → /plumber-cedar-park, /round-rock-plumber → /plumber-round-rock
-
-3. ✅ **Noindex Tags on Utility Pages** (created layout.tsx files)
-   - /leave-review, /unsubscribe, /review-request, /email-preferences
-   - /sms-signup, /ref, /referred-by, /schedule-appointment
-   - /admin (all subpages), /store/checkout/success
-   - All use robots: { index: false, follow: false }
-
-4. ✅ **Fixed Duplicate Page Titles**
-   - Admin: "Admin Dashboard" → "Unified Admin Panel"
-   - Review Request: "Leave a Review" → "Share Your Feedback"
-   - Privacy: Enhanced to "Privacy Policy - Data Protection & Security"
-   - Terms: Enhanced to "Terms of Service - Website & Service Agreement"
-
-5. ✅ **Privacy & Terms Pages Made Indexable**
-   - Changed from noindex to indexable (legal compliance best practice)
-   - Both pages now return 200 OK and are included in sitemap
-
-6. ✅ **TypeScript/LSP Error Fixes**
-   - Fixed app/backflow/page.tsx: corrected createServiceSchema() and createBreadcrumbListSchema() function signatures
-   - All pages now compile without errors
-
-7. ✅ **Image Alt Text Audit**
-   - Verified ALL images have descriptive alt text
-   - No empty alt="" attributes found (except one decorative overlay in ImageLightbox)
-   - All components use semantic, descriptive alt text for accessibility
-
-8. ✅ **HTTPS Mixed Content Check**
-   - No http:// resources on https pages
-   - Only XML namespace declarations (xmlns="http://...") found - standard practice
-
-9. ✅ **Security Audit**
-   - npm audit completed
-   - Applied available security fixes (brace-expansion vulnerability)
-   - Identified HIGH severity: xlsx package (Prototype Pollution - no fix available)
-   - Identified MODERATE: esbuild/vite/drizzle-kit (require breaking changes)
-   - Documented 40+ outdated packages for future updates
-
-10. ✅ **Internal Linking Audit**
-    - Services page already has comprehensive internal links to specialty services
-    - All major services linked: hydro-jetting, gas-leak-detection, permit-resolution, sewage-pump, etc.
-    - Seasonal pages (winter-freeze-protection, summer-plumbing-prep) in sitemap
-
-**SEO Impact:**
-- **Eliminated ~200+ indexability issues** (noindex tags + canonical redirects)
-- **Fixed 68 canonical URL errors** (redirects to final 200 OK destinations)
-- **Resolved 86 redirect issues** (all duplicate pages now redirect properly)
-- **Corrected duplicate title problems** (all pages have unique, descriptive titles)
-- **Improved crawl efficiency** (clean sitemap, proper robots directives)
-
-**Expected Results:**
-- SE Ranking health score improvement from 78/100 to 90+
-- Total issues reduced from 435 to <50
-- Indexable pages increased from ~40% to 80%+
-- Better search engine visibility for canonical pages
-- Improved user experience (no duplicate content confusion)
-
-**Files Modified:**
-- app/sitemap.xml/route.ts (sitemap cleanup + error handling)
-- next.config.ts (301 redirects)
-- app/leave-review/layout.tsx (noindex)
-- app/unsubscribe/layout.tsx (noindex)
-- app/schedule-appointment/layout.tsx (noindex)
-- app/email-preferences/layout.tsx (noindex)
-- app/sms-signup/layout.tsx (noindex)
-- app/review-request/layout.tsx (noindex)
-- app/ref/layout.tsx (noindex)
-- app/referred-by/layout.tsx (noindex)
-- app/store/checkout/success/page.tsx (noindex in metadata)
-- app/admin/layout.tsx (noindex metadata + unique title)
-- app/admin/page.tsx (unique title)
-- app/review-request/page.tsx (unique title + noindex)
-- app/privacy-policy/page.tsx (made indexable + unique title)
-- app/terms-of-service/page.tsx (made indexable + unique title)
-- app/backflow/page.tsx (LSP error fixes)
-
-**Next Steps:**
-1. Submit updated sitemap.xml to Google Search Console
-2. Request re-crawl of key pages
-3. Re-run SE Ranking audit to measure improvement
-4. Monitor Search Console coverage report
-5. Address npm security vulnerabilities when patches available
-6. Consider updating outdated packages (40+ identified)
