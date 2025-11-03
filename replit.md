@@ -3,6 +3,67 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence. It provides service information, covered areas, blog content, and an online store. The project leverages AI for content generation, marketing automation, and reputation management to improve local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
+## Recent Changes
+
+### SEO Remediation - November 3, 2025
+**Comprehensive SE Ranking audit fixes to improve health score from 78/100 to target 90+/100**
+
+#### Root Cause Identified
+- Non-www vs www URL inconsistency causing majority of errors (62 sitemap redirects, 41 canonical 3XX issues)
+
+#### Fixes Implemented
+
+**1. Sitemap WWW Consistency (✅ Fixes 62 errors)**
+- Updated `app/sitemap.xml/route.ts` baseUrl from `https://plumbersthatcare.com` to `https://www.plumbersthatcare.com`
+- All sitemap URLs now use canonical www format
+- Eliminates all 3XX redirect errors in XML sitemap
+
+**2. Canonical URL 3XX Issues (✅ Fixes 41 errors)**
+- Updated `server/lib/metadata.ts` to generate canonical URLs with www subdomain
+- Updated OG image URLs from non-www to www format
+- All pages now receive server-side canonical tags pointing to `https://www.plumbersthatcare.com/...`
+
+**3. Canonical Chain Fixes (✅ Fixes 2 errors)**
+- Fixed `/gas-leak-detection/page.tsx` canonical to point directly to `/gas-line-services` (no intermediate redirects)
+- Updated both generateMetadata() and component canonical props
+- Updated breadcrumb schema to match canonical URLs
+
+**4. Orphan Page Internal Links (✅ Fixes 4 service pages)**
+- Added footer links for previously orphaned pages:
+  - `/sewer-line-repair`
+  - `/repiping`
+  - `/fixture-installation`
+  - `/referral`
+- Maintained all original footer service links to prevent regression
+
+**5. Phone Number Redirects (✅ Already in place)**
+- URL-encoded %2B format redirects in `next.config.ts` functioning correctly
+- Handles both `/commercial/+15123689159` and `/blog/+15123689159` patterns
+
+#### Expected Impact
+- **Errors:** 73 → ~15-20 (reduced by ~53 errors, -72%)
+- **Health Score:** 78/100 → Expected 88-90/100 (+10-12 points)
+- **Warnings:** 181 → Expected reduction after re-crawl
+- **Major issues resolved:**
+  - Sitemap redirect errors (62)
+  - Canonical 3XX issues (41)
+  - Canonical chains (2)
+  - Non-canonical sitemap pages (6)
+  - Orphan service pages (4)
+
+#### Files Modified
+- `app/sitemap.xml/route.ts` - Sitemap WWW baseUrl
+- `server/lib/metadata.ts` - Canonical and OG image WWW URLs
+- `app/gas-leak-detection/page.tsx` - Canonical chain fix
+- `src/components/Footer.tsx` - Added orphan page links while preserving all originals
+- `next.config.ts` - Phone number redirects (no changes needed, already correct)
+
+#### Next Steps for Further Optimization
+- Monitor SE Ranking re-crawl results to verify error reduction
+- Address remaining warnings (181) and notices (227) if needed
+- Consider shortening long page titles (33 pages) for better SERP display
+- Fix any remaining orphan blog posts if they persist after re-crawl
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
