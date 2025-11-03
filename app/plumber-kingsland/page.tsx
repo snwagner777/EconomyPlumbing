@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Kingsland, TX | Economy Plumbing',
     description: 'Trusted plumbing services in Kingsland, TX. Water heater repair, drain cleaning, leak detection, commercial plumbing. Licensed plumbers. Call (830) 460-3565.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/kingsland',
   });
 }
 

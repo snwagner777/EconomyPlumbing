@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Kyle TX | Expert Plumbing Services',
     description: 'Reliable plumbing services in Kyle, TX. Water heater installation, drain cleaning, leak repair, and commercial plumbing. Licensed plumbers. Call (512) 368-9159.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/kyle',
   });
 }
 

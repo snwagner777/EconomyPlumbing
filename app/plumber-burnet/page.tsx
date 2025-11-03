@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Burnet, TX | Economy Plumbing',
     description: 'Professional plumbing services in Burnet, TX. Water heater installation, drain cleaning, leak repair, and more. Licensed & insured. Call (830) 460-3565.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/burnet',
   });
 }
 

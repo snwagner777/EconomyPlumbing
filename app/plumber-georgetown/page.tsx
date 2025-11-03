@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Georgetown, TX | Economy Plumbing',
     description: 'Georgetown plumber for Sun City, Wolf Ranch, Berry Creek. Expert water heater repair, drain cleaning, emergency plumbing. Licensed plumbers.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/georgetown',
   });
 }
 

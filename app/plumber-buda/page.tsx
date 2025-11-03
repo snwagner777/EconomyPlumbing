@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Buda, TX | Economy Plumbing',
     description: 'Buda, TX plumber near Austin. Expert water heater repair, drain cleaning & emergency plumbing services. Same-day service available. Call (512) 368-9159 now.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/buda',
   });
 }
 

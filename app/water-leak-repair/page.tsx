@@ -1,17 +1,19 @@
-'use client';
-import { usePathname } from "next/navigation";
+import type { Metadata } from 'next';
+import { getPageMetadata } from '@/server/lib/metadata';
 import ServicePage from "@/components/ServicePage";
 
+export async function generateMetadata(): Promise<Metadata> {
+  return await getPageMetadata('/water-leak-repair', {
+    title: 'Water Leak Repair Austin TX | Fast Leak Detection',
+    description: 'Fast leak detection with electronic equipment. Slab leak specialists, pipe & hidden leak repair. 24/7 emergency service available. Call (512) 368-9159.',
+    ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/leak-repair',
+  });
+}
+
 export default function LeakRepair() {
-  const pathname = usePathname();
-  
-  const isWaterLeakRepair = pathname === "/water-leak-repair";
-  const title = isWaterLeakRepair 
-    ? "Water Leak Repair Austin TX | Fast Leak Detection" 
-    : "Leak Detection & Slab Leak Repair Austin TX | 24/7";
-  const canonical = isWaterLeakRepair
-    ? "https://www.plumbersthatcare.com/water-leak-repair"
-    : "https://www.plumbersthatcare.com/leak-repair";
+  const title = "Water Leak Repair Austin TX | Fast Leak Detection";
+  const canonical = "https://www.plumbersthatcare.com/leak-repair";
   
   return (
     <ServicePage

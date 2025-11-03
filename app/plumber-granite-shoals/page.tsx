@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Granite Shoals, TX | Economy Plumbing',
     description: 'Reliable plumbing services in Granite Shoals, TX. Expert water heater repair, drain cleaning, and emergency plumbing. Same-day service. Call (830) 460-3565.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/granite-shoals',
   });
 }
 

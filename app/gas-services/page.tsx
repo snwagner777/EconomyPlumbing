@@ -14,6 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Gas Line Installation & Repair Austin TX | Licensed',
     description: 'Professional gas line installation for appliances, outdoor kitchens, fire pits & generators in Austin. Licensed gas fitters. Call (512) 368-9159 today.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/gas-line-services',
   });
 }
 

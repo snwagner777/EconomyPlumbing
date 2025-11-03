@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Leander TX | Expert Plumbing Services',
     description: 'Leander plumber serving Crystal Falls, Travisso, Mason Hills. Expert water heater repair, drain cleaning, leak detection. Same-day service.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/leander',
   });
 }
 

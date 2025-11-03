@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Liberty Hill TX | Expert Plumbing Services',
     description: 'Quality plumbing services in Liberty Hill, TX. Water heater services, drain cleaning, leak repair, and gas line services. Call (512) 368-9159 for service.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/liberty-hill',
   });
 }
 

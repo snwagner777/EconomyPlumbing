@@ -10,6 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber Near Me | 24/7 Emergency Plumbing Services Austin TX',
     description: 'Need a plumber near you? 24/7 emergency plumbing services in Austin, Marble Falls & surrounding areas. Licensed, insured, same-day service. Call (512) 368-9159.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas',
   });
 }
 

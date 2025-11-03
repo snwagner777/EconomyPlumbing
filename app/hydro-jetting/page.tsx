@@ -14,6 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Hydro Jetting Austin TX | 4,000 PSI Power Cleaning Service',
     description: 'Power through tough clogs in Austin with hydro jetting up to 4,000 PSI. Clear grease, tree roots & sewer buildup. Video inspection. Call (512) 368-9159.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/hydro-jetting-services',
   });
 }
 

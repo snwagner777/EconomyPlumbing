@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Pflugerville TX | Expert Plumbing Services',
     description: 'Pflugerville plumber for Falcon Pointe, Blackhawk, Springbrook. Expert water heater repair, drain cleaning, gas lines. Licensed plumbers.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/pflugerville',
   });
 }
 

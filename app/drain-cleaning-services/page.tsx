@@ -14,6 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Drain Cleaning Austin TX | Video Inspection & Hydro',
     description: 'Professional drain cleaning in Austin. Video camera inspection, hydro jetting & root removal. Clear tough clogs fast, same-day service. Call (512) 368-9159.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/drain-cleaning',
   });
 }
 

@@ -9,6 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Plumber in Spicewood TX | Expert Plumbing Services',
     description: 'Expert plumbing services in Spicewood, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing. Same-day service. Call (830) 460-3565.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/spicewood',
   });
 }
 

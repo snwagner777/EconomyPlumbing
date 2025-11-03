@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: 'Emergency plumbing service available 24/7 in Austin. Fast response for burst pipes, sewer backups & major leaks. Nights/weekends/holidays. Call (512) 368-9159.',
     ogImage: 'https://www.plumbersthatcare.com/attached_assets/optimized/Emergency_plumbing_service_arrival_3f78c39e.webp',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/emergency',
   });
 }
 

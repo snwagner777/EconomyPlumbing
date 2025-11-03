@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Cedar Park, TX | Economy Plumbing',
     description: 'Cedar Park plumber for Lakeline, Buttercup Creek, Whitestone. Expert water heater installation, drain cleaning, gas lines. Same-day service.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/cedar-park',
   });
 }
 

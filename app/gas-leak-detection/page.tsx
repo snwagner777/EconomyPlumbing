@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Gas Leak Detection Austin TX | 24/7 Emergency Service',
     description: 'Immediate gas leak detection & repair in Austin. Electronic equipment, licensed gas technicians, 24/7 emergency response. Call (512) 368-9159 for safety.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/gas-line-services',
   });
 }
 

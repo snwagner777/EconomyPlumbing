@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Bertram, TX | Economy Plumbing',
     description: 'Professional plumbing services in Bertram, TX. Water heater install, drain cleaning, leak repair, gas services. Licensed & insured. Call (830) 460-3565.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/bertram',
   });
 }
 

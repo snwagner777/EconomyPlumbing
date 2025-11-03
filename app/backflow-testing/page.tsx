@@ -14,6 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Backflow Testing Austin TX | State Certified Annual',
     description: 'State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests. Call (512) 368-9159.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/backflow',
   });
 }
 

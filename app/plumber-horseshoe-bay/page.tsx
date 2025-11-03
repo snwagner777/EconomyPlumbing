@@ -13,6 +13,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: 'Professional Plumber in Horseshoe Bay, TX | Economy Plumbing',
     description: 'Quality plumbing services in Horseshoe Bay, TX. Water heater services, drain cleaning, leak repair, and emergency plumbing. Call (830) 460-3565 for service.',
     ogType: 'website',
+    canonical: 'https://www.plumbersthatcare.com/service-areas/horseshoe-bay',
   });
 }
 
