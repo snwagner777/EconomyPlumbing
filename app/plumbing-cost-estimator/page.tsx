@@ -14,8 +14,16 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default async function PlumbingCostEstimator() {
-  const phoneConfig = await getPhoneNumbers();
+export default async function PlumbingCostEstimator({ searchParams }: {
+  searchParams: Promise<{[key: string]: string | string[] | undefined}>
+}) {
+  const search = await searchParams;
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
+  
+  const phoneNumbers = await getPhoneNumbers(urlParams);
 
   const breadcrumbs = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
@@ -26,12 +34,11 @@ export default async function PlumbingCostEstimator() {
   return (
     <>
       <script
-
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbs) }}
       />
-      <Header />
-      <PlumbingCostEstimatorClient phoneConfig={phoneConfig} />
+      <Header phoneConfig={phoneNumbers.austin} />
+      <PlumbingCostEstimatorClient phoneConfig={phoneNumbers.austin} />
       <Footer />
     </>
   );

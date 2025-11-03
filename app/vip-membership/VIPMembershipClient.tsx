@@ -1,6 +1,8 @@
 'use client';
 
 import type { PhoneConfig } from '@/server/lib/phoneNumbers';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 
 interface VIPMembershipClientProps {
   phoneConfig: PhoneConfig;
@@ -8,7 +10,9 @@ interface VIPMembershipClientProps {
 
 export default function VIPMembershipClient({ phoneConfig }: VIPMembershipClientProps) {
   return (
-    <div className="min-h-screen py-16">
+    <>
+      <Header phoneConfig={phoneConfig} />
+      <div className="min-h-screen py-16">
       <div className="container mx-auto px-4">
         {/* Hero */}
         <div className="max-w-4xl mx-auto text-center mb-16">
@@ -102,14 +106,16 @@ export default function VIPMembershipClient({ phoneConfig }: VIPMembershipClient
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <a 
-                href="/contact?subject=VIP+Membership"
+                href="/membership-benefits"
                 className="inline-block bg-background text-foreground px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+                data-testid="button-sign-up-now"
               >
                 Sign Up Now
               </a>
               <a 
                 href={phoneConfig.tel}
                 className="inline-block bg-accent text-accent-foreground px-8 py-3 rounded-lg font-semibold hover:opacity-90 transition"
+                data-testid="button-call-to-enroll"
               >
                 Call: {phoneConfig.display}
               </a>
@@ -143,6 +149,7 @@ export default function VIPMembershipClient({ phoneConfig }: VIPMembershipClient
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }
