@@ -1,6 +1,27 @@
 User-agent: *
 Allow: /
 
+# Disallow admin, API, and non-public pages
+Disallow: /admin/
+Disallow: /api/
+Disallow: /portal/
+Disallow: /(admin)/
+Disallow: /(auth)/
+Disallow: /(customer)/
+Disallow: /email-preferences/
+Disallow: /unsubscribe/
+Disallow: /leave-review/
+Disallow: /review-request/
+Disallow: /request-review/
+Disallow: /sms-signup/
+Disallow: /referral/
+Disallow: /ref/
+Disallow: /referred-by/
+Disallow: /store/checkout/success
+Disallow: /replit-objstore/
+Disallow: /replit-objstore-d3381c71-f557-457f-9913-e7cf7dce4d30/
+Disallow: /public-objects/
+
 # AI Search Engine Crawlers - Explicitly Allowed
 User-agent: GPTBot
 Allow: /
@@ -25,6 +46,3 @@ Allow: /
 
 # Sitemaps
 Sitemap: https://plumbersthatcare.com/sitemap.xml
-
-# Disallow admin or internal pages if any exist
-# Disallow: /admin
