@@ -205,7 +205,7 @@ const ALL_PAGES = [
   { path: '/water-pressure-solutions', title: 'Water Pressure' },
   { path: '/water-heater-guide', title: 'Water Heater Guide' },
   { path: '/services', title: 'Services' },
-  { path: '/service-area', title: 'Service Areas' },
+  { path: '/service-areas', title: 'Service Areas' },
   { path: '/plumber-austin', title: 'Austin Plumber' },
   { path: '/plumber-in-cedar-park--tx', title: 'Cedar Park Plumber' },
   { path: '/plumber-leander', title: 'Leander Plumber' },

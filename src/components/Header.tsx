@@ -81,7 +81,7 @@ export default function Header({
   ];
 
   const serviceAreas = [
-    { name: "All Service Areas", path: "/service-area", featured: true },
+    { name: "All Service Areas", path: "/service-areas", featured: true },
     { name: "Austin", path: "/plumber-austin", region: "Austin Metro" },
     { name: "Cedar Park", path: "/plumber-in-cedar-park--tx", region: "Austin Metro" },
     { name: "Leander", path: "/plumber-leander", region: "Austin Metro" },

@@ -55,6 +55,26 @@ const nextConfig: NextConfig = {
         destination: '/blog',
         permanent: true,
       },
+      {
+        source: '/+15123689159',
+        destination: '/contact',
+        permanent: true,
+      },
+      {
+        source: '/+18304603565',
+        destination: '/contact',
+        permanent: true,
+      },
+      {
+        source: '/%2B15123689159',
+        destination: '/contact',
+        permanent: true,
+      },
+      {
+        source: '/%2B18304603565',
+        destination: '/contact',
+        permanent: true,
+      },
       
       // Legacy URL redirects
       {

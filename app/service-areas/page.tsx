@@ -20,7 +20,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Serving all Austin neighborhoods including Downtown, South Austin, East Austin, and West Austin.",
       neighborhoods: ["Downtown Austin", "South Congress (SoCo)", "East Austin", "Hyde Park", "Mueller", "Zilker", "Tarrytown", "Clarksville"],
       zipCodes: "78701-78799",
-      path: "/service-area/austin"
+      path: "/service-areas/austin"
     },
     {
       name: "Cedar Park",
@@ -29,7 +29,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Complete plumbing services for Cedar Park residents and businesses.",
       neighborhoods: ["Buttercup Creek", "Cedar Park Center", "Lakeline", "Whitestone", "Vista Oaks", "Cypress Creek"],
       zipCodes: "78613, 78630",
-      path: "/service-area/cedar-park"
+      path: "/service-areas/cedar-park"
     },
     {
       name: "Leander",
@@ -38,7 +38,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Trusted plumbing services throughout Leander and surrounding areas.",
       neighborhoods: ["Crystal Falls", "Travisso", "Mason Hills", "Northline", "Summerlyn", "Lakeline Ranch"],
       zipCodes: "78641, 78645",
-      path: "/service-area/leander"
+      path: "/service-areas/leander"
     },
     {
       name: "Round Rock",
@@ -47,7 +47,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Professional plumbing services for all Round Rock communities.",
       neighborhoods: ["Teravista", "Forest Creek", "Stone Canyon", "Walsh Ranch", "Brushy Creek", "Cat Hollow"],
       zipCodes: "78664, 78665, 78681",
-      path: "/service-area/round-rock"
+      path: "/service-areas/round-rock"
     },
     {
       name: "Georgetown",
@@ -56,7 +56,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Serving Georgetown's historic downtown and modern developments.",
       neighborhoods: ["Sun City", "Wolf Ranch", "Berry Creek", "Downtown Georgetown", "Georgetown Village", "Westlake"],
       zipCodes: "78626, 78628, 78633",
-      path: "/service-area/georgetown"
+      path: "/service-areas/georgetown"
     },
     {
       name: "Pflugerville",
@@ -65,7 +65,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Complete plumbing solutions for Pflugerville homes and businesses.",
       neighborhoods: ["Falcon Pointe", "Blackhawk", "Springbrook Centre", "Wilshire", "Park at Blackhawk", "Cambridge Heights"],
       zipCodes: "78660",
-      path: "/service-area/pflugerville"
+      path: "/service-areas/pflugerville"
     },
     {
       name: "Liberty Hill",
@@ -74,7 +74,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Reliable plumbing services for Liberty Hill and surrounding rural areas.",
       neighborhoods: ["Rancho Sienna", "Sweetwater", "Liberty Hill ISD Area", "Rural Liberty Hill", "Heritage Oaks", "Old Town"],
       zipCodes: "78642",
-      path: "/service-area/liberty-hill"
+      path: "/service-areas/liberty-hill"
     },
     {
       name: "Buda",
@@ -83,7 +83,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Professional plumbing services for Buda's growing community.",
       neighborhoods: ["Garlic Creek", "Bradshaw Crossing", "Buda Mill & Grain", "Elm Grove", "Sunfield", "Green Meadows"],
       zipCodes: "78610",
-      path: "/service-area/buda"
+      path: "/service-areas/buda"
     },
     {
       name: "Kyle",
@@ -92,7 +92,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Trusted plumbing solutions for Kyle residents and businesses.",
       neighborhoods: ["Plum Creek", "Hometown Kyle", "Waterleaf", "Kyle Crossing", "Meridian", "The Greens"],
       zipCodes: "78640",
-      path: "/service-area/kyle"
+      path: "/service-areas/kyle"
     },
     {
       name: "Marble Falls",
@@ -101,7 +101,7 @@ function getCities(austinPhone: string, marbleFallsPhone: string) {
       description: "Serving the Highland Lakes area with quality plumbing services.",
       neighborhoods: ["Downtown Marble Falls", "Meadowlakes", "Granite Shoals", "Horseshoe Bay", "Cottonwood Shores", "Blue Lake Estates"],
       zipCodes: "78654, 78657, 78639",
-      path: "/service-area/marble-falls"
+      path: "/service-areas/marble-falls"
     }
   ];
 }

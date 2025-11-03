@@ -40,14 +40,14 @@ export default function ServiceAreaClient({
   marbleFallsPhoneConfig,
 }: ServiceAreaClientProps) {
   const nearbyCities = [
-    { name: "Cedar Park", path: "/service-area/cedar-park" },
-    { name: "Round Rock", path: "/service-area/round-rock" },
-    { name: "Pflugerville", path: "/service-area/pflugerville" },
-    { name: "Buda", path: "/service-area/buda" },
-    { name: "Kyle", path: "/service-area/kyle" },
-    { name: "Leander", path: "/service-area/leander" },
-    { name: "Georgetown", path: "/service-area/georgetown" },
-    { name: "Liberty Hill", path: "/service-area/liberty-hill" },
+    { name: "Cedar Park", path: "/service-areas/cedar-park" },
+    { name: "Round Rock", path: "/service-areas/round-rock" },
+    { name: "Pflugerville", path: "/service-areas/pflugerville" },
+    { name: "Buda", path: "/service-areas/buda" },
+    { name: "Kyle", path: "/service-areas/kyle" },
+    { name: "Leander", path: "/service-areas/leander" },
+    { name: "Georgetown", path: "/service-areas/georgetown" },
+    { name: "Liberty Hill", path: "/service-areas/liberty-hill" },
   ];
 
   if (!serviceArea) {
@@ -100,13 +100,13 @@ export default function ServiceAreaClient({
       "name": cityName,
       "containedIn": { "@type": "State", "name": "Texas" }
     },
-    "url": `https://www.plumbersthatcare.com/service-area/${slug}`,
+    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
   };
 
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
-    { name: cityName, url: `https://www.plumbersthatcare.com/service-area/${slug}` }
+    { name: cityName, url: `https://www.plumbersthatcare.com/service-areas/${slug}` }
   ]);
 
   return (

@@ -193,7 +193,7 @@ export default function Services() {
             size="lg"
             data-testid="button-contact"
           >
-            <Link href="/service-area" className="inline-flex items-center gap-2">
+            <Link href="/service-areas" className="inline-flex items-center gap-2">
               View Service Areas
               <ArrowRight className="w-5 h-5" />
             </Link>

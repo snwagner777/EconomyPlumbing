@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   
   const cityName = serviceArea?.cityName || 'Central Texas';
   
-  return await getPageMetadata(`/service-area/${slug}`, {
+  return await getPageMetadata(`/service-areas/${slug}`, {
     title: `Expert Plumbing Services in ${cityName}, TX | Economy Plumbing`,
     description: serviceArea?.introContent || `Professional plumbing services in ${cityName}, Texas. Same-day service, upfront pricing, 100% satisfaction guaranteed.`,
   });

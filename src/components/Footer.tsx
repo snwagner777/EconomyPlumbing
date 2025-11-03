@@ -119,7 +119,7 @@ export default function Footer() {
               <li><Link href="/plumber-in-cedar-park--tx" className="hover:text-primary" data-testid="footer-link-cedar-park">Cedar Park</Link></li>
               <li><Link href="/plumber-marble-falls" className="hover:text-primary" data-testid="footer-link-marble-falls">Marble Falls</Link></li>
               <li><Link href="/round-rock-plumber" className="hover:text-primary" data-testid="footer-link-round-rock">Round Rock</Link></li>
-              <li><Link href="/service-area" className="hover:text-primary" data-testid="footer-link-view-all-areas">View All Areas</Link></li>
+              <li><Link href="/service-areas" className="hover:text-primary" data-testid="footer-link-view-all-areas">View All Areas</Link></li>
             </ul>
           </div>
 
