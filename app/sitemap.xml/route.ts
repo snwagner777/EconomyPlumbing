@@ -91,8 +91,8 @@ export async function GET() {
     const areasRes = await fetch(`${baseUrl}/api/service-areas`);
     if (areasRes.ok) {
       const data = await areasRes.json();
-      // Handle both array responses and object responses with areas property
-      const areas = Array.isArray(data) ? data : (data?.areas || []);
+      // Handle both array responses and object responses with serviceAreas property
+      const areas = Array.isArray(data) ? data : (data?.serviceAreas || data?.areas || []);
       areaSlugs = areas.map((a: { slug: string }) => a.slug).filter(Boolean);
     }
   } catch (error) {
