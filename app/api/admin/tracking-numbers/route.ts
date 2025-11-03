@@ -7,16 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
 import { storage } from '@/server/storage';
-import { z } from 'zod';
-
-const trackingNumberSchema = z.object({
-  phoneNumber: z.string().min(10),
-  channelKey: z.string(),
-  channelName: z.string(),
-  isActive: z.boolean().optional(),
-  isDefault: z.boolean().optional(),
-  provider: z.enum(['twilio', 'zoom_phone']).optional(),
-});
+import { insertTrackingNumberSchema } from '@shared/schema';
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,7 +41,9 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const result = trackingNumberSchema.safeParse(body);
+    
+    // Validate using the correct schema from shared/schema.ts
+    const result = insertTrackingNumberSchema.safeParse(body);
     
     if (!result.success) {
       return NextResponse.json(
