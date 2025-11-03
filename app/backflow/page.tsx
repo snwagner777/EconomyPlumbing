@@ -46,26 +46,19 @@ const faqs = [
 
 export default async function BackflowTesting({ searchParams }: BackflowPageProps) {
   await searchParams;
-  const { phoneConfig, marbleFallsPhoneConfig } = await getPhoneNumbers();
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers();
 
-  const serviceSchema = createServiceSchema({
-    name: "Backflow Testing Services",
-    description: "State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests.",
-    areaServed: [
-      { name: "Austin", type: "City" },
-      { name: "Marble Falls", type: "City" },
-      { name: "Cedar Park", type: "City" },
-      { name: "Round Rock", type: "City" },
-      { name: "Georgetown", type: "City" },
-      { name: "Leander", type: "City" }
-    ],
-  });
+  const serviceSchema = createServiceSchema(
+    "Backflow Testing Services",
+    "State-certified backflow testing & device installation in Austin. Annual testing, city-compliant reports/filing. RPZ, DCVA, PVB tests.",
+    "https://www.plumbersthatcare.com/backflow"
+  );
 
   const faqSchema = createFAQSchema(faqs);
 
   const breadcrumbSchema = createBreadcrumbListSchema([
-    { name: "Home", item: "https://www.plumbersthatcare.com" },
-    { name: "Backflow Testing", item: "https://www.plumbersthatcare.com/backflow" }
+    { name: "Home", url: "https://www.plumbersthatcare.com" },
+    { name: "Backflow Testing", url: "https://www.plumbersthatcare.com/backflow" }
   ]);
 
   return (
