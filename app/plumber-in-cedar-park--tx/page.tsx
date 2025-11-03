@@ -34,7 +34,7 @@ export default async function CedarParkServiceArea({ searchParams }: CedarParkSe
   const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
   // Generate JSON-LD schemas for SEO
-  const canonical = 'https://www.plumbersthatcare.com/plumber-in-cedar-park--tx';
+  const canonical = 'https://www.plumbersthatcare.com/service-areas/cedar-park';
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },

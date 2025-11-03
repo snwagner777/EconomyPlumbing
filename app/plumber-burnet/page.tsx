@@ -34,7 +34,7 @@ export default async function BurnetServiceArea({ searchParams }: BurnetServiceA
   const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
   // Generate JSON-LD schemas for SEO
-  const canonical = 'https://www.plumbersthatcare.com/plumber-burnet';
+  const canonical = 'https://www.plumbersthatcare.com/service-areas/burnet';
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },

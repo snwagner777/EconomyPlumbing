@@ -26,7 +26,7 @@ export default async function KyleServiceArea() {
   const breadcrumbs = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
-    { name: "Kyle, TX", url: "https://www.plumbersthatcare.com/plumber-kyle" }
+    { name: "Kyle, TX", url: "https://www.plumbersthatcare.com/service-areas/kyle" }
   ]);
 
   const localBusiness = createLocalBusinessSchema();
@@ -48,7 +48,7 @@ export default async function KyleServiceArea() {
         state="TX"
         slug="kyle"
         metaDescription="Reliable plumbing services in Kyle, TX. Water heater installation, drain cleaning, leak repair, and commercial plumbing. Licensed plumbers. Call (512) 368-9159."
-        canonical="https://www.plumbersthatcare.com/plumber-kyle"
+        canonical="https://www.plumbersthatcare.com/service-areas/kyle"
         area="austin"
         nearbyCities={nearbyCities}
         heroImage="/attached_assets/optimized/plumber_fixing_sink__ddae57ac.webp"

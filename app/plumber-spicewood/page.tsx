@@ -26,7 +26,7 @@ export default async function SpicewoodServiceArea() {
   const breadcrumbs = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
-    { name: "Spicewood, TX", url: "https://www.plumbersthatcare.com/plumber-spicewood" }
+    { name: "Spicewood, TX", url: "https://www.plumbersthatcare.com/service-areas/spicewood" }
   ]);
 
   const localBusiness = createMarbleFallsLocationSchema();
@@ -48,7 +48,7 @@ export default async function SpicewoodServiceArea() {
         state="TX"
         slug="spicewood"
         metaDescription="Expert plumbing services in Spicewood, TX. Water heater repair, drain cleaning, leak repair, and emergency plumbing. Same-day service. Call (830) 460-3565."
-        canonical="https://www.plumbersthatcare.com/plumber-spicewood"
+        canonical="https://www.plumbersthatcare.com/service-areas/spicewood"
         area="marble-falls"
         nearbyCities={nearbyCities}
         heroImage="/attached_assets/optimized/plumber_water_heater_57dd8e1a.webp"

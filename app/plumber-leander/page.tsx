@@ -27,7 +27,7 @@ export default async function LeanderServiceArea() {
   const breadcrumbs = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
-    { name: "Leander, TX", url: "https://www.plumbersthatcare.com/plumber-leander" }
+    { name: "Leander, TX", url: "https://www.plumbersthatcare.com/service-areas/leander" }
   ]);
 
   const localBusiness = createLocalBusinessSchema();
@@ -49,7 +49,7 @@ export default async function LeanderServiceArea() {
         state="TX"
         slug="leander"
         metaDescription="Leander plumber serving Crystal Falls, Travisso, Mason Hills. Expert water heater repair, drain cleaning, leak detection. Same-day service."
-        canonical="https://www.plumbersthatcare.com/plumber-leander"
+        canonical="https://www.plumbersthatcare.com/service-areas/leander"
         area="austin"
         nearbyCities={nearbyCities}
         heroImage="/attached_assets/optimized/professional_plumber_f5e4b5a9.webp"

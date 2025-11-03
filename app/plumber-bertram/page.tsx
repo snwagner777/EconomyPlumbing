@@ -34,7 +34,7 @@ export default async function BertramServiceArea({ searchParams }: BertramServic
   const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
   // Generate JSON-LD schemas for SEO
-  const canonical = 'https://www.plumbersthatcare.com/plumber-bertram';
+  const canonical = 'https://www.plumbersthatcare.com/service-areas/bertram';
   const breadcrumbSchema = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },

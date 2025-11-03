@@ -27,7 +27,7 @@ export default async function RoundRockServiceArea() {
   const breadcrumbs = createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
     { name: "Service Areas", url: "https://www.plumbersthatcare.com/service-areas" },
-    { name: "Round Rock, TX", url: "https://www.plumbersthatcare.com/round-rock-plumber" }
+    { name: "Round Rock, TX", url: "https://www.plumbersthatcare.com/service-areas/round-rock" }
   ]);
 
   const localBusiness = createLocalBusinessSchema();
@@ -49,7 +49,7 @@ export default async function RoundRockServiceArea() {
         state="TX"
         slug="round-rock"
         metaDescription="Round Rock plumber for Teravista, Forest Creek, Walsh Ranch. Expert water heater repair, drain cleaning, leak detection. Emergency plumbing."
-        canonical="https://www.plumbersthatcare.com/round-rock-plumber"
+        canonical="https://www.plumbersthatcare.com/service-areas/round-rock"
         area="austin"
         nearbyCities={nearbyCities}
         heroImage="/attached_assets/optimized/plumber_working_on_p_6dc2075d.webp"
