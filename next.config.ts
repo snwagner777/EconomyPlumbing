@@ -45,24 +45,15 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       // Fix malformed URLs with phone numbers (404 errors from SE Ranking)
+      // Note: '+' must be URL-encoded as '%2B' in Next.js redirect sources
       {
-        source: '/commercial/+15123689159',
+        source: '/commercial/%2B15123689159',
         destination: '/commercial-plumbing',
         permanent: true,
       },
       {
-        source: '/blog/+15123689159',
+        source: '/blog/%2B15123689159',
         destination: '/blog',
-        permanent: true,
-      },
-      {
-        source: '/+15123689159',
-        destination: '/contact',
-        permanent: true,
-      },
-      {
-        source: '/+18304603565',
-        destination: '/contact',
         permanent: true,
       },
       {
