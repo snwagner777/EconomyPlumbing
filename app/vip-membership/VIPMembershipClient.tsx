@@ -149,6 +149,7 @@ export default function VIPMembershipClient({ phoneConfig }: VIPMembershipClient
           </div>
         </div>
       </div>
+      </div>
       <Footer />
     </>
   );
