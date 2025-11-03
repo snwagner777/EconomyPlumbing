@@ -51,6 +51,8 @@ export default function Header({
     { name: "All Services", path: "/services", featured: true },
     { name: "Water Heater Services", path: "/water-heater-services" },
     { name: "Water Heater Guide", path: "/water-heater-guide" },
+    { name: "Water Heater Calculator", path: "/water-heater-calculator" },
+    { name: "Plumbing Cost Estimator", path: "/plumbing-cost-estimator" },
     { name: "Drain Cleaning", path: "/drain-cleaning" },
     { name: "Hydro Jetting", path: "/hydro-jetting-services" },
     { name: "Rooter Services", path: "/rooter-services" },

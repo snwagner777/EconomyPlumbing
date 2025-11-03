@@ -101,6 +101,8 @@ export default function Footer() {
             <h4 className="text-white font-semibold mb-4">Services</h4>
             <ul className="space-y-2 text-sm">
               <li><Link href="/water-heater-services" className="hover:text-primary" data-testid="footer-link-water-heater">Water Heater Services</Link></li>
+              <li><Link href="/water-heater-calculator" className="hover:text-primary" data-testid="footer-link-calculator">Water Heater Calculator</Link></li>
+              <li><Link href="/plumbing-cost-estimator" className="hover:text-primary" data-testid="footer-link-estimator">Plumbing Cost Estimator</Link></li>
               <li><Link href="/drain-cleaning" className="hover:text-primary" data-testid="footer-link-drain">Drain Cleaning</Link></li>
               <li><Link href="/leak-repair" className="hover:text-primary" data-testid="footer-link-leak">Leak Repair</Link></li>
               <li><Link href="/toilet-faucet" className="hover:text-primary" data-testid="footer-link-toilet">Toilet & Faucet</Link></li>
