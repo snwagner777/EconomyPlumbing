@@ -19,7 +19,7 @@ const reviewFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   phone: z.string().optional(),
   rating: z.number().min(1, "Please select a rating").max(5),
-  reviewText: z.string().min(10, "Review must be at least 10 characters"),
+  text: z.string().min(10, "Review must be at least 10 characters"),
   serviceDate: z.string().optional(),
   photoUrl: z.string().optional(),
   honeypot: z.string().max(0, "Invalid submission"),
@@ -48,7 +48,7 @@ export default function LeaveReview() {
       email: "",
       phone: "",
       rating: 0,
-      reviewText: "",
+      text: "",
       serviceDate: "",
       photoUrl: "",
       honeypot: "",
@@ -69,7 +69,7 @@ export default function LeaveReview() {
         email: data.email || "",
         phone: data.phone || "",
         rating: 0,
-        reviewText: "",
+        text: "",
         serviceDate: "",
         photoUrl: "",
         honeypot: "",
@@ -425,7 +425,7 @@ export default function LeaveReview() {
                 {/* Review Text */}
                 <FormField
                   control={form.control}
-                  name="reviewText"
+                  name="text"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>
