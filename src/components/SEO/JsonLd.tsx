@@ -301,7 +301,7 @@ export function createServiceSchema(serviceName: string, serviceDescription: str
       },
       "aggregateRating": {
         "@type": "AggregateRating",
-        "ratingValue": "4.3",
+        "ratingValue": "4.8",
         "reviewCount": "495",
         "bestRating": "5",
         "worstRating": "1"
