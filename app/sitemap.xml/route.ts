@@ -111,7 +111,7 @@ export async function GET() {
   </url>`).join('')}
   ${blogSlugs.map(slug => `
   <url>
-    <loc>${baseUrl}/blog/${slug}</loc>
+    <loc>${baseUrl}/${slug}</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>`).join('')}

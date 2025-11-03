@@ -153,6 +153,14 @@ export default function NewServicePage() {
 
 ## System Architecture
 
+### URL Structure (CRITICAL)
+- **Blog Posts:** Served at root level `/{slug}` NOT `/blog/{slug}` via `app/[slug]/page.tsx`
+  - Example: `/austins-hard-water-plumbing-insights` (correct)
+  - Never use `/blog/austins-hard-water-plumbing-insights` (incorrect)
+  - Sitemap lists blog posts as `https://www.plumbersthatcare.com/{slug}`
+- **Service Areas:** `/service-areas/{slug}` (e.g., `/service-areas/austin`)
+- **Static Pages:** Direct paths (e.g., `/contact`, `/faq`, `/services`)
+
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router (migrated from Express/React), React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.

@@ -119,7 +119,6 @@ export default function BlogPostClient({ phoneConfig, marbleFallsPhoneConfig }: 
   const blogPostSchema = post ? createBlogPostSchema(post) : undefined;
   const breadcrumbSchema = post ? createBreadcrumbListSchema([
     { name: "Home", url: "https://www.plumbersthatcare.com" },
-    { name: "Blog", url: "https://www.plumbersthatcare.com/blog" },
     { name: post.title, url: canonicalUrl }
   ]) : undefined;
 
@@ -138,12 +137,6 @@ export default function BlogPostClient({ phoneConfig, marbleFallsPhoneConfig }: 
                   <Link href="/" className="hover:text-foreground flex items-center gap-1" data-testid="link-breadcrumb-home">
                     <Home className="w-4 h-4" />
                     Home
-                  </Link>
-                </li>
-                <li aria-hidden="true">/</li>
-                <li>
-                  <Link href="/blog" className="hover:text-foreground" data-testid="link-breadcrumb-blog">
-                    Blog
                   </Link>
                 </li>
                 <li aria-hidden="true">/</li>
