@@ -20,7 +20,7 @@ export function SchedulerButton({
 }: SchedulerButtonProps) {
   return (
     <Button
-      onClick={openScheduler}
+      onClick={() => openScheduler()}
       variant={variant}
       size={size}
       className={className}
