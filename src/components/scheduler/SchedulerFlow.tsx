@@ -73,9 +73,11 @@ export function SchedulerFlow({
   // Find matching service category if prefilledService is provided
   const matchedService = prefilledService
     ? SERVICE_CATEGORIES.find(
-        (cat) => 
-          cat.name.toLowerCase().includes(prefilledService.toLowerCase()) ||
-          prefilledService.toLowerCase().includes(cat.name.toLowerCase())
+        (cat) => {
+          const serviceLower = prefilledService?.toLowerCase() || '';
+          const catLower = cat.name.toLowerCase();
+          return catLower.includes(serviceLower) || serviceLower.includes(catLower);
+        }
       )
     : undefined;
 
