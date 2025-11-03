@@ -14,7 +14,7 @@ interface ServiceTitanToken {
 
 class ServiceTitanAuth {
   private token: ServiceTitanToken | null = null;
-  private readonly tokenUrl = 'https://auth.servicetitan.io/oauth/token';
+  private readonly tokenUrl = 'https://auth.servicetitan.io/connect/token';
   private readonly clientId: string;
   private readonly clientSecret: string;
   private readonly appKey: string;

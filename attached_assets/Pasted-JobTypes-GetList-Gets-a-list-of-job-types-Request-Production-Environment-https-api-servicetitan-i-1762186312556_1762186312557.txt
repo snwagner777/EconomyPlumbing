@@ -1,0 +1,116 @@
+JobTypes_GetList
+Gets a list of job types
+
+Request
+Production Environment
+https://api.servicetitan.io/jpm/v2/tenant/{tenant}/job-types[?name][&minDuration][&maxDuration][&priority][&ids][&page][&pageSize][&includeTotal][&active][&orderBy][&orderByDirection][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&externalDataApplicationGuid]
+Integration Environment
+https://api-integration.servicetitan.io/jpm/v2/tenant/{tenant}/job-types[?name][&minDuration][&maxDuration][&priority][&ids][&page][&pageSize][&includeTotal][&active][&orderBy][&orderByDirection][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&externalDataApplicationGuid]
+Request parameters
+
+Name
+In
+Required
+Type
+Description
+tenant
+template
+true
+integer
+Tenant ID
+
+name
+query
+false
+string
+Filters by job type name
+
+minDuration
+query
+false
+integer
+Minimum length of time for this job type (in seconds)
+
+maxDuration
+query
+false
+integer
+Maximum length of time for this job type (in seconds)
+
+priority
+query
+false
+string
+Level of urgency for this type of job
+
+ids
+query
+false
+string
+Perform lookup by multiple IDs (maximum 50)
+
+page
+query
+false
+integer
+The logical number of page to return, starting from 1
+
+pageSize
+query
+false
+integer
+How many records to return (50 by default)
+
+includeTotal
+query
+false
+boolean
+Whether total count should be returned
+
+active
+query
+false
+What kind of items should be returned (only active items will be returned by default)
+Values: [True, Any, False]
+
+orderBy
+query
+false
+string
+Orders results by a field. Supported fields are "id", "modifiedOn", and "createdOn"
+
+orderByDirection
+query
+false
+string
+Specifies order direction of results. Supported values are "asc"/"ascending" and "desc"/"descending"
+
+createdBefore
+query
+false
+string
+Return items created before certain date/time (in UTC)
+
+createdOnOrAfter
+query
+false
+string
+Return items created on or after certain date/time (in UTC)
+
+modifiedBefore
+query
+false
+string
+Return items modified before certain date/time (in UTC)
+
+modifiedOnOrAfter
+query
+false
+string
+Return items modified on or after certain date/time (in UTC)
+
+externalDataApplicationGuid
+query
+false
+string
+If this guid is provided, external data corresponding to this application guid will be returned.

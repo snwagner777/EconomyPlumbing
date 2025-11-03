@@ -43,11 +43,64 @@ interface ServiceTitanAppointment {
   status: string;
 }
 
+interface JobWithLocation {
+  id: number;
+  jobNumber: string;
+  appointmentStart: string;
+  appointmentEnd: string;
+  locationZip?: string;
+  locationAddress?: string;
+  locationCity?: string;
+}
+
 export class ServiceTitanJobs {
   private readonly tenantId: string;
 
   constructor() {
     this.tenantId = serviceTitanAuth.getTenantId();
+  }
+
+  /**
+   * Get scheduled jobs for a date range (for smart scheduling optimization)
+   */
+  async getJobsForDateRange(startDate: Date, endDate: Date): Promise<JobWithLocation[]> {
+    try {
+      const queryParams = new URLSearchParams({
+        startsOnOrAfter: startDate.toISOString(),
+        startsOnOrBefore: endDate.toISOString(),
+        includeAppointments: 'true',
+        page: '1',
+        pageSize: '500', // Get up to 500 jobs
+      });
+
+      const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+        `jpm/v2/tenant/${this.tenantId}/jobs?${queryParams.toString()}`
+      );
+
+      const jobs = response.data || [];
+      
+      // Extract job + location data
+      const jobsWithLocation: JobWithLocation[] = jobs
+        .filter(job => job.appointments && job.appointments.length > 0)
+        .map(job => {
+          const firstAppointment = job.appointments[0];
+          return {
+            id: job.id,
+            jobNumber: job.jobNumber,
+            appointmentStart: firstAppointment.arrivalWindowStart || firstAppointment.start,
+            appointmentEnd: firstAppointment.arrivalWindowEnd || firstAppointment.end,
+            locationZip: job.location?.zip,
+            locationAddress: job.location?.street,
+            locationCity: job.location?.city,
+          };
+        });
+
+      console.log(`[ServiceTitan Jobs] Found ${jobsWithLocation.length} scheduled jobs for date range`);
+      return jobsWithLocation;
+    } catch (error) {
+      console.error('[ServiceTitan Jobs] Error fetching jobs for date range:', error);
+      return []; // Return empty array on error (graceful degradation)
+    }
   }
 
   /**

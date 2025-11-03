@@ -72,7 +72,7 @@ export class ServiceTitanSettings {
 
     try {
       const response = await serviceTitanAuth.makeRequest<{ data: JobType[] }>(
-        `settings/v2/tenant/${this.tenantId}/job-types?isActive=true`
+        `jpm/v2/tenant/${this.tenantId}/job-types?active=True`
       );
 
       this.jobTypesCache = {
