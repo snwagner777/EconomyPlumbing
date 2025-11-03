@@ -2307,6 +2307,72 @@ export const insertCustomCampaignSendLogSchema = createInsertSchema(customCampai
   sentAt: true,
 });
 
+// Scheduler - Appointment booking requests
+export const schedulerRequests = pgTable("scheduler_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Customer info
+  serviceTitanCustomerId: integer("service_titan_customer_id"), // ST customer ID if exists
+  serviceTitanLocationId: integer("service_titan_location_id"), // ST location ID if exists
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone").notNull(),
+  address: text("address").notNull(),
+  city: text("city"),
+  state: text("state").default("TX"),
+  zipCode: text("zip_code"),
+  
+  // Service details
+  requestedService: text("requested_service").notNull(), // Service type requested
+  jobTypeId: integer("job_type_id"), // ServiceTitan job type ID
+  businessUnitId: integer("business_unit_id"), // ServiceTitan business unit ID
+  preferredDate: timestamp("preferred_date"),
+  preferredTimeSlot: text("preferred_time_slot"), // "morning", "afternoon", "evening"
+  specialInstructions: text("special_instructions"),
+  
+  // Booking tracking
+  status: text("status").notNull().default("pending"), // pending, confirmed, failed, cancelled
+  serviceTitanJobId: integer("service_titan_job_id"), // ST job ID when successfully booked
+  serviceTitanAppointmentId: integer("service_titan_appointment_id"), // ST appointment ID
+  serviceTitanBookingId: integer("service_titan_booking_id"), // ST booking ID
+  
+  // Payment (for prepaid services like backflow)
+  paymentIntentId: text("payment_intent_id"), // Stripe payment intent ID
+  paymentAmount: integer("payment_amount"), // Amount in cents
+  paymentStatus: text("payment_status"), // pending, succeeded, failed, refunded
+  isPrepaid: boolean("is_prepaid").notNull().default(false),
+  
+  // Source tracking
+  bookingSource: text("booking_source").notNull(), // website, referral, portal, backflow, coupon
+  referralCode: text("referral_code"), // If from referral
+  couponCode: text("coupon_code"), // If coupon applied
+  utmSource: text("utm_source"),
+  utmMedium: text("utm_medium"),
+  utmCampaign: text("utm_campaign"),
+  
+  // Metadata and errors
+  metadata: jsonb("metadata"), // Flexible storage for additional data
+  errorMessage: text("error_message"), // Error details if booking failed
+  retryCount: integer("retry_count").notNull().default(0),
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  bookedAt: timestamp("booked_at"), // When successfully booked in ServiceTitan
+}, (table) => ({
+  statusIdx: index("scheduler_requests_status_idx").on(table.status),
+  createdAtIdx: index("scheduler_requests_created_at_idx").on(table.createdAt),
+  stCustomerIdIdx: index("scheduler_requests_st_customer_id_idx").on(table.serviceTitanCustomerId),
+  stJobIdIdx: index("scheduler_requests_st_job_id_idx").on(table.serviceTitanJobId),
+  bookingSourceIdx: index("scheduler_requests_booking_source_idx").on(table.bookingSource),
+}));
+
+export const insertSchedulerRequestSchema = createInsertSchema(schedulerRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export type JobCompletion = typeof jobCompletions.$inferSelect;
 export type InsertJobCompletion = z.infer<typeof insertJobCompletionSchema>;
 export type InvoiceProcessingLog = typeof invoiceProcessingLog.$inferSelect;
@@ -2349,3 +2415,5 @@ export type CustomCampaignEmail = typeof customCampaignEmails.$inferSelect;
 export type InsertCustomCampaignEmail = z.infer<typeof insertCustomCampaignEmailSchema>;
 export type CustomCampaignSendLog = typeof customCampaignSendLog.$inferSelect;
 export type InsertCustomCampaignSendLog = z.infer<typeof insertCustomCampaignSendLogSchema>;
+export type SchedulerRequest = typeof schedulerRequests.$inferSelect;
+export type InsertSchedulerRequest = z.infer<typeof insertSchedulerRequestSchema>;
