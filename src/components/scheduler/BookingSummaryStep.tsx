@@ -136,15 +136,59 @@ export function BookingSummaryStep({
       return;
     }
 
-    // TODO: Handle Stripe payment for prepaid backflow before creating job
+    // Handle Stripe payment for prepaid backflow testing
     if (isBackflowService && backflowTotal > 0) {
-      // Will integrate Stripe checkout here in next task
-      toast({
-        title: 'Payment Required',
-        description: 'Stripe payment integration coming soon. For now, payment will be collected at service time.',
-      });
+      setIsBooking(true);
+      try {
+        const response = await fetch('/api/scheduler/backflow-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            deviceCount: backflowDeviceCount,
+            customerName: data.customer.name,
+            customerEmail: data.customer.email,
+            customerPhone: data.customer.phone,
+            bookingData: {
+              address: data.location.address,
+              city: data.location.city,
+              state: data.location.state,
+              zipCode: data.location.zipCode,
+              gateCode: data.location.gateCode,
+              requestedService: data.service.name,
+              preferredDate: data.timeSlot.start,
+              preferredTimeSlot: data.timeSlot.timeLabel,
+              arrivalWindowStart: data.timeSlot.start,
+              arrivalWindowEnd: data.timeSlot.end,
+              specialInstructions: specialInstructions || undefined,
+              promoCode: promoCode || undefined,
+              utm_source: data.utmSource || utmSource || 'website',
+              utm_medium: data.utmMedium || utmMedium || undefined,
+              utm_campaign: data.utmCampaign || utmCampaign || undefined,
+            },
+          }),
+        });
+
+        const result = await response.json();
+
+        if (result.url) {
+          // Redirect to Stripe checkout
+          window.location.href = result.url;
+          return;
+        } else {
+          throw new Error(result.error || 'Failed to create checkout session');
+        }
+      } catch (error: any) {
+        toast({
+          title: 'Checkout Error',
+          description: error.message || 'Unable to process payment. Please try again.',
+          variant: 'destructive',
+        });
+        setIsBooking(false);
+        return;
+      }
     }
 
+    // For non-backflow services, proceed with regular booking
     setIsBooking(true);
     try {
       const response = await fetch('/api/scheduler/book', {

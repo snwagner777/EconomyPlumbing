@@ -2371,6 +2371,8 @@ export const schedulerRequests = pgTable("scheduler_requests", {
   stCustomerIdIdx: index("scheduler_requests_st_customer_id_idx").on(table.serviceTitanCustomerId),
   stJobIdIdx: index("scheduler_requests_st_job_id_idx").on(table.serviceTitanJobId),
   bookingSourceIdx: index("scheduler_requests_booking_source_idx").on(table.bookingSource),
+  // Unique constraint on paymentIntentId for idempotency (allows NULL for non-prepaid bookings)
+  paymentIntentIdUnique: uniqueIndex("scheduler_requests_payment_intent_id_unique").on(table.paymentIntentId),
 }));
 
 export const insertSchedulerRequestSchema = createInsertSchema(schedulerRequests).omit({
