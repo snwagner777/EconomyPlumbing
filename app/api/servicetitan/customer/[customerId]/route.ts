@@ -14,12 +14,28 @@ export async function GET(
       );
     }
 
-    console.log(`[ServiceTitan] Fetching customer: ${customerId}`);
+    console.log(`[ServiceTitan] Fetching customer data: ${customerId}`);
 
     const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
     const serviceTitan = getServiceTitanAPI();
     
-    const customer = await serviceTitan.getCustomer(parseInt(customerId));
+    const customerIdNum = parseInt(customerId, 10);
+    
+    if (Number.isNaN(customerIdNum)) {
+      return NextResponse.json(
+        { error: "Invalid customer ID" },
+        { status: 400 }
+      );
+    }
+
+    // Fetch all customer data in parallel from ServiceTitan APIs
+    const [customer, appointments, invoices, memberships, estimates] = await Promise.all([
+      serviceTitan.getCustomer(customerIdNum),
+      serviceTitan.getCustomerAppointments(customerIdNum).catch(() => []),
+      serviceTitan.getCustomerInvoices(customerIdNum).catch(() => []),
+      serviceTitan.getCustomerMemberships(customerIdNum).catch(() => []),
+      serviceTitan.getCustomerEstimates(customerIdNum).catch(() => [])
+    ]);
     
     if (!customer) {
       return NextResponse.json(
@@ -28,7 +44,23 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ customer });
+    console.log(`[ServiceTitan] Fetched data for customer ${customerId}:`, {
+      appointments: (appointments || []).length,
+      invoices: (invoices || []).length,
+      memberships: (memberships || []).length,
+      estimates: (estimates || []).length
+    });
+
+    // Return comprehensive customer data
+    return NextResponse.json({ 
+      customer: {
+        ...customer,
+        appointments,
+        invoices,
+        memberships,
+        estimates
+      }
+    });
   } catch (error: any) {
     console.error('[ServiceTitan] Error fetching customer:', error);
     return NextResponse.json(

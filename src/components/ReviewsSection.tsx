@@ -23,6 +23,7 @@ function getPlatformInfo(source: string) {
     case 'dataforseo':
     case 'google_places':
     case 'gmb_api':
+    case 'google_serpapi':
       return {
         icon: SiGoogle,
         name: 'Google',
