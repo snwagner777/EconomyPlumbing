@@ -14,18 +14,20 @@ interface ServiceTitanToken {
 
 class ServiceTitanAuth {
   private token: ServiceTitanToken | null = null;
-  private readonly tokenUrl = 'https://auth.servicetitan.io/connect/token';
+  private readonly tokenUrl = 'https://auth.servicetitan.io/oauth/token';
   private readonly clientId: string;
   private readonly clientSecret: string;
+  private readonly appKey: string;
   private readonly tenantId: string;
 
   constructor() {
     this.clientId = process.env.SERVICETITAN_CLIENT_ID || '';
     this.clientSecret = process.env.SERVICETITAN_CLIENT_SECRET || '';
+    this.appKey = process.env.SERVICETITAN_APP_KEY || '';
     this.tenantId = process.env.SERVICETITAN_TENANT_ID || '';
 
-    if (!this.clientId || !this.clientSecret || !this.tenantId) {
-      throw new Error('ServiceTitan credentials not configured. Required: SERVICETITAN_CLIENT_ID, SERVICETITAN_CLIENT_SECRET, SERVICETITAN_TENANT_ID');
+    if (!this.clientId || !this.clientSecret || !this.appKey || !this.tenantId) {
+      throw new Error('ServiceTitan credentials not configured. Required: SERVICETITAN_CLIENT_ID, SERVICETITAN_CLIENT_SECRET, SERVICETITAN_APP_KEY, SERVICETITAN_TENANT_ID');
     }
   }
 
@@ -105,7 +107,7 @@ class ServiceTitanAuth {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
-        'ST-App-Key': this.clientId,
+        'ST-App-Key': this.appKey,
         ...options.headers,
       },
     });

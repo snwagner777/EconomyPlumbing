@@ -6,9 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { schedulerRequests, insertSchedulerRequestSchema } from '@shared/schema';
+import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema } from '@shared/schema';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
+import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
+import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,11 +33,64 @@ export async function POST(req: NextRequest) {
       status: 'pending',
     });
 
+    // Extract utm_source from request headers or body
+    const utmSource = body.utm_source || new URL(req.url).searchParams.get('utm_source') || 'website';
+
     // Create scheduler request record
     const [schedulerRequest] = await db.insert(schedulerRequests).values(validated).returning();
 
     try {
-      // Step 1: Ensure customer exists in ServiceTitan
+      // Step 1: Resolve campaign from tracking number mapping or fallback to "website"
+      console.log(`[Scheduler] Looking up campaign for utm_source: ${utmSource}`);
+      
+      // First, check if we have a tracking number with ServiceTitan campaign mapping
+      let campaignId: number | undefined;
+      const [trackingNumber] = await db.select()
+        .from(trackingNumbers)
+        .where(eq(trackingNumbers.channelKey, utmSource))
+        .limit(1);
+      
+      if (trackingNumber?.serviceTitanCampaignId) {
+        campaignId = trackingNumber.serviceTitanCampaignId;
+        console.log(`[Scheduler] Found campaign from tracking number: ${trackingNumber.serviceTitanCampaignName || trackingNumber.channelName} (ID: ${campaignId})`);
+      } else {
+        // Fallback: Try to find "website" or "Website" campaign
+        console.log(`[Scheduler] No tracking number mapping for ${utmSource}, looking for default "website" campaign`);
+        const campaigns = await serviceTitanSettings.getCampaigns();
+        const websiteCampaign = campaigns.find(c => 
+          c.name.toLowerCase() === 'website' || 
+          c.source?.toLowerCase() === 'website'
+        );
+        
+        if (websiteCampaign) {
+          campaignId = websiteCampaign.id;
+          console.log(`[Scheduler] Using default website campaign (ID: ${campaignId})`);
+        } else {
+          console.log(`[Scheduler] No default campaign found, proceeding without campaign tracking`);
+        }
+      }
+
+      // Step 2: Resolve job type from service name
+      console.log(`[Scheduler] Looking up job type for: ${validated.requestedService}`);
+      const jobType = await serviceTitanSettings.findJobTypeByName(validated.requestedService);
+      
+      if (!jobType) {
+        throw new Error(`Job type not found for service: ${validated.requestedService}. Please configure job types in ServiceTitan.`);
+      }
+      
+      console.log(`[Scheduler] Found job type: ${jobType.name} (ID: ${jobType.id})`);
+
+      // Step 3: Get business unit (use first active one for now)
+      const businessUnits = await serviceTitanSettings.getBusinessUnits();
+      if (businessUnits.length === 0) {
+        throw new Error('No active business units found in ServiceTitan');
+      }
+      
+      // Use job type's default business unit if specified, otherwise first available
+      const businessUnitId = jobType.defaultBusinessUnitId || businessUnits[0].id;
+      console.log(`[Scheduler] Using business unit ID: ${businessUnitId}`);
+
+      // Step 4: Ensure customer exists in ServiceTitan
       console.log(`[Scheduler] Creating/finding customer for ${validated.customerName}`);
       const customer = await serviceTitanCRM.ensureCustomer({
         name: validated.customerName,
@@ -49,7 +104,7 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Step 2: Ensure location exists for customer
+      // Step 5: Ensure location exists for customer
       console.log(`[Scheduler] Creating/finding location for customer ${customer.id}`);
       const location = await serviceTitanCRM.ensureLocation(customer.id, {
         customerId: customer.id,
@@ -63,22 +118,18 @@ export async function POST(req: NextRequest) {
         email: validated.customerEmail || undefined,
       });
 
-      // Step 3: Create job with appointment
-      // TODO: Get businessUnitId and jobTypeId from service mapping
-      // For now, using placeholder values - will need to configure these
-      const businessUnitId = 1; // Replace with actual business unit ID
-      const jobTypeId = 1; // Replace with actual job type ID
-
-      console.log(`[Scheduler] Creating job for ${validated.requestedService}`);
+      // Step 6: Create job with real IDs and campaign
+      console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}${campaignId ? `, Campaign: ${campaignId}` : ''})`);
       const job = await serviceTitanJobs.createJob({
         customerId: customer.id,
         locationId: location.id,
         businessUnitId,
-        jobTypeId,
+        jobTypeId: jobType.id,
         summary: `${validated.requestedService} - Booked via website`,
         preferredDate: validated.preferredDate || undefined,
         preferredTimeSlot: validated.preferredTimeSlot as any,
         specialInstructions: validated.specialInstructions || undefined,
+        campaignId: campaignId || undefined,
       });
 
       // Update scheduler request with ServiceTitan IDs

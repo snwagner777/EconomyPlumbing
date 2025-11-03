@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { LogOut, Phone, Plus, Edit, Trash2 } from "lucide-react";
+import { LogOut, Phone, Plus, Edit, Trash2, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 // Comprehensive list of channel types for tracking
@@ -90,6 +90,17 @@ interface TrackingNumber {
   isActive: boolean;
   isDefault: boolean;
   sortOrder: number;
+  serviceTitanCampaignId: number | null;
+  serviceTitanCampaignName: string | null;
+}
+
+interface ServiceTitanCampaign {
+  id: number;
+  name: string;
+  number: string;
+  status: string;
+  channel?: string;
+  source?: string;
 }
 
 export default function TrackingNumbersAdmin() {
@@ -102,6 +113,11 @@ export default function TrackingNumbersAdmin() {
   // Check auth status
   const { data: authData } = useQuery({
     queryKey: ['/api/admin/check'],
+  });
+
+  // Fetch ServiceTitan campaigns
+  const { data: campaignsData, isLoading: campaignsLoading, refetch: refetchCampaigns } = useQuery<{ success: boolean; campaigns: ServiceTitanCampaign[] }>({
+    queryKey: ['/api/admin/servicetitan/campaigns'],
   });
 
   useEffect(() => {
@@ -194,7 +210,7 @@ export default function TrackingNumbersAdmin() {
     updateMutation.mutate({
       id: editingNumber.id,
       updates: {
-        channelKey: editingNumber.channelKey, // ✅ NOW SAVES THE CHANNEL TYPE!
+        channelKey: editingNumber.channelKey,
         channelName: editingNumber.channelName,
         displayNumber: editingNumber.displayNumber,
         rawNumber: editingNumber.rawNumber,
@@ -203,8 +219,27 @@ export default function TrackingNumbersAdmin() {
         isActive: editingNumber.isActive,
         isDefault: editingNumber.isDefault,
         sortOrder: editingNumber.sortOrder,
+        serviceTitanCampaignId: editingNumber.serviceTitanCampaignId,
+        serviceTitanCampaignName: editingNumber.serviceTitanCampaignName,
       }
     });
+  };
+
+  const handleSyncCampaigns = async () => {
+    try {
+      await apiRequest("POST", "/api/admin/servicetitan/campaigns");
+      refetchCampaigns();
+      toast({
+        title: "Campaigns Synced",
+        description: "ServiceTitan campaigns have been refreshed successfully.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Sync Failed",
+        description: error.message || "Failed to sync campaigns from ServiceTitan",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!authData?.isAdmin) {
@@ -221,10 +256,14 @@ export default function TrackingNumbersAdmin() {
           <div>
             <h1 className="text-3xl font-bold">Tracking Numbers Admin</h1>
             <p className="text-muted-foreground mt-2">
-              Manage marketing channel phone numbers and detection rules
+              Manage marketing channel phone numbers, detection rules, and ServiceTitan campaign mapping
             </p>
           </div>
           <div className="flex gap-2">
+            <Button variant="default" onClick={handleSyncCampaigns} disabled={campaignsLoading}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${campaignsLoading ? 'animate-spin' : ''}`} />
+              Sync ST Campaigns
+            </Button>
             <Button variant="outline" onClick={() => router.push("/admin")}>
               Back to Admin
             </Button>
@@ -297,6 +336,17 @@ export default function TrackingNumbersAdmin() {
                         {JSON.stringify(JSON.parse(number.detectionRules), null, 2)}
                       </pre>
                     </div>
+                    {number.serviceTitanCampaignId && (
+                      <div className="sm:col-span-2">
+                        <Label className="text-sm font-medium text-muted-foreground">ServiceTitan Campaign</Label>
+                        <div className="mt-1 flex items-center gap-2">
+                          <Badge variant="secondary">
+                            ID: {number.serviceTitanCampaignId}
+                          </Badge>
+                          <span className="text-sm">{number.serviceTitanCampaignName || 'Unknown Campaign'}</span>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t">
                     <Button
@@ -468,6 +518,47 @@ export default function TrackingNumbersAdmin() {
                     data-testid="input-sortOrder"
                   />
                 </div>
+                
+                {/* ServiceTitan Campaign Mapping */}
+                <div className="grid gap-2 pt-4 border-t">
+                  <Label htmlFor="stCampaign">ServiceTitan Campaign (Optional)</Label>
+                  <Select
+                    value={editingNumber.serviceTitanCampaignId?.toString() || ""}
+                    onValueChange={(value) => {
+                      if (value === "") {
+                        setEditingNumber({ 
+                          ...editingNumber, 
+                          serviceTitanCampaignId: null, 
+                          serviceTitanCampaignName: null 
+                        });
+                      } else {
+                        const campaign = campaignsData?.campaigns.find(c => c.id.toString() === value);
+                        setEditingNumber({ 
+                          ...editingNumber, 
+                          serviceTitanCampaignId: parseInt(value),
+                          serviceTitanCampaignName: campaign?.name || null
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger data-testid="select-stCampaign">
+                      <SelectValue placeholder="Select a ServiceTitan campaign..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None (No campaign mapping)</SelectItem>
+                      {campaignsData?.campaigns.map((campaign) => (
+                        <SelectItem key={campaign.id} value={campaign.id.toString()}>
+                          {campaign.name} (#{campaign.number})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Map this utm_source to a ServiceTitan campaign for conversion tracking.
+                    {!campaignsData?.campaigns.length && " Click 'Sync ST Campaigns' to load campaigns."}
+                  </p>
+                </div>
+                
                 <div className="flex justify-end gap-2 pt-4">
                   <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                     Cancel

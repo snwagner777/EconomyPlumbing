@@ -1089,12 +1089,18 @@ export const trackingNumbers = pgTable("tracking_numbers", {
   isActive: boolean("is_active").notNull().default(true),
   isDefault: boolean("is_default").notNull().default(false), // One channel should be default
   sortOrder: integer("sort_order").notNull().default(0), // For ordering in admin panel
+  
+  // ServiceTitan campaign mapping
+  serviceTitanCampaignId: integer("servicetitan_campaign_id"), // Maps channelKey (utm_source) to ST campaign ID
+  serviceTitanCampaignName: text("servicetitan_campaign_name"), // Pretty name from ServiceTitan
+  
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 }, (table) => ({
   channelKeyIdx: index("tracking_numbers_channel_key_idx").on(table.channelKey),
   isActiveIdx: index("tracking_numbers_is_active_idx").on(table.isActive),
   isDefaultIdx: index("tracking_numbers_is_default_idx").on(table.isDefault),
+  stCampaignIdx: index("tracking_numbers_st_campaign_idx").on(table.serviceTitanCampaignId),
 }));
 
 export const insertServiceAreaSchema = createInsertSchema(serviceAreas).omit({

@@ -1,77 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence. It provides service information, covered areas, blog content, and an online store. The project leverages AI for content generation, marketing automation, and reputation management to improve local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
-
-## Recent Changes
-
-### SEO Remediation Complete - November 3, 2025
-**Comprehensive SE Ranking audit fixes - health score improved from 85/100 to expected 95+/100**
-
-#### Root Cause Identified
-- Non-www vs www URL inconsistency causing majority of errors (62 sitemap redirects, 41 canonical 3XX issues)
-
-#### Fixes Implemented
-
-**1. Sitemap WWW Consistency (✅ Fixes 62 errors)**
-- Updated `app/sitemap.xml/route.ts` baseUrl from `https://plumbersthatcare.com` to `https://www.plumbersthatcare.com`
-- All sitemap URLs now use canonical www format
-- Eliminates all 3XX redirect errors in XML sitemap
-
-**2. Canonical URL 3XX Issues (✅ Fixes 41 errors)**
-- Updated `server/lib/metadata.ts` to generate canonical URLs with www subdomain
-- Updated OG image URLs from non-www to www format
-- All pages now receive server-side canonical tags pointing to `https://www.plumbersthatcare.com/...`
-
-**3. Canonical Chain Fixes (✅ Fixes 2 errors)**
-- Fixed `/gas-leak-detection/page.tsx` canonical to point directly to `/gas-line-services` (no intermediate redirects)
-- Updated both generateMetadata() and component canonical props
-- Updated breadcrumb schema to match canonical URLs
-
-**4. Orphan Page Internal Links (✅ Fixes 4 service pages)**
-- Added footer links for previously orphaned pages:
-  - `/sewer-line-repair`
-  - `/repiping`
-  - `/fixture-installation`
-  - `/referral`
-- Maintained all original footer service links to prevent regression
-
-**5. Phone Number Redirects (✅ Already in place)**
-- URL-encoded %2B format redirects in `next.config.ts` functioning correctly
-- Handles both `/commercial/+15123689159` and `/blog/+15123689159` patterns
-
-#### Expected Impact
-- **Errors:** 73 → ~15-20 (reduced by ~53 errors, -72%)
-- **Health Score:** 78/100 → Expected 88-90/100 (+10-12 points)
-- **Warnings:** 181 → Expected reduction after re-crawl
-- **Major issues resolved:**
-  - Sitemap redirect errors (62)
-  - Canonical 3XX issues (41)
-  - Canonical chains (2)
-  - Non-canonical sitemap pages (6)
-  - Orphan service pages (4)
-
-#### Files Modified
-- `app/sitemap.xml/route.ts` - Sitemap WWW baseUrl
-- `server/lib/metadata.ts` - Canonical and OG image WWW URLs
-- `app/gas-leak-detection/page.tsx` - Canonical chain fix
-- `src/components/Footer.tsx` - Added orphan page links while preserving all originals
-- `next.config.ts` - Phone number redirects (no changes needed, already correct)
-
-**6. Database Metadata Optimization (✅ Fixes 54+ title/description issues)**
-- Optimized 52 page titles from avg 45 chars → 21 chars (keeps final titles under 60 chars with template)
-- Eliminated 2 duplicate meta descriptions (emergency & gas services pages)
-- All titles now follow pattern: "[Short Title]" → "[Short Title] | Economy Plumbing Services"
-- Final title lengths: Max 59 chars, optimal for Google SERP display
-- Longest title: 31 chars (before template) → 59 chars (after template)
-
-#### SEO Optimization Results Summary
-- **Sitemap Errors:** 62 → 0 (removed noindex page, fixed WWW consistency)
-- **Multiple H1 Issues:** 6 → 0 (changed error states to H2)
-- **Long Titles:** 54 → 0 (optimized all to <30 chars base)
-- **Duplicate Descriptions:** 22 → 0 (made all unique)
-- **Blog URL Structure:** Fixed (root-level slugs, not /blog/ prefix)
-- **Expected Health Score:** 95+/100 after next SE Ranking crawl
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -171,7 +101,7 @@ export default function NewServicePage() {
 - **Static Pages:** Direct paths (e.g., `/contact`, `/faq`, `/services`)
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router (migrated from Express/React), React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
@@ -184,10 +114,10 @@ export default function NewServicePage() {
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
-- **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync.
+- **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Also features a custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
-- **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching via SerpAPI (Google, Yelp).
+- **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
 - **Referral System:** Database-first management with ServiceTitan integration, and AI-generated emails (referee welcome, referrer thank you, referrer success notifications) with engagement tracking.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
@@ -206,7 +136,7 @@ export default function NewServicePage() {
 - **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
 - **SMS Providers:** Twilio, Zoom Phone.
 - **AI Services:** OpenAI (GPT-4o for blog generation, photo analysis, focal point detection; GPT-4o-mini for chatbot).
-- **Photo Management:** CompanyCam, Google Drive, ServiceTitan.
+- **Photo Management:** CompanyCam, Google Drive.
 - **Google Services:** Google Places API, Google Maps.
 - **SEO Data:** DataForSEO API.
 - **Social Media:** Meta Graph API.
