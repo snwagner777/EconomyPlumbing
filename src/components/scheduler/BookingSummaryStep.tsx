@@ -21,7 +21,7 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
   const [specialInstructions, setSpecialInstructions] = useState(data.specialInstructions || '');
   const [promoCode, setPromoCode] = useState('');
   const [backflowDeviceCount, setBackflowDeviceCount] = useState(1);
-  const [wantsVipMembership, setWantsVipMembership] = useState(false);
+  const [selectedMembership, setSelectedMembership] = useState<string | null>(null);
   const [isBooking, setIsBooking] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [jobNumber, setJobNumber] = useState<string | null>(null);
@@ -30,6 +30,14 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
 
   const isBackflowService = data.service?.category === 'backflow-testing';
   const backflowTotal = isBackflowService ? backflowDeviceCount * 125 : 0;
+
+  const membershipOptions = [
+    { id: 'silver-tankless', name: 'Silver VIP - Tankless', price: 212, duration: '1 year' },
+    { id: 'commercial', name: 'Commercial VIP', price: 119, duration: '1 year' },
+    { id: 'rental', name: 'Rental VIP', price: 109, duration: '1 year' },
+    { id: 'platinum-tank', name: 'Platinum VIP - Tank Type', price: 319, duration: '3 years' },
+    { id: 'platinum-tankless', name: 'Platinum VIP - Tankless', price: 599, duration: '3 years' },
+  ];
 
   const handleBook = async () => {
     if (!data.service || !data.customer || !data.location || !data.timeSlot) {
@@ -72,7 +80,7 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
           specialInstructions: specialInstructions || undefined,
           promoCode: promoCode || undefined,
           backflowDeviceCount: isBackflowService ? backflowDeviceCount : undefined,
-          wantsVipMembership: wantsVipMembership || undefined,
+          selectedMembershipId: selectedMembership || undefined,
           bookingSource: 'website',
           utm_source: data.utmSource || 'website',
         }),
@@ -314,25 +322,38 @@ export function BookingSummaryStep({ data, updateData, onBack }: BookingSummaryS
         {/* VIP Membership */}
         <Card>
           <CardHeader>
-            <CardTitle>VIP Membership</CardTitle>
+            <CardTitle>Add VIP Membership (Optional)</CardTitle>
             <CardDescription>
-              Join our VIP program for priority service and exclusive discounts
+              Priority scheduling, 10-15% savings, annual maintenance included
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="vip-membership"
-                checked={wantsVipMembership}
-                onChange={(e) => setWantsVipMembership(e.target.checked)}
-                className="w-4 h-4"
-                data-testid="checkbox-vip"
-              />
-              <Label htmlFor="vip-membership" className="cursor-pointer">
-                Add VIP Membership ($X/year) - Priority scheduling, 10% off all services
-              </Label>
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <Label>Select Membership Tier</Label>
+              <select
+                value={selectedMembership || ''}
+                onChange={(e) => setSelectedMembership(e.target.value || null)}
+                className="w-full p-2 border rounded-md bg-background"
+                data-testid="select-membership"
+              >
+                <option value="">No membership (just schedule service)</option>
+                {membershipOptions.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.name} - ${option.price}/{option.duration}
+                  </option>
+                ))}
+              </select>
             </div>
+            {selectedMembership && (
+              <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-sm font-semibold text-primary mb-1">
+                  ✓ {membershipOptions.find(m => m.id === selectedMembership)?.name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Includes priority scheduling, discounted rates, and annual maintenance visit
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
