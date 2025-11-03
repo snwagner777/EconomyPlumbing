@@ -7,9 +7,12 @@ import Footer from '@/components/Footer';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy | Economy Plumbing Services',
+  title: 'Privacy Policy - Data Protection & Security | Economy Plumbing Services',
   description: 'Economy Plumbing Services privacy policy. Learn how we collect, use & protect your personal information.',
-  robots: 'noindex',
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'Privacy Policy - Economy Plumbing Services',
     description: 'Learn how we collect, use & protect your personal information.',

@@ -10,8 +10,11 @@ import { isAuthenticated } from '@/lib/auth';
 import UnifiedAdminDashboard from './unified-admin-dashboard';
 
 export const metadata: Metadata = {
-  title: 'Admin Dashboard | Economy Plumbing Services',
-  robots: 'noindex',
+  title: 'Unified Admin Panel | Economy Plumbing Services',
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function AdminDashboardPage() {

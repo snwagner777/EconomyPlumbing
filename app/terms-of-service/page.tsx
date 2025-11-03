@@ -5,9 +5,12 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service | Economy Plumbing Services',
+  title: 'Terms of Service - Website & Service Agreement | Economy Plumbing Services',
   description: 'Economy Plumbing Services terms of service. Read our terms and conditions for using our website and services.',
-  robots: 'noindex',
+  robots: {
+    index: true,
+    follow: true,
+  },
   openGraph: {
     title: 'Terms of Service - Economy Plumbing Services',
     description: 'Read our terms and conditions for using our website and services.',

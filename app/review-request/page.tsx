@@ -6,11 +6,15 @@ import type { Metadata } from 'next';
 import { ReviewForm } from './review-form';
 
 export const metadata: Metadata = {
-  title: 'Leave a Review | Economy Plumbing Services',
-  description: 'Share your experience with Economy Plumbing Services. Leave a review on Google to help other customers find quality plumbing service.',
+  title: 'Share Your Feedback | Economy Plumbing Services',
+  description: 'Share your experience with Economy Plumbing Services. Leave a review on Google or share private feedback to help us improve.',
   openGraph: {
-    title: 'Leave a Review - Economy Plumbing',
+    title: 'Share Your Feedback - Economy Plumbing',
     description: 'Share your experience and help other customers',
+  },
+  robots: {
+    index: false,
+    follow: false,
   },
 };
 
