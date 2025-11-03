@@ -107,7 +107,7 @@ export default function Header({
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center">
             <img 
-              src={typeof logoImage === 'string' ? logoImage : logoImage.src} 
+              src={logoImage.src} 
               alt="Economy Plumbing Services logo" 
               width="85"
               height="48"

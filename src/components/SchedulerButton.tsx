@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { openScheduler } from "@/lib/scheduler";
 
 interface SchedulerButtonProps {
-  variant?: 'default' | 'outline' | 'ghost' | 'link';
+  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
   size?: 'default' | 'sm' | 'lg' | 'icon';
   className?: string;
   children?: React.ReactNode;
