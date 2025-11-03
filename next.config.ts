@@ -102,16 +102,6 @@ const nextConfig: NextConfig = {
         destination: '/leak-repair',
         permanent: true,
       },
-      {
-        source: '/water-heater-guide',
-        destination: '/water-heater-services',
-        permanent: true,
-      },
-      {
-        source: '/water-heater-calculator',
-        destination: '/water-heater-cost-calculator',
-        permanent: true,
-      },
       
       // City/Service Area URL consolidation
       {

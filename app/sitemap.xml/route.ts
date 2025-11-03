@@ -38,6 +38,9 @@ export async function GET() {
     
     // Service pages (canonical URLs only)
     { url: '/water-heater-services', priority: 0.8, changefreq: 'monthly' },
+    { url: '/water-heater-guide', priority: 0.7, changefreq: 'monthly' },
+    { url: '/water-heater-calculator', priority: 0.7, changefreq: 'monthly' },
+    { url: '/plumbing-cost-estimator', priority: 0.7, changefreq: 'monthly' },
     { url: '/drain-cleaning', priority: 0.8, changefreq: 'monthly' },
     { url: '/leak-repair', priority: 0.8, changefreq: 'monthly' },
     { url: '/emergency', priority: 0.9, changefreq: 'monthly' },
