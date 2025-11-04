@@ -45,6 +45,10 @@ interface Appointment {
   arrivalWindowEnd: string;
 }
 
+// Business hours: 8 AM - 5 PM, Monday - Friday
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 17;
+
 export async function POST(req: NextRequest) {
   try {
     const body: SmartAvailabilityRequest = await req.json();
@@ -65,31 +69,17 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] Fetching availability from ${start.toISOString()} to ${end.toISOString()}`);
     
-    // Get business unit (default to first active if not specified)
-    let buId = businessUnitId;
-    if (!buId) {
-      const businessUnits = await serviceTitanSettings.getBusinessUnits();
-      buId = businessUnits[0]?.id;
-      if (!buId) {
-        return NextResponse.json(
-          { success: false, error: 'No business units available' },
-          { status: 400 }
-        );
-      }
-      console.log(`[Smart Scheduler] Using default business unit: ${buId}`);
-    }
+    // Fetch existing appointments and jobs
+    const appointments = await fetchAppointments(start, end);
+    console.log(`[Smart Scheduler] Found ${appointments.length} existing appointments`);
     
-    // Fetch available slots from ServiceTitan Capacity API
-    const capacitySlots = await serviceTitanSettings.checkAvailability({
-      businessUnitId: buId,
-      jobTypeId,
-      startDate: start,
-      endDate: end,
-    });
+    // Get arrival windows from ServiceTitan
+    const arrivalWindows = await getArrivalWindows();
+    console.log(`[Smart Scheduler] Using ${arrivalWindows.length} arrival windows from ServiceTitan`);
     
-    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${capacitySlots.length} total slots`);
-    const availableSlots = capacitySlots.filter(slot => slot.isAvailable);
-    console.log(`[Smart Scheduler] ${availableSlots.length} slots have capacity available`);
+    // Generate available slots using arrival windows
+    const availableSlots = generateAvailableSlots(start, end, appointments, arrivalWindows);
+    console.log(`[Smart Scheduler] Generated ${availableSlots.length} available slots`);
     
     // Fetch scheduled jobs for proximity scoring
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
@@ -140,8 +130,6 @@ export async function POST(req: NextRequest) {
         proximityScore,
         nearbyJobs,
         zone: customerZone || undefined,
-        availableCapacity: slot.availableCapacity,
-        totalCapacity: slot.totalCapacity,
       };
     });
     
@@ -231,4 +219,139 @@ function getTimePeriod(start: string): 'morning' | 'afternoon' | 'evening' {
   if (hour < 12) return 'morning';
   if (hour < 17) return 'afternoon';
   return 'evening';
+}
+
+/**
+ * Fetch appointments from ServiceTitan for date range
+ */
+async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appointment[]> {
+  try {
+    const tenantId = serviceTitanAuth.getTenantId();
+    const queryParams = new URLSearchParams({
+      startsOnOrAfter: startDate.toISOString(),
+      startsOnOrBefore: endDate.toISOString(),
+      pageSize: '500',
+    });
+    
+    const response = await serviceTitanAuth.makeRequest<{ data: Appointment[] }>(
+      `jpm/v2/tenant/${tenantId}/appointments?${queryParams.toString()}`
+    );
+    
+    return response.data || [];
+  } catch (error) {
+    console.error('[Smart Scheduler] Error fetching appointments:', error);
+    return [];
+  }
+}
+
+/**
+ * Get arrival windows from ServiceTitan (extract from recent appointments)
+ */
+async function getArrivalWindows(): Promise<Array<{ start: string; end: string; durationHours: number }>> {
+  try {
+    const tenantId = serviceTitanAuth.getTenantId();
+    const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+      `jpm/v2/tenant/${tenantId}/appointments?pageSize=100`
+    );
+    
+    const appointments = response.data || [];
+    const windowsMap = new Map<string, { start: string; end: string; durationHours: number }>();
+    
+    appointments.forEach((apt: any) => {
+      if (apt.arrivalWindowStart && apt.arrivalWindowEnd) {
+        const startTime = new Date(apt.arrivalWindowStart);
+        const endTime = new Date(apt.arrivalWindowEnd);
+        const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
+        
+        const startHour = startTime.getUTCHours();
+        const endHour = endTime.getUTCHours();
+        
+        const key = `${startHour}-${endHour}`;
+        if (!windowsMap.has(key)) {
+          windowsMap.set(key, {
+            start: `${startHour.toString().padStart(2, '0')}:00`,
+            end: `${endHour.toString().padStart(2, '0')}:00`,
+            durationHours,
+          });
+        }
+      }
+    });
+    
+    // If no windows found, return default 2-hour and 4-hour windows
+    if (windowsMap.size === 0) {
+      return [
+        { start: '08:00', end: '10:00', durationHours: 2 },
+        { start: '10:00', end: '12:00', durationHours: 2 },
+        { start: '12:00', end: '14:00', durationHours: 2 },
+        { start: '14:00', end: '16:00', durationHours: 2 },
+        { start: '08:00', end: '12:00', durationHours: 4 },
+        { start: '12:00', end: '16:00', durationHours: 4 },
+      ];
+    }
+    
+    return Array.from(windowsMap.values()).sort((a, b) => a.start.localeCompare(b.start));
+  } catch (error) {
+    console.error('[Smart Scheduler] Error fetching arrival windows:', error);
+    // Return default windows
+    return [
+      { start: '08:00', end: '12:00', durationHours: 4 },
+      { start: '12:00', end: '16:00', durationHours: 4 },
+    ];
+  }
+}
+
+/**
+ * Generate available time slots based on arrival windows and existing appointments
+ */
+function generateAvailableSlots(
+  startDate: Date,
+  endDate: Date,
+  bookedAppointments: Appointment[],
+  arrivalWindows: Array<{ start: string; end: string; durationHours: number }>
+): Array<{ start: string; end: string }> {
+  const slots: Array<{ start: string; end: string }> = [];
+  const currentDate = new Date(startDate);
+  
+  while (currentDate <= endDate) {
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      currentDate.setDate(currentDate.getDate() + 1);
+      continue;
+    }
+    
+    // Generate slots for each arrival window
+    arrivalWindows.forEach(window => {
+      const [startHour, startMin] = window.start.split(':').map(Number);
+      const [endHour, endMin] = window.end.split(':').map(Number);
+      
+      const slotStart = new Date(currentDate);
+      slotStart.setHours(startHour, startMin || 0, 0, 0);
+      
+      const slotEnd = new Date(currentDate);
+      slotEnd.setHours(endHour, endMin || 0, 0, 0);
+      
+      // Check for conflicts
+      const hasConflict = bookedAppointments.some(apt => {
+        const aptStart = new Date(apt.arrivalWindowStart || apt.start);
+        const aptEnd = new Date(apt.arrivalWindowEnd || apt.end);
+        
+        return (
+          (slotStart >= aptStart && slotStart < aptEnd) ||
+          (slotEnd > aptStart && slotEnd <= aptEnd) ||
+          (slotStart <= aptStart && slotEnd >= aptEnd)
+        );
+      });
+      
+      if (!hasConflict && slotStart >= new Date()) {
+        slots.push({
+          start: slotStart.toISOString(),
+          end: slotEnd.toISOString(),
+        });
+      }
+    });
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return slots;
 }

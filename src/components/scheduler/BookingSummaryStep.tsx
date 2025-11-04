@@ -47,6 +47,7 @@ export function BookingSummaryStep({
   const backflowTotal = isBackflowService ? backflowDeviceCount * 125 : 0;
 
   const membershipOptions = [
+    { id: 'silver-tank', name: 'Silver VIP - Tank Type', price: 212, duration: '1 year' },
     { id: 'silver-tankless', name: 'Silver VIP - Tankless', price: 212, duration: '1 year' },
     { id: 'commercial', name: 'Commercial VIP', price: 119, duration: '1 year' },
     { id: 'rental', name: 'Rental VIP', price: 109, duration: '1 year' },
