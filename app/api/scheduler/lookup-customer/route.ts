@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
 
     if (!customer) {
       return NextResponse.json({ 
-        found: false,
+        success: false,
         customer: null,
         locations: []
       });
@@ -36,12 +36,12 @@ export async function POST(req: NextRequest) {
     console.log(`[Scheduler] Found customer ${customer.id} with ${locations.length} location(s)`);
 
     return NextResponse.json({
-      found: true,
+      success: true,
       customer: {
         id: customer.id,
         name: customer.name,
         email: customer.contacts?.find(c => c.type === 'Email')?.value || '',
-        phone: customer.contacts?.find(c => c.type === 'Phone' || c.type === 'MobilePhone')?.value || phone,
+        phoneNumber: customer.contacts?.find(c => c.type === 'Phone' || c.type === 'MobilePhone')?.value || phone,
         address: customer.address,
       },
       locations: locations.map(loc => ({

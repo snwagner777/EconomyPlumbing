@@ -40,6 +40,8 @@ interface AvailabilitySlot {
   start: string;
   end: string;
   isAvailable: boolean;
+  availableCapacity?: number;
+  totalCapacity?: number;
   technicianIds?: number[];
 }
 
@@ -211,9 +213,16 @@ export class ServiceTitanSettings {
         `dispatch/v2/tenant/${this.tenantId}/capacity?${queryParams.toString()}`
       );
 
-      const slots = response.slots || response.data || [];
-      console.log(`[ServiceTitan Settings] Found ${slots.length} availability slots`);
-      return slots;
+      const rawSlots = response.slots || response.data || [];
+      
+      // Normalize slots: ServiceTitan returns availableCapacity, not isAvailable
+      const normalizedSlots = rawSlots.map(slot => ({
+        ...slot,
+        isAvailable: (slot.availableCapacity || 0) > 0,
+      }));
+      
+      console.log(`[ServiceTitan Settings] Found ${rawSlots.length} total slots, ${normalizedSlots.filter(s => s.isAvailable).length} available`);
+      return normalizedSlots;
     } catch (error) {
       console.error('[ServiceTitan Settings] Error checking availability:', error);
       return [];
