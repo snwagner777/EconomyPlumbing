@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Loader2 } from 'lucide-react';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
@@ -41,6 +42,7 @@ const CATEGORY_COLORS = {
 
 export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<keyof typeof CATEGORY_LABELS | null>(null);
 
   // Fetch job types from ServiceTitan
   const { data, isLoading } = useQuery<{ success: boolean; jobTypes: JobType[] }>({
@@ -49,10 +51,18 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
 
   const jobTypes = data?.jobTypes || [];
 
-  // Filter by search query
-  const filteredJobTypes = jobTypes.filter(jt =>
-    jt.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Filter by search query and selected category
+  const filteredJobTypes = jobTypes.filter(jt => {
+    const matchesSearch = jt.name.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!matchesSearch) return false;
+    
+    if (selectedCategory) {
+      const meta = getJobTypeMeta(jt.name);
+      return meta.category === selectedCategory;
+    }
+    
+    return true;
+  });
 
   // Group by category
   const groupedByCategory = filteredJobTypes.reduce((acc, jt) => {
@@ -85,18 +95,83 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
     );
   }
 
+  // Show category selection first if no category selected and no search
+  if (!selectedCategory && !searchQuery) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="text-lg font-semibold mb-2">What type of service do you need?</h3>
+          <p className="text-sm text-muted-foreground">Choose a category to see available services</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {(Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>).map((category) => {
+            const categoryServices = jobTypes.filter(jt => getJobTypeMeta(jt.name).category === category);
+            if (categoryServices.length === 0) return null;
+
+            return (
+              <Card
+                key={category}
+                className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                onClick={() => setSelectedCategory(category)}
+                data-testid={`card-category-${category}`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-base mb-1">
+                      {CATEGORY_LABELS[category]}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      {categoryServices.length} service{categoryServices.length !== 1 ? 's' : ''} available
+                    </p>
+                  </div>
+                  <Badge variant={CATEGORY_COLORS[category]}>
+                    {categoryServices.length}
+                  </Badge>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Or search for a specific service..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+            data-testid="input-search-service"
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search for a service..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
-          data-testid="input-search-service"
-        />
+      {/* Back Button and Search */}
+      <div className="flex items-center gap-3">
+        {selectedCategory && !searchQuery && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedCategory(null)}
+            data-testid="button-back-categories"
+          >
+            ← Back to Categories
+          </Button>
+        )}
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <Input
+            placeholder="Search services..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+            data-testid="input-search-service"
+          />
+        </div>
       </div>
 
       {/* Service Categories */}

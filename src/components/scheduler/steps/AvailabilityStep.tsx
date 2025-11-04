@@ -72,8 +72,15 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return slotDate === format(selectedDate, 'yyyy-MM-dd');
   });
 
-  // Group by period
-  const slotsByPeriod = slotsForDate.reduce((acc: Record<string, TimeSlot[]>, slot: TimeSlot) => {
+  // Sort by proximity score (best first)
+  const sortedSlots = [...slotsForDate].sort((a, b) => {
+    const scoreA = a.proximityScore || 0;
+    const scoreB = b.proximityScore || 0;
+    return scoreB - scoreA; // Higher scores first
+  });
+
+  // Group by period (already sorted by proximity)
+  const slotsByPeriod = sortedSlots.reduce((acc: Record<string, TimeSlot[]>, slot: TimeSlot) => {
     if (!acc[slot.period]) {
       acc[slot.period] = [];
     }
@@ -81,8 +88,58 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return acc;
   }, {} as Record<string, TimeSlot[]>);
 
+  // Get top 3 best appointments across all periods
+  const top3Slots = sortedSlots.slice(0, 3).filter(s => (s.proximityScore || 0) > 50);
+
   return (
     <div className="space-y-6">
+      {/* Top 3 Best Appointments */}
+      {top3Slots.length > 0 && (
+        <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <div className="flex items-start gap-3 mb-3">
+            <Zap className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-green-900 dark:text-green-100">
+                Best Times for Your Location
+              </h3>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                These times are closest to other appointments in your area
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-2">
+            {top3Slots.map((slot, index) => (
+              <Button
+                key={slot.id}
+                variant={selectedSlot?.id === slot.id ? 'default' : 'outline'}
+                className="justify-between h-auto py-2.5"
+                onClick={() => onSelect(slot)}
+                data-testid={`button-top-timeslot-${index}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    #{index + 1}
+                  </Badge>
+                  <span className="font-medium text-sm">{slot.timeLabel}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="text-xs gap-1">
+                    <Zap className="w-3 h-3" />
+                    {Math.round(slot.proximityScore || 0)}% efficient
+                  </Badge>
+                  {slot.nearbyJobs && slot.nearbyJobs > 0 && (
+                    <Badge variant="outline" className="text-xs gap-1">
+                      <MapPin className="w-3 h-3" />
+                      {slot.nearbyJobs}
+                    </Badge>
+                  )}
+                </div>
+              </Button>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {/* Optimization Info */}
       {data?.optimization && (
         <Card className="p-4 bg-primary/5 border-primary/20">
