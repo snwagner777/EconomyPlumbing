@@ -51,16 +51,15 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   const endDate = format(addDays(selectedDate, 6), 'yyyy-MM-dd');
 
   // Fetch smart availability (fuel-optimized)
-  const { data, isLoading } = useQuery({
+  const { data, isLoading } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
     queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip, startDate],
     queryFn: async () => {
-      const result = await apiRequest('POST', '/api/scheduler/smart-availability', {
+      return await apiRequest('POST', '/api/scheduler/smart-availability', {
         jobTypeId,
         customerZip,
         startDate,
         endDate,
       });
-      return result as { success: boolean; slots: TimeSlot[]; optimization: any };
     },
   });
 

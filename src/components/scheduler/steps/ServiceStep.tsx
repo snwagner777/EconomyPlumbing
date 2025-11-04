@@ -67,7 +67,7 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
 
   // Auto-select if preselected service matches
   useEffect(() => {
-    if (preselectedService && jobTypes.length > 0) {
+    if (preselectedService && typeof preselectedService === 'string' && jobTypes.length > 0) {
       const match = jobTypes.find(jt =>
         jt.name.toLowerCase().includes(preselectedService.toLowerCase())
       );
