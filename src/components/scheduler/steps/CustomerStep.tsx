@@ -193,50 +193,47 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   if (!showForm && !customerFound) {
     return (
       <div className="space-y-6">
-        <Card className="p-6">
-          <h3 className="font-semibold mb-4">Let's Find Your Account</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Enter your phone number or email to see if you're already in our system
-          </p>
-          
-          <div className="flex gap-2">
-            <Input
-              placeholder="(512) 555-0123 or email@example.com"
-              value={lookupValue}
-              onChange={(e) => setLookupValue(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-              data-testid="input-lookup"
-            />
-            <Button
-              onClick={handleLookup}
-              disabled={lookupMutation.isPending}
-              data-testid="button-lookup"
-            >
-              {lookupMutation.isPending ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Search className="w-4 h-4" />
-              )}
-            </Button>
-          </div>
-
-          {lookupMutation.isPending && (
-            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Looking up your account...</span>
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">What's the best phone number to reach you?</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="(512) 555-0123"
+                value={lookupValue}
+                onChange={(e) => {
+                  setLookupValue(e.target.value);
+                  // Auto-lookup after user finishes typing (simple debounce)
+                  if (e.target.value.length >= 10) {
+                    const timer = setTimeout(() => {
+                      lookupMutation.mutate(e.target.value.trim());
+                    }, 500);
+                    return () => clearTimeout(timer);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && lookupValue.trim()) {
+                    handleLookup();
+                  }
+                }}
+                data-testid="input-phone"
+              />
+              <Button
+                onClick={handleLookup}
+                disabled={lookupMutation.isPending || !lookupValue.trim()}
+                data-testid="button-continue"
+              >
+                {lookupMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
+              </Button>
             </div>
-          )}
-        </Card>
-
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => setShowForm(true)}
-          data-testid="button-skip-lookup"
-        >
-          Skip - I'm a New Customer
-          <ChevronRight className="w-4 h-4 ml-2" />
-        </Button>
+            <p className="text-xs text-muted-foreground">
+              We'll use this to send appointment reminders
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
