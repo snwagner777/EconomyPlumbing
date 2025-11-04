@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { contactsXlsx } from '@shared/schema';
+import { contactsXlsx, phoneLoginLookups } from '@shared/schema';
 import { and, eq, or, sql } from 'drizzle-orm';
+import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
   try {
@@ -103,16 +104,21 @@ export async function POST(req: NextRequest) {
 
     const maskedEmail = maskEmail(primaryEmail);
 
-    // Generate a simple lookup token (customerId-phone-timestamp)
-    const lookupToken = Buffer.from(
-      JSON.stringify({
-        customerId: phoneContact.customerId,
-        email: primaryEmail,
-        timestamp: Date.now()
-      })
-    ).toString('base64');
+    // Generate a secure lookup token
+    const lookupToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Store lookup in database
+    await db.insert(phoneLoginLookups).values({
+      lookupToken,
+      phone: normalizedPhone,
+      email: primaryEmail,
+      customerId: phoneContact.customerId,
+      expiresAt,
+    });
 
     console.log("[Portal Phone Auth] SUCCESS: Found customer", phoneContact.customerId, "with email", primaryEmail);
+    console.log("[Portal Phone Auth] Stored lookup token, expires at:", expiresAt);
 
     return NextResponse.json({
       customerId: phoneContact.customerId,
