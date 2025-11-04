@@ -1,17 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import {
-  Droplets,
-  Zap,
-  Wrench,
-  AlertTriangle,
-  CheckCircle,
-  Flame,
-  Waves,
-  ClipboardList,
-} from 'lucide-react';
+import { Loader2, Wrench } from 'lucide-react';
 import { SchedulerData } from './SchedulerFlow';
 
 interface ServiceCategoryStepProps {
@@ -21,64 +13,14 @@ interface ServiceCategoryStepProps {
   prefilledService?: string;
 }
 
-export const SERVICE_CATEGORIES = [
-  {
-    id: 'water-heater',
-    name: 'Water Heater Services',
-    description: 'Installation, repair, and maintenance',
-    icon: Flame,
-    color: 'text-orange-500',
-    jobTypeId: 1,
-  },
-  {
-    id: 'drain-cleaning',
-    name: 'Drain Cleaning',
-    description: 'Clogged drains and sewer lines',
-    icon: Waves,
-    color: 'text-blue-500',
-    jobTypeId: 2,
-  },
-  {
-    id: 'leak-repair',
-    name: 'Leak Detection & Repair',
-    description: 'Find and fix water leaks',
-    icon: Droplets,
-    color: 'text-cyan-500',
-    jobTypeId: 3,
-  },
-  {
-    id: 'backflow-testing',
-    name: 'Backflow Testing',
-    description: 'Required annual certification',
-    icon: CheckCircle,
-    color: 'text-green-500',
-    jobTypeId: 4,
-  },
-  {
-    id: 'gas-services',
-    name: 'Gas Line Services',
-    description: 'Gas leak detection and repair',
-    icon: Zap,
-    color: 'text-yellow-500',
-    jobTypeId: 6,
-  },
-  {
-    id: 'fixture-installation',
-    name: 'Fixture Installation',
-    description: 'Faucets, toilets, and more',
-    icon: Wrench,
-    color: 'text-purple-500',
-    jobTypeId: 7,
-  },
-  {
-    id: 'inspection',
-    name: 'Plumbing Inspection',
-    description: 'Complete system evaluation',
-    icon: ClipboardList,
-    color: 'text-indigo-500',
-    jobTypeId: 8,
-  },
-];
+interface JobType {
+  id: number;
+  name: string;
+  code: string;
+}
+
+// Placeholder for when API loads
+export const SERVICE_CATEGORIES: any[] = [];
 
 export function ServiceCategoryStep({ data, updateData, onNext }: ServiceCategoryStepProps) {
   const handleServiceSelect = (service: typeof SERVICE_CATEGORIES[0]) => {
