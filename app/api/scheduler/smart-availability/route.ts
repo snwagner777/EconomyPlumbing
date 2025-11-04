@@ -2,20 +2,21 @@
  * Smart Scheduler Availability API
  * 
  * Intelligently suggests appointment slots based on:
- * - Customer location (address/zip)
+ * - ServiceTitan Capacity API (actual available time slots)
+ * - Customer location (address/zip) for proximity scoring
  * - Existing jobs scheduled for that day
  * - Proximity scoring to minimize driving distance
  * - Zone clustering for fuel efficiency
- * 
- * Uses actual appointment data instead of capacity API
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
+import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
+  businessUnitId?: number;
   customerZip?: string;
   customerAddress?: string;
   startDate: string;
@@ -32,6 +33,8 @@ interface ScoredSlot {
   proximityScore: number; // 0-100, higher = more fuel efficient
   nearbyJobs: number; // Count of jobs in same zone during this window
   zone?: string; // ZIP prefix or area code
+  availableCapacity?: number; // From ServiceTitan Capacity API
+  totalCapacity?: number; // From ServiceTitan Capacity API
 }
 
 interface Appointment {
@@ -42,15 +45,10 @@ interface Appointment {
   arrivalWindowEnd: string;
 }
 
-// Business hours: 8 AM - 5 PM, Monday - Friday
-const BUSINESS_START_HOUR = 8;
-const BUSINESS_END_HOUR = 17;
-const SLOT_DURATION_HOURS = 2; // 2-hour appointment windows
-
 export async function POST(req: NextRequest) {
   try {
     const body: SmartAvailabilityRequest = await req.json();
-    const { jobTypeId, customerZip, customerAddress, startDate, endDate } = body;
+    const { jobTypeId, businessUnitId, customerZip, customerAddress, startDate, endDate } = body;
     
     if (!jobTypeId || !startDate) {
       return NextResponse.json(
@@ -67,9 +65,31 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] Fetching availability from ${start.toISOString()} to ${end.toISOString()}`);
     
-    // Fetch existing appointments for the date range
-    const appointments = await fetchAppointments(start, end);
-    console.log(`[Smart Scheduler] Found ${appointments.length} existing appointments`);
+    // Get business unit (default to first active if not specified)
+    let buId = businessUnitId;
+    if (!buId) {
+      const businessUnits = await serviceTitanSettings.getBusinessUnits();
+      buId = businessUnits[0]?.id;
+      if (!buId) {
+        return NextResponse.json(
+          { success: false, error: 'No business units available' },
+          { status: 400 }
+        );
+      }
+      console.log(`[Smart Scheduler] Using default business unit: ${buId}`);
+    }
+    
+    // Fetch available slots from ServiceTitan Capacity API
+    const capacitySlots = await serviceTitanSettings.checkAvailability({
+      businessUnitId: buId,
+      jobTypeId,
+      startDate: start,
+      endDate: end,
+    });
+    
+    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${capacitySlots.length} total slots`);
+    const availableSlots = capacitySlots.filter(slot => slot.isAvailable);
+    console.log(`[Smart Scheduler] ${availableSlots.length} slots have capacity available`);
     
     // Fetch scheduled jobs for proximity scoring
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
@@ -77,10 +97,6 @@ export async function POST(req: NextRequest) {
     
     // Extract customer zone (ZIP prefix for clustering)
     const customerZone = customerZip ? getZone(customerZip) : null;
-    
-    // Generate available time slots by finding gaps
-    const availableSlots = generateAvailableSlots(start, end, appointments);
-    console.log(`[Smart Scheduler] Generated ${availableSlots.length} available slots`);
     
     // Score each slot based on proximity to existing jobs
     const scoredSlots: ScoredSlot[] = availableSlots.map((slot, index) => {
@@ -124,6 +140,8 @@ export async function POST(req: NextRequest) {
         proximityScore,
         nearbyJobs,
         zone: customerZone || undefined,
+        availableCapacity: slot.availableCapacity,
+        totalCapacity: slot.totalCapacity,
       };
     });
     
@@ -154,83 +172,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/**
- * Fetch appointments from ServiceTitan for date range
- */
-async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appointment[]> {
-  try {
-    const tenantId = serviceTitanAuth.getTenantId();
-    const queryParams = new URLSearchParams({
-      startsOnOrAfter: startDate.toISOString(),
-      startsOnOrBefore: endDate.toISOString(),
-      pageSize: '500',
-    });
-    
-    const response = await serviceTitanAuth.makeRequest<{ data: Appointment[] }>(
-      `jpm/v2/tenant/${tenantId}/appointments?${queryParams.toString()}`
-    );
-    
-    return response.data || [];
-  } catch (error) {
-    console.error('[Smart Scheduler] Error fetching appointments:', error);
-    return [];
-  }
-}
-
-/**
- * Generate available time slots based on business hours and existing appointments
- */
-function generateAvailableSlots(
-  startDate: Date,
-  endDate: Date,
-  bookedAppointments: Appointment[]
-): Array<{ start: string; end: string }> {
-  const slots: Array<{ start: string; end: string }> = [];
-  const currentDate = new Date(startDate);
-  
-  // Generate slots for each day in the range
-  while (currentDate <= endDate) {
-    // Skip weekends (0 = Sunday, 6 = Saturday)
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      currentDate.setDate(currentDate.getDate() + 1);
-      continue;
-    }
-    
-    // Generate time slots for this day
-    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour += SLOT_DURATION_HOURS) {
-      const slotStart = new Date(currentDate);
-      slotStart.setHours(hour, 0, 0, 0);
-      
-      const slotEnd = new Date(slotStart);
-      slotEnd.setHours(hour + SLOT_DURATION_HOURS, 0, 0, 0);
-      
-      // Check if this slot conflicts with any booked appointments
-      const hasConflict = bookedAppointments.some(apt => {
-        const aptStart = new Date(apt.arrivalWindowStart || apt.start);
-        const aptEnd = new Date(apt.arrivalWindowEnd || apt.end);
-        
-        // Check for overlap
-        return (
-          (slotStart >= aptStart && slotStart < aptEnd) ||
-          (slotEnd > aptStart && slotEnd <= aptEnd) ||
-          (slotStart <= aptStart && slotEnd >= aptEnd)
-        );
-      });
-      
-      if (!hasConflict) {
-        slots.push({
-          start: slotStart.toISOString(),
-          end: slotEnd.toISOString(),
-        });
-      }
-    }
-    
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-  
-  return slots;
-}
 
 /**
  * Extract zone from ZIP code (first 3 digits)
