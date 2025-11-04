@@ -10,9 +10,8 @@
 
 import { useState, useReducer } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Wrench, User, Calendar, CheckCircle2 } from 'lucide-react';
 import { ServiceStep } from '../scheduler/steps/ServiceStep';
 import { CustomerStep } from '../scheduler/steps/CustomerStep';
 import { AvailabilityStep } from '../scheduler/steps/AvailabilityStep';
@@ -85,12 +84,28 @@ interface SchedulerWizardProps {
   preselectedService?: string;
 }
 
-const STEP_TITLES = [
-  '',
-  'Select Your Service',
-  'Your Information',
-  'Choose Appointment Time',
-  'Confirm Booking',
+const STEP_CONFIG = [
+  { icon: null, title: '', subtitle: '' },
+  { 
+    icon: Wrench, 
+    title: "What can we help you with?",
+    subtitle: "Choose the service you need"
+  },
+  { 
+    icon: User, 
+    title: "Let's get your details",
+    subtitle: "We'll use this to create your appointment"
+  },
+  { 
+    icon: Calendar, 
+    title: "When works best for you?",
+    subtitle: "We've optimized these times for your area"
+  },
+  { 
+    icon: CheckCircle2, 
+    title: "You're all set!",
+    subtitle: "Review and confirm your booking"
+  },
 ];
 
 export function SchedulerWizard({ open, onClose, preselectedService }: SchedulerWizardProps) {
@@ -122,76 +137,88 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
     dispatch({ type: 'PREV_STEP' });
   };
 
-  // Progress calculation
-  const progress = ((state.step - 1) / 3) * 100;
+  const currentConfig = STEP_CONFIG[state.step];
+  const StepIcon = currentConfig.icon;
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold">{STEP_TITLES[state.step]}</DialogTitle>
+          {/* Conversational header with icon */}
+          <div className="flex items-center gap-4">
+            {StepIcon && (
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 shrink-0">
+                <StepIcon className="w-6 h-6 text-primary" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-2xl font-bold mb-1">
+                {currentConfig.title}
+              </DialogTitle>
+              {currentConfig.subtitle && (
+                <p className="text-sm text-muted-foreground">
+                  {currentConfig.subtitle}
+                </p>
+              )}
+            </div>
+          </div>
         </DialogHeader>
 
-        {/* Progress Bar */}
-        <div className="space-y-2">
-          <Progress value={progress} className="h-2" />
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span className={state.step >= 1 ? 'text-primary font-medium' : ''}>Service</span>
-            <span className={state.step >= 2 ? 'text-primary font-medium' : ''}>Info</span>
-            <span className={state.step >= 3 ? 'text-primary font-medium' : ''}>Time</span>
-            <span className={state.step >= 4 ? 'text-primary font-medium' : ''}>Confirm</span>
-          </div>
-        </div>
-
-        {/* Step Content */}
-        <div className="flex-1 overflow-y-auto py-4">
+        {/* Step Content with smooth transitions */}
+        <div className="flex-1 overflow-y-auto py-4 animate-in fade-in duration-300">
           {state.step === 1 && (
-            <ServiceStep
-              onSelect={handleSelectJobType}
-              preselectedService={preselectedService}
-            />
+            <div className="animate-in slide-in-from-right-5 duration-300">
+              <ServiceStep
+                onSelect={handleSelectJobType}
+                preselectedService={preselectedService}
+              />
+            </div>
           )}
           
           {state.step === 2 && (
-            <CustomerStep
-              onSubmit={handleCustomerSubmit}
-              initialData={state.customer || undefined}
-            />
+            <div className="animate-in slide-in-from-right-5 duration-300">
+              <CustomerStep
+                onSubmit={handleCustomerSubmit}
+                initialData={state.customer || undefined}
+              />
+            </div>
           )}
           
           {state.step === 3 && state.jobType && state.customer && (
-            <AvailabilityStep
-              jobTypeId={state.jobType.id}
-              customerZip={state.customer.zip}
-              onSelect={handleSelectTimeSlot}
-              selectedSlot={state.timeSlot || undefined}
-            />
+            <div className="animate-in slide-in-from-right-5 duration-300">
+              <AvailabilityStep
+                jobTypeId={state.jobType.id}
+                customerZip={state.customer.zip}
+                onSelect={handleSelectTimeSlot}
+                selectedSlot={state.timeSlot || undefined}
+              />
+            </div>
           )}
           
           {state.step === 4 && state.jobType && state.customer && state.timeSlot && (
-            <ReviewStep
-              jobType={state.jobType}
-              customer={state.customer}
-              timeSlot={state.timeSlot}
-              onSuccess={handleClose}
-            />
+            <div className="animate-in slide-in-from-right-5 duration-300">
+              <ReviewStep
+                jobType={state.jobType}
+                customer={state.customer}
+                timeSlot={state.timeSlot}
+                onSuccess={handleClose}
+              />
+            </div>
           )}
         </div>
 
-        {/* Navigation */}
-        {state.step > 1 && state.step < 4 && (
-          <div className="flex justify-between pt-4 border-t">
+        {/* Back button - always visible except on first step */}
+        {state.step > 1 && (
+          <div className="pt-4 border-t">
             <Button
-              variant="outline"
+              variant="ghost"
               onClick={handleBack}
               data-testid="button-back"
+              className="gap-2"
             >
-              <ChevronLeft className="w-4 h-4 mr-2" />
+              <ChevronLeft className="w-4 h-4" />
               Back
             </Button>
-            <div className="text-sm text-muted-foreground">
-              Step {state.step} of 4
-            </div>
           </div>
         )}
       </DialogContent>
