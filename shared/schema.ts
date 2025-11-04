@@ -949,6 +949,24 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
   contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
 }));
 
+// ServiceTitan Zones - Maps ZIP codes to service zones for smart scheduling
+// Enables fuel-efficient route clustering by grouping appointments in same zone
+export const serviceTitanZones = pgTable("service_titan_zones", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(), // e.g., "North Austin", "Central", "Hill Country"
+  zipCodes: text("zip_codes").array().notNull(), // Array of 5-digit ZIP codes in this zone
+  cities: text("cities").array(), // Optional: City names for display
+  sortOrder: integer("sort_order").notNull().default(0), // For admin ordering
+  active: boolean("active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  activeIdx: index("st_zones_active_idx").on(table.active),
+  sortOrderIdx: index("st_zones_sort_order_idx").on(table.sortOrder),
+  // GIN index for fast ZIP code containment queries (e.g., '78704' = ANY(zip_codes))
+  zipCodesGinIdx: index("st_zones_zip_codes_gin_idx").on(table.zipCodes).using('gin'),
+}));
+
 // NEW XLSX-BASED TABLES - These are the primary tables for customer data
 // The old serviceTitanCustomers/Contacts tables will continue to be synced by the API (which we can't stop)
 // but all application code will use these XLSX-based tables instead
@@ -1397,6 +1415,12 @@ export const insertServiceTitanContactSchema = createInsertSchema(serviceTitanCo
   lastSyncedAt: true,
 });
 
+export const insertServiceTitanZoneSchema = createInsertSchema(serviceTitanZones).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertMailgunWebhookLogSchema = createInsertSchema(mailgunWebhookLogs).omit({
   id: true,
   receivedAt: true,
@@ -1712,6 +1736,8 @@ export type ServiceTitanCustomer = typeof serviceTitanCustomers.$inferSelect;
 export type InsertServiceTitanCustomer = z.infer<typeof insertServiceTitanCustomerSchema>;
 export type ServiceTitanContact = typeof serviceTitanContacts.$inferSelect;
 export type InsertServiceTitanContact = z.infer<typeof insertServiceTitanContactSchema>;
+export type ServiceTitanZone = typeof serviceTitanZones.$inferSelect;
+export type InsertServiceTitanZone = z.infer<typeof insertServiceTitanZoneSchema>;
 export type ServiceTitanEstimate = typeof serviceTitanEstimates.$inferSelect;
 export type InsertServiceTitanEstimate = z.infer<typeof insertServiceTitanEstimateSchema>;
 export type ServiceTitanLineItem = typeof serviceTitanLineItems.$inferSelect;

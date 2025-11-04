@@ -35,7 +35,7 @@ export const JOB_TYPE_CATALOG: Record<string, JobTypeMeta> = {
     icon: AlertTriangle,
     color: 'text-red-500',
     category: 'emergency',
-    marketingCopy: 'Urgent repairs, 24/7 availability',
+    marketingCopy: 'Urgent repairs for critical plumbing issues',
     searchKeywords: ['urgent', 'emergency', 'leak', 'burst', 'flooding'],
   },
   'Emergency Plumbing': {
@@ -86,7 +86,7 @@ export const JOB_TYPE_CATALOG: Record<string, JobTypeMeta> = {
   'Leak Detection': {
     icon: AlertTriangle,
     color: 'text-yellow-500',
-    category: 'inspection',
+    category: 'repair',
     marketingCopy: 'Find hidden leaks before they cause damage',
     searchKeywords: ['leak', 'water damage', 'wet spot', 'high bill'],
   },
