@@ -58,27 +58,29 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
 
   const bookMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/scheduler/book', {
-        customerFirstName: customer.firstName,
-        customerLastName: customer.lastName,
+      const response = await apiRequest('POST', '/api/scheduler/book', {
+        customerName: `${customer.firstName} ${customer.lastName}`,
         customerEmail: customer.email,
         customerPhone: customer.phone,
-        locationAddress: customer.address,
-        locationCity: customer.city,
-        locationState: customer.state,
-        locationZip: customer.zip,
+        address: customer.address,
+        city: customer.city,
+        state: customer.state,
+        zipCode: customer.zip,
         requestedService: jobType.name,
-        preferredDate: format(new Date(timeSlot.start), 'yyyy-MM-dd'),
-        preferredTimeSlot: timeSlot.start,
+        preferredDate: new Date(timeSlot.start),
+        arrivalWindowStart: timeSlot.start,
+        arrivalWindowEnd: timeSlot.end,
         specialInstructions: customer.notes,
         bookingSource: 'scheduler_wizard',
+        utm_source: 'website',
       });
+      return await response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: (data: any) => {
       setIsBooked(true);
       toast({
         title: "Appointment Booked!",
-        description: `Your ${jobType.name} appointment is confirmed.`,
+        description: data.message || `Your ${jobType.name} appointment is confirmed. Job #${data.jobNumber || ''}`,
       });
       setTimeout(() => {
         onSuccess();

@@ -14,6 +14,8 @@ interface CreateJobData {
   summary: string;
   preferredDate?: Date;
   preferredTimeSlot?: 'morning' | 'afternoon' | 'evening';
+  arrivalWindowStart?: string; // ISO timestamp for exact arrival window
+  arrivalWindowEnd?: string; // ISO timestamp for exact arrival window
   specialInstructions?: string;
   bookingProviderId?: number;
   campaignId?: number;
@@ -139,13 +141,26 @@ export class ServiceTitanJobs {
    */
   async createJob(data: CreateJobData): Promise<ServiceTitanJob> {
     try {
-      const arrivalWindow = data.preferredDate
-        ? this.getArrivalWindow(data.preferredDate, data.preferredTimeSlot)
-        : {
-            // Default to next business day, 9 AM - 1 PM
-            start: new Date(Date.now() + 86400000).toISOString(),
-            end: new Date(Date.now() + 86400000 + 14400000).toISOString(),
-          };
+      // Use exact arrival window times if provided, otherwise calculate from preferredDate/TimeSlot
+      let arrivalWindow: { start: string; end: string };
+      
+      if (data.arrivalWindowStart && data.arrivalWindowEnd) {
+        // Use exact times from smart scheduler
+        arrivalWindow = {
+          start: data.arrivalWindowStart,
+          end: data.arrivalWindowEnd,
+        };
+        console.log(`[ServiceTitan Jobs] Using exact arrival window: ${arrivalWindow.start} to ${arrivalWindow.end}`);
+      } else if (data.preferredDate) {
+        // Fall back to calculated window from preferred time slot
+        arrivalWindow = this.getArrivalWindow(data.preferredDate, data.preferredTimeSlot);
+      } else {
+        // Default to next business day, 9 AM - 1 PM
+        arrivalWindow = {
+          start: new Date(Date.now() + 86400000).toISOString(),
+          end: new Date(Date.now() + 86400000 + 14400000).toISOString(),
+        };
+      }
 
       const payload = {
         customerId: data.customerId,

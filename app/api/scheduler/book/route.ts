@@ -130,6 +130,11 @@ export async function POST(req: NextRequest) {
 
       // Step 6: Create job with real IDs and campaign
       console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}${campaignId ? `, Campaign: ${campaignId}` : ''})`);
+      
+      // Use actual arrival window times if provided, otherwise fall back to preferredDate/TimeSlot
+      const arrivalWindowStart = body.arrivalWindowStart || undefined;
+      const arrivalWindowEnd = body.arrivalWindowEnd || undefined;
+      
       const job = await serviceTitanJobs.createJob({
         customerId: customer.id,
         locationId: location.id,
@@ -138,6 +143,8 @@ export async function POST(req: NextRequest) {
         summary: `${validated.requestedService} - Booked via website`,
         preferredDate: validated.preferredDate || undefined,
         preferredTimeSlot: validated.preferredTimeSlot as any,
+        arrivalWindowStart,
+        arrivalWindowEnd,
         specialInstructions: validated.specialInstructions || undefined,
         campaignId: campaignId || undefined,
       });
