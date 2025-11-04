@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, ChevronRight } from 'lucide-react';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 
 interface JobType {
@@ -100,11 +100,11 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
     return (
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-2">What type of service do you need?</h3>
+          <h3 className="text-xl font-bold mb-2">What type of service do you need?</h3>
           <p className="text-sm text-muted-foreground">Choose a category to see available services</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(Object.keys(CATEGORY_LABELS) as Array<keyof typeof CATEGORY_LABELS>).map((category) => {
             const categoryServices = jobTypes.filter(jt => getJobTypeMeta(jt.name).category === category);
             if (categoryServices.length === 0) return null;
@@ -112,22 +112,32 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
             return (
               <Card
                 key={category}
-                className="p-6 cursor-pointer hover-elevate active-elevate-2"
+                className="relative overflow-hidden min-h-[176px] cursor-pointer group border-2 transition-all hover:border-primary/40 hover:shadow-lg active:scale-[0.98]"
                 onClick={() => setSelectedCategory(category)}
                 data-testid={`card-category-${category}`}
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-base mb-1">
-                      {CATEGORY_LABELS[category]}
-                    </h3>
+                {/* Gradient Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent opacity-50 group-hover:opacity-70 transition-opacity" />
+                
+                <div className="relative p-6 h-full flex flex-col justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                        {CATEGORY_LABELS[category]}
+                      </h3>
+                      <Badge variant={CATEGORY_COLORS[category]} className="shrink-0">
+                        {categoryServices.length}
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {categoryServices.length} service{categoryServices.length !== 1 ? 's' : ''} available
                     </p>
                   </div>
-                  <Badge variant={CATEGORY_COLORS[category]}>
-                    {categoryServices.length}
-                  </Badge>
+                  
+                  <div className="flex items-center gap-2 text-sm text-primary font-medium mt-4">
+                    <span>View services</span>
+                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
                 </div>
               </Card>
             );
@@ -176,9 +186,9 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
 
       {/* Service Categories */}
       {(Object.keys(groupedByCategory) as Array<keyof typeof CATEGORY_LABELS>).map((category) => (
-        <div key={category} className="space-y-3">
+        <div key={category} className="space-y-4">
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-semibold">{CATEGORY_LABELS[category]}</h3>
+            <h3 className="text-lg font-bold">{CATEGORY_LABELS[category]}</h3>
             <Badge variant={CATEGORY_COLORS[category]}>
               {groupedByCategory[category].length}
             </Badge>
@@ -190,20 +200,20 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
               return (
                 <Card
                   key={jt.id}
-                  className="p-4 cursor-pointer transition-all hover-elevate active-elevate-2"
+                  className="p-4 cursor-pointer group border transition-all hover:border-primary/40 hover:shadow-md active:scale-[0.98]"
                   onClick={() => onSelect(jt)}
                   data-testid={`card-service-${jt.id}`}
                 >
-                  <div className="flex items-start gap-3">
-                    <div className={`p-2 rounded-md bg-muted ${jt.meta.color}`}>
+                  <div className="flex items-start gap-4">
+                    <div className={`p-3 rounded-full bg-primary/10 dark:bg-primary/20 border border-primary/20 ${jt.meta.color} shrink-0`}>
                       <Icon className="w-6 h-6" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm leading-tight">
+                      <h4 className="font-semibold text-base leading-tight mb-1 group-hover:text-primary transition-colors">
                         {jt.meta.displayName || jt.name}
                       </h4>
                       {jt.meta.marketingCopy && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
                           {jt.meta.marketingCopy}
                         </p>
                       )}

@@ -263,8 +263,14 @@ async function getArrivalWindows(): Promise<Array<{ start: string; end: string; 
         const endTime = new Date(apt.arrivalWindowEnd);
         const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
         
-        const startHour = startTime.getUTCHours();
-        const endHour = endTime.getUTCHours();
+        // Use local hours (not UTC) for proper time zone handling
+        const startHour = startTime.getHours();
+        const endHour = endTime.getHours();
+        
+        // Only use windows within business hours (8 AM - 5 PM)
+        if (startHour < BUSINESS_START_HOUR || endHour > BUSINESS_END_HOUR) {
+          return; // Skip emergency/after-hours appointments
+        }
         
         const key = `${startHour}-${endHour}`;
         if (!windowsMap.has(key)) {
