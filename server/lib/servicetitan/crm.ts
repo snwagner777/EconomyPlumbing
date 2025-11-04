@@ -164,6 +164,27 @@ export class ServiceTitanCRM {
   }
 
   /**
+   * Get all locations for a customer from ServiceTitan
+   */
+  async getCustomerLocations(customerId: number): Promise<ServiceTitanLocation[]> {
+    try {
+      console.log(`[ServiceTitan CRM] Fetching all locations for customer ${customerId}`);
+      
+      const response = await serviceTitanAuth.makeRequest<{ data: ServiceTitanLocation[] }>(
+        `crm/v2/tenant/${this.tenantId}/locations?customerId=${customerId}&active=true`
+      );
+
+      const locations = response.data || [];
+      console.log(`[ServiceTitan CRM] Found ${locations.length} locations for customer ${customerId}`);
+      
+      return locations;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error fetching locations for customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Find location for customer by address
    */
   async findLocation(customerId: number, address: string): Promise<ServiceTitanLocation | null> {

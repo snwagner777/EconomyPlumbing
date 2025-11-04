@@ -1,15 +1,14 @@
 /**
  * Customer Information Step
  * 
- * Polished form to collect customer contact details and service address.
- * Includes account lookup to auto-populate returning customers.
+ * Lookup existing customers, poll ServiceTitan for their locations, or create new customer.
  */
 
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChevronRight, Search, Loader2, CheckCircle, MapPin } from 'lucide-react';
+import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft } from 'lucide-react';
 
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -34,14 +33,28 @@ const customerSchema = z.object({
 type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface CustomerStepProps {
-  onSubmit: (data: CustomerFormData) => void;
+  onSubmit: (data: CustomerFormData & { locationId?: number }) => void;
   initialData?: Partial<CustomerFormData>;
+}
+
+interface STLocation {
+  id: number;
+  customerId: number;
+  name: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
-  const [customerFound, setCustomerFound] = useState(false);
-  const [locations, setLocations] = useState<any[]>([]);
+  const [customerFound, setCustomerFound] = useState<any>(null);
+  const [locations, setLocations] = useState<STLocation[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<STLocation | null>(null);
+  const [showAddLocation, setShowAddLocation] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const form = useForm<CustomerFormData>({
@@ -59,6 +72,7 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     },
   });
 
+  // Lookup customer in local DB
   const lookupMutation = useMutation({
     mutationFn: async (value: string) => {
       const response = await apiRequest('POST', '/api/scheduler/lookup-customer', {
@@ -69,9 +83,14 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     },
     onSuccess: (data: any) => {
       if (data.success && data.customer) {
-        setCustomerFound(true);
-        setLocations(data.locations || []);
+        setCustomerFound(data.customer);
         
+        // Immediately fetch locations from ServiceTitan
+        if (data.customer.serviceTitanId) {
+          fetchLocationsMutation.mutate(data.customer.serviceTitanId);
+        }
+        
+        // Pre-fill form with customer data
         const nameParts = data.customer.name.split(' ');
         const firstName = nameParts[0] || '';
         const lastName = nameParts.slice(1).join(' ') || '';
@@ -81,20 +100,50 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
           lastName,
           email: data.customer.email || '',
           phone: data.customer.phoneNumber || lookupValue,
-          address: data.customer.address?.street || '',
-          city: data.customer.address?.city || 'Austin',
-          state: data.customer.address?.state || 'TX',
-          zip: data.customer.address?.zip || '',
+          address: data.locations?.[0]?.street || '',
+          city: data.locations?.[0]?.city || 'Austin',
+          state: data.locations?.[0]?.state || 'TX',
+          zip: data.locations?.[0]?.zip || '',
           notes: '',
         });
-        
-        setShowForm(true);
       } else {
-        setCustomerFound(false);
+        setCustomerFound(null);
         setLocations([]);
         form.setValue('phone', lookupValue.match(/\d/) ? lookupValue : '');
         form.setValue('email', lookupValue.includes('@') ? lookupValue : '');
         setShowForm(true);
+      }
+    },
+  });
+
+  // Fetch locations from ServiceTitan
+  const fetchLocationsMutation = useMutation({
+    mutationFn: async (serviceTitanCustomerId: number) => {
+      const response = await apiRequest('POST', '/api/scheduler/fetch-locations', {
+        serviceTitanCustomerId,
+      });
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.success && data.locations) {
+        console.log('[CustomerStep] Fetched ServiceTitan locations:', data.locations);
+        setLocations(data.locations);
+      }
+    },
+  });
+
+  // Create new location for existing customer
+  const createLocationMutation = useMutation({
+    mutationFn: async (locationData: any) => {
+      const response = await apiRequest('POST', '/api/scheduler/create-location', locationData);
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.success && data.location) {
+        console.log('[CustomerStep] Created new location:', data.location);
+        setLocations(prev => [...prev, data.location]);
+        setSelectedLocation(data.location);
+        setShowAddLocation(false);
       }
     },
   });
@@ -105,15 +154,43 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     }
   };
 
-  const handleLocationSelect = (location: any) => {
+  const handleLocationSelect = (location: STLocation) => {
+    setSelectedLocation(location);
     form.setValue('address', location.address.street);
     form.setValue('city', location.address.city);
     form.setValue('state', location.address.state);
     form.setValue('zip', location.address.zip);
+    setShowForm(true);
+  };
+
+  const handleAddNewLocation = () => {
+    const formData = form.getValues();
+    if (customerFound && customerFound.serviceTitanId) {
+      createLocationMutation.mutate({
+        customerId: customerFound.serviceTitanId, // Match API endpoint parameter name
+        address: {
+          street: formData.address,
+          city: formData.city,
+          state: formData.state,
+          zip: formData.zip,
+        },
+        phone: formData.phone,
+        email: formData.email,
+      });
+    }
+  };
+
+  const handleSubmit = (data: CustomerFormData) => {
+    // Include selected location ID if customer has one
+    if (selectedLocation) {
+      onSubmit({ ...data, locationId: selectedLocation.id });
+    } else {
+      onSubmit(data);
+    }
   };
 
   // Show lookup interface first
-  if (!showForm) {
+  if (!showForm && !customerFound) {
     return (
       <div className="space-y-6">
         <Card className="p-6">
@@ -142,6 +219,13 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
               )}
             </Button>
           </div>
+
+          {lookupMutation.isPending && (
+            <div className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Looking up your account...</span>
+            </div>
+          )}
         </Card>
 
         <Button
@@ -157,10 +241,199 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     );
   }
 
+  // Show location selection if customer found with locations
+  if (customerFound && locations.length > 0 && !selectedLocation && !showAddLocation) {
+    return (
+      <div className="space-y-6">
+        <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-green-900 dark:text-green-100">
+                Welcome Back, {customerFound.name}!
+              </h3>
+              <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                We found your account. Please select a service location.
+              </p>
+            </div>
+          </div>
+        </Card>
+
+        {fetchLocationsMutation.isPending && (
+          <Card className="p-6 text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Loading your service locations from ServiceTitan...</p>
+          </Card>
+        )}
+
+        {!fetchLocationsMutation.isPending && (
+          <>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-sm">Select Service Location</h3>
+              <div className="grid gap-2">
+                {locations.map((location) => (
+                  <Card
+                    key={location.id}
+                    className="p-4 cursor-pointer hover-elevate active-elevate-2 border-2 transition-colors"
+                    onClick={() => handleLocationSelect(location)}
+                    data-testid={`card-location-${location.id}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <MapPin className="w-5 h-5 text-primary mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium">
+                          {location.address.street}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {location.address.city}, {location.address.state} {location.address.zip}
+                        </p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => setShowAddLocation(true)}
+              data-testid="button-add-location"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add New Service Location
+            </Button>
+          </>
+        )}
+
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setCustomerFound(null);
+            setLocations([]);
+            setShowForm(false);
+          }}
+          data-testid="button-back-lookup"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Lookup
+        </Button>
+      </div>
+    );
+  }
+
+  // Show add location form
+  if (showAddLocation && customerFound) {
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(() => handleAddNewLocation())} className="space-y-6">
+          <Card className="p-4 bg-primary/5">
+            <h3 className="font-semibold text-sm mb-2">Add New Service Location</h3>
+            <p className="text-xs text-muted-foreground">
+              Adding location for: {customerFound.name}
+            </p>
+          </Card>
+
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Street Address</FormLabel>
+                <FormControl>
+                  <Input placeholder="123 Main St" {...field} data-testid="input-address" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="grid grid-cols-6 gap-4">
+            <div className="col-span-3">
+              <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>City</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Austin" {...field} data-testid="input-city" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-1">
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>State</FormLabel>
+                    <FormControl>
+                      <Input placeholder="TX" maxLength={2} {...field} data-testid="input-state" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="col-span-2">
+              <FormField
+                control={form.control}
+                name="zip"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>ZIP Code</FormLabel>
+                    <FormControl>
+                      <Input placeholder="78701" {...field} data-testid="input-zip" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => setShowAddLocation(false)}
+              data-testid="button-cancel-location"
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={createLocationMutation.isPending}
+              data-testid="button-save-location"
+            >
+              {createLocationMutation.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Location
+                </>
+              )}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    );
+  }
+
+  // Show full customer form
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        {/* Customer Found Banner */}
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         {customerFound && (
           <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
             <div className="flex items-start gap-3">
@@ -177,36 +450,18 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
           </Card>
         )}
 
-        {/* Multiple Locations */}
-        {locations.length > 1 && (
-          <div className="space-y-3">
-            <h3 className="font-semibold text-sm">Select Service Location</h3>
-            <div className="grid gap-2">
-              {locations.map((location) => (
-                <Card
-                  key={location.id}
-                  className="p-3 cursor-pointer hover-elevate active-elevate-2"
-                  onClick={() => handleLocationSelect(location)}
-                  data-testid={`card-location-${location.id}`}
-                >
-                  <div className="flex items-start gap-3">
-                    <MapPin className="w-4 h-4 text-muted-foreground mt-1" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium">
-                        {location.address.street}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {location.address.city}, {location.address.state} {location.address.zip}
-                      </p>
-                      {location.isPrimary && (
-                        <Badge variant="secondary" className="text-xs mt-1">Primary</Badge>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              ))}
+        {selectedLocation && (
+          <Card className="p-4 bg-primary/5">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-5 h-5 text-primary mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm">Service Location</h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {selectedLocation.address.street}, {selectedLocation.address.city}, {selectedLocation.address.state} {selectedLocation.address.zip}
+                </p>
+              </div>
             </div>
-          </div>
+          </Card>
         )}
 
         {/* Name */}

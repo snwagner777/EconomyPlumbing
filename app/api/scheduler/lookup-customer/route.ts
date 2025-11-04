@@ -92,10 +92,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       customer: {
-        id: customer.id,
+        id: customer.id, // Local DB ID
+        serviceTitanId: customer.id, // ServiceTitan customer ID (same as id in this table)
         name: customer.name,
         email: customerEmail,
-        phone: customerPhone,
+        phoneNumber: customerPhone,
         type: customer.type,
       },
       locations,
