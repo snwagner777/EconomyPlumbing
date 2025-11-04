@@ -963,8 +963,8 @@ export const serviceTitanZones = pgTable("service_titan_zones", {
 }, (table) => ({
   activeIdx: index("st_zones_active_idx").on(table.active),
   sortOrderIdx: index("st_zones_sort_order_idx").on(table.sortOrder),
-  // GIN index for fast ZIP code containment queries (e.g., '78704' = ANY(zip_codes))
-  zipCodesGinIdx: index("st_zones_zip_codes_gin_idx").on(table.zipCodes).using('gin'),
+  // Note: GIN index for zipCodes array will be created manually via migration
+  // Standard B-tree index works for small datasets, GIN optimal for large-scale
 }));
 
 // NEW XLSX-BASED TABLES - These are the primary tables for customer data
