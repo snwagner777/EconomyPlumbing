@@ -14,8 +14,10 @@ interface CreateJobData {
   summary: string;
   preferredDate?: Date;
   preferredTimeSlot?: 'morning' | 'afternoon' | 'evening';
-  arrivalWindowStart?: string; // ISO timestamp for exact arrival window
-  arrivalWindowEnd?: string; // ISO timestamp for exact arrival window
+  arrivalWindowStart?: string; // ISO timestamp for customer promise (e.g., "8-12")
+  arrivalWindowEnd?: string; // ISO timestamp for customer promise
+  appointmentStart?: string; // ISO timestamp for actual scheduled slot (e.g., "10-12")
+  appointmentEnd?: string; // ISO timestamp for actual scheduled slot
   specialInstructions?: string;
   bookingProviderId?: number;
   campaignId?: number;
@@ -162,6 +164,11 @@ export class ServiceTitanJobs {
         };
       }
 
+      // Determine appointment start/end (actual scheduled slot)
+      // If provided explicitly, use those. Otherwise, use arrival window times.
+      const appointmentStart = data.appointmentStart || arrivalWindow.start;
+      const appointmentEnd = data.appointmentEnd || arrivalWindow.end;
+
       const payload = {
         customerId: data.customerId,
         locationId: data.locationId,
@@ -173,9 +180,10 @@ export class ServiceTitanJobs {
         ...(data.campaignId && { campaignId: data.campaignId }),
         // First appointment is created automatically with job
         appointment: {
-          start: arrivalWindow.start,
-          arrivalWindowStart: arrivalWindow.start,
-          arrivalWindowEnd: arrivalWindow.end,
+          start: appointmentStart, // Actual scheduled slot
+          end: appointmentEnd, // Actual scheduled slot end
+          arrivalWindowStart: arrivalWindow.start, // Customer promise
+          arrivalWindowEnd: arrivalWindow.end, // Customer promise
           ...(data.specialInstructions && { specialInstructions: data.specialInstructions }),
         },
       };

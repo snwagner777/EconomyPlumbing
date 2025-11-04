@@ -131,9 +131,33 @@ export async function POST(req: NextRequest) {
       // Step 6: Create job with real IDs and campaign
       console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}${campaignId ? `, Campaign: ${campaignId}` : ''})`);
       
-      // Use actual arrival window times if provided, otherwise fall back to preferredDate/TimeSlot
+      // Extract arrival window (customer promise) and appointment slot (actual schedule)
       const arrivalWindowStart = body.arrivalWindowStart || undefined;
       const arrivalWindowEnd = body.arrivalWindowEnd || undefined;
+      const appointmentStart = body.appointmentStart || undefined;
+      const appointmentEnd = body.appointmentEnd || undefined;
+      
+      // Validate appointment times if provided
+      if (appointmentStart && appointmentEnd && arrivalWindowStart && arrivalWindowEnd) {
+        const aptStart = new Date(appointmentStart);
+        const aptEnd = new Date(appointmentEnd);
+        const windowStart = new Date(arrivalWindowStart);
+        const windowEnd = new Date(arrivalWindowEnd);
+        
+        // Ensure appointment slot is within arrival window
+        if (aptStart < windowStart || aptEnd > windowEnd) {
+          throw new Error('Appointment slot must be within the selected arrival window');
+        }
+        
+        console.log(`[Scheduler] Validated appointment slot ${appointmentStart} - ${appointmentEnd} within window ${arrivalWindowStart} - ${arrivalWindowEnd}`);
+      } else if ((appointmentStart && !appointmentEnd) || (!appointmentStart && appointmentEnd)) {
+        throw new Error('Both appointmentStart and appointmentEnd must be provided together');
+      }
+      
+      console.log(`[Scheduler] Booking with arrival window: ${arrivalWindowStart} - ${arrivalWindowEnd}`);
+      if (appointmentStart && appointmentEnd) {
+        console.log(`[Scheduler] Appointment slot: ${appointmentStart} - ${appointmentEnd}`);
+      }
       
       const job = await serviceTitanJobs.createJob({
         customerId: customer.id,
@@ -145,6 +169,8 @@ export async function POST(req: NextRequest) {
         preferredTimeSlot: validated.preferredTimeSlot as any,
         arrivalWindowStart,
         arrivalWindowEnd,
+        appointmentStart, // Actual scheduled slot within arrival window
+        appointmentEnd, // Actual scheduled slot end
         specialInstructions: validated.specialInstructions || undefined,
         campaignId: campaignId || undefined,
       });

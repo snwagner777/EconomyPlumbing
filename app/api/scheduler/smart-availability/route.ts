@@ -13,6 +13,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
+import { db } from '@/server/db';
+import { serviceTitanZones } from '@shared/schema';
+import { sql } from 'drizzle-orm';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -85,8 +88,42 @@ export async function POST(req: NextRequest) {
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
     console.log(`[Smart Scheduler] Found ${existingJobs.length} jobs for proximity scoring`);
     
-    // Extract customer zone (ZIP prefix for clustering)
-    const customerZone = customerZip ? getZone(customerZip) : null;
+    // Extract customer zone from serviceTitanZones table
+    const customerZone = customerZip ? await getZoneForZip(customerZip) : null;
+    console.log(`[Smart Scheduler] Customer zone: ${customerZone || 'unknown'}`);
+    
+    // Precompute zones for all job ZIPs (batch lookup for performance)
+    // Normalize to 5 digits to handle ZIP+4 format (e.g., "78701-1234" → "78701")
+    const normalizeZip = (zip: string | null | undefined): string | null => {
+      if (!zip) return null;
+      const digits = zip.replace(/\D/g, '').substring(0, 5);
+      return digits.length === 5 ? digits : null; // Only return if valid 5-digit ZIP
+    };
+    
+    const uniqueZips = [...new Set(
+      existingJobs
+        .map(j => normalizeZip(j.locationZip))
+        .filter((zip): zip is string => zip !== null)
+    )];
+    const zipToZone: Record<string, string> = {};
+    
+    if (uniqueZips.length > 0) {
+      const zones = await db.query.serviceTitanZones.findMany({
+        where: (zones) => sql`${zones.zipCodes} && ARRAY[${sql.join(uniqueZips.map(z => sql`${z}`), sql`, `)}]::text[]`,
+      });
+      
+      // Build ZIP to zone mapping (all ZIPs normalized to 5 digits)
+      for (const zone of zones) {
+        for (const zip of zone.zipCodes) {
+          const normalized = normalizeZip(zip);
+          if (uniqueZips.includes(normalized)) {
+            zipToZone[normalized] = zone.name;
+          }
+        }
+      }
+      
+      console.log(`[Smart Scheduler] Mapped ${Object.keys(zipToZone).length} ZIPs to zones`);
+    }
     
     // Score each slot based on proximity to existing jobs
     const scoredSlots: ScoredSlot[] = availableSlots.map((slot, index) => {
@@ -104,11 +141,13 @@ export async function POST(req: NextRequest) {
         );
       });
       
-      // Count jobs in same zone
+      // Count jobs in same zone using precomputed zone map (normalized ZIPs)
       let nearbyJobs = 0;
       if (customerZone) {
         nearbyJobs = overlappingJobs.filter(job => {
-          const jobZone = job.locationZip ? getZone(job.locationZip) : null;
+          const normalizedJobZip = normalizeZip(job.locationZip);
+          if (!normalizedJobZip) return false; // Skip invalid ZIPs
+          const jobZone = zipToZone[normalizedJobZip];
           return jobZone === customerZone;
         }).length;
       }
@@ -162,12 +201,22 @@ export async function POST(req: NextRequest) {
 
 
 /**
- * Extract zone from ZIP code (first 3 digits)
- * Austin zones: 787xx, 786xx, 785xx
+ * Get zone name for a ZIP code from serviceTitanZones table
  */
-function getZone(zip: string): string {
-  const cleaned = zip.replace(/\D/g, '');
-  return cleaned.substring(0, 3);
+async function getZoneForZip(zip: string): Promise<string | null> {
+  try {
+    const cleanedZip = zip.replace(/\D/g, '').substring(0, 5);
+    
+    // Query zones table for ZIP match
+    const zone = await db.query.serviceTitanZones.findFirst({
+      where: sql`${cleanedZip} = ANY(${serviceTitanZones.zipCodes})`,
+    });
+    
+    return zone?.name || null;
+  } catch (error) {
+    console.error('[Smart Scheduler] Error looking up zone:', error);
+    return null;
+  }
 }
 
 /**
