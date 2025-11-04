@@ -6,11 +6,13 @@
  * - Existing jobs scheduled for that day
  * - Proximity scoring to minimize driving distance
  * - Zone clustering for fuel efficiency
+ * 
+ * Uses actual appointment data instead of capacity API
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
+import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -32,6 +34,19 @@ interface ScoredSlot {
   zone?: string; // ZIP prefix or area code
 }
 
+interface Appointment {
+  id: number;
+  start: string;
+  end: string;
+  arrivalWindowStart: string;
+  arrivalWindowEnd: string;
+}
+
+// Business hours: 8 AM - 5 PM, Monday - Friday
+const BUSINESS_START_HOUR = 8;
+const BUSINESS_END_HOUR = 17;
+const SLOT_DURATION_HOURS = 2; // 2-hour appointment windows
+
 export async function POST(req: NextRequest) {
   try {
     const body: SmartAvailabilityRequest = await req.json();
@@ -50,84 +65,72 @@ export async function POST(req: NextRequest) {
     const start = new Date(startDate);
     const end = endDate ? new Date(endDate) : new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
     
-    // Get business unit
-    const businessUnits = await serviceTitanSettings.getBusinessUnits();
-    const plumbingBU = businessUnits.find(bu => bu.name.toLowerCase().includes('plumbing'));
+    console.log(`[Smart Scheduler] Fetching availability from ${start.toISOString()} to ${end.toISOString()}`);
     
-    if (!plumbingBU) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'No plumbing business unit found',
-        },
-        { status: 500 }
-      );
-    }
+    // Fetch existing appointments for the date range
+    const appointments = await fetchAppointments(start, end);
+    console.log(`[Smart Scheduler] Found ${appointments.length} existing appointments`);
     
-    // Fetch available slots from ServiceTitan
-    const availability = await serviceTitanSettings.checkAvailability({
-      businessUnitId: plumbingBU.id,
-      jobTypeId,
-      startDate: start,
-      endDate: end,
-    });
-    
-    // Fetch existing scheduled jobs for the date range
+    // Fetch scheduled jobs for proximity scoring
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
+    console.log(`[Smart Scheduler] Found ${existingJobs.length} jobs for proximity scoring`);
     
     // Extract customer zone (ZIP prefix for clustering)
     const customerZone = customerZip ? getZone(customerZip) : null;
     
-    // Score each availability slot based on proximity to existing jobs
-    const scoredSlots: ScoredSlot[] = availability
-      .filter(slot => slot.isAvailable)
-      .map((slot, index) => {
-        const slotStart = new Date(slot.start);
-        const slotEnd = new Date(slot.end);
-        
-        // Find jobs overlapping with this time window
-        const overlappingJobs = existingJobs.filter(job => {
-          const jobStart = new Date(job.appointmentStart);
-          const jobEnd = new Date(job.appointmentEnd);
-          return (
-            (jobStart >= slotStart && jobStart < slotEnd) ||
-            (jobEnd > slotStart && jobEnd <= slotEnd) ||
-            (jobStart <= slotStart && jobEnd >= slotEnd)
-          );
-        });
-        
-        // Count jobs in same zone
-        let nearbyJobs = 0;
-        if (customerZone) {
-          nearbyJobs = overlappingJobs.filter(job => {
-            const jobZone = job.locationZip ? getZone(job.locationZip) : null;
-            return jobZone === customerZone;
-          }).length;
-        }
-        
-        // Calculate proximity score (0-100)
-        // Higher score = more fuel efficient (more nearby jobs)
-        const proximityScore = calculateProximityScore(
-          customerZone,
-          overlappingJobs,
-          nearbyJobs
+    // Generate available time slots by finding gaps
+    const availableSlots = generateAvailableSlots(start, end, appointments);
+    console.log(`[Smart Scheduler] Generated ${availableSlots.length} available slots`);
+    
+    // Score each slot based on proximity to existing jobs
+    const scoredSlots: ScoredSlot[] = availableSlots.map((slot, index) => {
+      const slotStart = new Date(slot.start);
+      const slotEnd = new Date(slot.end);
+      
+      // Find jobs overlapping with this time window
+      const overlappingJobs = existingJobs.filter(job => {
+        const jobStart = new Date(job.appointmentStart);
+        const jobEnd = new Date(job.appointmentEnd);
+        return (
+          (jobStart >= slotStart && jobStart < slotEnd) ||
+          (jobEnd > slotStart && jobEnd <= slotEnd) ||
+          (jobStart <= slotStart && jobEnd >= slotEnd)
         );
-        
-        return {
-          id: `slot-${index}`,
-          start: slot.start,
-          end: slot.end,
-          date: slot.start.split('T')[0],
-          timeLabel: formatTimeWindow(slot.start, slot.end),
-          period: getTimePeriod(slot.start),
-          proximityScore,
-          nearbyJobs,
-          zone: customerZone || undefined,
-        };
       });
+      
+      // Count jobs in same zone
+      let nearbyJobs = 0;
+      if (customerZone) {
+        nearbyJobs = overlappingJobs.filter(job => {
+          const jobZone = job.locationZip ? getZone(job.locationZip) : null;
+          return jobZone === customerZone;
+        }).length;
+      }
+      
+      // Calculate proximity score (0-100)
+      const proximityScore = calculateProximityScore(
+        customerZone,
+        overlappingJobs,
+        nearbyJobs
+      );
+      
+      return {
+        id: `slot-${index}`,
+        start: slot.start,
+        end: slot.end,
+        date: slot.start.split('T')[0],
+        timeLabel: formatTimeWindow(slot.start, slot.end),
+        period: getTimePeriod(slot.start),
+        proximityScore,
+        nearbyJobs,
+        zone: customerZone || undefined,
+      };
+    });
     
     // Sort by proximity score (highest first = most fuel efficient)
     scoredSlots.sort((a, b) => b.proximityScore - a.proximityScore);
+    
+    console.log(`[Smart Scheduler] Top 3 slots: ${scoredSlots.slice(0, 3).map(s => `${s.timeLabel} (score: ${s.proximityScore})`).join(', ')}`);
     
     return NextResponse.json({
       success: true,
@@ -149,6 +152,84 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/**
+ * Fetch appointments from ServiceTitan for date range
+ */
+async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appointment[]> {
+  try {
+    const tenantId = serviceTitanAuth.getTenantId();
+    const queryParams = new URLSearchParams({
+      startsOnOrAfter: startDate.toISOString(),
+      startsOnOrBefore: endDate.toISOString(),
+      pageSize: '500',
+    });
+    
+    const response = await serviceTitanAuth.makeRequest<{ data: Appointment[] }>(
+      `jpm/v2/tenant/${tenantId}/appointments?${queryParams.toString()}`
+    );
+    
+    return response.data || [];
+  } catch (error) {
+    console.error('[Smart Scheduler] Error fetching appointments:', error);
+    return [];
+  }
+}
+
+/**
+ * Generate available time slots based on business hours and existing appointments
+ */
+function generateAvailableSlots(
+  startDate: Date,
+  endDate: Date,
+  bookedAppointments: Appointment[]
+): Array<{ start: string; end: string }> {
+  const slots: Array<{ start: string; end: string }> = [];
+  const currentDate = new Date(startDate);
+  
+  // Generate slots for each day in the range
+  while (currentDate <= endDate) {
+    // Skip weekends (0 = Sunday, 6 = Saturday)
+    const dayOfWeek = currentDate.getDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      currentDate.setDate(currentDate.getDate() + 1);
+      continue;
+    }
+    
+    // Generate time slots for this day
+    for (let hour = BUSINESS_START_HOUR; hour < BUSINESS_END_HOUR; hour += SLOT_DURATION_HOURS) {
+      const slotStart = new Date(currentDate);
+      slotStart.setHours(hour, 0, 0, 0);
+      
+      const slotEnd = new Date(slotStart);
+      slotEnd.setHours(hour + SLOT_DURATION_HOURS, 0, 0, 0);
+      
+      // Check if this slot conflicts with any booked appointments
+      const hasConflict = bookedAppointments.some(apt => {
+        const aptStart = new Date(apt.arrivalWindowStart || apt.start);
+        const aptEnd = new Date(apt.arrivalWindowEnd || apt.end);
+        
+        // Check for overlap
+        return (
+          (slotStart >= aptStart && slotStart < aptEnd) ||
+          (slotEnd > aptStart && slotEnd <= aptEnd) ||
+          (slotStart <= aptStart && slotEnd >= aptEnd)
+        );
+      });
+      
+      if (!hasConflict) {
+        slots.push({
+          start: slotStart.toISOString(),
+          end: slotEnd.toISOString(),
+        });
+      }
+    }
+    
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  
+  return slots;
 }
 
 /**

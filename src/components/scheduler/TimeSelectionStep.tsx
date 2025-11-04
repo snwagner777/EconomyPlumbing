@@ -29,20 +29,61 @@ interface TimeSlot {
 }
 
 export function TimeSelectionStep({ data, updateData, onNext, onBack }: TimeSelectionStepProps) {
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [allSlots, setAllSlots] = useState<TimeSlot[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<TimeSlot | null>(null);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const { toast } = useToast();
 
+  // Fetch availability on mount for next 7 days
   useEffect(() => {
-    if (selectedDate && data.service?.jobTypeId && data.location?.zipCode) {
-      fetchAvailability();
-    }
-  }, [selectedDate]);
+    fetchInitialAvailability();
+  }, []);
 
-  const fetchAvailability = async () => {
-    if (!selectedDate || !data.service?.jobTypeId) return;
+  // Fetch more availability when calendar date is selected
+  useEffect(() => {
+    if (showCalendar && selectedDate) {
+      fetchAvailabilityForDate(selectedDate);
+    }
+  }, [selectedDate, showCalendar]);
+
+  const fetchInitialAvailability = async () => {
+    if (!data.service?.jobTypeId) return;
+
+    setIsLoading(true);
+    try {
+      const startDate = new Date();
+      const endDate = new Date(startDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const response = await fetch('/api/scheduler/smart-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobTypeId: data.service.jobTypeId,
+          customerZip: data.location?.zipCode,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setAllSlots(result.slots || []);
+      }
+    } catch (error) {
+      toast({
+        title: 'Error Loading Times',
+        description: 'Unable to fetch available time slots. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAvailabilityForDate = async (date: Date) => {
+    if (!data.service?.jobTypeId) return;
 
     setIsLoading(true);
     try {
@@ -52,14 +93,22 @@ export function TimeSelectionStep({ data, updateData, onNext, onBack }: TimeSele
         body: JSON.stringify({
           jobTypeId: data.service.jobTypeId,
           customerZip: data.location?.zipCode,
-          startDate: selectedDate.toISOString(),
-          endDate: new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000).toISOString(),
+          startDate: date.toISOString(),
+          endDate: new Date(date.getTime() + 24 * 60 * 60 * 1000).toISOString(),
         }),
       });
 
       const result = await response.json();
       if (result.success) {
-        setTimeSlots(result.slots || []);
+        // Merge with existing slots, avoiding duplicates
+        const newSlots = result.slots || [];
+        const merged = [...allSlots];
+        newSlots.forEach((newSlot: TimeSlot) => {
+          if (!merged.find(s => s.id === newSlot.id)) {
+            merged.push(newSlot);
+          }
+        });
+        setAllSlots(merged);
       }
     } catch (error) {
       toast({
@@ -98,122 +147,139 @@ export function TimeSelectionStep({ data, updateData, onNext, onBack }: TimeSele
     onNext();
   };
 
-  const groupedSlots = {
-    morning: timeSlots.filter((s) => s.period === 'morning'),
-    afternoon: timeSlots.filter((s) => s.period === 'afternoon'),
-    evening: timeSlots.filter((s) => s.period === 'evening'),
-  };
+  // Get top 3 smart slots (highest proximity scores)
+  const topSmartSlots = allSlots.slice(0, 3);
+  
+  // Get slots for selected calendar date
+  const calendarSlots = selectedDate
+    ? allSlots.filter(slot => {
+        const slotDate = new Date(slot.start).toDateString();
+        return slotDate === selectedDate.toDateString();
+      })
+    : [];
 
   return (
     <div>
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold mb-2" data-testid="text-time-title">
+        <h2 className="text-2xl font-bold mb-2" data-testid="text-time-title">
           Choose Your Appointment Time
         </h2>
-        <p className="text-muted-foreground" data-testid="text-time-subtitle">
-          Select a date and time that works best for you
+        <p className="text-muted-foreground text-sm" data-testid="text-time-subtitle">
+          We've found the best times based on your location
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto">
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Calendar */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Select Date</CardTitle>
-              <CardDescription>Choose your preferred appointment date</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                disabled={(date) => date < new Date()}
-                className="rounded-md border"
-                data-testid="calendar-appointment"
-              />
-            </CardContent>
-          </Card>
+      <div className="max-w-2xl mx-auto space-y-6">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground">Finding available times...</p>
+          </div>
+        ) : topSmartSlots.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
+            <p>No available times found.</p>
+            <p className="text-sm">Please contact us to schedule.</p>
+          </div>
+        ) : (
+          <>
+            {/* Top 3 Smart Slots */}
+            <Card>
+              <CardHeader className="p-4">
+                <CardTitle className="text-lg">Recommended Times</CardTitle>
+                <CardDescription className="text-sm">
+                  These times work best with our existing schedule in your area
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-4 pt-0 space-y-2">
+                {topSmartSlots.map((slot, index) => (
+                  <SmartTimeSlotButton
+                    key={slot.id}
+                    slot={slot}
+                    isSelected={selectedSlot?.id === slot.id}
+                    onSelect={() => handleSelectSlot(slot)}
+                    rank={index + 1}
+                  />
+                ))}
+              </CardContent>
+            </Card>
 
-          {/* Time Slots */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Available Times</CardTitle>
-              <CardDescription>
-                {selectedDate ? format(selectedDate, 'EEEE, MMMM d, yyyy') : 'Select a date first'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : timeSlots.length === 0 ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                  <p>No available times for this date.</p>
-                  <p className="text-sm">Please select another date.</p>
-                </div>
-              ) : (
-                <div className="space-y-6 max-h-96 overflow-y-auto">
-                  {/* Morning */}
-                  {groupedSlots.morning.length > 0 && (
+            {/* Calendar Fallback */}
+            {!showCalendar ? (
+              <div className="text-center">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCalendar(true)}
+                  data-testid="button-show-calendar"
+                >
+                  <Clock className="w-4 h-4 mr-2" />
+                  Browse Other Dates
+                </Button>
+              </div>
+            ) : (
+              <Card>
+                <CardHeader className="p-4">
+                  <CardTitle className="text-lg">Browse All Available Times</CardTitle>
+                  <CardDescription className="text-sm">
+                    Select any date to see all available time slots
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {/* Calendar */}
                     <div>
-                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Morning</h4>
-                      <div className="space-y-2">
-                        {groupedSlots.morning.map((slot) => (
-                          <TimeSlotButton
-                            key={slot.id}
-                            slot={slot}
-                            isSelected={selectedSlot?.id === slot.id}
-                            onSelect={() => handleSelectSlot(slot)}
-                          />
-                        ))}
-                      </div>
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        disabled={(date) => date < new Date()}
+                        className="rounded-md border"
+                        data-testid="calendar-appointment"
+                      />
                     </div>
-                  )}
 
-                  {/* Afternoon */}
-                  {groupedSlots.afternoon.length > 0 && (
+                    {/* Time Slots for Selected Date */}
                     <div>
-                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Afternoon</h4>
-                      <div className="space-y-2">
-                        {groupedSlots.afternoon.map((slot) => (
-                          <TimeSlotButton
-                            key={slot.id}
-                            slot={slot}
-                            isSelected={selectedSlot?.id === slot.id}
-                            onSelect={() => handleSelectSlot(slot)}
-                          />
-                        ))}
-                      </div>
+                      {selectedDate ? (
+                        <>
+                          <h4 className="font-semibold mb-3 text-sm">
+                            {format(selectedDate, 'EEEE, MMMM d')}
+                          </h4>
+                          {calendarSlots.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                              No times available for this date.
+                            </p>
+                          ) : (
+                            <div className="space-y-2 max-h-64 overflow-y-auto">
+                              {calendarSlots.map((slot) => (
+                                <Button
+                                  key={slot.id}
+                                  variant={selectedSlot?.id === slot.id ? 'default' : 'outline'}
+                                  onClick={() => handleSelectSlot(slot)}
+                                  className="w-full justify-start text-sm h-auto py-2"
+                                  data-testid={`button-time-slot-${slot.id}`}
+                                >
+                                  {slot.timeLabel}
+                                </Button>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">
+                          Select a date to see available times
+                        </p>
+                      )}
                     </div>
-                  )}
-
-                  {/* Evening */}
-                  {groupedSlots.evening.length > 0 && (
-                    <div>
-                      <h4 className="text-sm font-semibold mb-3 text-muted-foreground">Evening</h4>
-                      <div className="space-y-2">
-                        {groupedSlots.evening.map((slot) => (
-                          <TimeSlotButton
-                            key={slot.id}
-                            slot={slot}
-                            isSelected={selectedSlot?.id === slot.id}
-                            onSelect={() => handleSelectSlot(slot)}
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )}
 
         {/* Action Buttons */}
-        <div className="flex gap-3 mt-6">
+        <div className="flex gap-3">
           <Button
             variant="outline"
             onClick={onBack}
@@ -226,7 +292,6 @@ export function TimeSelectionStep({ data, updateData, onNext, onBack }: TimeSele
             onClick={handleContinue}
             disabled={!selectedSlot}
             className="flex-1"
-            size="lg"
             data-testid="button-continue-time"
           >
             Continue to Review
@@ -237,31 +302,46 @@ export function TimeSelectionStep({ data, updateData, onNext, onBack }: TimeSele
   );
 }
 
-function TimeSlotButton({
+function SmartTimeSlotButton({
   slot,
   isSelected,
   onSelect,
+  rank,
 }: {
   slot: TimeSlot;
   isSelected: boolean;
   onSelect: () => void;
+  rank: number;
 }) {
-  const isOptimized = (slot.proximityScore || 0) > 70;
+  const slotDate = new Date(slot.start);
+  const dateLabel = format(slotDate, 'EEEE, MMM d');
+  const isTopChoice = rank === 1 && (slot.proximityScore || 0) > 70;
 
   return (
     <Button
       variant={isSelected ? 'default' : 'outline'}
       onClick={onSelect}
-      className="w-full justify-between h-auto py-3"
-      data-testid={`button-time-slot-${slot.id}`}
+      className="w-full justify-between h-auto py-3 px-4"
+      data-testid={`button-smart-slot-${rank}`}
     >
-      <span className="font-medium">{slot.timeLabel}</span>
-      {isOptimized && (
-        <Badge variant="secondary" className="ml-2">
-          <TrendingDown className="w-3 h-3 mr-1" />
-          Optimized
-        </Badge>
+      <div className="flex flex-col items-start gap-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{slot.timeLabel}</span>
+          {isTopChoice && (
+            <Badge variant="secondary" className="text-xs">
+              <TrendingDown className="w-3 h-3 mr-1" />
+              Best Match
+            </Badge>
+          )}
+        </div>
+        <span className="text-xs text-muted-foreground">{dateLabel}</span>
+      </div>
+      {slot.nearbyJobs && slot.nearbyJobs > 0 && (
+        <span className="text-xs text-muted-foreground">
+          {slot.nearbyJobs} nearby {slot.nearbyJobs === 1 ? 'job' : 'jobs'}
+        </span>
       )}
     </Button>
   );
 }
+
