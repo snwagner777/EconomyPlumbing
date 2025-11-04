@@ -28,7 +28,7 @@ export const SERVICE_CATEGORIES = [
     description: 'Installation, repair, and maintenance',
     icon: Flame,
     color: 'text-orange-500',
-    jobTypeId: 1, // Replace with actual ServiceTitan job type ID
+    jobTypeId: 1,
   },
   {
     id: 'drain-cleaning',
@@ -53,14 +53,6 @@ export const SERVICE_CATEGORIES = [
     icon: CheckCircle,
     color: 'text-green-500',
     jobTypeId: 4,
-  },
-  {
-    id: 'emergency',
-    name: 'Emergency Service',
-    description: 'Urgent plumbing issues 24/7',
-    icon: AlertTriangle,
-    color: 'text-red-500',
-    jobTypeId: 5,
   },
   {
     id: 'gas-services',
@@ -125,14 +117,14 @@ export function ServiceCategoryStep({ data, updateData, onNext }: ServiceCategor
               onClick={() => handleServiceSelect(service)}
               data-testid={`card-service-${service.id}`}
             >
-              <CardHeader>
-                <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-lg bg-muted ${service.color}`}>
-                    <Icon className="w-6 h-6" />
+              <CardHeader className="p-4">
+                <div className="flex items-start gap-3">
+                  <div className={`p-2 rounded-lg bg-muted ${service.color}`}>
+                    <Icon className="w-4 h-4" />
                   </div>
                   <div className="flex-1">
-                    <CardTitle className="text-lg mb-1">{service.name}</CardTitle>
-                    <CardDescription>{service.description}</CardDescription>
+                    <CardTitle className="text-base mb-0.5">{service.name}</CardTitle>
+                    <CardDescription className="text-sm">{service.description}</CardDescription>
                   </div>
                 </div>
               </CardHeader>
