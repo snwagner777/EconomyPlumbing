@@ -431,8 +431,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">What's the best phone number to reach you?</label>
-            <div className="flex gap-2 max-w-md">
+            <label className="text-sm font-medium text-center block">What's the best phone number to reach you?</label>
+            <div className="flex gap-2 max-w-md mx-auto">
               <Input
                 type="tel"
                 placeholder="(512) 555-0123"

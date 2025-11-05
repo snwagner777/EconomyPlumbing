@@ -90,39 +90,53 @@ export async function POST(req: NextRequest) {
       const businessUnitId = jobType.defaultBusinessUnitId || businessUnits[0].id;
       console.log(`[Scheduler] Using business unit ID: ${businessUnitId}`);
 
-      // Step 4: Ensure customer exists in ServiceTitan
-      console.log(`[Scheduler] Creating/finding customer for ${validated.customerName}`);
-      const customer = await serviceTitanCRM.ensureCustomer({
-        name: validated.customerName,
-        phone: validated.customerPhone,
-        email: validated.customerEmail || undefined,
-        address: {
-          street: validated.address,
-          city: validated.city || 'Austin',
-          state: validated.state || 'TX',
-          zip: validated.zipCode || '78701',
-        },
-      });
+      // Step 4 & 5: Get customer and location IDs
+      // If we already have them from the lookup, skip creation
+      let customerId: number;
+      let locationId: number;
+      
+      if (body.serviceTitanId && body.locationId) {
+        // Use existing customer and location from lookup
+        customerId = body.serviceTitanId;
+        locationId = body.locationId;
+        console.log(`[Scheduler] Using existing customer ${customerId} and location ${locationId}`);
+      } else {
+        // Ensure customer exists in ServiceTitan
+        console.log(`[Scheduler] Creating/finding customer for ${validated.customerName}`);
+        const customer = await serviceTitanCRM.ensureCustomer({
+          name: validated.customerName,
+          phone: validated.customerPhone,
+          email: validated.customerEmail || undefined,
+          address: {
+            street: validated.address,
+            city: validated.city || 'Austin',
+            state: validated.state || 'TX',
+            zip: validated.zipCode || '78701',
+          },
+        });
+        customerId = customer.id;
 
-      // Step 5: Ensure location exists for customer
-      console.log(`[Scheduler] Creating/finding location for customer ${customer.id}`);
-      const location = await serviceTitanCRM.ensureLocation(customer.id, {
-        customerId: customer.id,
-        address: {
-          street: validated.address,
-          city: validated.city || 'Austin',
-          state: validated.state || 'TX',
-          zip: validated.zipCode || '78701',
-        },
-        phone: validated.customerPhone,
-        email: validated.customerEmail || undefined,
-      });
+        // Ensure location exists for customer
+        console.log(`[Scheduler] Creating/finding location for customer ${customerId}`);
+        const location = await serviceTitanCRM.ensureLocation(customerId, {
+          customerId,
+          address: {
+            street: validated.address,
+            city: validated.city || 'Austin',
+            state: validated.state || 'TX',
+            zip: validated.zipCode || '78701',
+          },
+          phone: validated.customerPhone,
+          email: validated.customerEmail || undefined,
+        });
+        locationId = location.id;
+      }
 
       // Step 5b: Add gate code as pinned note if provided
       if (body.gateCode && body.gateCode.trim()) {
-        console.log(`[Scheduler] Adding gate code as pinned note to location ${location.id}`);
+        console.log(`[Scheduler] Adding gate code as pinned note to location ${locationId}`);
         await serviceTitanCRM.createLocationNote(
-          location.id,
+          locationId,
           `Gate Code: ${body.gateCode.trim()}`,
           true
         );
@@ -160,8 +174,8 @@ export async function POST(req: NextRequest) {
       }
       
       const job = await serviceTitanJobs.createJob({
-        customerId: customer.id,
-        locationId: location.id,
+        customerId,
+        locationId,
         businessUnitId,
         jobTypeId: jobType.id,
         summary: `${validated.requestedService} - Booked via website`,
@@ -178,8 +192,8 @@ export async function POST(req: NextRequest) {
       // Update scheduler request with ServiceTitan IDs
       await db.update(schedulerRequests)
         .set({
-          serviceTitanCustomerId: customer.id,
-          serviceTitanLocationId: location.id,
+          serviceTitanCustomerId: customerId,
+          serviceTitanLocationId: locationId,
           serviceTitanJobId: job.id,
           serviceTitanAppointmentId: job.firstAppointmentId,
           status: 'confirmed',

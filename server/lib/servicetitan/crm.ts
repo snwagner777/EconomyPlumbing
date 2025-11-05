@@ -144,7 +144,7 @@ export class ServiceTitanCRM {
           },
           ...(data.email ? [{
             type: 'Email',
-            value: data.email,
+            value: data.email.split(',')[0].trim(), // Only use first email if multiple
           }] : []),
         ],
         locations: [
@@ -270,7 +270,7 @@ export class ServiceTitanCRM {
           },
           ...(data.email ? [{
             type: 'Email',
-            value: data.email,
+            value: data.email.split(',')[0].trim(), // Only use first email if multiple
           }] : []),
         ],
       };
