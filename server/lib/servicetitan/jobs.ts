@@ -20,7 +20,8 @@ interface CreateJobData {
   appointmentEnd?: string; // ISO timestamp for actual scheduled slot
   specialInstructions?: string;
   bookingProviderId?: number;
-  campaignId?: number;
+  campaignId: number; // REQUIRED per API docs
+  technicianId?: number; // Optional technician assignment
 }
 
 interface ServiceTitanJob {
@@ -286,23 +287,36 @@ export class ServiceTitanJobs {
       const appointmentStart = data.appointmentStart || arrivalWindow.start;
       const appointmentEnd = data.appointmentEnd || arrivalWindow.end;
 
+      // Build appointment object
+      const appointmentData: any = {
+        start: appointmentStart, // Actual scheduled slot
+        end: appointmentEnd, // Actual scheduled slot end
+        arrivalWindowStart: arrivalWindow.start, // Customer promise
+        arrivalWindowEnd: arrivalWindow.end, // Customer promise
+      };
+      
+      // Add special instructions if provided
+      if (data.specialInstructions) {
+        appointmentData.specialInstructions = data.specialInstructions;
+      }
+      
+      // Add technician assignment if provided
+      if (data.technicianId) {
+        appointmentData.assignedTechnicianIds = [data.technicianId];
+      }
+
+      // Build complete job payload with correct structure
       const payload = {
         customerId: data.customerId,
         locationId: data.locationId,
         businessUnitId: data.businessUnitId,
         jobTypeId: data.jobTypeId,
-        priority: 'Normal',
-        summary: data.summary,
+        priority: 'Normal', // REQUIRED at top level
+        summary: data.summary, // REQUIRED at top level
+        campaignId: data.campaignId, // REQUIRED field
         ...(data.bookingProviderId && { bookingProviderId: data.bookingProviderId }),
-        ...(data.campaignId && { campaignId: data.campaignId }),
-        // First appointment is created automatically with job
-        appointment: {
-          start: appointmentStart, // Actual scheduled slot
-          end: appointmentEnd, // Actual scheduled slot end
-          arrivalWindowStart: arrivalWindow.start, // Customer promise
-          arrivalWindowEnd: arrivalWindow.end, // Customer promise
-          ...(data.specialInstructions && { specialInstructions: data.specialInstructions }),
-        },
+        // REQUIRED: appointments array (not singular appointment)
+        appointments: [appointmentData],
       };
 
       const response = await serviceTitanAuth.makeRequest<ServiceTitanJob>(

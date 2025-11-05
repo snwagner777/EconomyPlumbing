@@ -57,6 +57,7 @@ export class ServiceTitanSettings {
   private jobTypesCache: { data: JobType[]; timestamp: number } | null = null;
   private businessUnitsCache: { data: BusinessUnit[]; timestamp: number } | null = null;
   private campaignsCache: { data: Campaign[]; timestamp: number } | null = null;
+  private techniciansCache: { data: any[]; timestamp: number } | null = null;
   private readonly CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
   constructor() {
@@ -188,6 +189,33 @@ export class ServiceTitanSettings {
     }
 
     return match || null;
+  }
+
+  /**
+   * Get all active technicians/employees (cached)
+   */
+  async getTechnicians(): Promise<any[]> {
+    // Check cache
+    if (this.techniciansCache && Date.now() - this.techniciansCache.timestamp < this.CACHE_TTL) {
+      return this.techniciansCache.data;
+    }
+
+    try {
+      const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+        `settings/v2/tenant/${this.tenantId}/employees?active=true&pageSize=200`
+      );
+
+      this.techniciansCache = {
+        data: response.data || [],
+        timestamp: Date.now(),
+      };
+
+      console.log(`[ServiceTitan Settings] Cached ${this.techniciansCache.data.length} technicians`);
+      return this.techniciansCache.data;
+    } catch (error) {
+      console.error('[ServiceTitan Settings] Error fetching technicians:', error);
+      return this.techniciansCache?.data || [];
+    }
   }
 
   /**

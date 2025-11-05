@@ -40,11 +40,11 @@ export async function POST(req: NextRequest) {
     const [schedulerRequest] = await db.insert(schedulerRequests).values(validated).returning();
 
     try {
-      // Step 1: Resolve campaign from tracking number mapping or fallback to "website"
+      // Step 1: Resolve campaign from tracking number mapping or fallback to "website" (REQUIRED)
       console.log(`[Scheduler] Looking up campaign for utm_source: ${utmSource}`);
       
       // First, check if we have a tracking number with ServiceTitan campaign mapping
-      let campaignId: number | undefined;
+      let campaignId: number;
       const [trackingNumber] = await db.select()
         .from(trackingNumbers)
         .where(eq(trackingNumbers.channelKey, utmSource))
@@ -66,7 +66,8 @@ export async function POST(req: NextRequest) {
           campaignId = websiteCampaign.id;
           console.log(`[Scheduler] Using default website campaign (ID: ${campaignId})`);
         } else {
-          console.log(`[Scheduler] No default campaign found, proceeding without campaign tracking`);
+          // REQUIRED: campaignId is mandatory, throw error if not found
+          throw new Error('No ServiceTitan campaign found. Please create a "Website" campaign in ServiceTitan Marketing > Campaigns.');
         }
       }
 
@@ -142,8 +143,31 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Step 6: Create job with real IDs and campaign
-      console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}${campaignId ? `, Campaign: ${campaignId}` : ''})`);
+      // Step 6: Get available technician for assignment (optional)
+      console.log(`[Scheduler] Getting available technicians for assignment`);
+      let technicianId: number | undefined;
+      
+      try {
+        const technicians = await serviceTitanSettings.getTechnicians();
+        // Filter for actual technicians (not all employees)
+        const activeTechs = technicians.filter(t => 
+          t.active && 
+          (t.role?.toLowerCase().includes('technician') || t.isTechnician)
+        );
+        
+        if (activeTechs.length > 0) {
+          const availableTech = activeTechs[0];
+          technicianId = availableTech.id;
+          console.log(`[Scheduler] Will assign technician: ${availableTech.name} (ID: ${availableTech.id})`);
+        } else {
+          console.log(`[Scheduler] No technicians available - job will be created unassigned`);
+        }
+      } catch (error) {
+        console.log(`[Scheduler] Could not fetch technicians - job will be created unassigned`);
+      }
+
+      // Step 7: Create job with real IDs and campaign (REQUIRED)
+      console.log(`[Scheduler] Creating job for ${validated.requestedService} (JobType: ${jobType.id}, BU: ${businessUnitId}, Campaign: ${campaignId})`);
       
       // Extract arrival window (customer promise) and appointment slot (actual schedule)
       const arrivalWindowStart = body.arrivalWindowStart || undefined;
@@ -186,7 +210,8 @@ export async function POST(req: NextRequest) {
         appointmentStart, // Actual scheduled slot within arrival window
         appointmentEnd, // Actual scheduled slot end
         specialInstructions: validated.specialInstructions || undefined,
-        campaignId: campaignId || undefined,
+        campaignId, // REQUIRED field
+        technicianId, // Assign technician if available
       });
 
       // Update scheduler request with ServiceTitan IDs
