@@ -128,7 +128,13 @@ export default function Header({
               <button
                 onMouseEnter={() => setContactOpen(true)}
                 onMouseLeave={() => setContactOpen(false)}
+                onClick={() => setContactOpen(!contactOpen)}
+                onFocus={() => setContactOpen(true)}
+                onBlur={() => setContactOpen(false)}
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+                aria-expanded={contactOpen}
+                aria-haspopup="true"
+                aria-label="Contact menu"
                 data-testid="button-contact-menu"
               >
                 Contact
@@ -172,7 +178,13 @@ export default function Header({
               <button
                 onMouseEnter={() => setAboutOpen(true)}
                 onMouseLeave={() => setAboutOpen(false)}
+                onClick={() => setAboutOpen(!aboutOpen)}
+                onFocus={() => setAboutOpen(true)}
+                onBlur={() => setAboutOpen(false)}
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+                aria-expanded={aboutOpen}
+                aria-haspopup="true"
+                aria-label="About us menu"
                 data-testid="button-about-menu"
               >
                 About Us
@@ -244,7 +256,13 @@ export default function Header({
               <button
                 onMouseEnter={() => setServicesOpen(true)}
                 onMouseLeave={() => setServicesOpen(false)}
+                onClick={() => setServicesOpen(!servicesOpen)}
+                onFocus={() => setServicesOpen(true)}
+                onBlur={() => setServicesOpen(false)}
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+                aria-label="Services menu"
                 data-testid="button-services-menu"
               >
                 Services
@@ -280,7 +298,13 @@ export default function Header({
               <button
                 onMouseEnter={() => setStoreOpen(true)}
                 onMouseLeave={() => setStoreOpen(false)}
+                onClick={() => setStoreOpen(!storeOpen)}
+                onFocus={() => setStoreOpen(true)}
+                onBlur={() => setStoreOpen(false)}
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
+                aria-expanded={storeOpen}
+                aria-haspopup="true"
+                aria-label="Customer portal menu"
                 data-testid="button-store-menu"
               >
                 Portal
@@ -419,6 +443,8 @@ export default function Header({
               <button
                 onClick={() => setMobileContactOpen(!mobileContactOpen)}
                 className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                aria-expanded={mobileContactOpen}
+                aria-label="Contact menu"
                 data-testid="mobile-button-contact"
               >
                 Contact Us
@@ -443,6 +469,8 @@ export default function Header({
               <button
                 onClick={() => setMobileAboutOpen(!mobileAboutOpen)}
                 className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                aria-expanded={mobileAboutOpen}
+                aria-label="About menu"
                 data-testid="mobile-button-about"
               >
                 About Us
@@ -485,6 +513,8 @@ export default function Header({
               <button
                 onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
                 className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                aria-expanded={mobileServicesOpen}
+                aria-label="Services menu"
                 data-testid="mobile-button-services"
               >
                 Services
@@ -511,6 +541,8 @@ export default function Header({
               <button
                 onClick={() => setMobileStoreOpen(!mobileStoreOpen)}
                 className="flex items-center justify-between w-full py-3 text-sm font-medium"
+                aria-expanded={mobileStoreOpen}
+                aria-label="Customer portal menu"
                 data-testid="mobile-button-store"
               >
                 Customer Portal
