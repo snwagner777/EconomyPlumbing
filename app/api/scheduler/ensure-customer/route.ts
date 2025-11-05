@@ -17,7 +17,7 @@ function normalizeContact(value: string, type: 'phone' | 'email'): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, address } = body;
+    const { name, phone, email, address, customerType } = body;
 
     if (!name || !phone || !address) {
       return NextResponse.json(
@@ -33,15 +33,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[Scheduler] Ensuring customer exists: ${name} (${phone})`);
+    console.log(`[Scheduler] Ensuring customer exists: ${name} (${phone}) - Type: ${customerType || 'Residential'}`);
 
     // Step 1: Create/get customer in ServiceTitan
     const customer = await serviceTitanCRM.ensureCustomer({
       name,
       phone,
       email,
+      customerType: customerType || 'Residential',
       address: {
         street: address.street,
+        unit: address.unit || undefined,
         city: address.city,
         state: address.state,
         zip: address.zip,

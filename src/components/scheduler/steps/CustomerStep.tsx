@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info } from 'lucide-react';
 
@@ -23,7 +24,9 @@ const customerSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Valid email is required'),
   phone: z.string().min(10, 'Valid phone number is required'),
+  customerType: z.enum(['Residential', 'Commercial']),
   address: z.string().min(1, 'Street address is required'),
+  unit: z.string().optional(),
   city: z.string().min(1, 'City is required'),
   state: z.string().min(2, 'State is required').max(2),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
@@ -106,7 +109,9 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       lastName: initialData?.lastName || '',
       email: initialData?.email || '',
       phone: initialData?.phone || '',
+      customerType: 'Residential',
       address: initialData?.address || '',
+      unit: initialData?.unit || '',
       city: initialData?.city || 'Austin',
       state: initialData?.state || 'TX',
       zip: initialData?.zip || '',
@@ -270,8 +275,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         name: `${customerData.firstName} ${customerData.lastName}`,
         phone: customerData.phone,
         email: customerData.email,
+        customerType: customerData.customerType,
         address: {
           street: customerData.address,
+          unit: customerData.unit || undefined,
           city: customerData.city,
           state: customerData.state,
           zip: customerData.zip,
@@ -797,6 +804,29 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           />
         </div>
 
+        {/* Customer Type */}
+        <FormField
+          control={form.control}
+          name="customerType"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Customer Type</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger data-testid="select-customer-type">
+                    <SelectValue placeholder="Select customer type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Residential">Residential</SelectItem>
+                  <SelectItem value="Commercial">Commercial</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Contact */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
@@ -828,19 +858,38 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         </div>
 
         {/* Address */}
-        <FormField
-          control={form.control}
-          name="address"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Service Address</FormLabel>
-              <FormControl>
-                <Input placeholder="123 Main St" {...field} data-testid="input-address" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <div className="grid grid-cols-3 gap-4">
+          <div className="col-span-2">
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Service Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="123 Main St" {...field} data-testid="input-address" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="col-span-1">
+            <FormField
+              control={form.control}
+              name="unit"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Unit # (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Apt 5B" {...field} data-testid="input-unit" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
         <div className="grid grid-cols-6 gap-4">
           <div className="col-span-3">

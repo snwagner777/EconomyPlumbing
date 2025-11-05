@@ -45,8 +45,10 @@ interface CreateCustomerData {
   name: string;
   phone: string;
   email?: string;
+  customerType?: 'Residential' | 'Commercial';
   address: {
     street: string;
+    unit?: string;
     city: string;
     state: string;
     zip: string;
@@ -114,9 +116,10 @@ export class ServiceTitanCRM {
     try {
       const payload = {
         name: data.name,
-        type: 'Residential', // Default to residential
+        type: data.customerType || 'Residential',
         address: {
           street: data.address.street,
+          unit: data.address.unit || undefined,
           city: data.address.city,
           state: data.address.state,
           zip: data.address.zip,
