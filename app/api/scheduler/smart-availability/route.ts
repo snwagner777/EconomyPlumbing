@@ -294,16 +294,61 @@ async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appoin
 }
 
 /**
- * Get arrival windows from ServiceTitan Settings API
- * Returns actual configured arrival windows (e.g., 10-2, 12-4, 3-7, 4-8, etc.)
+ * Get arrival windows by extracting REAL windows from existing appointments
+ * This gives us the actual configured windows (e.g., 2-6 PM, 8-12 AM, etc.)
  */
 async function getArrivalWindows(): Promise<Array<{ start: string; end: string; durationHours: number }>> {
-  const windows = await serviceTitanSettings.getArrivalWindows();
-  return windows.map(w => ({
-    start: w.start,
-    end: w.end,
-    durationHours: w.durationHours,
-  }));
+  try {
+    // Fetch last 30 days of appointments to find all arrival window patterns
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 30);
+    
+    const appointments = await serviceTitanJobs.getJobsForDateRange(startDate, endDate);
+    
+    // Extract unique arrival windows from actual appointments
+    const windowsMap = new Map<string, { start: string; end: string; durationHours: number }>();
+    
+    for (const job of appointments) {
+      if (job.appointmentStart && job.appointmentEnd) {
+        const startTime = new Date(job.appointmentStart);
+        const endTime = new Date(job.appointmentEnd);
+        
+        // Format as HH:mm (24-hour format)
+        const start = `${startTime.getUTCHours().toString().padStart(2, '0')}:${startTime.getUTCMinutes().toString().padStart(2, '0')}`;
+        const end = `${endTime.getUTCHours().toString().padStart(2, '0')}:${endTime.getUTCMinutes().toString().padStart(2, '0')}`;
+        
+        const key = `${start}-${end}`;
+        if (!windowsMap.has(key)) {
+          const durationMs = endTime.getTime() - startTime.getTime();
+          const durationHours = durationMs / (1000 * 60 * 60);
+          
+          windowsMap.set(key, { start, end, durationHours });
+        }
+      }
+    }
+    
+    const windows = Array.from(windowsMap.values());
+    console.log(`[Smart Scheduler] Extracted ${windows.length} unique arrival windows from appointments:`, 
+      windows.map(w => `${w.start}-${w.end}`));
+    
+    // If no windows found, use fallback
+    if (windows.length === 0) {
+      console.log('[Smart Scheduler] No windows found, using fallback');
+      return [
+        { start: '08:00', end: '12:00', durationHours: 4 },
+        { start: '13:00', end: '17:00', durationHours: 4 },
+      ];
+    }
+    
+    return windows;
+  } catch (error) {
+    console.error('[Smart Scheduler] Error extracting arrival windows:', error);
+    return [
+      { start: '08:00', end: '12:00', durationHours: 4 },
+      { start: '13:00', end: '17:00', durationHours: 4 },
+    ];
+  }
 }
 
 /**

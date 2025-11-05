@@ -91,47 +91,45 @@ export class ServiceTitanJobs {
         console.log(`[ServiceTitan Jobs] Sample appointment:`, JSON.stringify(appointments[0], null, 2));
       }
       
-      // Now fetch job details for each appointment to get location data
-      const jobsMap = new Map<number, any>();
+      // Fetch location data directly from appointments (they have locationId)
+      const jobsWithLocation: JobWithLocation[] = [];
+      const locationCache = new Map<number, any>();
       
       for (const apt of appointments) {
-        if (!apt.jobId || jobsMap.has(apt.jobId)) continue;
-        
         try {
-          const job = await serviceTitanAuth.makeRequest<any>(
-            `jpm/v2/tenant/${this.tenantId}/jobs/${apt.jobId}?includeLocation=true`
-          );
-          jobsMap.set(apt.jobId, job);
-        } catch (error) {
-          console.error(`[ServiceTitan Jobs] Error fetching job ${apt.jobId}:`, error);
-        }
-      }
-      
-      console.log(`[ServiceTitan Jobs] Fetched ${jobsMap.size} unique jobs`);
-      if (jobsMap.size > 0) {
-        const firstJob = Array.from(jobsMap.values())[0];
-        console.log(`[ServiceTitan Jobs] Sample job with location:`, JSON.stringify({
-          id: firstJob.id,
-          locationZip: firstJob.location?.zip,
-          locationAddress: firstJob.location?.address,
-        }, null, 2));
-      }
-      
-      // Extract job + location data
-      const jobsWithLocation: JobWithLocation[] = appointments
-        .filter(apt => jobsMap.has(apt.jobId))
-        .map(apt => {
-          const job = jobsMap.get(apt.jobId);
-          return {
-            id: job.id,
-            jobNumber: job.jobNumber,
+          // Get location data if not cached
+          let location = null;
+          if (apt.locationId && !locationCache.has(apt.locationId)) {
+            try {
+              location = await serviceTitanAuth.makeRequest<any>(
+                `crm/v2/tenant/${this.tenantId}/locations/${apt.locationId}`
+              );
+              locationCache.set(apt.locationId, location);
+              console.log(`[ServiceTitan Jobs] Fetched location ${apt.locationId}:`, {
+                zip: location.address?.zip,
+                street: location.address?.street,
+                city: location.address?.city,
+              });
+            } catch (error) {
+              console.error(`[ServiceTitan Jobs] Error fetching location ${apt.locationId}:`, error);
+            }
+          } else if (apt.locationId) {
+            location = locationCache.get(apt.locationId);
+          }
+          
+          jobsWithLocation.push({
+            id: apt.jobId,
+            jobNumber: apt.appointmentNumber,
             appointmentStart: apt.arrivalWindowStart || apt.start,
             appointmentEnd: apt.arrivalWindowEnd || apt.end,
-            locationZip: job.location?.zip,
-            locationAddress: job.location?.street,
-            locationCity: job.location?.city,
-          };
-        });
+            locationZip: location?.address?.zip,
+            locationAddress: location?.address?.street,
+            locationCity: location?.address?.city,
+          });
+        } catch (error) {
+          console.error(`[ServiceTitan Jobs] Error processing appointment ${apt.id}:`, error);
+        }
+      }
 
       console.log(`[ServiceTitan Jobs] Returning ${jobsWithLocation.length} jobs with location data`);
       if (jobsWithLocation.length > 0) {
