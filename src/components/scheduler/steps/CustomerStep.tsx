@@ -27,6 +27,7 @@ const customerSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(2, 'State is required').max(2),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
+  locationName: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -248,7 +249,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     const formData = form.getValues();
     if (customerFound && customerFound.serviceTitanId) {
       createLocationMutation.mutate({
-        customerId: customerFound.serviceTitanId, // Match API endpoint parameter name
+        customerId: customerFound.serviceTitanId,
+        name: formData.locationName || undefined,
         address: {
           street: formData.address,
           city: formData.city,
@@ -556,6 +558,23 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               Adding location for: {customerFound.name}
             </p>
           </Card>
+
+          <FormField
+            control={form.control}
+            name="locationName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Location Name (Optional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Home, Office, Vacation Home" {...field} data-testid="input-location-name" />
+                </FormControl>
+                <p className="text-xs text-muted-foreground mt-1">
+                  If not provided, we'll use the street address
+                </p>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}

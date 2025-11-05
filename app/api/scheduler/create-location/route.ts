@@ -4,7 +4,7 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { customerId, address, phone, email, gateCode } = body;
+    const { customerId, address, phone, email, gateCode, name } = body;
 
     if (!customerId || !address || !phone) {
       return NextResponse.json(
@@ -24,6 +24,7 @@ export async function POST(req: NextRequest) {
 
     const location = await serviceTitanCRM.createLocation({
       customerId: parseInt(customerId, 10),
+      name: name || undefined,
       address: {
         street: address.street,
         city: address.city,

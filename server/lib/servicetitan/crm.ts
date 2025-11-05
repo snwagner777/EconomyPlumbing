@@ -55,6 +55,7 @@ interface CreateCustomerData {
 
 interface CreateLocationData {
   customerId: number;
+  name?: string;
   address: {
     street: string;
     city: string;
@@ -220,8 +221,13 @@ export class ServiceTitanCRM {
    */
   async createLocation(data: CreateLocationData): Promise<ServiceTitanLocation> {
     try {
+      // Generate location name from address if not provided
+      const locationName = data.name || `${data.address.street}, ${data.address.city}`;
+      
       const payload = {
         customerId: data.customerId,
+        name: locationName,
+        body: `Service location: ${locationName}`,
         address: {
           street: data.address.street,
           city: data.address.city,
