@@ -193,6 +193,7 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
               <CustomerStep
                 onSubmit={handleCustomerSubmit}
                 initialData={state.customer || undefined}
+                selectedService={state.jobType || undefined}
               />
             </div>
           )}

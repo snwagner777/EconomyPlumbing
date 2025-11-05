@@ -16,7 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info } from 'lucide-react';
 
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -35,6 +35,11 @@ type CustomerFormData = z.infer<typeof customerSchema>;
 interface CustomerStepProps {
   onSubmit: (data: CustomerFormData & { locationId?: number; serviceTitanId?: number; customerTags?: string[] }) => void;
   initialData?: Partial<CustomerFormData>;
+  selectedService?: {
+    id: number;
+    name: string;
+    code: string;
+  };
 }
 
 interface STLocation {
@@ -49,7 +54,7 @@ interface STLocation {
   };
 }
 
-export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
+export function CustomerStep({ onSubmit, initialData, selectedService }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
   const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
@@ -57,6 +62,19 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   const [selectedLocation, setSelectedLocation] = useState<STLocation | null>(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [showForm, setShowForm] = useState(false);
+
+  // Check if service qualifies for free estimate message
+  const showFreeEstimateBanner = selectedService && (() => {
+    const serviceName = selectedService.name.toLowerCase();
+    return (
+      serviceName.includes('repair') ||
+      serviceName.includes('gas') ||
+      serviceName.includes('water heater') ||
+      serviceName.includes('food truck') ||
+      serviceName.includes('propane') ||
+      serviceName.includes('natural gas')
+    );
+  })();
 
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
@@ -207,6 +225,22 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   if (customersFound.length > 1 && !customerFound) {
     return (
       <div className="space-y-6">
+        {showFreeEstimateBanner && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                  Free Estimate Included
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         <div className="space-y-2">
           <h3 className="font-semibold text-lg">Is this you?</h3>
           <p className="text-sm text-muted-foreground">
@@ -258,6 +292,22 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   if (!showForm && !customerFound && customersFound.length <= 1) {
     return (
       <div className="space-y-6">
+        {showFreeEstimateBanner && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                  Free Estimate Included
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">What's the best phone number to reach you?</label>
@@ -307,6 +357,22 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   if (customerFound && locations.length > 0 && !selectedLocation && !showAddLocation) {
     return (
       <div className="space-y-6">
+        {showFreeEstimateBanner && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                  Free Estimate Included
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
           <div className="flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
@@ -389,6 +455,22 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     return (
       <Form {...form}>
         <form onSubmit={form.handleSubmit(() => handleAddNewLocation())} className="space-y-6">
+          {showFreeEstimateBanner && (
+            <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                    Free Estimate Included
+                  </h3>
+                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                    This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+          
           <Card className="p-4 bg-primary/5">
             <h3 className="font-semibold text-sm mb-2">Add New Service Location</h3>
             <p className="text-xs text-muted-foreground">
@@ -496,6 +578,22 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {showFreeEstimateBanner && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                  Free Estimate Included
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
         {customerFound && (
           <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
             <div className="flex items-start gap-3">
