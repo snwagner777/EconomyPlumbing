@@ -40,6 +40,7 @@ interface CustomerStepProps {
     name: string;
     code: string;
   };
+  onVipError?: () => void;
 }
 
 interface STLocation {
@@ -75,7 +76,7 @@ const normalizeState = (state: string): string => {
   return normalized || state.substring(0, 2).toUpperCase();
 };
 
-export function CustomerStep({ onSubmit, initialData, selectedService }: CustomerStepProps) {
+export function CustomerStep({ onSubmit, initialData, selectedService, onVipError }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
   const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
@@ -214,6 +215,15 @@ export function CustomerStep({ onSubmit, initialData, selectedService }: Custome
     
     // Immediately submit with the selected location for existing customers
     if (customerFound) {
+      // Check VIP status before submitting
+      const isVIPService = selectedService?.name.toLowerCase().includes('vip');
+      const isVIPCustomer = customerFound.customerTags?.some((tag: string) => tag.toLowerCase() === 'vip');
+      
+      if (isVIPService && !isVIPCustomer) {
+        onVipError?.();
+        return;
+      }
+      
       const submitData = {
         firstName: form.getValues('firstName'),
         lastName: form.getValues('lastName'),
@@ -290,28 +300,48 @@ export function CustomerStep({ onSubmit, initialData, selectedService }: Custome
         </div>
 
         <div className="space-y-3">
-          {customersFound.map((customer, index) => (
-            <Card
-              key={customer.id}
-              className="p-4 cursor-pointer hover-elevate active-elevate-2 border-2 transition-colors"
-              onClick={() => handleCustomerSelect(customer)}
-              data-testid={`card-customer-${customer.id}`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold">{customer.name}</p>
-                  {customer.email && (
-                    <p className="text-xs text-muted-foreground mt-1">{customer.email}</p>
-                  )}
-                  {customer.locations?.[0] && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {customer.locations[0].street}, {customer.locations[0].city}, {customer.locations[0].state}
-                    </p>
-                  )}
+          {customersFound.map((customer, index) => {
+            const isVIP = customer.customerTags?.some((tag: string) => tag.toLowerCase() === 'vip');
+            const isVIPService = selectedService?.name.toLowerCase().includes('vip');
+            
+            return (
+              <Card
+                key={customer.id}
+                className={`p-4 cursor-pointer hover-elevate active-elevate-2 border-2 transition-colors ${
+                  isVIPService && !isVIP ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+                onClick={() => {
+                  if (isVIPService && !isVIP) {
+                    onVipError?.();
+                    return;
+                  }
+                  handleCustomerSelect(customer);
+                }}
+                data-testid={`card-customer-${customer.id}`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold">{customer.name}</p>
+                      {isVIP && (
+                        <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 text-xs">
+                          VIP
+                        </Badge>
+                      )}
+                    </div>
+                    {customer.email && (
+                      <p className="text-xs text-muted-foreground mt-1">{customer.email}</p>
+                    )}
+                    {customer.locations?.[0] && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {customer.locations[0].street}, {customer.locations[0].city}, {customer.locations[0].state}
+                      </p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         <Button

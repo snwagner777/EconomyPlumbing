@@ -241,6 +241,7 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
                 onSubmit={handleCustomerSubmit}
                 initialData={state.customer || undefined}
                 selectedService={state.jobType || undefined}
+                onVipError={() => setVipError(true)}
               />
             </div>
           )}
