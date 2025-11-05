@@ -922,7 +922,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           {createCustomerMutation.isPending ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Creating your account in ServiceTitan...
+              Please wait...
             </>
           ) : (
             <>
