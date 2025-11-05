@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
         hostname: '**',
       },
     ],
+    qualities: [75, 85], // Support both default (75) and high quality (85) images
   },
   
   // Experimental features
