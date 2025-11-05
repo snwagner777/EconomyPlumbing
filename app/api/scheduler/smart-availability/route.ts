@@ -450,9 +450,10 @@ function generateAvailableSlots(
       slotEnd.setUTCHours(endHour + 6, endMin || 0, 0, 0); // 12 PM CST = 18:00 UTC
       
       // Check for conflicts with existing appointments
+      // CRITICAL: Use appointment times (start/end), NOT arrival windows!
       const hasConflict = bookedAppointments.some(apt => {
-        const aptStart = new Date(apt.arrivalWindowStart || apt.start);
-        const aptEnd = new Date(apt.arrivalWindowEnd || apt.end);
+        const aptStart = new Date(apt.start); // Use actual appointment time
+        const aptEnd = new Date(apt.end);     // Not arrival window
         
         return (
           (slotStart >= aptStart && slotStart < aptEnd) ||
@@ -461,9 +462,9 @@ function generateAvailableSlots(
         );
       });
       
-      // Check if slot is still available (at least 1 hour in the future)
+      // Check if slot is still available
       const now = new Date();
-      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
+      const leadTimeMs = 0; // TEMPORARILY DISABLED for testing - re-enable with 1 hour later
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
       
       const isSlotAvailable = !hasConflict && slotEnd > minBookingTime;

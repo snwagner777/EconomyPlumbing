@@ -209,7 +209,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
 
       {/* View More Times Button */}
       {!showCalendar && (
-        <div className="flex justify-center">
+        <div className="flex flex-col items-center gap-4">
           <Button 
             variant="outline" 
             onClick={() => setShowCalendar(true)}
@@ -219,6 +219,24 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
             <Clock className="w-4 h-4" />
             View All Available Times
           </Button>
+          
+          {/* Text Us for Custom Scheduling */}
+          <Card className="p-4 bg-muted/50 border-dashed max-w-md">
+            <p className="text-sm text-center text-muted-foreground mb-3">
+              Don't see the appointment time you're looking for?
+            </p>
+            <Button 
+              variant="default" 
+              className="w-full gap-2"
+              onClick={() => window.open('sms:5123689159', '_blank')}
+              data-testid="button-text-us"
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+              </svg>
+              Text Us for Same-Day or Custom Times
+            </Button>
+          </Card>
         </div>
       )}
 
