@@ -54,6 +54,27 @@ interface STLocation {
   };
 }
 
+// Helper to normalize state to 2-letter code
+const normalizeState = (state: string): string => {
+  if (!state) return 'TX';
+  
+  // If already 2 characters, return uppercase
+  if (state.length === 2) return state.toUpperCase();
+  
+  // Common state mappings
+  const stateMap: { [key: string]: string } = {
+    'texas': 'TX',
+    'california': 'CA',
+    'new york': 'NY',
+    'florida': 'FL',
+    'illinois': 'IL',
+    // Add more as needed
+  };
+  
+  const normalized = stateMap[state.toLowerCase()];
+  return normalized || state.substring(0, 2).toUpperCase();
+};
+
 export function CustomerStep({ onSubmit, initialData, selectedService }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
   const [customersFound, setCustomersFound] = useState<any[]>([]);
@@ -140,7 +161,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService }: Custome
       phone: customer.phoneNumber || lookupValue,
       address: customer.locations?.[0]?.street || '',
       city: customer.locations?.[0]?.city || 'Austin',
-      state: customer.locations?.[0]?.state || 'TX',
+      state: normalizeState(customer.locations?.[0]?.state || 'TX'),
       zip: customer.locations?.[0]?.zip || '',
       notes: '',
     });
@@ -188,7 +209,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService }: Custome
     setSelectedLocation(location);
     form.setValue('address', location.address.street);
     form.setValue('city', location.address.city);
-    form.setValue('state', location.address.state);
+    form.setValue('state', normalizeState(location.address.state));
     form.setValue('zip', location.address.zip);
     setShowForm(true);
   };
