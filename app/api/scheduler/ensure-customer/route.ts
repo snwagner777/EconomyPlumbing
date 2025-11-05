@@ -51,11 +51,11 @@ export async function POST(req: NextRequest) {
     console.log(`[Scheduler] Customer ready in ServiceTitan: ${customer.id}`);
 
     // Step 2: Sync to local database using upsert (don't wait for hourly sync)
-    console.log(`[Scheduler] Syncing customer ${customer.id} to local database`);
+    console.log(`[Scheduler] Syncing customer ${customer.id} to local database immediately`);
     
     // Upsert customer record (insert or update)
     await db.insert(serviceTitanCustomers).values({
-      id: customer.id.toString(),
+      id: customer.id, // Integer ID from ServiceTitan
       name: customer.name,
       type: customer.type || 'Residential',
       street: address.street,
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     if (phone) {
       const normalizedPhone = normalizeContact(phone, 'phone');
       await db.insert(serviceTitanContacts).values({
-        customerId: customer.id.toString(),
+        customerId: customer.id, // Integer customer ID
         contactType: 'Phone',
         value: phone,
         normalizedValue: normalizedPhone,
@@ -87,6 +87,7 @@ export async function POST(req: NextRequest) {
         set: {
           value: phone,
           contactType: 'Phone',
+          customerId: customer.id,
         },
       });
     }
@@ -95,7 +96,7 @@ export async function POST(req: NextRequest) {
     if (email) {
       const normalizedEmail = normalizeContact(email, 'email');
       await db.insert(serviceTitanContacts).values({
-        customerId: customer.id.toString(),
+        customerId: customer.id, // Integer customer ID
         contactType: 'Email',
         value: email,
         normalizedValue: normalizedEmail,
@@ -104,11 +105,12 @@ export async function POST(req: NextRequest) {
         set: {
           value: email,
           contactType: 'Email',
+          customerId: customer.id,
         },
       });
     }
 
-    console.log(`[Scheduler] Customer synced to local database`);
+    console.log(`[Scheduler] ✅ Customer ${customer.id} synced to local database (serviceTitanCustomers + serviceTitanContacts)`);
 
     return NextResponse.json({
       success: true,

@@ -263,15 +263,60 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     }
   };
 
+  // Create new customer in ServiceTitan
+  const createCustomerMutation = useMutation({
+    mutationFn: async (customerData: CustomerFormData) => {
+      const response = await apiRequest('POST', '/api/scheduler/ensure-customer', {
+        name: `${customerData.firstName} ${customerData.lastName}`,
+        phone: customerData.phone,
+        email: customerData.email,
+        address: {
+          street: customerData.address,
+          city: customerData.city,
+          state: customerData.state,
+          zip: customerData.zip,
+        },
+      });
+      return await response.json();
+    },
+    onSuccess: (data: any, variables: CustomerFormData) => {
+      if (data.success && data.customer) {
+        console.log('[CustomerStep] Created customer in ServiceTitan:', data.customer.id);
+        // Submit with ServiceTitan customer ID
+        const submitData = {
+          ...variables,
+          serviceTitanId: data.customer.id,
+          customerTags: [],
+        };
+        onSubmit(submitData);
+      }
+    },
+  });
+
   const handleSubmit = (data: CustomerFormData) => {
-    // Include customer metadata if available
-    const submitData = {
-      ...data,
-      locationId: selectedLocation?.id,
-      serviceTitanId: customerFound?.serviceTitanId,
-      customerTags: customerFound?.customerTags || [],
-    };
-    onSubmit(submitData);
+    // Check VIP status before proceeding
+    const isVIPService = selectedService?.name.toLowerCase().includes('vip');
+    const isVIPCustomer = customerFound?.customerTags?.some((tag: string) => tag.toLowerCase() === 'vip');
+    
+    if (isVIPService && !isVIPCustomer && !customerFound) {
+      // New customer trying to book VIP service
+      onVipError?.();
+      return;
+    }
+    
+    // If existing customer, include their metadata
+    if (customerFound) {
+      const submitData = {
+        ...data,
+        locationId: selectedLocation?.id,
+        serviceTitanId: customerFound.serviceTitanId,
+        customerTags: customerFound.customerTags || [],
+      };
+      onSubmit(submitData);
+    } else {
+      // New customer - create in ServiceTitan first
+      createCustomerMutation.mutate(data);
+    }
   };
 
   // Show customer selection if multiple customers found (check this FIRST)
@@ -867,9 +912,24 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         />
 
         {/* Submit */}
-        <Button type="submit" className="w-full" size="lg" data-testid="button-continue">
-          Continue to Appointment Times
-          <ChevronRight className="w-4 h-4 ml-2" />
+        <Button 
+          type="submit" 
+          className="w-full" 
+          size="lg" 
+          disabled={createCustomerMutation.isPending}
+          data-testid="button-continue"
+        >
+          {createCustomerMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating your account in ServiceTitan...
+            </>
+          ) : (
+            <>
+              Continue to Appointment Times
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </>
+          )}
         </Button>
       </form>
     </Form>
