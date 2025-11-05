@@ -176,7 +176,7 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
     );
   }
 
-  // Step 1: Show 3 large category pills
+  // Step 1: Show category cards
   if (!selectedCategory) {
     return (
       <div className="space-y-6">
@@ -185,37 +185,45 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
           <p className="text-sm text-muted-foreground">Select the type of service you need</p>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 mt-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-8">
           {MAIN_CATEGORIES.map((category) => {
             const Icon = category.icon;
-            const servicesCount = categorizedServices[category.key]?.length || 0;
+            const services = categorizedServices[category.key] || [];
+            const servicesCount = services.length;
             
             if (servicesCount === 0) return null;
+
+            // If only one service, select it directly instead of showing subcategory
+            const isSingleService = servicesCount === 1;
+            const handleClick = () => {
+              if (isSingleService) {
+                onSelect(services[0]);
+              } else {
+                setSelectedCategory(category.key);
+              }
+            };
 
             return (
               <Card
                 key={category.key}
                 className={`relative overflow-hidden cursor-pointer border-2 transition-all ${category.borderColor} hover:shadow-lg active:scale-[0.99]`}
-                onClick={() => setSelectedCategory(category.key)}
+                onClick={handleClick}
                 data-testid={`button-category-${category.key}`}
               >
                 <div className={`absolute inset-0 ${category.bgColor} opacity-40`} />
                 
-                <div className="relative p-6 flex items-center gap-5">
-                  <div className={`p-4 rounded-2xl ${category.bgColor} border border-current/20 ${category.color} shrink-0`}>
-                    <Icon className="w-8 h-8" />
+                <div className="relative p-4 flex flex-col items-center text-center gap-3">
+                  <div className={`p-3 rounded-xl ${category.bgColor} border border-current/20 ${category.color}`}>
+                    <Icon className="w-6 h-6" />
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="text-xl font-bold">{category.label}</h3>
-                      <Badge variant="outline" className="shrink-0">
+                    <h3 className="text-base font-bold mb-1">{category.label}</h3>
+                    {!isSingleService && (
+                      <Badge variant="outline" className="text-xs">
                         {servicesCount} services
                       </Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
+                    )}
                   </div>
                 </div>
               </Card>
@@ -252,7 +260,7 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {services.map((jt) => {
           const categoryData = selectedCategoryData;
           const Icon = categoryData?.icon || Wrench;
@@ -260,19 +268,17 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
           return (
             <Card
               key={jt.id}
-              className="p-4 cursor-pointer border-2 transition-all hover:border-primary hover:shadow-md active:scale-[0.98]"
+              className="p-3 cursor-pointer border-2 transition-all hover:border-primary hover:shadow-md active:scale-[0.98]"
               onClick={() => onSelect(jt)}
               data-testid={`card-service-${jt.id}`}
             >
-              <div className="flex items-start gap-4">
-                <div className={`p-2.5 rounded-lg ${categoryData?.bgColor} border ${categoryData?.color} border-current/20 shrink-0`}>
+              <div className="flex flex-col items-center text-center gap-2">
+                <div className={`p-2 rounded-lg ${categoryData?.bgColor} border ${categoryData?.color} border-current/20`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-base leading-tight">
-                    {jt.name}
-                  </h4>
-                </div>
+                <h4 className="font-semibold text-sm leading-tight">
+                  {jt.name}
+                </h4>
               </div>
             </Card>
           );
