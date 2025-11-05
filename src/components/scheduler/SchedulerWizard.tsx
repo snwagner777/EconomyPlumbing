@@ -11,11 +11,12 @@
 import { useState, useReducer } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Wrench, User, Calendar, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ServiceStep } from '../scheduler/steps/ServiceStep';
 import { CustomerStep } from '../scheduler/steps/CustomerStep';
 import { AvailabilityStep } from '../scheduler/steps/AvailabilityStep';
 import { ReviewStep } from '../scheduler/steps/ReviewStep';
+import { Card } from "@/components/ui/card";
 
 interface JobType {
   id: number;
@@ -119,14 +120,17 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
     customer: null,
     timeSlot: null,
   });
+  const [vipError, setVipError] = useState(false);
 
   const handleClose = () => {
     dispatch({ type: 'RESET' });
+    setVipError(false);
     onClose();
   };
 
   const handleSelectJobType = (jobType: JobType) => {
     dispatch({ type: 'SELECT_JOB_TYPE', payload: jobType });
+    setVipError(false);
   };
 
   const handleCustomerSubmit = (customer: CustomerInfo) => {
@@ -134,11 +138,17 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
     const isVIPService = state.jobType?.name.toLowerCase().includes('vip');
     const isVIPCustomer = customer.customerTags?.some(tag => tag.toLowerCase() === 'vip');
     
+    console.log('[VIP Check] Service:', state.jobType?.name);
+    console.log('[VIP Check] Is VIP Service:', isVIPService);
+    console.log('[VIP Check] Customer Tags:', customer.customerTags);
+    console.log('[VIP Check] Is VIP Customer:', isVIPCustomer);
+    
     if (isVIPService && !isVIPCustomer) {
-      alert('VIP Service is only available to VIP members. Please go back and select a different service, or contact us to learn about becoming a VIP member.');
+      setVipError(true);
       return;
     }
     
+    setVipError(false);
     dispatch({ type: 'SET_CUSTOMER_INFO', payload: customer });
   };
 
@@ -189,7 +199,44 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
           )}
           
           {state.step === 2 && (
-            <div className="animate-in slide-in-from-right-5 duration-300">
+            <div className="animate-in slide-in-from-right-5 duration-300 space-y-4">
+              {vipError && (
+                <Card className="p-4 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-red-900 dark:text-red-100 mb-1">
+                        VIP Membership Required
+                      </h3>
+                      <p className="text-xs text-red-700 dark:text-red-300 mb-3">
+                        VIP Service is exclusively available to active VIP members. It looks like your account doesn't have a valid VIP membership, or it may have expired.
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="bg-white dark:bg-red-950 border-red-300 dark:border-red-700 text-red-900 dark:text-red-100 hover:bg-red-50 dark:hover:bg-red-900"
+                          onClick={handleBack}
+                          data-testid="button-select-different-service"
+                        >
+                          Select Different Service
+                        </Button>
+                        <Button
+                          size="sm"
+                          className="bg-red-600 hover:bg-red-700 text-white"
+                          onClick={() => {
+                            window.open('/vip-membership', '_blank');
+                          }}
+                          data-testid="button-learn-vip"
+                        >
+                          Learn About VIP Membership
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              )}
+              
               <CustomerStep
                 onSubmit={handleCustomerSubmit}
                 initialData={state.customer || undefined}
