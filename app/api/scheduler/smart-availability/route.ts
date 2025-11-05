@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
     }
     
     const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
     
     console.log(`[Smart Scheduler] Fetching availability from ${start.toISOString()} to ${end.toISOString()}`);
     
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
     const availableSlots = generateAvailableSlots(start, end, appointments, arrivalWindows);
     console.log(`[Smart Scheduler] Generated ${availableSlots.length} available slots`);
     
-    // Fetch scheduled jobs for proximity scoring
+    // Fetch scheduled jobs for proximity scoring (next 10 days)
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
     console.log(`[Smart Scheduler] Found ${existingJobs.length} jobs for proximity scoring`);
     
