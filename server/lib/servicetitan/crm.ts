@@ -135,6 +135,19 @@ export class ServiceTitanCRM {
             value: data.email,
           }] : []),
         ],
+        locations: [
+          {
+            name: `${data.name} - Primary`,
+            address: {
+              street: data.address.street,
+              unit: data.address.unit || undefined,
+              city: data.address.city,
+              state: data.address.state,
+              zip: data.address.zip,
+              country: 'USA',
+            },
+          },
+        ],
       };
 
       const response = await serviceTitanAuth.makeRequest<ServiceTitanCustomer>(
