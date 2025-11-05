@@ -314,9 +314,14 @@ async function getArrivalWindows(): Promise<Array<{ start: string; end: string; 
         const startTime = new Date(job.appointmentStart);
         const endTime = new Date(job.appointmentEnd);
         
-        // Format as HH:mm (24-hour format)
-        const start = `${startTime.getUTCHours().toString().padStart(2, '0')}:${startTime.getUTCMinutes().toString().padStart(2, '0')}`;
-        const end = `${endTime.getUTCHours().toString().padStart(2, '0')}:${endTime.getUTCMinutes().toString().padStart(2, '0')}`;
+        // Convert from UTC to Central Time (UTC-6 for CST, UTC-5 for CDT)
+        // Use toLocaleString to get local time, then extract hours/minutes
+        const centralStart = new Date(startTime.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+        const centralEnd = new Date(endTime.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+        
+        // Format as HH:mm (24-hour format) in Central Time
+        const start = `${centralStart.getHours().toString().padStart(2, '0')}:${centralStart.getMinutes().toString().padStart(2, '0')}`;
+        const end = `${centralEnd.getHours().toString().padStart(2, '0')}:${centralEnd.getMinutes().toString().padStart(2, '0')}`;
         
         const key = `${start}-${end}`;
         if (!windowsMap.has(key)) {
@@ -396,7 +401,12 @@ function generateAvailableSlots(
       // Allow slots that end after current time (not just start)
       // This shows today's afternoon slot even if morning has passed
       const now = new Date();
-      const isSlotAvailable = !hasConflict && slotEnd > now;
+      
+      // IMPORTANT: For same-day slots, check if we have at least 1 hour lead time
+      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum
+      const minBookingTime = new Date(now.getTime() + leadTimeMs);
+      
+      const isSlotAvailable = !hasConflict && slotEnd > minBookingTime;
       
       if (isSlotAvailable) {
         slots.push({
