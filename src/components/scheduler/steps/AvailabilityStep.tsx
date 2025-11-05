@@ -40,15 +40,20 @@ const PERIOD_LABELS = {
 };
 
 export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlot }: AvailabilityStepProps) {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [showCalendar, setShowCalendar] = useState(false);
   
-  const startDate = format(selectedDate, 'yyyy-MM-dd');
-  const endDate = format(addDays(selectedDate, 6), 'yyyy-MM-dd');
+  // Always fetch from today (or earliest future date if today is past)
+  const fetchStartDate = today;
+  const startDate = format(fetchStartDate, 'yyyy-MM-dd');
+  const endDate = format(addDays(fetchStartDate, 13), 'yyyy-MM-dd'); // 2 weeks of availability
 
-  // Fetch smart availability (fuel-optimized)
+  // Fetch smart availability (fuel-optimized) - always fetch 2 weeks from today
   const { data, isLoading } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
-    queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip, startDate],
+    queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip],
     queryFn: async () => {
       const response = await apiRequest('POST', '/api/scheduler/smart-availability', {
         jobTypeId,
@@ -62,31 +67,38 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
 
   const slots = data?.slots || [];
   
-  // Filter slots for selected date
-  const slotsForDate = slots.filter(slot => {
-    const slotDate = format(new Date(slot.start), 'yyyy-MM-dd');
-    return slotDate === format(selectedDate, 'yyyy-MM-dd');
-  });
-
-  // Sort by proximity score (best first)
-  const sortedSlots = [...slotsForDate].sort((a, b) => {
+  // Sort ALL slots by proximity score (best first) - for top recommendations
+  const allSortedSlots = [...slots].sort((a, b) => {
     const scoreA = a.proximityScore || 0;
     const scoreB = b.proximityScore || 0;
     return scoreB - scoreA; // Higher scores first
   });
 
-  // Group by period (already sorted by proximity)
-  const slotsByPeriod = sortedSlots.reduce((acc: Record<string, TimeSlot[]>, slot: TimeSlot) => {
+  // Get top 3-5 best appointments across ALL dates for prominent display
+  const topSlots = allSortedSlots.slice(0, Math.min(5, allSortedSlots.length));
+  const hasHighEfficiencySlots = topSlots.some(s => (s.proximityScore || 0) > 60);
+  
+  // Filter slots for selected date (for calendar view)
+  const slotsForDate = slots.filter(slot => {
+    const slotDate = format(new Date(slot.start), 'yyyy-MM-dd');
+    return slotDate === format(selectedDate, 'yyyy-MM-dd');
+  });
+
+  // Sort slots for selected date by proximity score
+  const sortedSlotsForDate = [...slotsForDate].sort((a, b) => {
+    const scoreA = a.proximityScore || 0;
+    const scoreB = b.proximityScore || 0;
+    return scoreB - scoreA; // Higher scores first
+  });
+
+  // Group by period (for calendar view)
+  const slotsByPeriod = sortedSlotsForDate.reduce((acc: Record<string, TimeSlot[]>, slot: TimeSlot) => {
     if (!acc[slot.period]) {
       acc[slot.period] = [];
     }
     acc[slot.period].push(slot);
     return acc;
   }, {} as Record<string, TimeSlot[]>);
-
-  // Get top 3-5 best appointments across all periods (always show at least top 3)
-  const topSlots = sortedSlots.slice(0, Math.min(5, sortedSlots.length));
-  const hasHighEfficiencySlots = topSlots.some(s => (s.proximityScore || 0) > 60);
 
   const getEfficiencyBadge = (score: number) => {
     if (score >= 80) return { label: 'Excellent', variant: 'default' as const, color: 'text-green-600 dark:text-green-400' };
