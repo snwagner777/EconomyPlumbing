@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       for (const zone of zones) {
         for (const zip of zone.zipCodes) {
           const normalized = normalizeZip(zip);
-          if (uniqueZips.includes(normalized)) {
+          if (normalized && uniqueZips.includes(normalized)) {
             zipToZone[normalized] = zone.name;
           }
         }
