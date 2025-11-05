@@ -11,8 +11,17 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Wrench, Construction, ClipboardCheck, Loader2, ArrowLeft } from 'lucide-react';
-import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
+import { 
+  Wrench, 
+  Flame, 
+  Droplet, 
+  Star, 
+  Truck, 
+  Shield, 
+  Tag, 
+  Loader2, 
+  ArrowLeft 
+} from 'lucide-react';
 
 interface JobType {
   id: number;
@@ -25,9 +34,18 @@ interface ServiceStepProps {
   preselectedService?: string;
 }
 
-type MainCategory = 'repair' | 'installation' | 'maintenance';
+type MainCategory = 'special-offers' | 'backflow' | 'water-heater' | 'gas' | 'vip' | 'food-truck' | 'repair';
 
 const MAIN_CATEGORIES = [
+  {
+    key: 'special-offers' as MainCategory,
+    label: 'Special Offers',
+    description: 'Groupon deals and promotional services',
+    icon: Tag,
+    color: 'text-pink-600 dark:text-pink-400',
+    bgColor: 'bg-pink-50 dark:bg-pink-900/20',
+    borderColor: 'hover:border-pink-300 dark:hover:border-pink-700',
+  },
   {
     key: 'repair' as MainCategory,
     label: 'Repair',
@@ -38,22 +56,49 @@ const MAIN_CATEGORIES = [
     borderColor: 'hover:border-blue-300 dark:hover:border-blue-700',
   },
   {
-    key: 'installation' as MainCategory,
-    label: 'Install',
-    description: 'New fixtures, water heaters, and appliances',
-    icon: Construction,
+    key: 'water-heater' as MainCategory,
+    label: 'Water Heater',
+    description: 'Installation, repair, and service',
+    icon: Flame,
+    color: 'text-orange-600 dark:text-orange-400',
+    bgColor: 'bg-orange-50 dark:bg-orange-900/20',
+    borderColor: 'hover:border-orange-300 dark:hover:border-orange-700',
+  },
+  {
+    key: 'gas' as MainCategory,
+    label: 'Gas Services',
+    description: 'Natural gas and propane service',
+    icon: Flame,
+    color: 'text-red-600 dark:text-red-400',
+    bgColor: 'bg-red-50 dark:bg-red-900/20',
+    borderColor: 'hover:border-red-300 dark:hover:border-red-700',
+  },
+  {
+    key: 'backflow' as MainCategory,
+    label: 'Backflow Testing',
+    description: 'Annual backflow prevention testing',
+    icon: Shield,
     color: 'text-green-600 dark:text-green-400',
     bgColor: 'bg-green-50 dark:bg-green-900/20',
     borderColor: 'hover:border-green-300 dark:hover:border-green-700',
   },
   {
-    key: 'maintenance' as MainCategory,
-    label: 'Maintenance',
-    description: 'Inspections, tune-ups, and preventive care',
-    icon: ClipboardCheck,
+    key: 'vip' as MainCategory,
+    label: 'VIP Service',
+    description: 'Premium membership service',
+    icon: Star,
     color: 'text-purple-600 dark:text-purple-400',
     bgColor: 'bg-purple-50 dark:bg-purple-900/20',
     borderColor: 'hover:border-purple-300 dark:hover:border-purple-700',
+  },
+  {
+    key: 'food-truck' as MainCategory,
+    label: 'Food Truck',
+    description: 'Mobile food service plumbing',
+    icon: Truck,
+    color: 'text-amber-600 dark:text-amber-400',
+    bgColor: 'bg-amber-50 dark:bg-amber-900/20',
+    borderColor: 'hover:border-amber-300 dark:hover:border-amber-700',
   },
 ];
 
@@ -67,26 +112,46 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
 
   const jobTypes = data?.jobTypes || [];
 
-  // Map ServiceTitan job types to our simplified categories
+  // Categorize job types based on name patterns
   const categorizedServices = jobTypes.reduce((acc, jt) => {
-    const meta = getJobTypeMeta(jt.name);
     let mainCategory: MainCategory;
+    const name = jt.name.toLowerCase();
     
-    // Map detailed categories to our 3 main categories
-    if (meta.category === 'repair' || meta.category === 'emergency') {
+    // Special Offers: Groupon + $49 deal
+    if (name.includes('groupon') || name.includes('$49')) {
+      mainCategory = 'special-offers';
+    }
+    // Backflow Testing
+    else if (name.includes('backflow')) {
+      mainCategory = 'backflow';
+    }
+    // Water Heater
+    else if (name.includes('water heater') || name === 'no hot water') {
+      mainCategory = 'water-heater';
+    }
+    // Gas Services
+    else if (name.includes('gas')) {
+      mainCategory = 'gas';
+    }
+    // VIP Service
+    else if (name.includes('vip')) {
+      mainCategory = 'vip';
+    }
+    // Food Truck
+    else if (name.includes('food truck')) {
+      mainCategory = 'food-truck';
+    }
+    // Everything else goes to Repair
+    else {
       mainCategory = 'repair';
-    } else if (meta.category === 'installation') {
-      mainCategory = 'installation';
-    } else {
-      mainCategory = 'maintenance';
     }
     
     if (!acc[mainCategory]) {
       acc[mainCategory] = [];
     }
-    acc[mainCategory].push({ ...jt, meta });
+    acc[mainCategory].push(jt);
     return acc;
-  }, {} as Record<MainCategory, Array<JobType & { meta: ReturnType<typeof getJobTypeMeta> }>>);
+  }, {} as Record<MainCategory, JobType[]>);
 
   // Auto-select if preselected service matches
   useEffect(() => {
@@ -189,7 +254,9 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {services.map((jt) => {
-          const Icon = jt.meta.icon;
+          const categoryData = selectedCategoryData;
+          const Icon = categoryData?.icon || Wrench;
+          
           return (
             <Card
               key={jt.id}
@@ -198,18 +265,13 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
               data-testid={`card-service-${jt.id}`}
             >
               <div className="flex items-start gap-4">
-                <div className="p-2.5 rounded-lg bg-primary/10 dark:bg-primary/20 border border-primary/20 shrink-0">
-                  <Icon className="w-5 h-5 text-primary" />
+                <div className={`p-2.5 rounded-lg ${categoryData?.bgColor} border ${categoryData?.color} border-current/20 shrink-0`}>
+                  <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-semibold text-base leading-tight mb-1.5">
-                    {jt.meta.displayName || jt.name}
+                  <h4 className="font-semibold text-base leading-tight">
+                    {jt.name}
                   </h4>
-                  {jt.meta.marketingCopy && (
-                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                      {jt.meta.marketingCopy}
-                    </p>
-                  )}
                 </div>
               </div>
             </Card>

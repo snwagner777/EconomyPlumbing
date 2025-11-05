@@ -8,13 +8,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 
+// Job types to exclude from customer-facing scheduler
+const EXCLUDED_JOB_TYPES = [
+  'Estimate',
+  'Finish Up Job',
+  'Major - 4 Hours',
+  'Major - 8 Hours',
+];
+
 export async function GET(req: NextRequest) {
   try {
     // Fetch job types from ServiceTitan (cached for performance)
     const jobTypes = await serviceTitanSettings.getJobTypes();
     
-    // Format for UI (already filtered to active in getJobTypes)
-    const options = jobTypes
+    // Filter out internal/unwanted job types
+    const filtered = jobTypes.filter(jt => !EXCLUDED_JOB_TYPES.includes(jt.name));
+    
+    // Format for UI
+    const options = filtered
       .map(jt => ({
         id: jt.id,
         name: jt.name,
