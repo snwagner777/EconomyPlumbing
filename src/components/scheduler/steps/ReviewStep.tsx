@@ -32,6 +32,8 @@ interface CustomerInfo {
   state: string;
   zip: string;
   notes?: string;
+  serviceTitanId?: number;
+  locationId?: number;
 }
 
 interface TimeSlot {
@@ -73,6 +75,8 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
         specialInstructions: customer.notes,
         bookingSource: 'scheduler_wizard',
         utm_source: 'website',
+        ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
+        ...(customer.locationId && { locationId: customer.locationId }),
       });
       return await response.json();
     },
