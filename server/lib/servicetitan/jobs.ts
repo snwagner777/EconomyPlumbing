@@ -174,48 +174,50 @@ export class ServiceTitanJobs {
    * 
    * Uses the AppointmentAssignments_GetList endpoint from dispatch module.
    */
-  async getTechnicianAssignments(appointmentIds: number[]): Promise<Map<number, number>> {
+  async getTechnicianAssignments(
+    appointmentIds: number[],
+    startDate?: Date,
+    endDate?: Date
+  ): Promise<Map<number, number>> {
     try {
       if (appointmentIds.length === 0) {
         return new Map();
       }
 
-      console.log(`[ServiceTitan Jobs] Fetching technician assignments for ${appointmentIds.length} appointments`);
+      console.log(`[ServiceTitan Jobs] Fetching technician assignments for appointments:`, appointmentIds);
       
       const assignmentMap = new Map<number, number>();
       const appointmentIdSet = new Set(appointmentIds); // For faster lookup
       
-      // Filter by status and date: only recent active appointments
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
+      // Fetch active assignments only (Scheduled status = appointments that haven't been completed yet)
       const queryParams = new URLSearchParams({
         page: '1',
         pageSize: '500',
-        status: 'Scheduled,Dispatched,Working', // Active assignments only
-        modifiedOnOrAfter: today.toISOString(), // Recent assignments only
+        status: 'Scheduled', // Only get scheduled (active) assignments
       });
+      
+      console.log(`[ServiceTitan Jobs] Fetching Scheduled assignments to match appointment IDs:`, appointmentIds);
 
       const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
         `dispatch/v2/tenant/${this.tenantId}/appointment-assignments?${queryParams.toString()}`
       );
 
       const assignments = response.data || [];
-      console.log(`[ServiceTitan Jobs] Fetched ${assignments.length} active appointment assignments`);
+      console.log(`[ServiceTitan Jobs] Fetched ${assignments.length} assignments in date range`);
       
-      // Log a sample assignment
+      // Log a sample
       if (assignments.length > 0) {
         console.log(`[ServiceTitan Jobs] Sample assignment:`, JSON.stringify(assignments[0], null, 2));
       }
       
-      // Extract technician assignments
+      // Extract technician assignments for OUR appointment IDs
       for (const assignment of assignments) {
         if (appointmentIdSet.has(assignment.appointmentId)) {
           const techId = assignment.technicianId || assignment.assignedTechnicianId;
           
           if (techId) {
             assignmentMap.set(assignment.appointmentId, techId);
-            console.log(`[ServiceTitan Jobs] ✓ Matched! Appointment ${assignment.appointmentId} → Technician ${techId}`);
+            console.log(`[ServiceTitan Jobs] ✓ FOUND! Appointment ${assignment.appointmentId} → Technician ${techId}`);
           }
         }
       }

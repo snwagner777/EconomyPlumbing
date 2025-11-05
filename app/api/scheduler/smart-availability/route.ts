@@ -91,7 +91,11 @@ export async function POST(req: NextRequest) {
     
     // Fetch technician assignments for all jobs
     const appointmentIds = existingJobs.map(j => j.appointmentId);
-    const techAssignments = await serviceTitanJobs.getTechnicianAssignments(appointmentIds);
+    const techAssignments = await serviceTitanJobs.getTechnicianAssignments(
+      appointmentIds,
+      startDate,
+      endDate
+    );
     
     // Add technician IDs to jobs
     existingJobs.forEach(job => {
