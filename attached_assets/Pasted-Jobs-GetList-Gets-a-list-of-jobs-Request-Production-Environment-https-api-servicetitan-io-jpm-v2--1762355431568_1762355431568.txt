@@ -1,0 +1,110 @@
+Jobs_GetList
+Gets a list of jobs
+
+Request
+Production Environment
+https://api.servicetitan.io/jpm/v2/tenant/{tenant}/jobs[?page][&pageSize][&includeTotal][&ids][&number][&projectId][&bookingId][&jobStatus][&appointmentStatus][&priority][&firstAppointmentStartsOnOrAfter][&firstAppointmentStartsBefore][&appointmentStartsOnOrAfter][&appointmentStartsBefore][&technicianId][&customerId][&locationId][&soldById][&jobTypeId][&campaignId][&businessUnitId][&invoiceId][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&completedOnOrAfter][&completedBefore][&tagTypeIds][&sort][&externalDataApplicationGuid][&externalDataKey][&externalDataValues][&hasUnusedAppointments]
+Integration Environment
+https://api-integration.servicetitan.io/jpm/v2/tenant/{tenant}/jobs[?page][&pageSize][&includeTotal][&ids][&number][&projectId][&bookingId][&jobStatus][&appointmentStatus][&priority][&firstAppointmentStartsOnOrAfter][&firstAppointmentStartsBefore][&appointmentStartsOnOrAfter][&appointmentStartsBefore][&technicianId][&customerId][&locationId][&soldById][&jobTypeId][&campaignId][&businessUnitId][&invoiceId][&createdBefore][&createdOnOrAfter][&modifiedBefore][&modifiedOnOrAfter][&completedOnOrAfter][&completedBefore][&tagTypeIds][&sort][&externalDataApplicationGuid][&externalDataKey][&externalDataValues][&hasUnusedAppointments]
+Request parameters
+
+Name
+In
+Required
+Type
+Description
+tenant
+template
+true
+integer
+Tenant ID
+
+page
+query
+false
+integer
+The logical number of page to return, starting from 1
+
+pageSize
+query
+false
+integer
+How many records to return (50 by default)
+
+includeTotal
+query
+false
+boolean
+Whether total count should be returned
+
+ids
+query
+false
+string
+Perform lookup by multiple IDs (maximum 50)
+
+number
+query
+false
+string
+Filters by job number
+
+projectId
+query
+false
+integer
+Filters by project ID
+
+bookingId
+query
+false
+integer
+Filters by booking ID that resulted in this job
+
+jobStatus
+query
+false
+Filters by job status
+Values: [Scheduled, Dispatched, InProgress, Hold, Completed, Canceled]
+
+appointmentStatus
+query
+false
+Filters by appointment status. Return a job if it has any appointment with the specified status.
+Values: [Scheduled, Dispatched, Working, Hold, Done, Canceled]
+
+priority
+query
+false
+string
+Filters by priority. Supported priorities are "Low", "Normal", "High", "Urgent"
+
+firstAppointmentStartsOnOrAfter
+query
+false
+string
+Return jobs whose first appointment starts on or after date/time (in UTC). Use with "firstAppointmentStartsBefore" to find jobs whose first appointment is within the specified date range.
+
+firstAppointmentStartsBefore
+query
+false
+string
+Return jobs whose first appointment starts before date/time (in UTC)
+
+appointmentStartsOnOrAfter
+query
+false
+string
+Return jobs if any appointment starts after date/time (in UTC)
+
+appointmentStartsBefore
+query
+false
+string
+Return jobs if any appointment starts after date/time (in UTC)
+
+technicianId
+query
+false
+integer
+Return jobs if technician is assigned to any appointment

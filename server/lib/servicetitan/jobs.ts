@@ -198,8 +198,9 @@ export class ServiceTitanJobs {
           pageSize: pageSize.toString(),
         });
 
+        // Try the dispatch module for assignments
         const response = await serviceTitanAuth.makeRequest<{ data: any[]; hasMore?: boolean }>(
-          `jpm/v2/tenant/${this.tenantId}/appointment-assignments?${queryParams.toString()}`
+          `dispatch/v2/tenant/${this.tenantId}/appointments?${queryParams.toString()}`
         );
 
         const assignments = response.data || [];
