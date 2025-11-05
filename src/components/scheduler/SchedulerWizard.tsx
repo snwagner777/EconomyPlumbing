@@ -28,6 +28,7 @@ interface TimeSlot {
   start: string;
   end: string;
   timeLabel: string;
+  period: 'morning' | 'afternoon' | 'evening';
   proximityScore?: number;
   nearbyJobs?: number;
 }
@@ -42,6 +43,9 @@ interface CustomerInfo {
   state: string;
   zip: string;
   notes?: string;
+  serviceTitanId?: number;
+  customerTags?: string[];
+  locationId?: number;
 }
 
 interface WizardState {
@@ -126,6 +130,15 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
   };
 
   const handleCustomerSubmit = (customer: CustomerInfo) => {
+    // Check if VIP service selected but customer is not VIP (case-insensitive)
+    const isVIPService = state.jobType?.name.toLowerCase().includes('vip');
+    const isVIPCustomer = customer.customerTags?.some(tag => tag.toLowerCase() === 'vip');
+    
+    if (isVIPService && !isVIPCustomer) {
+      alert('VIP Service is only available to VIP members. Please go back and select a different service, or contact us to learn about becoming a VIP member.');
+      return;
+    }
+    
     dispatch({ type: 'SET_CUSTOMER_INFO', payload: customer });
   };
 

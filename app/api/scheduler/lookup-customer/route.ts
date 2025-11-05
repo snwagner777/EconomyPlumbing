@@ -96,6 +96,7 @@ export async function POST(req: NextRequest) {
           email: customerEmail,
           phoneNumber: customerPhone,
           type: customer.type,
+          customerTags: customer.customerTags || [],
           locations,
         };
       })

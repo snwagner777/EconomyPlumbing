@@ -33,7 +33,7 @@ const customerSchema = z.object({
 type CustomerFormData = z.infer<typeof customerSchema>;
 
 interface CustomerStepProps {
-  onSubmit: (data: CustomerFormData & { locationId?: number }) => void;
+  onSubmit: (data: CustomerFormData & { locationId?: number; serviceTitanId?: number; customerTags?: string[] }) => void;
   initialData?: Partial<CustomerFormData>;
 }
 
@@ -193,12 +193,14 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   };
 
   const handleSubmit = (data: CustomerFormData) => {
-    // Include selected location ID if customer has one
-    if (selectedLocation) {
-      onSubmit({ ...data, locationId: selectedLocation.id });
-    } else {
-      onSubmit(data);
-    }
+    // Include customer metadata if available
+    const submitData = {
+      ...data,
+      locationId: selectedLocation?.id,
+      serviceTitanId: customerFound?.serviceTitanId,
+      customerTags: customerFound?.customerTags || [],
+    };
+    onSubmit(submitData);
   };
 
   // Show lookup interface first
