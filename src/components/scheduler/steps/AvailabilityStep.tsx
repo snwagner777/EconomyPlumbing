@@ -79,6 +79,12 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   const topSlots = allSortedSlots.slice(0, Math.min(3, allSortedSlots.length));
   const hasHighEfficiencySlots = topSlots.some(s => (s.proximityScore || 0) > 60);
   
+  // Check if all top slots have the same efficiency score (within 5 points)
+  const topScores = topSlots.map(s => s.proximityScore || 0);
+  const maxScore = Math.max(...topScores);
+  const minScore = Math.min(...topScores);
+  const allTopSlotsEquallyEfficient = topSlots.length > 1 && (maxScore - minScore) <= 5;
+  
   // Filter slots for selected date (for calendar view)
   const slotsForDate = slots.filter(slot => {
     const slotDate = format(new Date(slot.start), 'yyyy-MM-dd');
@@ -147,7 +153,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   ? 'text-green-900 dark:text-green-100'
                   : 'text-blue-900 dark:text-blue-100'
               }`}>
-                {hasHighEfficiencySlots ? 'Recommended Appointment Times' : 'Next Available Appointments'}
+                {hasHighEfficiencySlots ? 'Most Efficient Appointment Times' : 'Next Available Appointments'}
+                {allTopSlotsEquallyEfficient && <span className="text-sm font-normal ml-2">(sorted by earliest)</span>}
               </h3>
               <p className={`text-sm ${
                 hasHighEfficiencySlots 
@@ -155,7 +162,9 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   : 'text-blue-700 dark:text-blue-300'
               }`}>
                 {hasHighEfficiencySlots 
-                  ? 'We already have other jobs scheduled nearby during these times - great for reducing costs and wait times!'
+                  ? allTopSlotsEquallyEfficient
+                    ? 'These times have equal efficiency - we already have jobs nearby! Showing earliest first.'
+                    : 'We already have other jobs scheduled nearby during these times - great for reducing costs and wait times!'
                   : 'Select a time that works best for your schedule'
                 }
               </p>
@@ -194,6 +203,22 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
                         </p>
                       </div>
+                      
+                      {/* Efficiency Score Badge */}
+                      {(slot.proximityScore || 0) > 0 && (
+                        <Badge 
+                          variant="secondary" 
+                          className={`text-xs shrink-0 ${
+                            isSelected 
+                              ? 'bg-white/20 text-white border-white/30' 
+                              : (slot.proximityScore || 0) >= 70
+                                ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
+                                : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                          }`}
+                        >
+                          {slot.proximityScore}% efficient
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -331,7 +356,21 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                                 <Clock className="w-4 h-4 shrink-0" />
                                 <span className="font-semibold text-sm sm:text-base">{slot.timeLabel}</span>
                               </div>
-                              {/* Badges removed - cleaner UI */}
+                              {/* Efficiency Score Badge */}
+                              {score > 0 && (
+                                <Badge 
+                                  variant="secondary" 
+                                  className={`text-xs shrink-0 ${
+                                    isSelected
+                                      ? 'bg-white/20 text-white border-white/30'
+                                      : score >= 70
+                                        ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
+                                        : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                                  }`}
+                                >
+                                  {score}%
+                                </Badge>
+                              )}
                             </Button>
                           );
                         })}
