@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Schedule Appointment | Economy Plumbing Services',
+  title: 'Schedule Appointment',
   description: 'Schedule your plumbing service appointment',
   robots: {
     index: false,

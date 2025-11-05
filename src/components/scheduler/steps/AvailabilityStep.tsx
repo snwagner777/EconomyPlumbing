@@ -128,20 +128,20 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
             ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800'
             : 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800'
         }`}>
-          <div className="flex items-start gap-4 mb-5">
-            <div className={`p-3 rounded-full ${
+          <div className="flex items-start gap-3 sm:gap-4 mb-5">
+            <div className={`p-2.5 sm:p-3 rounded-full shrink-0 ${
               hasHighEfficiencySlots 
                 ? 'bg-green-100 dark:bg-green-900/40'
                 : 'bg-blue-100 dark:bg-blue-900/40'
             }`}>
-              <TrendingUp className={`w-6 h-6 ${
+              <TrendingUp className={`w-5 h-5 sm:w-6 sm:h-6 ${
                 hasHighEfficiencySlots 
                   ? 'text-green-600 dark:text-green-400'
                   : 'text-blue-600 dark:text-blue-400'
               }`} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className={`text-lg font-bold mb-1 ${
+              <h3 className={`text-base sm:text-lg font-bold mb-1 ${
                 hasHighEfficiencySlots 
                   ? 'text-green-900 dark:text-green-100'
                   : 'text-blue-900 dark:text-blue-100'
@@ -168,7 +168,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               return (
                 <Card
                   key={slot.id}
-                  className={`p-4 cursor-pointer border-2 transition-all ${
+                  className={`p-3 sm:p-4 cursor-pointer border-2 transition-all touch-manipulation ${
                     isSelected 
                       ? 'bg-primary border-primary shadow-lg' 
                       : 'bg-white dark:bg-gray-950 border-green-300 dark:border-green-700 hover:border-green-400 dark:hover:border-green-600 hover:shadow-md'
@@ -176,20 +176,20 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   onClick={() => onSelect(slot)}
                   data-testid={`card-top-timeslot-${index}`}
                 >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                       <Badge 
                         variant={isSelected ? 'outline' : 'secondary'} 
-                        className={`text-sm px-2.5 py-1 ${isSelected ? 'border-white/50 text-white' : ''}`}
+                        className={`text-xs sm:text-sm px-2 sm:px-2.5 py-1 shrink-0 ${isSelected ? 'border-white/50 text-white' : ''}`}
                       >
                         #{index + 1}
                       </Badge>
                       
                       <div className="flex-1 min-w-0">
-                        <p className={`font-bold text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                        <p className={`font-bold text-base sm:text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
                           {slot.timeLabel}
                         </p>
-                        <p className={`text-xs ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
+                        <p className={`text-xs sm:text-sm ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
                         </p>
                       </div>
@@ -258,11 +258,11 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
             </Card>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Calendar */}
-        <div className="lg:col-span-2">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-4">Select a Date</h3>
+        <div className="lg:col-span-2 order-2 lg:order-1">
+          <Card className="p-3 sm:p-4">
+            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">Select a Date</h3>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -278,9 +278,9 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
         </div>
 
         {/* Time Slots */}
-        <div className="lg:col-span-3">
-          <Card className="p-4">
-            <h3 className="font-semibold mb-4">
+        <div className="lg:col-span-3 order-1 lg:order-2">
+          <Card className="p-3 sm:p-4">
+            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">
               All Available Times - {format(selectedDate, 'EEEE, MMMM d')}
             </h3>
 
@@ -318,7 +318,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                             <Button
                               key={slot.id}
                               variant={isSelected ? 'default' : 'outline'}
-                              className={`justify-between h-auto py-3 border-2 ${
+                              className={`justify-between h-auto py-3 border-2 touch-manipulation ${
                                 score >= 70 && !isSelected 
                                   ? 'border-green-200 dark:border-green-800 hover:border-green-300 dark:hover:border-green-700' 
                                   : ''
@@ -326,9 +326,9 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                               onClick={() => onSelect(slot)}
                               data-testid={`button-timeslot-${slot.id}`}
                             >
-                              <div className="flex items-center gap-2.5">
-                                <Clock className="w-4 h-4" />
-                                <span className="font-semibold">{slot.timeLabel}</span>
+                              <div className="flex items-center gap-2 sm:gap-2.5">
+                                <Clock className="w-4 h-4 shrink-0" />
+                                <span className="font-semibold text-sm sm:text-base">{slot.timeLabel}</span>
                               </div>
                               {/* Badges removed - cleaner UI */}
                             </Button>
