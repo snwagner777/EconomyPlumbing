@@ -328,9 +328,9 @@ export class ServiceTitanJobs {
         appointmentData.specialInstructions = data.specialInstructions;
       }
       
-      // Add technician assignment if provided
+      // Add technician assignment if provided (using correct field name from API docs)
       if (data.technicianId) {
-        appointmentData.assignedTechnicianIds = [data.technicianId];
+        appointmentData.technicianIds = [data.technicianId];
       }
 
       // Build complete job payload with correct structure
@@ -357,15 +357,9 @@ export class ServiceTitanJobs {
 
       console.log(`[ServiceTitan Jobs] Created job ${response.jobNumber} (ID: ${response.id}) with appointment ${response.firstAppointmentId}`);
       
-      // CRITICAL: Actually assign the technician via dispatch API (job creation doesn't auto-assign)
-      if (data.technicianId && response.firstAppointmentId) {
-        try {
-          await this.assignTechnician(response.firstAppointmentId, data.technicianId);
-          console.log(`[ServiceTitan Jobs] ✓ Assigned technician ${data.technicianId} to appointment ${response.firstAppointmentId}`);
-        } catch (error) {
-          console.error(`[ServiceTitan Jobs] ⚠ Failed to assign technician ${data.technicianId}:`, error);
-          // Don't throw - job was created successfully, assignment is a nice-to-have
-        }
+      // Log technician assignment for debugging
+      if (data.technicianId) {
+        console.log(`[ServiceTitan Jobs] Technician ${data.technicianId} should be auto-assigned via technicianIds field`);
       }
       
       return response;
