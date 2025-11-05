@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean, index, uniqueIndex, bigint, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index, uniqueIndex, bigint, jsonb, serial, numeric } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -2341,11 +2341,11 @@ export const insertCustomCampaignSendLogSchema = createInsertSchema(customCampai
 
 // Scheduler - Appointment booking requests
 export const schedulerRequests = pgTable("scheduler_requests", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  id: serial("id").primaryKey(),
   
   // Customer info
-  serviceTitanCustomerId: integer("service_titan_customer_id"), // ST customer ID if exists
-  serviceTitanLocationId: integer("service_titan_location_id"), // ST location ID if exists
+  serviceTitanCustomerId: integer("servicetitan_customer_id"), // ST customer ID if exists
+  serviceTitanLocationId: integer("servicetitan_location_id"), // ST location ID if exists
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email"),
   customerPhone: text("customer_phone").notNull(),
@@ -2356,41 +2356,37 @@ export const schedulerRequests = pgTable("scheduler_requests", {
   
   // Service details
   requestedService: text("requested_service").notNull(), // Service type requested
-  jobTypeId: integer("job_type_id"), // ServiceTitan job type ID
-  businessUnitId: integer("business_unit_id"), // ServiceTitan business unit ID
   preferredDate: timestamp("preferred_date"),
   preferredTimeSlot: text("preferred_time_slot"), // "morning", "afternoon", "evening"
   specialInstructions: text("special_instructions"),
   
-  // Booking tracking
-  status: text("status").notNull().default("pending"), // pending, confirmed, failed, cancelled
-  serviceTitanJobId: integer("service_titan_job_id"), // ST job ID when successfully booked
-  serviceTitanAppointmentId: integer("service_titan_appointment_id"), // ST appointment ID
-  serviceTitanBookingId: integer("service_titan_booking_id"), // ST booking ID
-  
-  // Payment (for prepaid services like backflow)
-  paymentIntentId: text("payment_intent_id"), // Stripe payment intent ID
-  paymentAmount: integer("payment_amount"), // Amount in cents
-  paymentStatus: text("payment_status"), // pending, succeeded, failed, refunded
-  isPrepaid: boolean("is_prepaid").notNull().default(false),
-  
   // Source tracking
   bookingSource: text("booking_source").notNull(), // website, referral, portal, backflow, coupon
-  referralCode: text("referral_code"), // If from referral
-  couponCode: text("coupon_code"), // If coupon applied
-  utmSource: text("utm_source"),
-  utmMedium: text("utm_medium"),
-  utmCampaign: text("utm_campaign"),
+  
+  // Booking tracking
+  status: text("status").notNull().default("pending"), // pending, confirmed, failed, cancelled
+  serviceTitanJobId: integer("servicetitan_job_id"), // ST job ID when successfully booked
+  serviceTitanAppointmentId: integer("servicetitan_appointment_id"), // ST appointment ID
+  serviceTitanInvoiceId: integer("servicetitan_invoice_id"), // ST invoice ID
+  serviceTitanPaymentId: integer("servicetitan_payment_id"), // ST payment ID
+  
+  // Payment (for prepaid services like backflow)
+  paymentAmount: numeric("payment_amount"), // Payment amount
+  paymentMethod: text("payment_method"), // Payment method
+  stripePaymentId: text("stripe_payment_id"), // Stripe payment ID
   
   // Metadata and errors
-  metadata: jsonb("metadata"), // Flexible storage for additional data
   errorMessage: text("error_message"), // Error details if booking failed
-  retryCount: integer("retry_count").notNull().default(0),
+  bookedAt: timestamp("booked_at"), // When successfully booked in ServiceTitan
   
   // Timestamps
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
-  bookedAt: timestamp("booked_at"), // When successfully booked in ServiceTitan
+  
+  // Payment tracking (added after initial schema)
+  paymentIntentId: text("payment_intent_id"), // Stripe payment intent ID for idempotency
+  paymentStatus: text("payment_status"), // pending, succeeded, failed, refunded
+  isPrepaid: boolean("is_prepaid").notNull().default(false)
 }, (table) => ({
   statusIdx: index("scheduler_requests_status_idx").on(table.status),
   createdAtIdx: index("scheduler_requests_created_at_idx").on(table.createdAt),
