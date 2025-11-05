@@ -91,35 +91,56 @@ export class ServiceTitanJobs {
         console.log(`[ServiceTitan Jobs] Sample appointment:`, JSON.stringify(appointments[0], null, 2));
       }
       
-      // Fetch location data directly from appointments (they have locationId)
+      // Fetch jobs and locations using the correct API flow:
+      // 1. Appointment has jobId
+      // 2. Job API (/jobs/{jobId}) returns locationId
+      // 3. Locations API (/locations/{locationId}) returns full address
+      
       const jobsWithLocation: JobWithLocation[] = [];
+      const jobCache = new Map<number, any>();
       const locationCache = new Map<number, any>();
       
       for (const apt of appointments) {
         try {
-          // Get location data if not cached
-          let location = null;
-          if (apt.locationId && !locationCache.has(apt.locationId)) {
+          // Step 1: Get the Job using jobId from appointment
+          let job = jobCache.get(apt.jobId);
+          if (!job) {
             try {
-              location = await serviceTitanAuth.makeRequest<any>(
-                `crm/v2/tenant/${this.tenantId}/locations/${apt.locationId}`
+              job = await serviceTitanAuth.makeRequest<any>(
+                `jpm/v2/tenant/${this.tenantId}/jobs/${apt.jobId}`
               );
-              locationCache.set(apt.locationId, location);
-              console.log(`[ServiceTitan Jobs] Fetched location ${apt.locationId}:`, {
-                zip: location.address?.zip,
-                street: location.address?.street,
-                city: location.address?.city,
-              });
+              jobCache.set(apt.jobId, job);
             } catch (error) {
-              console.error(`[ServiceTitan Jobs] Error fetching location ${apt.locationId}:`, error);
+              console.error(`[ServiceTitan Jobs] Error fetching job ${apt.jobId}:`, error);
+              continue;
             }
-          } else if (apt.locationId) {
-            location = locationCache.get(apt.locationId);
           }
           
+          // Step 2: Get the Location using locationId from job
+          let location = null;
+          if (job.locationId) {
+            location = locationCache.get(job.locationId);
+            if (!location) {
+              try {
+                location = await serviceTitanAuth.makeRequest<any>(
+                  `crm/v2/tenant/${this.tenantId}/locations/${job.locationId}`
+                );
+                locationCache.set(job.locationId, location);
+                console.log(`[ServiceTitan Jobs] Fetched location ${job.locationId}:`, {
+                  zip: location.address?.zip,
+                  street: location.address?.street,
+                  city: location.address?.city,
+                });
+              } catch (error) {
+                console.error(`[ServiceTitan Jobs] Error fetching location ${job.locationId}:`, error);
+              }
+            }
+          }
+          
+          // Step 3: Build the job with location data
           jobsWithLocation.push({
             id: apt.jobId,
-            jobNumber: apt.appointmentNumber,
+            jobNumber: job.jobNumber || apt.appointmentNumber,
             appointmentStart: apt.arrivalWindowStart || apt.start,
             appointmentEnd: apt.arrivalWindowEnd || apt.end,
             locationZip: location?.address?.zip,
@@ -130,6 +151,8 @@ export class ServiceTitanJobs {
           console.error(`[ServiceTitan Jobs] Error processing appointment ${apt.id}:`, error);
         }
       }
+      
+      console.log(`[ServiceTitan Jobs] Fetched ${jobCache.size} unique jobs and ${locationCache.size} unique locations`);
 
       console.log(`[ServiceTitan Jobs] Returning ${jobsWithLocation.length} jobs with location data`);
       if (jobsWithLocation.length > 0) {
