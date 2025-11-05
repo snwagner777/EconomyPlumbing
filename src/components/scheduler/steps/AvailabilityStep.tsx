@@ -41,6 +41,7 @@ const PERIOD_LABELS = {
 
 export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlot }: AvailabilityStepProps) {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
   
   const startDate = format(selectedDate, 'yyyy-MM-dd');
   const endDate = format(addDays(selectedDate, 6), 'yyyy-MM-dd');
@@ -173,27 +174,45 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
         </Card>
       )}
 
-      {/* Optimization Info */}
-      {data?.optimization && (
-        <Card className="p-4 bg-primary/5 border-primary/20">
-          <div className="flex items-start gap-3">
-            <Zap className="w-5 h-5 text-primary mt-0.5 shrink-0" />
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm">Smart Scheduling Enabled</h3>
-              <p className="text-xs text-muted-foreground mt-1">
-                Optimized for your zone: <span className="font-semibold text-foreground">{data.optimization.customerZone}</span>
-                {data.optimization.optimizedSlots > 0 && (
-                  <span className="text-primary font-medium">
-                    {' '}• {data.optimization.optimizedSlots} efficient slots found
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </Card>
+      {/* View More Times Button */}
+      {!showCalendar && (
+        <div className="flex justify-center">
+          <Button 
+            variant="outline" 
+            onClick={() => setShowCalendar(true)}
+            className="gap-2"
+            data-testid="button-view-more-times"
+          >
+            <Clock className="w-4 h-4" />
+            View All Available Times
+          </Button>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Calendar and All Time Slots (Hidden by Default) */}
+      {showCalendar && (
+        <>
+          {/* Optimization Info */}
+          {data?.optimization && (
+            <Card className="p-4 bg-primary/5 border-primary/20">
+              <div className="flex items-start gap-3">
+                <Zap className="w-5 h-5 text-primary mt-0.5 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm">Smart Scheduling Enabled</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Optimized for your zone: <span className="font-semibold text-foreground">{data.optimization.customerZone}</span>
+                    {data.optimization.optimizedSlots > 0 && (
+                      <span className="text-primary font-medium">
+                        {' '}• {data.optimization.optimizedSlots} efficient slots found
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Calendar */}
         <div className="lg:col-span-2">
           <Card className="p-4">
@@ -301,6 +320,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
           </Card>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 }
