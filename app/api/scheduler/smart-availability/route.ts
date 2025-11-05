@@ -16,6 +16,7 @@ import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 import { db } from '@/server/db';
 import { serviceTitanZones } from '@shared/schema';
 import { sql } from 'drizzle-orm';
+import { format } from 'date-fns';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -76,9 +77,9 @@ export async function POST(req: NextRequest) {
     const appointments = await fetchAppointments(start, end);
     console.log(`[Smart Scheduler] Found ${appointments.length} existing appointments`);
     
-    // Get arrival windows from ServiceTitan
-    const arrivalWindows = await getArrivalWindows();
-    console.log(`[Smart Scheduler] Using ${arrivalWindows.length} arrival windows from ServiceTitan`);
+    // Get hardcoded arrival windows (business hours: 8-12, 9-1, 10-2, 11-3, 12-4, 1-5, 2-6, 3-7, 4-8)
+    const arrivalWindows = getArrivalWindows();
+    console.log(`[Smart Scheduler] Using ${arrivalWindows.length} hardcoded arrival windows`);
     
     // Generate available slots using arrival windows
     const availableSlots = generateAvailableSlots(start, end, appointments, arrivalWindows);
@@ -88,9 +89,19 @@ export async function POST(req: NextRequest) {
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
     console.log(`[Smart Scheduler] Found ${existingJobs.length} jobs for proximity scoring`);
     
+    // Fetch technician assignments for all jobs
+    const appointmentIds = existingJobs.map(j => j.appointmentId);
+    const techAssignments = await serviceTitanJobs.getTechnicianAssignments(appointmentIds);
+    
+    // Add technician IDs to jobs
+    existingJobs.forEach(job => {
+      job.technicianId = techAssignments.get(job.appointmentId);
+    });
+    
     // Extract customer zone from serviceTitanZones table
     const customerZone = customerZip ? await getZoneForZip(customerZip) : null;
-    console.log(`[Smart Scheduler] Customer zone: ${customerZone || 'unknown'}`);
+    const customerZoneNumber = customerZone ? parseZoneNumber(customerZone) : null;
+    console.log(`[Smart Scheduler] Customer zone: ${customerZone} (zone #${customerZoneNumber || 'unknown'})`);
     
     // Precompute zones for all job ZIPs (batch lookup for performance)
     // Normalize to 5 digits to handle ZIP+4 format (e.g., "78701-1234" → "78701")
@@ -125,40 +136,40 @@ export async function POST(req: NextRequest) {
       console.log(`[Smart Scheduler] Mapped ${Object.keys(zipToZone).length} ZIPs to zones`);
     }
     
-    // Score each slot based on proximity to existing jobs
+    // Score each slot based on technician route contiguity and zone adjacency
     const scoredSlots: ScoredSlot[] = availableSlots.map((slot, index) => {
       const slotStart = new Date(slot.start);
       const slotEnd = new Date(slot.end);
+      const slotDate = format(slotStart, 'yyyy-MM-dd');
       
-      // Find jobs overlapping with this time window
-      const overlappingJobs = existingJobs.filter(job => {
-        const jobStart = new Date(job.appointmentStart);
-        const jobEnd = new Date(job.appointmentEnd);
-        return (
-          (jobStart >= slotStart && jobStart < slotEnd) ||
-          (jobEnd > slotStart && jobEnd <= slotEnd) ||
-          (jobStart <= slotStart && jobEnd >= slotEnd)
-        );
+      // Find all jobs scheduled on the same day (not just time overlap!)
+      const sameDayJobs = existingJobs.filter(job => {
+        const jobDate = format(new Date(job.appointmentStart), 'yyyy-MM-dd');
+        return jobDate === slotDate;
       });
       
-      // Count jobs in same zone using precomputed zone map (normalized ZIPs)
-      let nearbyJobs = 0;
-      if (customerZone) {
-        nearbyJobs = overlappingJobs.filter(job => {
-          const normalizedJobZip = normalizeZip(job.locationZip);
-          if (!normalizedJobZip) return false; // Skip invalid ZIPs
-          const jobZone = zipToZone[normalizedJobZip];
-          return jobZone === customerZone;
-        }).length;
-      }
-      
-      // Calculate proximity score (0-100)
-      const proximityScore = calculateProximityScore(
-        customerZone,
-        overlappingJobs,
-        nearbyJobs
+      // Calculate proximity score based on technician routes and zone adjacency
+      const proximityScore = calculateProximityScoreV2(
+        slotStart,
+        slotEnd,
+        customerZoneNumber,
+        sameDayJobs,
+        zipToZone,
+        normalizeZip,
+        parseZoneNumber
       );
       
+      // Count jobs in same/adjacent zones for display
+      const nearbyJobCount = sameDayJobs.filter(job => {
+        const jobZip = normalizeZip(job.locationZip);
+        const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+        const jobZoneNum = parseZoneNumber(jobZoneName);
+        
+        if (!customerZoneNumber || !jobZoneNum) return false;
+        const distance = Math.abs(customerZoneNumber - jobZoneNum);
+        return distance <= 1; // Same zone or adjacent
+      }).length;
+
       return {
         id: `slot-${index}`,
         start: slot.start,
@@ -167,7 +178,7 @@ export async function POST(req: NextRequest) {
         timeLabel: formatTimeWindow(slot.start, slot.end),
         period: getTimePeriod(slot.start),
         proximityScore,
-        nearbyJobs,
+        nearbyJobs: nearbyJobCount,
         zone: customerZone || undefined,
       };
     });
@@ -220,33 +231,116 @@ async function getZoneForZip(zip: string): Promise<string | null> {
 }
 
 /**
- * Calculate proximity score (0-100)
- * Factors:
- * - Number of nearby jobs in same zone
- * - Total jobs in time window (route density)
+ * Parse zone number from zone name
+ * Example: "3 - Central" → 3
  */
-function calculateProximityScore(
-  customerZone: string | null,
-  overlappingJobs: any[],
-  nearbyJobs: number
+function parseZoneNumber(zoneName: string | null): number | null {
+  if (!zoneName) return null;
+  const match = zoneName.match(/^(\d+)/);
+  return match ? parseInt(match[1], 10) : null;
+}
+
+/**
+ * Calculate zone adjacency score
+ * Same zone: 95, Adjacent (±1): 80, Two away (±2): 65, Far (±3+): 45
+ */
+function getZoneAdjacencyScore(customerZoneNum: number | null, jobZoneNum: number | null): number {
+  if (!customerZoneNum || !jobZoneNum) return 0;
+  
+  const distance = Math.abs(customerZoneNum - jobZoneNum);
+  if (distance === 0) return 95; // Same zone
+  if (distance === 1) return 80; // Adjacent zone
+  if (distance === 2) return 65; // Two zones away
+  return 45; // Far away
+}
+
+/**
+ * NEW Proximity Algorithm V2
+ * Scores based on:
+ * 1. Technician route contiguity (appointments within 2-3 hours in same/adjacent zones)
+ * 2. Zone adjacency (same zone = best, adjacent zones = good, far = poor)
+ * 3. Same-day job clustering (more jobs same day in nearby zones = better)
+ */
+function calculateProximityScoreV2(
+  slotStart: Date,
+  slotEnd: Date,
+  customerZoneNumber: number | null,
+  sameDayJobs: any[],
+  zipToZone: Record<string, string>,
+  normalizeZip: (zip: string | null | undefined) => string | null,
+  parseZoneNumber: (zoneName: string | null) => number | null
 ): number {
-  if (!customerZone) {
+  if (!customerZoneNumber) {
     // No zone info = neutral score
     return 50;
   }
-  
-  // Base score on nearby jobs
-  let score = 50;
-  
-  // Each nearby job adds 15 points (max 90)
-  score += Math.min(nearbyJobs * 15, 40);
-  
-  // Bonus for high-density routes (4+ total jobs in window)
-  if (overlappingJobs.length >= 4) {
-    score += 10;
+
+  // Group jobs by technician
+  const jobsByTech = new Map<number, any[]>();
+  for (const job of sameDayJobs) {
+    if (job.technicianId) {
+      if (!jobsByTech.has(job.technicianId)) {
+        jobsByTech.set(job.technicianId, []);
+      }
+      jobsByTech.get(job.technicianId)!.push(job);
+    }
   }
-  
-  return Math.min(score, 100);
+
+  let bestScore = 50; // Base score
+
+  // Check each technician's schedule for contiguous opportunities
+  for (const [techId, techJobs] of jobsByTech.entries()) {
+    // Sort jobs by time
+    const sortedJobs = techJobs.sort((a, b) => 
+      new Date(a.appointmentStart).getTime() - new Date(b.appointmentStart).getTime()
+    );
+
+    // Check for contiguous appointments (within 3 hours before/after our slot)
+    const contiguityWindow = 3 * 60 * 60 * 1000; // 3 hours in milliseconds
+    
+    for (const job of sortedJobs) {
+      const jobStart = new Date(job.appointmentStart);
+      const jobEnd = new Date(job.appointmentEnd);
+      const jobZip = normalizeZip(job.locationZip);
+      const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+      const jobZoneNum = parseZoneNumber(jobZoneName);
+
+      // Check if job is within contiguity window
+      const timeBefore = slotStart.getTime() - jobEnd.getTime();
+      const timeAfter = jobStart.getTime() - slotEnd.getTime();
+      
+      const isContiguous = (
+        (timeBefore >= 0 && timeBefore <= contiguityWindow) || // Job ends before our slot
+        (timeAfter >= 0 && timeAfter <= contiguityWindow)      // Job starts after our slot
+      );
+
+      if (isContiguous) {
+        // Calculate zone adjacency score
+        const zoneScore = getZoneAdjacencyScore(customerZoneNumber, jobZoneNum);
+        bestScore = Math.max(bestScore, zoneScore);
+      }
+    }
+  }
+
+  // Boost score if there are multiple jobs in same/adjacent zones that day (even if not contiguous)
+  const jobsInNearbyZones = sameDayJobs.filter(job => {
+    const jobZip = normalizeZip(job.locationZip);
+    const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+    const jobZoneNum = parseZoneNumber(jobZoneName);
+    
+    if (!jobZoneNum) return false;
+    const distance = Math.abs(customerZoneNumber - jobZoneNum);
+    return distance <= 1; // Same zone or adjacent
+  });
+
+  // Bonus for clustering (more jobs nearby that day = better)
+  if (jobsInNearbyZones.length >= 3) {
+    bestScore = Math.min(100, bestScore + 10);
+  } else if (jobsInNearbyZones.length >= 2) {
+    bestScore = Math.min(100, bestScore + 5);
+  }
+
+  return Math.min(bestScore, 100);
 }
 
 function formatTimeWindow(start: string, end: string): string {
@@ -294,66 +388,21 @@ async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appoin
 }
 
 /**
- * Get arrival windows by extracting REAL windows from existing appointments
- * This gives us the actual configured windows (e.g., 2-6 PM, 8-12 AM, etc.)
+ * Get hardcoded arrival windows based on actual business hours
+ * Windows: 8-12, 9-1, 10-2, 11-3, 12-4, 1-5, 2-6, 3-7, 4-8
  */
-async function getArrivalWindows(): Promise<Array<{ start: string; end: string; durationHours: number }>> {
-  try {
-    // Fetch last 30 days of appointments to find all arrival window patterns
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - 30);
-    
-    const appointments = await serviceTitanJobs.getJobsForDateRange(startDate, endDate);
-    
-    // Extract unique arrival windows from actual appointments
-    const windowsMap = new Map<string, { start: string; end: string; durationHours: number }>();
-    
-    for (const job of appointments) {
-      if (job.appointmentStart && job.appointmentEnd) {
-        const startTime = new Date(job.appointmentStart);
-        const endTime = new Date(job.appointmentEnd);
-        
-        // Convert from UTC to Central Time (UTC-6 for CST, UTC-5 for CDT)
-        // Use toLocaleString to get local time, then extract hours/minutes
-        const centralStart = new Date(startTime.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
-        const centralEnd = new Date(endTime.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
-        
-        // Format as HH:mm (24-hour format) in Central Time
-        const start = `${centralStart.getHours().toString().padStart(2, '0')}:${centralStart.getMinutes().toString().padStart(2, '0')}`;
-        const end = `${centralEnd.getHours().toString().padStart(2, '0')}:${centralEnd.getMinutes().toString().padStart(2, '0')}`;
-        
-        const key = `${start}-${end}`;
-        if (!windowsMap.has(key)) {
-          const durationMs = endTime.getTime() - startTime.getTime();
-          const durationHours = durationMs / (1000 * 60 * 60);
-          
-          windowsMap.set(key, { start, end, durationHours });
-        }
-      }
-    }
-    
-    const windows = Array.from(windowsMap.values());
-    console.log(`[Smart Scheduler] Extracted ${windows.length} unique arrival windows from appointments:`, 
-      windows.map(w => `${w.start}-${w.end}`));
-    
-    // If no windows found, use fallback
-    if (windows.length === 0) {
-      console.log('[Smart Scheduler] No windows found, using fallback');
-      return [
-        { start: '08:00', end: '12:00', durationHours: 4 },
-        { start: '13:00', end: '17:00', durationHours: 4 },
-      ];
-    }
-    
-    return windows;
-  } catch (error) {
-    console.error('[Smart Scheduler] Error extracting arrival windows:', error);
-    return [
-      { start: '08:00', end: '12:00', durationHours: 4 },
-      { start: '13:00', end: '17:00', durationHours: 4 },
-    ];
-  }
+function getArrivalWindows(): Array<{ start: string; end: string; durationHours: number }> {
+  return [
+    { start: '08:00', end: '12:00', durationHours: 4 }, // 8 AM - 12 PM
+    { start: '09:00', end: '13:00', durationHours: 4 }, // 9 AM - 1 PM
+    { start: '10:00', end: '14:00', durationHours: 4 }, // 10 AM - 2 PM
+    { start: '11:00', end: '15:00', durationHours: 4 }, // 11 AM - 3 PM
+    { start: '12:00', end: '16:00', durationHours: 4 }, // 12 PM - 4 PM
+    { start: '13:00', end: '17:00', durationHours: 4 }, // 1 PM - 5 PM
+    { start: '14:00', end: '18:00', durationHours: 4 }, // 2 PM - 6 PM
+    { start: '15:00', end: '19:00', durationHours: 4 }, // 3 PM - 7 PM
+    { start: '16:00', end: '20:00', durationHours: 4 }, // 4 PM - 8 PM
+  ];
 }
 
 /**

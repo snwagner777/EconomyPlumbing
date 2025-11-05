@@ -50,11 +50,13 @@ interface ServiceTitanAppointment {
 interface JobWithLocation {
   id: number;
   jobNumber: string;
+  appointmentId: number;
   appointmentStart: string;
   appointmentEnd: string;
   locationZip?: string;
   locationAddress?: string;
   locationCity?: string;
+  technicianId?: number;
 }
 
 export class ServiceTitanJobs {
@@ -141,6 +143,7 @@ export class ServiceTitanJobs {
           jobsWithLocation.push({
             id: apt.jobId,
             jobNumber: job.jobNumber || apt.appointmentNumber,
+            appointmentId: apt.id,
             appointmentStart: apt.arrivalWindowStart || apt.start,
             appointmentEnd: apt.arrivalWindowEnd || apt.end,
             locationZip: location?.address?.zip,
@@ -162,6 +165,69 @@ export class ServiceTitanJobs {
     } catch (error) {
       console.error('[ServiceTitan Jobs] Error fetching jobs for date range:', error);
       return []; // Return empty array on error (graceful degradation)
+    }
+  }
+
+  /**
+   * Fetch technician assignments for appointments
+   * Returns a map of appointmentId -> technicianId
+   * 
+   * NOTE: ServiceTitan API doesn't support filtering by appointmentIds,
+   * so we fetch all assignments and filter client-side.
+   * We paginate to ensure we get all assignments.
+   */
+  async getTechnicianAssignments(appointmentIds: number[]): Promise<Map<number, number>> {
+    try {
+      if (appointmentIds.length === 0) {
+        return new Map();
+      }
+
+      console.log(`[ServiceTitan Jobs] Fetching technician assignments for ${appointmentIds.length} appointments`);
+      
+      const assignmentMap = new Map<number, number>();
+      const appointmentIdSet = new Set(appointmentIds); // For faster lookup
+      let page = 1;
+      let hasMore = true;
+      const pageSize = 500;
+      let totalFetched = 0;
+
+      // Paginate through all assignments until we have all the ones we need
+      while (hasMore && assignmentMap.size < appointmentIds.length) {
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          pageSize: pageSize.toString(),
+        });
+
+        const response = await serviceTitanAuth.makeRequest<{ data: any[]; hasMore?: boolean }>(
+          `jpm/v2/tenant/${this.tenantId}/appointment-assignments?${queryParams.toString()}`
+        );
+
+        const assignments = response.data || [];
+        totalFetched += assignments.length;
+        
+        // Filter to only the appointments we care about and build map
+        for (const assignment of assignments) {
+          if (appointmentIdSet.has(assignment.appointmentId) && assignment.technicianId) {
+            assignmentMap.set(assignment.appointmentId, assignment.technicianId);
+          }
+        }
+
+        // Check if there are more pages (API might return hasMore or we check if we got a full page)
+        hasMore = assignments.length === pageSize;
+        page++;
+
+        // Safety: don't fetch more than 10 pages (5000 assignments)
+        if (page > 10) {
+          console.log(`[ServiceTitan Jobs] Reached page limit (10 pages), stopping pagination`);
+          break;
+        }
+      }
+
+      console.log(`[ServiceTitan Jobs] Found ${assignmentMap.size}/${appointmentIds.length} technician assignments (fetched ${totalFetched} total assignments)`);
+      return assignmentMap;
+    } catch (error) {
+      console.error('[ServiceTitan Jobs] Error fetching technician assignments:', error);
+      return new Map(); // Return empty map on error (graceful degradation)
     }
   }
 

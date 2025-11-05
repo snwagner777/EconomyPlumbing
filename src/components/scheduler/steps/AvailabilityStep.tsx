@@ -106,6 +106,23 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return { label: 'Available', variant: 'outline' as const, color: 'text-muted-foreground' };
   };
 
+  // Show loading state while analyzing schedule
+  if (isLoading) {
+    return (
+      <Card className="p-12">
+        <div className="flex flex-col items-center justify-center gap-4 text-center">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Analyzing schedule, please wait...</h3>
+            <p className="text-sm text-muted-foreground">
+              Finding the most fuel-efficient appointment times for your area
+            </p>
+          </div>
+        </div>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Top Appointments - Prominent Display */}
