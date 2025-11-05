@@ -74,40 +74,46 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Upsert phone contact (insert or update by normalized value)
+    // Upsert phone contact (check if exists, then insert or skip)
     if (phone) {
       const normalizedPhone = normalizeContact(phone, 'phone');
-      await db.insert(serviceTitanContacts).values({
-        customerId: customer.id, // Integer customer ID
-        contactType: 'Phone',
-        value: phone,
-        normalizedValue: normalizedPhone,
-      }).onConflictDoUpdate({
-        target: serviceTitanContacts.normalizedValue,
-        set: {
-          value: phone,
-          contactType: 'Phone',
+      
+      // Check if contact already exists
+      const existingPhone = await db.select()
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalizedPhone))
+        .limit(1);
+      
+      if (existingPhone.length === 0) {
+        // Only insert if doesn't exist
+        await db.insert(serviceTitanContacts).values({
           customerId: customer.id,
-        },
-      });
+          contactType: 'Phone',
+          value: phone,
+          normalizedValue: normalizedPhone,
+        });
+      }
     }
 
-    // Upsert email contact (insert or update by normalized value)
+    // Upsert email contact (check if exists, then insert or skip)
     if (email) {
       const normalizedEmail = normalizeContact(email, 'email');
-      await db.insert(serviceTitanContacts).values({
-        customerId: customer.id, // Integer customer ID
-        contactType: 'Email',
-        value: email,
-        normalizedValue: normalizedEmail,
-      }).onConflictDoUpdate({
-        target: serviceTitanContacts.normalizedValue,
-        set: {
-          value: email,
-          contactType: 'Email',
+      
+      // Check if contact already exists
+      const existingEmail = await db.select()
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalizedEmail))
+        .limit(1);
+      
+      if (existingEmail.length === 0) {
+        // Only insert if doesn't exist
+        await db.insert(serviceTitanContacts).values({
           customerId: customer.id,
-        },
-      });
+          contactType: 'Email',
+          value: email,
+          normalizedValue: normalizedEmail,
+        });
+      }
     }
 
     console.log(`[Scheduler] ✅ Customer ${customer.id} synced to local database (serviceTitanCustomers + serviceTitanContacts)`);
