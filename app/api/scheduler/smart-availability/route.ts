@@ -197,7 +197,11 @@ export async function POST(req: NextRequest) {
       return scoreDiff;
     });
     
-    console.log(`[Smart Scheduler] Top 3 slots: ${scoredSlots.slice(0, 3).map(s => `${s.timeLabel} (score: ${s.proximityScore})`).join(', ')}`);
+    // Log top 10 slots with scores for debugging
+    console.log(`[Smart Scheduler] Top 10 slots by score:`);
+    scoredSlots.slice(0, 10).forEach((s, i) => {
+      console.log(`  ${i + 1}. ${s.timeLabel} - Score: ${s.proximityScore}`);
+    });
     
     return NextResponse.json({
       success: true,
@@ -328,6 +332,14 @@ function calculateProximityScoreV2(
       if (isContiguous) {
         // Calculate zone adjacency score
         const zoneScore = getZoneAdjacencyScore(customerZoneNumber, jobZoneNum);
+        
+        // Debug logging
+        if (process.env.NODE_ENV === 'development') {
+          const slotTime = format(slotStart, 'h:mm a');
+          const jobTime = format(jobStart, 'h:mm a');
+          console.log(`[Proximity] ${slotTime} slot near ${jobTime} job: zone score ${zoneScore} (customer zone ${customerZoneNumber}, job zone ${jobZoneNum})`);
+        }
+        
         bestScore = Math.max(bestScore, zoneScore);
       }
     }
