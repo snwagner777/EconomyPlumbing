@@ -5,15 +5,18 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
+import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { insertTrackingNumberSchema } from '@shared/schema';
 
 export async function GET(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
     }
 
     const { searchParams } = new URL(req.url);
@@ -35,9 +38,12 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = await requireAdmin();
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error },
+        { status: 401 }
+      );
     }
 
     const body = await req.json();
