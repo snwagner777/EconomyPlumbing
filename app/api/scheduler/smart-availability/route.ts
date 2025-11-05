@@ -474,7 +474,7 @@ function generateAvailableSlots(
       const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
       
-      const isSlotAvailable = !hasConflict && slotEnd > minBookingTime;
+      const isSlotAvailable = !hasConflict && slotStart >= minBookingTime;
       
       if (isSlotAvailable) {
         slots.push({

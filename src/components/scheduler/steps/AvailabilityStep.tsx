@@ -100,11 +100,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return acc;
   }, {} as Record<string, TimeSlot[]>);
 
-  const getEfficiencyBadge = (score: number) => {
-    if (score >= 80) return { label: 'Excellent', variant: 'default' as const, color: 'text-green-600 dark:text-green-400' };
-    if (score >= 60) return { label: 'Good', variant: 'secondary' as const, color: 'text-blue-600 dark:text-blue-400' };
-    return { label: 'Available', variant: 'outline' as const, color: 'text-muted-foreground' };
-  };
+  // Badge helper removed - cleaner UI without efficiency badges
 
   // Show loading state while analyzing schedule
   if (isLoading) {
@@ -168,7 +164,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
           <div className="space-y-3">
             {topSlots.map((slot, index) => {
               const isSelected = selectedSlot?.id === slot.id;
-              const efficiency = getEfficiencyBadge(slot.proximityScore || 0);
               
               return (
                 <Card
@@ -275,7 +270,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               disabled={(date) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                return date < today || date > addDays(today, 30);
+                return date < today || date > addDays(today, 45);
               }}
               className="rounded-md border"
             />
@@ -318,7 +313,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                         {periodSlots.map((slot) => {
                           const isSelected = selectedSlot?.id === slot.id;
                           const score = slot.proximityScore || 0;
-                          const efficiency = getEfficiencyBadge(score);
                           
                           return (
                             <Button
