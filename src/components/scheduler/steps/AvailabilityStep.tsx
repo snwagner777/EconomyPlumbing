@@ -141,7 +141,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   : 'text-blue-700 dark:text-blue-300'
               }`}>
                 {hasHighEfficiencySlots 
-                  ? 'These times are fuel-efficient because we already have technicians nearby in your area'
+                  ? 'We already have other jobs scheduled nearby during these times - great for reducing costs and wait times!'
                   : 'Select a time that works best for your schedule'
                 }
               </p>
@@ -184,23 +184,15 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                     </div>
                     
                     <div className="flex items-center gap-2 shrink-0">
-                      <Badge 
-                        variant={isSelected ? 'outline' : efficiency.variant}
-                        className={`gap-1.5 ${isSelected ? 'border-white/50 text-white' : efficiency.color}`}
-                      >
-                        <Zap className="w-3.5 h-3.5" />
-                        <span className="font-semibold">{Math.round(slot.proximityScore || 0)}%</span>
-                      </Badge>
-                      
-                      {slot.nearbyJobs && slot.nearbyJobs > 0 && (
+                      {slot.nearbyJobs && slot.nearbyJobs > 0 ? (
                         <Badge 
-                          variant={isSelected ? 'outline' : 'outline'}
-                          className={`gap-1.5 ${isSelected ? 'border-white/50 text-white' : ''}`}
+                          variant={isSelected ? 'outline' : 'secondary'}
+                          className={`gap-1.5 ${isSelected ? 'border-white/50 text-white' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}
                         >
                           <MapPin className="w-3.5 h-3.5" />
-                          {slot.nearbyJobs} nearby
+                          {slot.nearbyJobs} job{slot.nearbyJobs > 1 ? 's' : ''} nearby
                         </Badge>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </Card>

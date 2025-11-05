@@ -353,7 +353,12 @@ function generateAvailableSlots(
         );
       });
       
-      if (!hasConflict && slotStart >= new Date()) {
+      // Allow slots that end after current time (not just start)
+      // This shows today's afternoon slot even if morning has passed
+      const now = new Date();
+      const isSlotAvailable = !hasConflict && slotEnd > now;
+      
+      if (isSlotAvailable) {
         slots.push({
           start: slotStart.toISOString(),
           end: slotEnd.toISOString(),

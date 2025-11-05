@@ -66,40 +66,69 @@ export class ServiceTitanJobs {
 
   /**
    * Get scheduled jobs for a date range (for smart scheduling optimization)
+   * Uses Appointments API instead of Jobs API for better reliability
    */
   async getJobsForDateRange(startDate: Date, endDate: Date): Promise<JobWithLocation[]> {
     try {
+      console.log(`[ServiceTitan Jobs] Fetching appointments from ${startDate.toISOString()} to ${endDate.toISOString()}`);
+      
+      // Use Appointments API directly - more reliable than Jobs API with includeAppointments
       const queryParams = new URLSearchParams({
         startsOnOrAfter: startDate.toISOString(),
         startsOnOrBefore: endDate.toISOString(),
-        includeAppointments: 'true',
         page: '1',
-        pageSize: '500', // Get up to 500 jobs
+        pageSize: '500',
       });
 
       const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
-        `jpm/v2/tenant/${this.tenantId}/jobs?${queryParams.toString()}`
+        `jpm/v2/tenant/${this.tenantId}/appointments?${queryParams.toString()}`
       );
 
-      const jobs = response.data || [];
+      const appointments = response.data || [];
+      console.log(`[ServiceTitan Jobs] API returned ${appointments.length} appointments`);
+      
+      if (appointments.length > 0) {
+        console.log(`[ServiceTitan Jobs] Sample appointment:`, JSON.stringify(appointments[0], null, 2));
+      }
+      
+      // Now fetch job details for each appointment to get location data
+      const jobsMap = new Map<number, any>();
+      
+      for (const apt of appointments) {
+        if (!apt.jobId || jobsMap.has(apt.jobId)) continue;
+        
+        try {
+          const job = await serviceTitanAuth.makeRequest<any>(
+            `jpm/v2/tenant/${this.tenantId}/jobs/${apt.jobId}`
+          );
+          jobsMap.set(apt.jobId, job);
+        } catch (error) {
+          console.error(`[ServiceTitan Jobs] Error fetching job ${apt.jobId}:`, error);
+        }
+      }
+      
+      console.log(`[ServiceTitan Jobs] Fetched ${jobsMap.size} unique jobs`);
       
       // Extract job + location data
-      const jobsWithLocation: JobWithLocation[] = jobs
-        .filter(job => job.appointments && job.appointments.length > 0)
-        .map(job => {
-          const firstAppointment = job.appointments[0];
+      const jobsWithLocation: JobWithLocation[] = appointments
+        .filter(apt => jobsMap.has(apt.jobId))
+        .map(apt => {
+          const job = jobsMap.get(apt.jobId);
           return {
             id: job.id,
             jobNumber: job.jobNumber,
-            appointmentStart: firstAppointment.arrivalWindowStart || firstAppointment.start,
-            appointmentEnd: firstAppointment.arrivalWindowEnd || firstAppointment.end,
+            appointmentStart: apt.arrivalWindowStart || apt.start,
+            appointmentEnd: apt.arrivalWindowEnd || apt.end,
             locationZip: job.location?.zip,
             locationAddress: job.location?.street,
             locationCity: job.location?.city,
           };
         });
 
-      console.log(`[ServiceTitan Jobs] Found ${jobsWithLocation.length} scheduled jobs for date range`);
+      console.log(`[ServiceTitan Jobs] Returning ${jobsWithLocation.length} jobs with location data`);
+      if (jobsWithLocation.length > 0) {
+        console.log(`[ServiceTitan Jobs] Sample:`, jobsWithLocation[0]);
+      }
       return jobsWithLocation;
     } catch (error) {
       console.error('[ServiceTitan Jobs] Error fetching jobs for date range:', error);
