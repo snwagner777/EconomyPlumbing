@@ -99,7 +99,7 @@ export class ServiceTitanJobs {
         
         try {
           const job = await serviceTitanAuth.makeRequest<any>(
-            `jpm/v2/tenant/${this.tenantId}/jobs/${apt.jobId}`
+            `jpm/v2/tenant/${this.tenantId}/jobs/${apt.jobId}?includeLocation=true`
           );
           jobsMap.set(apt.jobId, job);
         } catch (error) {
@@ -108,6 +108,14 @@ export class ServiceTitanJobs {
       }
       
       console.log(`[ServiceTitan Jobs] Fetched ${jobsMap.size} unique jobs`);
+      if (jobsMap.size > 0) {
+        const firstJob = Array.from(jobsMap.values())[0];
+        console.log(`[ServiceTitan Jobs] Sample job with location:`, JSON.stringify({
+          id: firstJob.id,
+          locationZip: firstJob.location?.zip,
+          locationAddress: firstJob.location?.address,
+        }, null, 2));
+      }
       
       // Extract job + location data
       const jobsWithLocation: JobWithLocation[] = appointments

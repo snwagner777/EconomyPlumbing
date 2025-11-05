@@ -255,6 +255,46 @@ export class ServiceTitanSettings {
   }
 
   /**
+   * Get arrival windows from ServiceTitan Settings
+   * Returns actual arrival window configurations for scheduling
+   */
+  async getArrivalWindows(): Promise<Array<{ id: number; name: string; start: string; end: string; durationHours: number }>> {
+    try {
+      const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+        `settings/v2/tenant/${this.tenantId}/arrival-windows`
+      );
+      
+      const windows = (response.data || []).map((window: any) => ({
+        id: window.id,
+        name: window.name || `${window.start} - ${window.end}`,
+        start: window.start, // Format: "HH:mm" like "08:00"
+        end: window.end,     // Format: "HH:mm" like "12:00"
+        durationHours: this.calculateDuration(window.start, window.end),
+      }));
+      
+      console.log(`[ServiceTitan Settings] Found ${windows.length} arrival windows from API`);
+      return windows;
+    } catch (error) {
+      console.error('[ServiceTitan Settings] Error fetching arrival windows:', error);
+      // Fallback to common business hours windows
+      console.log('[ServiceTitan Settings] Using fallback arrival windows');
+      return [
+        { id: 1, name: 'Morning', start: '08:00', end: '12:00', durationHours: 4 },
+        { id: 2, name: 'Afternoon', start: '13:00', end: '17:00', durationHours: 4 },
+      ];
+    }
+  }
+  
+  /**
+   * Calculate duration in hours between two time strings
+   */
+  private calculateDuration(start: string, end: string): number {
+    const [startHour, startMin] = start.split(':').map(Number);
+    const [endHour, endMin] = end.split(':').map(Number);
+    return (endHour * 60 + endMin - (startHour * 60 + startMin)) / 60;
+  }
+
+  /**
    * Clear all caches (for admin refresh)
    */
   clearCache(): void {

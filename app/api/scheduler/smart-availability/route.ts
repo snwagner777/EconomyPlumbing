@@ -294,21 +294,16 @@ async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appoin
 }
 
 /**
- * Get arrival windows (hardcoded business hours)
- * Business hours: Morning (8 AM - 12 PM), Afternoon (1 PM - 5 PM)
- * 
- * IMPORTANT: We use hardcoded windows instead of pulling from ServiceTitan
- * to avoid including emergency/after-hours appointments in normal scheduling.
+ * Get arrival windows from ServiceTitan Settings API
+ * Returns actual configured arrival windows (e.g., 10-2, 12-4, 3-7, 4-8, etc.)
  */
 async function getArrivalWindows(): Promise<Array<{ start: string; end: string; durationHours: number }>> {
-  // Hardcoded business hours windows to prevent after-hours slots from appearing
-  return [
-    // Morning window: 8 AM - 12 PM (4 hours)
-    { start: '08:00', end: '12:00', durationHours: 4 },
-    
-    // Afternoon window: 1 PM - 5 PM (4 hours) 
-    { start: '13:00', end: '17:00', durationHours: 4 },
-  ];
+  const windows = await serviceTitanSettings.getArrivalWindows();
+  return windows.map(w => ({
+    start: w.start,
+    end: w.end,
+    durationHours: w.durationHours,
+  }));
 }
 
 /**

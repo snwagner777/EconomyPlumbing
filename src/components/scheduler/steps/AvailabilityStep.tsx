@@ -289,9 +289,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                     <div key={period} className="space-y-2">
                       <div className="flex items-center gap-2 mb-3">
                         <h4 className="font-semibold text-sm">{PERIOD_LABELS[period]}</h4>
-                        <Badge variant="secondary" className="text-xs">
-                          {periodSlots.length} slots
-                        </Badge>
                       </div>
 
                       <div className="grid grid-cols-1 gap-2">
@@ -328,11 +325,11 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                                 )}
                                 {slot.nearbyJobs && slot.nearbyJobs > 0 && (
                                   <Badge 
-                                    variant={isSelected ? 'outline' : 'outline'}
-                                    className={`text-xs gap-1 ${isSelected ? 'border-white/50' : ''}`}
+                                    variant={isSelected ? 'outline' : 'secondary'}
+                                    className={`text-xs gap-1 ${isSelected ? 'border-white/50' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}
                                   >
                                     <MapPin className="w-3 h-3" />
-                                    {slot.nearbyJobs}
+                                    {slot.nearbyJobs} nearby
                                   </Badge>
                                 )}
                               </div>
