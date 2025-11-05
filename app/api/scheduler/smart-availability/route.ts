@@ -187,8 +187,15 @@ export async function POST(req: NextRequest) {
       };
     });
     
-    // Sort by proximity score (highest first = most fuel efficient)
-    scoredSlots.sort((a, b) => b.proximityScore - a.proximityScore);
+    // Sort by proximity score (highest first), then by time (earlier preferred)
+    scoredSlots.sort((a, b) => {
+      const scoreDiff = b.proximityScore - a.proximityScore;
+      // If scores are within 5 points, prioritize earlier times
+      if (Math.abs(scoreDiff) <= 5) {
+        return new Date(a.start).getTime() - new Date(b.start).getTime();
+      }
+      return scoreDiff;
+    });
     
     console.log(`[Smart Scheduler] Top 3 slots: ${scoredSlots.slice(0, 3).map(s => `${s.timeLabel} (score: ${s.proximityScore})`).join(', ')}`);
     
