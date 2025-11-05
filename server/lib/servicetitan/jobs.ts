@@ -311,9 +311,23 @@ export class ServiceTitanJobs {
       }
 
       // Determine appointment start/end (actual scheduled slot)
-      // If provided explicitly, use those. Otherwise, use arrival window times.
-      const appointmentStart = data.appointmentStart || arrivalWindow.start;
-      const appointmentEnd = data.appointmentEnd || arrivalWindow.end;
+      // Appointments are 2 hours long, arrival windows are 4 hours
+      let appointmentStart: string;
+      let appointmentEnd: string;
+      
+      if (data.appointmentStart && data.appointmentEnd) {
+        // Use explicitly provided times
+        appointmentStart = data.appointmentStart;
+        appointmentEnd = data.appointmentEnd;
+      } else {
+        // Create a 2-hour appointment starting at the arrival window start
+        const startDate = new Date(arrivalWindow.start);
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 2); // 2-hour appointment duration
+        
+        appointmentStart = startDate.toISOString();
+        appointmentEnd = endDate.toISOString();
+      }
 
       // Build appointment object
       const appointmentData: any = {
