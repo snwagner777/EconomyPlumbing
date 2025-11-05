@@ -37,6 +37,7 @@ interface ScoredSlot {
   proximityScore: number; // 0-100, higher = more fuel efficient
   nearbyJobs: number; // Count of jobs in same zone during this window
   zone?: string; // ZIP prefix or area code
+  technicianId?: number | null; // Pre-assigned technician for optimal routing
   availableCapacity?: number; // From ServiceTitan Capacity API
   totalCapacity?: number; // From ServiceTitan Capacity API
 }
@@ -152,8 +153,8 @@ export async function POST(req: NextRequest) {
         return jobDate === slotDate;
       });
       
-      // Calculate proximity score based on technician routes and zone adjacency
-      const proximityScore = calculateProximityScoreV2(
+      // Calculate proximity score and best technician for this slot
+      const proximityResult = calculateProximityScoreV2(
         slotStart,
         slotEnd,
         customerZoneNumber,
@@ -181,9 +182,10 @@ export async function POST(req: NextRequest) {
         date: slot.start.split('T')[0],
         timeLabel: formatTimeWindow(slot.start, slot.end),
         period: getTimePeriod(slot.start),
-        proximityScore,
+        proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
         zone: customerZone || undefined,
+        technicianId: proximityResult.technicianId, // Pre-assigned technician for optimal routing
       };
     });
     
@@ -275,6 +277,8 @@ function getZoneAdjacencyScore(customerZoneNum: number | null, jobZoneNum: numbe
  * 1. Technician route contiguity (appointments within 2-3 hours in same/adjacent zones)
  * 2. Zone adjacency (same zone = best, adjacent zones = good, far = poor)
  * 3. Same-day job clustering (more jobs same day in nearby zones = better)
+ * 
+ * Returns: { score: number, technicianId: number | null }
  */
 function calculateProximityScoreV2(
   slotStart: Date,
@@ -284,10 +288,10 @@ function calculateProximityScoreV2(
   zipToZone: Record<string, string>,
   normalizeZip: (zip: string | null | undefined) => string | null,
   parseZoneNumber: (zoneName: string | null) => number | null
-): number {
+): { score: number; technicianId: number | null } {
   if (!customerZoneNumber) {
-    // No zone info = neutral score
-    return 50;
+    // No zone info = neutral score, no tech assignment
+    return { score: 50, technicianId: null };
   }
 
   // Group jobs by technician
@@ -302,6 +306,7 @@ function calculateProximityScoreV2(
   }
 
   let bestScore = 50; // Base score
+  let bestTechnicianId: number | null = null; // Track best technician
 
   // Check each technician's schedule for contiguous opportunities
   for (const [techId, techJobs] of jobsByTech.entries()) {
@@ -337,10 +342,14 @@ function calculateProximityScoreV2(
         if (process.env.NODE_ENV === 'development') {
           const slotTime = format(slotStart, 'h:mm a');
           const jobTime = format(jobStart, 'h:mm a');
-          console.log(`[Proximity] ${slotTime} slot near ${jobTime} job: zone score ${zoneScore} (customer zone ${customerZoneNumber}, job zone ${jobZoneNum})`);
+          console.log(`[Proximity] ${slotTime} slot near ${jobTime} job: zone score ${zoneScore} (customer zone ${customerZoneNumber}, job zone ${jobZoneNum}) - Tech ${techId}`);
         }
         
-        bestScore = Math.max(bestScore, zoneScore);
+        // Track best technician for this slot
+        if (zoneScore > bestScore) {
+          bestScore = zoneScore;
+          bestTechnicianId = techId;
+        }
       }
     }
   }
@@ -363,7 +372,10 @@ function calculateProximityScoreV2(
     bestScore = Math.min(100, bestScore + 5);
   }
 
-  return Math.min(bestScore, 100);
+  return { 
+    score: Math.min(bestScore, 100),
+    technicianId: bestTechnicianId
+  };
 }
 
 function formatTimeWindow(start: string, end: string): string {
