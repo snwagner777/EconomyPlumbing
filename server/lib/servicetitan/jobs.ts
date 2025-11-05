@@ -170,6 +170,34 @@ export class ServiceTitanJobs {
   }
 
   /**
+   * Assign a technician to an appointment
+   * 
+   * Uses the dispatch API to create an official technician assignment
+   */
+  async assignTechnician(appointmentId: number, technicianId: number): Promise<void> {
+    try {
+      const payload = {
+        appointmentId,
+        technicianId,
+        status: 'Scheduled',
+      };
+
+      await serviceTitanAuth.makeRequest(
+        `dispatch/v2/tenant/${this.tenantId}/appointment-assignments`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+      
+      console.log(`[ServiceTitan Jobs] Assigned technician ${technicianId} to appointment ${appointmentId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error assigning technician:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Fetch technician assignments from Dispatch API
    * Returns a map of appointmentId -> technicianId
    * 
@@ -328,6 +356,18 @@ export class ServiceTitanJobs {
       );
 
       console.log(`[ServiceTitan Jobs] Created job ${response.jobNumber} (ID: ${response.id}) with appointment ${response.firstAppointmentId}`);
+      
+      // CRITICAL: Actually assign the technician via dispatch API (job creation doesn't auto-assign)
+      if (data.technicianId && response.firstAppointmentId) {
+        try {
+          await this.assignTechnician(response.firstAppointmentId, data.technicianId);
+          console.log(`[ServiceTitan Jobs] ✓ Assigned technician ${data.technicianId} to appointment ${response.firstAppointmentId}`);
+        } catch (error) {
+          console.error(`[ServiceTitan Jobs] ⚠ Failed to assign technician ${data.technicianId}:`, error);
+          // Don't throw - job was created successfully, assignment is a nice-to-have
+        }
+      }
+      
       return response;
     } catch (error) {
       console.error('[ServiceTitan Jobs] Error creating job:', error);
