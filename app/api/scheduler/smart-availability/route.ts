@@ -348,21 +348,29 @@ function calculateProximityScoreV2(
 }
 
 function formatTimeWindow(start: string, end: string): string {
+  // Format times in Central Time (America/Chicago timezone)
   const startTime = new Date(start).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone: 'America/Chicago', // Display in Central Time
   });
   const endTime = new Date(end).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
+    timeZone: 'America/Chicago', // Display in Central Time
   });
   return `${startTime} - ${endTime}`;
 }
 
 function getTimePeriod(start: string): 'morning' | 'afternoon' | 'evening' {
-  const hour = new Date(start).getHours();
+  // Get hour in Central Time for period classification
+  const hour = parseInt(new Date(start).toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: 'America/Chicago',
+  }));
   if (hour < 12) return 'morning';
   if (hour < 17) return 'afternoon';
   return 'evening';
@@ -433,13 +441,15 @@ function generateAvailableSlots(
       const [startHour, startMin] = window.start.split(':').map(Number);
       const [endHour, endMin] = window.end.split(':').map(Number);
       
+      // Create slots in Central Time (UTC-6 offset)
+      // Current date is in UTC, so we need to create Central time by adding 6 hours to UTC hour
       const slotStart = new Date(currentDate);
-      slotStart.setHours(startHour, startMin || 0, 0, 0);
+      slotStart.setUTCHours(startHour + 6, startMin || 0, 0, 0); // 8 AM CST = 14:00 UTC
       
       const slotEnd = new Date(currentDate);
-      slotEnd.setHours(endHour, endMin || 0, 0, 0);
+      slotEnd.setUTCHours(endHour + 6, endMin || 0, 0, 0); // 12 PM CST = 18:00 UTC
       
-      // Check for conflicts
+      // Check for conflicts with existing appointments
       const hasConflict = bookedAppointments.some(apt => {
         const aptStart = new Date(apt.arrivalWindowStart || apt.start);
         const aptEnd = new Date(apt.arrivalWindowEnd || apt.end);
@@ -451,12 +461,9 @@ function generateAvailableSlots(
         );
       });
       
-      // Allow slots that end after current time (not just start)
-      // This shows today's afternoon slot even if morning has passed
+      // Check if slot is still available (at least 1 hour in the future)
       const now = new Date();
-      
-      // IMPORTANT: For same-day slots, check if we have at least 1 hour lead time
-      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum
+      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
       
       const isSlotAvailable = !hasConflict && slotEnd > minBookingTime;

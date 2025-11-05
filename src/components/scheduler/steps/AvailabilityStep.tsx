@@ -49,9 +49,9 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   // Always fetch from today (or earliest future date if today is past)
   const fetchStartDate = today;
   const startDate = format(fetchStartDate, 'yyyy-MM-dd');
-  const endDate = format(addDays(fetchStartDate, 13), 'yyyy-MM-dd'); // 2 weeks of availability
+  const endDate = format(addDays(fetchStartDate, 44), 'yyyy-MM-dd'); // 45 days of availability
 
-  // Fetch smart availability (fuel-optimized) - always fetch 2 weeks from today
+  // Fetch smart availability (fuel-optimized) - always fetch 45 days from today
   const { data, isLoading } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
     queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip],
     queryFn: async () => {
@@ -74,8 +74,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return scoreB - scoreA; // Higher scores first
   });
 
-  // Get top 3-5 best appointments across ALL dates for prominent display
-  const topSlots = allSortedSlots.slice(0, Math.min(5, allSortedSlots.length));
+  // Get top 3 best appointments across ALL dates for prominent display
+  const topSlots = allSortedSlots.slice(0, Math.min(3, allSortedSlots.length));
   const hasHighEfficiencySlots = topSlots.some(s => (s.proximityScore || 0) > 60);
   
   // Filter slots for selected date (for calendar view)
@@ -198,18 +198,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
                         </p>
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 shrink-0">
-                      {slot.nearbyJobs && slot.nearbyJobs > 0 ? (
-                        <Badge 
-                          variant={isSelected ? 'outline' : 'secondary'}
-                          className={`gap-1.5 ${isSelected ? 'border-white/50 text-white' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}
-                        >
-                          <MapPin className="w-3.5 h-3.5" />
-                          {slot.nearbyJobs} job{slot.nearbyJobs > 1 ? 's' : ''} nearby
-                        </Badge>
-                      ) : null}
                     </div>
                   </div>
                 </Card>
