@@ -190,8 +190,8 @@ export async function POST(req: NextRequest) {
     // Sort by proximity score (highest first), then by time (earlier preferred)
     scoredSlots.sort((a, b) => {
       const scoreDiff = b.proximityScore - a.proximityScore;
-      // If scores are within 5 points, prioritize earlier times
-      if (Math.abs(scoreDiff) <= 5) {
+      // If scores are within 15 points, prioritize earlier times (customers prefer morning)
+      if (Math.abs(scoreDiff) <= 15) {
         return new Date(a.start).getTime() - new Date(b.start).getTime();
       }
       return scoreDiff;
