@@ -30,14 +30,12 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [serviceAreasOpen, setServiceAreasOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [storeOpen, setStoreOpen] = useState(false);
   
   // Mobile menu collapsible sections
   const [mobileContactOpen, setMobileContactOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
-  const [mobileAreasOpen, setMobileAreasOpen] = useState(false);
   const [mobileAboutOpen, setMobileAboutOpen] = useState(false);
   const [mobileStoreOpen, setMobileStoreOpen] = useState(false);
   
@@ -177,7 +175,7 @@ export default function Header({
                 className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
                 data-testid="button-about-menu"
               >
-                About
+                About Us
                 <ChevronDown className="w-4 h-4" />
               </button>
               
@@ -185,9 +183,9 @@ export default function Header({
                 <div
                   onMouseEnter={() => setAboutOpen(true)}
                   onMouseLeave={() => setAboutOpen(false)}
-                  className="absolute top-full left-0 pt-2 w-56"
+                  className="absolute top-full left-0 pt-2 w-64"
                 >
-                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
+                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
                     <Link
                       href="/about"
                       className="block px-4 py-2 text-sm hover-elevate"
@@ -223,6 +221,20 @@ export default function Header({
                     >
                       Customer Portal
                     </Link>
+                    <div className="border-t border-border my-2"></div>
+                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                      Service Areas
+                    </div>
+                    {serviceAreas.map((area) => (
+                      <Link
+                        key={area.path}
+                        href={area.path}
+                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold' : ''}`}
+                        data-testid={`link-area-${area.path.slice(1)}`}
+                      >
+                        {area.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -257,39 +269,6 @@ export default function Header({
                         data-testid={`link-service-${service.path.slice(1)}`}
                       >
                         {service.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <div className="relative">
-              <button
-                onMouseEnter={() => setServiceAreasOpen(true)}
-                onMouseLeave={() => setServiceAreasOpen(false)}
-                className="flex items-center gap-1 text-sm font-medium text-foreground hover-elevate px-2 py-2 rounded-md whitespace-nowrap"
-                data-testid="button-service-areas-menu"
-              >
-                Areas
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              
-              {serviceAreasOpen && (
-                <div
-                  onMouseEnter={() => setServiceAreasOpen(true)}
-                  onMouseLeave={() => setServiceAreasOpen(false)}
-                  className="absolute top-full left-0 pt-2 w-64"
-                >
-                  <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
-                    {serviceAreas.map((area) => (
-                      <Link
-                        key={area.path}
-                        href={area.path}
-                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold border-b border-border mb-1' : ''}`}
-                        data-testid={`link-area-${area.path.slice(1)}`}
-                      >
-                        {area.name}
                       </Link>
                     ))}
                   </div>
@@ -483,6 +462,21 @@ export default function Header({
                   <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
                     Membership Benefits
                   </Link>
+                  <div className="border-t border-border my-2 mx-4"></div>
+                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                    Service Areas
+                  </div>
+                  {serviceAreas.map((area) => (
+                    <Link
+                      key={area.path}
+                      href={area.path}
+                      className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
+                      data-testid={`mobile-link-area-${area.path.slice(1)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {area.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -507,32 +501,6 @@ export default function Header({
                       onClick={() => setMobileMenuOpen(false)}
                     >
                       {service.name}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="border-b border-border">
-              <button
-                onClick={() => setMobileAreasOpen(!mobileAreasOpen)}
-                className="flex items-center justify-between w-full py-3 text-sm font-medium"
-                data-testid="mobile-button-areas"
-              >
-                Service Areas
-                <ChevronDown className={`w-4 h-4 transition-transform ${mobileAreasOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {mobileAreasOpen && (
-                <div className="pb-2 space-y-1">
-                  {serviceAreas.map((area) => (
-                    <Link
-                      key={area.path}
-                      href={area.path}
-                      className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
-                      data-testid={`mobile-link-area-${area.path.slice(1)}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {area.name}
                     </Link>
                   ))}
                 </div>
