@@ -462,9 +462,9 @@ function generateAvailableSlots(
         );
       });
       
-      // Check if slot is still available
+      // Check if slot is still available (1 hour lead time)
       const now = new Date();
-      const leadTimeMs = 0; // TEMPORARILY DISABLED for testing - re-enable with 1 hour later
+      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
       
       const isSlotAvailable = !hasConflict && slotEnd > minBookingTime;

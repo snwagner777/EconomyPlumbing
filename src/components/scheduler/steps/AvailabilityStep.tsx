@@ -234,7 +234,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M2 5a2 2 0 012-2h12a2 2 0 012 2v10a2 2 0 01-2 2H4a2 2 0 01-2-2V5zm3.293 1.293a1 1 0 011.414 0l3.293 3.293 3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
               </svg>
-              Text Us for Same-Day or Custom Times
+              Text Us
             </Button>
           </Card>
         </div>
