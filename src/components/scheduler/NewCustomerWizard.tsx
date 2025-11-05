@@ -299,10 +299,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
               <Button
                 variant="outline"
                 className="h-20 text-base"
-                onClick={() => {
-                  handleAnswer(true);
-                  onSubmit({ ...data, sameAsBilling: true });
-                }}
+                onClick={() => handleAnswer(true)}
                 data-testid="button-same-location"
               >
                 ✓ Yes, same location

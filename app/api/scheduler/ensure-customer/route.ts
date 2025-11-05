@@ -98,19 +98,19 @@ export async function POST(req: NextRequest) {
       id: customer.id, // Integer ID from ServiceTitan
       name: customer.name,
       type: customer.type || 'Residential',
-      street: address.street,
-      city: address.city,
-      state: address.state,
-      zip: address.zip,
+      street: address,
+      city: city,
+      state: state,
+      zip: zip,
       active: true,
     }).onConflictDoUpdate({
       target: serviceTitanCustomers.id,
       set: {
         name: customer.name,
-        street: address.street,
-        city: address.city,
-        state: address.state,
-        zip: address.zip,
+        street: address,
+        city: city,
+        state: state,
+        zip: zip,
       },
     });
 
