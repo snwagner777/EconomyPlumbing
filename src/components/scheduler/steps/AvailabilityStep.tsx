@@ -24,6 +24,7 @@ interface TimeSlot {
   proximityScore?: number;
   nearbyJobs?: number;
   zone?: string;
+  technicianId?: number | null; // Pre-assigned technician for optimal routing
 }
 
 interface AvailabilityStepProps {
