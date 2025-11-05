@@ -187,11 +187,11 @@ export async function POST(req: NextRequest) {
       };
     });
     
-    // Sort by proximity score (highest first), then by time (earlier preferred)
+    // Sort by proximity score (highest first), with slight preference for earlier times on ties
     scoredSlots.sort((a, b) => {
       const scoreDiff = b.proximityScore - a.proximityScore;
-      // If scores are within 15 points, prioritize earlier times (customers prefer morning)
-      if (Math.abs(scoreDiff) <= 15) {
+      // Only use time as tie-breaker for exact score matches
+      if (scoreDiff === 0) {
         return new Date(a.start).getTime() - new Date(b.start).getTime();
       }
       return scoreDiff;

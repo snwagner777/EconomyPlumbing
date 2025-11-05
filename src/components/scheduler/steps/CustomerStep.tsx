@@ -25,7 +25,10 @@ const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Valid email is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
+  phone: z.string()
+    .regex(/^[\d\s\-\(\)\.]+$/, 'Phone number can only contain numbers and formatting characters')
+    .transform(val => val.replace(/\D/g, ''))
+    .refine(val => val.length === 10, 'Phone number must be exactly 10 digits'),
   customerType: z.enum(['Residential', 'Commercial']),
   address: z.string().min(1, 'Street address is required'),
   unit: z.string().optional(),
@@ -429,10 +432,12 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">What's the best phone number to reach you?</label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 max-w-md">
               <Input
+                type="tel"
                 placeholder="(512) 555-0123"
                 value={lookupValue}
+                className="max-w-xs"
                 onChange={(e) => {
                   setLookupValue(e.target.value);
                   // Auto-lookup after user finishes typing (simple debounce)
