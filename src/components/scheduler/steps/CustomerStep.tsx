@@ -203,56 +203,7 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
     onSubmit(submitData);
   };
 
-  // Show lookup interface first
-  if (!showForm && !customerFound) {
-    return (
-      <div className="space-y-6">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">What's the best phone number to reach you?</label>
-            <div className="flex gap-2">
-              <Input
-                placeholder="(512) 555-0123"
-                value={lookupValue}
-                onChange={(e) => {
-                  setLookupValue(e.target.value);
-                  // Auto-lookup after user finishes typing (simple debounce)
-                  if (e.target.value.length >= 10) {
-                    const timer = setTimeout(() => {
-                      lookupMutation.mutate(e.target.value.trim());
-                    }, 500);
-                    return () => clearTimeout(timer);
-                  }
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && lookupValue.trim()) {
-                    handleLookup();
-                  }
-                }}
-                data-testid="input-phone"
-              />
-              <Button
-                onClick={handleLookup}
-                disabled={lookupMutation.isPending || !lookupValue.trim()}
-                data-testid="button-continue"
-              >
-                {lookupMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  'Continue'
-                )}
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              We'll use this to send appointment reminders
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show customer selection if multiple customers found
+  // Show customer selection if multiple customers found (check this FIRST)
   if (customersFound.length > 1 && !customerFound) {
     return (
       <div className="space-y-6">
@@ -299,6 +250,55 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
         >
           None of these - Create New Account
         </Button>
+      </div>
+    );
+  }
+
+  // Show lookup interface if no customer found yet
+  if (!showForm && !customerFound && customersFound.length <= 1) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-medium">What's the best phone number to reach you?</label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="(512) 555-0123"
+                value={lookupValue}
+                onChange={(e) => {
+                  setLookupValue(e.target.value);
+                  // Auto-lookup after user finishes typing (simple debounce)
+                  if (e.target.value.length >= 10) {
+                    const timer = setTimeout(() => {
+                      lookupMutation.mutate(e.target.value.trim());
+                    }, 500);
+                    return () => clearTimeout(timer);
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && lookupValue.trim()) {
+                    handleLookup();
+                  }
+                }}
+                data-testid="input-phone"
+              />
+              <Button
+                onClick={handleLookup}
+                disabled={lookupMutation.isPending || !lookupValue.trim()}
+                data-testid="button-continue"
+              >
+                {lookupMutation.isPending ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  'Continue'
+                )}
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              We'll use this to send appointment reminders
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
