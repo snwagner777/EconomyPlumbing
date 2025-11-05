@@ -53,6 +53,14 @@ interface CreateCustomerData {
     state: string;
     zip: string;
   };
+  serviceLocation?: {
+    name: string;
+    street: string;
+    unit?: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 interface CreateLocationData {
@@ -114,6 +122,10 @@ export class ServiceTitanCRM {
    */
   async createCustomer(data: CreateCustomerData): Promise<ServiceTitanCustomer> {
     try {
+      // Use service location if provided, otherwise use billing address
+      const locationAddress = data.serviceLocation || data.address;
+      const locationName = data.serviceLocation?.name || `${data.name} - Primary`;
+
       const payload = {
         name: data.name,
         type: data.customerType || 'Residential',
@@ -137,13 +149,13 @@ export class ServiceTitanCRM {
         ],
         locations: [
           {
-            name: `${data.name} - Primary`,
+            name: locationName,
             address: {
-              street: data.address.street,
-              unit: data.address.unit || undefined,
-              city: data.address.city,
-              state: data.address.state,
-              zip: data.address.zip,
+              street: locationAddress.street,
+              unit: locationAddress.unit || undefined,
+              city: locationAddress.city,
+              state: locationAddress.state,
+              zip: locationAddress.zip,
               country: 'USA',
             },
           },

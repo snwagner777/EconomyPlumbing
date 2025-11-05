@@ -17,21 +17,46 @@ function normalizeContact(value: string, type: 'phone' | 'email'): string {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, phone, email, address, customerType, forceCreate } = body;
+    const { 
+      firstName, lastName, 
+      phone, email, 
+      customerType, 
+      address, unit, city, state, zip,
+      sameAsBilling, locationName, 
+      locationAddress, locationUnit, locationCity, locationState, locationZip,
+      forceCreate
+    } = body;
 
-    if (!name || !phone || !address) {
+    const name = firstName && lastName ? `${firstName} ${lastName}` : body.name;
+
+    if (!name || !phone) {
       return NextResponse.json(
-        { error: 'Name, phone, and address required' },
+        { error: 'Name and phone required' },
         { status: 400 }
       );
     }
 
-    if (!address.street || !address.city || !address.state || !address.zip) {
+    if (!address || !city || !state || !zip) {
       return NextResponse.json(
-        { error: 'Complete address required (street, city, state, zip)' },
+        { error: 'Complete billing address required' },
         { status: 400 }
       );
     }
+
+    // Determine service location address
+    const serviceAddress = sameAsBilling !== false ? {
+      street: address,
+      unit: unit || undefined,
+      city,
+      state,
+      zip,
+    } : {
+      street: locationAddress,
+      unit: locationUnit || undefined,
+      city: locationCity,
+      state: locationState,
+      zip: locationZip,
+    };
 
     const customerData = {
       name,
@@ -39,11 +64,15 @@ export async function POST(req: NextRequest) {
       email,
       customerType: customerType || 'Residential',
       address: {
-        street: address.street,
-        unit: address.unit || undefined,
-        city: address.city,
-        state: address.state,
-        zip: address.zip,
+        street: address,
+        unit: unit || undefined,
+        city,
+        state,
+        zip,
+      },
+      serviceLocation: {
+        name: locationName || `${name} - Primary`,
+        ...serviceAddress,
       },
     };
 

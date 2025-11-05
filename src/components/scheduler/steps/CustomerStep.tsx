@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info } from 'lucide-react';
+import { NewCustomerWizard } from '../NewCustomerWizard';
+import { NewLocationWizard } from '../NewLocationWizard';
 
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -235,7 +237,9 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         lastName: form.getValues('lastName'),
         email: form.getValues('email'),
         phone: form.getValues('phone'),
+        customerType: 'Residential' as const,
         address: location.address.street,
+        unit: '',
         city: location.address.city,
         state: normalizeState(location.address.state),
         zip: location.address.zip,
@@ -270,21 +274,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
 
   // Create new customer in ServiceTitan
   const createCustomerMutation = useMutation({
-    mutationFn: async (customerData: CustomerFormData) => {
-      const response = await apiRequest('POST', '/api/scheduler/ensure-customer', {
-        name: `${customerData.firstName} ${customerData.lastName}`,
-        phone: customerData.phone,
-        email: customerData.email,
-        customerType: customerData.customerType,
-        forceCreate: true, // Always create new when user explicitly chooses "Create New Customer"
-        address: {
-          street: customerData.address,
-          unit: customerData.unit || undefined,
-          city: customerData.city,
-          state: customerData.state,
-          zip: customerData.zip,
-        },
-      });
+    mutationFn: async (customerData: any) => {
+      const response = await apiRequest('POST', '/api/scheduler/ensure-customer', customerData);
       return await response.json();
     },
     onSuccess: (data: any, variables: CustomerFormData) => {
@@ -584,151 +575,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     );
   }
 
-  // Show add location form
+  // Show add location wizard
   if (showAddLocation && customerFound) {
     return (
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(() => handleAddNewLocation())} className="space-y-6">
-          {showFreeEstimateBanner && (
-            <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-              <div className="flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
-                    Free Estimate Included
-                  </h3>
-                  <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                    This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
-                  </p>
-                </div>
-              </div>
-            </Card>
-          )}
-          
-          <Card className="p-4 bg-primary/5">
-            <h3 className="font-semibold text-sm mb-2">Add New Service Location</h3>
-            <p className="text-xs text-muted-foreground">
-              Adding location for: {customerFound.name}
-            </p>
-          </Card>
-
-          <FormField
-            control={form.control}
-            name="locationName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Location Name (Optional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Home, Office, Vacation Home" {...field} data-testid="input-location-name" />
-                </FormControl>
-                <p className="text-xs text-muted-foreground mt-1">
-                  If not provided, we'll use the street address
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Street Address</FormLabel>
-                <FormControl>
-                  <Input placeholder="123 Main St" {...field} data-testid="input-address" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-6 gap-4">
-            <div className="col-span-3">
-              <FormField
-                control={form.control}
-                name="city"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>City</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Austin" {...field} data-testid="input-city" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="col-span-1">
-              <FormField
-                control={form.control}
-                name="state"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>State</FormLabel>
-                    <FormControl>
-                      <Input placeholder="TX" maxLength={2} {...field} data-testid="input-state" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="col-span-2">
-              <FormField
-                control={form.control}
-                name="zip"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>ZIP Code</FormLabel>
-                    <FormControl>
-                      <Input placeholder="78701" {...field} data-testid="input-zip" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="flex-1"
-              onClick={() => setShowAddLocation(false)}
-              data-testid="button-cancel-location"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={createLocationMutation.isPending}
-              data-testid="button-save-location"
-            >
-              {createLocationMutation.isPending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Location
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    );
-  }
-
-  // Show full customer form
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <div className="space-y-6">
         {showFreeEstimateBanner && (
           <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-3">
@@ -744,244 +594,66 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
             </div>
           </Card>
         )}
-        
-        {customerFound && (
-          <Card className="p-4 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm text-green-900 dark:text-green-100">
-                  Welcome Back!
-                </h3>
-                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                  We found your account. Your information has been filled in below.
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
 
-        {selectedLocation && (
-          <Card className="p-4 bg-primary/5">
-            <div className="flex items-start gap-3">
-              <MapPin className="w-5 h-5 text-primary mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-sm">Service Location</h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {selectedLocation.address.street}, {selectedLocation.address.city}, {selectedLocation.address.state} {selectedLocation.address.zip}
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* Name */}
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="firstName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>First Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="John" {...field} data-testid="input-firstName" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="lastName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Last Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Doe" {...field} data-testid="input-lastName" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        {/* Customer Type */}
-        <FormField
-          control={form.control}
-          name="customerType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Customer Type</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger data-testid="select-customer-type">
-                    <SelectValue placeholder="Select customer type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Residential">Residential</SelectItem>
-                  <SelectItem value="Commercial">Commercial</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
+        <NewLocationWizard
+          customerName={customerFound.name}
+          onSubmit={(locationData) => {
+            if (customerFound && customerFound.serviceTitanId) {
+              createLocationMutation.mutate({
+                customerId: customerFound.serviceTitanId,
+                name: locationData.locationName || undefined,
+                address: {
+                  street: locationData.address,
+                  unit: locationData.unit || undefined,
+                  city: locationData.city,
+                  state: locationData.state,
+                  zip: locationData.zip,
+                },
+                phone: customerFound.phone || '',
+                email: customerFound.email || '',
+              });
+            }
+          }}
+          onCancel={() => setShowAddLocation(false)}
+          isSubmitting={createLocationMutation.isPending}
         />
+      </div>
+    );
+  }
 
-        {/* Contact */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input type="email" placeholder="john@example.com" {...field} data-testid="input-email" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Phone</FormLabel>
-                <FormControl>
-                  <Input placeholder="(512) 555-0123" {...field} data-testid="input-phone" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+  // Show new customer wizard
+  return (
+    <div className="space-y-6">
+      {showFreeEstimateBanner && (
+        <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+          <div className="flex items-start gap-3">
+            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                Free Estimate Included
+              </h3>
+              <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
-        {/* Address */}
-        <div className="grid grid-cols-3 gap-4">
-          <div className="col-span-2">
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Service Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123 Main St" {...field} data-testid="input-address" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="col-span-1">
-            <FormField
-              control={form.control}
-              name="unit"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unit # (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Apt 5B" {...field} data-testid="input-unit" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-6 gap-4">
-          <div className="col-span-3">
-            <FormField
-              control={form.control}
-              name="city"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>City</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Austin" {...field} data-testid="input-city" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="col-span-1">
-            <FormField
-              control={form.control}
-              name="state"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>State</FormLabel>
-                  <FormControl>
-                    <Input placeholder="TX" maxLength={2} {...field} data-testid="input-state" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="col-span-2">
-            <FormField
-              control={form.control}
-              name="zip"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>ZIP Code</FormLabel>
-                  <FormControl>
-                    <Input placeholder="78701" {...field} data-testid="input-zip" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        {/* Notes */}
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Additional Notes (Optional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Any specific instructions or details about your plumbing issue..."
-                  className="resize-none"
-                  rows={3}
-                  {...field}
-                  data-testid="input-notes"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        {/* Submit */}
-        <Button 
-          type="submit" 
-          className="w-full" 
-          size="lg" 
-          disabled={createCustomerMutation.isPending}
-          data-testid="button-continue"
-        >
-          {createCustomerMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Please wait...
-            </>
-          ) : (
-            <>
-              Continue to Appointment Times
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </>
-          )}
-        </Button>
-      </form>
-    </Form>
+      <NewCustomerWizard
+        onSubmit={(wizardData) => {
+          // Create customer in ServiceTitan immediately with wizard data
+          createCustomerMutation.mutate({
+            ...wizardData,
+            forceCreate: true, // Always create new when user explicitly chooses "Create New Customer"
+          });
+        }}
+        onCancel={() => {
+          setShowForm(false);
+          setCustomersFound([]);
+        }}
+        isSubmitting={createCustomerMutation.isPending}
+      />
+    </div>
   );
 }
