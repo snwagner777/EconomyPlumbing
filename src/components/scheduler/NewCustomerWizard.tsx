@@ -1,55 +1,14 @@
 /**
- * Conversational Multi-Step Wizard for Creating New Customers
+ * Truly Conversational Customer Creation - One Question at a Time
  * 
- * Flow: Name → Contact → Billing Address → Service Location
+ * Feels like a natural conversation, not a form
  */
 
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ArrowRight, Loader2 } from 'lucide-react';
-
-// Step schemas
-const nameSchema = z.object({
-  firstName: z.string().min(1, 'First name is required'),
-  lastName: z.string().min(1, 'Last name is required'),
-  customerType: z.enum(['Residential', 'Commercial']),
-});
-
-const contactSchema = z.object({
-  email: z.string().email('Valid email is required'),
-  phone: z.string().min(10, 'Valid phone number is required'),
-});
-
-const billingAddressSchema = z.object({
-  address: z.string().min(1, 'Street address is required'),
-  unit: z.string().optional(),
-  city: z.string().min(1, 'City is required'),
-  state: z.string().min(2, 'State is required').max(2),
-  zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
-});
-
-const serviceLocationSchema = z.object({
-  sameAsBilling: z.boolean(),
-  locationName: z.string().optional(),
-  locationAddress: z.string().optional(),
-  locationUnit: z.string().optional(),
-  locationCity: z.string().optional(),
-  locationState: z.string().optional(),
-  locationZip: z.string().optional(),
-}).refine(
-  (data) => {
-    if (data.sameAsBilling) return true;
-    return !!(data.locationAddress && data.locationCity && data.locationState && data.locationZip);
-  },
-  { message: 'Complete service location address is required', path: ['locationAddress'] }
-);
+import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Building } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface NewCustomerWizardProps {
   onSubmit: (data: any) => void;
@@ -57,9 +16,15 @@ interface NewCustomerWizardProps {
   isSubmitting?: boolean;
 }
 
+type ConversationStep = 
+  | 'firstName' | 'lastName' | 'customerType' 
+  | 'phone' | 'email' 
+  | 'address' | 'unit' | 'city' | 'state' | 'zip'
+  | 'sameAsBilling' | 'locationName' | 'locationAddress' | 'locationUnit' | 'locationCity' | 'locationState' | 'locationZip';
+
 export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCustomerWizardProps) {
-  const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
-  const [wizardData, setWizardData] = useState<any>({
+  const [step, setStep] = useState<ConversationStep>('firstName');
+  const [data, setData] = useState<any>({
     customerType: 'Residential',
     sameAsBilling: true,
     city: 'Austin',
@@ -67,490 +32,535 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
     locationCity: 'Austin',
     locationState: 'TX',
   });
+  const [error, setError] = useState('');
 
-  // Step 1: Name + Type
-  const step1Form = useForm({
-    resolver: zodResolver(nameSchema),
-    defaultValues: {
-      firstName: wizardData.firstName || '',
-      lastName: wizardData.lastName || '',
-      customerType: wizardData.customerType || 'Residential',
-    },
-  });
+  const handleAnswer = (value: string | boolean, nextStep?: ConversationStep) => {
+    setError('');
+    const newData = { ...data, [step]: value };
+    setData(newData);
+    
+    if (nextStep) {
+      setStep(nextStep);
+    } else {
+      // Auto-advance logic
+      advanceToNextStep(newData);
+    }
+  };
 
-  // Step 2: Contact
-  const step2Form = useForm({
-    resolver: zodResolver(contactSchema),
-    defaultValues: {
-      email: wizardData.email || '',
-      phone: wizardData.phone || '',
-    },
-  });
+  const advanceToNextStep = (currentData: any) => {
+    const stepOrder: ConversationStep[] = [
+      'firstName', 'lastName', 'customerType',
+      'phone', 'email',
+      'address', 'unit', 'city', 'state', 'zip',
+      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'
+    ];
 
-  // Step 3: Billing Address
-  const step3Form = useForm({
-    resolver: zodResolver(billingAddressSchema),
-    defaultValues: {
-      address: wizardData.address || '',
-      unit: wizardData.unit || '',
-      city: wizardData.city || 'Austin',
-      state: wizardData.state || 'TX',
-      zip: wizardData.zip || '',
-    },
-  });
+    const currentIndex = stepOrder.indexOf(step);
+    let nextIndex = currentIndex + 1;
 
-  // Step 4: Service Location
-  const step4Form = useForm({
-    resolver: zodResolver(serviceLocationSchema),
-    defaultValues: {
-      sameAsBilling: wizardData.sameAsBilling ?? true,
-      locationName: wizardData.locationName || '',
-      locationAddress: wizardData.locationAddress || '',
-      locationUnit: wizardData.locationUnit || '',
-      locationCity: wizardData.locationCity || 'Austin',
-      locationState: wizardData.locationState || 'TX',
-      locationZip: wizardData.locationZip || '',
-    },
-  });
+    // Skip unit if empty
+    if (stepOrder[nextIndex] === 'unit' && step === 'address') {
+      // Show unit but allow skip
+    }
 
-  const handleStep1Submit = step1Form.handleSubmit((data) => {
-    setWizardData({ ...wizardData, ...data });
-    setCurrentStep(2);
-  });
+    // Skip location fields if sameAsBilling is true
+    if (currentData.sameAsBilling && nextIndex >= stepOrder.indexOf('locationName')) {
+      // Done - submit
+      onSubmit(currentData);
+      return;
+    }
 
-  const handleStep2Submit = step2Form.handleSubmit((data) => {
-    setWizardData({ ...wizardData, ...data });
-    setCurrentStep(3);
-  });
+    // Skip location unit if we're collecting location details
+    if (stepOrder[nextIndex] === 'locationUnit' && step === 'locationAddress') {
+      // Show locationUnit but allow skip
+    }
 
-  const handleStep3Submit = step3Form.handleSubmit((data) => {
-    setWizardData({ ...wizardData, ...data });
-    setCurrentStep(4);
-  });
+    if (nextIndex < stepOrder.length) {
+      setStep(stepOrder[nextIndex]);
+    } else {
+      onSubmit(currentData);
+    }
+  };
 
-  const handleStep4Submit = step4Form.handleSubmit((data) => {
-    const finalData = { ...wizardData, ...data };
-    onSubmit(finalData);
-  });
+  const goBack = () => {
+    const stepOrder: ConversationStep[] = [
+      'firstName', 'lastName', 'customerType',
+      'phone', 'email',
+      'address', 'unit', 'city', 'state', 'zip',
+      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'
+    ];
 
-  const sameAsBilling = step4Form.watch('sameAsBilling');
+    const currentIndex = stepOrder.indexOf(step);
+    if (currentIndex > 0) {
+      setStep(stepOrder[currentIndex - 1]);
+    }
+  };
+
+  const validateAndContinue = (value: string, pattern?: RegExp, errorMsg?: string) => {
+    if (!value.trim()) {
+      setError('This field is required');
+      return;
+    }
+    if (pattern && !pattern.test(value)) {
+      setError(errorMsg || 'Invalid format');
+      return;
+    }
+    handleAnswer(value);
+  };
+
+  const renderQuestion = () => {
+    switch (step) {
+      case 'firstName':
+        return (
+          <QuestionBox
+            icon={<User className="w-6 h-6" />}
+            question="What's your first name?"
+            value={data.firstName || ''}
+            onChange={(v) => setData({ ...data, firstName: v })}
+            onEnter={() => validateAndContinue(data.firstName || '')}
+            placeholder="e.g., John"
+            autoFocus
+          />
+        );
+
+      case 'lastName':
+        return (
+          <QuestionBox
+            icon={<User className="w-6 h-6" />}
+            question="And your last name?"
+            value={data.lastName || ''}
+            onChange={(v) => setData({ ...data, lastName: v })}
+            onEnter={() => validateAndContinue(data.lastName || '')}
+            placeholder="e.g., Smith"
+            autoFocus
+          />
+        );
+
+      case 'customerType':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <Building className="w-6 h-6 text-primary mt-1" />
+              <div>
+                <h3 className="text-lg font-medium">Is this for residential or commercial property?</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  This helps us prepare the right equipment and pricing
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-20 text-base"
+                onClick={() => handleAnswer('Residential')}
+                data-testid="button-residential"
+              >
+                🏠 Residential
+              </Button>
+              <Button
+                variant="outline"
+                className="h-20 text-base"
+                onClick={() => handleAnswer('Commercial')}
+                data-testid="button-commercial"
+              >
+                🏢 Commercial
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'phone':
+        return (
+          <QuestionBox
+            icon={<Phone className="w-6 h-6" />}
+            question="What's the best phone number to reach you?"
+            value={data.phone || ''}
+            onChange={(v) => setData({ ...data, phone: v })}
+            onEnter={() => validateAndContinue(
+              data.phone || '', 
+              /^[\d\s\-\(\)]+$/, 
+              'Please enter a valid phone number'
+            )}
+            placeholder="(512) 555-0123"
+            type="tel"
+            autoFocus
+          />
+        );
+
+      case 'email':
+        return (
+          <QuestionBox
+            icon={<Mail className="w-6 h-6" />}
+            question="And your email address?"
+            description="We'll send your appointment confirmation here"
+            value={data.email || ''}
+            onChange={(v) => setData({ ...data, email: v })}
+            onEnter={() => validateAndContinue(
+              data.email || '',
+              /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              'Please enter a valid email address'
+            )}
+            placeholder="john@example.com"
+            type="email"
+            autoFocus
+          />
+        );
+
+      case 'address':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="What's your billing address?"
+            description="Where should we send invoices?"
+            value={data.address || ''}
+            onChange={(v) => setData({ ...data, address: v })}
+            onEnter={() => validateAndContinue(data.address || '')}
+            placeholder="123 Main Street"
+            autoFocus
+          />
+        );
+
+      case 'unit':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="Unit or apartment number?"
+            description="Leave blank if not applicable"
+            value={data.unit || ''}
+            onChange={(v) => setData({ ...data, unit: v })}
+            onEnter={() => handleAnswer(data.unit || '')}
+            placeholder="Apt 5B (optional)"
+            autoFocus
+            optional
+          />
+        );
+
+      case 'city':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="City?"
+            value={data.city || ''}
+            onChange={(v) => setData({ ...data, city: v })}
+            onEnter={() => validateAndContinue(data.city || '')}
+            placeholder="Austin"
+            autoFocus
+          />
+        );
+
+      case 'state':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="State?"
+            value={data.state || ''}
+            onChange={(v) => setData({ ...data, state: v.toUpperCase() })}
+            onEnter={() => validateAndContinue(
+              data.state || '',
+              /^[A-Z]{2}$/,
+              'Please enter a 2-letter state code'
+            )}
+            placeholder="TX"
+            maxLength={2}
+            autoFocus
+          />
+        );
+
+      case 'zip':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="ZIP code?"
+            value={data.zip || ''}
+            onChange={(v) => setData({ ...data, zip: v })}
+            onEnter={() => validateAndContinue(
+              data.zip || '',
+              /^\d{5}(-\d{4})?$/,
+              'Please enter a valid ZIP code'
+            )}
+            placeholder="78701"
+            autoFocus
+          />
+        );
+
+      case 'sameAsBilling':
+        return (
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <MapPin className="w-6 h-6 text-primary mt-1" />
+              <div>
+                <h3 className="text-lg font-medium">Is the service location the same as your billing address?</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Where we'll be doing the work
+                </p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant="outline"
+                className="h-20 text-base"
+                onClick={() => {
+                  handleAnswer(true);
+                  onSubmit({ ...data, sameAsBilling: true });
+                }}
+                data-testid="button-same-location"
+              >
+                ✓ Yes, same location
+              </Button>
+              <Button
+                variant="outline"
+                className="h-20 text-base"
+                onClick={() => handleAnswer(false, 'locationName')}
+                data-testid="button-different-location"
+              >
+                Different location
+              </Button>
+            </div>
+          </div>
+        );
+
+      case 'locationName':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="What would you like to call this service location?"
+            description="e.g., 'Vacation Home' or 'Downtown Office'"
+            value={data.locationName || ''}
+            onChange={(v) => setData({ ...data, locationName: v })}
+            onEnter={() => handleAnswer(data.locationName || '')}
+            placeholder="Location name (optional)"
+            autoFocus
+            optional
+          />
+        );
+
+      case 'locationAddress':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="What's the service location address?"
+            description="Where we'll be doing the work"
+            value={data.locationAddress || ''}
+            onChange={(v) => setData({ ...data, locationAddress: v })}
+            onEnter={() => validateAndContinue(data.locationAddress || '')}
+            placeholder="456 Oak Avenue"
+            autoFocus
+          />
+        );
+
+      case 'locationUnit':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="Unit or suite number at service location?"
+            description="Leave blank if not applicable"
+            value={data.locationUnit || ''}
+            onChange={(v) => setData({ ...data, locationUnit: v })}
+            onEnter={() => handleAnswer(data.locationUnit || '')}
+            placeholder="Suite 100 (optional)"
+            autoFocus
+            optional
+          />
+        );
+
+      case 'locationCity':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="Service location city?"
+            value={data.locationCity || ''}
+            onChange={(v) => setData({ ...data, locationCity: v })}
+            onEnter={() => validateAndContinue(data.locationCity || '')}
+            placeholder="Austin"
+            autoFocus
+          />
+        );
+
+      case 'locationState':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="Service location state?"
+            value={data.locationState || ''}
+            onChange={(v) => setData({ ...data, locationState: v.toUpperCase() })}
+            onEnter={() => validateAndContinue(
+              data.locationState || '',
+              /^[A-Z]{2}$/,
+              'Please enter a 2-letter state code'
+            )}
+            placeholder="TX"
+            maxLength={2}
+            autoFocus
+          />
+        );
+
+      case 'locationZip':
+        return (
+          <QuestionBox
+            icon={<MapPin className="w-6 h-6" />}
+            question="Service location ZIP code?"
+            value={data.locationZip || ''}
+            onChange={(v) => setData({ ...data, locationZip: v })}
+            onEnter={() => {
+              validateAndContinue(
+                data.locationZip || '',
+                /^\d{5}(-\d{4})?$/,
+                'Please enter a valid ZIP code'
+              );
+              // This is the last step - submit
+              onSubmit({ ...data, locationZip: data.locationZip });
+            }}
+            placeholder="78701"
+            autoFocus
+          />
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  const canGoBack = step !== 'firstName';
 
   return (
     <div className="space-y-6">
-      {/* Progress indicator */}
-      <div className="flex items-center justify-center gap-2">
-        {[1, 2, 3, 4].map((step) => (
-          <div
-            key={step}
-            className={`h-2 rounded-full transition-all ${
-              step === currentStep
-                ? 'w-8 bg-primary'
-                : step < currentStep
-                ? 'w-2 bg-primary/50'
-                : 'w-2 bg-muted'
-            }`}
-          />
-        ))}
+      {/* Progress dots */}
+      <div className="flex items-center justify-center gap-1.5">
+        {['firstName', 'phone', 'address', 'sameAsBilling'].map((milestone) => {
+          const milestoneSteps: Record<string, ConversationStep[]> = {
+            firstName: ['firstName', 'lastName', 'customerType'],
+            phone: ['phone', 'email'],
+            address: ['address', 'unit', 'city', 'state', 'zip'],
+            sameAsBilling: ['sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'],
+          };
+
+          const isActive = milestoneSteps[milestone]?.includes(step);
+          const isPassed = Object.keys(milestoneSteps)
+            .indexOf(milestone) < Object.keys(milestoneSteps)
+            .findIndex(key => milestoneSteps[key]?.includes(step));
+
+          return (
+            <div
+              key={milestone}
+              className={cn(
+                "h-1.5 rounded-full transition-all",
+                isActive ? "w-8 bg-primary" : isPassed ? "w-1.5 bg-primary/50" : "w-1.5 bg-muted"
+              )}
+            />
+          );
+        })}
       </div>
 
-      {/* Step 1: Name + Type */}
-      {currentStep === 1 && (
-        <Form {...step1Form}>
-          <form onSubmit={handleStep1Submit} className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">What's your name?</h3>
-              <p className="text-sm text-muted-foreground">Let's start with the basics.</p>
-            </div>
+      {/* Conversation area */}
+      <div className="min-h-[200px]">
+        {renderQuestion()}
+        {error && (
+          <p className="text-sm text-destructive mt-2 animate-in fade-in slide-in-from-top-1">
+            {error}
+          </p>
+        )}
+      </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={step1Form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>First Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John" {...field} data-testid="input-firstName" autoFocus />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={step1Form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Last Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Doe" {...field} data-testid="input-lastName" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+      {/* Navigation */}
+      <div className="flex gap-3">
+        {canGoBack && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="flex-1"
+            disabled={isSubmitting}
+            data-testid="button-cancel"
+          >
+            Cancel
+          </Button>
+        )}
+        {!canGoBack && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="flex-1"
+            data-testid="button-cancel"
+          >
+            Cancel
+          </Button>
+        )}
+        {canGoBack && step !== 'sameAsBilling' && step !== 'customerType' && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={goBack}
+            disabled={isSubmitting}
+            data-testid="button-back"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  );
+}
 
-            <FormField
-              control={step1Form.control}
-              name="customerType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Customer Type</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger data-testid="select-customer-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Residential">Residential</SelectItem>
-                      <SelectItem value="Commercial">Commercial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+interface QuestionBoxProps {
+  icon: React.ReactNode;
+  question: string;
+  description?: string;
+  value: string;
+  onChange: (value: string) => void;
+  onEnter: () => void;
+  placeholder: string;
+  type?: string;
+  maxLength?: number;
+  autoFocus?: boolean;
+  optional?: boolean;
+}
 
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="flex-1"
-                data-testid="button-cancel"
-              >
-                Cancel
-              </Button>
-              <Button type="submit" className="flex-1" data-testid="button-next">
-                Next <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
-
-      {/* Step 2: Contact */}
-      {currentStep === 2 && (
-        <Form {...step2Form}>
-          <form onSubmit={handleStep2Submit} className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">How can we reach you?</h3>
-              <p className="text-sm text-muted-foreground">We'll use this to send appointment confirmations.</p>
-            </div>
-
-            <FormField
-              control={step2Form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="(512) 555-0123" {...field} data-testid="input-phone" autoFocus />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={step2Form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="john@example.com" {...field} data-testid="input-email" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentStep(1)}
-                className="flex-1"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-              <Button type="submit" className="flex-1" data-testid="button-next">
-                Next <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
-
-      {/* Step 3: Billing Address */}
-      {currentStep === 3 && (
-        <Form {...step3Form}>
-          <form onSubmit={handleStep3Submit} className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">What's your billing address?</h3>
-              <p className="text-sm text-muted-foreground">This is where we'll send invoices.</p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <FormField
-                  control={step3Form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Street Address</FormLabel>
-                      <FormControl>
-                        <Input placeholder="123 Main St" {...field} data-testid="input-address" autoFocus />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-1">
-                <FormField
-                  control={step3Form.control}
-                  name="unit"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Unit (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Apt 5B" {...field} data-testid="input-unit" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-6 gap-4">
-              <div className="col-span-3">
-                <FormField
-                  control={step3Form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Austin" {...field} data-testid="input-city" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-1">
-                <FormField
-                  control={step3Form.control}
-                  name="state"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>State</FormLabel>
-                      <FormControl>
-                        <Input placeholder="TX" maxLength={2} {...field} data-testid="input-state" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <div className="col-span-2">
-                <FormField
-                  control={step3Form.control}
-                  name="zip"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>ZIP Code</FormLabel>
-                      <FormControl>
-                        <Input placeholder="78701" {...field} data-testid="input-zip" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentStep(2)}
-                className="flex-1"
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-              <Button type="submit" className="flex-1" data-testid="button-next">
-                Next <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
-
-      {/* Step 4: Service Location */}
-      {currentStep === 4 && (
-        <Form {...step4Form}>
-          <form onSubmit={handleStep4Submit} className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-1">Where do you need service?</h3>
-              <p className="text-sm text-muted-foreground">Let us know where the work will be done.</p>
-            </div>
-
-            <FormField
-              control={step4Form.control}
-              name="sameAsBilling"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      data-testid="checkbox-same-billing"
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="cursor-pointer">
-                      Service location is the same as my billing address
-                    </FormLabel>
-                    <p className="text-xs text-muted-foreground">
-                      Check this if the work will be done at your billing address
-                    </p>
-                  </div>
-                </FormItem>
-              )}
-            />
-
-            {!sameAsBilling && (
-              <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                <FormField
-                  control={step4Form.control}
-                  name="locationName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Location Name (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Vacation Home, Rental Property" {...field} data-testid="input-location-name" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2">
-                    <FormField
-                      control={step4Form.control}
-                      name="locationAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Street Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="456 Oak Ave" {...field} data-testid="input-location-address" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <FormField
-                      control={step4Form.control}
-                      name="locationUnit"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Unit (Optional)</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Unit 10" {...field} data-testid="input-location-unit" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-6 gap-4">
-                  <div className="col-span-3">
-                    <FormField
-                      control={step4Form.control}
-                      name="locationCity"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>City</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Austin" {...field} data-testid="input-location-city" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-1">
-                    <FormField
-                      control={step4Form.control}
-                      name="locationState"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>State</FormLabel>
-                          <FormControl>
-                            <Input placeholder="TX" maxLength={2} {...field} data-testid="input-location-state" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <FormField
-                      control={step4Form.control}
-                      name="locationZip"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>ZIP Code</FormLabel>
-                          <FormControl>
-                            <Input placeholder="78701" {...field} data-testid="input-location-zip" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentStep(3)}
-                className="flex-1"
-                disabled={isSubmitting}
-                data-testid="button-back"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" /> Back
-              </Button>
-              <Button type="submit" className="flex-1" disabled={isSubmitting} data-testid="button-create-customer">
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Creating...
-                  </>
-                ) : (
-                  'Create Customer'
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      )}
+function QuestionBox({
+  icon,
+  question,
+  description,
+  value,
+  onChange,
+  onEnter,
+  placeholder,
+  type = 'text',
+  maxLength,
+  autoFocus,
+  optional,
+}: QuestionBoxProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="text-primary mt-1">{icon}</div>
+        <div className="flex-1">
+          <h3 className="text-lg font-medium">{question}</h3>
+          {description && (
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Input
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onEnter();
+            }
+          }}
+          placeholder={placeholder}
+          maxLength={maxLength}
+          autoFocus={autoFocus}
+          className="text-base h-11"
+          data-testid={`input-${question.toLowerCase().replace(/[^a-z]+/g, '-')}`}
+        />
+        <Button onClick={onEnter} size="lg" data-testid="button-continue">
+          {optional && !value ? 'Skip' : 'Continue'}
+        </Button>
+      </div>
     </div>
   );
 }
