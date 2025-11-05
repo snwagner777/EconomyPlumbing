@@ -84,8 +84,9 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return acc;
   }, {} as Record<string, TimeSlot[]>);
 
-  // Get top 3 best appointments across all periods
-  const top3Slots = sortedSlots.slice(0, 3).filter(s => (s.proximityScore || 0) > 50);
+  // Get top 3-5 best appointments across all periods (always show at least top 3)
+  const topSlots = sortedSlots.slice(0, Math.min(5, sortedSlots.length));
+  const hasHighEfficiencySlots = topSlots.some(s => (s.proximityScore || 0) > 60);
 
   const getEfficiencyBadge = (score: number) => {
     if (score >= 80) return { label: 'Excellent', variant: 'default' as const, color: 'text-green-600 dark:text-green-400' };
@@ -95,25 +96,48 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
 
   return (
     <div className="space-y-6">
-      {/* Top 3 Best Appointments - Prominent Display */}
-      {top3Slots.length > 0 && (
-        <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-200 dark:border-green-800">
+      {/* Top Appointments - Prominent Display */}
+      {topSlots.length > 0 && (
+        <Card className={`p-6 border-2 ${
+          hasHighEfficiencySlots 
+            ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800'
+            : 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800'
+        }`}>
           <div className="flex items-start gap-4 mb-5">
-            <div className="p-3 rounded-full bg-green-100 dark:bg-green-900/40">
-              <TrendingUp className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <div className={`p-3 rounded-full ${
+              hasHighEfficiencySlots 
+                ? 'bg-green-100 dark:bg-green-900/40'
+                : 'bg-blue-100 dark:bg-blue-900/40'
+            }`}>
+              <TrendingUp className={`w-6 h-6 ${
+                hasHighEfficiencySlots 
+                  ? 'text-green-600 dark:text-green-400'
+                  : 'text-blue-600 dark:text-blue-400'
+              }`} />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-bold text-green-900 dark:text-green-100 mb-1">
-                Recommended Appointment Times
+              <h3 className={`text-lg font-bold mb-1 ${
+                hasHighEfficiencySlots 
+                  ? 'text-green-900 dark:text-green-100'
+                  : 'text-blue-900 dark:text-blue-100'
+              }`}>
+                {hasHighEfficiencySlots ? 'Recommended Appointment Times' : 'Next Available Appointments'}
               </h3>
-              <p className="text-sm text-green-700 dark:text-green-300">
-                These times are fuel-efficient because we already have technicians nearby in your area
+              <p className={`text-sm ${
+                hasHighEfficiencySlots 
+                  ? 'text-green-700 dark:text-green-300'
+                  : 'text-blue-700 dark:text-blue-300'
+              }`}>
+                {hasHighEfficiencySlots 
+                  ? 'These times are fuel-efficient because we already have technicians nearby in your area'
+                  : 'Select a time that works best for your schedule'
+                }
               </p>
             </div>
           </div>
           
           <div className="space-y-3">
-            {top3Slots.map((slot, index) => {
+            {topSlots.map((slot, index) => {
               const isSelected = selectedSlot?.id === slot.id;
               const efficiency = getEfficiencyBadge(slot.proximityScore || 0);
               
