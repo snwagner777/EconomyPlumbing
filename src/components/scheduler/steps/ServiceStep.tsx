@@ -39,8 +39,8 @@ type MainCategory = 'special-offers' | 'backflow' | 'water-heater' | 'gas' | 'vi
 const MAIN_CATEGORIES = [
   {
     key: 'special-offers' as MainCategory,
-    label: 'Special Offers',
-    description: 'Groupon deals and promotional services',
+    label: 'I have a special offer',
+    description: 'Groupon or promotional deal',
     icon: Tag,
     color: 'text-pink-600 dark:text-pink-400',
     bgColor: 'bg-pink-50 dark:bg-pink-900/20',
@@ -217,12 +217,15 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
                     <Icon className="w-6 h-6" />
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-bold mb-1">{category.label}</h3>
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <h3 className="text-base font-bold">{category.label}</h3>
                     {!isSingleService && (
-                      <Badge variant="outline" className="text-xs">
-                        {servicesCount} services
-                      </Badge>
+                      <>
+                        <p className="text-xs text-muted-foreground">{category.description}</p>
+                        <Badge variant="outline" className="text-xs">
+                          {servicesCount} options
+                        </Badge>
+                      </>
                     )}
                   </div>
                 </div>

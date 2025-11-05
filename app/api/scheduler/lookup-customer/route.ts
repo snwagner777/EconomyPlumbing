@@ -27,79 +27,85 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Scheduler] Looking up customer in local DB by ${phone ? 'phone' : 'email'}: ${phone || email}`);
 
-    // Try to find contact by phone first, then email as fallback
-    let contact = null;
+    // Try to find ALL contacts by phone first, then email as fallback
+    let contacts: any[] = [];
     
     if (phone) {
       const normalizedPhone = normalizeContact(phone, 'phone');
-      contact = await db.query.serviceTitanContacts.findFirst({
+      contacts = await db.query.serviceTitanContacts.findMany({
         where: eq(serviceTitanContacts.normalizedValue, normalizedPhone),
       });
     }
     
     // If not found by phone, try email
-    if (!contact && email) {
+    if (contacts.length === 0 && email) {
       const normalizedEmail = normalizeContact(email, 'email');
-      contact = await db.query.serviceTitanContacts.findFirst({
+      contacts = await db.query.serviceTitanContacts.findMany({
         where: eq(serviceTitanContacts.normalizedValue, normalizedEmail),
       });
     }
 
-    if (!contact) {
+    if (contacts.length === 0) {
       console.log(`[Scheduler] No customer found`);
       return NextResponse.json({ 
         success: false,
-        customer: null,
-        locations: []
+        customers: [],
       });
     }
 
-    // Get customer data
-    const customer = await db.query.serviceTitanCustomers.findFirst({
-      where: eq(serviceTitanCustomers.id, contact.customerId),
+    // Get all unique customer IDs
+    const uniqueCustomerIds = [...new Set(contacts.map(c => c.customerId))];
+    
+    // Get all matching customers
+    const customers = await db.query.serviceTitanCustomers.findMany({
+      where: (table, { inArray }) => inArray(table.id, uniqueCustomerIds),
     });
 
-    if (!customer) {
-      console.log(`[Scheduler] Contact found but customer not found`);
+    if (customers.length === 0) {
+      console.log(`[Scheduler] Contacts found but customers not found`);
       return NextResponse.json({ 
         success: false,
-        customer: null,
-        locations: []
+        customers: [],
       });
     }
 
-    // Get all contacts for this customer (for phone/email display)
-    const allContacts = await db.query.serviceTitanContacts.findMany({
-      where: eq(serviceTitanContacts.customerId, customer.id),
-    });
+    // Build response with all customers and their contact info
+    const customersWithContacts = await Promise.all(
+      customers.map(async (customer) => {
+        const customerContacts = await db.query.serviceTitanContacts.findMany({
+          where: eq(serviceTitanContacts.customerId, customer.id),
+        });
 
-    const customerPhone = allContacts.find(c => c.contactType === 'Phone' || c.contactType === 'MobilePhone')?.value || phone;
-    const customerEmail = allContacts.find(c => c.contactType === 'Email')?.value || email;
+        const customerPhone = customerContacts.find(c => c.contactType === 'Phone' || c.contactType === 'MobilePhone')?.value || phone;
+        const customerEmail = customerContacts.find(c => c.contactType === 'Email')?.value || email;
 
-    console.log(`[Scheduler] Found customer ${customer.id}: ${customer.name}`);
+        const locations = customer.street ? [{
+          id: customer.id,
+          name: 'Primary Location',
+          street: customer.street,
+          city: customer.city,
+          state: customer.state,
+          zip: customer.zip,
+          isPrimary: true,
+        }] : [];
 
-    // For now, return single location (primary address from customer record)
-    const locations = customer.street ? [{
-      id: customer.id,
-      name: 'Primary Location',
-      street: customer.street,
-      city: customer.city,
-      state: customer.state,
-      zip: customer.zip,
-      isPrimary: true,
-    }] : [];
+        return {
+          id: customer.id,
+          serviceTitanId: customer.id,
+          name: customer.name,
+          email: customerEmail,
+          phoneNumber: customerPhone,
+          type: customer.type,
+          locations,
+        };
+      })
+    );
+
+    console.log(`[Scheduler] Found ${customersWithContacts.length} customer(s) matching ${phone || email}`);
 
     return NextResponse.json({
       success: true,
-      customer: {
-        id: customer.id, // Local DB ID
-        serviceTitanId: customer.id, // ServiceTitan customer ID (same as id in this table)
-        name: customer.name,
-        email: customerEmail,
-        phoneNumber: customerPhone,
-        type: customer.type,
-      },
-      locations,
+      customers: customersWithContacts,
     });
   } catch (error: any) {
     console.error('[Scheduler] Customer lookup error:', error);

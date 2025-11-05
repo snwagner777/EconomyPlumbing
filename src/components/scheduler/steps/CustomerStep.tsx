@@ -51,6 +51,7 @@ interface STLocation {
 
 export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
+  const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
   const [locations, setLocations] = useState<STLocation[]>([]);
   const [selectedLocation, setSelectedLocation] = useState<STLocation | null>(null);
@@ -82,31 +83,16 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
       return await response.json();
     },
     onSuccess: (data: any) => {
-      if (data.success && data.customer) {
-        setCustomerFound(data.customer);
+      if (data.success && data.customers && data.customers.length > 0) {
+        setCustomersFound(data.customers);
         
-        // Immediately fetch locations from ServiceTitan
-        if (data.customer.serviceTitanId) {
-          fetchLocationsMutation.mutate(data.customer.serviceTitanId);
+        // If only one customer, auto-select it
+        if (data.customers.length === 1) {
+          handleCustomerSelect(data.customers[0]);
         }
-        
-        // Pre-fill form with customer data
-        const nameParts = data.customer.name.split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
-        form.reset({
-          firstName,
-          lastName,
-          email: data.customer.email || '',
-          phone: data.customer.phoneNumber || lookupValue,
-          address: data.locations?.[0]?.street || '',
-          city: data.locations?.[0]?.city || 'Austin',
-          state: data.locations?.[0]?.state || 'TX',
-          zip: data.locations?.[0]?.zip || '',
-          notes: '',
-        });
+        // Otherwise, show customer selection UI
       } else {
+        setCustomersFound([]);
         setCustomerFound(null);
         setLocations([]);
         form.setValue('phone', lookupValue.match(/\d/) ? lookupValue : '');
@@ -115,6 +101,32 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
       }
     },
   });
+  
+  const handleCustomerSelect = (customer: any) => {
+    setCustomerFound(customer);
+    
+    // Immediately fetch locations from ServiceTitan
+    if (customer.serviceTitanId) {
+      fetchLocationsMutation.mutate(customer.serviceTitanId);
+    }
+    
+    // Pre-fill form with customer data
+    const nameParts = customer.name.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    form.reset({
+      firstName,
+      lastName,
+      email: customer.email || '',
+      phone: customer.phoneNumber || lookupValue,
+      address: customer.locations?.[0]?.street || '',
+      city: customer.locations?.[0]?.city || 'Austin',
+      state: customer.locations?.[0]?.state || 'TX',
+      zip: customer.locations?.[0]?.zip || '',
+      notes: '',
+    });
+  };
 
   // Fetch locations from ServiceTitan
   const fetchLocationsMutation = useMutation({
@@ -234,6 +246,57 @@ export function CustomerStep({ onSubmit, initialData }: CustomerStepProps) {
             </p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Show customer selection if multiple customers found
+  if (customersFound.length > 1 && !customerFound) {
+    return (
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <h3 className="font-semibold text-lg">Is this you?</h3>
+          <p className="text-sm text-muted-foreground">
+            We found multiple accounts with this phone number. Please select your account:
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          {customersFound.map((customer, index) => (
+            <Card
+              key={customer.id}
+              className="p-4 cursor-pointer hover-elevate active-elevate-2 border-2 transition-colors"
+              onClick={() => handleCustomerSelect(customer)}
+              data-testid={`card-customer-${customer.id}`}
+            >
+              <div className="flex items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold">{customer.name}</p>
+                  {customer.email && (
+                    <p className="text-xs text-muted-foreground mt-1">{customer.email}</p>
+                  )}
+                  {customer.locations?.[0] && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {customer.locations[0].street}, {customer.locations[0].city}, {customer.locations[0].state}
+                    </p>
+                  )}
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={() => {
+            setCustomersFound([]);
+            setShowForm(true);
+          }}
+          data-testid="button-new-customer"
+        >
+          None of these - Create New Account
+        </Button>
       </div>
     );
   }
