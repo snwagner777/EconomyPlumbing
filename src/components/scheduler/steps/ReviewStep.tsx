@@ -43,6 +43,7 @@ interface TimeSlot {
   timeLabel: string;
   proximityScore?: number;
   nearbyJobs?: number;
+  technicianId?: number | null; // Pre-assigned technician for optimal routing
 }
 
 interface ReviewStepProps {
@@ -77,6 +78,7 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
         utm_source: 'website',
         ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
         ...(customer.locationId && { locationId: customer.locationId }),
+        ...(timeSlot.technicianId && { technicianId: timeSlot.technicianId }), // Pre-assigned technician from smart slot
       });
       return await response.json();
     },

@@ -31,6 +31,7 @@ interface TimeSlot {
   period: 'morning' | 'afternoon' | 'evening';
   proximityScore?: number;
   nearbyJobs?: number;
+  technicianId?: number | null; // Pre-assigned technician for optimal routing
 }
 
 interface CustomerInfo {

@@ -143,27 +143,34 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Step 6: Get available technician for assignment (optional)
-      console.log(`[Scheduler] Getting available technicians for assignment`);
-      let technicianId: number | undefined;
+      // Step 6: Determine technician assignment
+      // Priority: 1) Pre-selected from smart slot, 2) Fallback to available technician
+      let technicianId: number | undefined = body.technicianId || undefined;
       
-      try {
-        const technicians = await serviceTitanSettings.getTechnicians();
-        // Filter for actual technicians (not all employees)
-        const activeTechs = technicians.filter(t => 
-          t.active && 
-          (t.role?.toLowerCase().includes('technician') || t.isTechnician)
-        );
+      if (technicianId) {
+        console.log(`[Scheduler] Using pre-selected technician from smart slot: ${technicianId}`);
+      } else {
+        // Fallback: Get available technician for assignment (optional)
+        console.log(`[Scheduler] No pre-selected technician, finding available technician...`);
         
-        if (activeTechs.length > 0) {
-          const availableTech = activeTechs[0];
-          technicianId = availableTech.id;
-          console.log(`[Scheduler] Will assign technician: ${availableTech.name} (ID: ${availableTech.id})`);
-        } else {
-          console.log(`[Scheduler] No technicians available - job will be created unassigned`);
+        try {
+          const technicians = await serviceTitanSettings.getTechnicians();
+          // Filter for actual technicians (not all employees)
+          const activeTechs = technicians.filter(t => 
+            t.active && 
+            (t.role?.toLowerCase().includes('technician') || t.isTechnician)
+          );
+          
+          if (activeTechs.length > 0) {
+            const availableTech = activeTechs[0];
+            technicianId = availableTech.id;
+            console.log(`[Scheduler] Assigned fallback technician: ${availableTech.name} (ID: ${availableTech.id})`);
+          } else {
+            console.log(`[Scheduler] No technicians available - job will be created unassigned`);
+          }
+        } catch (error) {
+          console.log(`[Scheduler] Could not fetch technicians - job will be created unassigned`);
         }
-      } catch (error) {
-        console.log(`[Scheduler] Could not fetch technicians - job will be created unassigned`);
       }
 
       // Step 7: Create job with real IDs and campaign (REQUIRED)
