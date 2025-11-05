@@ -211,7 +211,27 @@ export function CustomerStep({ onSubmit, initialData, selectedService }: Custome
     form.setValue('city', location.address.city);
     form.setValue('state', normalizeState(location.address.state));
     form.setValue('zip', location.address.zip);
-    setShowForm(true);
+    
+    // Immediately submit with the selected location for existing customers
+    if (customerFound) {
+      const submitData = {
+        firstName: form.getValues('firstName'),
+        lastName: form.getValues('lastName'),
+        email: form.getValues('email'),
+        phone: form.getValues('phone'),
+        address: location.address.street,
+        city: location.address.city,
+        state: normalizeState(location.address.state),
+        zip: location.address.zip,
+        notes: form.getValues('notes') || '',
+        locationId: location.id,
+        serviceTitanId: customerFound.serviceTitanId,
+        customerTags: customerFound.customerTags || [],
+      };
+      onSubmit(submitData);
+    } else {
+      setShowForm(true);
+    }
   };
 
   const handleAddNewLocation = () => {
