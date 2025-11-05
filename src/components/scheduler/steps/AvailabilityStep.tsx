@@ -336,26 +336,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                                 <Clock className="w-4 h-4" />
                                 <span className="font-semibold">{slot.timeLabel}</span>
                               </div>
-                              <div className="flex items-center gap-2">
-                                {score >= 60 && (
-                                  <Badge 
-                                    variant={isSelected ? 'outline' : efficiency.variant}
-                                    className={`text-xs gap-1 ${isSelected ? 'border-white/50' : ''}`}
-                                  >
-                                    <Zap className="w-3 h-3" />
-                                    {efficiency.label}
-                                  </Badge>
-                                )}
-                                {slot.nearbyJobs && slot.nearbyJobs > 0 && (
-                                  <Badge 
-                                    variant={isSelected ? 'outline' : 'secondary'}
-                                    className={`text-xs gap-1 ${isSelected ? 'border-white/50' : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'}`}
-                                  >
-                                    <MapPin className="w-3 h-3" />
-                                    {slot.nearbyJobs} nearby
-                                  </Badge>
-                                )}
-                              </div>
+                              {/* Badges removed - cleaner UI */}
                             </Button>
                           );
                         })}

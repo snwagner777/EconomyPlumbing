@@ -93,8 +93,8 @@ export async function POST(req: NextRequest) {
     const appointmentIds = existingJobs.map(j => j.appointmentId);
     const techAssignments = await serviceTitanJobs.getTechnicianAssignments(
       appointmentIds,
-      startDate,
-      endDate
+      start,
+      end
     );
     
     // Add technician IDs to jobs
