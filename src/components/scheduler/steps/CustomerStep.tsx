@@ -276,6 +276,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         phone: customerData.phone,
         email: customerData.email,
         customerType: customerData.customerType,
+        forceCreate: true, // Always create new when user explicitly chooses "Create New Customer"
         address: {
           street: customerData.address,
           unit: customerData.unit || undefined,
