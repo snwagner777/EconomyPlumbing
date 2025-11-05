@@ -171,7 +171,7 @@ export function SchedulerFlow({
   const StepIcon = currentConfig.icon;
 
   return (
-    <div className="w-full">
+    <div className="w-full px-2 sm:px-0">
       {/* Progress indicator */}
       {state.step > 1 && (
         <div className="mb-8">
@@ -259,7 +259,7 @@ export function SchedulerFlow({
                 variant="ghost"
                 size="sm"
                 onClick={handleBack}
-                className="mb-6 gap-2"
+                className="mb-6 gap-2 -ml-2"
                 data-testid="button-back"
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -280,7 +280,7 @@ export function SchedulerFlow({
               variant="ghost"
               size="sm"
               onClick={handleBack}
-              className="mb-6 gap-2"
+              className="mb-6 gap-2 -ml-2"
               data-testid="button-back"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -302,7 +302,7 @@ export function SchedulerFlow({
               variant="ghost"
               size="sm"
               onClick={handleBack}
-              className="mb-6 gap-2"
+              className="mb-6 gap-2 -ml-2"
               data-testid="button-back"
             >
               <ChevronLeft className="w-4 h-4" />
