@@ -294,65 +294,21 @@ async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appoin
 }
 
 /**
- * Get arrival windows from ServiceTitan (extract from recent appointments)
+ * Get arrival windows (hardcoded business hours)
+ * Business hours: Morning (8 AM - 12 PM), Afternoon (1 PM - 5 PM)
+ * 
+ * IMPORTANT: We use hardcoded windows instead of pulling from ServiceTitan
+ * to avoid including emergency/after-hours appointments in normal scheduling.
  */
 async function getArrivalWindows(): Promise<Array<{ start: string; end: string; durationHours: number }>> {
-  try {
-    const tenantId = serviceTitanAuth.getTenantId();
-    const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
-      `jpm/v2/tenant/${tenantId}/appointments?pageSize=100`
-    );
+  // Hardcoded business hours windows to prevent after-hours slots from appearing
+  return [
+    // Morning window: 8 AM - 12 PM (4 hours)
+    { start: '08:00', end: '12:00', durationHours: 4 },
     
-    const appointments = response.data || [];
-    const windowsMap = new Map<string, { start: string; end: string; durationHours: number }>();
-    
-    appointments.forEach((apt: any) => {
-      if (apt.arrivalWindowStart && apt.arrivalWindowEnd) {
-        const startTime = new Date(apt.arrivalWindowStart);
-        const endTime = new Date(apt.arrivalWindowEnd);
-        const durationHours = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60);
-        
-        // Use local hours (not UTC) for proper time zone handling
-        const startHour = startTime.getHours();
-        const endHour = endTime.getHours();
-        
-        // Only use windows within business hours (8 AM - 5 PM)
-        if (startHour < BUSINESS_START_HOUR || endHour > BUSINESS_END_HOUR) {
-          return; // Skip emergency/after-hours appointments
-        }
-        
-        const key = `${startHour}-${endHour}`;
-        if (!windowsMap.has(key)) {
-          windowsMap.set(key, {
-            start: `${startHour.toString().padStart(2, '0')}:00`,
-            end: `${endHour.toString().padStart(2, '0')}:00`,
-            durationHours,
-          });
-        }
-      }
-    });
-    
-    // If no windows found, return default 2-hour and 4-hour windows
-    if (windowsMap.size === 0) {
-      return [
-        { start: '08:00', end: '10:00', durationHours: 2 },
-        { start: '10:00', end: '12:00', durationHours: 2 },
-        { start: '12:00', end: '14:00', durationHours: 2 },
-        { start: '14:00', end: '16:00', durationHours: 2 },
-        { start: '08:00', end: '12:00', durationHours: 4 },
-        { start: '12:00', end: '16:00', durationHours: 4 },
-      ];
-    }
-    
-    return Array.from(windowsMap.values()).sort((a, b) => a.start.localeCompare(b.start));
-  } catch (error) {
-    console.error('[Smart Scheduler] Error fetching arrival windows:', error);
-    // Return default windows
-    return [
-      { start: '08:00', end: '12:00', durationHours: 4 },
-      { start: '12:00', end: '16:00', durationHours: 4 },
-    ];
-  }
+    // Afternoon window: 1 PM - 5 PM (4 hours) 
+    { start: '13:00', end: '17:00', durationHours: 4 },
+  ];
 }
 
 /**
