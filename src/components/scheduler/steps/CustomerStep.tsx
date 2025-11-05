@@ -303,15 +303,16 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           {customersFound.map((customer, index) => {
             const isVIP = customer.customerTags?.some((tag: string) => tag.toLowerCase() === 'vip');
             const isVIPService = selectedService?.name.toLowerCase().includes('vip');
+            const isDisabled = isVIPService && !isVIP;
             
             return (
               <Card
                 key={customer.id}
                 className={`p-4 cursor-pointer hover-elevate active-elevate-2 border-2 transition-colors ${
-                  isVIPService && !isVIP ? 'opacity-50 cursor-not-allowed' : ''
+                  isDisabled ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
                 onClick={() => {
-                  if (isVIPService && !isVIP) {
+                  if (isDisabled) {
                     onVipError?.();
                     return;
                   }
@@ -321,7 +322,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               >
                 <div className="flex items-start gap-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold">{customer.name}</p>
                       {isVIP && (
                         <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 text-xs">
@@ -448,9 +449,16 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           <div className="flex items-start gap-3">
             <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5" />
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm text-green-900 dark:text-green-100">
-                Welcome Back, {customerFound.name}!
-              </h3>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="font-semibold text-sm text-green-900 dark:text-green-100">
+                  Welcome Back, {customerFound.name}!
+                </h3>
+                {customerFound.customerTags?.some((tag: string) => tag.toLowerCase() === 'vip') && (
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-200 text-xs">
+                    VIP
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-green-700 dark:text-green-300 mt-1">
                 We found your account. Please select a service location.
               </p>
