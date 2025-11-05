@@ -21,6 +21,18 @@ Preferred communication style: Simple, everyday language.
 - NEVER modify, "improve", or wrap this code - use ServiceTitan's exact implementation
 - Do NOT use `window.STWidgetManager` - use direct `STWidgetManager` calls as specified
 
+**Custom Appointment Scheduler - Conversational Design**
+- Features truly conversational customer creation wizard (NewCustomerWizard.tsx) - one question at a time, not form-like
+- Question flow: First name → Last name → Customer type (Residential/Commercial buttons) → Phone → Email → Billing address (street/unit/city/state/zip) → Service location same? (Yes/No buttons) → (if different) Location details
+- NO visible form labels - questions are conversational ("What's your first name?" not "First Name:")
+- Smart auto-advance between steps with Enter key support
+- Optional fields (unit numbers) can be skipped with "Skip" button
+- Supports separate billing address vs service location addresses
+- Creates customer immediately in ServiceTitan when wizard completes (atomic operation)
+- ServiceTitan V2 API requirement: customers MUST include `locations` array (every customer needs at least one location)
+- Force create flag: "Create New Customer" button creates new record even if phone/email matches existing customer
+- All data syncs to local database immediately (serviceTitanCustomers + serviceTitanContacts tables)
+
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
 - The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
 - NEVER create separate admin pages (e.g., `/admin/gmb-setup`) without first checking if the functionality already exists in the unified dashboard
