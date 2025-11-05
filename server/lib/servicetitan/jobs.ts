@@ -187,38 +187,32 @@ export class ServiceTitanJobs {
       console.log(`[ServiceTitan Jobs] Fetching technician assignments for appointments:`, appointmentIds);
       
       const assignmentMap = new Map<number, number>();
-      const appointmentIdSet = new Set(appointmentIds); // For faster lookup
       
-      // Fetch active assignments only (Scheduled status = appointments that haven't been completed yet)
+      // Use appointmentIds parameter to filter for our specific appointments!
       const queryParams = new URLSearchParams({
-        page: '1',
+        appointmentIds: appointmentIds.join(','), // Comma-separated list of appointment IDs
         pageSize: '500',
-        status: 'Scheduled', // Only get scheduled (active) assignments
       });
-      
-      console.log(`[ServiceTitan Jobs] Fetching Scheduled assignments to match appointment IDs:`, appointmentIds);
 
       const response = await serviceTitanAuth.makeRequest<{ data: any[] }>(
         `dispatch/v2/tenant/${this.tenantId}/appointment-assignments?${queryParams.toString()}`
       );
 
       const assignments = response.data || [];
-      console.log(`[ServiceTitan Jobs] Fetched ${assignments.length} assignments in date range`);
+      console.log(`[ServiceTitan Jobs] Fetched ${assignments.length} assignments for ${appointmentIds.length} appointments`);
       
       // Log a sample
       if (assignments.length > 0) {
         console.log(`[ServiceTitan Jobs] Sample assignment:`, JSON.stringify(assignments[0], null, 2));
       }
       
-      // Extract technician assignments for OUR appointment IDs
+      // Extract technician IDs
       for (const assignment of assignments) {
-        if (appointmentIdSet.has(assignment.appointmentId)) {
-          const techId = assignment.technicianId || assignment.assignedTechnicianId;
-          
-          if (techId) {
-            assignmentMap.set(assignment.appointmentId, techId);
-            console.log(`[ServiceTitan Jobs] ✓ FOUND! Appointment ${assignment.appointmentId} → Technician ${techId}`);
-          }
+        const techId = assignment.technicianId || assignment.assignedTechnicianId;
+        
+        if (techId && assignment.appointmentId) {
+          assignmentMap.set(assignment.appointmentId, techId);
+          console.log(`[ServiceTitan Jobs] ✓ Appointment ${assignment.appointmentId} → Technician ${techId} (${assignment.technicianName || 'unknown'})`);
         }
       }
 
