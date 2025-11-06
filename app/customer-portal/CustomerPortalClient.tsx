@@ -308,7 +308,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       };
     }>;
   }>({
-    queryKey: ['/api/portal/customer-locations', customerId],
+    queryKey: [`/api/portal/customer-locations/${customerId}`],
     enabled: !!customerId,
   });
 
