@@ -153,6 +153,45 @@ export async function POST(req: NextRequest) {
         return jobDate === slotDate;
       });
       
+      // HILL COUNTRY ZONE RESTRICTION:
+      // Only allow 8-12 AM or 4-8 PM slots UNLESS there are already jobs in Hill Country zone that day
+      if (customerZone && customerZone.toLowerCase().includes('hill country')) {
+        // Check if slot overlaps with afternoon blackout window (12:00 PM - 4:00 PM Central Time)
+        // Use toLocaleTimeString with America/Chicago to properly handle DST
+        const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          hour12: false,
+          timeZone: 'America/Chicago',
+        }));
+        
+        const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          hour12: false,
+          timeZone: 'America/Chicago',
+        }));
+        
+        // Slot overlaps afternoon (12-4 PM) if:
+        // - It starts before 4 PM AND ends after 12 PM (noon)
+        const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
+        
+        if (overlapsAfternoon) {
+          // Count nearby jobs in Hill Country zone
+          const nearbyHillCountryJobs = sameDayJobs.filter(job => {
+            const jobZip = normalizeZip(job.locationZip);
+            const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+            return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
+          });
+          
+          // If no nearby Hill Country jobs, return null to filter out this slot
+          if (nearbyHillCountryJobs.length === 0) {
+            console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - no nearby jobs`);
+            return null;
+          } else {
+            console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} nearby jobs found`);
+          }
+        }
+      }
+      
       // Calculate proximity score and best technician for this slot
       const proximityResult = calculateProximityScoreV2(
         slotStart,
@@ -187,7 +226,7 @@ export async function POST(req: NextRequest) {
         zone: customerZone || undefined,
         technicianId: proximityResult.technicianId, // Pre-assigned technician for optimal routing
       };
-    });
+    }).filter((slot): slot is ScoredSlot => slot !== null); // Remove filtered-out Hill Country afternoon slots
     
     // Sort by proximity score (highest first), with slight preference for earlier times on ties
     scoredSlots.sort((a, b) => {
