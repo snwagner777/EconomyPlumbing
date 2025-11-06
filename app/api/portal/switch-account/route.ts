@@ -2,9 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
+interface SessionData {
+  customerId?: number;
+  availableCustomerIds?: number[];
+}
+
 const sessionOptions = {
   password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-  cookieName: 'portal_session',
+  cookieName: 'customer_portal_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -24,20 +29,20 @@ export async function POST(request: NextRequest) {
 
     // Get session
     const cookieStore = await cookies();
-    const session = await getIronSession(cookieStore, sessionOptions);
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
 
     // Check if user has an active session
-    if (!session.portalCustomerId || !session.portalAvailableCustomerIds) {
+    if (!session.customerId || !session.availableCustomerIds) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const targetCustomerId = parseInt(customerId);
 
     // Validate that user has access to this account
-    if (!session.portalAvailableCustomerIds.includes(targetCustomerId)) {
+    if (!session.availableCustomerIds.includes(targetCustomerId)) {
       console.log(
         `[Portal] Account switch denied - Customer ${targetCustomerId} not in available accounts:`,
-        session.portalAvailableCustomerIds
+        session.availableCustomerIds
       );
       return NextResponse.json(
         { error: 'Access denied to this account' },
@@ -46,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Switch to the new account
-    session.portalCustomerId = targetCustomerId;
+    session.customerId = targetCustomerId;
     await session.save();
 
     console.log(`[Portal] Account switched to customer ${targetCustomerId}`);

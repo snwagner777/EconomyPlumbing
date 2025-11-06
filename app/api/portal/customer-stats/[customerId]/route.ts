@@ -5,9 +5,14 @@ import { gt, count } from 'drizzle-orm';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
+interface SessionData {
+  customerId?: number;
+  availableCustomerIds?: number[];
+}
+
 const sessionOptions = {
   password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-  cookieName: 'portal_session',
+  cookieName: 'customer_portal_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
@@ -29,18 +34,18 @@ export async function GET(
 
     // Check session authentication
     const cookieStore = await cookies();
-    const session = await getIronSession(cookieStore, sessionOptions);
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
 
-    if (!session.portalCustomerId || !session.portalAvailableCustomerIds) {
+    if (!session.customerId || !session.availableCustomerIds) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     // Verify user has access to this customer ID
     const requestedCustomerId = parseInt(customerId);
-    if (!session.portalAvailableCustomerIds.includes(requestedCustomerId)) {
+    if (!session.availableCustomerIds.includes(requestedCustomerId)) {
       console.log(
         `[Portal] Customer stats denied - Customer ${requestedCustomerId} not in available accounts:`,
-        session.portalAvailableCustomerIds
+        session.availableCustomerIds
       );
       return NextResponse.json(
         { error: 'Access denied to this customer account' },

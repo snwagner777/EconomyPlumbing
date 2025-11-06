@@ -9,7 +9,7 @@ interface PortalSessionData {
 
 const sessionOptions = {
   password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-  cookieName: 'portal_session',
+  cookieName: 'customer_portal_session',
   cookieOptions: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
