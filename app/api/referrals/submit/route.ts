@@ -9,6 +9,7 @@ import { db } from '@/server/db';
 import { referrals, serviceTitanCustomers } from '@shared/schema';
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
+import { sendRefereeWelcomeEmail } from '@/server/lib/resendClient';
 import { eq } from 'drizzle-orm';
 
 const referralSchema = z.object({
@@ -121,6 +122,25 @@ export async function POST(req: NextRequest) {
           referrerCustomerId,
           referrerName: referral.referrerName,
         });
+        
+        // Send welcome email to referee with QR code voucher
+        if (referral.refereeEmail && voucherData?.refereeVoucher) {
+          try {
+            await sendRefereeWelcomeEmail({
+              refereeName: referral.refereeName,
+              refereeEmail: referral.refereeEmail,
+              referrerName: referral.referrerName,
+              voucherCode: voucherData.refereeVoucher.code,
+              voucherQRCode: voucherData.refereeVoucher.qrCode,
+              discountAmount: 2500, // $25
+              expiresAt: voucherData.refereeVoucher.expiresAt,
+            });
+            console.log('[Referral] Referee welcome email sent successfully');
+          } catch (emailError) {
+            console.error('[Referral] Failed to send referee welcome email:', emailError);
+            // Don't fail the referral submission if email fails
+          }
+        }
       } catch (error) {
         console.error('[Referral Voucher Creation] Error:', error);
         // Continue even if voucher creation fails
@@ -128,7 +148,6 @@ export async function POST(req: NextRequest) {
     }
 
     // TODO: Send thank you email to referrer
-    // TODO: Send welcome email to referee with QR code voucher
     // TODO: Notify admin
 
     return NextResponse.json({
