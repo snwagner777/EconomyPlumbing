@@ -330,6 +330,26 @@ export class ServiceTitanCRM {
       throw error;
     }
   }
+
+  /**
+   * Update location active status (deactivate/reactivate)
+   */
+  async updateLocationStatus(locationId: number, active: boolean): Promise<void> {
+    try {
+      await serviceTitanAuth.makeRequest(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({ active }),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] ${active ? 'Activated' : 'Deactivated'} location ${locationId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error updating location ${locationId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const serviceTitanCRM = new ServiceTitanCRM();
