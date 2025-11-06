@@ -10,6 +10,7 @@ import { Phone, Mail, Clock } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { A2PConsentCheckboxes } from "@/components/A2PConsentCheckboxes";
 interface ContactFormProps {
   pageContext?: string;
   austinPhone?: { display: string; tel: string };
@@ -34,6 +35,12 @@ export default function ContactForm({
     location: "",
     urgency: "",
     message: "",
+    address: "",
+    city: "",
+    state: "TX",
+    zip: "",
+    smsConsent: false,
+    emailConsent: false,
     pageContext: pageContext,
     website: "", // Honeypot field - invisible to users
     formStartTime: formStartTime // Timestamp for spam detection
@@ -57,6 +64,12 @@ export default function ContactForm({
         location: "",
         urgency: "",
         message: "",
+        address: "",
+        city: "",
+        state: "TX",
+        zip: "",
+        smsConsent: false,
+        emailConsent: false,
         pageContext: pageContext,
         website: "",
         formStartTime: Date.now()
@@ -201,6 +214,56 @@ export default function ContactForm({
                   {formData.message.length}/500 characters
                 </p>
               </div>
+
+              {/* Address Fields */}
+              <div className="pt-4 border-t">
+                <p className="text-sm font-medium mb-3">Service Address (Optional - helps us serve you better)</p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="address">Street Address</Label>
+                    <Input
+                      id="address"
+                      value={formData.address}
+                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                      placeholder="123 Main St"
+                      data-testid="input-address"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="city">City</Label>
+                      <Input
+                        id="city"
+                        value={formData.city}
+                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                        placeholder="Austin"
+                        data-testid="input-city"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="zip">ZIP Code</Label>
+                      <Input
+                        id="zip"
+                        value={formData.zip}
+                        onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
+                        placeholder="78701"
+                        maxLength={5}
+                        data-testid="input-zip"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* A2P Consent Checkboxes */}
+              <A2PConsentCheckboxes
+                smsConsent={formData.smsConsent}
+                emailConsent={formData.emailConsent}
+                onSmsConsentChange={(checked) => setFormData({ ...formData, smsConsent: checked })}
+                onEmailConsentChange={(checked) => setFormData({ ...formData, emailConsent: checked })}
+              />
 
               <Button 
                 type="submit" 

@@ -27,6 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
+import { A2PConsentCheckboxes } from "@/components/A2PConsentCheckboxes";
 
 interface ContactFormSectionProps {
   title?: string;
@@ -73,11 +74,23 @@ export default function ContactFormSection({
   });
 
   const [honeypot, setHoneypot] = useState(""); // Honeypot field
+  const [smsConsent, setSmsConsent] = useState(false);
+  const [emailConsent, setEmailConsent] = useState(false);
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("TX");
+  const [zip, setZip] = useState("");
 
   const submitContact = useMutation({
     mutationFn: async (data: InsertContactSubmission) => {
       const res = await apiRequest("POST", "/api/contact", {
         ...data,
+        address,
+        city,
+        state,
+        zip,
+        smsConsent,
+        emailConsent,
         website: honeypot, // Include honeypot
         formStartTime: formStartTime // Include timestamp
       });
@@ -86,6 +99,11 @@ export default function ContactFormSection({
     onSuccess: () => {
       setIsSubmitted(true);
       form.reset();
+      setSmsConsent(false);
+      setEmailConsent(false);
+      setAddress("");
+      setCity("");
+      setZip("");
       toast({
         title: "Message Sent!",
         description: "We'll contact you within 1 hour during business hours.",
@@ -281,6 +299,54 @@ export default function ContactFormSection({
                   <FormMessage />
                 </FormItem>
               )}
+            />
+
+            {/* Address Fields */}
+            <div className="pt-4 border-t space-y-4">
+              <p className="text-sm font-medium">Service Address (Optional - helps us serve you better)</p>
+              
+              <div>
+                <Label htmlFor="address">Street Address</Label>
+                <Input
+                  id="address"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="123 Main St"
+                  data-testid="input-address"
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="city">City</Label>
+                  <Input
+                    id="city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Austin"
+                    data-testid="input-city"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="zip">ZIP Code</Label>
+                  <Input
+                    id="zip"
+                    value={zip}
+                    onChange={(e) => setZip(e.target.value)}
+                    placeholder="78701"
+                    maxLength={5}
+                    data-testid="input-zip"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* A2P Consent Checkboxes */}
+            <A2PConsentCheckboxes
+              smsConsent={smsConsent}
+              emailConsent={emailConsent}
+              onSmsConsentChange={setSmsConsent}
+              onEmailConsentChange={setEmailConsent}
             />
 
             <Button
