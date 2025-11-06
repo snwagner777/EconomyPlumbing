@@ -182,6 +182,7 @@ export async function POST(req: NextRequest) {
           (startHourCT === 12 && endHourCT === 16) || // 12 PM - 4 PM
           (startHourCT === 13 && endHourCT === 17) || // 1 PM - 5 PM
           (startHourCT === 14 && endHourCT === 18);   // 2 PM - 6 PM
+        // Note: 9 AM - 1 PM is allowed for Hill Country
         
         if (isBlockedWindow) {
           // Count existing Hill Country jobs on the same day
