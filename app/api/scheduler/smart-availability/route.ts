@@ -562,23 +562,29 @@ function generateAvailableSlots(
       const slotEnd = fromZonedTime(slotEndStr, TIMEZONE);
       
       // Check for conflicts with existing appointments
-      // CRITICAL: Use appointment times (start/end), NOT arrival windows!
+      // Arrival windows are 4 hours but actual work is ~2 hours within that window
+      // Only block if windows overlap by 3+ hours (meaning likely scheduling conflict)
       let conflictingAppointment: any = null;
       const hasConflict = bookedAppointments.some(apt => {
-        const aptStart = new Date(apt.start); // Use actual appointment time
-        const aptEnd = new Date(apt.end);     // Not arrival window
+        const aptStart = new Date(apt.start);
+        const aptEnd = new Date(apt.end);
         
-        const overlaps = (
-          (slotStart >= aptStart && slotStart < aptEnd) ||
-          (slotEnd > aptStart && slotEnd <= aptEnd) ||
-          (slotStart <= aptStart && slotEnd >= aptEnd)
-        );
+        // Calculate overlap in milliseconds
+        const overlapStart = new Date(Math.max(slotStart.getTime(), aptStart.getTime()));
+        const overlapEnd = new Date(Math.min(slotEnd.getTime(), aptEnd.getTime()));
+        const overlapMs = Math.max(0, overlapEnd.getTime() - overlapStart.getTime());
+        const overlapHours = overlapMs / (1000 * 60 * 60);
         
-        if (overlaps) {
+        // Only block if overlap is 3+ hours (e.g., 10-2 and 11-3 overlap by 2 hours = OK)
+        // 10-2 vs 1-5 overlaps by 1 hour = OK
+        // 1-5 vs 2-6 overlaps by 3 hours = BLOCK
+        const isSignificantOverlap = overlapHours >= 3;
+        
+        if (isSignificantOverlap) {
           conflictingAppointment = apt;
         }
         
-        return overlaps;
+        return isSignificantOverlap;
       });
       
       // Check if slot is still available (1 hour lead time in Central Time)
