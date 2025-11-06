@@ -117,7 +117,10 @@ export default function SMSOptInWidget({
             data-testid="checkbox-terms-minimal"
           />
           <Label htmlFor="terms-minimal" className="text-xs text-muted-foreground cursor-pointer">
-            I agree to receive texts
+            I agree to receive promotional messages via autodialer. Not required for purchase. I agree to{" "}
+            <a href="/terms-of-service" className="underline">Terms</a> &{" "}
+            <a href="/privacy-policy" className="underline">Privacy</a>. 
+            4 Msgs/Month. Msg & Data Rates apply. Text STOP to opt out.
           </Label>
         </div>
       </form>
@@ -172,9 +175,10 @@ export default function SMSOptInWidget({
                   data-testid="checkbox-terms-inline"
                 />
                 <Label htmlFor="terms-inline" className="text-xs text-muted-foreground cursor-pointer">
-                  I agree to receive recurring automated marketing text messages at the phone number provided. 
-                  Consent is not a condition of purchase. Msg & data rates may apply. 
-                  Reply STOP to unsubscribe. View our <a href="/privacy-policy" className="underline">Privacy Policy</a>.
+                  I agree to receive promotional messages sent via an autodialer, and this agreement isn't a condition of any purchase. I also agree to the{" "}
+                  <a href="/terms-of-service" className="underline">Terms of Service</a> and{" "}
+                  <a href="/privacy-policy" className="underline">Privacy Policy</a>. 
+                  4 Msgs/Month. Msg & Data Rates may apply. Text STOP to opt out anytime. Text Help for more information.
                 </Label>
               </div>
             </div>
@@ -247,10 +251,10 @@ export default function SMSOptInWidget({
                 data-testid="checkbox-terms-hero"
               />
               <Label htmlFor="terms-hero" className="text-sm text-muted-foreground text-left cursor-pointer">
-                I agree to receive recurring automated marketing text messages at the phone number provided. 
-                Consent is not a condition of purchase. Message frequency varies. 
-                Msg & data rates may apply. Reply STOP to unsubscribe. 
-                View our <a href="/privacy-policy" className="underline">Privacy Policy</a> and <a href="/terms-of-service" className="underline">Terms</a>.
+                I agree to receive promotional messages sent via an autodialer, and this agreement isn't a condition of any purchase. I also agree to the{" "}
+                <a href="/terms-of-service" className="underline">Terms of Service</a> and{" "}
+                <a href="/privacy-policy" className="underline">Privacy Policy</a>. 
+                4 Msgs/Month. Msg & Data Rates may apply. Text STOP to opt out anytime. Text Help for more information.
               </Label>
             </div>
             
@@ -341,15 +345,13 @@ export default function SMSOptInWidget({
               />
               <div className="grid gap-1.5 leading-none">
                 <Label htmlFor="terms" className="text-sm cursor-pointer">
-                  I agree to receive text messages
+                  I agree to receive promotional messages
                 </Label>
                 <p className="text-xs text-muted-foreground">
-                  By checking this box, you agree to receive recurring automated marketing text messages 
-                  (e.g., cart reminders) at the phone number provided. Consent is not a condition of purchase. 
-                  Message frequency varies. Msg & data rates may apply. 
-                  Reply STOP to unsubscribe or HELP for help. 
-                  View our <a href="/privacy-policy" className="underline">Privacy Policy</a> and{" "}
-                  <a href="/terms-of-service" className="underline">Terms of Service</a>.
+                  I agree to receive promotional messages sent via an autodialer, and this agreement isn't a condition of any purchase. I also agree to the{" "}
+                  <a href="/terms-of-service" className="underline">Terms of Service</a> and{" "}
+                  <a href="/privacy-policy" className="underline">Privacy Policy</a>. 
+                  4 Msgs/Month. Msg & Data Rates may apply. Text STOP to opt out anytime. Text Help for more information.
                 </p>
               </div>
             </div>

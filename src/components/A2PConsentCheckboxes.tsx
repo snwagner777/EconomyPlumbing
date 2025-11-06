@@ -42,8 +42,11 @@ export function A2PConsentCheckboxes({
           htmlFor="sms-consent"
           className="text-sm text-muted-foreground font-normal cursor-pointer leading-tight"
         >
-          I consent to receive text messages (SMS) from Economy Plumbing Services about appointments,
-          promotions, and service updates. Message and data rates may apply. Reply STOP to opt out.
+          I agree to receive promotional messages sent via an autodialer, and this agreement isn't a condition of any purchase. I also agree to the{" "}
+          <a href="/terms-of-service" className="underline hover:text-foreground" target="_blank" rel="noopener noreferrer">Terms of Service</a>{" "}
+          and{" "}
+          <a href="/privacy-policy" className="underline hover:text-foreground" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.{" "}
+          4 Msgs/Month. Msg & Data Rates may apply. Text STOP to opt out anytime. Text Help for more information.
         </Label>
       </div>
 

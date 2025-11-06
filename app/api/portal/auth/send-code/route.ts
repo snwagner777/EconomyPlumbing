@@ -42,10 +42,38 @@ export async function POST(request: NextRequest) {
     const { or, sql, and, eq } = await import('drizzle-orm');
     
     const searchValue = contactValue.trim();
-    const normalizedPhone = searchValue.replace(/\D/g, ''); // Remove non-digits for phone search
+    let normalizedPhone = searchValue.replace(/\D/g, ''); // Remove non-digits for phone search
+    
+    // Normalize to 10 digits - strip leading "1" if present (US country code)
+    if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
+      normalizedPhone = normalizedPhone.substring(1);
+    }
     
     // Determine if we're searching by phone or email
-    const isPhoneSearch = normalizedPhone.length >= 10;
+    const isPhoneSearch = normalizedPhone.length === 10;
+    
+    // Validate phone number length if this is a phone search
+    if (verificationType === 'sms' && normalizedPhone.length !== 10) {
+      console.log('[Portal Auth] Invalid phone number length:', normalizedPhone.length);
+      return NextResponse.json(
+        { error: 'Please enter a valid 10-digit phone number' },
+        { status: 400 }
+      );
+    }
+    
+    // Build search condition based on whether we have a valid phone or just email
+    let searchCondition;
+    
+    if (normalizedPhone.length >= 10) {
+      // Search by BOTH email OR phone (exact matches only)
+      searchCondition = or(
+        sql`LOWER(${customersXlsx.email}) = LOWER(${searchValue})`,
+        sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedPhone}`
+      );
+    } else {
+      // Only search by email (exact match)
+      searchCondition = sql`LOWER(${customersXlsx.email}) = LOWER(${searchValue})`;
+    }
     
     // Search by email OR phone in customers_xlsx (active customers only)
     const customers = await db
@@ -59,10 +87,7 @@ export async function POST(request: NextRequest) {
       .where(
         and(
           eq(customersXlsx.active, true),
-          or(
-            sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'`,
-            sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
-          )
+          searchCondition
         )
       )
       .limit(10);

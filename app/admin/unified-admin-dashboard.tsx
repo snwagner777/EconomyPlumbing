@@ -85,6 +85,7 @@ import { format, formatDistanceToNow } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { formatPhoneNumber } from "@/lib/phoneUtils";
 
 type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
 
@@ -1484,7 +1485,7 @@ function SuccessStoriesSection() {
                     <CardTitle>{story.customerName}</CardTitle>
                     <CardDescription className="mt-1">
                       {story.email && `${story.email} • `}
-                      {story.phone && `${story.phone} • `}
+                      {story.phone && `${formatPhoneNumber(story.phone)} • `}
                       {story.location}
                     </CardDescription>
                   </div>

@@ -21,8 +21,23 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("[Portal Phone Auth] Raw phone from request:", phone);
-    const normalizedPhone = phone.replace(/\D/g, '');
+    let normalizedPhone = phone.replace(/\D/g, '');
+    
+    // Normalize to 10 digits - strip leading "1" if present (US country code)
+    if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
+      normalizedPhone = normalizedPhone.substring(1);
+    }
+    
     console.log("[Portal Phone Auth] Normalized phone:", normalizedPhone);
+
+    // Validate phone number length (US phones are 10 digits)
+    if (normalizedPhone.length !== 10) {
+      console.log("[Portal Phone Auth] ERROR: Invalid phone length:", normalizedPhone.length);
+      return NextResponse.json({
+        found: false,
+        error: "Please enter a valid 10-digit phone number"
+      }, { status: 400 });
+    }
 
     // Search for phone in customers_xlsx table directly
     // FILTER OUT INACTIVE CUSTOMERS - only allow login for active customers
@@ -40,7 +55,8 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(customersXlsx.active, true), // Only active customers
-          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
+          // Exact phone match using normalized numbers
+          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedPhone}`
         )
       )
       .limit(1);

@@ -2764,7 +2764,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                           {contact.name && ` - ${contact.name}`}
                                         </p>
                                         <p className="font-medium break-all" data-testid={`location-${location.id}-contact-${contactIndex}`}>
-                                          {contact.value}
+                                          {isEmail ? contact.value : formatPhoneNumber(contact.value)}
                                         </p>
                                       </div>
                                     </div>
@@ -4831,7 +4831,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       <PhoneIcon className="w-4 h-4 text-primary" />
                     )}
                     <div className="flex-1">
-                      <p className="text-sm font-medium">{contact.value}</p>
+                      <p className="text-sm font-medium">{contact.type === 'Email' ? contact.value : formatPhoneNumber(contact.value)}</p>
                       {contact.name && <p className="text-xs text-muted-foreground">{contact.name}</p>}
                     </div>
                   </div>

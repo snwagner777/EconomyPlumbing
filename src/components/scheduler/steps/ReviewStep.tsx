@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone } from 'lucide-react';
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
+import { formatPhoneNumber } from '@/lib/phoneUtils';
 
 interface JobType {
   id: number;
@@ -184,7 +185,7 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
               <p className="text-muted-foreground">Phone</p>
               <p className="font-medium flex items-center gap-1">
                 <Phone className="w-3 h-3" />
-                {customer.phone}
+                {formatPhoneNumber(customer.phone)}
               </p>
             </div>
           </div>
