@@ -164,7 +164,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [showAccountSelection, setShowAccountSelection] = useState(false);
   
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('phone-lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -1374,28 +1374,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     disabled={!lookupValue.trim() || isSearching}
                     data-testid="button-lookup-submit"
                   >
-                    {isSearching ? 'Searching...' : 'Access My Account'}
-                  </Button>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        Or
-                      </span>
-                    </div>
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    onClick={() => setVerificationStep('phone-lookup')}
-                    className="w-full"
-                    data-testid="button-phone-login"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Login with Phone Number
+                    {isSearching ? 'Searching...' : 'Send Verification Code'}
                   </Button>
 
                   {lookupSuccess && (
@@ -1568,50 +1547,32 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="verification-code">
-                      {lookupType === 'phone' ? '6-Digit Code' : 'Check your email for the access link'}
+                      6-Digit Verification Code
                     </Label>
-                    {lookupType === 'phone' && (
-                      <>
-                        <Input
-                          id="verification-code"
-                          type="text"
-                          placeholder="123456"
-                          value={verificationCode}
-                          onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                          onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
-                          maxLength={6}
-                          data-testid="input-verification-code"
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          Enter the 6-digit code sent to {lookupValue}
-                        </p>
-                      </>
-                    )}
-                    {lookupType === 'email' && (
-                      <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
-                        <div className="flex items-start gap-3">
-                          <Mail className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-                          <div>
-                            <p className="font-medium mb-1">Check your email</p>
-                            <p className="text-sm text-muted-foreground">
-                              We sent a secure access link to {lookupValue}. Click the link in the email to access your portal.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    <Input
+                      id="verification-code"
+                      type="text"
+                      placeholder="123456"
+                      value={verificationCode}
+                      onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                      maxLength={6}
+                      className="text-center text-2xl tracking-widest font-semibold"
+                      data-testid="input-verification-code"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Enter the 6-digit code sent to {lookupValue}
+                    </p>
                   </div>
 
-                  {lookupType === 'phone' && (
-                    <Button
-                      onClick={handleVerifyCode}
-                      className="w-full"
-                      disabled={verificationCode.length !== 6 || isVerifying}
-                      data-testid="button-verify-code"
-                    >
-                      {isVerifying ? 'Verifying...' : 'Verify Code'}
-                    </Button>
-                  )}
+                  <Button
+                    onClick={handleVerifyCode}
+                    className="w-full"
+                    disabled={verificationCode.length !== 6 || isVerifying}
+                    data-testid="button-verify-code"
+                  >
+                    {isVerifying ? 'Verifying...' : 'Verify & Access Portal'}
+                  </Button>
 
                   <Button
                     variant="outline"
@@ -1619,7 +1580,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     className="w-full"
                     data-testid="button-back-to-lookup"
                   >
-                    Try Another Method
+                    Use Different Email
                   </Button>
 
                   {lookupSuccess && (
