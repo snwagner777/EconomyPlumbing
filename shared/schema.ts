@@ -250,6 +250,55 @@ export const referralCreditUsage = pgTable("referral_credit_usage", {
   usedAtIdx: index("referral_credit_usage_used_at_idx").on(table.usedAt),
 }));
 
+// Vouchers - QR code-based discount system for referrals
+// Replaces complex ServiceTitan job tracking with simple tech-scannable vouchers
+export const vouchers = pgTable("vouchers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Voucher details
+  code: text("code").notNull().unique(), // Human-readable code (e.g., "REF-A1B2C3D4")
+  qrCode: text("qr_code").notNull(), // Base64-encoded QR code image
+  
+  // Value and restrictions
+  discountAmount: integer("discount_amount").notNull(), // Amount in cents ($25 = 2500)
+  minimumJobAmount: integer("minimum_job_amount").notNull().default(20000), // $200 minimum
+  voucherType: text("voucher_type").notNull(), // 'referral_new_customer', 'referral_reward', 'promotional'
+  
+  // Customer info
+  customerId: integer("customer_id"), // ServiceTitan customer ID (null if not created yet)
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email"),
+  customerPhone: text("customer_phone"),
+  
+  // Referral tracking (if this is a referral voucher)
+  referralId: varchar("referral_id"), // Links to referrals table if applicable
+  referrerCustomerId: integer("referrer_customer_id"), // Who referred this customer (for reward tracking)
+  
+  // Status tracking
+  status: text("status").notNull().default('active'), // 'active', 'redeemed', 'expired', 'cancelled'
+  
+  // Redemption tracking
+  redeemedAt: timestamp("redeemed_at"),
+  redeemedBy: text("redeemed_by"), // Tech name/email who scanned it
+  redeemedJobId: text("redeemed_job_id"), // ServiceTitan job ID where used
+  redeemedJobNumber: text("redeemed_job_number"),
+  redeemedJobAmount: integer("redeemed_job_amount"), // Actual job amount in cents
+  
+  // Expiration
+  expiresAt: timestamp("expires_at").notNull(), // Auto-set to createdAt + 6 months
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  codeIdx: uniqueIndex("vouchers_code_idx").on(table.code),
+  customerIdIdx: index("vouchers_customer_id_idx").on(table.customerId),
+  statusIdx: index("vouchers_status_idx").on(table.status),
+  expiresAtIdx: index("vouchers_expires_at_idx").on(table.expiresAt),
+  referralIdIdx: index("vouchers_referral_id_idx").on(table.referralId),
+  referrerCustomerIdIdx: index("vouchers_referrer_customer_id_idx").on(table.referrerCustomerId),
+}));
+
 // Referee welcome emails - sent immediately when someone is referred
 export const refereeWelcomeEmails = pgTable("referee_welcome_emails", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -2278,6 +2327,12 @@ export const insertReferralCreditUsageSchema = createInsertSchema(referralCredit
   processedAt: true,
 });
 
+export const insertVoucherSchema = createInsertSchema(vouchers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertRefereeWelcomeEmailSchema = createInsertSchema(refereeWelcomeEmails).omit({
   id: true,
   createdAt: true,
@@ -2427,6 +2482,8 @@ export type EmailSuppressionList = typeof emailSuppressionList.$inferSelect;
 export type InsertEmailSuppressionList = z.infer<typeof insertEmailSuppressionListSchema>;
 export type ReferralCreditUsage = typeof referralCreditUsage.$inferSelect;
 export type InsertReferralCreditUsage = z.infer<typeof insertReferralCreditUsageSchema>;
+export type Voucher = typeof vouchers.$inferSelect;
+export type InsertVoucher = z.infer<typeof insertVoucherSchema>;
 export type RefereeWelcomeEmail = typeof refereeWelcomeEmails.$inferSelect;
 export type InsertRefereeWelcomeEmail = z.infer<typeof insertRefereeWelcomeEmailSchema>;
 export type ReferrerThankYouEmail = typeof referrerThankYouEmails.$inferSelect;
