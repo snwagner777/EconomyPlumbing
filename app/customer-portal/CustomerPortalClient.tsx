@@ -182,6 +182,12 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
   
+  // Cancel appointment state
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [appointmentToCancel, setAppointmentToCancel] = useState<ServiceTitanAppointment & { jobId?: number } | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [isCanceling, setIsCanceling] = useState(false);
+  
   // Edit contact info state
   const [editContactsOpen, setEditContactsOpen] = useState(false);
   const [editEmail, setEditEmail] = useState("");
@@ -680,7 +686,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   };
 
   const handleRescheduleAppointment = async () => {
-    if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentWindow || !customerId) {
+    if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentWindow) {
       return;
     }
 
@@ -701,14 +707,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       const newStartDateTime = new Date(`${newAppointmentDate}T${startTime}:00`);
       const newEndDateTime = new Date(`${newAppointmentDate}T${endTime}:00`);
 
-      const response = await fetch('/api/portal/reschedule-appointment', {
+      const response = await fetch('/api/customer-portal/reschedule-appointment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appointmentId: appointmentToReschedule.id,
-          newStart: newStartDateTime.toISOString(),
-          newEnd: newEndDateTime.toISOString(),
-          customerId: customerId,
+          start: newStartDateTime.toISOString(),
+          end: newEndDateTime.toISOString(),
+          arrivalWindowStart: newStartDateTime.toISOString(),
+          arrivalWindowEnd: newEndDateTime.toISOString(),
         }),
       });
 
@@ -718,14 +725,86 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         throw new Error(result.error || 'Failed to reschedule appointment');
       }
 
+      toast({
+        title: "Success!",
+        description: "Your appointment has been rescheduled",
+      });
+
       // Refresh customer data
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/account'] });
       
       setRescheduleDialogOpen(false);
     } catch (error: any) {
       console.error('Reschedule error:', error);
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to reschedule appointment',
+        variant: "destructive",
+      });
     } finally {
       setIsRescheduling(false);
+    }
+  };
+
+  const handleOpenCancelDialog = (appointment: ServiceTitanAppointment & { jobId?: number; jobNumber?: string }) => {
+    setAppointmentToCancel(appointment);
+    setCancelReason("");
+    setCancelDialogOpen(true);
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!appointmentToCancel) {
+      return;
+    }
+
+    // Need jobId to cancel - try to extract from jobNumber if not directly available
+    const jobId = appointmentToCancel.jobId;
+    
+    if (!jobId) {
+      toast({
+        title: "Error",
+        description: "Unable to cancel this appointment. Please call us for assistance.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCanceling(true);
+
+    try {
+      const response = await fetch('/api/customer-portal/cancel-job', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId,
+          reason: cancelReason || 'Canceled by customer',
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to cancel appointment');
+      }
+
+      toast({
+        title: "Appointment Canceled",
+        description: "Your appointment has been successfully canceled",
+      });
+
+      // Refresh customer data
+      queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/account'] });
+      
+      setCancelDialogOpen(false);
+    } catch (error: any) {
+      console.error('Cancel error:', error);
+      toast({
+        title: "Error",
+        description: error.message || 'Failed to cancel appointment',
+        variant: "destructive",
+      });
+    } finally {
+      setIsCanceling(false);
     }
   };
 
@@ -2551,6 +2630,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                       <CalendarClock className="w-4 h-4 mr-1" />
                                       Reschedule
                                     </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => handleOpenCancelDialog(appointment as any)}
+                                      data-testid={`button-cancel-${appointment.id}`}
+                                    >
+                                      <AlertCircle className="w-4 h-4 mr-1" />
+                                      Cancel
+                                    </Button>
                                   </div>
                                 </div>
                                 <div className="text-sm space-y-1">
@@ -3083,6 +3171,66 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Cancel Appointment Dialog */}
+      <Dialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+        <DialogContent data-testid="dialog-cancel">
+          <DialogHeader>
+            <DialogTitle>Cancel Appointment</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to cancel this appointment?
+            </DialogDescription>
+          </DialogHeader>
+          
+          {appointmentToCancel && (
+            <div className="space-y-4">
+              <div className="p-4 border rounded-lg">
+                <p className="text-sm"><strong>Service:</strong> {appointmentToCancel.jobType}</p>
+                <p className="text-sm"><strong>Date:</strong> {formatDate(appointmentToCancel.start)}</p>
+                {appointmentToCancel.arrivalWindowStart && appointmentToCancel.arrivalWindowEnd && (
+                  <p className="text-sm">
+                    <strong>Time:</strong> {formatTime(appointmentToCancel.arrivalWindowStart)} - {formatTime(appointmentToCancel.arrivalWindowEnd)}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="cancel-reason">Reason for Cancellation (Optional)</Label>
+                <Input
+                  id="cancel-reason"
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="e.g., Schedule conflict, no longer needed..."
+                  data-testid="input-cancel-reason"
+                />
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Note: Once canceled, you'll need to schedule a new appointment if you change your mind. You can also call us at {phoneConfig.display} if you need assistance.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setCancelDialogOpen(false)}
+              disabled={isCanceling}
+              data-testid="button-keep-appointment"
+            >
+              Keep Appointment
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleCancelAppointment}
+              disabled={isCanceling}
+              data-testid="button-confirm-cancel"
+            >
+              {isCanceling ? "Canceling..." : "Cancel Appointment"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

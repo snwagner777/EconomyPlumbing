@@ -416,18 +416,45 @@ export class ServiceTitanJobs {
   /**
    * Cancel a job
    */
-  async cancelJob(jobId: number, cancelReasonId: number): Promise<void> {
+  async cancelJob(jobId: number, options: { reasonId: number; memo: string }): Promise<void> {
     try {
       await serviceTitanAuth.makeRequest(
         `jpm/v2/tenant/${this.tenantId}/jobs/${jobId}/cancel`,
         {
-          method: 'POST',
-          body: JSON.stringify({ cancelReasonId }),
+          method: 'PUT',
+          body: JSON.stringify(options),
         }
       );
       console.log(`[ServiceTitan Jobs] Cancelled job ${jobId}`);
     } catch (error) {
       console.error(`[ServiceTitan Jobs] Error cancelling job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Reschedule an appointment
+   */
+  async rescheduleAppointment(
+    appointmentId: number,
+    options: {
+      start?: string; // ISO datetime
+      end?: string; // ISO datetime
+      arrivalWindowStart?: string; // ISO datetime
+      arrivalWindowEnd?: string; // ISO datetime
+    }
+  ): Promise<void> {
+    try {
+      await serviceTitanAuth.makeRequest(
+        `jpm/v2/tenant/${this.tenantId}/appointments/${appointmentId}/reschedule`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(options),
+        }
+      );
+      console.log(`[ServiceTitan Jobs] Rescheduled appointment ${appointmentId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error rescheduling appointment ${appointmentId}:`, error);
       throw error;
     }
   }
