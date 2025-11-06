@@ -16,28 +16,28 @@ function Calendar({
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-4", className)}
+      className={cn("p-2 sm:p-3", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center mb-1",
-        caption_label: "text-base font-semibold",
+        month: "space-y-3 sm:space-y-4",
+        caption: "flex justify-center pt-1 relative items-center mb-2",
+        caption_label: "text-sm sm:text-base font-semibold",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
-          "h-8 w-8 bg-transparent p-0 hover:bg-accent"
+          "h-7 w-7 sm:h-8 sm:w-8 bg-transparent p-0 hover:bg-accent"
         ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
+        nav_button_previous: "absolute left-0 sm:left-1",
+        nav_button_next: "absolute right-0 sm:right-1",
+        table: "w-full border-collapse",
         head_row: "flex mb-1",
         head_cell:
-          "text-muted-foreground rounded-md w-10 font-semibold text-xs uppercase",
-        row: "flex w-full mt-1.5",
-        cell: "relative h-10 w-10 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+          "text-muted-foreground rounded-md w-9 sm:w-10 font-semibold text-[10px] sm:text-xs uppercase",
+        row: "flex w-full mt-1 sm:mt-1.5",
+        cell: "relative h-9 w-9 sm:h-10 sm:w-10 text-center text-sm p-0 [&:has([aria-selected])]:bg-accent/50 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-10 w-10 p-0 font-medium aria-selected:opacity-100 hover-elevate"
+          "h-9 w-9 sm:h-10 sm:w-10 p-0 text-sm font-medium aria-selected:opacity-100 hover-elevate"
         ),
         day_range_end: "day-range-end",
         day_selected:

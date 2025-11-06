@@ -130,13 +130,13 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     <div className="space-y-6">
       {/* Top Appointments - Prominent Display */}
       {topSlots.length > 0 && (
-        <Card className={`p-6 border-2 ${
+        <Card className={`p-4 sm:p-6 border-2 ${
           hasHighEfficiencySlots 
             ? 'bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-green-200 dark:border-green-800'
             : 'bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20 border-blue-200 dark:border-blue-800'
         }`}>
-          <div className="flex items-start gap-3 sm:gap-4 mb-5">
-            <div className={`p-2.5 sm:p-3 rounded-full shrink-0 ${
+          <div className="flex items-start gap-3 sm:gap-4 mb-4 sm:mb-5">
+            <div className={`p-2 sm:p-2.5 rounded-full shrink-0 ${
               hasHighEfficiencySlots 
                 ? 'bg-green-100 dark:bg-green-900/40'
                 : 'bg-blue-100 dark:bg-blue-900/40'
@@ -154,15 +154,17 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   : 'text-blue-900 dark:text-blue-100'
               }`}>
                 {hasHighEfficiencySlots ? 'Most Efficient Appointment Times' : 'Next Available Appointments'}
-                {allTopSlotsEquallyEfficient && <span className="text-sm font-normal ml-2">(sorted by earliest)</span>}
               </h3>
-              <p className={`text-sm ${
+              {allTopSlotsEquallyEfficient && (
+                <p className="text-xs sm:text-sm text-muted-foreground mb-1">(sorted by earliest)</p>
+              )}
+              <p className={`text-xs sm:text-sm ${
                 hasHighEfficiencySlots 
                   ? 'text-green-700 dark:text-green-300'
                   : 'text-blue-700 dark:text-blue-300'
               }`}>
                 {hasHighEfficiencySlots 
-                  ? 'These are our most fuel-efficient appointment times! We already have other jobs scheduled nearby, which helps us reduce travel costs and offer you faster service.'
+                  ? 'We already have jobs scheduled nearby for faster service and lower costs!'
                   : 'Select a time that works best for your schedule'
                 }
               </p>
@@ -194,31 +196,33 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                       </Badge>
                       
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <p className={`font-bold text-base sm:text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
-                            {slot.timeLabel}
-                          </p>
-                          {index === 0 && (slot.proximityScore || 0) > 60 && (
-                            <Badge 
-                              variant="default"
-                              className={`text-[10px] sm:text-xs px-1.5 py-0 ${
-                                isSelected 
-                                  ? 'bg-white/20 text-white border-white/30' 
-                                  : 'bg-green-600 text-white'
-                              }`}
-                            >
-                              Most Efficient
-                            </Badge>
-                          )}
+                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                          <div className="flex items-center gap-2">
+                            <p className={`font-bold text-base sm:text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                              {slot.timeLabel}
+                            </p>
+                            {index === 0 && (
+                              <Badge 
+                                variant="default"
+                                className={`text-[10px] sm:text-xs px-1.5 py-0.5 shrink-0 ${
+                                  isSelected 
+                                    ? 'bg-white/20 text-white border-white/30' 
+                                    : 'bg-green-600 text-white'
+                                }`}
+                              >
+                                Most Efficient
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        <p className={`text-xs sm:text-sm ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
+                        <p className={`text-xs sm:text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
-                          {index === 0 && (slot.proximityScore || 0) > 60 && (
-                            <span className={`ml-1 ${isSelected ? 'text-white/80' : 'text-green-600 dark:text-green-500'}`}>
-                              • We'll be working nearby
-                            </span>
-                          )}
                         </p>
+                        {index === 0 && (
+                          <p className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-green-600 dark:text-green-500'}`}>
+                            ✓ We'll be working nearby
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -243,13 +247,13 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
           </Button>
           
           {/* Text Us for Custom Scheduling */}
-          <Card className="p-4 bg-muted/50 border-dashed max-w-md">
-            <p className="text-sm text-center text-muted-foreground mb-3">
-              Don't see the appointment time you're looking for?
+          <Card className="p-4 bg-muted/50 border-dashed w-full max-w-md mx-auto">
+            <p className="text-xs sm:text-sm text-center text-muted-foreground mb-3">
+              Don't see the time you're looking for?
             </p>
             <Button 
               variant="default" 
-              className="w-full gap-2"
+              className="w-full gap-2 min-h-11"
               onClick={() => window.open('sms:5123689159', '_blank')}
               data-testid="button-text-us"
             >
@@ -288,8 +292,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Calendar */}
         <div className="lg:col-span-2 order-2 lg:order-1">
-          <Card className="p-4 sm:p-5 overflow-hidden">
-            <h3 className="font-semibold text-base sm:text-lg mb-4">Select a Date</h3>
+          <Card className="p-3 sm:p-4 md:p-5">
+            <h3 className="font-semibold text-base sm:text-lg mb-3 sm:mb-4">Select a Date</h3>
             <Calendar
               mode="single"
               selected={selectedDate}
