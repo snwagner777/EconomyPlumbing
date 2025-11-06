@@ -18,7 +18,8 @@ import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
-import { getReferralProcessor } from "./lib/referralProcessor";
+// DEPRECATED: Old ServiceTitan job scanning system - replaced by voucher-based QR code system
+// import { getReferralProcessor } from "./lib/referralProcessor";
 import { startGMBAutomation } from "./lib/gmbAutomation";
 import { getReviewRequestScheduler } from "./lib/reviewRequestScheduler";
 import { getReferralNurtureScheduler } from "./lib/referralNurtureScheduler";
@@ -83,25 +84,27 @@ setTimeout(() => {
 console.log('[Worker] Starting custom campaign scheduler...');
 startCustomCampaignScheduler();
 
-// Start referral processor
-console.log('[Worker] Starting referral processor...');
-const referralProcessor = getReferralProcessor();
-
-// Run once on startup after 5-second delay
-setTimeout(() => {
-  console.log('[Referral Processor] Running initial referral processing...');
-  referralProcessor.processPendingReferrals().catch(err => {
-    console.error('[Referral Processor] Error during initial processing:', err);
-  });
-}, 5000);
-
-// Then run every hour
-setInterval(() => {
-  console.log('[Referral Processor] Running hourly referral processing...');
-  referralProcessor.processPendingReferrals().catch(err => {
-    console.error('[Referral Processor] Error during hourly processing:', err);
-  });
-}, 60 * 60 * 1000); // Every hour
+// DEPRECATED: Old referral processor replaced by voucher-based QR code system
+// Referrals now use instant voucher creation (app/api/referrals/submit)
+// and QR code scanning (app/customer-portal/scan) instead of job matching
+// console.log('[Worker] Starting referral processor...');
+// const referralProcessor = getReferralProcessor();
+// 
+// // Run once on startup after 5-second delay
+// setTimeout(() => {
+//   console.log('[Referral Processor] Running initial referral processing...');
+//   referralProcessor.processPendingReferrals().catch(err => {
+//     console.error('[Referral Processor] Error during initial processing:', err);
+//   });
+// }, 5000);
+// 
+// // Then run every hour
+// setInterval(() => {
+//   console.log('[Referral Processor] Running hourly referral processing...');
+//   referralProcessor.processPendingReferrals().catch(err => {
+//     console.error('[Referral Processor] Error during hourly processing:', err);
+//   });
+// }, 60 * 60 * 1000); // Every hour
 
 console.log('[Worker] All background jobs started successfully');
 console.log('[Worker] Process will run indefinitely...');

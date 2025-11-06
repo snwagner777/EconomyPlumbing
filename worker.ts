@@ -22,7 +22,8 @@ import { startAutoBlogGeneration } from './server/lib/autoBlogGenerator';
 import { startGoogleDriveMonitoring } from './server/lib/googleDriveMonitor';
 import { startDailyCompositeJob } from './server/lib/dailyCompositeJob';
 import { startPhotoCleanupJob } from './server/lib/photoCleanupJob';
-import { getReferralProcessor } from './server/lib/referralProcessor';
+// DEPRECATED: Old ServiceTitan job scanning system - replaced by voucher-based QR code system
+// import { getReferralProcessor } from './server/lib/referralProcessor';
 import { startGMBAutomation } from './server/lib/gmbAutomation';
 import { getReviewRequestScheduler } from './server/lib/reviewRequestScheduler';
 import { getReferralNurtureScheduler } from './server/lib/referralNurtureScheduler';
@@ -246,7 +247,7 @@ async function initializeWorker(): Promise<void> {
   registry.register('review-requests', 30 * 60 * 1000, true); // 30 minutes
   registry.register('referral-nurture', 30 * 60 * 1000, true); // 30 minutes
   registry.register('custom-campaigns', 30 * 60 * 1000, true); // 30 minutes
-  registry.register('referral-processor', 60 * 60 * 1000, true); // 1 hour
+  // DEPRECATED: registry.register('referral-processor', 60 * 60 * 1000, true); // Replaced by voucher system
   registry.register('health-alerter', 5 * 60 * 1000, true); // 5 minutes
   registry.register('automated-photo-cleanup', 24 * 60 * 60 * 1000, true); // 24 hours
   registry.register('daily-composite', 60 * 60 * 1000, false); // 1 hour (disabled)
@@ -326,11 +327,13 @@ async function initializeWorker(): Promise<void> {
     await customCampaignScheduler.processCampaigns();
   });
 
-  // Start referral processor
-  const referralProcessor = getReferralProcessor();
-  registry.start('referral-processor', async () => {
-    await referralProcessor.processPendingReferrals();
-  });
+  // DEPRECATED: Old referral processor replaced by voucher-based QR code system
+  // Referrals now use instant voucher creation (app/api/referrals/submit)
+  // and QR code scanning (app/customer-portal/scan) instead of job matching
+  // const referralProcessor = getReferralProcessor();
+  // registry.start('referral-processor', async () => {
+  //   await referralProcessor.processPendingReferrals();
+  // });
 
   // Start health alerter
   registry.start('health-alerter', async () => {
