@@ -14,6 +14,7 @@ interface NewCustomerWizardProps {
   onSubmit: (data: any) => void;
   onCancel: () => void;
   isSubmitting?: boolean;
+  isGrouponService?: boolean;
 }
 
 type ConversationStep = 
@@ -21,9 +22,9 @@ type ConversationStep =
   | 'phone' | 'email' 
   | 'address' | 'unit' | 'city' | 'state' | 'zip'
   | 'sameAsBilling' | 'locationName' | 'locationAddress' | 'locationUnit' | 'locationCity' | 'locationState' | 'locationZip'
-  | 'grouponVoucher' | 'gateCode';
+  | 'grouponVoucher' | 'specialInstructions';
 
-export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCustomerWizardProps) {
+export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponService }: NewCustomerWizardProps) {
   const [step, setStep] = useState<ConversationStep>('firstName');
   const [data, setData] = useState<any>({
     customerType: 'Residential',
@@ -54,7 +55,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
       'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip',
-      'grouponVoucher', 'gateCode'
+      'grouponVoucher', 'specialInstructions'
     ];
 
     const currentIndex = stepOrder.indexOf(step);
@@ -67,8 +68,18 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
 
     // Skip location fields if sameAsBilling is true
     if (currentData.sameAsBilling && nextIndex >= stepOrder.indexOf('locationName') && nextIndex < stepOrder.indexOf('grouponVoucher')) {
-      // Jump to grouponVoucher
-      setStep('grouponVoucher');
+      // Skip to Groupon voucher if this is a Groupon service, otherwise skip to special instructions
+      if (isGrouponService) {
+        setStep('grouponVoucher');
+      } else {
+        setStep('specialInstructions');
+      }
+      return;
+    }
+
+    // Skip Groupon voucher if not a Groupon service
+    if (stepOrder[nextIndex] === 'grouponVoucher' && !isGrouponService) {
+      setStep('specialInstructions');
       return;
     }
 
@@ -90,12 +101,19 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
       'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip',
-      'grouponVoucher', 'gateCode'
+      'grouponVoucher', 'specialInstructions'
     ];
 
     const currentIndex = stepOrder.indexOf(step);
     if (currentIndex > 0) {
-      setStep(stepOrder[currentIndex - 1]);
+      let prevIndex = currentIndex - 1;
+      
+      // Skip Groupon voucher if going back and not a Groupon service
+      if (stepOrder[prevIndex] === 'grouponVoucher' && !isGrouponService) {
+        prevIndex--;
+      }
+      
+      setStep(stepOrder[prevIndex]);
     }
   };
 
@@ -426,20 +444,20 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
           />
         );
 
-      case 'gateCode':
+      case 'specialInstructions':
         return (
           <QuestionBox
             icon={<DoorClosed className="w-6 h-6" />}
-            question="Is there a gate code or access instructions?"
-            description="This helps our technicians arrive on time"
-            value={data.gateCode || ''}
-            onChange={(v) => setData({ ...data, gateCode: v })}
+            question="Any special instructions for our technician?"
+            description="Gate code, door code, parking instructions, or other access details"
+            value={data.specialInstructions || ''}
+            onChange={(v) => setData({ ...data, specialInstructions: v })}
             onEnter={() => {
-              handleAnswer(data.gateCode || '');
+              handleAnswer(data.specialInstructions || '');
               // This is the final step - submit
-              onSubmit({ ...data, gateCode: data.gateCode });
+              onSubmit({ ...data, specialInstructions: data.specialInstructions });
             }}
-            placeholder="Gate code or access notes (optional)"
+            placeholder="e.g., Gate code #1234, use side entrance (optional)"
             autoFocus
             optional
           />
@@ -462,7 +480,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
             phone: ['phone', 'email'],
             address: ['address', 'unit', 'city', 'state', 'zip'],
             sameAsBilling: ['sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'],
-            final: ['grouponVoucher', 'gateCode'],
+            final: ['grouponVoucher', 'specialInstructions'],
           };
 
           const isActive = milestoneSteps[milestone]?.includes(step);

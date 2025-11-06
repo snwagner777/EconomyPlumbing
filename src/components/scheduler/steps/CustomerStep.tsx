@@ -37,7 +37,7 @@ const customerSchema = z.object({
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
   locationName: z.string().optional(),
   grouponVoucher: z.string().optional(),
-  gateCode: z.string().optional(),
+  specialInstructions: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -109,6 +109,12 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     );
   })();
 
+  // Check if this is a Groupon service
+  const isGrouponService = selectedService && (() => {
+    const serviceName = selectedService.name.toLowerCase();
+    return serviceName.includes('groupon') || serviceName.includes('$49');
+  })();
+
   const form = useForm<CustomerFormData>({
     resolver: zodResolver(customerSchema),
     defaultValues: {
@@ -123,7 +129,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       state: initialData?.state || 'TX',
       zip: initialData?.zip || '',
       grouponVoucher: initialData?.grouponVoucher || '',
-      gateCode: initialData?.gateCode || '',
+      specialInstructions: initialData?.specialInstructions || '',
       notes: initialData?.notes || '',
     },
   });
@@ -662,6 +668,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           setCustomersFound([]);
         }}
         isSubmitting={createCustomerMutation.isPending}
+        isGrouponService={isGrouponService || false}
       />
     </div>
   );

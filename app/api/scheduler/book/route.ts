@@ -194,6 +194,29 @@ export async function POST(req: NextRequest) {
         console.log(`[Scheduler] Appointment slot: ${appointmentStart} - ${appointmentEnd}`);
       }
       
+      // Build combined special instructions from customer input, Groupon voucher, and any existing instructions
+      const instructionsParts: string[] = [];
+      
+      if (body.specialInstructions && body.specialInstructions.trim()) {
+        instructionsParts.push(body.specialInstructions.trim());
+      }
+      
+      if (body.grouponVoucher && body.grouponVoucher.trim()) {
+        instructionsParts.push(`Groupon Voucher: ${body.grouponVoucher.trim()}`);
+      }
+      
+      if (validated.specialInstructions && validated.specialInstructions.trim()) {
+        instructionsParts.push(validated.specialInstructions.trim());
+      }
+      
+      const combinedInstructions = instructionsParts.length > 0 
+        ? instructionsParts.join('\n\n') 
+        : undefined;
+      
+      if (combinedInstructions) {
+        console.log(`[Scheduler] Adding special instructions to appointment:\n${combinedInstructions}`);
+      }
+      
       const job = await serviceTitanJobs.createJob({
         customerId,
         locationId,
@@ -206,29 +229,10 @@ export async function POST(req: NextRequest) {
         arrivalWindowEnd,
         appointmentStart, // Actual scheduled slot within arrival window
         appointmentEnd, // Actual scheduled slot end
-        specialInstructions: validated.specialInstructions || undefined,
+        specialInstructions: combinedInstructions,
         campaignId, // REQUIRED field
         technicianId, // Assign technician if available
       });
-
-      // Step 7b: Add Groupon voucher and gate code as pinned notes to JOB
-      if (body.grouponVoucher && body.grouponVoucher.trim()) {
-        console.log(`[Scheduler] Adding Groupon voucher as pinned note to job ${job.id}`);
-        await serviceTitanJobs.createJobNote(
-          job.id,
-          `Groupon Voucher: ${body.grouponVoucher.trim()}`,
-          true // pinned
-        );
-      }
-
-      if (body.gateCode && body.gateCode.trim()) {
-        console.log(`[Scheduler] Adding gate code as pinned note to job ${job.id}`);
-        await serviceTitanJobs.createJobNote(
-          job.id,
-          `Gate Code/Access: ${body.gateCode.trim()}`,
-          true // pinned
-        );
-      }
 
       // Update scheduler request with ServiceTitan IDs
       await db.update(schedulerRequests)
