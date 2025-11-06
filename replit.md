@@ -4,6 +4,11 @@
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
 ## Recent Changes (November 6, 2025)
+- **XLSX Import Verification**: Debugged and verified customer import process works correctly
+  - ✅ Added comprehensive logging to track data flow through import pipeline
+  - ✅ Confirmed phone numbers correctly flow from XLSX → parsing → batch insert → database
+  - ✅ Manual import successfully imported 13,021 customers with all contact data intact
+  - ✅ Documented `service_titan_contacts` table as deprecated (Oct 23 sync, never maintained)
 - **Unified Customer Database**: Migrated ALL customer creation/lookup to `customers_xlsx` table (XLSX import source of truth)
   - ✅ Chatbot, Contact Form, Scheduler, Portal Login now use unified `customers_xlsx` table
   - ✅ ServiceTitan API creates write immediately to `customers_xlsx` for instant portal/scheduler access
@@ -45,7 +50,7 @@ Preferred communication style: Simple, everyday language.
 - Creates customer immediately in ServiceTitan when wizard completes (atomic operation)
 - ServiceTitan V2 API requirement: customers MUST include `locations` array (every customer needs at least one location)
 - Force create flag: "Create New Customer" button creates new record even if phone/email matches existing customer
-- All data syncs to local database immediately (serviceTitanCustomers + serviceTitanContacts tables)
+- All data syncs to local database immediately (`customers_xlsx` table - single source of truth)
 
 **Estimate Acceptance Workflow**
 - Customer portal displays open estimates (unsold, not dismissed, created within last 30 days)
@@ -151,7 +156,8 @@ export default function NewServicePage() {
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
-- **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Also features a custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
+- **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. The `customers_xlsx` table (populated by hourly Mailgun XLSX imports) is the single source of truth for all customer data. Also features a custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
+  - **DEPRECATED TABLE:** `service_titan_contacts` - Old API sync from October 23, 2025. Never updated, never maintained. NEVER reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
