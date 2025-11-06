@@ -212,10 +212,10 @@ export async function redeemVoucher(params: {
       const reward = await createVoucher({
         voucherType: 'referral_reward',
         customerName: referral.referrerName,
-        customerEmail: referral.referrerEmail,
+        customerEmail: undefined,
         customerPhone: referral.referrerPhone,
         customerId: voucher.referrerCustomerId,
-        referralId: voucher.referralId,
+        referralId: voucher.referralId ?? undefined,
         discountAmount: 2500, // $25 reward
         minimumJobAmount: 20000, // $200 minimum
       });
