@@ -311,6 +311,23 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     enabled: !!customerId,
   });
 
+  // Fetch recent job completions (for technician rating)
+  const { data: recentJobsData, refetch: refetchRecentJobs } = useQuery<{
+    jobs: Array<{
+      id: string;
+      jobId: number;
+      completionDate: Date;
+      serviceName: string | null;
+      technicianName: string | null;
+      invoiceTotal: number | null;
+      technicianRating: number | null;
+      ratedAt: Date | null;
+    }>;
+  }>({
+    queryKey: ['/api/portal/recent-jobs', customerId],
+    enabled: !!customerId,
+  });
+
   // Fetch ALL locations for this customer (multi-location support)
   const { data: locationsData } = useQuery<{
     locations: Array<{
@@ -2683,6 +2700,141 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </Card>
                     );
                   })()}
+
+                  {/* Recent Service Appointments - For Rating Technicians */}
+                  {recentJobsData && recentJobsData.jobs.length > 0 && (
+                    <Card className="border-primary/20">
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Star className="w-6 h-6 text-primary" />
+                          <CardTitle>Recent Service Appointments</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Rate your technician and share your experience
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {recentJobsData.jobs.map((job) => (
+                            <div
+                              key={job.id}
+                              className="flex items-start gap-4 p-4 border rounded-lg bg-card"
+                              data-testid={`recent-job-${job.id}`}
+                            >
+                              <Calendar className="w-5 h-5 text-primary mt-1" />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                  <div>
+                                    <h4 className="font-semibold">{job.serviceName || 'Service Appointment'}</h4>
+                                    {job.technicianName && (
+                                      <p className="text-sm text-muted-foreground">Technician: {job.technicianName}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="text-sm space-y-1">
+                                  <p className="text-muted-foreground">
+                                    Completed: {formatDate(job.completionDate)}
+                                  </p>
+                                  {job.invoiceTotal && (
+                                    <p className="text-muted-foreground">
+                                      Total: {formatCurrency(job.invoiceTotal / 100)}
+                                    </p>
+                                  )}
+                                </div>
+
+                                {/* Rating Interface */}
+                                <div className="mt-3 pt-3 border-t">
+                                  {job.technicianRating ? (
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-sm text-muted-foreground">Your rating:</p>
+                                      <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <Star
+                                            key={star}
+                                            className={`w-5 h-5 ${
+                                              star <= job.technicianRating!
+                                                ? 'fill-primary text-primary'
+                                                : 'text-muted-foreground/30'
+                                            }`}
+                                          />
+                                        ))}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        (Rated {formatDate(job.ratedAt!)})
+                                      </p>
+                                    </div>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      <p className="text-sm font-medium">How was your experience?</p>
+                                      <div className="flex gap-1">
+                                        {[1, 2, 3, 4, 5].map((star) => (
+                                          <button
+                                            key={star}
+                                            onClick={async () => {
+                                              try {
+                                                const response = await fetch('/api/portal/rate-technician', {
+                                                  method: 'POST',
+                                                  headers: { 'Content-Type': 'application/json' },
+                                                  body: JSON.stringify({
+                                                    jobCompletionId: job.id,
+                                                    rating: star,
+                                                  }),
+                                                });
+
+                                                if (!response.ok) throw new Error('Failed to submit rating');
+
+                                                toast({
+                                                  title: 'Thank you!',
+                                                  description: 'Your rating has been submitted.',
+                                                });
+
+                                                // Refresh recent jobs to show the rating
+                                                await refetchRecentJobs();
+
+                                                // Flow into review/referral or feedback based on rating
+                                                if (star >= 4) {
+                                                  // High rating - open review modal
+                                                  setReviewModalOpen(true);
+                                                  setReviewRating(0); // Reset for user to rate again in full review
+                                                } else {
+                                                  // Low rating - request feedback
+                                                  toast({
+                                                    title: 'We value your feedback',
+                                                    description: 'Please let us know how we can improve.',
+                                                  });
+                                                  setReviewModalOpen(true);
+                                                  setReviewRating(star);
+                                                  setReviewFeedback("");
+                                                }
+                                              } catch (error) {
+                                                console.error('Rating error:', error);
+                                                toast({
+                                                  title: 'Error',
+                                                  description: 'Failed to submit rating. Please try again.',
+                                                  variant: 'destructive',
+                                                });
+                                              }
+                                            }}
+                                            className="hover-elevate active-elevate-2 p-1.5 rounded transition-colors"
+                                            data-testid={`button-rate-${job.id}-${star}`}
+                                          >
+                                            <Star className="w-6 h-6 text-muted-foreground/50 hover:text-primary hover:fill-primary transition-colors" />
+                                          </button>
+                                        ))}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        Click a star to rate your technician
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Upcoming Appointments */}
                   <div id="appointments-section">

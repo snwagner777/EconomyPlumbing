@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db } from '@/server/db';
-import { jobCompletions } from '@/shared/schema';
+import { jobCompletions } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
