@@ -122,6 +122,7 @@ export async function createReferralVouchers(params: {
   refereeName: string;
   refereeEmail?: string;
   refereePhone?: string;
+  refereeCustomerId?: number; // Link to existing customer if found
   referrerCustomerId: number;
   referrerName: string;
 }): Promise<{ refereeVoucher: { id: string; code: string; qrCode: string; expiresAt: Date } }> {
@@ -131,6 +132,7 @@ export async function createReferralVouchers(params: {
     customerName: params.refereeName,
     customerEmail: params.refereeEmail,
     customerPhone: params.refereePhone,
+    customerId: params.refereeCustomerId, // Link to customer if they exist
     referralId: params.referralId,
     referrerCustomerId: params.referrerCustomerId,
   });
@@ -280,7 +282,7 @@ export async function getCustomerVoucherTotals(customerId: number) {
   return {
     activeCount: active.length,
     totalValue, // in cents
-    totalValueFormatted: `$${(totalValue / 100).toFixed(0)}`,
+    totalValueFormatted: `$${(totalValue / 100).toFixed(2)}`,
     vouchers: customerVouchers,
   };
 }

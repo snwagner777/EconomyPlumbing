@@ -78,11 +78,23 @@ export async function POST(req: NextRequest) {
     const [referrerCustomer] = await db
       .select()
       .from(serviceTitanCustomers)
-      .where(eq(serviceTitanCustomers.phoneNumber, result.data.referrerPhone))
+      .where(eq(serviceTitanCustomers.phone, result.data.referrerPhone))
       .limit(1);
     
     if (referrerCustomer) {
-      referrerCustomerId = referrerCustomer.serviceTitanId;
+      referrerCustomerId = referrerCustomer.id; // id is the ServiceTitan customer ID
+    }
+    
+    // Look up referee customer ID if they already exist
+    let refereeCustomerId: number | undefined;
+    const [refereeCustomer] = await db
+      .select()
+      .from(serviceTitanCustomers)
+      .where(eq(serviceTitanCustomers.phone, result.data.refereePhone))
+      .limit(1);
+    
+    if (refereeCustomer) {
+      refereeCustomerId = refereeCustomer.id;
     }
 
     // Create referral record
@@ -105,6 +117,7 @@ export async function POST(req: NextRequest) {
           refereeName: referral.refereeName,
           refereeEmail: referral.refereeEmail ?? undefined,
           refereePhone: referral.refereePhone,
+          refereeCustomerId, // Link to existing customer if found
           referrerCustomerId,
           referrerName: referral.referrerName,
         });

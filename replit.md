@@ -123,14 +123,14 @@ export default function NewServicePage() {
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
-- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers.
+- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. Also features a custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
-- **Referral System:** Database-first management with ServiceTitan integration, and AI-generated emails (referee welcome, referrer thank you, referrer success notifications) with engagement tracking.
+- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes replacing complex ServiceTitan job scanning. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes in emails and customer portal. Vouchers auto-create reward for referrer when referee's voucher is redeemed. Database-first with AI-generated emails and engagement tracking.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
 
