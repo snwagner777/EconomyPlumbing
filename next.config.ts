@@ -52,25 +52,23 @@ const nextConfig: NextConfig = {
     },
   },
   
-  // Security headers with CSP that allows Ecwid integration
+  // Security headers - CSP disabled for now to allow all third-party integrations
   async headers() {
     return [
       {
         source: '/:path*',
         headers: [
           {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://app.ecwid.com https://*.ecwid.com https://d1oxlq5h9kq8q5.cloudfront.net https://*.servicetitan.com https://static.servicetitan.com https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.jsdelivr.net",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://app.ecwid.com https://*.ecwid.com https://d1oxlq5h9kq8q5.cloudfront.net",
-              "font-src 'self' https://fonts.gstatic.com https://*.ecwid.com https://d1oxlq5h9kq8q5.cloudfront.net data:",
-              "img-src 'self' data: blob: https: http:",
-              "connect-src 'self' https://app.ecwid.com https://*.ecwid.com https://d1oxlq5h9kq8q5.cloudfront.net https://*.servicetitan.com https://www.google-analytics.com https://analytics.google.com https://www.facebook.com https://www.clarity.ms https://c.clarity.ms https://*.ingest.sentry.io",
-              "frame-src 'self' https://app.ecwid.com https://*.ecwid.com https://js.stripe.com https://hooks.stripe.com https://www.facebook.com https://*.servicetitan.com",
-              "worker-src 'self' blob:",
-              "child-src 'self' blob: https://app.ecwid.com https://*.ecwid.com",
-            ].join('; '),
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
           },
         ],
       },
