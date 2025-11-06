@@ -133,16 +133,6 @@ export async function POST(req: NextRequest) {
         locationId = location.id;
       }
 
-      // Step 5b: Add gate code as pinned note if provided
-      if (body.gateCode && body.gateCode.trim()) {
-        console.log(`[Scheduler] Adding gate code as pinned note to location ${locationId}`);
-        await serviceTitanCRM.createLocationNote(
-          locationId,
-          `Gate Code: ${body.gateCode.trim()}`,
-          true
-        );
-      }
-
       // Step 6: Determine technician assignment
       // Priority: 1) Pre-selected from smart slot, 2) Fallback to available technician
       let technicianId: number | undefined = body.technicianId || undefined;
@@ -220,6 +210,25 @@ export async function POST(req: NextRequest) {
         campaignId, // REQUIRED field
         technicianId, // Assign technician if available
       });
+
+      // Step 7b: Add Groupon voucher and gate code as pinned notes to JOB
+      if (body.grouponVoucher && body.grouponVoucher.trim()) {
+        console.log(`[Scheduler] Adding Groupon voucher as pinned note to job ${job.id}`);
+        await serviceTitanJobs.createJobNote(
+          job.id,
+          `Groupon Voucher: ${body.grouponVoucher.trim()}`,
+          true // pinned
+        );
+      }
+
+      if (body.gateCode && body.gateCode.trim()) {
+        console.log(`[Scheduler] Adding gate code as pinned note to job ${job.id}`);
+        await serviceTitanJobs.createJobNote(
+          job.id,
+          `Gate Code/Access: ${body.gateCode.trim()}`,
+          true // pinned
+        );
+      }
 
       // Update scheduler request with ServiceTitan IDs
       await db.update(schedulerRequests)

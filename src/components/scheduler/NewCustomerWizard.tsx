@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Building } from 'lucide-react';
+import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Building, Ticket, DoorClosed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NewCustomerWizardProps {
@@ -20,7 +20,8 @@ type ConversationStep =
   | 'firstName' | 'lastName' | 'customerType' 
   | 'phone' | 'email' 
   | 'address' | 'unit' | 'city' | 'state' | 'zip'
-  | 'sameAsBilling' | 'locationName' | 'locationAddress' | 'locationUnit' | 'locationCity' | 'locationState' | 'locationZip';
+  | 'sameAsBilling' | 'locationName' | 'locationAddress' | 'locationUnit' | 'locationCity' | 'locationState' | 'locationZip'
+  | 'grouponVoucher' | 'gateCode';
 
 export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCustomerWizardProps) {
   const [step, setStep] = useState<ConversationStep>('firstName');
@@ -52,7 +53,8 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
       'firstName', 'lastName', 'customerType',
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
-      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'
+      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip',
+      'grouponVoucher', 'gateCode'
     ];
 
     const currentIndex = stepOrder.indexOf(step);
@@ -64,9 +66,9 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
     }
 
     // Skip location fields if sameAsBilling is true
-    if (currentData.sameAsBilling && nextIndex >= stepOrder.indexOf('locationName')) {
-      // Done - submit
-      onSubmit(currentData);
+    if (currentData.sameAsBilling && nextIndex >= stepOrder.indexOf('locationName') && nextIndex < stepOrder.indexOf('grouponVoucher')) {
+      // Jump to grouponVoucher
+      setStep('grouponVoucher');
       return;
     }
 
@@ -87,7 +89,8 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
       'firstName', 'lastName', 'customerType',
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
-      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'
+      'sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip',
+      'grouponVoucher', 'gateCode'
     ];
 
     const currentIndex = stepOrder.indexOf(step);
@@ -398,17 +401,47 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
             question="Service location ZIP code?"
             value={data.locationZip || ''}
             onChange={(v) => setData({ ...data, locationZip: v })}
-            onEnter={() => {
-              validateAndContinue(
-                data.locationZip || '',
-                /^\d{5}(-\d{4})?$/,
-                'Please enter a valid ZIP code'
-              );
-              // This is the last step - submit
-              onSubmit({ ...data, locationZip: data.locationZip });
-            }}
+            onEnter={() => validateAndContinue(
+              data.locationZip || '',
+              /^\d{5}(-\d{4})?$/,
+              'Please enter a valid ZIP code'
+            )}
             placeholder="78701"
             autoFocus
+          />
+        );
+
+      case 'grouponVoucher':
+        return (
+          <QuestionBox
+            icon={<Ticket className="w-6 h-6" />}
+            question="Do you have a Groupon voucher code?"
+            description="Enter your voucher code, or leave blank if you don't have one"
+            value={data.grouponVoucher || ''}
+            onChange={(v) => setData({ ...data, grouponVoucher: v })}
+            onEnter={() => handleAnswer(data.grouponVoucher || '')}
+            placeholder="Voucher code (optional)"
+            autoFocus
+            optional
+          />
+        );
+
+      case 'gateCode':
+        return (
+          <QuestionBox
+            icon={<DoorClosed className="w-6 h-6" />}
+            question="Is there a gate code or access instructions?"
+            description="This helps our technicians arrive on time"
+            value={data.gateCode || ''}
+            onChange={(v) => setData({ ...data, gateCode: v })}
+            onEnter={() => {
+              handleAnswer(data.gateCode || '');
+              // This is the final step - submit
+              onSubmit({ ...data, gateCode: data.gateCode });
+            }}
+            placeholder="Gate code or access notes (optional)"
+            autoFocus
+            optional
           />
         );
 
@@ -423,12 +456,13 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting }: NewCusto
     <div className="space-y-6">
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-1.5">
-        {['firstName', 'phone', 'address', 'sameAsBilling'].map((milestone) => {
+        {['firstName', 'phone', 'address', 'sameAsBilling', 'final'].map((milestone) => {
           const milestoneSteps: Record<string, ConversationStep[]> = {
             firstName: ['firstName', 'lastName', 'customerType'],
             phone: ['phone', 'email'],
             address: ['address', 'unit', 'city', 'state', 'zip'],
             sameAsBilling: ['sameAsBilling', 'locationName', 'locationAddress', 'locationUnit', 'locationCity', 'locationState', 'locationZip'],
+            final: ['grouponVoucher', 'gateCode'],
           };
 
           const isActive = milestoneSteps[milestone]?.includes(step);
