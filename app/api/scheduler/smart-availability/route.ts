@@ -17,7 +17,7 @@ import { db } from '@/server/db';
 import { serviceTitanZones } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 import { format, addDays } from 'date-fns';
-import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -73,9 +73,9 @@ export async function POST(req: NextRequest) {
     // CRITICAL: Parse dates as Central Time midnight to avoid timezone bugs
     // If frontend sends "2025-11-08", we want Nov 8 at 00:00 Central Time, not UTC
     const TIMEZONE = 'America/Chicago';
-    const start = zonedTimeToUtc(`${startDate}T00:00:00`, TIMEZONE);
+    const start = fromZonedTime(`${startDate}T00:00:00`, TIMEZONE);
     const end = endDate 
-      ? zonedTimeToUtc(`${endDate}T00:00:00`, TIMEZONE)
+      ? fromZonedTime(`${endDate}T00:00:00`, TIMEZONE)
       : addDays(start, 10);
     
     console.log(`[Smart Scheduler] Fetching availability from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')} to ${formatInTimeZone(end, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')}`);
@@ -517,8 +517,8 @@ function generateAvailableSlots(
   const slots: Array<{ start: string; end: string }> = [];
   
   // Convert UTC dates to Central Time for iteration
-  let currentDateCT = utcToZonedTime(startDate, TIMEZONE);
-  const endDateCT = utcToZonedTime(endDate, TIMEZONE);
+  let currentDateCT = toZonedTime(startDate, TIMEZONE);
+  const endDateCT = toZonedTime(endDate, TIMEZONE);
   
   while (currentDateCT <= endDateCT) {
     // Check day of week in Central Time
@@ -545,8 +545,8 @@ function generateAvailableSlots(
       const slotEndStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(endHour).padStart(2, '0')}:${String(endMin || 0).padStart(2, '0')}:00`;
       
       // Convert Central Time to UTC
-      const slotStart = zonedTimeToUtc(slotStartStr, TIMEZONE);
-      const slotEnd = zonedTimeToUtc(slotEndStr, TIMEZONE);
+      const slotStart = fromZonedTime(slotStartStr, TIMEZONE);
+      const slotEnd = fromZonedTime(slotEndStr, TIMEZONE);
       
       // Check for conflicts with existing appointments
       // CRITICAL: Use appointment times (start/end), NOT arrival windows!
