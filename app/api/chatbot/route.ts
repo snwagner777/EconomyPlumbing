@@ -54,10 +54,14 @@ Customer Creation (REQUIRED FIRST):
 - Before discussing appointment scheduling, you MUST create the customer in our system
 - Start by asking for their phone number to check if they're an existing customer
 - Call lookup_customer with their phone number or email
-- If they exist: Welcome them back by name and proceed to scheduling
+- If they exist: Welcome them back by name and ask if that's correct
+  - If customer says "that's not me" or "wrong person": Call create_new_account to start fresh
+  - If correct: Ask if using the same service location or need a new one
+    - If new location needed: Call create_new_location to add another address
+    - If same location: Proceed to scheduling
 - If they're new: Collect their information one question at a time (name, email, full address with city/state/ZIP)
 - Once you have complete info, call create_customer to create them in ServiceTitan
-- Only AFTER the customer is created should you discuss appointment scheduling
+- Only AFTER the customer is created/verified should you discuss appointment scheduling
 
 Example customer creation flow:
 1. Customer: "I need to schedule a drain cleaning"
@@ -191,6 +195,84 @@ export async function POST(req: NextRequest) {
               },
             },
             required: [],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'create_new_account',
+          description: 'Create a new customer account even though lookup found someone with this phone/email. Use when customer says "that\'s not me" or "wrong person". Forces creation of new account.',
+          parameters: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Customer full name',
+              },
+              phone: {
+                type: 'string',
+                description: 'Customer phone number',
+              },
+              email: {
+                type: 'string',
+                description: 'Customer email address (optional)',
+              },
+              address: {
+                type: 'string',
+                description: 'Street address',
+              },
+              city: {
+                type: 'string',
+                description: 'City name',
+              },
+              state: {
+                type: 'string',
+                description: 'State (2-letter code, e.g., TX)',
+              },
+              zip: {
+                type: 'string',
+                description: '5-digit ZIP code',
+              },
+            },
+            required: ['name', 'phone', 'address', 'city', 'state', 'zip'],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'create_new_location',
+          description: 'Add a new service location to an existing customer account. Use when customer has service needed at a different address.',
+          parameters: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'number',
+                description: 'ServiceTitan customer ID from lookup_customer',
+              },
+              locationName: {
+                type: 'string',
+                description: 'Name for this location (e.g., "Vacation Home", "Rental Property")',
+              },
+              street: {
+                type: 'string',
+                description: 'Street address',
+              },
+              city: {
+                type: 'string',
+                description: 'City name',
+              },
+              state: {
+                type: 'string',
+                description: 'State (2-letter code, e.g., TX)',
+              },
+              zip: {
+                type: 'string',
+                description: '5-digit ZIP code',
+              },
+            },
+            required: ['customerId', 'locationName', 'street', 'city', 'state', 'zip'],
           },
         },
       },
@@ -335,6 +417,10 @@ export async function POST(req: NextRequest) {
         functionResult = await lookupCustomer(functionArgs);
       } else if (functionName === 'create_customer') {
         functionResult = await createCustomer(functionArgs);
+      } else if (functionName === 'create_new_account') {
+        functionResult = await createNewAccount(functionArgs);
+      } else if (functionName === 'create_new_location') {
+        functionResult = await createNewLocation(functionArgs);
       } else if (functionName === 'check_appointment_availability') {
         functionResult = await checkAppointmentAvailability(functionArgs);
       } else if (functionName === 'book_appointment') {
@@ -777,6 +863,167 @@ async function createCustomer(args: {
     return {
       success: false,
       message: 'Unable to create customer. Please try again or call us directly.',
+      error: error.message,
+    };
+  }
+}
+
+/**
+ * Create a new account even if customer found with same phone/email
+ * Used when wrong person found during lookup
+ */
+async function createNewAccount(args: {
+  name: string;
+  phone: string;
+  email?: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+}) {
+  try {
+    console.log('[Chatbot] Force creating new account (duplicate phone/email allowed)');
+    
+    // Import ServiceTitan CRM
+    const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
+    const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+    
+    const { name, phone, email, address, city, state, zip } = args;
+    
+    // Create customer in ServiceTitan with forceCreate flag
+    const customer = await serviceTitanCRM.ensureCustomer({
+      name,
+      phone,
+      email: email || undefined,
+      customerType: 'Residential' as const,
+      address: {
+        street: address,
+        city,
+        state,
+        zip,
+      },
+      serviceLocation: {
+        name: `${name} - Primary`,
+        street: address,
+        city,
+        state,
+        zip,
+      },
+      forceCreate: true, // Force new customer even if phone/email matches
+    });
+
+    console.log(`[Chatbot] New account created: ${customer.id}`);
+
+    // Sync to local database
+    await db.insert(serviceTitanCustomers).values({
+      id: customer.id,
+      name: customer.name,
+      type: customer.type || 'Residential',
+      street: address,
+      city,
+      state,
+      zip,
+      active: true,
+    }).onConflictDoUpdate({
+      target: serviceTitanCustomers.id,
+      set: {
+        name: customer.name,
+        street: address,
+        city,
+        state,
+        zip,
+      },
+    });
+
+    // Sync contacts
+    const normalizeContact = (value: string, type: 'phone' | 'email'): string => {
+      if (type === 'phone') {
+        return value.replace(/\D/g, '');
+      }
+      return value.toLowerCase().trim();
+    };
+
+    await db.insert(serviceTitanContacts).values({
+      customerId: customer.id,
+      contactType: 'Phone',
+      value: phone,
+      normalizedValue: normalizeContact(phone, 'phone'),
+    });
+
+    if (email) {
+      await db.insert(serviceTitanContacts).values({
+        customerId: customer.id,
+        contactType: 'Email',
+        value: email,
+        normalizedValue: normalizeContact(email, 'email'),
+      });
+    }
+
+    return {
+      success: true,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        phone,
+        email: email || null,
+        address: { street: address, city, state, zip },
+      },
+      message: `New account created successfully (ID: ${customer.id})`,
+    };
+  } catch (error: any) {
+    console.error('[Chatbot] Error creating new account:', error);
+    return {
+      success: false,
+      message: 'Unable to create new account. Please call us directly.',
+      error: error.message,
+    };
+  }
+}
+
+/**
+ * Add a new service location to existing customer
+ */
+async function createNewLocation(args: {
+  customerId: number;
+  locationName: string;
+  street: string;
+  city: string;
+  state: string;
+  zip: string;
+}) {
+  try {
+    const { customerId, locationName, street, city, state, zip } = args;
+    
+    console.log(`[Chatbot] Adding new location to customer ${customerId}: ${locationName}`);
+    
+    // Import ServiceTitan CRM
+    const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
+    
+    // Add location via ServiceTitan API
+    const location = await serviceTitanCRM.addLocation(customerId, {
+      name: locationName,
+      street,
+      city,
+      state,
+      zip,
+    });
+
+    console.log(`[Chatbot] Location added: ${location.id}`);
+
+    return {
+      success: true,
+      location: {
+        id: location.id,
+        name: locationName,
+        address: { street, city, state, zip },
+      },
+      message: `New location "${locationName}" added successfully`,
+    };
+  } catch (error: any) {
+    console.error('[Chatbot] Error creating new location:', error);
+    return {
+      success: false,
+      message: 'Unable to add new location. Please call us for assistance.',
       error: error.message,
     };
   }
