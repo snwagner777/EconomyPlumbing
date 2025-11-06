@@ -61,14 +61,11 @@ export async function POST(request: NextRequest) {
       customerIds
     );
 
-    // Generate verification code or token
-    const code =
-      verificationType === 'sms'
-        ? Math.floor(100000 + Math.random() * 900000).toString() // 6-digit code
-        : crypto.randomUUID(); // UUID token for email magic link
+    // Generate 6-digit verification code for both SMS and email
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-    // Set expiry time (10 min for SMS, 1 hour for email)
-    const expiryMinutes = verificationType === 'sms' ? 10 : 60;
+    // Set expiry time (10 min for SMS, 15 min for email)
+    const expiryMinutes = verificationType === 'sms' ? 10 : 15;
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
     // Store verification in database
@@ -123,14 +120,13 @@ export async function POST(request: NextRequest) {
         );
       }
     } else if (verificationType === 'email') {
-      // Send email magic link
+      // Send email verification code
       try {
         const { sendEmail } = await import('@/server/email');
-        const magicLink = `${request.nextUrl.protocol}//${request.nextUrl.host}/customer-portal?token=${code}`;
 
         await sendEmail({
           to: contactValue,
-          subject: 'Access Your Customer Portal - Economy Plumbing',
+          subject: 'Your Customer Portal Verification Code - Economy Plumbing',
           html: `
             <!DOCTYPE html>
             <html>
@@ -143,18 +139,15 @@ export async function POST(request: NextRequest) {
                 <h1 style="color: white; margin: 0;">Economy Plumbing Services</h1>
               </div>
               <div style="padding: 30px; background-color: #f9f9f9;">
-                <h2>Access Your Customer Portal</h2>
-                <p>Click the button below to securely access your customer portal:</p>
+                <h2>Your Verification Code</h2>
+                <p>Enter this code to access your customer portal:</p>
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${magicLink}" style="background-color: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-                    Access Portal
-                  </a>
+                  <div style="background-color: #fff; border: 2px solid #0066cc; border-radius: 8px; padding: 20px; display: inline-block;">
+                    <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #0066cc;">${code}</span>
+                  </div>
                 </div>
-                <p style="color: #666; font-size: 14px;">Or copy and paste this link into your browser:</p>
-                <p style="background-color: #fff; padding: 10px; border-left: 4px solid #0066cc; word-break: break-all; font-size: 13px;">
-                  ${magicLink}
-                </p>
-                <p style="color: #999; font-size: 12px; margin-top: 30px;">This link will expire in ${expiryMinutes} minutes. If you didn't request this link, please ignore this email.</p>
+                <p style="color: #666; font-size: 14px;">This code will expire in ${expiryMinutes} minutes.</p>
+                <p style="color: #999; font-size: 12px; margin-top: 30px;">If you didn't request this code, please ignore this email or contact us at (512) 396-7811.</p>
               </div>
               <div style="background-color: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666;">
                 <p style="margin: 5px 0;">Economy Plumbing Services</p>
@@ -166,17 +159,17 @@ export async function POST(request: NextRequest) {
           `,
         });
 
-        console.log('[Portal Auth] Magic link email sent successfully');
+        console.log('[Portal Auth] Verification code email sent successfully');
 
         return NextResponse.json({
           success: true,
-          message: `Magic link sent to ${contactValue}! Please check your email.`,
+          message: `Verification code sent to ${contactValue}! Please check your email.`,
           expiresIn: expiryMinutes * 60, // seconds
         });
       } catch (error) {
         console.error('[Portal Auth] Email send failed:', error);
         return NextResponse.json(
-          { error: 'Failed to send magic link email' },
+          { error: 'Failed to send verification code email' },
           { status: 500 }
         );
       }
