@@ -1,28 +1,40 @@
 import { NextResponse } from 'next/server';
+import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { db } from '@/server/db';
 import { jobCompletions } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
 
+interface PortalSessionData {
+  customerId?: string;
+  availableCustomerIds?: number[];
+}
+
+const sessionOptions = {
+  password: process.env.SESSION_SECRET!,
+  cookieName: 'customer_portal_session',
+  cookieOptions: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    sameSite: 'lax' as const,
+    maxAge: 60 * 60 * 24 * 30, // 30 days
+  },
+};
+
 export async function POST(request: Request) {
   try {
     const cookieStore = await cookies();
-    const sessionCookie = cookieStore.get('customer_portal_session');
+    const session = await getIronSession<PortalSessionData>(cookieStore, sessionOptions);
 
-    if (!sessionCookie) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const session = JSON.parse(sessionCookie.value);
     const { customerId, availableCustomerIds } = session;
 
     if (!customerId) {
-      return NextResponse.json({ error: 'No customer ID in session' }, { status: 400 });
+      return NextResponse.json({ error: 'Unauthorized - no session' }, { status: 401 });
     }
 
     // Verify this customer is in the authorized list
-    if (!availableCustomerIds.includes(parseInt(customerId))) {
+    if (!availableCustomerIds || !availableCustomerIds.includes(parseInt(customerId))) {
       return NextResponse.json({ error: 'Unauthorized customer access' }, { status: 403 });
     }
 
