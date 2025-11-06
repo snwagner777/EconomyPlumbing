@@ -194,11 +194,30 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                       </Badge>
                       
                       <div className="flex-1 min-w-0">
-                        <p className={`font-bold text-base sm:text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
-                          {slot.timeLabel}
-                        </p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className={`font-bold text-base sm:text-lg ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                            {slot.timeLabel}
+                          </p>
+                          {index === 0 && (slot.proximityScore || 0) > 60 && (
+                            <Badge 
+                              variant="default"
+                              className={`text-[10px] sm:text-xs px-1.5 py-0 ${
+                                isSelected 
+                                  ? 'bg-white/20 text-white border-white/30' 
+                                  : 'bg-green-600 text-white'
+                              }`}
+                            >
+                              Most Efficient
+                            </Badge>
+                          )}
+                        </div>
                         <p className={`text-xs sm:text-sm ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
+                          {index === 0 && (slot.proximityScore || 0) > 60 && (
+                            <span className={`ml-1 ${isSelected ? 'text-white/80' : 'text-green-600 dark:text-green-500'}`}>
+                              • We'll be working nearby
+                            </span>
+                          )}
                         </p>
                       </div>
                     </div>
@@ -269,8 +288,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
           <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 sm:gap-6">
         {/* Calendar */}
         <div className="lg:col-span-2 order-2 lg:order-1">
-          <Card className="p-3 sm:p-4">
-            <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4">Select a Date</h3>
+          <Card className="p-4 sm:p-5 overflow-hidden">
+            <h3 className="font-semibold text-base sm:text-lg mb-4">Select a Date</h3>
             <Calendar
               mode="single"
               selected={selectedDate}
@@ -280,8 +299,26 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                 today.setHours(0, 0, 0, 0);
                 return date < today || date > addDays(today, 45);
               }}
-              className="rounded-md border"
+              modifiers={{
+                hasSlots: slots
+                  .map(s => {
+                    const d = new Date(s.start);
+                    d.setHours(0, 0, 0, 0);
+                    return d;
+                  })
+                  .filter((d, i, arr) => arr.findIndex(dd => dd.getTime() === d.getTime()) === i)
+              }}
+              modifiersClassNames={{
+                hasSlots: "relative after:absolute after:bottom-1 after:left-1/2 after:-translate-x-1/2 after:w-1 after:h-1 after:rounded-full after:bg-primary"
+              }}
+              className="w-full"
             />
+            <div className="mt-4 pt-4 border-t flex items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-primary"></div>
+                <span>Available</span>
+              </div>
+            </div>
           </Card>
         </div>
 
