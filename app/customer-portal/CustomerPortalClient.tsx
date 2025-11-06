@@ -18,6 +18,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { openScheduler } from "@/lib/scheduler";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 import { ReferralModal } from "@/components/ReferralModal";
+import { VouchersSection } from "./VouchersSection";
 import { 
   User,
   Users,
@@ -3011,6 +3012,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     </Card>
                   )}
                   </div>
+
+                  {/* Vouchers Section */}
+                  {customerId && <VouchersSection customerId={parseInt(customerId)} />}
 
                   {/* Leave a Review (show if they have completed appointments) */}
                   {completedAppointments.length > 0 && (
