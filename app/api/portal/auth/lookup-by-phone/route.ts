@@ -82,27 +82,39 @@ export async function POST(req: NextRequest) {
       hasPhone: !!customer.phone
     });
 
-    // Check if customer has email
-    if (!customer.email) {
-      console.log("[Portal Phone Auth] ERROR: No email found for customer", customer.id);
-      return NextResponse.json({ 
-        error: "No email address found for this account. Please contact us directly." 
-      }, { status: 404 });
-    }
-
-    const primaryEmail = customer.email.trim();
-
-    // Mask the email for privacy (show first 2 chars and domain)
-    const maskEmail = (email: string) => {
-      const [localPart, domain] = email.split('@');
-      if (!localPart || !domain) return email;
-      
-      const visibleChars = Math.min(2, localPart.length);
-      const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
-      return `${maskedLocal}@${domain}`;
+    // Mask phone for display
+    const maskPhone = (phone: string) => {
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length === 10) {
+        return `(***) ***-${digits.slice(-4)}`;
+      }
+      return `***${digits.slice(-4)}`;
     };
 
-    const maskedEmail = maskEmail(primaryEmail);
+    const maskedPhone = maskPhone(customer.phone || normalizedPhone);
+
+    // Determine verification method based on available contact info
+    const hasEmail = !!(customer.email && customer.email.trim());
+    const verificationType = hasEmail ? 'email' : 'sms';
+
+    let primaryContact = normalizedPhone;
+    let maskedContact = maskedPhone;
+    
+    if (hasEmail) {
+      primaryContact = customer.email.trim();
+      
+      // Mask the email for privacy (show first 2 chars and domain)
+      const maskEmail = (email: string) => {
+        const [localPart, domain] = email.split('@');
+        if (!localPart || !domain) return email;
+        
+        const visibleChars = Math.min(2, localPart.length);
+        const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+        return `${maskedLocal}@${domain}`;
+      };
+      
+      maskedContact = maskEmail(primaryContact);
+    }
 
     // Generate a secure lookup token
     const lookupToken = crypto.randomUUID();
@@ -112,18 +124,24 @@ export async function POST(req: NextRequest) {
     await db.insert(phoneLoginLookups).values({
       lookupToken,
       phone: normalizedPhone,
-      email: primaryEmail,
+      email: hasEmail ? primaryContact : null,
       customerId: customer.id,
       expiresAt,
     });
 
-    console.log("[Portal Phone Auth] SUCCESS: Found customer", customer.id, "with email", primaryEmail);
+    console.log("[Portal Phone Auth] SUCCESS: Found customer", customer.id);
+    console.log("[Portal Phone Auth] Verification type:", verificationType);
+    console.log("[Portal Phone Auth] Contact:", hasEmail ? 'email' : 'phone');
     console.log("[Portal Phone Auth] Stored lookup token, expires at:", expiresAt);
 
     return NextResponse.json({
       customerId: customer.id,
-      email: primaryEmail,
-      maskedEmail: maskedEmail,
+      phone: normalizedPhone,
+      email: hasEmail ? primaryContact : null,
+      maskedContact: maskedContact,
+      maskedEmail: hasEmail ? maskedContact : null,  // Backwards compatibility
+      maskedPhone: maskedPhone,
+      verificationType: verificationType,
       lookupToken: lookupToken
     });
   } catch (error: any) {
