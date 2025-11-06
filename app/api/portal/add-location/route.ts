@@ -33,9 +33,6 @@ export async function POST(req: NextRequest) {
         state,
         zip: zipCode,
       },
-      name: undefined,
-      phone: undefined,
-      email: undefined,
     });
 
     // Add gate code as pinned note if provided
