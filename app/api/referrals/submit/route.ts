@@ -6,8 +6,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { referrals } from '@shared/schema';
+import { referrals, serviceTitanCustomers } from '@shared/schema';
 import { z } from 'zod';
+import { createReferralVouchers } from '@/server/lib/vouchers';
+import { eq } from 'drizzle-orm';
 
 const referralSchema = z.object({
   referrerName: z.string().min(1).max(200),
@@ -71,24 +73,56 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Look up referrer customer ID from ServiceTitan by phone
+    let referrerCustomerId: number | undefined;
+    const [referrerCustomer] = await db
+      .select()
+      .from(serviceTitanCustomers)
+      .where(eq(serviceTitanCustomers.phoneNumber, result.data.referrerPhone))
+      .limit(1);
+    
+    if (referrerCustomer) {
+      referrerCustomerId = referrerCustomer.serviceTitanId;
+    }
+
     // Create referral record
     const [referral] = await db
       .insert(referrals)
       .values({
         ...result.data,
+        referrerCustomerId,
         submittedAt: new Date(),
         status: 'pending',
       })
       .returning();
 
+    // Create instant voucher for referee (and prepare for referrer reward)
+    let voucherData;
+    if (referrerCustomerId) {
+      try {
+        voucherData = await createReferralVouchers({
+          referralId: referral.id,
+          refereeName: referral.refereeName,
+          refereeEmail: referral.refereeEmail ?? undefined,
+          refereePhone: referral.refereePhone,
+          referrerCustomerId,
+          referrerName: referral.referrerName,
+        });
+      } catch (error) {
+        console.error('[Referral Voucher Creation] Error:', error);
+        // Continue even if voucher creation fails
+      }
+    }
+
     // TODO: Send thank you email to referrer
-    // TODO: Send welcome email to referee
+    // TODO: Send welcome email to referee with QR code voucher
     // TODO: Notify admin
 
     return NextResponse.json({
       success: true,
       message: 'Thank you for your referral! We will contact them soon.',
       referralId: referral.id,
+      voucherCode: voucherData?.refereeVoucher.code,
     }, { status: 201 });
   } catch (error) {
     console.error('[Referral Submission API] Error:', error);
