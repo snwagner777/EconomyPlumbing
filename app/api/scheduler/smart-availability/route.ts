@@ -511,13 +511,20 @@ function generateAvailableSlots(
       const [startHour, startMin] = window.start.split(':').map(Number);
       const [endHour, endMin] = window.end.split(':').map(Number);
       
-      // Create slots in Central Time (UTC-6 offset)
-      // Current date is in UTC, so we need to create Central time by adding 6 hours to UTC hour
-      const slotStart = new Date(currentDate);
-      slotStart.setUTCHours(startHour + 6, startMin || 0, 0, 0); // 8 AM CST = 14:00 UTC
+      // Create slots in Central Time
+      // Use toLocaleString to get the date in Central time, then parse back
+      const dateStr = currentDate.toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+      const [month, day, year] = dateStr.split('/').map(Number);
       
-      const slotEnd = new Date(currentDate);
-      slotEnd.setUTCHours(endHour + 6, endMin || 0, 0, 0); // 12 PM CST = 18:00 UTC
+      // Create Date objects in Central Time by constructing ISO string
+      // Format: YYYY-MM-DDTHH:MM:SS-06:00 (CST) or -05:00 (CDT)
+      const tzOffset = new Date().toLocaleString('en-US', { 
+        timeZone: 'America/Chicago',
+        timeZoneName: 'short' 
+      }).includes('CDT') ? '-05:00' : '-06:00';
+      
+      const slotStart = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(startHour).padStart(2, '0')}:${String(startMin || 0).padStart(2, '0')}:00${tzOffset}`);
+      const slotEnd = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(endHour).padStart(2, '0')}:${String(endMin || 0).padStart(2, '0')}:00${tzOffset}`);
       
       // Check for conflicts with existing appointments
       // CRITICAL: Use appointment times (start/end), NOT arrival windows!

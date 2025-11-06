@@ -134,8 +134,8 @@ export async function POST(req: NextRequest) {
       }
 
       // Step 6: Determine technician assignment
-      // Priority: 1) Pre-selected from smart slot, 2) Fallback to available technician
-      let technicianId: number | undefined = body.technicianId || undefined;
+      // Priority: 1) Pre-selected from smart slot, 2) From body, 3) Fallback to available technician
+      let technicianId: number | undefined = body.slot?.technicianId || body.technicianId || undefined;
       
       if (technicianId) {
         console.log(`[Scheduler] Using pre-selected technician from smart slot: ${technicianId}`);
