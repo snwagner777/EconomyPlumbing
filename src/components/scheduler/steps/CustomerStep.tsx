@@ -449,14 +449,18 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
                 value={lookupValue}
                 className="max-w-xs"
                 onChange={(e) => {
-                  setLookupValue(e.target.value);
-                  // Auto-lookup after user finishes typing (simple debounce)
-                  if (e.target.value.length >= 10) {
-                    const timer = setTimeout(() => {
-                      lookupMutation.mutate(e.target.value.trim());
-                    }, 500);
-                    return () => clearTimeout(timer);
+                  let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                  
+                  // Format phone number as user types: (512) 555-0123
+                  if (value.length >= 10) {
+                    value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+                  } else if (value.length >= 6) {
+                    value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+                  } else if (value.length >= 3) {
+                    value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
                   }
+                  
+                  setLookupValue(value);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && lookupValue.trim()) {
@@ -477,7 +481,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
                 )}
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground text-center">
               We'll use this to send appointment reminders
             </p>
           </div>
