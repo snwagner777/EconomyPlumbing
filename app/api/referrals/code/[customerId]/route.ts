@@ -56,12 +56,8 @@ export async function GET(
       );
     }
 
-    // Generate unique code (e.g., JOHN-SMITH-ABC)
-    const nameParts = customer.name.trim().toUpperCase().split(' ');
-    const firstName = nameParts[0] || 'CUSTOMER';
-    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
-    const randomSuffix = Math.random().toString(36).substring(2, 5).toUpperCase();
-    const code = `${firstName}${lastName ? `-${lastName}` : ''}-${randomSuffix}`;
+    // Use customer ID as the referral code (simple and non-intrusive)
+    const code = customerIdNum.toString();
 
     // Store code
     const [newCode] = await db
