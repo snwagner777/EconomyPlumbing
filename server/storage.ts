@@ -3676,6 +3676,19 @@ export class DatabaseStorage implements IStorage {
         const batchSize = 500;
         for (let i = 0; i < customers.length; i += batchSize) {
           const batch = customers.slice(i, i + batchSize);
+          
+          // DEBUG: Log sample from first batch to verify phone data reaches Drizzle
+          if (i === 0) {
+            const sampleFromBatch = batch.filter(c => 
+              [27881198, 100000, 200000, 300000, 400000].includes(c.id)
+            );
+            if (sampleFromBatch.length > 0) {
+              console.log('[STORAGE] DEBUG - Sample customers in first batch before Drizzle insert:',
+                JSON.stringify(sampleFromBatch, null, 2)
+              );
+            }
+          }
+          
           await tx.insert(customersXlsx).values(batch);
         }
       }

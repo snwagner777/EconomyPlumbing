@@ -171,6 +171,14 @@ export async function POST(req: NextRequest) {
       withEmailOnly: customersWithEmail,
     });
 
+    // DEBUG: Log sample customers to verify phone data is present
+    const sampleCustomers = customersToImport.filter(c => 
+      [27881198, 100000, 200000, 300000, 400000].includes(c.id)
+    );
+    console.log('[Mailgun] DEBUG - Sample customers before storage insert:', 
+      JSON.stringify(sampleCustomers, null, 2)
+    );
+
     // FULL REPLACE with transaction safety: All-or-nothing import
     console.log('[Mailgun] Starting transactional full replace import...');
     const importedCount = await storage.replaceAllCustomersXlsx(customersToImport);
