@@ -4,10 +4,9 @@ import { z } from 'zod';
 
 const redeemVoucherSchema = z.object({
   code: z.string().min(1),
-  technicianName: z.string().min(1),
-  jobId: z.string().min(1),
-  jobNumber: z.string().min(1),
   jobAmount: z.number().min(0),
+  technicianName: z.string().optional(),
+  jobNumber: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {

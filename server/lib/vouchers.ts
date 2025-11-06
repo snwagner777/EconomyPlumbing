@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import { db } from '../db';
 import { vouchers, referrals } from '../../shared/schema';
 import { eq, and } from 'drizzle-orm';
+import { getResendClient } from './resendClient';
 
 /**
  * Generate a unique voucher code
@@ -20,10 +21,15 @@ export function generateVoucherCode(): string {
 
 /**
  * Generate QR code as base64 data URL
+ * The QR code contains a URL that opens when scanned with a phone camera
  */
 async function generateQRCode(code: string): Promise<string> {
   try {
-    const qrDataUrl = await QRCode.toDataURL(code, {
+    // Generate URL that techs will be redirected to when scanning with camera
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.plumbersthatcare.com';
+    const scanUrl = `${baseUrl}/customer-portal/scan?code=${encodeURIComponent(code)}`;
+    
+    const qrDataUrl = await QRCode.toDataURL(scanUrl, {
       errorCorrectionLevel: 'H',
       type: 'image/png',
       width: 300,
@@ -141,14 +147,13 @@ export async function createReferralVouchers(params: {
 }
 
 /**
- * Redeem a voucher
+ * Redeem a voucher and notify customer via email
  */
 export async function redeemVoucher(params: {
   code: string;
-  technicianName: string;
-  jobId: string;
-  jobNumber: string;
   jobAmount: number; // in cents
+  technicianName?: string;
+  jobNumber?: string;
 }): Promise<{
   success: boolean;
   message: string;
@@ -192,12 +197,70 @@ export async function redeemVoucher(params: {
       status: 'redeemed',
       redeemedAt: new Date(),
       redeemedBy: params.technicianName,
-      redeemedJobId: params.jobId,
       redeemedJobNumber: params.jobNumber,
       redeemedJobAmount: params.jobAmount,
       updatedAt: new Date(),
     })
     .where(eq(vouchers.id, voucher.id));
+  
+  // Send email notification to customer
+  if (voucher.customerEmail) {
+    try {
+      const { client, fromEmail } = await getResendClient();
+      
+      const emailHtml = `
+        <html>
+          <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9fafb;">
+            <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h2 style="color: #10b981; margin-top: 0;">🎉 Voucher Redeemed Successfully!</h2>
+              
+              <p style="font-size: 16px; line-height: 1.6;">
+                Hi ${voucher.customerName},
+              </p>
+              
+              <p style="font-size: 16px; line-height: 1.6;">
+                Great news! Your Economy Plumbing Services voucher has been redeemed.
+              </p>
+              
+              <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 20px 0;">
+                <p style="margin: 8px 0;"><strong>Voucher Code:</strong> ${voucher.code}</p>
+                <p style="margin: 8px 0;"><strong>Discount Applied:</strong> <span style="color: #10b981; font-size: 20px; font-weight: bold;">$${(voucher.discountAmount / 100).toFixed(2)}</span></p>
+                ${params.jobNumber ? `<p style="margin: 8px 0;"><strong>Job Number:</strong> #${params.jobNumber}</p>` : ''}
+                <p style="margin: 8px 0;"><strong>Redeemed On:</strong> ${new Date().toLocaleDateString('en-US', { dateStyle: 'full' })}</p>
+              </div>
+              
+              <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                <p style="margin: 0; font-size: 14px; color: #92400e;">
+                  <strong>Important:</strong> This voucher has no cash value and cannot be exchanged for cash. Thank you for choosing Economy Plumbing Services!
+                </p>
+              </div>
+              
+              <p style="font-size: 16px; line-height: 1.6; margin-top: 20px;">
+                Thank you for your business!
+              </p>
+              
+              <p style="color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                Economy Plumbing Services<br/>
+                This is an automated notification. Please do not reply to this email.
+              </p>
+            </div>
+          </body>
+        </html>
+      `;
+      
+      await client.emails.send({
+        from: fromEmail,
+        to: voucher.customerEmail,
+        subject: '✓ Voucher Redeemed - Economy Plumbing Services',
+        html: emailHtml,
+      });
+      
+      console.log(`[Voucher] Redemption email sent to ${voucher.customerEmail}`);
+    } catch (emailError) {
+      console.error('[Voucher] Failed to send redemption email:', emailError);
+      // Don't fail the redemption if email fails
+    }
+  }
   
   // If this is a referral voucher, create reward voucher for the referrer
   let referrerRewardVoucher;

@@ -115,6 +115,9 @@ export function VouchersSection({ customerId }: { customerId: number }) {
                   <div className="text-sm text-muted-foreground mt-1">
                     {voucherData.activeCount} {voucherData.activeCount === 1 ? 'voucher' : 'vouchers'} ready to use
                   </div>
+                  <div className="text-xs text-muted-foreground mt-1 italic">
+                    Vouchers have no cash value
+                  </div>
                 </div>
               </div>
               <div className="text-center">
