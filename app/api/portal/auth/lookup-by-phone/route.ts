@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { contactsXlsx, customersXlsx, phoneLoginLookups } from '@shared/schema';
-import { and, eq, or, sql } from 'drizzle-orm';
+import { customersXlsx, phoneLoginLookups } from '@shared/schema';
+import { and, eq, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
@@ -24,43 +24,33 @@ export async function POST(req: NextRequest) {
     const normalizedPhone = phone.replace(/\D/g, '');
     console.log("[Portal Phone Auth] Normalized phone:", normalizedPhone);
 
-    // Search for phone in contacts_xlsx (handles comma-separated values)
+    // Search for phone in customers_xlsx table directly
     // FILTER OUT INACTIVE CUSTOMERS - only allow login for active customers
     console.log("[Portal Phone Auth] Querying database for phone:", normalizedPhone);
     
-    // Search using LIKE for comma-separated values and exact match
-    // Join with customersXlsx to filter by active status
-    const contacts = await db
+    // Search customers_xlsx for matching phone number (active customers only)
+    const customers = await db
       .select({
-        id: contactsXlsx.id,
-        customerId: contactsXlsx.customerId,
-        contactType: contactsXlsx.contactType,
-        value: contactsXlsx.value,
-        normalizedValue: contactsXlsx.normalizedValue,
-        isPrimary: contactsXlsx.isPrimary,
+        id: customersXlsx.id,
+        name: customersXlsx.name,
+        email: customersXlsx.email,
+        phone: customersXlsx.phone,
       })
-      .from(contactsXlsx)
-      .innerJoin(customersXlsx, eq(contactsXlsx.customerId, customersXlsx.id))
+      .from(customersXlsx)
       .where(
         and(
-          eq(contactsXlsx.contactType, 'Phone'),
           eq(customersXlsx.active, true), // Only active customers
-          or(
-            sql`${contactsXlsx.normalizedValue} = ${normalizedPhone}`,
-            sql`${contactsXlsx.normalizedValue} LIKE ${'%,' + normalizedPhone + ',%'}`,
-            sql`${contactsXlsx.normalizedValue} LIKE ${normalizedPhone + ',%'}`,
-            sql`${contactsXlsx.normalizedValue} LIKE ${'%,' + normalizedPhone}`
-          )
+          sql`REPLACE(REPLACE(REPLACE(${customersXlsx.phone}, '-', ''), '(', ''), ')', '') LIKE '%' || ${normalizedPhone} || '%'`
         )
       )
       .limit(1);
 
     console.log("[Portal Phone Auth] Query results:", {
-      found: contacts.length > 0,
-      count: contacts.length
+      found: customers.length > 0,
+      count: customers.length
     });
 
-    if (contacts.length === 0) {
+    if (customers.length === 0) {
       console.log("[Portal Phone Auth] No customer found for phone:", normalizedPhone);
       return NextResponse.json({
         found: false,
@@ -68,40 +58,23 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    const phoneContact = contacts[0];
-    console.log("[Portal Phone Auth] Found contact:", {
-      customerId: phoneContact.customerId,
-      contactType: phoneContact.contactType,
-      value: phoneContact.value
+    const customer = customers[0];
+    console.log("[Portal Phone Auth] Found customer:", {
+      customerId: customer.id,
+      name: customer.name,
+      hasEmail: !!customer.email,
+      hasPhone: !!customer.phone
     });
 
-    // Now find the email for this customer
-    console.log("[Portal Phone Auth] Looking for email for customer ID:", phoneContact.customerId);
-    
-    const emailContacts = await db
-      .select()
-      .from(contactsXlsx)
-      .where(
-        and(
-          eq(contactsXlsx.customerId, phoneContact.customerId),
-          eq(contactsXlsx.contactType, 'Email')
-        )
-      )
-      .limit(1);
-
-    console.log("[Portal Phone Auth] Found", emailContacts.length, "email contacts");
-
-    if (emailContacts.length === 0) {
-      console.log("[Portal Phone Auth] ERROR: No email found for customer", phoneContact.customerId);
+    // Check if customer has email
+    if (!customer.email) {
+      console.log("[Portal Phone Auth] ERROR: No email found for customer", customer.id);
       return NextResponse.json({ 
         error: "No email address found for this account. Please contact us directly." 
       }, { status: 404 });
     }
 
-    const emailContact = emailContacts[0];
-    // Handle comma-separated emails - take the first one
-    const emails = emailContact.value.split(',').map((e: string) => e.trim());
-    const primaryEmail = emails[0];
+    const primaryEmail = customer.email.trim();
 
     // Mask the email for privacy (show first 2 chars and domain)
     const maskEmail = (email: string) => {
@@ -124,15 +97,15 @@ export async function POST(req: NextRequest) {
       lookupToken,
       phone: normalizedPhone,
       email: primaryEmail,
-      customerId: phoneContact.customerId,
+      customerId: customer.id,
       expiresAt,
     });
 
-    console.log("[Portal Phone Auth] SUCCESS: Found customer", phoneContact.customerId, "with email", primaryEmail);
+    console.log("[Portal Phone Auth] SUCCESS: Found customer", customer.id, "with email", primaryEmail);
     console.log("[Portal Phone Auth] Stored lookup token, expires at:", expiresAt);
 
     return NextResponse.json({
-      customerId: phoneContact.customerId,
+      customerId: customer.id,
       email: primaryEmail,
       maskedEmail: maskedEmail,
       lookupToken: lookupToken
