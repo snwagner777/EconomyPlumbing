@@ -520,6 +520,9 @@ function generateAvailableSlots(
   let currentDateCT = toZonedTime(startDate, TIMEZONE);
   const endDateCT = toZonedTime(endDate, TIMEZONE);
   
+  console.log(`[Slot Generation] Checking dates ${formatInTimeZone(currentDateCT, TIMEZONE, 'MMM d yyyy')} to ${formatInTimeZone(endDateCT, TIMEZONE, 'MMM d yyyy')}`);
+  console.log(`[Slot Generation] Found ${bookedAppointments.length} existing appointments to check for conflicts`);
+  
   while (currentDateCT <= endDateCT) {
     // Check day of week in Central Time
     const dayOfWeek = currentDateCT.getDay(); // 0=Sunday, 6=Saturday
@@ -567,6 +570,21 @@ function generateAvailableSlots(
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
       
       const isSlotAvailable = !hasConflict && slotStart >= minBookingTime;
+      
+      // Debug logging for filtered slots
+      if (!isSlotAvailable) {
+        const slotDateStr = formatInTimeZone(slotStart, TIMEZONE, 'EEE MMM d, yyyy');
+        const slotTimeStr = formatInTimeZone(slotStart, TIMEZONE, 'h:mm a');
+        const endTimeStr = formatInTimeZone(slotEnd, TIMEZONE, 'h:mm a');
+        const nowStr = formatInTimeZone(now, TIMEZONE, 'MMM d h:mm a zzz');
+        const minBookStr = formatInTimeZone(minBookingTime, TIMEZONE, 'MMM d h:mm a zzz');
+        
+        if (hasConflict) {
+          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: CONFLICT with existing appointment`);
+        } else {
+          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: TOO SOON (now: ${nowStr}, min: ${minBookStr})`);
+        }
+      }
       
       if (isSlotAvailable) {
         slots.push({
