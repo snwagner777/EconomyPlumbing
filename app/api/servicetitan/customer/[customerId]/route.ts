@@ -28,6 +28,18 @@ export async function GET(
       );
     }
 
+    // Fetch customer tags from local database
+    const { db } = await import('@/server/storage');
+    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    const localCustomer = await db
+      .select({ customerTags: serviceTitanCustomers.customerTags })
+      .from(serviceTitanCustomers)
+      .where(eq(serviceTitanCustomers.id, customerIdNum))
+      .limit(1)
+      .then(rows => rows[0]);
+
     // Fetch all customer data in parallel from ServiceTitan APIs
     const [customer, appointments, invoices, memberships, estimates] = await Promise.all([
       serviceTitan.getCustomer(customerIdNum),
@@ -51,10 +63,11 @@ export async function GET(
       estimates: (estimates || []).length
     });
 
-    // Return comprehensive customer data
+    // Return comprehensive customer data with tags from local database
     return NextResponse.json({ 
       customer: {
         ...customer,
+        customerTags: localCustomer?.customerTags || [],
         appointments,
         invoices,
         memberships,

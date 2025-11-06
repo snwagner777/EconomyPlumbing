@@ -51,6 +51,7 @@ import {
   Briefcase
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
+import { SchedulerDialog } from "./SchedulerDialog";
 
 interface ServiceTitanContact {
   id: number;
@@ -69,6 +70,7 @@ interface ServiceTitanCustomer {
   email: string;
   phoneNumber: string;
   contacts?: ServiceTitanContact[];
+  customerTags?: string[];
   address?: {
     street: string;
     city: string;
@@ -232,6 +234,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   // Review modal state
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(0);
+  
+  // Scheduler dialog state
+  const [schedulerOpen, setSchedulerOpen] = useState(false);
   const [reviewFeedback, setReviewFeedback] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   // Estimate detail modal state
@@ -1807,17 +1812,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Button
-                          asChild
+                          onClick={() => setSchedulerOpen(true)}
                           data-testid="button-schedule-appointment"
                         >
-                          <a
-                            href={`/schedule-appointment?customerId=${customerId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Calendar className="w-4 h-4 mr-2" />
-                            Schedule Appointment
-                          </a>
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Schedule Appointment
                         </Button>
                         <Button
                           asChild
@@ -3054,6 +3053,27 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       </main>
 
       <Footer />
+      
+      {/* Schedule Appointment Dialog */}
+      {customerData && (
+        <SchedulerDialog
+          open={schedulerOpen}
+          onOpenChange={setSchedulerOpen}
+          customerInfo={{
+            firstName: customerData.customer.name.split(' ')[0] || '',
+            lastName: customerData.customer.name.split(' ').slice(1).join(' ') || '',
+            email: customerData.customer.email || '',
+            phone: customerData.customer.phoneNumber || '',
+            address: customerData.customer.address?.street || '',
+            city: customerData.customer.address?.city || '',
+            state: customerData.customer.address?.state || '',
+            zip: customerData.customer.address?.zip || '',
+            serviceTitanId: customerData.customer.id,
+            customerTags: customerData.customer.customerTags || [],
+          }}
+          utmSource="customer-portal"
+        />
+      )}
       
       {/* Referral Modal */}
       {customerData && referralLinkData && (

@@ -173,23 +173,6 @@ export function SchedulerFlow({
 
   return (
     <div className="w-full px-2 sm:px-0">
-      {/* Progress indicator */}
-      {state.step > 1 && (
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-muted-foreground">
-              Step {state.step} of 4
-            </span>
-          </div>
-          <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-primary transition-all duration-300"
-              style={{ width: `${(state.step / 4) * 100}%` }}
-            />
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       {StepIcon && (
         <div className="mb-8">
