@@ -411,6 +411,16 @@ function calculateProximityScoreV2(
     bestScore = Math.min(100, bestScore + 5);
   }
 
+  // FALLBACK: If no proximity match found, assign any technician working that day
+  if (bestTechnicianId === null && sameDayJobs.length > 0) {
+    // Find first technician with jobs that day
+    const firstTech = sameDayJobs.find(job => job.technicianId)?.technicianId;
+    if (firstTech) {
+      bestTechnicianId = firstTech;
+      console.log(`[Proximity] No proximity match - assigning fallback tech ${firstTech} for same-day job`);
+    }
+  }
+
   return { 
     score: Math.min(bestScore, 100),
     technicianId: bestTechnicianId
