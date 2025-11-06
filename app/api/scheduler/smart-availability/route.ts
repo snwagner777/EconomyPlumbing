@@ -159,44 +159,40 @@ export async function POST(req: NextRequest) {
         return jobDate === slotDate;
       });
       
-      // HILL COUNTRY ZONE RESTRICTION:
-      // Only allow 8-12 AM or 4-8 PM slots UNLESS there are already jobs in Hill Country zone that day
-      if (customerZone && customerZone.toLowerCase().includes('hill country')) {
-        // Check if slot overlaps with afternoon blackout window (12:00 PM - 4:00 PM Central Time)
-        // Use toLocaleTimeString with America/Chicago to properly handle DST
-        const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          hour12: false,
-          timeZone: 'America/Chicago',
-        }));
-        
-        const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          hour12: false,
-          timeZone: 'America/Chicago',
-        }));
-        
-        // Slot overlaps afternoon (12-4 PM) if:
-        // - It starts before 4 PM AND ends after 12 PM (noon)
-        const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
-        
-        if (overlapsAfternoon) {
-          // Count nearby jobs in Hill Country zone
-          const nearbyHillCountryJobs = sameDayJobs.filter(job => {
-            const jobZip = normalizeZip(job.locationZip);
-            const jobZoneName = jobZip ? zipToZone[jobZip] : null;
-            return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
-          });
-          
-          // If no nearby Hill Country jobs, return null to filter out this slot
-          if (nearbyHillCountryJobs.length === 0) {
-            console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - no nearby jobs`);
-            return null;
-          } else {
-            console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} nearby jobs found`);
-          }
-        }
-      }
+      // HILL COUNTRY ZONE RESTRICTION - DISABLED FOR NOW
+      // The filter was too aggressive and blocking legitimate slots
+      // TODO: Re-enable with better logic after consulting with dispatch
+      
+      // if (customerZone && customerZone.toLowerCase().includes('hill country')) {
+      //   const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
+      //     hour: 'numeric',
+      //     hour12: false,
+      //     timeZone: 'America/Chicago',
+      //   }));
+      //   
+      //   const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
+      //     hour: 'numeric',
+      //     hour12: false,
+      //     timeZone: 'America/Chicago',
+      //   }));
+      //   
+      //   const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
+      //   
+      //   if (overlapsAfternoon) {
+      //     const nearbyHillCountryJobs = sameDayJobs.filter(job => {
+      //       const jobZip = normalizeZip(job.locationZip);
+      //       const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+      //       return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
+      //     });
+      //     
+      //     if (nearbyHillCountryJobs.length === 0) {
+      //       console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - no nearby jobs`);
+      //       return null;
+      //     } else {
+      //       console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} nearby jobs found`);
+      //     }
+      //   }
+      // }
       
       // Calculate proximity score and best technician for this slot
       const proximityResult = calculateProximityScoreV2(
@@ -294,10 +290,16 @@ async function getZoneForZip(zip: string): Promise<string | null> {
 
 /**
  * Parse zone number from zone name
- * Example: "3 - Central" → 3
+ * Example: "3 - Central" → 3, "Hill Country" → 7 (special case)
  */
 function parseZoneNumber(zoneName: string | null): number | null {
   if (!zoneName) return null;
+  
+  // Special case: Hill Country doesn't have a number prefix, assign zone 7
+  if (zoneName.toLowerCase().includes('hill country')) {
+    return 7;
+  }
+  
   const match = zoneName.match(/^(\d+)/);
   return match ? parseInt(match[1], 10) : null;
 }
