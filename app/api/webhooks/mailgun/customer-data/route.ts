@@ -129,23 +129,22 @@ export async function POST(req: NextRequest) {
     let skippedCount = 0;
 
     for (const row of rows as any[]) {
-      // Map XLSX columns to database fields
-      const customerData = {
-        serviceTitanCustomerId: row['Customer ID']?.toString() || null,
-        customerName: row['Customer Name'] || null,
-        phone: row['Phone']?.toString() || null,
+      // Map XLSX columns to database fields matching schema exactly
+      const customerData: any = {
+        id: row['Customer ID'] ? parseInt(row['Customer ID'].toString()) : null,
+        name: row['Customer Name'] || 'Unknown',
+        type: row['Customer Type'] || 'Residential',
         email: row['Email'] || null,
-        address: row['Address'] || null,
+        phone: row['Phone']?.toString() || null,
+        street: row['Address'] || null,
         city: row['City'] || null,
         state: row['State'] || null,
         zip: row['ZIP']?.toString() || null,
-        customerType: row['Customer Type'] || 'residential',
-        active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False', // Default true unless explicitly false
-        // Add other fields as needed
+        active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False',
       };
 
-      // Skip rows without essential data
-      if (!customerData.phone && !customerData.email) {
+      // Skip rows without required fields (id and at least phone or email)
+      if (!customerData.id || (!customerData.phone && !customerData.email)) {
         skippedCount++;
         continue;
       }

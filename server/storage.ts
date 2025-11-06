@@ -66,6 +66,7 @@ import {
   customReviews,
   reviewPlatforms,
   customersXlsx,
+  contactsXlsx,
   emailSendLog,
   emailSuppressionList,
   type JobCompletion,
@@ -3667,14 +3668,18 @@ export class DatabaseStorage implements IStorage {
       await tx.delete(contactsXlsx);
       await tx.delete(customersXlsx);
 
-      // Step 2: Insert all new customer data
-      let importedCount = 0;
-      for (const customer of customers) {
-        await tx.insert(customersXlsx).values(customer);
-        importedCount++;
+      // Step 2: Bulk insert all new customer data (much faster than row-by-row)
+      if (customers.length > 0) {
+        // PostgreSQL has a limit on the number of parameters in a single query
+        // Split into batches of 500 to avoid hitting the limit
+        const batchSize = 500;
+        for (let i = 0; i < customers.length; i += batchSize) {
+          const batch = customers.slice(i, i + batchSize);
+          await tx.insert(customersXlsx).values(batch);
+        }
       }
 
-      return importedCount;
+      return customers.length;
     });
   }
 
