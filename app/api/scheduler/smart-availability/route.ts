@@ -109,10 +109,11 @@ export async function POST(req: NextRequest) {
       job.technicianId = techAssignments.get(job.appointmentId);
     });
     
-    // Extract customer zone from serviceTitanZones table
-    const customerZone = customerZip ? await getZoneForZip(customerZip) : null;
-    const customerZoneNumber = customerZone ? parseZoneNumber(customerZone) : null;
-    console.log(`[Smart Scheduler] Customer zone: ${customerZone} (zone #${customerZoneNumber || 'unknown'})`);
+    // Extract SERVICE LOCATION zone from serviceTitanZones table
+    // NOTE: customerZip should be the service location ZIP, not billing address
+    const serviceLocationZone = customerZip ? await getZoneForZip(customerZip) : null;
+    const serviceLocationZoneNumber = serviceLocationZone ? parseZoneNumber(serviceLocationZone) : null;
+    console.log(`[Smart Scheduler] Service location ZIP: ${customerZip}, Zone: ${serviceLocationZone} (zone #${serviceLocationZoneNumber || 'unknown'})`);
     
     // Precompute zones for all job ZIPs (batch lookup for performance)
     // Normalize to 5 digits to handle ZIP+4 format (e.g., "78701-1234" → "78701")
@@ -159,46 +160,49 @@ export async function POST(req: NextRequest) {
         return jobDate === slotDate;
       });
       
-      // HILL COUNTRY ZONE RESTRICTION - DISABLED FOR NOW
-      // The filter was too aggressive and blocking legitimate slots
-      // TODO: Re-enable with better logic after consulting with dispatch
-      
-      // if (customerZone && customerZone.toLowerCase().includes('hill country')) {
-      //   const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
-      //     hour: 'numeric',
-      //     hour12: false,
-      //     timeZone: 'America/Chicago',
-      //   }));
-      //   
-      //   const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
-      //     hour: 'numeric',
-      //     hour12: false,
-      //     timeZone: 'America/Chicago',
-      //   }));
-      //   
-      //   const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
-      //   
-      //   if (overlapsAfternoon) {
-      //     const nearbyHillCountryJobs = sameDayJobs.filter(job => {
-      //       const jobZip = normalizeZip(job.locationZip);
-      //       const jobZoneName = jobZip ? zipToZone[jobZip] : null;
-      //       return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
-      //     });
-      //     
-      //     if (nearbyHillCountryJobs.length === 0) {
-      //       console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - no nearby jobs`);
-      //       return null;
-      //     } else {
-      //       console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} nearby jobs found`);
-      //     }
-      //   }
-      // }
+      // HILL COUNTRY ZONE RESTRICTION:
+      // Only allow afternoon slots (12-4 PM) if there are already jobs in Hill Country that day
+      // This prevents single afternoon trips to Hill Country (fuel efficiency)
+      if (serviceLocationZone && serviceLocationZone.toLowerCase().includes('hill country')) {
+        // Check if slot overlaps with afternoon blackout window (12:00 PM - 4:00 PM Central Time)
+        const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          hour12: false,
+          timeZone: 'America/Chicago',
+        }));
+        
+        const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          hour12: false,
+          timeZone: 'America/Chicago',
+        }));
+        
+        // Slot overlaps afternoon (12-4 PM) if it starts before 4 PM AND ends after 12 PM
+        const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
+        
+        if (overlapsAfternoon) {
+          // Count existing Hill Country jobs on the same day
+          const nearbyHillCountryJobs = sameDayJobs.filter(job => {
+            const jobZip = normalizeZip(job.locationZip);
+            const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+            return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
+          });
+          
+          // Block afternoon slot if no other Hill Country jobs that day
+          if (nearbyHillCountryJobs.length === 0) {
+            console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - service location ${customerZip} is Hill Country, no nearby jobs`);
+            return null;
+          } else {
+            console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} Hill Country jobs found that day`);
+          }
+        }
+      }
       
       // Calculate proximity score and best technician for this slot
       const proximityResult = calculateProximityScoreV2(
         slotStart,
         slotEnd,
-        customerZoneNumber,
+        serviceLocationZoneNumber,
         sameDayJobs,
         zipToZone,
         normalizeZip,
@@ -211,8 +215,8 @@ export async function POST(req: NextRequest) {
         const jobZoneName = jobZip ? zipToZone[jobZip] : null;
         const jobZoneNum = parseZoneNumber(jobZoneName);
         
-        if (!customerZoneNumber || !jobZoneNum) return false;
-        const distance = Math.abs(customerZoneNumber - jobZoneNum);
+        if (!serviceLocationZoneNumber || !jobZoneNum) return false;
+        const distance = Math.abs(serviceLocationZoneNumber - jobZoneNum);
         return distance <= 1; // Same zone or adjacent
       }).length;
 
