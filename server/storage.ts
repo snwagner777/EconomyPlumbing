@@ -3661,10 +3661,20 @@ export class DatabaseStorage implements IStorage {
   }
 
   async replaceAllCustomersXlsx(customers: any[]): Promise<number> {
+    // DEBUG: Track customer 27881198 before transaction
+    const customer27881198 = customers.find(c => c.id === 27881198);
+    if (customer27881198) {
+      console.log('\n📊 [STORAGE] Customer 27881198 received in replaceAllCustomersXlsx:');
+      console.log('  phone:', customer27881198.phone);
+      console.log('  email:', customer27881198.email);
+      console.log('  Full object:', JSON.stringify(customer27881198, null, 2));
+    }
+
     // Atomic transaction: delete all existing data and insert new data
     // If any step fails, the entire operation rolls back
     return await db.transaction(async (tx) => {
       // Step 1: Delete all existing customer and contact data
+      console.log('[STORAGE] Deleting existing data...');
       await tx.delete(contactsXlsx);
       await tx.delete(customersXlsx);
 
@@ -3675,10 +3685,21 @@ export class DatabaseStorage implements IStorage {
         const batchSize = 500;
         for (let i = 0; i < customers.length; i += batchSize) {
           const batch = customers.slice(i, i + batchSize);
+          
+          // DEBUG: Track which batch contains customer 27881198
+          const has27881198 = batch.some(c => c.id === 27881198);
+          if (has27881198) {
+            const customer = batch.find(c => c.id === 27881198);
+            console.log(`\n🔥 [STORAGE] Batch ${Math.floor(i / batchSize) + 1} contains customer 27881198:`);
+            console.log('  phone:', customer?.phone);
+            console.log('  email:', customer?.email);
+          }
+          
           await tx.insert(customersXlsx).values(batch);
         }
       }
 
+      console.log(`[STORAGE] Successfully inserted ${customers.length} customers`);
       return customers.length;
     });
   }
