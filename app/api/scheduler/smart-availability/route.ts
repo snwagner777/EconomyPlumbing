@@ -16,7 +16,8 @@ import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 import { db } from '@/server/db';
 import { serviceTitanZones } from '@shared/schema';
 import { sql } from 'drizzle-orm';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
+import { zonedTimeToUtc, utcToZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -69,10 +70,15 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : new Date(start.getTime() + 10 * 24 * 60 * 60 * 1000);
+    // CRITICAL: Parse dates as Central Time midnight to avoid timezone bugs
+    // If frontend sends "2025-11-08", we want Nov 8 at 00:00 Central Time, not UTC
+    const TIMEZONE = 'America/Chicago';
+    const start = zonedTimeToUtc(`${startDate}T00:00:00`, TIMEZONE);
+    const end = endDate 
+      ? zonedTimeToUtc(`${endDate}T00:00:00`, TIMEZONE)
+      : addDays(start, 10);
     
-    console.log(`[Smart Scheduler] Fetching availability from ${start.toISOString()} to ${end.toISOString()}`);
+    console.log(`[Smart Scheduler] Fetching availability from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')} to ${formatInTimeZone(end, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')}`);
     
     // Fetch existing appointments and jobs
     const appointments = await fetchAppointments(start, end);
@@ -499,6 +505,7 @@ function getArrivalWindows(): Array<{ start: string; end: string; durationHours:
 
 /**
  * Generate available time slots based on arrival windows and existing appointments
+ * CRITICAL: All date/time logic operates in Central Time to avoid timezone bugs
  */
 function generateAvailableSlots(
   startDate: Date,
@@ -506,48 +513,40 @@ function generateAvailableSlots(
   bookedAppointments: Appointment[],
   arrivalWindows: Array<{ start: string; end: string; durationHours: number }>
 ): Array<{ start: string; end: string }> {
+  const TIMEZONE = 'America/Chicago';
   const slots: Array<{ start: string; end: string }> = [];
-  const currentDate = new Date(startDate);
   
-  while (currentDate <= endDate) {
+  // Convert UTC dates to Central Time for iteration
+  let currentDateCT = utcToZonedTime(startDate, TIMEZONE);
+  const endDateCT = utcToZonedTime(endDate, TIMEZONE);
+  
+  while (currentDateCT <= endDateCT) {
     // Check day of week in Central Time
-    const dayOfWeek = parseInt(currentDate.toLocaleDateString('en-US', { 
-      weekday: 'numeric',
-      timeZone: 'America/Chicago'
-    }));
+    const dayOfWeek = currentDateCT.getDay(); // 0=Sunday, 6=Saturday
     
-    // Skip weekends (Sunday=0, Saturday=6) UNLESS there are already appointments scheduled that day
-    const dateStr = format(currentDate, 'yyyy-MM-dd');
-    const hasAppointmentsThisDay = bookedAppointments.some(apt => {
-      const aptDate = format(new Date(apt.start), 'yyyy-MM-dd');
-      return aptDate === dateStr;
-    });
-    
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    if (isWeekend && !hasAppointmentsThisDay) {
-      currentDate.setDate(currentDate.getDate() + 1);
+    // NEVER allow weekend bookings - skip Saturday and Sunday completely
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      currentDateCT = addDays(currentDateCT, 1);
       continue;
     }
+    
+    // Extract date components in Central Time
+    const year = currentDateCT.getFullYear();
+    const month = currentDateCT.getMonth() + 1;
+    const day = currentDateCT.getDate();
     
     // Generate slots for each arrival window
     arrivalWindows.forEach(window => {
       const [startHour, startMin] = window.start.split(':').map(Number);
       const [endHour, endMin] = window.end.split(':').map(Number);
       
-      // Create slots in Central Time
-      // Use toLocaleString to get the date in Central time, then parse back
-      const dateStr = currentDate.toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
-      const [month, day, year] = dateStr.split('/').map(Number);
+      // Build ISO string for Central Time slot (YYYY-MM-DDTHH:MM:SS)
+      const slotStartStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(startHour).padStart(2, '0')}:${String(startMin || 0).padStart(2, '0')}:00`;
+      const slotEndStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(endHour).padStart(2, '0')}:${String(endMin || 0).padStart(2, '0')}:00`;
       
-      // Create Date objects in Central Time by constructing ISO string
-      // Format: YYYY-MM-DDTHH:MM:SS-06:00 (CST) or -05:00 (CDT)
-      const tzOffset = new Date().toLocaleString('en-US', { 
-        timeZone: 'America/Chicago',
-        timeZoneName: 'short' 
-      }).includes('CDT') ? '-05:00' : '-06:00';
-      
-      const slotStart = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(startHour).padStart(2, '0')}:${String(startMin || 0).padStart(2, '0')}:00${tzOffset}`);
-      const slotEnd = new Date(`${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(endHour).padStart(2, '0')}:${String(endMin || 0).padStart(2, '0')}:00${tzOffset}`);
+      // Convert Central Time to UTC
+      const slotStart = zonedTimeToUtc(slotStartStr, TIMEZONE);
+      const slotEnd = zonedTimeToUtc(slotEndStr, TIMEZONE);
       
       // Check for conflicts with existing appointments
       // CRITICAL: Use appointment times (start/end), NOT arrival windows!
@@ -562,7 +561,7 @@ function generateAvailableSlots(
         );
       });
       
-      // Check if slot is still available (1 hour lead time)
+      // Check if slot is still available (1 hour lead time in Central Time)
       const now = new Date();
       const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
       const minBookingTime = new Date(now.getTime() + leadTimeMs);
@@ -577,7 +576,8 @@ function generateAvailableSlots(
       }
     });
     
-    currentDate.setDate(currentDate.getDate() + 1);
+    // Move to next day in Central Time
+    currentDateCT = addDays(currentDateCT, 1);
   }
   
   return slots;
