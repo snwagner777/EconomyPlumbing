@@ -1421,21 +1421,42 @@ class ServiceTitanAPI {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
+      let soldCount = 0;
+      let dismissedCount = 0;
+      let oldCount = 0;
+      
       const activeEstimates = estimates.filter((e: any) => {
         // Exclude sold estimates
-        if (e.soldOn) return false;
+        if (e.soldOn) {
+          soldCount++;
+          return false;
+        }
         
         // Exclude dismissed estimates  
-        if (e.dismissedOn) return false;
+        if (e.dismissedOn) {
+          dismissedCount++;
+          return false;
+        }
         
         // Exclude estimates older than 30 days
         const createdDate = new Date(e.createdOn);
-        if (createdDate < thirtyDaysAgo) return false;
+        if (createdDate < thirtyDaysAgo) {
+          oldCount++;
+          return false;
+        }
         
         return true;
       });
       
-      console.log(`[ServiceTitan] Filtered to ${activeEstimates.length} active estimates (unsold, not dismissed, <30 days old) from ${estimates.length} total`);
+      console.log(`[ServiceTitan] Estimate filtering results:`, {
+        total: estimates.length,
+        active: activeEstimates.length,
+        excluded: {
+          sold: soldCount,
+          dismissed: dismissedCount,
+          olderThan30Days: oldCount
+        }
+      });
       
       // Create memoization cache for pricebook items to avoid duplicate API calls
       const pricebookCache = new Map<string, any>();

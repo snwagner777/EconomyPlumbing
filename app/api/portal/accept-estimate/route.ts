@@ -39,6 +39,27 @@ export async function POST(req: NextRequest) {
     const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
     const serviceTitan = getServiceTitanAPI();
 
+    // CRITICAL SECURITY CHECK: Verify estimate belongs to authenticated customer
+    let estimate;
+    try {
+      const customerEstimates = await serviceTitan.getCustomerEstimates(session.customerId);
+      estimate = customerEstimates.find((e: any) => e.id === estimateId);
+      
+      if (!estimate) {
+        console.warn(`[Estimate Acceptance] Unauthorized attempt: Customer ${session.customerId} tried to accept estimate ${estimateId} which doesn't belong to them`);
+        return NextResponse.json(
+          { error: 'Estimate not found or does not belong to you' },
+          { status: 403 }
+        );
+      }
+    } catch (error) {
+      console.error('[Estimate Acceptance] Error verifying estimate ownership:', error);
+      return NextResponse.json(
+        { error: 'Failed to verify estimate ownership' },
+        { status: 500 }
+      );
+    }
+
     // Mark estimate as sold in ServiceTitan
     // ServiceTitan Estimates API v2 - update estimate status to sold
     const soldDate = new Date().toISOString();
@@ -128,14 +149,14 @@ export async function POST(req: NextRequest) {
               <li>We'll send you a confirmation with the appointment details</li>
             </ol>
             
-            <p>If you have any questions or need to reach us sooner, please call <strong>(512) 259-7222</strong>.</p>
+            <p>If you have any questions or need to reach us sooner, please call <strong>${process.env.BUSINESS_PHONE || '(512) 259-7222'}</strong>.</p>
             
             <p>Thank you for choosing Economy Plumbing Services!</p>
             
             <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; font-size: 12px;">
               Economy Plumbing Services<br>
               Austin's Trusted Plumbing Experts<br>
-              (512) 259-7222
+              ${process.env.BUSINESS_PHONE || '(512) 259-7222'}
             </p>
           `,
         });
