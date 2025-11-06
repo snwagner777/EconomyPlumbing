@@ -4,6 +4,12 @@ import path from 'path';
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   
+  // Allow Replit preview domains to load Next.js assets (CSS/JS)
+  // Required for dev server cross-origin requests
+  allowedDevOrigins: process.env.REPLIT_DOMAINS 
+    ? process.env.REPLIT_DOMAINS.split(',').map(d => d.trim())
+    : [],
+  
   // Skip TypeScript checking during production builds for faster deployments
   // Type checking is done in development and by LSP
   typescript: {
