@@ -36,6 +36,8 @@ const customerSchema = z.object({
   state: z.string().min(2, 'State is required').max(2),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
   locationName: z.string().optional(),
+  grouponVoucher: z.string().optional(),
+  gateCode: z.string().optional(),
   notes: z.string().optional(),
 });
 
@@ -120,6 +122,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       city: initialData?.city || 'Austin',
       state: initialData?.state || 'TX',
       zip: initialData?.zip || '',
+      grouponVoucher: initialData?.grouponVoucher || '',
+      gateCode: initialData?.gateCode || '',
       notes: initialData?.notes || '',
     },
   });

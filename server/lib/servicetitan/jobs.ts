@@ -198,6 +198,32 @@ export class ServiceTitanJobs {
   }
 
   /**
+   * Create a pinned note on a job (e.g., Groupon voucher, gate code, special instructions)
+   */
+  async createJobNote(jobId: number, text: string, pinned: boolean = true): Promise<{ id: number }> {
+    try {
+      const payload = {
+        text,
+        pinned,
+      };
+
+      const response = await serviceTitanAuth.makeRequest<{ id: number }>(
+        `jpm/v2/tenant/${this.tenantId}/jobs/${jobId}/notes`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan Jobs] Created ${pinned ? 'pinned ' : ''}note on job ${jobId}: ${response.id}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error creating note on job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Fetch technician assignments from Dispatch API
    * Returns a map of appointmentId -> technicianId
    * 
