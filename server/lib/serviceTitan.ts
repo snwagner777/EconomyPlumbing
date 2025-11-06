@@ -1092,6 +1092,42 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Submit technician rating to ServiceTitan
+   * This reports customer ratings back to ServiceTitan after job completion
+   */
+  async submitTechnicianRating(
+    jobId: number | string,
+    rating: number
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Submitting rating ${rating} for job ${jobId}...`);
+      
+      // ServiceTitan expects ratings 1-5
+      if (rating < 1 || rating > 5) {
+        throw new Error(`Invalid rating: ${rating}. Must be between 1 and 5.`);
+      }
+
+      const ratingUrl = `https://api.servicetitan.io/customer-interactions/v2/tenant/${this.config.tenantId}/technician-ratings/${jobId}`;
+      
+      await this.request(
+        ratingUrl,
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            rating: rating
+          }),
+        },
+        true // use full URL
+      );
+      
+      console.log(`[ServiceTitan] Successfully submitted rating ${rating} for job ${jobId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan] Error submitting technician rating for job ${jobId}:`, error);
+      // Don't throw - we don't want to fail the review submission if ServiceTitan rating fails
+    }
+  }
+
+  /**
    * Get available arrival windows from ServiceTitan
    * This fetches recent appointments and extracts unique arrival windows
    */

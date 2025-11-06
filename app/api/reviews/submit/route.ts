@@ -84,6 +84,36 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Review] New submission from ${reviewData.customerName} (${review.rating} stars)`);
 
+    // Submit technician rating to ServiceTitan if this review came from a review request
+    if (reviewData.requestId) {
+      try {
+        const { db } = await import('@/server/db');
+        const { reviewRequests } = await import('@/shared/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        const [reviewRequest] = await db
+          .select()
+          .from(reviewRequests)
+          .where(eq(reviewRequests.id, reviewData.requestId))
+          .limit(1);
+        
+        if (reviewRequest && reviewRequest.jobCompletionId) {
+          const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
+          const serviceTitan = getServiceTitanAPI();
+          
+          await serviceTitan.submitTechnicianRating(
+            reviewRequest.jobCompletionId,
+            review.rating
+          );
+          
+          console.log(`[Review] Submitted rating to ServiceTitan for job ${reviewRequest.jobCompletionId}`);
+        }
+      } catch (stError: any) {
+        // Don't fail the whole request if ServiceTitan rating fails
+        console.error('[Review] Error submitting rating to ServiceTitan:', stError);
+      }
+    }
+
     // If 4+ star review AND we have customer email + ID, create referral nurture campaign
     if (review.rating >= 4 && reviewData.email && reviewData.serviceTitanCustomerId) {
       try {

@@ -255,6 +255,22 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   });
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   
+  // Add customer contact state
+  const [addContactOpen, setAddContactOpen] = useState(false);
+  const [newContactType, setNewContactType] = useState<'Phone' | 'MobilePhone' | 'Email'>('Phone');
+  const [newContactValue, setNewContactValue] = useState("");
+  const [newContactMemo, setNewContactMemo] = useState("");
+  const [isAddingContact, setIsAddingContact] = useState(false);
+
+  // Manage location contacts state
+  const [manageLocationContactsOpen, setManageLocationContactsOpen] = useState(false);
+  const [selectedLocationForContacts, setSelectedLocationForContacts] = useState<any>(null);
+  const [newLocationContactType, setNewLocationContactType] = useState<'Phone' | 'MobilePhone' | 'Email'>('Phone');
+  const [newLocationContactValue, setNewLocationContactValue] = useState("");
+  const [newLocationContactName, setNewLocationContactName] = useState("");
+  const [newLocationContactMemo, setNewLocationContactMemo] = useState("");
+  const [isAddingLocationContact, setIsAddingLocationContact] = useState(false);
+  
   const { toast } = useToast();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
@@ -1857,10 +1873,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  // TODO: Open add contact dialog
-                                  console.log('Add contact clicked');
-                                }}
+                                onClick={() => setAddContactOpen(true)}
                                 data-testid="button-add-contact"
                               >
                                 Add
@@ -2552,8 +2565,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                     variant="ghost"
                                     size="sm"
                                     onClick={() => {
-                                      // TODO: Open manage location contacts dialog
-                                      console.log('Manage contacts for location', location.id);
+                                      setSelectedLocationForContacts(location);
+                                      setManageLocationContactsOpen(true);
                                     }}
                                     data-testid={`button-manage-location-contacts-${location.id}`}
                                     className="h-auto py-1 px-2 text-xs"
@@ -4143,6 +4156,265 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               data-testid="button-submit-add-location"
             >
               {isAddingLocation ? 'Adding...' : 'Add Location'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Contact Dialog */}
+      <Dialog open={addContactOpen} onOpenChange={setAddContactOpen}>
+        <DialogContent data-testid="dialog-add-contact">
+          <DialogHeader>
+            <DialogTitle>Add Contact Information</DialogTitle>
+            <DialogDescription>
+              Add a new phone number or email address to your account
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="contact-type">Contact Type *</Label>
+              <Select
+                value={newContactType}
+                onValueChange={(value: any) => setNewContactType(value)}
+              >
+                <SelectTrigger id="contact-type" data-testid="select-contact-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Phone">Phone</SelectItem>
+                  <SelectItem value="MobilePhone">Mobile Phone</SelectItem>
+                  <SelectItem value="Email">Email</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contact-value">
+                {newContactType === 'Email' ? 'Email Address' : 'Phone Number'} *
+              </Label>
+              <Input
+                id="contact-value"
+                type={newContactType === 'Email' ? 'email' : 'tel'}
+                value={newContactValue}
+                onChange={(e) => setNewContactValue(e.target.value)}
+                placeholder={newContactType === 'Email' ? 'you@example.com' : '(512) 555-1234'}
+                data-testid="input-contact-value"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="contact-memo">Label (Optional)</Label>
+              <Input
+                id="contact-memo"
+                value={newContactMemo}
+                onChange={(e) => setNewContactMemo(e.target.value)}
+                placeholder="e.g., Work, Home, Personal"
+                data-testid="input-contact-memo"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAddContactOpen(false);
+                setNewContactValue("");
+                setNewContactMemo("");
+              }}
+              disabled={isAddingContact}
+              data-testid="button-cancel-add-contact"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!customerId || !newContactValue.trim()) return;
+                
+                setIsAddingContact(true);
+                try {
+                  const response = await fetch('/api/portal/customer-contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      customerId,
+                      type: newContactType,
+                      value: newContactValue.trim(),
+                      memo: newContactMemo.trim() || undefined
+                    }),
+                  });
+
+                  if (!response.ok) throw new Error('Failed to add contact');
+
+                  toast({
+                    title: 'Contact added',
+                    description: 'Your contact information has been updated.',
+                  });
+
+                  setAddContactOpen(false);
+                  setNewContactValue("");
+                  setNewContactMemo("");
+                  
+                  queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', customerId] });
+                } catch (error) {
+                  console.error('Add contact error:', error);
+                  toast({
+                    title: 'Error',
+                    description: 'Failed to add contact. Please try again.',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setIsAddingContact(false);
+                }
+              }}
+              disabled={isAddingContact || !newContactValue.trim()}
+              data-testid="button-submit-add-contact"
+            >
+              {isAddingContact ? 'Adding...' : 'Add Contact'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Location Contacts Dialog */}
+      <Dialog open={manageLocationContactsOpen} onOpenChange={setManageLocationContactsOpen}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-manage-location-contacts">
+          <DialogHeader>
+            <DialogTitle>Manage Location Contacts</DialogTitle>
+            <DialogDescription>
+              {selectedLocationForContacts?.name || 'Location'} - Add or manage contacts specific to this location
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Existing contacts */}
+            {selectedLocationForContacts?.contacts && selectedLocationForContacts.contacts.length > 0 && (
+              <div className="space-y-2">
+                <Label>Current Contacts</Label>
+                {selectedLocationForContacts.contacts.map((contact: any, idx: number) => (
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
+                    {contact.type === 'Email' ? (
+                      <Mail className="w-4 h-4 text-primary" />
+                    ) : (
+                      <PhoneIcon className="w-4 h-4 text-primary" />
+                    )}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{contact.value}</p>
+                      {contact.name && <p className="text-xs text-muted-foreground">{contact.name}</p>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new contact form */}
+            <div className="border-t pt-4">
+              <Label className="mb-3 block">Add New Contact</Label>
+              
+              <div className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="loc-contact-type">Type</Label>
+                  <Select
+                    value={newLocationContactType}
+                    onValueChange={(value: any) => setNewLocationContactType(value)}
+                  >
+                    <SelectTrigger id="loc-contact-type">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Phone">Phone</SelectItem>
+                      <SelectItem value="MobilePhone">Mobile Phone</SelectItem>
+                      <SelectItem value="Email">Email</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="loc-contact-name">Contact Name (Optional)</Label>
+                  <Input
+                    id="loc-contact-name"
+                    value={newLocationContactName}
+                    onChange={(e) => setNewLocationContactName(e.target.value)}
+                    placeholder="e.g., Property Manager, Office Manager"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="loc-contact-value">
+                    {newLocationContactType === 'Email' ? 'Email' : 'Phone Number'}
+                  </Label>
+                  <Input
+                    id="loc-contact-value"
+                    type={newLocationContactType === 'Email' ? 'email' : 'tel'}
+                    value={newLocationContactValue}
+                    onChange={(e) => setNewLocationContactValue(e.target.value)}
+                    placeholder={newLocationContactType === 'Email' ? 'contact@example.com' : '(512) 555-1234'}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setManageLocationContactsOpen(false);
+                setSelectedLocationForContacts(null);
+                setNewLocationContactValue("");
+                setNewLocationContactName("");
+                setNewLocationContactMemo("");
+              }}
+              disabled={isAddingLocationContact}
+            >
+              Close
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!customerId || !selectedLocationForContacts || !newLocationContactValue.trim()) return;
+                
+                setIsAddingLocationContact(true);
+                try {
+                  const response = await fetch('/api/portal/location-contacts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      customerId,
+                      locationId: selectedLocationForContacts.id,
+                      type: newLocationContactType,
+                      value: newLocationContactValue.trim(),
+                      name: newLocationContactName.trim() || undefined,
+                      memo: newLocationContactMemo.trim() || undefined
+                    }),
+                  });
+
+                  if (!response.ok) throw new Error('Failed to add location contact');
+
+                  toast({
+                    title: 'Contact added',
+                    description: 'Location contact has been added successfully.',
+                  });
+
+                  setNewLocationContactValue("");
+                  setNewLocationContactName("");
+                  setNewLocationContactMemo("");
+                  
+                  queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', customerId] });
+                } catch (error) {
+                  console.error('Add location contact error:', error);
+                  toast({
+                    title: 'Error',
+                    description: 'Failed to add location contact. Please try again.',
+                    variant: 'destructive',
+                  });
+                } finally {
+                  setIsAddingLocationContact(false);
+                }
+              }}
+              disabled={isAddingLocationContact || !newLocationContactValue.trim()}
+            >
+              {isAddingLocationContact ? 'Adding...' : 'Add Contact'}
             </Button>
           </DialogFooter>
         </DialogContent>
