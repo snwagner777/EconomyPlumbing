@@ -128,6 +128,10 @@ export async function POST(req: NextRequest) {
     const customersToImport: any[] = [];
     let skippedCount = 0;
 
+    let customersWithPhone = 0;
+    let customersWithEmail = 0;
+    let customersWithBoth = 0;
+
     for (const row of rows as any[]) {
       // Map XLSX columns to database fields matching schema exactly
       // Note: XLSX uses "Phone Number" (with space) not "Phone"
@@ -137,49 +141,35 @@ export async function POST(req: NextRequest) {
         type: row['Type'] || 'Residential',
         email: row['Email'] || null,
         phone: row['Phone Number']?.toString() || null, // "Phone Number" with space!
-        street: null, // Will be parsed from Full Address if needed
+        street: null, // Address data fetched from ServiceTitan API when needed
         city: null,
         state: null,
         zip: null,
         active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False',
       };
 
-      // DEBUG: Track customer 27881198 specifically
-      if (customerData.id === 27881198) {
-        console.log('\n🔍 [Mailgun DEBUG] Customer 27881198 - RAW XLSX ROW:');
-        console.log('  Row["Phone Number"]:', row['Phone Number']);
-        console.log('  Type:', typeof row['Phone Number']);
-        console.log('\n🔍 [Mailgun DEBUG] Customer 27881198 - PARSED DATA:');
-        console.log('  customerData.phone:', customerData.phone);
-        console.log('  customerData.email:', customerData.email);
-        console.log('  customerData.type:', customerData.type);
-        console.log('  Full object:', JSON.stringify(customerData, null, 2));
-      }
-
       // Skip rows without required fields (id and at least phone or email)
       if (!customerData.id || (!customerData.phone && !customerData.email)) {
-        if (customerData.id === 27881198) {
-          console.log('❌ [Mailgun DEBUG] Customer 27881198 would be SKIPPED!');
-        }
         skippedCount++;
         continue;
       }
 
+      // Track contact method statistics
+      if (customerData.phone && customerData.email) customersWithBoth++;
+      else if (customerData.phone) customersWithPhone++;
+      else if (customerData.email) customersWithEmail++;
+
       customersToImport.push(customerData);
     }
 
-    console.log('[Mailgun] Parsed', customersToImport.length, 'valid customers, skipped', skippedCount);
-
-    // DEBUG: Check customer 27881198 in final array before DB insert
-    const customer27881198 = customersToImport.find(c => c.id === 27881198);
-    if (customer27881198) {
-      console.log('\n✅ [Mailgun DEBUG] Customer 27881198 FOUND in final import array:');
-      console.log('  phone:', customer27881198.phone);
-      console.log('  email:', customer27881198.email);
-      console.log('  Full object:', JSON.stringify(customer27881198, null, 2));
-    } else {
-      console.log('\n❌ [Mailgun DEBUG] Customer 27881198 NOT FOUND in final import array!');
-    }
+    console.log('[Mailgun] Parsed customers breakdown:', {
+      valid: customersToImport.length,
+      skipped: skippedCount,
+      total: rows.length,
+      withBothPhoneEmail: customersWithBoth,
+      withPhoneOnly: customersWithPhone,
+      withEmailOnly: customersWithEmail,
+    });
 
     // FULL REPLACE with transaction safety: All-or-nothing import
     console.log('[Mailgun] Starting transactional full replace import...');

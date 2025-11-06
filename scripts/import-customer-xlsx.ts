@@ -27,6 +27,10 @@ async function importCustomerXlsx() {
   const customersToImport: any[] = [];
   let skippedCount = 0;
 
+  let customersWithPhone = 0;
+  let customersWithEmail = 0;
+  let customersWithBoth = 0;
+
   for (const row of rows as any[]) {
     // EXACT SAME MAPPING as Mailgun webhook (app/api/webhooks/mailgun/customer-data/route.ts)
     // Note: XLSX uses "Phone Number" (with space) not "Phone"
@@ -43,45 +47,37 @@ async function importCustomerXlsx() {
       active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False',
     };
 
-    // DEBUG: Track customer 27881198 specifically
-    if (customerData.id === 27881198) {
-      console.log('\n🔍 [DEBUG] Customer 27881198 - RAW XLSX ROW:');
-      console.log('  Row["Phone Number"]:', row['Phone Number']);
-      console.log('  Type:', typeof row['Phone Number']);
-      console.log('\n🔍 [DEBUG] Customer 27881198 - PARSED DATA:');
-      console.log('  customerData.phone:', customerData.phone);
-      console.log('  customerData.email:', customerData.email);
-      console.log('  customerData.type:', customerData.type);
-      console.log('  Full object:', JSON.stringify(customerData, null, 2));
-    }
-
     // Skip rows without required fields (id and at least phone or email)
     if (!customerData.id || (!customerData.phone && !customerData.email)) {
-      if (customerData.id === 27881198) {
-        console.log('❌ [DEBUG] Customer 27881198 would be SKIPPED!');
-      }
       skippedCount++;
       continue;
     }
 
+    // Track contact method statistics
+    if (customerData.phone && customerData.email) customersWithBoth++;
+    else if (customerData.phone) customersWithPhone++;
+    else if (customerData.email) customersWithEmail++;
+
     customersToImport.push(customerData);
   }
 
-  console.log('[Import] Parsed', customersToImport.length, 'valid customers, skipped', skippedCount);
+  console.log('[Import] Parsed customers breakdown:', {
+    valid: customersToImport.length,
+    skipped: skippedCount,
+    total: rows.length,
+    withBothPhoneEmail: customersWithBoth,
+    withPhoneOnly: customersWithPhone,
+    withEmailOnly: customersWithEmail,
+  });
 
-  // DEBUG: Check customer 27881198 in final array before DB insert
-  const customer27881198 = customersToImport.find(c => c.id === 27881198);
-  if (customer27881198) {
-    console.log('\n✅ [DEBUG] Customer 27881198 FOUND in final import array:');
-    console.log('  phone:', customer27881198.phone);
-    console.log('  email:', customer27881198.email);
-    console.log('  Full object:', JSON.stringify(customer27881198, null, 2));
-  } else {
-    console.log('\n❌ [DEBUG] Customer 27881198 NOT FOUND in final import array!');
-  }
+  // Show sample of first 3 customers for verification
+  console.log('\n[Import] Sample customers (first 3):');
+  customersToImport.slice(0, 3).forEach((c, idx) => {
+    console.log(`  ${idx + 1}. ID ${c.id}: ${c.name} | Phone: ${c.phone || 'N/A'} | Email: ${c.email || 'N/A'}`);
+  });
 
   // FULL REPLACE with transaction safety: All-or-nothing import
-  console.log('[Import] Starting transactional full replace import...');
+  console.log('\n[Import] Starting transactional full replace import...');
   const importedCount = await storage.replaceAllCustomersXlsx(customersToImport);
 
   console.log('[Import] Full replace import complete:', {
