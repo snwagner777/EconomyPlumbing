@@ -3114,6 +3114,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               customerTags: customerData.customer.customerTags || [],
               locationId: serviceLocation?.id,
             }}
+            locations={customerLocations}
             utmSource="customer-portal"
           />
         );

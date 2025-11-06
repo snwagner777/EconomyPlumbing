@@ -144,6 +144,12 @@ export function SchedulerDialog({
     if (open && locations.length > 0 && !selectedLocationId) {
       // Prefer non-Hill Country location (ZIP 78654)
       const preferredLocation = locations.find(loc => loc.address.zip !== '78654') || locations[0];
+      console.log('[SchedulerDialog] Auto-selecting location:', {
+        totalLocations: locations.length,
+        selectedLocationId: preferredLocation.id,
+        selectedZip: preferredLocation.address.zip,
+        allLocations: locations.map(l => ({ id: l.id, zip: l.address.zip, city: l.address.city }))
+      });
       setSelectedLocationId(preferredLocation.id);
     }
   }, [open, locations, selectedLocationId]);
@@ -153,6 +159,14 @@ export function SchedulerDialog({
     ? locations.find(loc => loc.id === selectedLocationId)
     : null;
   const serviceZip = selectedLocation?.address.zip || customerInfo.zip;
+  
+  console.log('[SchedulerDialog] Service ZIP calculation:', {
+    hasSelectedLocation: !!selectedLocation,
+    selectedLocationZip: selectedLocation?.address.zip,
+    fallbackZip: customerInfo.zip,
+    finalServiceZip: serviceZip,
+    locationsAvailable: locations.length
+  });
 
   const handleSelectJobType = (jobType: JobType) => {
     // Check if VIP service selected but customer is not VIP
