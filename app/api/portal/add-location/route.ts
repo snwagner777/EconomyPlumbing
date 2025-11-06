@@ -10,7 +10,7 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { customerId, address, city, state, zipCode, gateCode } = body;
+    const { customerId, address, city, state, zipCode, specialInstructions } = body;
 
     if (!customerId || !address || !city || !state || !zipCode) {
       return NextResponse.json(
@@ -35,12 +35,12 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Add gate code as pinned note if provided
-    if (gateCode && gateCode.trim()) {
-      console.log(`[Portal] Adding gate code as pinned note to location ${location.id}`);
+    // Add special instructions as pinned note if provided
+    if (specialInstructions && specialInstructions.trim()) {
+      console.log(`[Portal] Adding special instructions as pinned note to location ${location.id}`);
       await serviceTitanCRM.createLocationNote(
         location.id,
-        `Gate Code: ${gateCode.trim()}`,
+        `Special Instructions: ${specialInstructions.trim()}`,
         true
       );
     }

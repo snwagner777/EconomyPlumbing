@@ -180,6 +180,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [appointmentToReschedule, setAppointmentToReschedule] = useState<ServiceTitanAppointment | null>(null);
   const [newAppointmentDate, setNewAppointmentDate] = useState("");
   const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
+  const [rescheduleSpecialInstructions, setRescheduleSpecialInstructions] = useState("");
+  const [rescheduleGrouponVoucher, setRescheduleGrouponVoucher] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [availableSlots, setAvailableSlots] = useState<Array<{
     id: string;
@@ -241,7 +243,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     city: 'Austin',
     state: 'TX',
     zipCode: '',
-    gateCode: '',
+    specialInstructions: '',
   });
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   
@@ -752,6 +754,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           end: selectedSlot.end,
           arrivalWindowStart: selectedSlot.start,
           arrivalWindowEnd: selectedSlot.end,
+          specialInstructions: rescheduleSpecialInstructions || undefined,
+          grouponVoucher: rescheduleGrouponVoucher || undefined,
         }),
       });
 
@@ -770,6 +774,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/account'] });
       
       setRescheduleDialogOpen(false);
+      setRescheduleSpecialInstructions("");
+      setRescheduleGrouponVoucher("");
     } catch (error: any) {
       console.error('Reschedule error:', error);
       toast({
@@ -1092,7 +1098,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           city: newLocationData.city,
           state: newLocationData.state,
           zipCode: newLocationData.zipCode,
-          gateCode: newLocationData.gateCode || undefined,
+          specialInstructions: newLocationData.specialInstructions || undefined,
         }),
       });
 
@@ -1115,7 +1121,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         city: 'Austin',
         state: 'TX',
         zipCode: '',
-        gateCode: '',
+        specialInstructions: '',
       });
     } catch (error: any) {
       toast({
@@ -3350,6 +3356,36 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 </p>
               )}
               
+              {/* Special Instructions field (always shown) */}
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-special-instructions">Special Instructions (Optional)</Label>
+                <Input
+                  id="reschedule-special-instructions"
+                  value={rescheduleSpecialInstructions}
+                  onChange={(e) => setRescheduleSpecialInstructions(e.target.value)}
+                  placeholder="Gate code, door code, parking instructions, etc."
+                  data-testid="input-reschedule-special-instructions"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Any gate codes, door codes, or special access instructions for our technician
+                </p>
+              </div>
+
+              {/* Groupon Voucher field (conditional - only for Groupon services) */}
+              {appointmentToReschedule?.jobType?.toLowerCase().includes('groupon') || 
+               appointmentToReschedule?.jobType?.toLowerCase().includes('$49') ? (
+                <div className="space-y-2">
+                  <Label htmlFor="reschedule-groupon-voucher">Groupon Voucher Code (Optional)</Label>
+                  <Input
+                    id="reschedule-groupon-voucher"
+                    value={rescheduleGrouponVoucher}
+                    onChange={(e) => setRescheduleGrouponVoucher(e.target.value)}
+                    placeholder="Enter your Groupon voucher code"
+                    data-testid="input-reschedule-groupon-voucher"
+                  />
+                </div>
+              ) : null}
+              
               <p className="text-xs text-muted-foreground">
                 Note: This will update your appointment in our system. You can also call us at {phoneConfig.display} for assistance.
               </p>
@@ -3986,13 +4022,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="new-gate-code">Gate Code (Optional)</Label>
+              <Label htmlFor="new-special-instructions">Special Instructions (Optional)</Label>
               <Input
-                id="new-gate-code"
-                value={newLocationData.gateCode}
-                onChange={(e) => setNewLocationData({ ...newLocationData, gateCode: e.target.value })}
-                placeholder="Enter gate code if applicable"
-                data-testid="input-new-gate-code"
+                id="new-special-instructions"
+                value={newLocationData.specialInstructions}
+                onChange={(e) => setNewLocationData({ ...newLocationData, specialInstructions: e.target.value })}
+                placeholder="Gate code, door code, parking instructions, etc."
+                data-testid="input-new-special-instructions"
               />
               <p className="text-xs text-muted-foreground">
                 This will be securely stored for technician access
@@ -4010,7 +4046,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   city: 'Austin',
                   state: 'TX',
                   zipCode: '',
-                  gateCode: '',
+                  specialInstructions: '',
                 });
               }}
               disabled={isAddingLocation}

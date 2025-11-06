@@ -78,7 +78,9 @@ Appointment Booking (ONLY AFTER CUSTOMER CREATED):
 - Once customer is created, ask for their ZIP code if you don't have it
 - Call check_appointment_availability to show available times
 - Present the top 3-5 most efficient appointment times in a friendly way
-- After they choose a time slot, call book_appointment
+- After they choose a time slot, ask if they have any special instructions (gate code, door code, parking instructions)
+- For Groupon services, also ask if they have a voucher code
+- Call book_appointment with all collected information
 - Always provide the confirmation number after booking
 
 Cancel & Reschedule Appointments:
@@ -379,6 +381,14 @@ export async function POST(req: NextRequest) {
                 type: 'number',
                 description: 'ServiceTitan customer ID from lookup_customer or create_customer',
               },
+              specialInstructions: {
+                type: 'string',
+                description: 'Gate code, door code, parking instructions, or other access details (optional)',
+              },
+              grouponVoucher: {
+                type: 'string',
+                description: 'Groupon voucher code if booking a Groupon service (optional)',
+              },
             },
             required: ['customerName', 'customerPhone', 'customerZip', 'slotId'],
           },
@@ -575,6 +585,8 @@ async function bookAppointment(args: {
   customerZip: string;
   slotId: string;
   serviceType?: string;
+  specialInstructions?: string;
+  grouponVoucher?: string;
 }) {
   try {
     const {
@@ -585,6 +597,8 @@ async function bookAppointment(args: {
       customerZip,
       slotId,
       serviceType = 'standard',
+      specialInstructions,
+      grouponVoucher,
     } = args;
     
     // First, fetch the slot details
@@ -622,6 +636,8 @@ async function bookAppointment(args: {
         slot: selectedSlot,
         jobTypeId: 140551181,
         serviceDescription: `Scheduled via AI chat - ${serviceType}`,
+        specialInstructions: specialInstructions || undefined,
+        grouponVoucher: grouponVoucher || undefined,
       }),
     });
     

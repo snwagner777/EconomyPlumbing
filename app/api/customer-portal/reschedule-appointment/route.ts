@@ -18,6 +18,8 @@ const rescheduleSchema = z.object({
   end: z.string().optional(), // ISO datetime
   arrivalWindowStart: z.string().optional(), // ISO datetime
   arrivalWindowEnd: z.string().optional(), // ISO datetime
+  specialInstructions: z.string().optional(),
+  grouponVoucher: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { appointmentId, start, end, arrivalWindowStart, arrivalWindowEnd } = rescheduleSchema.parse(body);
+    const { appointmentId, start, end, arrivalWindowStart, arrivalWindowEnd, specialInstructions, grouponVoucher } = rescheduleSchema.parse(body);
 
     const authenticatedCustomerId = session.customerPortalAuth.customerId;
 
@@ -50,12 +52,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Build special instructions for appointment
+    const instructionsParts: string[] = [];
+    if (specialInstructions && specialInstructions.trim()) {
+      instructionsParts.push(specialInstructions.trim());
+    }
+    if (grouponVoucher && grouponVoucher.trim()) {
+      instructionsParts.push(`Groupon Voucher: ${grouponVoucher.trim()}`);
+    }
+    const combinedInstructions = instructionsParts.length > 0 
+      ? instructionsParts.join('\n\n') 
+      : undefined;
+
     // Reschedule appointment in ServiceTitan
     await serviceTitanJobs.rescheduleAppointment(appointmentId, {
       start,
       end,
       arrivalWindowStart,
       arrivalWindowEnd,
+      specialInstructions: combinedInstructions,
     });
 
     // Update local database if this appointment was booked through scheduler
