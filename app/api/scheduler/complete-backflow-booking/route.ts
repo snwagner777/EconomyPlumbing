@@ -272,12 +272,12 @@ export async function POST(req: NextRequest) {
         email: validated.customerEmail || undefined,
       });
 
-      // Step 5b: Add gate code as pinned note if provided
-      if (bookingData.gateCode && bookingData.gateCode.trim()) {
-        console.log(`[Backflow Booking] Adding gate code as pinned note to location ${location.id}`);
+      // Step 5b: Add special instructions as pinned note if provided
+      if (bookingData.specialInstructions && bookingData.specialInstructions.trim()) {
+        console.log(`[Backflow Booking] Adding special instructions as pinned note to location ${location.id}`);
         await serviceTitanCRM.createLocationNote(
           location.id,
-          `Gate Code: ${bookingData.gateCode.trim()}`,
+          `Special Instructions: ${bookingData.specialInstructions.trim()}`,
           true
         );
       }

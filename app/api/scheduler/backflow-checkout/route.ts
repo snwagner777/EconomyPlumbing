@@ -24,7 +24,6 @@ const checkoutSchema = z.object({
     city: z.string(),
     state: z.string(),
     zipCode: z.string(),
-    gateCode: z.string().optional(),
     requestedService: z.string(),
     preferredDate: z.string(),
     preferredTimeSlot: z.string(),
