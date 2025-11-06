@@ -218,7 +218,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                         <p className={`text-xs sm:text-sm mt-0.5 ${isSelected ? 'text-white/90' : 'text-muted-foreground'}`}>
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
                         </p>
-                        {index === 0 && (
+                        {index === 0 && (slot.proximityScore || 0) > 50 && (
                           <p className={`text-xs mt-1 ${isSelected ? 'text-white/80' : 'text-green-600 dark:text-green-500'}`}>
                             ✓ We'll be working nearby
                           </p>

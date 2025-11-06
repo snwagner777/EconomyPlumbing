@@ -21,7 +21,7 @@ import { storage } from '@/server/storage';
 import { z } from 'zod';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { db } from '@/server/db';
-import { serviceTitanCustomers, serviceTitanContacts } from '@shared/schema';
+import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 // Validation schema for contact form
@@ -161,8 +161,8 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Contact] ServiceTitan customer ready: ${customer.id}`);
 
-        // Sync to local database
-        await db.insert(serviceTitanCustomers).values({
+        // Sync to local database (customers_xlsx) for immediate portal/scheduler access
+        await db.insert(customersXlsx).values({
           id: customer.id,
           name: customer.name,
           type: customer.type || 'Residential',
@@ -170,52 +170,21 @@ export async function POST(req: NextRequest) {
           city: data.city,
           state: data.state,
           zip: data.zip,
+          phone: data.phone,
+          email: data.email,
           active: true,
         }).onConflictDoUpdate({
-          target: serviceTitanCustomers.id,
+          target: customersXlsx.id,
           set: {
             name: customer.name,
             street: data.address,
             city: data.city,
             state: data.state,
             zip: data.zip,
+            phone: data.phone,
+            email: data.email,
           },
         });
-
-        // Sync contacts to local database
-        if (data.phone) {
-          const normalizedPhone = normalizeContact(data.phone, 'phone');
-          const existingPhone = await db.select()
-            .from(serviceTitanContacts)
-            .where(eq(serviceTitanContacts.normalizedValue, normalizedPhone))
-            .limit(1);
-          
-          if (existingPhone.length === 0) {
-            await db.insert(serviceTitanContacts).values({
-              customerId: customer.id,
-              contactType: 'Phone',
-              value: data.phone,
-              normalizedValue: normalizedPhone,
-            });
-          }
-        }
-
-        if (data.email) {
-          const normalizedEmail = normalizeContact(data.email, 'email');
-          const existingEmail = await db.select()
-            .from(serviceTitanContacts)
-            .where(eq(serviceTitanContacts.normalizedValue, normalizedEmail))
-            .limit(1);
-          
-          if (existingEmail.length === 0) {
-            await db.insert(serviceTitanContacts).values({
-              customerId: customer.id,
-              contactType: 'Email',
-              value: data.email,
-              normalizedValue: normalizedEmail,
-            });
-          }
-        }
 
         console.log(`[Contact] ✅ Customer ${customer.id} synced to local database`);
       } catch (error) {
