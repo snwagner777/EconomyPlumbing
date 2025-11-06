@@ -3088,14 +3088,12 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         // Debug: Log all locations to console
         console.log('[Portal Debug] All customer locations:', customerLocations);
         
-        // Find the service location (not billing address)
-        // Prefer locations that have been used for previous jobs
-        // If multiple locations, prefer the one that's NOT in Hill Country (78654)
-        const serviceLocation = customerLocations.length > 1
-          ? customerLocations.find(loc => loc.address?.zip !== '78654') || customerLocations[0]
-          : customerLocations[0];
+        // CRITICAL: ALWAYS prefer non-Hill Country (78654) locations for scheduling
+        // Hill Country is billing address, not service location
+        const serviceLocation = customerLocations.find(loc => loc.address?.zip !== '78654') || customerLocations[0];
           
         console.log('[Portal Debug] Selected service location:', serviceLocation);
+        console.log('[Portal Debug] Using ZIP for scheduler:', serviceLocation?.address?.zip || customerData.customer.address?.zip);
         
         return (
           <SchedulerDialog
