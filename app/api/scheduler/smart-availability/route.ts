@@ -500,8 +500,15 @@ function generateAvailableSlots(
   const currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {
-    const dayOfWeek = currentDate.getDay();
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
+    // Get day of week in Central Time (not UTC!)
+    // This ensures we properly filter Sundays/Saturdays in the business's timezone
+    const centralDateStr = currentDate.toLocaleDateString('en-US', { 
+      timeZone: 'America/Chicago',
+      weekday: 'short'
+    });
+    const isSundayOrSaturday = centralDateStr === 'Sun' || centralDateStr === 'Sat';
+    
+    if (isSundayOrSaturday) {
       currentDate.setDate(currentDate.getDate() + 1);
       continue;
     }
