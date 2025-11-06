@@ -39,26 +39,35 @@ export async function POST(request: NextRequest) {
 
     // Search ONLY in local XLSX synced cache (customers_xlsx table)
     const { customersXlsx } = await import('@shared/schema');
-    const { or, sql } = await import('drizzle-orm');
+    const { or, sql, and, eq } = await import('drizzle-orm');
     
     const searchValue = contactValue.trim();
     const normalizedPhone = searchValue.replace(/\D/g, ''); // Remove non-digits for phone search
     
+    // Determine if we're searching by phone or email
+    const isPhoneSearch = normalizedPhone.length >= 10;
+    
     // Search by email OR phone in customers_xlsx (active customers only)
     const customers = await db
-      .select({ id: customersXlsx.id })
+      .select({ 
+        id: customersXlsx.id,
+        email: customersXlsx.email,
+        phone: customersXlsx.phone,
+        name: customersXlsx.name
+      })
       .from(customersXlsx)
       .where(
-        or(
-          sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'`,
-          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
+        and(
+          eq(customersXlsx.active, true),
+          or(
+            sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'`,
+            sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
+          )
         )
       )
       .limit(10);
 
-    const customerIds = customers.map(c => c.id);
-
-    if (customerIds.length === 0) {
+    if (customers.length === 0) {
       console.log('[Portal Auth] No customer found in synced database');
       return NextResponse.json(
         {
@@ -70,6 +79,55 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // If searching by phone and multiple unique emails found, return them for selection
+    if (isPhoneSearch && verificationType === 'email') {
+      // Get unique emails (filter out nulls and duplicates)
+      const uniqueEmails = Array.from(new Set(
+        customers
+          .map(c => c.email?.toLowerCase().trim())
+          .filter((email): email is string => !!email)
+      ));
+
+      if (uniqueEmails.length > 1) {
+        console.log(`[Portal Auth] Found ${uniqueEmails.length} unique emails for phone, asking user to select`);
+        
+        // Mask emails for privacy - hide both local part AND domain
+        const maskEmail = (email: string) => {
+          const [localPart, domain] = email.split('@');
+          if (!localPart || !domain) return email;
+          
+          // Mask local part (show first 2 chars)
+          const visibleLocalChars = Math.min(2, localPart.length);
+          const maskedLocal = localPart.substring(0, visibleLocalChars) + '*'.repeat(Math.max(3, localPart.length - visibleLocalChars));
+          
+          // Mask domain (show first char and extension)
+          const domainParts = domain.split('.');
+          if (domainParts.length < 2) {
+            // No extension, just mask the domain
+            const maskedDomain = domainParts[0].charAt(0) + '*'.repeat(Math.max(3, domainParts[0].length - 1));
+            return `${maskedLocal}@${maskedDomain}`;
+          }
+          
+          // Has extension - mask the main part, keep extension
+          const mainPart = domainParts.slice(0, -1).join('.');
+          const extension = domainParts[domainParts.length - 1];
+          const maskedDomain = mainPart.charAt(0) + '*'.repeat(Math.max(3, mainPart.length - 1));
+          
+          return `${maskedLocal}@${maskedDomain}.${extension}`;
+        };
+
+        return NextResponse.json({
+          requiresEmailSelection: true,
+          emails: uniqueEmails.map(email => ({
+            masked: maskEmail(email),
+            value: email
+          })),
+          message: 'Multiple email addresses found. Please select which one to use.'
+        });
+      }
+    }
+
+    const customerIds = customers.map(c => c.id);
     console.log(
       `[Portal Auth] Found ${customerIds.length} customer account(s) in cache:`,
       customerIds

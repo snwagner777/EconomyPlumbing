@@ -167,10 +167,14 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [showAccountSelection, setShowAccountSelection] = useState(false);
   
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-account' | 'authenticated'>('lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-email' | 'select-account' | 'authenticated'>('lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
+  
+  // Email selection state
+  const [availableEmails, setAvailableEmails] = useState<Array<{ masked: string; value: string }>>([]);
+  const [selectedEmail, setSelectedEmail] = useState("");
   
   // Phone-based login state
   const [phoneLoginNumber, setPhoneLoginNumber] = useState("");
@@ -501,13 +505,63 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       const result = await response.json();
       
+      // Check if email selection is required
+      if (result.requiresEmailSelection && result.emails) {
+        setAvailableEmails(result.emails);
+        setVerificationStep('select-email');
+        setLookupSuccess(result.message);
+      } else {
+        // Move to verification step
+        setVerificationStep('verify-code');
+        setVerificationMessage(result.message);
+        setLookupSuccess(result.message);
+      }
+    } catch (err: any) {
+      console.error('Customer lookup failed:', err);
+      setLookupError(err.message || 'We couldn\'t find an account with that information. Please verify and try again.');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleSelectEmail = async () => {
+    if (!selectedEmail) {
+      setLookupError('Please select an email address');
+      return;
+    }
+    
+    setLookupError(null);
+    setLookupSuccess(null);
+    setIsSearching(true);
+
+    try {
+      // Now send code to the selected email ONLY
+      const response = await fetch('/api/portal/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contactValue: selectedEmail,
+          verificationType: 'email',
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to send verification code');
+      }
+
+      const result = await response.json();
+      
+      // Update lookupValue to the selected email for verification
+      setLookupValue(selectedEmail);
+      
       // Move to verification step
       setVerificationStep('verify-code');
       setVerificationMessage(result.message);
       setLookupSuccess(result.message);
     } catch (err: any) {
-      console.error('Customer lookup failed:', err);
-      setLookupError(err.message || 'We couldn\'t find an account with that information. Please verify and try again.');
+      console.error('Email send failed:', err);
+      setLookupError(err.message || 'Failed to send verification code');
     } finally {
       setIsSearching(false);
     }
@@ -1579,6 +1633,93 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     data-testid="button-back-from-phone"
                   >
                     Use Different Method
+                  </Button>
+
+                  {lookupSuccess && (
+                    <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                        <div className="text-green-700 dark:text-green-400">
+                          <p className="font-medium mb-1">Success</p>
+                          <p>{lookupSuccess}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {lookupError && (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                      <div className="flex items-start gap-3">
+                        <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                        <div className="text-destructive">
+                          <p className="font-medium mb-1">Error</p>
+                          <p>{lookupError}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ) : verificationStep === 'select-email' ? (
+              <Card className="max-w-md mx-auto">
+                <CardHeader>
+                  <CardTitle>Select Email Address</CardTitle>
+                  <CardDescription>
+                    Multiple email addresses found. Choose which one to send the verification code to.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Available Email Addresses</Label>
+                    <div className="space-y-2">
+                      {availableEmails.map((emailOption, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedEmail(emailOption.value)}
+                          className={`w-full p-4 rounded-lg border-2 text-left transition-all ${
+                            selectedEmail === emailOption.value
+                              ? 'border-primary bg-primary/10'
+                              : 'border-border hover:border-primary/50 hover:bg-accent'
+                          }`}
+                          data-testid={`button-select-email-${index}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <Mail className="w-5 h-5 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">{emailOption.masked}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {selectedEmail === emailOption.value ? 'Selected' : 'Click to select'}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      For security, parts of the email addresses are hidden
+                    </p>
+                  </div>
+
+                  <Button
+                    onClick={handleSelectEmail}
+                    className="w-full"
+                    disabled={!selectedEmail || isSearching}
+                    data-testid="button-send-to-selected-email"
+                  >
+                    {isSearching ? 'Sending...' : 'Send Code to Selected Email'}
+                  </Button>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setVerificationStep('lookup');
+                      setSelectedEmail('');
+                      setAvailableEmails([]);
+                    }}
+                    className="w-full"
+                    data-testid="button-back-from-email-select"
+                  >
+                    Use Different Phone Number
                   </Button>
 
                   {lookupSuccess && (
