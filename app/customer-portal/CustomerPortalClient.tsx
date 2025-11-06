@@ -3093,7 +3093,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         const serviceLocation = customerLocations.find(loc => loc.address?.zip !== '78654') || customerLocations[0];
           
         console.log('[Portal Debug] Selected service location:', serviceLocation);
-        console.log('[Portal Debug] Using ZIP for scheduler:', serviceLocation?.address?.zip || customerData.customer.address?.zip);
+        console.log('[Portal Debug] Using ZIP for scheduler (service location ONLY):', serviceLocation?.address?.zip || 'NO LOCATION AVAILABLE');
         
         return (
           <SchedulerDialog
@@ -3104,10 +3104,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               lastName: customerData.customer.name.split(' ').slice(1).join(' ') || '',
               email: customerData.customer.email || '',
               phone: customerData.customer.phoneNumber || '',
-              address: serviceLocation?.address?.street || customerData.customer.address?.street || '',
-              city: serviceLocation?.address?.city || customerData.customer.address?.city || '',
-              state: serviceLocation?.address?.state || customerData.customer.address?.state || '',
-              zip: serviceLocation?.address?.zip || customerData.customer.address?.zip || '',
+              // CRITICAL: Use ONLY service location data, NEVER billing address for scheduling
+              address: serviceLocation?.address?.street || '',
+              city: serviceLocation?.address?.city || '',
+              state: serviceLocation?.address?.state || '',
+              zip: serviceLocation?.address?.zip || '',
               serviceTitanId: customerData.customer.id,
               customerTags: customerData.customer.customerTags || [],
               locationId: serviceLocation?.id,

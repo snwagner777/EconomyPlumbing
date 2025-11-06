@@ -155,17 +155,18 @@ export function SchedulerDialog({
   }, [open, locations, selectedLocationId]);
   
   // Get the selected location's ZIP for scheduling
+  // CRITICAL: NEVER fall back to customerInfo.zip (billing address)
   const selectedLocation = selectedLocationId 
     ? locations.find(loc => loc.id === selectedLocationId)
     : null;
-  const serviceZip = selectedLocation?.address.zip || customerInfo.zip;
+  const serviceZip = selectedLocation?.address.zip || '';
   
   console.log('[SchedulerDialog] Service ZIP calculation:', {
     hasSelectedLocation: !!selectedLocation,
     selectedLocationZip: selectedLocation?.address.zip,
-    fallbackZip: customerInfo.zip,
     finalServiceZip: serviceZip,
-    locationsAvailable: locations.length
+    locationsAvailable: locations.length,
+    note: 'NO FALLBACK to billing address - service location ZIP ONLY'
   });
 
   const handleSelectJobType = (jobType: JobType) => {
