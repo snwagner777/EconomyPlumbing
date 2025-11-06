@@ -37,12 +37,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
-    const serviceTitan = getServiceTitanAPI();
+    // Search ONLY in local XLSX synced cache (customers_xlsx table)
+    const { customersXlsx } = await import('@shared/schema');
+    const { or, sql } = await import('drizzle-orm');
+    
+    const searchValue = contactValue.trim();
+    const normalizedPhone = searchValue.replace(/\D/g, ''); // Remove non-digits for phone search
+    
+    // Search by email OR phone in customers_xlsx (active customers only)
+    const customers = await db
+      .select({ id: customersXlsx.id })
+      .from(customersXlsx)
+      .where(
+        or(
+          sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'`,
+          sql`REPLACE(REPLACE(REPLACE(${customersXlsx.phone}, '-', ''), '(', ''), ')', '') LIKE '%' || ${normalizedPhone} || '%'`
+        )
+      )
+      .limit(10);
 
-    // Search ONLY in local synced cache - DO NOT create customers on-demand
-    const searchValue = contactValue;
-    const customerIds = await serviceTitan.searchLocalCustomer(searchValue);
+    const customerIds = customers.map(c => c.id);
 
     if (customerIds.length === 0) {
       console.log('[Portal Auth] No customer found in synced database');

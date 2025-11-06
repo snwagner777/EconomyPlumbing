@@ -29,16 +29,17 @@ async function importCustomerXlsx() {
 
   for (const row of rows as any[]) {
     // EXACT SAME MAPPING as Mailgun webhook (app/api/webhooks/mailgun/customer-data/route.ts)
+    // Note: XLSX uses "Phone Number" (with space) not "Phone"
     const customerData: any = {
       id: row['Customer ID'] ? parseInt(row['Customer ID'].toString()) : null,
       name: row['Customer Name'] || 'Unknown',
-      type: row['Customer Type'] || 'Residential',
+      type: row['Type'] || 'Residential',
       email: row['Email'] || null,
-      phone: row['Phone']?.toString() || null,
-      street: row['Address'] || null,
-      city: row['City'] || null,
-      state: row['State'] || null,
-      zip: row['ZIP']?.toString() || null,
+      phone: row['Phone Number']?.toString() || null, // "Phone Number" with space!
+      street: null, // Will be parsed from Full Address if needed
+      city: null,
+      state: null,
+      zip: null,
       active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False',
     };
 
