@@ -54,11 +54,16 @@ Customer Creation (REQUIRED FIRST):
 - Before discussing appointment scheduling, you MUST create the customer in our system
 - Start by asking for their phone number to check if they're an existing customer
 - Call lookup_customer with their phone number or email
-- If they exist: Welcome them back by name and ask if that's correct
-  - If customer says "that's not me" or "wrong person": Call create_new_account to start fresh
-  - If correct: Ask if using the same service location or need a new one
-    - If new location needed: Call create_new_location to add another address
-    - If same location: Proceed to scheduling
+- If MULTIPLE accounts found:
+  - List the accounts (e.g., "I found 2 accounts: 1) John Smith at 123 Main St, 2) John Smith at 456 Oak Ave")
+  - Ask which account they want to use
+  - OR ask if they want to create a NEW account instead
+- If ONE account found: Welcome them back by name and ask if that's correct
+  - If customer says "that's not me" or "wrong person": Create a new account
+  - If correct: Call get_customer_locations to fetch all their service addresses
+    - If multiple locations: Ask which location they want service at
+    - If one location: Confirm if using this address
+    - Option: "Or would you like to add a NEW service location?"
 - If they're new: Collect their information one question at a time (name, email, full address with city/state/ZIP)
 - Once you have complete info, call create_customer to create them in ServiceTitan
 - Only AFTER the customer is created/verified should you discuss appointment scheduling
@@ -67,12 +72,14 @@ Example customer creation flow:
 1. Customer: "I need to schedule a drain cleaning"
 2. You: "I'd be happy to help! First, what's the best phone number to reach you?"
 3. Customer: "512-555-0123"
-4. You: [Call lookup_customer] Either:
-   - "Welcome back, John! I see we've helped you before." OR
-   - "Great! I don't see you in our system yet. What's your full name?"
-5. [If new, continue gathering: email, street address, city, state, ZIP]
-6. You: [Call create_customer] "Perfect! I've got you set up in our system."
-7. [NOW proceed to scheduling]
+4. You: [Call lookup_customer] 
+   - If multiple: "I found 2 accounts - which one is yours? 1) John at 123 Main St, 2) John at 456 Oak Ave, or 3) Create new account"
+   - If one: "Welcome back, John! I see we've helped you before at 123 Main St. Is that correct?"
+   - If none: "Great! I don't see you in our system yet. What's your full name?"
+5. [If existing, call get_customer_locations and ask which location or if new location needed]
+6. [If new, continue gathering: email, street address, city, state, ZIP]
+7. You: [Call create_customer] "Perfect! I've got you set up in our system."
+8. [NOW proceed to scheduling]
 
 Appointment Booking (ONLY AFTER CUSTOMER CREATED):
 - Once customer is created, ask for their ZIP code if you don't have it
@@ -82,6 +89,14 @@ Appointment Booking (ONLY AFTER CUSTOMER CREATED):
 - For Groupon services, also ask if they have a voucher code
 - Call book_appointment with all collected information
 - Always provide the confirmation number after booking
+
+IMPORTANT - Technician Assignment:
+- NEVER tell customers which technician will be assigned to their appointment
+- If customer asks "who's my technician?" or "when will I know who's coming?" - respond: "Our dispatch team will assign the best available technician and you'll receive a notification the day of your appointment"
+- If customer REQUESTS a specific technician (e.g., "Can I have Sean?" or "I want Ian"):
+  - Respond warmly: "I'll make a note of that request! We'll do our best to accommodate it, though final assignments are made by our dispatch team based on scheduling and location"
+  - Accept the request politely but DO NOT actually pass it to the booking system
+  - Do NOT show them a list of available technicians
 
 Cancel & Reschedule Appointments:
 - When a customer wants to cancel or reschedule, let them know they can do this easily through our customer portal
@@ -183,7 +198,7 @@ export async function POST(req: NextRequest) {
         type: 'function',
         function: {
           name: 'lookup_customer',
-          description: 'Lookup an existing customer by phone number or email. ALWAYS call this first before creating a new customer or scheduling appointments.',
+          description: 'Lookup an existing customer by phone number or email. ALWAYS call this first before creating a new customer or scheduling appointments. Returns all customer accounts matching the contact info.',
           parameters: {
             type: 'object',
             properties: {
@@ -197,6 +212,23 @@ export async function POST(req: NextRequest) {
               },
             },
             required: [],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'get_customer_locations',
+          description: 'Get all service locations for a specific customer account. Use after lookup_customer to show customer their available locations for service.',
+          parameters: {
+            type: 'object',
+            properties: {
+              customerId: {
+                type: 'number',
+                description: 'ServiceTitan customer ID from lookup_customer',
+              },
+            },
+            required: ['customerId'],
           },
         },
       },
@@ -425,6 +457,8 @@ export async function POST(req: NextRequest) {
       
       if (functionName === 'lookup_customer') {
         functionResult = await lookupCustomer(functionArgs);
+      } else if (functionName === 'get_customer_locations') {
+        functionResult = await getCustomerLocations(functionArgs);
       } else if (functionName === 'create_customer') {
         functionResult = await createCustomer(functionArgs);
       } else if (functionName === 'create_new_account') {
@@ -692,17 +726,16 @@ async function lookupCustomer(args: { phone?: string; email?: string }) {
       return value.toLowerCase().trim(); // Lowercase for email
     };
 
-    // Search in serviceTitanContacts table
+    // Search in serviceTitanContacts table - get ALL matching contacts
     const searchValue = phone 
       ? normalizeContact(phone, 'phone')
       : normalizeContact(email!, 'email');
     
-    const [contact] = await db.select()
+    const contacts = await db.select()
       .from(serviceTitanContacts)
-      .where(eq(serviceTitanContacts.normalizedValue, searchValue))
-      .limit(1);
+      .where(eq(serviceTitanContacts.normalizedValue, searchValue));
 
-    if (!contact) {
+    if (contacts.length === 0) {
       return {
         success: false,
         found: false,
@@ -710,35 +743,41 @@ async function lookupCustomer(args: { phone?: string; email?: string }) {
       };
     }
 
-    // Fetch full customer details
-    const [customer] = await db.select()
+    // Fetch ALL customer details for matching contacts
+    const customerIds = [...new Set(contacts.map(c => c.customerId))];
+    const customers = await db.select()
       .from(serviceTitanCustomers)
-      .where(eq(serviceTitanCustomers.id, contact.customerId))
-      .limit(1);
+      .where(sql`${serviceTitanCustomers.id} = ANY(ARRAY[${sql.join(customerIds.map(id => sql`${id}`), sql`, `)}])`);
 
-    if (!customer) {
+    if (customers.length === 0) {
       return {
         success: false,
         found: false,
-        message: 'Customer record not found',
+        message: 'Customer records not found',
       };
     }
+
+    // Return all matching customers
+    const customerList = customers.map(customer => ({
+      id: customer.id,
+      name: customer.name,
+      phone: contacts.find(c => c.customerId === customer.id)?.value || '',
+      address: {
+        street: customer.street,
+        city: customer.city,
+        state: customer.state,
+        zip: customer.zip,
+      },
+    }));
 
     return {
       success: true,
       found: true,
-      customer: {
-        id: customer.id,
-        name: customer.name,
-        phone: contact.value,
-        address: {
-          street: customer.street,
-          city: customer.city,
-          state: customer.state,
-          zip: customer.zip,
-        },
-      },
-      message: `Found existing customer: ${customer.name}`,
+      multipleAccounts: customerList.length > 1,
+      customers: customerList,
+      message: customerList.length === 1 
+        ? `Found existing customer: ${customerList[0].name}`
+        : `Found ${customerList.length} accounts with this contact information`,
     };
   } catch (error: any) {
     console.error('[Chatbot] Error looking up customer:', error);
@@ -746,6 +785,65 @@ async function lookupCustomer(args: { phone?: string; email?: string }) {
       success: false,
       found: false,
       message: 'Error looking up customer',
+    };
+  }
+}
+
+/**
+ * Get all service locations for a customer
+ */
+async function getCustomerLocations(args: { customerId: number }) {
+  try {
+    const { customerId } = args;
+    
+    // Import locally to avoid circular dependencies
+    const { serviceTitanCustomers } = await import('@shared/schema');
+    const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
+    const { eq } = await import('drizzle-orm');
+    
+    // Fetch customer from local database
+    const [customer] = await db.select()
+      .from(serviceTitanCustomers)
+      .where(eq(serviceTitanCustomers.id, customerId))
+      .limit(1);
+
+    if (!customer) {
+      return {
+        success: false,
+        message: 'Customer not found',
+      };
+    }
+
+    // Fetch locations from ServiceTitan
+    const locations = await serviceTitanCRM.getCustomerLocations(customerId);
+
+    if (locations.length === 0) {
+      return {
+        success: true,
+        locations: [],
+        message: 'No service locations found for this customer',
+      };
+    }
+
+    return {
+      success: true,
+      locations: locations.map(loc => ({
+        id: loc.id,
+        name: loc.name,
+        address: {
+          street: loc.address.street,
+          city: loc.address.city,
+          state: loc.address.state,
+          zip: loc.address.zip,
+        },
+      })),
+      message: `Found ${locations.length} service location(s)`,
+    };
+  } catch (error: any) {
+    console.error('[Chatbot] Error getting customer locations:', error);
+    return {
+      success: false,
+      message: 'Error fetching customer locations',
     };
   }
 }

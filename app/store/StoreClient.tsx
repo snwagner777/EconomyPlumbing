@@ -44,10 +44,14 @@ export default function StoreClient({ phoneConfig }: StoreClientProps) {
     <>
       <Script
         src={`https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data_platform=code&data_date=2025-11-05`}
-        strategy="lazyOnload"
+        strategy="afterInteractive"
         onLoad={initializeEcwid}
         onError={(e) => {
           console.error('[Ecwid] Failed to load script:', e);
+          console.error('[Ecwid] Error details:', JSON.stringify(e, null, 2));
+        }}
+        onReady={() => {
+          console.log('[Ecwid] Script ready');
         }}
       />
       
