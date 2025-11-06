@@ -553,15 +553,22 @@ function generateAvailableSlots(
       
       // Check for conflicts with existing appointments
       // CRITICAL: Use appointment times (start/end), NOT arrival windows!
+      let conflictingAppointment: any = null;
       const hasConflict = bookedAppointments.some(apt => {
         const aptStart = new Date(apt.start); // Use actual appointment time
         const aptEnd = new Date(apt.end);     // Not arrival window
         
-        return (
+        const overlaps = (
           (slotStart >= aptStart && slotStart < aptEnd) ||
           (slotEnd > aptStart && slotEnd <= aptEnd) ||
           (slotStart <= aptStart && slotEnd >= aptEnd)
         );
+        
+        if (overlaps) {
+          conflictingAppointment = apt;
+        }
+        
+        return overlaps;
       });
       
       // Check if slot is still available (1 hour lead time in Central Time)
@@ -579,8 +586,10 @@ function generateAvailableSlots(
         const nowStr = formatInTimeZone(now, TIMEZONE, 'MMM d h:mm a zzz');
         const minBookStr = formatInTimeZone(minBookingTime, TIMEZONE, 'MMM d h:mm a zzz');
         
-        if (hasConflict) {
-          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: CONFLICT with existing appointment`);
+        if (hasConflict && conflictingAppointment) {
+          const aptStartCT = formatInTimeZone(new Date(conflictingAppointment.start), TIMEZONE, 'h:mm a');
+          const aptEndCT = formatInTimeZone(new Date(conflictingAppointment.end), TIMEZONE, 'h:mm a');
+          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: CONFLICT with appointment ${conflictingAppointment.id} (${aptStartCT}-${aptEndCT})`);
         } else {
           console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: TOO SOON (now: ${nowStr}, min: ${minBookStr})`);
         }

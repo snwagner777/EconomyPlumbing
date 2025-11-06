@@ -29,7 +29,7 @@ export async function GET(
     }
 
     // Fetch customer tags from local database
-    const { db } = await import('@/server/storage');
+    const { db } = await import('@/server/db');
     const { serviceTitanCustomers } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
     
