@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { serviceTitanCustomers, serviceTitanContacts } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { customersXlsx } from '@shared/schema';
+import { or, sql, eq, and } from 'drizzle-orm';
 
 /**
  * Normalize phone/email for searching
@@ -25,84 +25,59 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[Scheduler] Looking up customer in local DB by ${phone ? 'phone' : 'email'}: ${phone || email}`);
+    console.log(`[Scheduler] Looking up customer in XLSX DB by ${phone ? 'phone' : 'email'}: ${phone || email}`);
 
-    // Try to find ALL contacts by phone first, then email as fallback
-    let contacts: any[] = [];
+    // Search in customers_xlsx table (XLSX import data)
+    const searchValue = (phone || email).trim();
+    const normalizedPhone = phone ? normalizeContact(phone, 'phone') : '';
     
-    if (phone) {
-      const normalizedPhone = normalizeContact(phone, 'phone');
-      contacts = await db.query.serviceTitanContacts.findMany({
-        where: eq(serviceTitanContacts.normalizedValue, normalizedPhone),
-      });
-    }
-    
-    // If not found by phone, try email
-    if (contacts.length === 0 && email) {
-      const normalizedEmail = normalizeContact(email, 'email');
-      contacts = await db.query.serviceTitanContacts.findMany({
-        where: eq(serviceTitanContacts.normalizedValue, normalizedEmail),
-      });
-    }
-
-    if (contacts.length === 0) {
-      console.log(`[Scheduler] No customer found`);
-      return NextResponse.json({ 
-        success: false,
-        customers: [],
-      });
-    }
-
-    // Get all unique customer IDs
-    const uniqueCustomerIds = [...new Set(contacts.map(c => c.customerId))];
-    
-    // Get all matching customers
-    const customers = await db.query.serviceTitanCustomers.findMany({
-      where: (table, { inArray }) => inArray(table.id, uniqueCustomerIds),
-    });
+    // Search by email OR phone in customers_xlsx (active customers only)
+    const customers = await db
+      .select()
+      .from(customersXlsx)
+      .where(
+        and(
+          eq(customersXlsx.active, true), // Only active customers
+          or(
+            email ? sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'` : sql`1=0`,
+            phone ? sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'` : sql`1=0`
+          )
+        )
+      );
 
     if (customers.length === 0) {
-      console.log(`[Scheduler] Contacts found but customers not found`);
+      console.log(`[Scheduler] No customer found in XLSX database`);
       return NextResponse.json({ 
         success: false,
         customers: [],
       });
     }
 
-    // Build response with all customers and their contact info
-    const customersWithContacts = await Promise.all(
-      customers.map(async (customer) => {
-        const customerContacts = await db.query.serviceTitanContacts.findMany({
-          where: eq(serviceTitanContacts.customerId, customer.id),
-        });
+    // Build response with customer data from customers_xlsx
+    const customersWithContacts = customers.map((customer) => {
+      const locations = customer.street ? [{
+        id: customer.id,
+        name: 'Primary Location',
+        street: customer.street,
+        city: customer.city,
+        state: customer.state,
+        zip: customer.zip,
+        isPrimary: true,
+      }] : [];
 
-        const customerPhone = customerContacts.find(c => c.contactType === 'Phone' || c.contactType === 'MobilePhone')?.value || phone;
-        const customerEmail = customerContacts.find(c => c.contactType === 'Email')?.value || email;
+      return {
+        id: customer.id,
+        serviceTitanId: customer.id,
+        name: customer.name,
+        email: customer.email || email || '',
+        phoneNumber: customer.phone || phone || '',
+        type: customer.type,
+        customerTags: [],
+        locations,
+      };
+    });
 
-        const locations = customer.street ? [{
-          id: customer.id,
-          name: 'Primary Location',
-          street: customer.street,
-          city: customer.city,
-          state: customer.state,
-          zip: customer.zip,
-          isPrimary: true,
-        }] : [];
-
-        return {
-          id: customer.id,
-          serviceTitanId: customer.id,
-          name: customer.name,
-          email: customerEmail,
-          phoneNumber: customerPhone,
-          type: customer.type,
-          customerTags: customer.customerTags || [],
-          locations,
-        };
-      })
-    );
-
-    console.log(`[Scheduler] Found ${customersWithContacts.length} customer(s) matching ${phone || email}`);
+    console.log(`[Scheduler] Found ${customersWithContacts.length} active customer(s) from XLSX matching ${phone || email}`);
 
     return NextResponse.json({
       success: true,
