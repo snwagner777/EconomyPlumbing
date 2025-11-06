@@ -333,19 +333,7 @@ export default function AIChatbot() {
       // Check if AI wants to open ServiceTitan scheduler
       if (data.openScheduler) {
         // Open the ServiceTitan scheduler
-        const schedulerOpened = await openScheduler();
-        
-        if (!schedulerOpened) {
-          // If scheduler didn't open, add a fallback message
-          const fallbackMessage: Message = {
-            id: `msg_${Date.now() + 1}`,
-            role: "assistant",
-            content: "I'm having trouble opening the scheduler right now. Please call us at " + phoneConfig.display + " to book your appointment, or you can try refreshing the page and clicking the 'Schedule Service' button.",
-            timestamp: Date.now()
-          };
-          setMessages([...newMessages, assistantMessage, fallbackMessage]);
-          return;
-        }
+        openScheduler();
       }
 
       setMessages([...newMessages, assistantMessage]);
