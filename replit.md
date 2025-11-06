@@ -3,6 +3,15 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
+## Recent Changes (November 6, 2025)
+- **Estimate Acceptance Workflow**: Added complete estimate approval system allowing customers to accept estimates through portal, with ServiceTitan API integration, admin/customer email notifications, and security validation
+- **Enhanced Estimate Filtering**: ServiceTitan estimates now exclude sold (soldOn not null), dismissed (dismissedOn not null), and old estimates (>30 days) with detailed logging
+- **Phone Number Configuration**: Replaced all hardcoded phone numbers with dynamic configuration from phoneConfig prop and environment variables
+- **Security Improvements**: Added estimate ownership validation to prevent unauthorized estimate acceptance by other customers
+- **Technician Rating System**: Complete 5-star rating interface for recent service appointments with flow into review requests or feedback collection
+- **Contact Management UI**: Full CRUD for customer contacts and location contacts with proper session-based authorization
+- **API Security Fixes**: Replaced JSON.parse cookie parsing with proper getIronSession pattern across all portal API routes
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -32,6 +41,17 @@ Preferred communication style: Simple, everyday language.
 - ServiceTitan V2 API requirement: customers MUST include `locations` array (every customer needs at least one location)
 - Force create flag: "Create New Customer" button creates new record even if phone/email matches existing customer
 - All data syncs to local database immediately (serviceTitanCustomers + serviceTitanContacts tables)
+
+**Estimate Acceptance Workflow**
+- Customer portal displays open estimates (unsold, not dismissed, created within last 30 days)
+- Automatic filtering excludes: sold estimates (soldOn not null), dismissed estimates (dismissedOn not null), estimates older than 30 days
+- "Accept Estimate" button in estimate detail modal launches confirmation dialog
+- Confirmation dialog shows estimate details, terms/conditions checkbox, and "What Happens Next" steps
+- Security: API validates estimate belongs to authenticated customer before allowing acceptance
+- On acceptance: marks estimate as sold in ServiceTitan via PATCH API, sends notification emails to admin and customer
+- Admin email includes estimate details, customer info, and direct link to ServiceTitan estimate
+- Customer email confirms acceptance and sets expectation for scheduling callback within 1 business day
+- Accepted estimates immediately removed from customer's open estimates list via cache invalidation
 
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
 - The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
