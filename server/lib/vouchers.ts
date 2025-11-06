@@ -277,7 +277,7 @@ export async function redeemVoucher(params: {
       const reward = await createVoucher({
         voucherType: 'referral_reward',
         customerName: referral.referrerName,
-        customerEmail: undefined,
+        customerEmail: referral.referrerEmail ?? undefined,
         customerPhone: referral.referrerPhone,
         customerId: voucher.referrerCustomerId,
         referralId: voucher.referralId ?? undefined,
@@ -296,6 +296,26 @@ export async function redeemVoucher(params: {
           updatedAt: new Date(),
         })
         .where(eq(referrals.id, voucher.referralId!));
+      
+      // Send reward email to referrer
+      if (referral.referrerEmail) {
+        try {
+          const { sendReferrerRewardEmail } = await import('./resendClient');
+          await sendReferrerRewardEmail({
+            referrerName: referral.referrerName,
+            referrerEmail: referral.referrerEmail,
+            refereeName: referral.refereeName,
+            voucherCode: reward.code,
+            voucherQRCode: reward.qrCode,
+            discountAmount: 2500, // $25
+            expiresAt: reward.expiresAt,
+          });
+          console.log('[Voucher] Referrer reward email sent successfully');
+        } catch (emailError) {
+          console.error('[Voucher] Failed to send referrer reward email:', emailError);
+          // Don't fail the redemption if email fails
+        }
+      }
     }
   }
   

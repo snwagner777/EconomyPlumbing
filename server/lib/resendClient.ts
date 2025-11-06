@@ -240,3 +240,109 @@ export async function sendRefereeWelcomeEmail(data: {
     throw error;
   }
 }
+
+export async function sendReferrerRewardEmail(data: {
+  referrerName: string;
+  referrerEmail: string;
+  refereeName: string;
+  voucherCode: string;
+  voucherQRCode: string; // base64 data URL
+  discountAmount: number; // in cents
+  expiresAt: Date;
+}) {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    
+    const expiryDate = data.expiresAt.toLocaleDateString('en-US', { 
+      dateStyle: 'full'
+    });
+    
+    const emailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9fafb;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #10b981; margin-top: 0;">🎉 Thank You for Your Referral!</h2>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              Hi ${data.referrerName},
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              Great news! ${data.refereeName} just used their referral voucher for their first service with Economy Plumbing Services.
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              As a thank you for spreading the word about our services, we've created your reward voucher!
+            </p>
+            
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 20px 0;">
+              <p style="margin: 8px 0;"><strong>Your Reward:</strong> <span style="color: #10b981; font-size: 20px; font-weight: bold;">$${(data.discountAmount / 100).toFixed(2)} OFF</span></p>
+              <p style="margin: 8px 0; font-size: 14px;">Use on your next service call of $200 or more</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">Your Reward QR Code</p>
+              <img src="${data.voucherQRCode}" alt="Reward Voucher QR Code" style="width: 250px; height: 250px; margin: 10px auto; display: block;" />
+              <p style="font-family: monospace; font-size: 16px; font-weight: bold; color: #10b981; margin-top: 10px;">${data.voucherCode}</p>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 8px 0; font-size: 14px; color: #0c4a6e;">
+                <strong>How to Use Your Reward:</strong>
+              </p>
+              <ol style="margin: 8px 0; padding-left: 20px; color: #0c4a6e;">
+                <li>Schedule your next service appointment</li>
+                <li>Show this QR code to your technician</li>
+                <li>Save $${(data.discountAmount / 100).toFixed(2)} on jobs of $200 or more!</li>
+              </ol>
+              <p style="margin: 8px 0; font-size: 12px; font-style: italic; color: #0c4a6e;">
+                Expires: ${expiryDate}
+              </p>
+            </div>
+            
+            <div style="background-color: #fef3c7; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px; color: #92400e;">
+                <strong>💡 Keep Earning Rewards!</strong><br/>
+                Refer more friends and family to earn additional vouchers. Every successful referral gets you $${(data.discountAmount / 100).toFixed(2)} off your next service!
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="tel:+15125551234" style="display: inline-block; background-color: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                Schedule Your Next Service
+              </a>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px;">
+              <p style="margin: 0; font-size: 12px; color: #6b7280; font-style: italic;">
+                <strong>Important:</strong> This voucher has no cash value and cannot be exchanged for cash. Voucher must be presented at time of service. One voucher per customer. Cannot be combined with other offers.
+              </p>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6; margin-top: 20px;">
+              Thank you for being a valued customer and for referring ${data.refereeName}!
+            </p>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              Economy Plumbing Services<br/>
+              Licensed & Insured • Family Owned • Serving Austin Since 1995
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: data.referrerEmail,
+      subject: `🎉 Your Referral Reward: $${(data.discountAmount / 100).toFixed(2)} OFF Your Next Service!`,
+      html: emailHtml,
+    });
+    
+    console.log(`[Resend] Referrer reward email sent to ${data.referrerEmail}`);
+    return result;
+  } catch (error) {
+    console.error('[Resend] Failed to send referrer reward email:', error);
+    throw error;
+  }
+}
