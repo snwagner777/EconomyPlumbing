@@ -176,13 +176,14 @@ export async function POST(req: NextRequest) {
           timeZone: 'America/Chicago',
         }));
         
-        // Check if this is one of the blocked windows: 10-2, 12-4, 1-5, or 2-6
+        // Check if this is one of the blocked windows: 10-2, 11-3, 12-4, 1-5, or 2-6
         const isBlockedWindow = 
           (startHourCT === 10 && endHourCT === 14) || // 10 AM - 2 PM
+          (startHourCT === 11 && endHourCT === 15) || // 11 AM - 3 PM
           (startHourCT === 12 && endHourCT === 16) || // 12 PM - 4 PM
           (startHourCT === 13 && endHourCT === 17) || // 1 PM - 5 PM
           (startHourCT === 14 && endHourCT === 18);   // 2 PM - 6 PM
-        // Note: 9 AM - 1 PM is allowed for Hill Country
+        // Note: 8-12 and 9-1 are allowed for Hill Country
         
         if (isBlockedWindow) {
           // Count existing Hill Country jobs on the same day
