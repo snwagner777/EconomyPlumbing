@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { portalVerifications, serviceTitanCustomers } from '@shared/schema';
+import { portalVerifications, customersXlsx } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
@@ -64,18 +64,18 @@ export async function POST(request: NextRequest) {
     
     console.log('[Portal Verify] Code verified, customer IDs:', verification.customerIds);
     
-    // Get customer details from database
+    // Get customer details from database (customers_xlsx)
     const customers = await db
       .select({
-        id: serviceTitanCustomers.id,
-        name: serviceTitanCustomers.name,
-        email: serviceTitanCustomers.email,
-        phone: serviceTitanCustomers.phone,
+        id: customersXlsx.id,
+        name: customersXlsx.name,
+        email: customersXlsx.email,
+        phone: customersXlsx.phone,
       })
-      .from(serviceTitanCustomers)
+      .from(customersXlsx)
       .where(
         // Find all matching customer IDs from verification
-        eq(serviceTitanCustomers.id, verification.customerIds[0])
+        eq(customersXlsx.id, verification.customerIds[0])
       );
     
     // Fetch additional customers if multiple IDs
@@ -83,13 +83,13 @@ export async function POST(request: NextRequest) {
       for (let i = 1; i < verification.customerIds.length; i++) {
         const [additionalCustomer] = await db
           .select({
-            id: serviceTitanCustomers.id,
-            name: serviceTitanCustomers.name,
-            email: serviceTitanCustomers.email,
-            phone: serviceTitanCustomers.phone,
+            id: customersXlsx.id,
+            name: customersXlsx.name,
+            email: customersXlsx.email,
+            phone: customersXlsx.phone,
           })
-          .from(serviceTitanCustomers)
-          .where(eq(serviceTitanCustomers.id, verification.customerIds[i]));
+          .from(customersXlsx)
+          .where(eq(customersXlsx.id, verification.customerIds[i]));
         
         if (additionalCustomer) {
           customers.push(additionalCustomer);

@@ -1,18 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { db } from '@/server/db';
-import { serviceTitanCustomers, serviceTitanContacts } from '@shared/schema';
+import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
-
-/**
- * Normalize contact value for database storage
- */
-function normalizeContact(value: string, type: 'phone' | 'email'): string {
-  if (type === 'phone') {
-    return value.replace(/\D/g, ''); // Digits only
-  }
-  return value.toLowerCase().trim(); // Lowercase for email
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -90,73 +80,35 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Scheduler] Customer ready in ServiceTitan: ${customer.id}`);
 
-    // Step 2: Sync to local database using upsert (don't wait for hourly sync)
-    console.log(`[Scheduler] Syncing customer ${customer.id} to local database immediately`);
+    // Step 2: Sync to local database (customers_xlsx) for immediate portal/scheduler access
+    console.log(`[Scheduler] Syncing customer ${customer.id} to customers_xlsx immediately`);
     
     // Upsert customer record (insert or update)
-    await db.insert(serviceTitanCustomers).values({
-      id: customer.id, // Integer ID from ServiceTitan
+    await db.insert(customersXlsx).values({
+      id: customer.id,
       name: customer.name,
       type: customer.type || 'Residential',
       street: address,
-      city: city,
-      state: state,
-      zip: zip,
+      city,
+      state,
+      zip,
+      phone,
+      email: email || null,
       active: true,
     }).onConflictDoUpdate({
-      target: serviceTitanCustomers.id,
+      target: customersXlsx.id,
       set: {
         name: customer.name,
         street: address,
-        city: city,
-        state: state,
-        zip: zip,
+        city,
+        state,
+        zip,
+        phone,
+        email: email || null,
       },
     });
 
-    // Upsert phone contact (check if exists, then insert or skip)
-    if (phone) {
-      const normalizedPhone = normalizeContact(phone, 'phone');
-      
-      // Check if contact already exists
-      const existingPhone = await db.select()
-        .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalizedPhone))
-        .limit(1);
-      
-      if (existingPhone.length === 0) {
-        // Only insert if doesn't exist
-        await db.insert(serviceTitanContacts).values({
-          customerId: customer.id,
-          contactType: 'Phone',
-          value: phone,
-          normalizedValue: normalizedPhone,
-        });
-      }
-    }
-
-    // Upsert email contact (check if exists, then insert or skip)
-    if (email) {
-      const normalizedEmail = normalizeContact(email, 'email');
-      
-      // Check if contact already exists
-      const existingEmail = await db.select()
-        .from(serviceTitanContacts)
-        .where(eq(serviceTitanContacts.normalizedValue, normalizedEmail))
-        .limit(1);
-      
-      if (existingEmail.length === 0) {
-        // Only insert if doesn't exist
-        await db.insert(serviceTitanContacts).values({
-          customerId: customer.id,
-          contactType: 'Email',
-          value: email,
-          normalizedValue: normalizedEmail,
-        });
-      }
-    }
-
-    console.log(`[Scheduler] ✅ Customer ${customer.id} synced to local database (serviceTitanCustomers + serviceTitanContacts)`);
+    console.log(`[Scheduler] ✅ Customer ${customer.id} synced to customers_xlsx (immediate access)`);
 
     return NextResponse.json({
       success: true,

@@ -4,13 +4,18 @@
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
 ## Recent Changes (November 6, 2025)
-- **Estimate Acceptance Workflow**: Added complete estimate approval system allowing customers to accept estimates through portal, with ServiceTitan API integration, admin/customer email notifications, and security validation
-- **Enhanced Estimate Filtering**: ServiceTitan estimates now exclude sold (soldOn not null), dismissed (dismissedOn not null), and old estimates (>30 days) with detailed logging
-- **Phone Number Configuration**: Replaced all hardcoded phone numbers with dynamic configuration from phoneConfig prop and environment variables
-- **Security Improvements**: Added estimate ownership validation to prevent unauthorized estimate acceptance by other customers
-- **Technician Rating System**: Complete 5-star rating interface for recent service appointments with flow into review requests or feedback collection
-- **Contact Management UI**: Full CRUD for customer contacts and location contacts with proper session-based authorization
-- **API Security Fixes**: Replaced JSON.parse cookie parsing with proper getIronSession pattern across all portal API routes
+- **Unified Customer Database**: Migrated ALL customer creation/lookup to `customers_xlsx` table (XLSX import source of truth)
+  - ✅ Chatbot, Contact Form, Scheduler, Portal Login now use unified `customers_xlsx` table
+  - ✅ ServiceTitan API creates write immediately to `customers_xlsx` for instant portal/scheduler access
+  - ✅ PostgreSQL phone search using `regexp_replace('[^0-9]', '', 'g')` for proper normalization
+  - ✅ All new customers created via API sync to `customers_xlsx` with ServiceTitan ID
+- **Smart Appointment Display**: "We'll be working nearby" only shows when efficiency score > 50 (keeps "Most Efficient" badge)
+- **Estimate Acceptance Workflow**: Complete estimate approval system with ServiceTitan API integration, admin/customer email notifications, security validation
+- **Enhanced Estimate Filtering**: Excludes sold (soldOn not null), dismissed (dismissedOn not null), and old estimates (>30 days)
+- **Phone Number Configuration**: Dynamic configuration from phoneConfig prop and environment variables
+- **Security Improvements**: Estimate ownership validation, proper iron-session across all portal API routes
+- **Technician Rating System**: 5-star rating interface with flow into review requests or feedback collection
+- **Contact Management UI**: Full CRUD for customer contacts and location contacts
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
