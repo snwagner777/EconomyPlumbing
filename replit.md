@@ -3,25 +3,6 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
 
-## Recent Changes (November 6, 2025)
-- **XLSX Import Verification**: Debugged and verified customer import process works correctly
-  - ✅ Added comprehensive logging to track data flow through import pipeline
-  - ✅ Confirmed phone numbers correctly flow from XLSX → parsing → batch insert → database
-  - ✅ Manual import successfully imported 13,021 customers with all contact data intact
-  - ✅ Documented `service_titan_contacts` table as deprecated (Oct 23 sync, never maintained)
-- **Unified Customer Database**: Migrated ALL customer creation/lookup to `customers_xlsx` table (XLSX import source of truth)
-  - ✅ Chatbot, Contact Form, Scheduler, Portal Login now use unified `customers_xlsx` table
-  - ✅ ServiceTitan API creates write immediately to `customers_xlsx` for instant portal/scheduler access
-  - ✅ PostgreSQL phone search using `regexp_replace('[^0-9]', '', 'g')` for proper normalization
-  - ✅ All new customers created via API sync to `customers_xlsx` with ServiceTitan ID
-- **Smart Appointment Display**: "We'll be working nearby" only shows when efficiency score > 50 (keeps "Most Efficient" badge)
-- **Estimate Acceptance Workflow**: Complete estimate approval system with ServiceTitan API integration, admin/customer email notifications, security validation
-- **Enhanced Estimate Filtering**: Excludes sold (soldOn not null), dismissed (dismissedOn not null), and old estimates (>30 days)
-- **Phone Number Configuration**: Dynamic configuration from phoneConfig prop and environment variables
-- **Security Improvements**: Estimate ownership validation, proper iron-session across all portal API routes
-- **Technician Rating System**: 5-star rating interface with flow into review requests or feedback collection
-- **Contact Management UI**: Full CRUD for customer contacts and location contacts
-
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -50,7 +31,7 @@ Preferred communication style: Simple, everyday language.
 - Creates customer immediately in ServiceTitan when wizard completes (atomic operation)
 - ServiceTitan V2 API requirement: customers MUST include `locations` array (every customer needs at least one location)
 - Force create flag: "Create New Customer" button creates new record even if phone/email matches existing customer
-- All data syncs to local database immediately (`customers_xlsx` table - single source of truth)
+- **Database Sync:** When creating customers via ServiceTitan API, immediately write to `customers_xlsx` database with the new customer ID that ServiceTitan returns - this enables instant portal/scheduler access without waiting for the next hourly XLSX import
 
 **Estimate Acceptance Workflow**
 - Customer portal displays open estimates (unsold, not dismissed, created within last 30 days)
@@ -156,8 +137,14 @@ export default function NewServicePage() {
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
-- **ServiceTitan Integration:** XLSX-based customer data management for customer portal and marketing, replacing API-based sync. The `customers_xlsx` table (populated by hourly Mailgun XLSX imports) is the single source of truth for all customer data. Also features a custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
+- **ServiceTitan Integration:** 
+  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS.
+    - **Primary Data Source:** Hourly Mailgun XLSX imports (ServiceTitan export) populate the database with ~13,000 customers
+    - **Bi-Directional Sync:** When creating customers via ServiceTitan API (scheduler, contact forms, portal signup), immediately write to `customers_xlsx` database with the new customer ID that ServiceTitan returns. This ensures instant portal/scheduler access without waiting for next XLSX sync.
+    - **What's Stored:** Customer ID (ServiceTitan), name, type (Residential/Commercial), phone(s), email(s), active status
+    - **What's NOT Stored:** Full address data is fetched fresh from ServiceTitan API when customers schedule or access portal
   - **DEPRECATED TABLE:** `service_titan_contacts` - Old API sync from October 23, 2025. Never updated, never maintained. NEVER reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
+  - **API Services:** Custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
