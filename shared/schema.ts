@@ -1864,6 +1864,10 @@ export const jobCompletions = pgTable("job_completions", {
   invoiceTotal: integer("invoice_total"), // In cents
   jobNotes: text("job_notes"),
   
+  // Technician rating (1-5 stars, submitted by customer)
+  technicianRating: integer("technician_rating"), // null = not yet rated, 1-5 = customer rating
+  ratedAt: timestamp("rated_at"), // When customer submitted rating
+  
   // Marketing flags
   marketingOptedOut: boolean("marketing_opted_out").notNull().default(false),
   isQuoteOnly: boolean("is_quote_only").notNull().default(false), // $0 jobs - quotes/estimates without completed work
