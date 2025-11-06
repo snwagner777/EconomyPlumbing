@@ -117,10 +117,10 @@ export default function SMSOptInWidget({
             data-testid="checkbox-terms-minimal"
           />
           <Label htmlFor="terms-minimal" className="text-xs text-muted-foreground cursor-pointer">
-            I agree to receive promotional messages via autodialer. Not required for purchase. I agree to{" "}
-            <a href="/terms-of-service" className="underline">Terms</a> &{" "}
-            <a href="/privacy-policy" className="underline">Privacy</a>. 
-            4 Msgs/Month. Msg & Data Rates apply. Text STOP to opt out.
+            I agree to receive promotional messages sent via an autodialer, and this agreement isn't a condition of any purchase. I also agree to the{" "}
+            <a href="/terms-of-service" className="underline">Terms of Service</a> and{" "}
+            <a href="/privacy-policy" className="underline">Privacy Policy</a>. 
+            4 Msgs/Month. Msg & Data Rates may apply. Text STOP to opt out anytime. Text Help for more information.
           </Label>
         </div>
       </form>

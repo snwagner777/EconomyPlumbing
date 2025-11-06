@@ -167,7 +167,11 @@ export class SMSService {
 
   /**
    * Send marketing campaign SMS
-   * TEMPORARILY SIMPLIFIED
+   * DISABLED - Marketing SMS requires explicit opt-in verification
+   * 
+   * As of Nov 6, 2025: Marketing messages can ONLY be sent to users who have explicitly
+   * checked the A2P consent checkbox. This method is disabled until proper opt-in checking
+   * is implemented in the rebuilt marketing system.
    */
   async sendCampaignMessage(
     phoneNumber: string,
@@ -177,16 +181,12 @@ export class SMSService {
     customerId?: number,
     customerName?: string
   ): Promise<SMSSendResult> {
-    return this.sendSMS({
-      phoneNumber,
-      messageBody,
-      messageType: 'marketing',
-      customerId,
-      customerName,
-      campaignId,
-      messageId,
-      checkOptIn: false // Temporarily disabled
-    });
+    // DISABLED: Cannot send marketing SMS without verifying opt-in consent
+    console.error('[SMSService] Marketing SMS is disabled - opt-in verification required');
+    return {
+      success: false,
+      error: 'Marketing SMS requires explicit opt-in consent verification. This feature is disabled until proper consent checking is implemented.'
+    };
   }
 
   /**
