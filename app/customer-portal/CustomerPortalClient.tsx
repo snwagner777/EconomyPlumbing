@@ -3055,26 +3055,40 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       <Footer />
       
       {/* Schedule Appointment Dialog */}
-      {customerData && (
-        <SchedulerDialog
-          open={schedulerOpen}
-          onOpenChange={setSchedulerOpen}
-          customerInfo={{
-            firstName: customerData.customer.name.split(' ')[0] || '',
-            lastName: customerData.customer.name.split(' ').slice(1).join(' ') || '',
-            email: customerData.customer.email || '',
-            phone: customerData.customer.phoneNumber || '',
-            address: customerLocations[0]?.address?.street || customerData.customer.address?.street || '',
-            city: customerLocations[0]?.address?.city || customerData.customer.address?.city || '',
-            state: customerLocations[0]?.address?.state || customerData.customer.address?.state || '',
-            zip: customerLocations[0]?.address?.zip || customerData.customer.address?.zip || '',
-            serviceTitanId: customerData.customer.id,
-            customerTags: customerData.customer.customerTags || [],
-            locationId: customerLocations[0]?.id,
-          }}
-          utmSource="customer-portal"
-        />
-      )}
+      {customerData && (() => {
+        // Debug: Log all locations to console
+        console.log('[Portal Debug] All customer locations:', customerLocations);
+        
+        // Find the service location (not billing address)
+        // Prefer locations that have been used for previous jobs
+        // If multiple locations, prefer the one that's NOT in Hill Country (78654)
+        const serviceLocation = customerLocations.length > 1
+          ? customerLocations.find(loc => loc.address?.zip !== '78654') || customerLocations[0]
+          : customerLocations[0];
+          
+        console.log('[Portal Debug] Selected service location:', serviceLocation);
+        
+        return (
+          <SchedulerDialog
+            open={schedulerOpen}
+            onOpenChange={setSchedulerOpen}
+            customerInfo={{
+              firstName: customerData.customer.name.split(' ')[0] || '',
+              lastName: customerData.customer.name.split(' ').slice(1).join(' ') || '',
+              email: customerData.customer.email || '',
+              phone: customerData.customer.phoneNumber || '',
+              address: serviceLocation?.address?.street || customerData.customer.address?.street || '',
+              city: serviceLocation?.address?.city || customerData.customer.address?.city || '',
+              state: serviceLocation?.address?.state || customerData.customer.address?.state || '',
+              zip: serviceLocation?.address?.zip || customerData.customer.address?.zip || '',
+              serviceTitanId: customerData.customer.id,
+              customerTags: customerData.customer.customerTags || [],
+              locationId: serviceLocation?.id,
+            }}
+            utmSource="customer-portal"
+          />
+        );
+      })()}
       
       {/* Referral Modal */}
       {customerData && referralLinkData && (
