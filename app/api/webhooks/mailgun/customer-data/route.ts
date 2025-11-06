@@ -124,54 +124,43 @@ export async function POST(req: NextRequest) {
 
     console.log('[Mailgun] Found', rows.length, 'rows in XLSX');
 
-    // Import customer data
-    let importedCount = 0;
-    let updatedCount = 0;
+    // Parse and validate all rows first (before any database operations)
+    const customersToImport: any[] = [];
     let skippedCount = 0;
 
     for (const row of rows as any[]) {
-      try {
-        // Map XLSX columns to database fields
-        const customerData = {
-          serviceTitanCustomerId: row['Customer ID']?.toString() || null,
-          customerName: row['Customer Name'] || null,
-          phone: row['Phone']?.toString() || null,
-          email: row['Email'] || null,
-          address: row['Address'] || null,
-          city: row['City'] || null,
-          state: row['State'] || null,
-          zip: row['ZIP']?.toString() || null,
-          customerType: row['Customer Type'] || 'residential',
-          // Add other fields as needed
-        };
+      // Map XLSX columns to database fields
+      const customerData = {
+        serviceTitanCustomerId: row['Customer ID']?.toString() || null,
+        customerName: row['Customer Name'] || null,
+        phone: row['Phone']?.toString() || null,
+        email: row['Email'] || null,
+        address: row['Address'] || null,
+        city: row['City'] || null,
+        state: row['State'] || null,
+        zip: row['ZIP']?.toString() || null,
+        customerType: row['Customer Type'] || 'residential',
+        active: row['Active'] !== false && row['Active'] !== 'false' && row['Active'] !== 'FALSE' && row['Active'] !== 'False', // Default true unless explicitly false
+        // Add other fields as needed
+      };
 
-        // Skip rows without essential data
-        if (!customerData.phone && !customerData.email) {
-          skippedCount++;
-          continue;
-        }
-
-        // Upsert customer (create or update)
-        const existing = customerData.serviceTitanCustomerId
-          ? await storage.getCustomerByServiceTitanId(customerData.serviceTitanCustomerId)
-          : null;
-
-        if (existing) {
-          await storage.updateCustomerXlsx(existing.id, customerData);
-          updatedCount++;
-        } else {
-          await storage.createCustomerXlsx(customerData);
-          importedCount++;
-        }
-      } catch (error) {
-        console.error('[Mailgun] Error processing row:', error);
+      // Skip rows without essential data
+      if (!customerData.phone && !customerData.email) {
         skippedCount++;
+        continue;
       }
+
+      customersToImport.push(customerData);
     }
 
-    console.log('[Mailgun] Import complete:', {
+    console.log('[Mailgun] Parsed', customersToImport.length, 'valid customers, skipped', skippedCount);
+
+    // FULL REPLACE with transaction safety: All-or-nothing import
+    console.log('[Mailgun] Starting transactional full replace import...');
+    const importedCount = await storage.replaceAllCustomersXlsx(customersToImport);
+
+    console.log('[Mailgun] Full replace import complete:', {
       imported: importedCount,
-      updated: updatedCount,
       skipped: skippedCount,
       total: rows.length,
     });
@@ -179,7 +168,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       imported: importedCount,
-      updated: updatedCount,
       skipped: skippedCount,
       total: rows.length,
     });

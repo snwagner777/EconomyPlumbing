@@ -276,6 +276,8 @@ export interface IStorage {
   incrementCampaignEngagement(campaignId: string, campaignType: string, metric: 'opened' | 'clicked'): Promise<void>;
   
   // Customer XLSX (Mailgun XLSX imports)
+  clearCustomerXlsxData(): Promise<void>;
+  replaceAllCustomersXlsx(customers: any[]): Promise<number>;
   getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined>;
   createCustomerXlsx(data: any): Promise<any>;
   updateCustomerXlsx(id: number, updates: any): Promise<any>;
@@ -2499,6 +2501,13 @@ Call (512) 368-9159 or schedule service online.`,
   async incrementCampaignEngagement(campaignId: string, campaignType: string, metric: 'opened' | 'clicked'): Promise<void> {}
   
   // Customer XLSX
+  async clearCustomerXlsxData(): Promise<void> {
+    // MemStorage no-op
+  }
+  async replaceAllCustomersXlsx(customers: any[]): Promise<number> {
+    // MemStorage no-op
+    return customers.length;
+  }
   async getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined> {
     return undefined;
   }
@@ -3644,6 +3653,31 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Customer XLSX (Mailgun XLSX imports)
+  async clearCustomerXlsxData(): Promise<void> {
+    // Full replace: delete all existing customer and contact data
+    await db.delete(contactsXlsx);
+    await db.delete(customersXlsx);
+  }
+
+  async replaceAllCustomersXlsx(customers: any[]): Promise<number> {
+    // Atomic transaction: delete all existing data and insert new data
+    // If any step fails, the entire operation rolls back
+    return await db.transaction(async (tx) => {
+      // Step 1: Delete all existing customer and contact data
+      await tx.delete(contactsXlsx);
+      await tx.delete(customersXlsx);
+
+      // Step 2: Insert all new customer data
+      let importedCount = 0;
+      for (const customer of customers) {
+        await tx.insert(customersXlsx).values(customer);
+        importedCount++;
+      }
+
+      return importedCount;
+    });
+  }
+
   async getCustomerByServiceTitanId(serviceTitanId: number): Promise<any | undefined> {
     const [result] = await db
       .select()

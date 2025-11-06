@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { contactsXlsx, phoneLoginLookups } from '@shared/schema';
+import { contactsXlsx, customersXlsx, phoneLoginLookups } from '@shared/schema';
 import { and, eq, or, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
@@ -25,15 +25,26 @@ export async function POST(req: NextRequest) {
     console.log("[Portal Phone Auth] Normalized phone:", normalizedPhone);
 
     // Search for phone in contacts_xlsx (handles comma-separated values)
+    // FILTER OUT INACTIVE CUSTOMERS - only allow login for active customers
     console.log("[Portal Phone Auth] Querying database for phone:", normalizedPhone);
     
     // Search using LIKE for comma-separated values and exact match
+    // Join with customersXlsx to filter by active status
     const contacts = await db
-      .select()
+      .select({
+        id: contactsXlsx.id,
+        customerId: contactsXlsx.customerId,
+        contactType: contactsXlsx.contactType,
+        value: contactsXlsx.value,
+        normalizedValue: contactsXlsx.normalizedValue,
+        isPrimary: contactsXlsx.isPrimary,
+      })
       .from(contactsXlsx)
+      .innerJoin(customersXlsx, eq(contactsXlsx.customerId, customersXlsx.id))
       .where(
         and(
           eq(contactsXlsx.contactType, 'Phone'),
+          eq(customersXlsx.active, true), // Only active customers
           or(
             sql`${contactsXlsx.normalizedValue} = ${normalizedPhone}`,
             sql`${contactsXlsx.normalizedValue} LIKE ${'%,' + normalizedPhone + ',%'}`,
