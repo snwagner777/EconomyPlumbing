@@ -510,8 +510,24 @@ function generateAvailableSlots(
   const currentDate = new Date(startDate);
   
   while (currentDate <= endDate) {
-    // No artificial weekend filtering - show actual available times from ServiceTitan
-    // If appointments are available on weekends, customers should see them
+    // Check day of week in Central Time
+    const dayOfWeek = parseInt(currentDate.toLocaleDateString('en-US', { 
+      weekday: 'numeric',
+      timeZone: 'America/Chicago'
+    }));
+    
+    // Skip weekends (Sunday=0, Saturday=6) UNLESS there are already appointments scheduled that day
+    const dateStr = format(currentDate, 'yyyy-MM-dd');
+    const hasAppointmentsThisDay = bookedAppointments.some(apt => {
+      const aptDate = format(new Date(apt.start), 'yyyy-MM-dd');
+      return aptDate === dateStr;
+    });
+    
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    if (isWeekend && !hasAppointmentsThisDay) {
+      currentDate.setDate(currentDate.getDate() + 1);
+      continue;
+    }
     
     // Generate slots for each arrival window
     arrivalWindows.forEach(window => {

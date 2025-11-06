@@ -47,8 +47,8 @@ export default function StoreClient({ phoneConfig }: StoreClientProps) {
         strategy="afterInteractive"
         onLoad={initializeEcwid}
         onError={(e) => {
-          console.error('[Ecwid] Failed to load script:', e);
-          console.error('[Ecwid] Error details:', JSON.stringify(e, null, 2));
+          console.error('[Ecwid] Failed to load script');
+          console.error('[Ecwid] Error type:', e?.type || 'unknown');
         }}
         onReady={() => {
           console.log('[Ecwid] Script ready');

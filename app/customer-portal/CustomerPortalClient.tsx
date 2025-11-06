@@ -326,17 +326,17 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const customerLocations = locationsData?.locations || [];
 
   // Separate upcoming and completed appointments
-  const upcomingAppointments = customerData?.appointments.filter(apt => {
+  const upcomingAppointments = (customerData?.appointments || []).filter(apt => {
     const isUpcoming = new Date(apt.start) > new Date();
     const isNotCompleted = !['Done', 'Completed', 'Cancelled'].includes(apt.status);
     return isUpcoming && isNotCompleted;
-  }) || [];
+  });
 
-  const completedAppointments = customerData?.appointments.filter(apt => {
+  const completedAppointments = (customerData?.appointments || []).filter(apt => {
     const isPast = new Date(apt.start) <= new Date();
     const isCompleted = ['Done', 'Completed', 'Cancelled'].includes(apt.status);
     return isPast || isCompleted;
-  }) || [];
+  });
 
   // Check for magic link token OR server session on page load
   useEffect(() => {
@@ -2240,7 +2240,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   {/* Savings Calculator - Show value to members and missed savings to non-members */}
                   {(() => {
                     // Calculate total from paid invoices
-                    const paidInvoices = customerData.invoices.filter(inv => 
+                    const paidInvoices = (customerData?.invoices || []).filter(inv => 
                       inv.status.toLowerCase().includes('paid') || inv.status.toLowerCase().includes('complete')
                     );
                     const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.total, 0);
@@ -2548,7 +2548,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   {/* Open Estimates - Backend already filters for unsold estimates */}
                   {(() => {
                     // Backend now filters for unsold estimates (where soldOn is null)
-                    const openEstimates = customerData.estimates || [];
+                    const openEstimates = customerData?.estimates || [];
 
                     if (openEstimates.length === 0) return null;
 
@@ -2708,13 +2708,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      {customerData.invoices.length === 0 ? (
+                      {(customerData?.invoices || []).length === 0 ? (
                         <p className="text-center py-8 text-muted-foreground" data-testid="text-no-invoices">
                           No invoices found
                         </p>
                       ) : (
                         <div className="space-y-4">
-                          {customerData.invoices.map((invoice) => (
+                          {(customerData?.invoices || []).map((invoice) => (
                             <div
                               key={invoice.id}
                               className="flex items-start gap-4 p-4 border rounded-lg"
