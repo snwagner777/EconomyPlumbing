@@ -1545,6 +1545,38 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Mark an estimate as sold (accepted by customer)
+   */
+  async markEstimateAsSold(estimateId: number, soldDate: string): Promise<any> {
+    try {
+      // ServiceTitan Estimates API v2 - PATCH to update soldOn field
+      const updateUrl = `https://api.servicetitan.io/sales/v2/tenant/${this.config.tenantId}/estimates/${estimateId}`;
+      
+      const updatePayload = {
+        soldOn: soldDate,
+      };
+
+      const result = await this.request<any>(
+        updateUrl,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(updatePayload),
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+        true
+      );
+
+      console.log(`[ServiceTitan] Estimate ${estimateId} marked as sold on ${soldDate}`);
+      return result;
+    } catch (error) {
+      console.error('[ServiceTitan] Mark estimate as sold error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Get pricebook service details by ID
    */
   async getPricebookService(serviceId: number): Promise<any> {

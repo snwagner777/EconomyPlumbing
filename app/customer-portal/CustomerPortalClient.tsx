@@ -244,6 +244,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [estimateDetailOpen, setEstimateDetailOpen] = useState(false);
   const [selectedEstimate, setSelectedEstimate] = useState<ServiceTitanEstimate | null>(null);
   
+  // Estimate acceptance state
+  const [showAcceptanceDialog, setShowAcceptanceDialog] = useState(false);
+  const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false);
+  const [acceptanceTermsAgreed, setAcceptanceTermsAgreed] = useState(false);
+  
   // Add location state
   const [addLocationOpen, setAddLocationOpen] = useState(false);
   const [newLocationData, setNewLocationData] = useState({
@@ -3434,31 +3439,182 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex flex-col gap-3 pt-4 border-t">
+                <Button
+                  size="lg"
+                  className="w-full"
+                  onClick={() => {
+                    setShowAcceptanceDialog(true);
+                  }}
+                  data-testid="button-accept-estimate"
+                >
+                  <CheckCircle className="w-5 h-5 mr-2" />
+                  Accept This Estimate
+                </Button>
+                <div className="flex gap-3">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => setEstimateDetailOpen(false)}
+                    data-testid="button-close-estimate-detail"
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => {
+                      handleRequestPDF('estimate', selectedEstimate.estimateNumber, selectedEstimate.id, {
+                        customerId: customerData!.customer.id,
+                        customerName: customerData!.customer.name,
+                        customerEmail: customerData!.customer.email
+                      });
+                      setEstimateDetailOpen(false);
+                    }}
+                    data-testid="button-request-estimate-pdf-modal"
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Request PDF
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Estimate Acceptance Confirmation Dialog */}
+      <Dialog open={showAcceptanceDialog} onOpenChange={setShowAcceptanceDialog}>
+        <DialogContent className="max-w-lg" data-testid="dialog-accept-estimate-confirmation">
+          <DialogHeader>
+            <DialogTitle>Accept This Estimate?</DialogTitle>
+            <DialogDescription>
+              Please review the estimate details and terms before accepting
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedEstimate && (
+            <div className="space-y-4">
+              <div className="p-4 bg-muted/30 rounded-lg border">
+                <h3 className="font-semibold mb-2">Estimate #{selectedEstimate.estimateNumber}</h3>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Total Amount:</span>
+                    <span className="font-semibold text-primary text-lg">{formatCurrency(selectedEstimate.total)}</span>
+                  </div>
+                  {selectedEstimate.summary && (
+                    <p className="text-muted-foreground mt-2">{selectedEstimate.summary}</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-3 text-sm">
+                <div className="p-3 bg-muted/20 rounded-lg border">
+                  <h4 className="font-semibold mb-2">What Happens Next:</h4>
+                  <ul className="space-y-1.5 text-muted-foreground">
+                    <li className="flex gap-2">
+                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <span>Our scheduling team will contact you within 1 business day</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <span>We'll find a convenient time for the service</span>
+                    </li>
+                    <li className="flex gap-2">
+                      <CheckCircle className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
+                      <span>You'll receive a confirmation with appointment details</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="flex items-start gap-2 p-3 border rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="accept-terms"
+                    checked={acceptanceTermsAgreed}
+                    onChange={(e) => setAcceptanceTermsAgreed(e.target.checked)}
+                    className="mt-1"
+                    data-testid="checkbox-accept-terms"
+                  />
+                  <label htmlFor="accept-terms" className="text-sm cursor-pointer">
+                    I understand that by accepting this estimate, I am agreeing to have Economy Plumbing Services 
+                    perform the work described above at the quoted price. This is not a binding contract for scheduling, 
+                    but confirms my intent to proceed with the service.
+                  </label>
+                </div>
+              </div>
+
+              <DialogFooter className="flex gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
-                  onClick={() => setEstimateDetailOpen(false)}
-                  data-testid="button-close-estimate-detail"
+                  onClick={() => {
+                    setShowAcceptanceDialog(false);
+                    setAcceptanceTermsAgreed(false);
+                  }}
+                  disabled={isAcceptingEstimate}
+                  data-testid="button-cancel-acceptance"
                 >
-                  Close
+                  Cancel
                 </Button>
                 <Button
-                  className="flex-1"
-                  onClick={() => {
-                    handleRequestPDF('estimate', selectedEstimate.estimateNumber, selectedEstimate.id, {
-                      customerId: customerData!.customer.id,
-                      customerName: customerData!.customer.name,
-                      customerEmail: customerData!.customer.email
-                    });
-                    setEstimateDetailOpen(false);
+                  onClick={async () => {
+                    if (!acceptanceTermsAgreed) {
+                      toast({
+                        title: 'Please agree to terms',
+                        description: 'You must agree to the terms before accepting the estimate',
+                        variant: 'destructive',
+                      });
+                      return;
+                    }
+
+                    setIsAcceptingEstimate(true);
+                    try {
+                      const response = await fetch('/api/portal/accept-estimate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          estimateId: selectedEstimate.id,
+                          estimateNumber: selectedEstimate.estimateNumber,
+                        }),
+                      });
+
+                      const data = await response.json();
+
+                      if (!response.ok) {
+                        throw new Error(data.error || 'Failed to accept estimate');
+                      }
+
+                      toast({
+                        title: 'Estimate Accepted!',
+                        description: data.message || 'Our team will contact you soon to schedule the work.',
+                      });
+
+                      setShowAcceptanceDialog(false);
+                      setEstimateDetailOpen(false);
+                      setAcceptanceTermsAgreed(false);
+
+                      // Refresh customer data to remove accepted estimate from list
+                      await queryClient.invalidateQueries({ 
+                        queryKey: ['/api/servicetitan/customer', customerId] 
+                      });
+
+                    } catch (error: any) {
+                      console.error('Estimate acceptance error:', error);
+                      toast({
+                        title: 'Error',
+                        description: error.message || 'Failed to accept estimate. Please try again.',
+                        variant: 'destructive',
+                      });
+                    } finally {
+                      setIsAcceptingEstimate(false);
+                    }
                   }}
-                  data-testid="button-request-estimate-pdf-modal"
+                  disabled={!acceptanceTermsAgreed || isAcceptingEstimate}
+                  data-testid="button-confirm-acceptance"
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Request PDF Copy
+                  {isAcceptingEstimate ? 'Accepting...' : 'Accept Estimate'}
                 </Button>
-              </div>
+              </DialogFooter>
             </div>
           )}
         </DialogContent>
