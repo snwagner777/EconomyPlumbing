@@ -18,17 +18,20 @@ interface StoreClientProps {
 export default function StoreClient({ phoneConfig }: StoreClientProps) {
   useEffect(() => {
     const script = document.createElement('script');
-    script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data_platform=code`;
+    script.src = `https://app.ecwid.com/script.js?${ECWID_STORE_ID}&data_platform=code&data_date=2025-11-05`;
     script.type = 'text/javascript';
     script.setAttribute('charset', 'utf-8');
     script.setAttribute('data-cfasync', 'false');
     
     script.onload = () => {
-      if (window.Ecwid) {
-        window.Ecwid.init();
-      }
       if (window.xProductBrowser) {
-        window.xProductBrowser(`id=my-store-${ECWID_STORE_ID}`);
+        window.xProductBrowser(
+          "categoriesPerRow=3",
+          "views=grid(20,3) list(60) table(60)",
+          "categoryView=grid",
+          "searchView=list",
+          `id=my-store-${ECWID_STORE_ID}`
+        );
       }
     };
     
