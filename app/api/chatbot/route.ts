@@ -50,23 +50,32 @@ Common DIY tips (always emphasize safety):
 - Low water pressure: Check aerators for buildup
 - Frozen pipes: Never use open flame, use hair dryer or space heater
 
-Appointment Booking (Conversational):
-- When a customer wants to schedule, have a natural conversation to gather: ZIP code, service type, name, phone, and address
-- Ask one question at a time - don't overwhelm them with a form
-- Once you have their ZIP code, call check_appointment_availability to show available times
-- Present the top 3-5 most efficient appointment times in a friendly way
-- After they choose a time slot, confirm their details and call book_appointment
-- Always provide the confirmation number after booking
+Customer Creation (REQUIRED FIRST):
+- Before discussing appointment scheduling, you MUST create the customer in our system
+- Start by asking for their phone number to check if they're an existing customer
+- Call lookup_customer with their phone number or email
+- If they exist: Welcome them back by name and proceed to scheduling
+- If they're new: Collect their information one question at a time (name, email, full address with city/state/ZIP)
+- Once you have complete info, call create_customer to create them in ServiceTitan
+- Only AFTER the customer is created should you discuss appointment scheduling
 
-Example booking flow:
+Example customer creation flow:
 1. Customer: "I need to schedule a drain cleaning"
-2. You: "I'd be happy to help you schedule! What's your ZIP code?"
-3. Customer: "78701"
-4. You: [Call check_appointment_availability] "Great! I have several times available. Our most fuel-efficient slots are: [list top 3 times]. Which works best for you?"
-5. Customer: "The Monday 9am slot"
-6. You: "Perfect! Can I get your full name?"
-7. [Continue gathering info: phone, address]
-8. You: [Call book_appointment] "All set! Your appointment is confirmed for Monday at 9am. Your confirmation number is #12345"
+2. You: "I'd be happy to help! First, what's the best phone number to reach you?"
+3. Customer: "512-555-0123"
+4. You: [Call lookup_customer] Either:
+   - "Welcome back, John! I see we've helped you before." OR
+   - "Great! I don't see you in our system yet. What's your full name?"
+5. [If new, continue gathering: email, street address, city, state, ZIP]
+6. You: [Call create_customer] "Perfect! I've got you set up in our system."
+7. [NOW proceed to scheduling]
+
+Appointment Booking (ONLY AFTER CUSTOMER CREATED):
+- Once customer is created, ask for their ZIP code if you don't have it
+- Call check_appointment_availability to show available times
+- Present the top 3-5 most efficient appointment times in a friendly way
+- After they choose a time slot, call book_appointment
+- Always provide the confirmation number after booking
 
 Cancel & Reschedule Appointments:
 - When a customer wants to cancel or reschedule, let them know they can do this easily through our customer portal
@@ -167,8 +176,70 @@ export async function POST(req: NextRequest) {
       {
         type: 'function',
         function: {
+          name: 'lookup_customer',
+          description: 'Lookup an existing customer by phone number or email. ALWAYS call this first before creating a new customer or scheduling appointments.',
+          parameters: {
+            type: 'object',
+            properties: {
+              phone: {
+                type: 'string',
+                description: 'Customer phone number (10 digits)',
+              },
+              email: {
+                type: 'string',
+                description: 'Customer email address',
+              },
+            },
+            required: [],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
+          name: 'create_customer',
+          description: 'Create a new customer in ServiceTitan and local database. Only call this after verifying they are not an existing customer via lookup_customer.',
+          parameters: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+                description: 'Customer full name',
+              },
+              phone: {
+                type: 'string',
+                description: 'Customer phone number',
+              },
+              email: {
+                type: 'string',
+                description: 'Customer email address (optional)',
+              },
+              address: {
+                type: 'string',
+                description: 'Street address',
+              },
+              city: {
+                type: 'string',
+                description: 'City name',
+              },
+              state: {
+                type: 'string',
+                description: 'State (2-letter code, e.g., TX)',
+              },
+              zip: {
+                type: 'string',
+                description: '5-digit ZIP code',
+              },
+            },
+            required: ['name', 'phone', 'address', 'city', 'state', 'zip'],
+          },
+        },
+      },
+      {
+        type: 'function',
+        function: {
           name: 'check_appointment_availability',
-          description: 'Check available appointment times for a customer based on their ZIP code and service type. Use this when the customer wants to know available times or is ready to schedule.',
+          description: 'Check available appointment times for a customer based on their ZIP code and service type. Only use AFTER customer has been created or looked up.',
           parameters: {
             type: 'object',
             properties: {
@@ -190,7 +261,7 @@ export async function POST(req: NextRequest) {
         type: 'function',
         function: {
           name: 'book_appointment',
-          description: 'Book an appointment for a customer. Only call this after confirming the time slot with the customer.',
+          description: 'Book an appointment for a customer. Only call this after confirming the time slot with the customer AND after customer is created/looked up.',
           parameters: {
             type: 'object',
             properties: {
@@ -221,6 +292,10 @@ export async function POST(req: NextRequest) {
               serviceType: {
                 type: 'string',
                 description: 'Type of service needed',
+              },
+              serviceTitanId: {
+                type: 'number',
+                description: 'ServiceTitan customer ID from lookup_customer or create_customer',
               },
             },
             required: ['customerName', 'customerPhone', 'customerZip', 'slotId'],
@@ -256,7 +331,11 @@ export async function POST(req: NextRequest) {
       
       let functionResult: any;
       
-      if (functionName === 'check_appointment_availability') {
+      if (functionName === 'lookup_customer') {
+        functionResult = await lookupCustomer(functionArgs);
+      } else if (functionName === 'create_customer') {
+        functionResult = await createCustomer(functionArgs);
+      } else if (functionName === 'check_appointment_availability') {
         functionResult = await checkAppointmentAvailability(functionArgs);
       } else if (functionName === 'book_appointment') {
         functionResult = await bookAppointment(functionArgs);
@@ -481,6 +560,224 @@ async function bookAppointment(args: {
     return {
       success: false,
       message: 'Unable to complete booking. Please call us to finish scheduling your appointment.',
+    };
+  }
+}
+
+/**
+ * Lookup an existing customer in local database
+ */
+async function lookupCustomer(args: { phone?: string; email?: string }) {
+  try {
+    const { phone, email } = args;
+    
+    if (!phone && !email) {
+      return {
+        success: false,
+        message: 'Phone number or email required for lookup',
+      };
+    }
+
+    // Import locally to avoid circular dependencies
+    const { serviceTitanContacts, serviceTitanCustomers } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    // Normalize contact value
+    const normalizeContact = (value: string, type: 'phone' | 'email'): string => {
+      if (type === 'phone') {
+        return value.replace(/\D/g, ''); // Digits only
+      }
+      return value.toLowerCase().trim(); // Lowercase for email
+    };
+
+    // Search in serviceTitanContacts table
+    const searchValue = phone 
+      ? normalizeContact(phone, 'phone')
+      : normalizeContact(email!, 'email');
+    
+    const [contact] = await db.select()
+      .from(serviceTitanContacts)
+      .where(eq(serviceTitanContacts.normalizedValue, searchValue))
+      .limit(1);
+
+    if (!contact) {
+      return {
+        success: false,
+        found: false,
+        message: 'Customer not found in our system',
+      };
+    }
+
+    // Fetch full customer details
+    const [customer] = await db.select()
+      .from(serviceTitanCustomers)
+      .where(eq(serviceTitanCustomers.id, contact.customerId))
+      .limit(1);
+
+    if (!customer) {
+      return {
+        success: false,
+        found: false,
+        message: 'Customer record not found',
+      };
+    }
+
+    return {
+      success: true,
+      found: true,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        phone: contact.value,
+        address: {
+          street: customer.street,
+          city: customer.city,
+          state: customer.state,
+          zip: customer.zip,
+        },
+      },
+      message: `Found existing customer: ${customer.name}`,
+    };
+  } catch (error: any) {
+    console.error('[Chatbot] Error looking up customer:', error);
+    return {
+      success: false,
+      found: false,
+      message: 'Error looking up customer',
+    };
+  }
+}
+
+/**
+ * Create a new customer in ServiceTitan and local database
+ */
+async function createCustomer(args: {
+  name: string;
+  phone: string;
+  email?: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+}) {
+  try {
+    const { name, phone, email, address, city, state, zip } = args;
+    
+    // Import ServiceTitan CRM
+    const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
+    const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
+    const { eq } = await import('drizzle-orm');
+    
+    console.log(`[Chatbot] Creating customer in ServiceTitan: ${name}`);
+    
+    // Create customer in ServiceTitan
+    const customer = await serviceTitanCRM.ensureCustomer({
+      name,
+      phone,
+      email: email || undefined,
+      customerType: 'Residential' as const,
+      address: {
+        street: address,
+        city,
+        state,
+        zip,
+      },
+      serviceLocation: {
+        name: `${name} - Primary`,
+        street: address,
+        city,
+        state,
+        zip,
+      },
+    });
+
+    console.log(`[Chatbot] Customer created in ServiceTitan: ${customer.id}`);
+
+    // Sync to local database
+    await db.insert(serviceTitanCustomers).values({
+      id: customer.id,
+      name: customer.name,
+      type: customer.type || 'Residential',
+      street: address,
+      city,
+      state,
+      zip,
+      active: true,
+    }).onConflictDoUpdate({
+      target: serviceTitanCustomers.id,
+      set: {
+        name: customer.name,
+        street: address,
+        city,
+        state,
+        zip,
+      },
+    });
+
+    // Sync contacts to local database
+    const normalizeContact = (value: string, type: 'phone' | 'email'): string => {
+      if (type === 'phone') {
+        return value.replace(/\D/g, '');
+      }
+      return value.toLowerCase().trim();
+    };
+
+    const normalizedPhone = normalizeContact(phone, 'phone');
+    const existingPhone = await db.select()
+      .from(serviceTitanContacts)
+      .where(eq(serviceTitanContacts.normalizedValue, normalizedPhone))
+      .limit(1);
+    
+    if (existingPhone.length === 0) {
+      await db.insert(serviceTitanContacts).values({
+        customerId: customer.id,
+        contactType: 'Phone',
+        value: phone,
+        normalizedValue: normalizedPhone,
+      });
+    }
+
+    if (email) {
+      const normalizedEmail = normalizeContact(email, 'email');
+      const existingEmail = await db.select()
+        .from(serviceTitanContacts)
+        .where(eq(serviceTitanContacts.normalizedValue, normalizedEmail))
+        .limit(1);
+      
+      if (existingEmail.length === 0) {
+        await db.insert(serviceTitanContacts).values({
+          customerId: customer.id,
+          contactType: 'Email',
+          value: email,
+          normalizedValue: normalizedEmail,
+        });
+      }
+    }
+
+    console.log(`[Chatbot] ✅ Customer ${customer.id} synced to local database`);
+
+    return {
+      success: true,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        phone,
+        email: email || null,
+        address: {
+          street: address,
+          city,
+          state,
+          zip,
+        },
+      },
+      message: `Customer created successfully in ServiceTitan (ID: ${customer.id})`,
+    };
+  } catch (error: any) {
+    console.error('[Chatbot] Error creating customer:', error);
+    return {
+      success: false,
+      message: 'Unable to create customer. Please try again or call us directly.',
+      error: error.message,
     };
   }
 }
