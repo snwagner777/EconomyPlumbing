@@ -48,7 +48,8 @@ import {
   CalendarClock,
   Edit2,
   Building2,
-  Briefcase
+  Briefcase,
+  Receipt
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "./SchedulerDialog";
@@ -2486,6 +2487,34 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     </Card>
                   )}
                   </div>
+
+                  {/* Billing Address */}
+                  {customerData?.customer?.address && (
+                    <Card>
+                      <CardHeader>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="w-6 h-6 text-primary" />
+                          <CardTitle>Billing Address</CardTitle>
+                        </div>
+                        <CardDescription>
+                          Your primary billing address on file
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
+                          <Receipt className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                          <div className="flex-1">
+                            <p className="font-medium">
+                              {customerData.customer.address.street}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
 
                   {/* Service Locations */}
                   {customerLocations.length > 0 && (

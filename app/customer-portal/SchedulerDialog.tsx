@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useReducer, useEffect } from 'react';
-import { Wrench, Calendar, CheckCircle2, AlertCircle, ChevronLeft } from 'lucide-react';
+import { Wrench, Calendar, CheckCircle2, AlertCircle, ChevronLeft, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { ServiceStep } from '@/components/scheduler/steps/ServiceStep';
 import { AvailabilityStep } from '@/components/scheduler/steps/AvailabilityStep';
 import { ReviewStep } from '@/components/scheduler/steps/ReviewStep';
@@ -24,6 +26,17 @@ interface TimeSlot {
   proximityScore?: number;
   nearbyJobs?: number;
   technicianId?: number | null;
+}
+
+interface CustomerLocation {
+  id: number;
+  name?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
 }
 
 interface CustomerInfo {
@@ -75,6 +88,7 @@ interface SchedulerDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   customerInfo: CustomerInfo;
+  locations?: CustomerLocation[];
   utmSource?: string;
   utmMedium?: string;
   utmCampaign?: string;
@@ -103,6 +117,7 @@ export function SchedulerDialog({
   open,
   onOpenChange,
   customerInfo,
+  locations = [],
   utmSource = 'customer-portal',
   utmMedium,
   utmCampaign
@@ -113,14 +128,31 @@ export function SchedulerDialog({
     timeSlot: null,
   });
   const [vipError, setVipError] = useState(false);
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
 
   // Reset state when dialog is closed
   useEffect(() => {
     if (!open) {
       dispatch({ type: 'RESET' });
       setVipError(false);
+      setSelectedLocationId(null);
     }
   }, [open]);
+  
+  // Initialize selected location when dialog opens
+  useEffect(() => {
+    if (open && locations.length > 0 && !selectedLocationId) {
+      // Prefer non-Hill Country location (ZIP 78654)
+      const preferredLocation = locations.find(loc => loc.address.zip !== '78654') || locations[0];
+      setSelectedLocationId(preferredLocation.id);
+    }
+  }, [open, locations, selectedLocationId]);
+  
+  // Get the selected location's ZIP for scheduling
+  const selectedLocation = selectedLocationId 
+    ? locations.find(loc => loc.id === selectedLocationId)
+    : null;
+  const serviceZip = selectedLocation?.address.zip || customerInfo.zip;
 
   const handleSelectJobType = (jobType: JobType) => {
     // Check if VIP service selected but customer is not VIP
@@ -173,6 +205,38 @@ export function SchedulerDialog({
             </div>
           )}
         </DialogHeader>
+
+        {/* Location Selector - Show if multiple locations */}
+        {locations.length > 1 && (
+          <div className="space-y-2 mb-4 p-4 bg-muted/30 rounded-lg border">
+            <Label htmlFor="service-location" className="flex items-center gap-2 text-sm font-medium">
+              <MapPin className="w-4 h-4 text-primary" />
+              Service Location
+            </Label>
+            <Select
+              value={selectedLocationId?.toString() || ''}
+              onValueChange={(value) => setSelectedLocationId(parseInt(value, 10))}
+            >
+              <SelectTrigger id="service-location" data-testid="select-service-location">
+                <SelectValue placeholder="Select service location" />
+              </SelectTrigger>
+              <SelectContent>
+                {locations.map((location) => (
+                  <SelectItem 
+                    key={location.id} 
+                    value={location.id.toString()}
+                    data-testid={`location-option-${location.id}`}
+                  >
+                    {location.name || location.address.street} - {location.address.city}, {location.address.state} {location.address.zip}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Scheduling for: {selectedLocation?.address.city}, {selectedLocation?.address.zip}
+            </p>
+          </div>
+        )}
 
         {/* VIP Error Alert */}
         {vipError && (
@@ -228,7 +292,7 @@ export function SchedulerDialog({
               </Button>
               <AvailabilityStep
                 jobTypeId={state.jobType.id}
-                customerZip={customerInfo.zip}
+                customerZip={serviceZip}
                 onSelect={handleSelectTimeSlot}
                 selectedSlot={state.timeSlot || undefined}
               />
