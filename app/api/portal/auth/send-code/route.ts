@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       .where(
         or(
           sql`${customersXlsx.email} ILIKE '%' || ${searchValue} || '%'`,
-          sql`REPLACE(REPLACE(REPLACE(${customersXlsx.phone}, '-', ''), '(', ''), ')', '') LIKE '%' || ${normalizedPhone} || '%'`
+          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
         )
       )
       .limit(10);

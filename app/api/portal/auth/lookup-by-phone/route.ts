@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       .where(
         and(
           eq(customersXlsx.active, true), // Only active customers
-          sql`REPLACE(REPLACE(REPLACE(${customersXlsx.phone}, '-', ''), '(', ''), ')', '') LIKE '%' || ${normalizedPhone} || '%'`
+          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') LIKE '%' || ${normalizedPhone} || '%'`
         )
       )
       .limit(1);
