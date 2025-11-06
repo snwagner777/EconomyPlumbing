@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Score each slot based on technician route contiguity and zone adjacency
-    const scoredSlots: ScoredSlot[] = availableSlots.map((slot, index) => {
+    const scoredSlots = availableSlots.map((slot, index): ScoredSlot | null => {
       const slotStart = new Date(slot.start);
       const slotEnd = new Date(slot.end);
       const slotDate = format(slotStart, 'yyyy-MM-dd');

@@ -181,6 +181,14 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [newAppointmentDate, setNewAppointmentDate] = useState("");
   const [newAppointmentWindow, setNewAppointmentWindow] = useState("");
   const [isRescheduling, setIsRescheduling] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState<Array<{
+    id: string;
+    start: string;
+    end: string;
+    timeLabel: string;
+    proximityScore: number;
+  }>>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
   
   // Cancel appointment state
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -661,29 +669,64 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     const dateStr = appointmentDate.toISOString().split('T')[0];
     setNewAppointmentDate(dateStr);
     
-    // Pre-select time window based on current appointment's arrival window
-    if (appointment.arrivalWindowStart && appointment.arrivalWindowEnd && timeWindows.length > 0) {
-      const startTime = new Date(appointment.arrivalWindowStart);
-      const endTime = new Date(appointment.arrivalWindowEnd);
-      
-      const startStr = `${startTime.getUTCHours().toString().padStart(2, '0')}:${startTime.getUTCMinutes().toString().padStart(2, '0')}`;
-      const endStr = `${endTime.getUTCHours().toString().padStart(2, '0')}:${endTime.getUTCMinutes().toString().padStart(2, '0')}`;
-      
-      // Find matching window
-      const matchingWindow = timeWindows.find(w => w.start === startStr && w.end === endStr);
-      if (matchingWindow) {
-        setNewAppointmentWindow(`${matchingWindow.start}-${matchingWindow.end}`);
-      } else if (timeWindows.length > 0) {
-        // Default to first window if no match
-        setNewAppointmentWindow(`${timeWindows[0].start}-${timeWindows[0].end}`);
-      }
-    } else if (timeWindows.length > 0) {
-      // Default to first window
-      setNewAppointmentWindow(`${timeWindows[0].start}-${timeWindows[0].end}`);
-    }
+    // Clear previous selections
+    setNewAppointmentWindow("");
+    setAvailableSlots([]);
     
     setRescheduleDialogOpen(true);
   };
+
+  // Fetch smart availability slots when date changes
+  useEffect(() => {
+    const fetchSmartSlots = async () => {
+      if (!newAppointmentDate || !rescheduleDialogOpen || customerLocations.length === 0) {
+        return;
+      }
+
+      setIsLoadingSlots(true);
+      try {
+        // Use first location's ZIP code to fetch availability
+        const customerZip = customerLocations[0]?.address?.zip;
+        if (!customerZip) {
+          console.warn('[Reschedule] No ZIP code found for customer');
+          setIsLoadingSlots(false);
+          return;
+        }
+
+        const response = await fetch('/api/scheduler/smart-availability', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            jobTypeId: 140551181, // Standard plumbing
+            customerZip,
+            startDate: newAppointmentDate,
+            endDate: newAppointmentDate, // Same day
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.slots) {
+          // Take top 10 most efficient slots
+          setAvailableSlots(data.slots.slice(0, 10));
+          
+          // Auto-select first slot if available
+          if (data.slots.length > 0 && !newAppointmentWindow) {
+            setNewAppointmentWindow(data.slots[0].id);
+          }
+        } else {
+          setAvailableSlots([]);
+        }
+      } catch (error) {
+        console.error('[Reschedule] Error fetching smart slots:', error);
+        setAvailableSlots([]);
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    };
+
+    fetchSmartSlots();
+  }, [newAppointmentDate, rescheduleDialogOpen, customerLocations, newAppointmentWindow]);
 
   const handleRescheduleAppointment = async () => {
     if (!appointmentToReschedule || !newAppointmentDate || !newAppointmentWindow) {
@@ -693,29 +736,22 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     setIsRescheduling(true);
 
     try {
-      // Parse the selected window (format: "HH:MM-HH:MM")
-      const [startTime, endTime] = newAppointmentWindow.split('-');
+      // Find the selected slot from available slots
+      const selectedSlot = availableSlots.find(slot => slot.id === newAppointmentWindow);
       
-      // Find the matching window to get the label
-      const selectedWindow = timeWindows.find(w => `${w.start}-${w.end}` === newAppointmentWindow);
-      
-      if (!selectedWindow) {
-        throw new Error("Invalid time window selected");
+      if (!selectedSlot) {
+        throw new Error("Selected time slot is no longer available. Please choose another time.");
       }
-
-      // Combine date and window times into ISO strings
-      const newStartDateTime = new Date(`${newAppointmentDate}T${startTime}:00`);
-      const newEndDateTime = new Date(`${newAppointmentDate}T${endTime}:00`);
 
       const response = await fetch('/api/customer-portal/reschedule-appointment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           appointmentId: appointmentToReschedule.id,
-          start: newStartDateTime.toISOString(),
-          end: newEndDateTime.toISOString(),
-          arrivalWindowStart: newStartDateTime.toISOString(),
-          arrivalWindowEnd: newEndDateTime.toISOString(),
+          start: selectedSlot.start,
+          end: selectedSlot.end,
+          arrivalWindowStart: selectedSlot.start,
+          arrivalWindowEnd: selectedSlot.end,
         }),
       });
 
@@ -3271,29 +3307,49 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="new-window">Time Window</Label>
-                  <Select
-                    value={newAppointmentWindow}
-                    onValueChange={setNewAppointmentWindow}
-                  >
-                    <SelectTrigger id="new-window" data-testid="select-time-window">
-                      <SelectValue placeholder="Select a time window" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {timeWindows.map((window) => (
-                        <SelectItem 
-                          key={`${window.start}-${window.end}`} 
-                          value={`${window.start}-${window.end}`}
-                          data-testid={`option-${window.start}-${window.end}`}
-                        >
-                          {window.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="new-window">Available Time Slots</Label>
+                  {isLoadingSlots ? (
+                    <div className="flex items-center justify-center p-4 border rounded-md">
+                      <p className="text-sm text-muted-foreground">Loading available times...</p>
+                    </div>
+                  ) : availableSlots.length > 0 ? (
+                    <Select
+                      value={newAppointmentWindow}
+                      onValueChange={setNewAppointmentWindow}
+                    >
+                      <SelectTrigger id="new-window" data-testid="select-time-window">
+                        <SelectValue placeholder="Select a time slot" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSlots.map((slot) => (
+                          <SelectItem 
+                            key={slot.id} 
+                            value={slot.id}
+                            data-testid={`option-${slot.id}`}
+                          >
+                            {slot.timeLabel}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  ) : newAppointmentDate ? (
+                    <div className="flex items-center justify-center p-4 border rounded-md">
+                      <p className="text-sm text-muted-foreground">No available time slots for this date. Try another date.</p>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center p-4 border rounded-md">
+                      <p className="text-sm text-muted-foreground">Select a date to see available times.</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
+              {availableSlots.length > 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Showing most fuel-efficient time slots based on your location. This helps us minimize driving and serve you better!
+                </p>
+              )}
+              
               <p className="text-xs text-muted-foreground">
                 Note: This will update your appointment in our system. You can also call us at {phoneConfig.display} for assistance.
               </p>
