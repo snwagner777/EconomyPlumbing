@@ -66,6 +66,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, message: 'Contact added successfully' });
   } catch (error: any) {
     console.error('[Portal] Add customer contact error:', error);
+    
+    // Check for ServiceTitan "customer not active" error
+    if (error.message && error.message.includes('is not active')) {
+      return NextResponse.json(
+        { error: 'Cannot add contacts to inactive customer accounts. Please contact support to reactivate this account.' },
+        { status: 409 }
+      );
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Failed to add contact' },
       { status: 500 }
