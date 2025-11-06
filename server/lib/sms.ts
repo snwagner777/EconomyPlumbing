@@ -1,100 +1,94 @@
-import twilio from 'twilio';
-import { getValidAccessToken, isZoomOAuthConfigured } from './zoomOAuth';
+/**
+ * SMS Service - SimpleTexting Integration
+ * 
+ * Provider: SimpleTexting API v2
+ * Documentation: https://api-doc.simpletexting.com/
+ * 
+ * Environment Variables Required:
+ * - SIMPLETEXTING_API_TOKEN: Your SimpleTexting API token (Bearer auth)
+ * - SIMPLETEXTING_PHONE_NUMBER: Your SimpleTexting phone number (sender)
+ */
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const simpleTextingToken = process.env.SIMPLETEXTING_API_TOKEN;
+const simpleTextingPhoneNumber = process.env.SIMPLETEXTING_PHONE_NUMBER;
 
-const zoomPhoneNumber = process.env.ZOOM_PHONE_NUMBER;
-const zoomUserId = process.env.ZOOM_USER_ID;
+const isSimpleTextingConfigured = !!(simpleTextingToken && simpleTextingPhoneNumber);
 
-const isTwilioConfigured = !!(accountSid && authToken && twilioPhoneNumber);
-const isZoomConfigured = isZoomOAuthConfigured() && !!zoomPhoneNumber && !!zoomUserId;
-
-if (!isZoomConfigured && !isTwilioConfigured) {
-  console.warn('[SMS] No SMS provider configured. SMS functionality will be disabled.');
-} else if (isZoomConfigured) {
-  console.log('[SMS] Using Zoom Phone for SMS delivery (OAuth)');
+if (!isSimpleTextingConfigured) {
+  console.warn('[SMS] SimpleTexting not configured. SMS functionality will be disabled.');
+  console.warn('[SMS] Required: SIMPLETEXTING_API_TOKEN and SIMPLETEXTING_PHONE_NUMBER');
 } else {
-  console.log('[SMS] Using Twilio for SMS delivery');
+  console.log('[SMS] Using SimpleTexting for SMS delivery');
+  console.log('[SMS] Sender number:', simpleTextingPhoneNumber);
 }
-
-const twilioClient = isTwilioConfigured ? twilio(accountSid, authToken) : null;
 
 export interface SendSMSOptions {
   to: string;
   message: string;
 }
 
-async function sendViaZoom({ to, message }: SendSMSOptions): Promise<void> {
-  console.log('[Zoom Phone] Sending SMS via OAuth:');
-  console.log('  User ID:', zoomUserId);
-  console.log('  To:', to);
+/**
+ * Send SMS via SimpleTexting API
+ * 
+ * API Endpoint: POST https://api-app2.simpletexting.com/v2/api/messages
+ * Authentication: Bearer token
+ * 
+ * @param to - Recipient phone number (10 digits, no formatting)
+ * @param message - Message text content
+ */
+async function sendViaSimpleTexting({ to, message }: SendSMSOptions): Promise<void> {
+  if (!isSimpleTextingConfigured) {
+    throw new Error('SimpleTexting not configured');
+  }
+
+  // Normalize phone number - SimpleTexting expects 10 digits (no +1 prefix)
+  let normalizedPhone = to.replace(/\D/g, '');
+  if (normalizedPhone.length === 11 && normalizedPhone.startsWith('1')) {
+    normalizedPhone = normalizedPhone.substring(1);
+  }
+  
+  console.log('[SimpleTexting] Sending SMS:');
+  console.log('  From:', simpleTextingPhoneNumber);
+  console.log('  To:', normalizedPhone);
+  console.log('  Message length:', message.length, 'characters');
   
   try {
-    // Get valid OAuth access token (auto-refreshes if expired)
-    const accessToken = await getValidAccessToken();
-    
-    // Use user-specific SMS endpoint
-    const response = await fetch(`https://api.zoom.us/v2/phone/users/${zoomUserId}/sms`, {
+    const response = await fetch('https://api-app2.simpletexting.com/v2/api/messages', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${simpleTextingToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: to,
-        message: message,
+        contactPhone: normalizedPhone,
+        accountPhone: simpleTextingPhoneNumber,
+        mode: 'SMS',
+        text: message,
       }),
     });
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('[Zoom Phone] API error:', error);
-      throw new Error(`Zoom Phone API error: ${response.status} ${response.statusText}`);
+      console.error('[SimpleTexting] API error:', error);
+      throw new Error(`SimpleTexting API error: ${response.status} ${response.statusText}`);
     }
 
     const result = await response.json();
-    console.log(`[Zoom Phone] SMS sent successfully to ${to}:`, result);
+    console.log(`[SimpleTexting] ✅ SMS sent successfully to ${normalizedPhone}`);
+    console.log('[SimpleTexting] Response:', result);
   } catch (error) {
-    console.error('[Zoom Phone] Failed to send SMS:', error);
-    throw new Error('Failed to send SMS via Zoom Phone');
-  }
-}
-
-async function sendViaTwilio({ to, message }: SendSMSOptions): Promise<void> {
-  if (!twilioClient) {
-    throw new Error('Twilio client not initialized');
-  }
-  
-  console.log('[Twilio] Sending SMS:');
-  console.log('  From:', twilioPhoneNumber);
-  console.log('  To:', to);
-  
-  try {
-    await twilioClient.messages.create({
-      body: message,
-      from: twilioPhoneNumber,
-      to: to,
-    });
-    console.log(`[Twilio] SMS sent successfully to ${to}`);
-  } catch (error) {
-    console.error('[Twilio] Failed to send SMS:', error);
-    throw new Error('Failed to send SMS via Twilio');
+    console.error('[SimpleTexting] Failed to send SMS:', error);
+    throw new Error('Failed to send SMS via SimpleTexting');
   }
 }
 
 export async function sendSMS({ to, message }: SendSMSOptions): Promise<void> {
-  if (!isZoomConfigured && !isTwilioConfigured) {
-    console.warn('[SMS] No SMS provider configured - skipping SMS to:', to);
-    throw new Error('No SMS provider configured. Please set either Zoom Phone or Twilio environment variables.');
+  if (!isSimpleTextingConfigured) {
+    console.warn('[SMS] SimpleTexting not configured - skipping SMS to:', to);
+    throw new Error('SMS provider not configured. Please set SIMPLETEXTING_API_TOKEN and SIMPLETEXTING_PHONE_NUMBER environment variables.');
   }
   
-  if (isZoomConfigured) {
-    await sendViaZoom({ to, message });
-  } else {
-    await sendViaTwilio({ to, message });
-  }
+  await sendViaSimpleTexting({ to, message });
 }
 
 export function generateOTP(): string {
