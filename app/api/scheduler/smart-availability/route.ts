@@ -160,11 +160,10 @@ export async function POST(req: NextRequest) {
         return jobDate === slotDate;
       });
       
-      // HILL COUNTRY ZONE RESTRICTION:
-      // Only allow afternoon slots (12-4 PM) if there are already jobs in Hill Country that day
+      // HILL COUNTRY RESTRICTION:
+      // Block specific afternoon windows (10-2, 1-5, 2-6) unless there's already a Hill Country job that day
       // This prevents single afternoon trips to Hill Country (fuel efficiency)
       if (serviceLocationZone && serviceLocationZone.toLowerCase().includes('hill country')) {
-        // Check if slot overlaps with afternoon blackout window (12:00 PM - 4:00 PM Central Time)
         const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
           hour: 'numeric',
           hour12: false,
@@ -177,10 +176,14 @@ export async function POST(req: NextRequest) {
           timeZone: 'America/Chicago',
         }));
         
-        // Slot overlaps afternoon (12-4 PM) if it starts before 4 PM AND ends after 12 PM
-        const overlapsAfternoon = startHourCT < 16 && endHourCT > 12;
+        // Check if this is one of the blocked windows: 10-2, 12-4, 1-5, or 2-6
+        const isBlockedWindow = 
+          (startHourCT === 10 && endHourCT === 14) || // 10 AM - 2 PM
+          (startHourCT === 12 && endHourCT === 16) || // 12 PM - 4 PM
+          (startHourCT === 13 && endHourCT === 17) || // 1 PM - 5 PM
+          (startHourCT === 14 && endHourCT === 18);   // 2 PM - 6 PM
         
-        if (overlapsAfternoon) {
+        if (isBlockedWindow) {
           // Count existing Hill Country jobs on the same day
           const nearbyHillCountryJobs = sameDayJobs.filter(job => {
             const jobZip = normalizeZip(job.locationZip);
@@ -188,12 +191,12 @@ export async function POST(req: NextRequest) {
             return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
           });
           
-          // Block afternoon slot if no other Hill Country jobs that day
+          // Block this window if no other Hill Country jobs that day
           if (nearbyHillCountryJobs.length === 0) {
-            console.log(`[Hill Country Filter] Blocking slot ${formatTimeWindow(slot.start, slot.end)} - service location ${customerZip} is Hill Country, no nearby jobs`);
+            console.log(`[Hill Country Filter] Blocking ${formatTimeWindow(slot.start, slot.end)} - no Hill Country jobs scheduled that day`);
             return null;
           } else {
-            console.log(`[Hill Country Filter] Allowing slot ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} Hill Country jobs found that day`);
+            console.log(`[Hill Country Filter] Allowing ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} Hill Country jobs found that day`);
           }
         }
       }

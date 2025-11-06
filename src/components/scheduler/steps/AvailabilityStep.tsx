@@ -254,7 +254,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm">Smart Scheduling Enabled</h3>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Optimized for your zone: <span className="font-semibold text-foreground">{data.optimization.customerZone}</span>
+                    Optimized for: <span className="font-semibold text-foreground">{data.optimization.customerZone}</span>
                     {data.optimization.optimizedSlots > 0 && (
                       <span className="text-primary font-medium">
                         {' '}• {data.optimization.optimizedSlots} efficient slots found
