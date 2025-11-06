@@ -172,6 +172,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   // Phone-based login state
   const [phoneLoginNumber, setPhoneLoginNumber] = useState("");
   const [maskedEmail, setMaskedEmail] = useState("");
+  const [actualEmail, setActualEmail] = useState(""); // Store actual email for verification
   const [lookupToken, setLookupToken] = useState("");
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [isSendingLink, setIsSendingLink] = useState(false);
@@ -593,6 +594,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     setVerificationMessage("");
     setPhoneLoginNumber("");
     setMaskedEmail("");
+    setActualEmail("");
     setLookupToken("");
   };
 
@@ -619,9 +621,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       const result = await response.json();
       
       setMaskedEmail(result.maskedEmail);
+      setActualEmail(result.email); // Store actual email for sending verification code
       setLookupToken(result.lookupToken);
       setVerificationStep('phone-email-found');
-      setLookupSuccess(`We found your account! We'll send a login link to ${result.maskedEmail}`);
+      setLookupSuccess(`We found your account! We'll send a verification code to ${result.maskedEmail}`);
     } catch (err: any) {
       console.error('Phone lookup failed:', err);
       setLookupError(err.message || 'We couldn\'t find an account with that phone number.');
@@ -630,35 +633,37 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     }
   };
 
-  const handleSendPhoneMagicLink = async () => {
+  const handleSendPhoneVerificationCode = async () => {
     setLookupError(null);
     setLookupSuccess(null);
     setIsSendingLink(true);
 
     try {
-      const response = await fetch('/api/portal/auth/send-phone-magic-link', {
+      const response = await fetch('/api/portal/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          lookupToken,
+          contactValue: actualEmail, // Use the actual email from phone lookup
+          verificationType: 'email',
         }),
       });
       
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to send login link');
+        throw new Error(errorData.error || 'Failed to send verification code');
       }
 
       const result = await response.json();
       
-      setLookupSuccess(result.message || `Magic link sent to ${maskedEmail}! Check your email.`);
+      setVerificationStep('verify-code');
+      setLookupSuccess(result.message || `Verification code sent to ${maskedEmail}!`);
       toast({
         title: "Check your email!",
-        description: `We've sent a login link to ${maskedEmail}`,
+        description: `We've sent a 6-digit code to ${maskedEmail}`,
       });
     } catch (err: any) {
-      console.error('Send magic link failed:', err);
-      setLookupError(err.message || 'Failed to send login link. Please try again.');
+      console.error('Send verification code failed:', err);
+      setLookupError(err.message || 'Failed to send verification code. Please try again.');
     } finally {
       setIsSendingLink(false);
     }
@@ -1377,6 +1382,27 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     {isSearching ? 'Searching...' : 'Send Verification Code'}
                   </Button>
 
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    onClick={() => setVerificationStep('phone-lookup')}
+                    className="w-full"
+                    data-testid="button-phone-login"
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Login with Phone Number
+                  </Button>
+
                   {lookupSuccess && (
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-4 text-sm">
                       <div className="flex items-start gap-3">
@@ -1407,7 +1433,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 <CardHeader>
                   <CardTitle>Login with Phone Number</CardTitle>
                   <CardDescription>
-                    Enter your phone number and we'll send a login link to your email
+                    Enter your phone number and we'll send a verification code to your email
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1474,7 +1500,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 <CardHeader>
                   <CardTitle>Account Found!</CardTitle>
                   <CardDescription>
-                    We'll send a login link to your email address
+                    We'll send a verification code to your email address
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1494,12 +1520,12 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   </div>
 
                   <Button
-                    onClick={handleSendPhoneMagicLink}
+                    onClick={handleSendPhoneVerificationCode}
                     className="w-full"
                     disabled={isSendingLink}
-                    data-testid="button-send-phone-magic-link"
+                    data-testid="button-send-phone-verification-code"
                   >
-                    {isSendingLink ? 'Sending...' : 'Send Login Link'}
+                    {isSendingLink ? 'Sending...' : 'Send Verification Code'}
                   </Button>
 
                   <Button
