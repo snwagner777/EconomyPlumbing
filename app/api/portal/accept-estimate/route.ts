@@ -77,6 +77,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Get business phone from environment (required for emails)
+    const businessPhone = process.env.BUSINESS_PHONE;
+    if (!businessPhone) {
+      console.error('[Estimate Acceptance] BUSINESS_PHONE environment variable not set');
+    }
+
     // Send email notification to admin/team
     try {
       const { Resend } = await import('resend');
@@ -88,7 +94,7 @@ export async function POST(req: NextRequest) {
       await resend.emails.send({
         from: 'Economy Plumbing <noreply@plumbersthatcare.com>',
         to: process.env.ADMIN_EMAIL || 'admin@plumbersthatcare.com',
-        subject: `🎉 Estimate Accepted: #${estimateNumber}`,
+        subject: `Estimate Accepted: #${estimateNumber}`,
         html: `
           <h2>Customer Accepted Estimate</h2>
           <p>A customer has accepted an estimate through the customer portal and is ready to schedule service!</p>
@@ -149,14 +155,13 @@ export async function POST(req: NextRequest) {
               <li>We'll send you a confirmation with the appointment details</li>
             </ol>
             
-            <p>If you have any questions or need to reach us sooner, please call <strong>${process.env.BUSINESS_PHONE || '(512) 259-7222'}</strong>.</p>
+            <p>If you have any questions or need to reach us sooner, please call ${businessPhone ? `<strong>${businessPhone}</strong>` : 'our office'}.</p>
             
             <p>Thank you for choosing Economy Plumbing Services!</p>
             
             <p style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; color: #666; font-size: 12px;">
               Economy Plumbing Services<br>
-              Austin's Trusted Plumbing Experts<br>
-              ${process.env.BUSINESS_PHONE || '(512) 259-7222'}
+              Austin's Trusted Plumbing Experts${businessPhone ? `<br>${businessPhone}` : ''}
             </p>
           `,
         });
