@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { usePhoneConfig } from "@/hooks/usePhoneConfig";
 import { A2PConsentCheckboxes } from "@/components/A2PConsentCheckboxes";
 

@@ -1,8 +1,19 @@
 /**
  * Contact Form Submission API
  * 
- * Handles contact form submissions from the website
- * Stores in database and sends notification email to admin
+ * Handles contact form submissions from the website with ServiceTitan integration
+ * 
+ * WORKFLOW:
+ * 1. Validates form data (honeypot, timing, schema)
+ * 2. If complete address provided → Creates/finds ServiceTitan customer
+ * 3. Syncs customer to LOCAL database (serviceTitanCustomers + serviceTitanContacts tables)
+ * 4. Saves form submission to LOCAL database (contactSubmissions table with consent flags)
+ * 5. Sends admin notification email with ServiceTitan ID + consent status
+ * 
+ * LOCAL DATABASE TABLES UPDATED:
+ * - contactSubmissions: Form data + SMS/email consent preferences
+ * - serviceTitanCustomers: Customer record synced from ServiceTitan
+ * - serviceTitanContacts: Phone/email contacts for fast lookup
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -128,7 +139,7 @@ export async function POST(req: NextRequest) {
           name: data.name,
           phone: data.phone,
           email: data.email || undefined,
-          customerType: 'Residential', // Default for contact forms
+          customerType: 'Residential' as const, // Default for contact forms
           address: {
             street: data.address,
             city: data.city,
@@ -160,8 +171,6 @@ export async function POST(req: NextRequest) {
           state: data.state,
           zip: data.zip,
           active: true,
-          smsOptIn: data.smsConsent || false,
-          emailOptIn: data.emailConsent || false,
         }).onConflictDoUpdate({
           target: serviceTitanCustomers.id,
           set: {
@@ -170,8 +179,6 @@ export async function POST(req: NextRequest) {
             city: data.city,
             state: data.state,
             zip: data.zip,
-            smsOptIn: data.smsConsent || false,
-            emailOptIn: data.emailConsent || false,
           },
         });
 
@@ -217,18 +224,18 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Save to database
+    // Save to database (this captures form submission + consent preferences)
     const submission = await storage.createContactSubmission({
       name: data.name,
       email: data.email || null,
-      phone: data.phone || null,
+      phone: data.phone,
       message: data.message,
       service: data.service || null,
       urgency: data.urgency || null,
       location: data.location || null,
-      submittedAt: new Date(),
-      ipAddress: ip,
       pageContext: data.pageContext || null,
+      smsConsent: data.smsConsent || false,
+      emailConsent: data.emailConsent || false,
     });
 
     console.log('[Contact] New submission:', submission.id);

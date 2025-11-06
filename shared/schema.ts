@@ -102,9 +102,13 @@ export const contactSubmissions = pgTable("contact_submissions", {
   urgency: text("urgency"),
   message: text("message"),
   pageContext: text("page_context"),
+  smsConsent: boolean("sms_consent").notNull().default(false), // A2P compliance
+  emailConsent: boolean("email_consent").notNull().default(false), // CAN-SPAM compliance
   submittedAt: timestamp("submitted_at").notNull().defaultNow(),
 }, (table) => ({
   submittedAtIdx: index("contact_submissions_submitted_at_idx").on(table.submittedAt),
+  smsConsentIdx: index("contact_submissions_sms_consent_idx").on(table.smsConsent),
+  emailConsentIdx: index("contact_submissions_email_consent_idx").on(table.emailConsent),
 }));
 
 // Referral code mapping (code → customer ID)
