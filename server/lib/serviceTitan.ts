@@ -748,6 +748,93 @@ class ServiceTitanAPI {
   }
 
   /**
+   * Add a customer contact
+   */
+  async addCustomerContact(
+    customerId: number,
+    data: {
+      type: string;
+      value: string;
+      memo?: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Adding ${data.type} contact for customer ${customerId}...`);
+      
+      const contactData: any = {
+        type: data.type,
+        value: data.value,
+        memo: data.memo || data.type.toLowerCase()
+      };
+
+      // Add phone settings for Phone contacts
+      if (data.type === 'Phone' || data.type === 'MobilePhone') {
+        contactData.phoneSettings = {
+          phoneNumber: data.value,
+          doNotText: false
+        };
+      }
+      
+      await this.request(
+        `/customers/${customerId}/contacts`,
+        {
+          method: 'POST',
+          body: JSON.stringify(contactData),
+        }
+      );
+      
+      console.log('[ServiceTitan] Contact added successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Add contact error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a customer contact by ID
+   */
+  async updateCustomerContact(
+    customerId: number,
+    contactId: number,
+    data: {
+      type: string;
+      value: string;
+      memo?: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Updating contact ${contactId} for customer ${customerId}...`);
+      
+      const contactData: any = {
+        type: data.type,
+        value: data.value,
+        memo: data.memo || data.type.toLowerCase()
+      };
+
+      // Add phone settings for Phone contacts
+      if (data.type === 'Phone' || data.type === 'MobilePhone') {
+        contactData.phoneSettings = {
+          phoneNumber: data.value,
+          doNotText: false
+        };
+      }
+      
+      await this.request(
+        `/customers/${customerId}/contacts/${contactId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(contactData),
+        }
+      );
+      
+      console.log('[ServiceTitan] Contact updated successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Update contact error:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Delete a customer contact by ID
    */
   async deleteCustomerContact(customerId: number, contactId: number): Promise<void> {
@@ -838,6 +925,168 @@ class ServiceTitanAPI {
       return result.data || [];
     } catch (error) {
       console.error('[ServiceTitan] Get all customer locations error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new service location for a customer
+   */
+  async createServiceLocation(
+    customerId: number,
+    data: {
+      name: string;
+      street: string;
+      city: string;
+      state: string;
+      zip: string;
+    }
+  ): Promise<any> {
+    try {
+      console.log(`[ServiceTitan] Creating new location for customer ${customerId}...`);
+      
+      const locationData = {
+        name: data.name,
+        customerId: customerId,
+        address: {
+          street: data.street,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          country: 'USA',
+        }
+      };
+      
+      const result = await this.request<{ data: any }>(
+        `/locations`,
+        {
+          method: 'POST',
+          body: JSON.stringify(locationData),
+        }
+      );
+      
+      console.log('[ServiceTitan] Location created successfully');
+      return result.data;
+    } catch (error) {
+      console.error('[ServiceTitan] Create location error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add a location contact
+   */
+  async addLocationContact(
+    locationId: number,
+    data: {
+      type: string;
+      value: string;
+      memo?: string;
+      name?: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Adding ${data.type} contact for location ${locationId}...`);
+      
+      const contactData: any = {
+        type: data.type,
+        value: data.value,
+        memo: data.memo || data.type.toLowerCase()
+      };
+
+      if (data.name) {
+        contactData.name = data.name;
+      }
+
+      // Add phone settings for Phone contacts
+      if (data.type === 'Phone' || data.type === 'MobilePhone') {
+        contactData.phoneSettings = {
+          phoneNumber: data.value,
+          doNotText: false
+        };
+      }
+      
+      await this.request(
+        `/locations/${locationId}/contacts`,
+        {
+          method: 'POST',
+          body: JSON.stringify(contactData),
+        }
+      );
+      
+      console.log('[ServiceTitan] Location contact added successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Add location contact error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a location contact by ID
+   */
+  async updateLocationContact(
+    locationId: number,
+    contactId: number,
+    data: {
+      type: string;
+      value: string;
+      memo?: string;
+      name?: string;
+    }
+  ): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Updating contact ${contactId} for location ${locationId}...`);
+      
+      const contactData: any = {
+        type: data.type,
+        value: data.value,
+        memo: data.memo || data.type.toLowerCase()
+      };
+
+      if (data.name) {
+        contactData.name = data.name;
+      }
+
+      // Add phone settings for Phone contacts
+      if (data.type === 'Phone' || data.type === 'MobilePhone') {
+        contactData.phoneSettings = {
+          phoneNumber: data.value,
+          doNotText: false
+        };
+      }
+      
+      await this.request(
+        `/locations/${locationId}/contacts/${contactId}`,
+        {
+          method: 'PUT',
+          body: JSON.stringify(contactData),
+        }
+      );
+      
+      console.log('[ServiceTitan] Location contact updated successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Update location contact error:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a location contact by ID
+   */
+  async deleteLocationContact(locationId: number, contactId: number): Promise<void> {
+    try {
+      console.log(`[ServiceTitan] Deleting contact ${contactId} for location ${locationId}...`);
+      
+      await this.request(
+        `/locations/${locationId}/contacts/${contactId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      
+      console.log('[ServiceTitan] Location contact deleted successfully');
+    } catch (error) {
+      console.error('[ServiceTitan] Delete location contact error:', error);
       throw error;
     }
   }

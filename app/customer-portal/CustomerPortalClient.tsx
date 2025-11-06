@@ -1802,142 +1802,153 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 </Card>
               ) : customerData ? (
                 <>
+                  {/* Primary Account Information Card */}
                   <Card>
-                    <CardHeader className="flex flex-row items-center justify-between gap-4 flex-wrap">
-                      <div className="flex items-center gap-3">
-                        <User className="w-8 h-8 text-primary" />
-                        <div>
-                          <CardTitle>{customerData.customer.name}</CardTitle>
-                          <CardDescription>Customer Account</CardDescription>
+                    <CardHeader>
+                      <div className="flex items-center justify-between gap-4 flex-wrap">
+                        <div className="flex items-center gap-3">
+                          <User className="w-8 h-8 text-primary" />
+                          <div>
+                            <CardTitle>{customerData.customer.name}</CardTitle>
+                            <CardDescription>Account Information</CardDescription>
+                          </div>
                         </div>
-                      </div>
-                      <div className="flex gap-2 flex-wrap">
-                        <Button
-                          onClick={() => setSchedulerOpen(true)}
-                          data-testid="button-schedule-appointment"
-                        >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Schedule Appointment
-                        </Button>
-                        <Button
-                          asChild
-                          variant="outline"
-                          data-testid="button-call"
-                        >
-                          <a href={`tel:${phoneConfig.tel}`}>
-                            <PhoneIcon className="w-4 h-4 mr-2" />
-                            Call {phoneConfig.display}
-                          </a>
-                        </Button>
-                        <Button
-                          asChild
-                          variant="outline"
-                          data-testid="button-text"
-                        >
-                          <a href={`sms:${phoneConfig.tel}`}>
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Text Us
-                          </a>
-                        </Button>
-                        <Button
-                          variant="outline"
-                          data-testid="button-email-us"
-                          onClick={() => {
-                            // Pre-fill form with customer data
-                            setEmailUsName(customerData?.customer?.name || "");
-                            setEmailUsEmail(customerData?.customer?.email || "");
-                            setEmailUsPhone(customerData?.customer?.phoneNumber || "");
-                            setEmailUsSubject("");
-                            setEmailUsMessage("");
-                            setEmailUsOpen(true);
-                          }}
-                        >
-                          <Mail className="w-4 h-4 mr-2" />
-                          Email Us
-                        </Button>
-                        {availableCustomerIds.length > 1 && (
+                        <div className="flex gap-2 flex-wrap">
                           <Button
-                            variant="outline"
-                            onClick={handleSwitchAccount}
-                            data-testid="button-switch-account"
+                            onClick={() => setSchedulerOpen(true)}
+                            data-testid="button-schedule-appointment"
                           >
-                            <Users className="w-4 h-4 mr-2" />
-                            Switch Account
+                            <Calendar className="w-4 h-4 mr-2" />
+                            Schedule
                           </Button>
-                        )}
+                          <Button
+                            asChild
+                            variant="outline"
+                            data-testid="button-call"
+                          >
+                            <a href={`tel:${phoneConfig.tel}`}>
+                              <PhoneIcon className="w-4 h-4 mr-2" />
+                              Call
+                            </a>
+                          </Button>
+                          {availableCustomerIds.length > 1 && (
+                            <Button
+                              variant="outline"
+                              onClick={handleSwitchAccount}
+                              data-testid="button-switch-account"
+                            >
+                              <Users className="w-4 h-4 mr-2" />
+                              Switch
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-sm font-semibold">Contact Information</h3>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleEditContacts}
-                            data-testid="button-edit-contacts"
-                          >
-                            Edit
-                          </Button>
-                        </div>
-                        
-                        {customerData.customer.contacts && customerData.customer.contacts.length > 0 ? (
-                          <div className="space-y-3">
-                            {customerData.customer.contacts.map((contact, index) => {
-                              const isEmail = contact.type === 'Email';
-                              const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
-                              
-                              if (!isEmail && !isPhone) return null;
-                              
-                              return (
-                                <div key={contact.id} className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg">
-                                  {isEmail ? (
-                                    <Mail className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                  ) : (
-                                    <PhoneIcon className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />
-                                  )}
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-xs text-muted-foreground mb-0.5">
-                                      {contact.type === 'MobilePhone' ? 'Mobile' : contact.type}
-                                    </p>
-                                    <p className="font-medium break-all" data-testid={`contact-${contact.type.toLowerCase()}-${index}`}>
-                                      {contact.value}
-                                    </p>
-                                    {contact.memo && contact.memo !== 'email' && contact.memo !== 'Phone' && contact.memo !== 'mobile' && (
-                                      <p className="text-xs text-muted-foreground mt-0.5">
-                                        {contact.memo}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => {
-                                      setContactToDelete({
-                                        id: contact.id,
-                                        type: contact.type,
-                                        value: contact.value
-                                      });
-                                      setDeleteContactDialogOpen(true);
-                                    }}
-                                    data-testid={`button-delete-contact-${contact.id}`}
-                                    className="flex-shrink-0 text-destructive hover:text-destructive"
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                              <p className="text-sm text-muted-foreground mb-1">Phone</p>
-                              <p className="font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber || 'Not provided'}</p>
+                      <div className="grid md:grid-cols-2 gap-6">
+                        {/* Contact Information Section */}
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold flex items-center gap-2">
+                              <PhoneIcon className="w-4 h-4 text-primary" />
+                              Contact Information
+                            </h3>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  // TODO: Open add contact dialog
+                                  console.log('Add contact clicked');
+                                }}
+                                data-testid="button-add-contact"
+                              >
+                                Add
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleEditContacts}
+                                data-testid="button-edit-contacts"
+                              >
+                                Edit
+                              </Button>
                             </div>
-                            <div>
-                              <p className="text-sm text-muted-foreground mb-1">Email</p>
-                              <p className="font-medium" data-testid="text-customer-email">{customerData.customer.email || 'Not provided'}</p>
+                          </div>
+                          
+                          {customerData.customer.contacts && customerData.customer.contacts.length > 0 ? (
+                            <div className="space-y-2">
+                              {customerData.customer.contacts.map((contact, index) => {
+                                const isEmail = contact.type === 'Email';
+                                const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
+                                
+                                if (!isEmail && !isPhone) return null;
+                                
+                                return (
+                                  <div key={contact.id} className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                                    {isEmail ? (
+                                      <Mail className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                    ) : (
+                                      <PhoneIcon className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                    )}
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs text-muted-foreground">
+                                        {contact.type === 'MobilePhone' ? 'Mobile' : contact.type}
+                                      </p>
+                                      <p className="text-sm font-medium break-all" data-testid={`contact-${contact.type.toLowerCase()}-${index}`}>
+                                        {contact.value}
+                                      </p>
+                                      {contact.memo && contact.memo !== 'email' && contact.memo !== 'Phone' && contact.memo !== 'mobile' && (
+                                        <p className="text-xs text-muted-foreground mt-0.5">
+                                          {contact.memo}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              {customerData.customer.phoneNumber && (
+                                <div className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                                  <PhoneIcon className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1">
+                                    <p className="text-xs text-muted-foreground">Phone</p>
+                                    <p className="text-sm font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber}</p>
+                                  </div>
+                                </div>
+                              )}
+                              {customerData.customer.email && (
+                                <div className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                                  <Mail className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                  <div className="flex-1">
+                                    <p className="text-xs text-muted-foreground">Email</p>
+                                    <p className="text-sm font-medium break-all" data-testid="text-customer-email">{customerData.customer.email}</p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Billing Address Section */}
+                        {customerData?.customer?.address && (
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-semibold flex items-center gap-2">
+                              <Building2 className="w-4 h-4 text-primary" />
+                              Billing Address
+                            </h3>
+                            <div className="flex items-start gap-2 p-2 bg-muted/30 rounded">
+                              <Receipt className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">
+                                  {customerData.customer.address.street}
+                                </p>
+                                <p className="text-sm text-muted-foreground">
+                                  {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
+                                </p>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -2485,34 +2496,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   )}
                   </div>
 
-                  {/* Billing Address */}
-                  {customerData?.customer?.address && (
-                    <Card>
-                      <CardHeader>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="w-6 h-6 text-primary" />
-                          <CardTitle>Billing Address</CardTitle>
-                        </div>
-                        <CardDescription>
-                          Your primary billing address on file
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border">
-                          <Receipt className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                          <div className="flex-1">
-                            <p className="font-medium">
-                              {customerData.customer.address.street}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {customerData.customer.address.city}, {customerData.customer.address.state} {customerData.customer.address.zip}
-                            </p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
-
                   {/* Service Locations */}
                   {customerLocations.length > 0 && (
                     <Card>
@@ -2542,28 +2525,76 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                         {customerLocations.map((location, index) => (
                           <div
                             key={location.id}
-                            className="flex items-start gap-3 p-4 bg-muted/30 rounded-lg border"
+                            className="flex flex-col gap-3 p-4 bg-muted/30 rounded-lg border"
                             data-testid={`location-card-${location.id}`}
                           >
-                            <Home className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
-                            <div className="flex-1">
-                              {location.name && (
-                                <p className="text-xs text-muted-foreground mb-1">
-                                  {location.name}
+                            <div className="flex items-start gap-3">
+                              <Home className="w-5 h-5 text-primary flex-shrink-0 mt-1" />
+                              <div className="flex-1">
+                                {location.name && (
+                                  <p className="text-xs text-muted-foreground mb-1">
+                                    {location.name}
+                                  </p>
+                                )}
+                                <p className="font-medium" data-testid={`text-location-street-${location.id}`}>
+                                  {location.address.street}
                                 </p>
-                              )}
-                              <p className="font-medium" data-testid={`text-location-street-${location.id}`}>
-                                {location.address.street}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {location.address.city}, {location.address.state} {location.address.zip}
-                              </p>
-                              {index === 0 && customerLocations.length > 1 && (
-                                <Badge variant="secondary" className="mt-2 text-xs">
-                                  Primary
-                                </Badge>
-                              )}
+                                <p className="text-sm text-muted-foreground">
+                                  {location.address.city}, {location.address.state} {location.address.zip}
+                                </p>
+                                <div className="flex gap-2 mt-2 flex-wrap">
+                                  {index === 0 && customerLocations.length > 1 && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Primary
+                                    </Badge>
+                                  )}
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      // TODO: Open manage location contacts dialog
+                                      console.log('Manage contacts for location', location.id);
+                                    }}
+                                    data-testid={`button-manage-location-contacts-${location.id}`}
+                                    className="h-auto py-1 px-2 text-xs"
+                                  >
+                                    Manage Contacts
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
+                            
+                            {/* Location-specific contacts */}
+                            {location.contacts && location.contacts.length > 0 && (
+                              <div className="pl-8 space-y-2 border-l-2 border-primary/20">
+                                <p className="text-xs font-semibold text-muted-foreground">Location Contacts</p>
+                                {location.contacts.map((contact: any, contactIndex: number) => {
+                                  const isEmail = contact.type === 'Email';
+                                  const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
+                                  
+                                  if (!isEmail && !isPhone) return null;
+                                  
+                                  return (
+                                    <div key={contactIndex} className="flex items-start gap-2 p-2 bg-background/50 rounded text-sm">
+                                      {isEmail ? (
+                                        <Mail className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                      ) : (
+                                        <PhoneIcon className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
+                                      )}
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-xs text-muted-foreground">
+                                          {contact.type === 'MobilePhone' ? 'Mobile' : contact.type}
+                                          {contact.name && ` - ${contact.name}`}
+                                        </p>
+                                        <p className="font-medium break-all" data-testid={`location-${location.id}-contact-${contactIndex}`}>
+                                          {contact.value}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </CardContent>
