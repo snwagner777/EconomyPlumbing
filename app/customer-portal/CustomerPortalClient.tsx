@@ -2636,7 +2636,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     </Card>
                   )}
 
-                  {/* Open Estimates - Backend already filters for unsold estimates */}
+                  {/* Open Estimates - Redesigned with urgency indicators */}
                   {(() => {
                     // Backend now filters for unsold estimates (where soldOn is null)
                     const openEstimates = customerData?.estimates || [];
@@ -2644,62 +2644,143 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     if (openEstimates.length === 0) return null;
 
                     return (
-                      <Card>
-                        <CardHeader>
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-6 h-6 text-primary" />
-                            <CardTitle>Open Estimates</CardTitle>
+                      <Card className="border-primary/30">
+                        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-primary/10 rounded-lg">
+                                <FileText className="w-6 h-6 text-primary" />
+                              </div>
+                              <div>
+                                <CardTitle className="text-xl">Open Estimates</CardTitle>
+                                <CardDescription className="mt-1">
+                                  {openEstimates.length} {openEstimates.length === 1 ? 'estimate' : 'estimates'} awaiting your decision
+                                </CardDescription>
+                              </div>
+                            </div>
+                            <Badge variant="secondary" className="text-sm">
+                              {openEstimates.length}
+                            </Badge>
                           </div>
-                          <CardDescription>
-                            Your pending estimates and quotes (valid for 30 days)
-                          </CardDescription>
                         </CardHeader>
-                        <CardContent>
-                          <div className="overflow-x-auto pb-2">
-                            <div className="flex gap-4 min-w-max">
-                              {openEstimates.map((estimate) => (
+                        <CardContent className="p-6">
+                          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-1">
+                            {openEstimates.map((estimate) => {
+                              // Calculate urgency level
+                              const isExpiringSoon = estimate.expirationStatus === 'expiring_soon';
+                              const isExpired = estimate.expirationStatus === 'expired';
+                              const daysLeft = estimate.daysUntilExpiration || 0;
+                              
+                              return (
                                 <Card
                                   key={estimate.id}
-                                  className="w-80 flex-shrink-0 hover-elevate active-elevate-2 cursor-pointer"
+                                  className={`overflow-hidden transition-all duration-200 cursor-pointer hover-elevate active-elevate-2 ${
+                                    isExpiringSoon ? 'border-amber-500/50 shadow-amber-500/10 shadow-lg' : 
+                                    isExpired ? 'border-destructive/50 shadow-destructive/10 shadow-lg' : 
+                                    'border-primary/30'
+                                  }`}
                                   onClick={() => {
                                     setSelectedEstimate(estimate);
                                     setEstimateDetailOpen(true);
                                   }}
                                   data-testid={`estimate-card-${estimate.id}`}
                                 >
-                                  <CardContent className="p-4">
-                                    <div className="flex items-start justify-between gap-2 mb-3">
-                                      <div className="flex-1">
-                                        <h4 className="font-semibold">Estimate #{estimate.estimateNumber}</h4>
-                                        {estimate.summary && (
-                                          <p className="text-sm text-muted-foreground line-clamp-1">{estimate.summary}</p>
-                                        )}
-                                      </div>
-                                      <div className="flex flex-col gap-1 items-end">
-                                        {getStatusBadge(estimate.status)}
-                                        {getExpirationBadge(estimate)}
-                                      </div>
+                                  {/* Urgency Banner */}
+                                  {(isExpiringSoon || isExpired) && (
+                                    <div className={`py-2 px-4 text-center text-sm font-semibold ${
+                                      isExpired ? 'bg-destructive text-destructive-foreground' : 
+                                      'bg-amber-500 text-white'
+                                    }`}>
+                                      {isExpired ? 'EXPIRED' : `EXPIRES IN ${daysLeft} ${daysLeft === 1 ? 'DAY' : 'DAYS'} - ACT NOW!`}
                                     </div>
-                                    <div className="space-y-2 text-sm">
-                                      <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Total:</span>
-                                        <span className="font-semibold text-primary">{formatCurrency(estimate.total)}</span>
-                                      </div>
-                                      <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Created:</span>
-                                        <span>{formatDate(estimate.createdOn)}</span>
-                                      </div>
-                                      {estimate.expiresOn && (
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">Expires:</span>
-                                          <span>{formatDate(estimate.expiresOn)}</span>
+                                  )}
+                                  
+                                  <CardContent className="p-6">
+                                    <div className="space-y-4">
+                                      {/* Header with estimate number and price */}
+                                      <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="text-xl font-bold">Estimate #{estimate.estimateNumber}</h3>
+                                            {getStatusBadge(estimate.status)}
+                                          </div>
+                                          {estimate.summary && (
+                                            <p className="text-muted-foreground line-clamp-2">{estimate.summary}</p>
+                                          )}
                                         </div>
-                                      )}
+                                        <div className="text-right">
+                                          <p className="text-sm text-muted-foreground mb-1">Total</p>
+                                          <p className="text-3xl font-bold text-primary">{formatCurrency(estimate.total)}</p>
+                                        </div>
+                                      </div>
+                                      
+                                      {/* Expiration countdown */}
+                                      <div className={`p-4 rounded-lg ${
+                                        isExpiringSoon ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800' : 
+                                        isExpired ? 'bg-destructive/10 border border-destructive/30' :
+                                        'bg-muted/50 border'
+                                      }`}>
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <Clock className={`w-5 h-5 ${
+                                              isExpiringSoon ? 'text-amber-600 dark:text-amber-500' : 
+                                              isExpired ? 'text-destructive' :
+                                              'text-muted-foreground'
+                                            }`} />
+                                            <div>
+                                              <p className="text-sm font-medium">
+                                                {isExpired ? 'Estimate Expired' : 'Valid Until'}
+                                              </p>
+                                              <p className={`text-xs ${
+                                                isExpiringSoon ? 'text-amber-700 dark:text-amber-400' : 
+                                                isExpired ? 'text-destructive' :
+                                                'text-muted-foreground'
+                                              }`}>
+                                                {estimate.expiresOn ? formatDate(estimate.expiresOn) : 'See estimate'}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          {!isExpired && daysLeft > 0 && (
+                                            <div className={`text-right ${
+                                              isExpiringSoon ? 'text-amber-700 dark:text-amber-400' : 'text-muted-foreground'
+                                            }`}>
+                                              <p className="text-2xl font-bold">{daysLeft}</p>
+                                              <p className="text-xs">{daysLeft === 1 ? 'day left' : 'days left'}</p>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Action buttons */}
+                                      <div className="flex gap-3 pt-2">
+                                        <Button 
+                                          size="lg" 
+                                          className="flex-1"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedEstimate(estimate);
+                                            setEstimateDetailOpen(true);
+                                          }}
+                                          data-testid={`button-view-estimate-${estimate.id}`}
+                                        >
+                                          <FileText className="w-4 h-4 mr-2" />
+                                          View Details & Accept
+                                        </Button>
+                                      </div>
+
+                                      {/* Footer info */}
+                                      <div className="flex items-center justify-between text-xs text-muted-foreground pt-2 border-t">
+                                        <span>Created {formatDate(estimate.createdOn)}</span>
+                                        <span className="flex items-center gap-1">
+                                          <AlertCircle className="w-3 h-3" />
+                                          Click to view full details
+                                        </span>
+                                      </div>
                                     </div>
                                   </CardContent>
                                 </Card>
-                              ))}
-                            </div>
+                              );
+                            })}
                           </div>
                         </CardContent>
                       </Card>
