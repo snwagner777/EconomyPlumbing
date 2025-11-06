@@ -2072,10 +2072,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                           // Handle 0 services case first
                           if (customerStats.serviceCount === 0 || customerStats.topPercentile === null) {
                             return (
-                              <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => {
-                                const element = document.getElementById('job-history-section');
-                                element?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }}>
+                              <Card className="hover-elevate w-full h-full overflow-hidden cursor-pointer" data-testid="card-service-history" onClick={() => setSchedulerOpen(true)}>
                                 <CardContent className="p-4 flex flex-col items-center justify-center text-center w-full h-full relative">
                                   <Home className="w-8 h-8 text-primary mb-2" />
                                   <div className="text-base font-bold mb-1">
