@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
     if (reviewData.requestId) {
       try {
         const { db } = await import('@/server/db');
-        const { reviewRequests } = await import('@/shared/schema');
+        const { reviewRequests } = await import('@shared/schema');
         const { eq } = await import('drizzle-orm');
         
         const [reviewRequest] = await db

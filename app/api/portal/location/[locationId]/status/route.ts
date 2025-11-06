@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
-import { sessionOptions, SessionData } from '@/server/types/iron-session';
+import { sessionOptions, SessionData } from '@/lib/session';
 import { cookies } from 'next/headers';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';

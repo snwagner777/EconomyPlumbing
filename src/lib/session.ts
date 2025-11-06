@@ -35,7 +35,7 @@ if (!process.env.SESSION_SECRET) {
   throw new Error('SESSION_SECRET environment variable is required');
 }
 
-const sessionOptions = {
+export const sessionOptions = {
   password: process.env.SESSION_SECRET,
   cookieName: 'plumbing_session',
   ttl: 7 * 24 * 60 * 60, // 1 week (in seconds)
