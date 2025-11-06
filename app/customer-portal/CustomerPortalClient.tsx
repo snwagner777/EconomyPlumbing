@@ -3064,12 +3064,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             lastName: customerData.customer.name.split(' ').slice(1).join(' ') || '',
             email: customerData.customer.email || '',
             phone: customerData.customer.phoneNumber || '',
-            address: customerData.customer.address?.street || '',
-            city: customerData.customer.address?.city || '',
-            state: customerData.customer.address?.state || '',
-            zip: customerData.customer.address?.zip || '',
+            address: customerLocations[0]?.address?.street || customerData.customer.address?.street || '',
+            city: customerLocations[0]?.address?.city || customerData.customer.address?.city || '',
+            state: customerLocations[0]?.address?.state || customerData.customer.address?.state || '',
+            zip: customerLocations[0]?.address?.zip || customerData.customer.address?.zip || '',
             serviceTitanId: customerData.customer.id,
             customerTags: customerData.customer.customerTags || [],
+            locationId: customerLocations[0]?.id,
           }}
           utmSource="customer-portal"
         />

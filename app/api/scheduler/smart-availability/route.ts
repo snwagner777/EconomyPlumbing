@@ -229,7 +229,7 @@ export async function POST(req: NextRequest) {
         period: getTimePeriod(slot.start),
         proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
-        zone: customerZone || undefined,
+        zone: serviceLocationZone || undefined,
         technicianId: proximityResult.technicianId, // Pre-assigned technician for optimal routing
       };
     }).filter((slot): slot is ScoredSlot => slot !== null); // Remove filtered-out Hill Country afternoon slots
@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
       success: true,
       slots: scoredSlots,
       optimization: {
-        customerZone,
+        customerZone: serviceLocationZone,
         totalSlots: scoredSlots.length,
         optimizedSlots: scoredSlots.filter(s => s.proximityScore > 50).length,
       },
