@@ -162,9 +162,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   : 'text-blue-700 dark:text-blue-300'
               }`}>
                 {hasHighEfficiencySlots 
-                  ? allTopSlotsEquallyEfficient
-                    ? 'These times have equal efficiency - we already have jobs nearby! Showing earliest first.'
-                    : 'We already have other jobs scheduled nearby during these times - great for reducing costs and wait times!'
+                  ? 'These are our most fuel-efficient appointment times! We already have other jobs scheduled nearby, which helps us reduce travel costs and offer you faster service.'
                   : 'Select a time that works best for your schedule'
                 }
               </p>
@@ -203,22 +201,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                           {format(new Date(slot.start), 'EEEE, MMMM d')}
                         </p>
                       </div>
-                      
-                      {/* Efficiency Score Badge */}
-                      {(slot.proximityScore || 0) > 0 && (
-                        <Badge 
-                          variant="secondary" 
-                          className={`text-xs shrink-0 ${
-                            isSelected 
-                              ? 'bg-white/20 text-white border-white/30' 
-                              : (slot.proximityScore || 0) >= 70
-                                ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
-                                : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                          }`}
-                        >
-                          {slot.proximityScore}% efficient
-                        </Badge>
-                      )}
                     </div>
                   </div>
                 </Card>
@@ -356,21 +338,6 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                                 <Clock className="w-4 h-4 shrink-0" />
                                 <span className="font-semibold text-sm sm:text-base">{slot.timeLabel}</span>
                               </div>
-                              {/* Efficiency Score Badge */}
-                              {score > 0 && (
-                                <Badge 
-                                  variant="secondary" 
-                                  className={`text-xs shrink-0 ${
-                                    isSelected
-                                      ? 'bg-white/20 text-white border-white/30'
-                                      : score >= 70
-                                        ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 border-green-300 dark:border-green-700'
-                                        : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
-                                  }`}
-                                >
-                                  {score}%
-                                </Badge>
-                              )}
                             </Button>
                           );
                         })}
