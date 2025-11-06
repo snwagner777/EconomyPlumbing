@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { formatPhoneNumber } from "@/lib/phoneUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -153,7 +154,7 @@ interface CustomerPortalClientProps {
 
 export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConfig }: CustomerPortalClientProps) {
   const [lookupValue, setLookupValue] = useState("");
-  const [lookupType, setLookupType] = useState<"phone" | "email">("email");
+  const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupSuccess, setLookupSuccess] = useState<string | null>(null);
@@ -2072,7 +2073,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                         {contact.type === 'MobilePhone' ? 'Mobile' : contact.type}
                                       </p>
                                       <p className="text-sm font-medium break-all" data-testid={`contact-${contact.type.toLowerCase()}-${index}`}>
-                                        {contact.value}
+                                        {isEmail ? contact.value : formatPhoneNumber(contact.value)}
                                       </p>
                                       {contact.memo && contact.memo !== 'email' && contact.memo !== 'Phone' && contact.memo !== 'mobile' && (
                                         <p className="text-xs text-muted-foreground mt-0.5">
@@ -2091,7 +2092,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                   <PhoneIcon className="w-3 h-3 text-primary flex-shrink-0 mt-0.5" />
                                   <div className="flex-1">
                                     <p className="text-xs text-muted-foreground">Phone</p>
-                                    <p className="text-sm font-medium" data-testid="text-customer-phone">{customerData.customer.phoneNumber}</p>
+                                    <p className="text-sm font-medium" data-testid="text-customer-phone">{formatPhoneNumber(customerData.customer.phoneNumber)}</p>
                                   </div>
                                 </div>
                               )}
@@ -3545,7 +3546,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           open={showReferralModal}
           onOpenChange={setShowReferralModal}
           customerName={customerData.customer.name}
-          customerPhone={customerData.customer.phoneNumber}
+          customerPhone={formatPhoneNumber(customerData.customer.phoneNumber)}
           customerId={customerId!}
           referralCode={referralLinkData.code}
         />
