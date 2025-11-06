@@ -1,48 +1,10 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement.
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, manage operations, and drive growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement. Key ambitions include becoming a leading service provider by leveraging technology, increasing customer lifetime value through personalized engagement, and optimizing operational efficiency with intelligent automation.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
-
-**ServiceTitan Scheduler Integration - CRITICAL**
-- ALWAYS use the exact embed code provided by ServiceTitan (reference: attached_assets/Screenshot 2025-11-02 at 8.08.50 PM_1762135732654.png)
-- Script MUST be placed at end of `<body>` tag exactly as shown:
-```html
-<script>
-  (function(q,w,e,r,t,y,u){q[t]=q[t]||function(){(q[t].q = q[t].q || []).push(arguments)};
-    q[t].l=1*new Date();y=w.createElement(e);u=w.getElementsByTagName(e)[0];y.async=true;
-    y.src=r;u.parentNode.insertBefore(y,u);q[t]('init', '3ce4a586-8427-4716-9ac6-46cb8bf7ac4f');
-  })(window, document, 'script', 'https://static.servicetitan.com/webscheduler/shim.js', 'STWidgetManager');
-</script>
-```
-- Button onclick attribute: `onclick="STWidgetManager('ws-open')"`
-- NEVER modify, "improve", or wrap this code - use ServiceTitan's exact implementation
-- Do NOT use `window.STWidgetManager` - use direct `STWidgetManager` calls as specified
-
-**Custom Appointment Scheduler - Conversational Design**
-- Features truly conversational customer creation wizard (NewCustomerWizard.tsx) - one question at a time, not form-like
-- Question flow: First name → Last name → Customer type (Residential/Commercial buttons) → Phone → Email → Billing address (street/unit/city/state/zip) → Service location same? (Yes/No buttons) → (if different) Location details
-- NO visible form labels - questions are conversational ("What's your first name?" not "First Name:")
-- Smart auto-advance between steps with Enter key support
-- Optional fields (unit numbers) can be skipped with "Skip" button
-- Supports separate billing address vs service location addresses
-- Creates customer immediately in ServiceTitan when wizard completes (atomic operation)
-- ServiceTitan V2 API requirement: customers MUST include `locations` array (every customer needs at least one location)
-- Force create flag: "Create New Customer" button creates new record even if phone/email matches existing customer
-- **Database Sync:** When creating customers via ServiceTitan API, immediately write to `customers_xlsx` database with the new customer ID that ServiceTitan returns - this enables instant portal/scheduler access without waiting for the next hourly XLSX import
-
-**Estimate Acceptance Workflow**
-- Customer portal displays open estimates (unsold, not dismissed, created within last 30 days)
-- Automatic filtering excludes: sold estimates (soldOn not null), dismissed estimates (dismissedOn not null), estimates older than 30 days
-- "Accept Estimate" button in estimate detail modal launches confirmation dialog
-- Confirmation dialog shows estimate details, terms/conditions checkbox, and "What Happens Next" steps
-- Security: API validates estimate belongs to authenticated customer before allowing acceptance
-- On acceptance: marks estimate as sold in ServiceTitan via PATCH API, sends notification emails to admin and customer
-- Admin email includes estimate details, customer info, and direct link to ServiceTitan estimate
-- Customer email confirms acceptance and sets expectation for scheduling callback within 1 business day
-- Accepted estimates immediately removed from customer's open estimates list via cache invalidation
 
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
 - The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
@@ -113,6 +75,27 @@ export default function NewServicePage() {
 5. **Extract interactivity** - Create separate Client components for forms, buttons, state management
 6. **Pass data as props** - Server Component → fetches data → passes to Client Component
 
+### SSR Priority Guidelines - Which Pages MUST Be Server-Rendered:
+
+**HIGH PRIORITY (Critical for SEO) - MUST be Server Components:**
+- ✅ All public-facing content pages (services, areas, blog posts, about, contact)
+- ✅ Landing pages with UTM tracking (schedule-appointment, referral offers)
+- ✅ Payment success/confirmation pages (for proper analytics tracking)
+- ✅ All pages that appear in sitemap.xml
+- ✅ Pages with structured data (JSON-LD schemas)
+- ✅ Dynamic routes with SEO value ([slug] pages for blog, services, areas)
+
+**MEDIUM PRIORITY (Good for performance) - Should be Server Components:**
+- ⚠️ Public forms with minimal client interaction
+- ⚠️ Static informational pages
+- ⚠️ Pages with server-fetched data that doesn't update frequently
+
+**LOW PRIORITY (Can remain Client Components) - CSR Acceptable:**
+- ❌ Admin dashboards (not public, not SEO-critical)
+- ❌ Authenticated portals (customer portal, behind login)
+- ❌ Real-time interactive tools (calculators with constant state updates)
+- ❌ Internal-only pages (unsubscribe, email preferences with tokens)
+
 ## System Architecture
 
 ### URL Structure (CRITICAL)
@@ -137,18 +120,14 @@ export default function NewServicePage() {
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
-- **ServiceTitan Integration:** 
-  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS.
-    - **Primary Data Source:** Hourly Mailgun XLSX imports (ServiceTitan export) populate the database with ~13,000 customers
-    - **Bi-Directional Sync:** When creating customers via ServiceTitan API (scheduler, contact forms, portal signup), immediately write to `customers_xlsx` database with the new customer ID that ServiceTitan returns. This ensures instant portal/scheduler access without waiting for next XLSX sync.
-    - **What's Stored:** Customer ID (ServiceTitan), name, type (Residential/Commercial), phone(s), email(s), active status
-    - **What's NOT Stored:** Full address data is fetched fresh from ServiceTitan API when customers schedule or access portal
-  - **DEPRECATED TABLE:** `service_titan_contacts` - Old API sync from October 23, 2025. Never updated, never maintained. NEVER reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
+- **ServiceTitan Integration:**
+  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access for new customers created via ServiceTitan API.
+  - **DEPRECATED TABLE:** `service_titan_contacts` - Never reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
   - **API Services:** Custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
-- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes replacing complex ServiceTitan job scanning. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes in emails and customer portal. Vouchers auto-create reward for referrer when referee's voucher is redeemed. Database-first with AI-generated emails and engagement tracking.
+- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes. Vouchers auto-create reward for referrer when referee's voucher is redeemed.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
 
@@ -165,7 +144,7 @@ export default function NewServicePage() {
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
 - **SMS Providers:** Twilio, Zoom Phone.
-- **AI Services:** OpenAI (GPT-4o for blog generation, photo analysis, focal point detection; GPT-4o-mini for chatbot).
+- **AI Services:** OpenAI (GPT-4o, GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive.
 - **Google Services:** Google Places API, Google Maps.
 - **SEO Data:** DataForSEO API.
