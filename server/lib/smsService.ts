@@ -7,6 +7,13 @@
  * - Review requests, marketing campaigns, referrals, transactional messages
  * - TCPA compliance, opt-in/opt-out checking
  * - Delivery tracking, cost tracking, template system
+ * 
+ * CRITICAL REQUIREMENT (as of Nov 6, 2025):
+ * - NEVER send marketing/promotional SMS to users who have NOT explicitly opted in via checkbox
+ * - Users must check the A2P consent checkbox with required verbiage before receiving ANY promotional messages
+ * - EXCEPTION: 2FA/authentication messages and transactional messages (review requests) do NOT require opt-in
+ * - Opt-in consent is stored in contactSubmissions.smsConsent field
+ * - When rebuilding this service, ensure checkOptIn is TRUE for all marketing messageTypes
  */
 
 import { sendSMS as twilioSendSMS } from "./sms";
