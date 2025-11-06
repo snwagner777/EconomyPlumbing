@@ -2126,7 +2126,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                     🎉 First Time Customer
                                   </Badge>
                                   <p className="text-xs text-muted-foreground mt-1 px-2 line-clamp-3">
-                                    We're excited to serve you! Schedule your first service or call us at (512) 259-7222 for any plumbing needs.
+                                    We're excited to serve you! Schedule your first service or call us at {phoneConfig.displayNumber} for any plumbing needs.
                                   </p>
                                   <p className="text-xs text-primary mt-2 absolute bottom-2">Get Started →</p>
                                 </CardContent>
@@ -2163,7 +2163,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                             badgeVariant = "secondary";
                           } else {
                             // Encourage more engagement
-                            message = `We're here when you need us! Remember, we offer maintenance plans, emergency services, and more. Give us a call anytime at (512) 259-7222!`;
+                            message = `We're here when you need us! Remember, we offer maintenance plans, emergency services, and more. Give us a call anytime at ${phoneConfig.displayNumber}!`;
                             icon = Phone;
                             emoji = '📞';
                             badgeVariant = "outline";

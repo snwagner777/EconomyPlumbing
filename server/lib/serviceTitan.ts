@@ -1415,16 +1415,34 @@ class ServiceTitanAPI {
       // Map estimates to display format
       const estimates = result.data || [];
       
-      // Filter for UNSOLD estimates only (where soldOn is null/empty)
-      const unsoldEstimates = estimates.filter((e: any) => !e.soldOn);
-      console.log(`[ServiceTitan] Filtered to ${unsoldEstimates.length} unsold estimates from ${estimates.length} total`);
+      // Filter for UNSOLD and ACTIVE estimates only
+      // Exclude: sold estimates (soldOn not null), dismissed estimates (dismissedOn not null)
+      // Exclude: estimates older than 30 days
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const activeEstimates = estimates.filter((e: any) => {
+        // Exclude sold estimates
+        if (e.soldOn) return false;
+        
+        // Exclude dismissed estimates  
+        if (e.dismissedOn) return false;
+        
+        // Exclude estimates older than 30 days
+        const createdDate = new Date(e.createdOn);
+        if (createdDate < thirtyDaysAgo) return false;
+        
+        return true;
+      });
+      
+      console.log(`[ServiceTitan] Filtered to ${activeEstimates.length} active estimates (unsold, not dismissed, <30 days old) from ${estimates.length} total`);
       
       // Create memoization cache for pricebook items to avoid duplicate API calls
       const pricebookCache = new Map<string, any>();
       
       // Enhance each estimate with pricebook item details
       const enhancedEstimates = await Promise.all(
-        unsoldEstimates.map(async (estimate: any) => {
+        activeEstimates.map(async (estimate: any) => {
           const items = estimate.items || [];
           
           // Fetch pricebook details for each item
