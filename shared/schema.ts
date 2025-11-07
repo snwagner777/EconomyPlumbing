@@ -1400,7 +1400,7 @@ export const phoneLoginLookups = pgTable("phone_login_lookups", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   lookupToken: text("lookup_token").notNull().unique(),
   phone: text("phone").notNull(),
-  email: text("email").notNull(),
+  email: text("email"), // Optional - customers may only have phone or SMS verification
   customerId: integer("customer_id").notNull(),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
   createdAt: timestamp("created_at").defaultNow(),

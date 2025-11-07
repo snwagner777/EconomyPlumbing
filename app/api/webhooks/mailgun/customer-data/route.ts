@@ -13,6 +13,7 @@ import { Readable } from 'stream';
 import { createHmac } from 'crypto';
 import * as xlsx from 'xlsx';
 import { storage } from '@/server/storage';
+import { db } from '@/server/db';
 
 interface BusboyFile {
   buffer: Buffer;
@@ -181,7 +182,9 @@ export async function POST(req: NextRequest) {
 
     // FULL REPLACE with transaction safety: All-or-nothing import
     console.log('[Mailgun] Starting transactional full replace import...');
+    const importStartTime = Date.now();
     const importedCount = await storage.replaceAllCustomersXlsx(customersToImport);
+    const processingTime = Date.now() - importStartTime;
 
     console.log('[Mailgun] Full replace import complete:', {
       imported: importedCount,
@@ -189,11 +192,33 @@ export async function POST(req: NextRequest) {
       total: rows.length,
     });
 
+    // Record import metadata to customer_data_imports table
+    const { customerDataImports } = await import('@shared/schema');
+    const importId = `import_${new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').substring(0, 23)}`;
+    
+    await db.insert(customerDataImports).values({
+      id: importId,
+      fileName: xlsxFile.filename,
+      importSource: 'email',
+      totalRows: rows.length,
+      customersImported: importedCount,
+      contactsImported: customersWithPhone + customersWithEmail + customersWithBoth,
+      errors: skippedCount,
+      totalLifetimeRevenue: 0, // TODO: Calculate from actual customer data
+      status: 'completed',
+      startedAt: new Date(Date.now() - processingTime),
+      completedAt: new Date(),
+      processingTime,
+    });
+
+    console.log('[Mailgun] Import metadata recorded:', importId);
+
     return NextResponse.json({
       success: true,
       imported: importedCount,
       skipped: skippedCount,
       total: rows.length,
+      importId,
     });
   } catch (error) {
     console.error('[Mailgun] Error processing webhook:', error);

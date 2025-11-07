@@ -93,55 +93,99 @@ export async function POST(req: NextRequest) {
 
     const maskedPhone = maskPhone(customer.phone || normalizedPhone);
 
-    // Determine verification method based on available contact info
-    const hasEmail = !!(customer.email && customer.email.trim());
-    const verificationType = hasEmail ? 'email' : 'sms';
+    // Parse email field - could contain multiple comma-separated emails
+    const parseEmails = (emailField: string | null): string[] => {
+      if (!emailField || !emailField.trim()) return [];
+      return emailField
+        .split(',')
+        .map(e => e.trim())
+        .filter(e => e.length > 0 && e.includes('@'));
+    };
 
-    let primaryContact = normalizedPhone;
-    let maskedContact = maskedPhone;
+    const emails = parseEmails(customer.email);
+    const hasEmail = emails.length > 0;
     
-    if (hasEmail) {
-      primaryContact = customer.email.trim();
+    // Mask email for privacy (show first 2 chars and domain)
+    const maskEmail = (email: string) => {
+      const [localPart, domain] = email.split('@');
+      if (!localPart || !domain) return email;
       
-      // Mask the email for privacy (show first 2 chars and domain)
-      const maskEmail = (email: string) => {
-        const [localPart, domain] = email.split('@');
-        if (!localPart || !domain) return email;
-        
-        const visibleChars = Math.min(2, localPart.length);
-        const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
-        return `${maskedLocal}@${domain}`;
-      };
+      const visibleChars = Math.min(2, localPart.length);
+      const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+      return `${maskedLocal}@${domain}`;
+    };
+
+    // If customer has NO email, they must use SMS verification
+    if (!hasEmail) {
+      console.log("[Portal Phone Auth] Customer has no email, SMS verification required");
       
-      maskedContact = maskEmail(primaryContact);
+      // Generate lookup token for SMS flow
+      const lookupToken = crypto.randomUUID();
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+      // Create phone_login_lookups record with null email (SMS verification)
+      await db.insert(phoneLoginLookups).values({
+        lookupToken,
+        phone: normalizedPhone,
+        email: null,
+        customerId: customer.id,
+        expiresAt,
+      });
+
+      console.log("[Portal Phone Auth] SUCCESS: Found customer (SMS only)", customer.id);
+      
+      return NextResponse.json({
+        customerId: customer.id,
+        phone: normalizedPhone,
+        email: null,
+        maskedContact: maskedPhone,
+        maskedPhone: maskedPhone,
+        verificationType: 'sms',
+        lookupToken: lookupToken
+      });
     }
 
-    // Generate a secure lookup token
-    const lookupToken = crypto.randomUUID();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    // If customer has MULTIPLE emails, return them for selection (don't create lookup yet)
+    if (emails.length > 1) {
+      console.log(`[Portal Phone Auth] Found ${emails.length} emails for customer ${customer.id}, requiring selection`);
+      
+      return NextResponse.json({
+        customerId: customer.id,
+        phone: normalizedPhone,
+        requiresEmailSelection: true,
+        emails: emails.map(email => ({
+          value: email,
+          masked: maskEmail(email)
+        })),
+        maskedPhone: maskedPhone,
+        message: 'We found multiple email addresses for your account. Please select which one to use for verification.'
+      });
+    }
 
-    // Store lookup in database
+    // Customer has exactly ONE email - proceed with creating lookup record
+    const primaryEmail = emails[0];
+    const lookupToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
     await db.insert(phoneLoginLookups).values({
       lookupToken,
       phone: normalizedPhone,
-      email: hasEmail ? primaryContact : null,
+      email: primaryEmail,
       customerId: customer.id,
       expiresAt,
     });
 
-    console.log("[Portal Phone Auth] SUCCESS: Found customer", customer.id);
-    console.log("[Portal Phone Auth] Verification type:", verificationType);
-    console.log("[Portal Phone Auth] Contact:", hasEmail ? 'email' : 'phone');
-    console.log("[Portal Phone Auth] Stored lookup token, expires at:", expiresAt);
+    console.log("[Portal Phone Auth] SUCCESS: Found customer with single email", customer.id);
+    console.log("[Portal Phone Auth] Contact:", primaryEmail);
 
     return NextResponse.json({
       customerId: customer.id,
       phone: normalizedPhone,
-      email: hasEmail ? primaryContact : null,
-      maskedContact: maskedContact,
-      maskedEmail: hasEmail ? maskedContact : null,  // Backwards compatibility
+      email: primaryEmail,
+      maskedContact: maskEmail(primaryEmail),
+      maskedEmail: maskEmail(primaryEmail),
       maskedPhone: maskedPhone,
-      verificationType: verificationType,
+      verificationType: 'email',
       lookupToken: lookupToken
     });
   } catch (error: any) {
