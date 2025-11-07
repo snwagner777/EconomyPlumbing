@@ -353,11 +353,11 @@ ${emailNumber === 1 ? `
 - Still warm and helpful, not salesy
 - "When you're ready, we're here"
 ` : `
-- Final soft touch: limited-time seasonal offer or discount (if appropriate)
-- Express appreciation for their consideration
+- Final soft touch: Express appreciation for their consideration
 - Leave door open: "We hope to earn your business in the future"
 - Include testimonial or social proof
 - Thank them regardless of whether they book
+- IMPORTANT: DO NOT offer any discounts, promotions, or special offers unless explicitly provided in template
 `}
 
 ${phoneNumber ? `IMPORTANT: Include the phone number ${phoneNumber} in the email signature for tracking purposes. Format: "Questions? Call us at ${phoneNumber}"` : ''}

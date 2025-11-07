@@ -132,7 +132,35 @@ export default function NewServicePage() {
     - Returns `isAvailable` boolean and `openAvailability` hours for each time slot
     - Replaced manual appointment overlap checking which caused false positives (e.g., Monday 8-12 showing available when fully booked)
   - **DEPRECATED:** Old `checkAvailability()` method and manual slot generation functions - all replaced by Capacity API integration
-- **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation. Campaign triggers: Review requests auto-created from invoice PDFs (4 emails over 21 days), Quote follow-ups auto-created from estimate PDFs (3 emails over 14 days), both check for existing campaigns to prevent duplicates.
+  - **Unified Scheduler System:** Same Capacity API-based scheduler works across:
+    - Frontend scheduler component (`src/components/scheduler/steps/AvailabilityStep.tsx`)
+    - Customer portal reschedule flow (`app/customer-portal/CustomerPortalClient.tsx`)
+    - AI chatbot booking (`app/api/chatbot/route.ts`)
+    - All three call `/api/scheduler/smart-availability` which uses `checkCapacity()` for real-time availability
+- **Marketing Automation (DETAILED WORKFLOW):**
+  - **AI-Powered Email System:** Uses OpenAI GPT-4o to generate personalized campaign emails
+  - **Three Campaign Types:**
+    1. **Review Request** (4 emails over 21 days after invoice)
+    2. **Quote Follow-up** (3 emails over 14 days after estimate)
+    3. **Referral Nurture** (for 5-star reviewers, 6-month drip)
+  - **Customer Contact Retrieval Workflow:**
+    1. Mailgun webhook receives invoice/estimate PDF email from ServiceTitan
+    2. PDF parser (`server/lib/pdfParser.ts`) extracts: customer name, phone, email, document number, amount, line items
+    3. System matches customer in `customers_xlsx` database by phone (normalized) or email (fuzzy match)
+    4. If match found, campaign is auto-created with customer's contact info
+    5. No match = campaign skipped (logged but not created)
+  - **AI Email Personalization Process:**
+    1. Admin approves email template structure in unified admin dashboard
+    2. At send-time, AI personalizes each email using:
+       - Customer name, service type, job amount, location from PDF
+       - Current season context (winter freeze warnings, summer heat, etc.)
+       - Email sequence position (urgency increases over drip)
+       - Messaging strategy (value → trust → social proof → urgency)
+    3. AI generates: subject line, preheader, HTML body, plain text version
+    4. **CRITICAL: NO DISCOUNTS** - AI is explicitly instructed NOT to offer discounts, promotions, or special offers unless manually configured in template
+  - **Duplicate Prevention:** System checks for existing active campaigns before creating new ones
+  - **Campaign-Specific Phone Tracking:** Each campaign type can have dedicated tracking number
+  - **UTM Parameter Generation:** All links auto-tagged with campaign/source/medium for attribution
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
 - **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes. Vouchers auto-create reward for referrer when referee's voucher is redeemed. Referral page includes Header/Footer navigation and requires both phone numbers AND email addresses for referrer and friend.
