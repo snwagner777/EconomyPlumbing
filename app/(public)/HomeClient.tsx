@@ -278,8 +278,8 @@ export default function HomeClient({ phoneConfig, marbleFallsPhoneConfig }: Home
             </div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {services.slice(0, 5).map((service) => (
-                <ServiceCard key={service.title} {...service} />
+              {services.slice(0, 5).map((service, index) => (
+                <ServiceCard key={service.title} {...service} priority={index < 3} />
               ))}
               
               <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border bg-primary/5">

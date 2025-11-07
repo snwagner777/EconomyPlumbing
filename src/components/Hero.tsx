@@ -44,7 +44,7 @@ export default function Hero({ austinPhone }: HeroProps) {
           <div className="flex flex-wrap gap-4 mb-12">
             <Button 
               size="lg" 
-              onClick={openScheduler}
+              onClick={() => openScheduler()}
               className="bg-primary text-primary-foreground text-lg px-8"
               data-testid="button-schedule-hero"
             >

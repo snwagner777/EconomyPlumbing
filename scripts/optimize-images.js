@@ -52,7 +52,7 @@ const imagesToOptimize = [
 
 async function optimizeImage(config) {
   try {
-    const { input, output, width } = config;
+    const { input, output, width, quality = 85 } = config;
     
     console.log(`Processing: ${input}`);
     
@@ -61,7 +61,7 @@ async function optimizeImage(config) {
         fit: 'inside',
         withoutEnlargement: true
       })
-      .webp({ quality: 85 })
+      .webp({ quality })
       .toFile(output);
     
     console.log(`✓ Saved: ${output}`);

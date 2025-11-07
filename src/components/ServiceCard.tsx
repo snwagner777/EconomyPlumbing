@@ -13,9 +13,10 @@ interface ServiceCardProps {
   features: string[];
   link: string;
   image?: string;
+  priority?: boolean;
 }
 
-const ServiceCard = memo(({ icon: Icon, title, description, features, link, image }: ServiceCardProps) => {
+const ServiceCard = memo(({ icon: Icon, title, description, features, link, image, priority = false }: ServiceCardProps) => {
   return (
     <Card className="p-6 hover:shadow-xl transition-shadow border border-card-border">
       {image && (
@@ -26,7 +27,8 @@ const ServiceCard = memo(({ icon: Icon, title, description, features, link, imag
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
-            loading="lazy"
+            priority={priority}
+            loading={priority ? undefined : "lazy"}
           />
         </div>
       )}
