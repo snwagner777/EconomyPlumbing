@@ -31,9 +31,6 @@ export default function ContactForm({
     name: "",
     phone: "",
     email: "",
-    service: "",
-    location: "",
-    urgency: "",
     message: "",
     address: "",
     city: "",
@@ -60,9 +57,6 @@ export default function ContactForm({
         name: "",
         phone: "",
         email: "",
-        service: "",
-        location: "",
-        urgency: "",
         message: "",
         address: "",
         city: "",
@@ -102,39 +96,46 @@ export default function ContactForm({
         <div className="grid lg:grid-cols-2 gap-12">
           <div>
             <h3 className="text-2xl font-bold mb-6">Request Free Estimate</h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="name">Full Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  data-testid="input-name"
-                />
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Contact Information Section */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name">Full Name *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="John Smith"
+                    required
+                    data-testid="input-name"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="phone">Phone Number *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  required
-                  data-testid="input-phone"
-                />
-              </div>
+                <div>
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="(512) 555-1234"
+                    required
+                    data-testid="input-phone"
+                  />
+                </div>
 
-              <div>
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  data-testid="input-email"
-                />
+                <div>
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="john@example.com"
+                    required
+                    data-testid="input-email"
+                  />
+                </div>
               </div>
 
               {/* Honeypot field - hidden from humans, visible to bots */}
@@ -151,110 +152,65 @@ export default function ContactForm({
                 />
               </div>
 
-              <div>
-                <Label htmlFor="service">Service Needed</Label>
-                <Select value={formData.service} onValueChange={(value) => setFormData({ ...formData, service: value })}>
-                  <SelectTrigger id="service" data-testid="select-service">
-                    <SelectValue placeholder="Select a service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="water-heater">Water Heater Repair/Replacement</SelectItem>
-                    <SelectItem value="drain">Drain Cleaning</SelectItem>
-                    <SelectItem value="leak">Leak Detection & Repair</SelectItem>
-                    <SelectItem value="toilet-faucet">Toilet & Faucet Services</SelectItem>
-                    <SelectItem value="commercial">Commercial Plumbing</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+              {/* Service Address Section */}
+              <div className="pt-4 border-t space-y-4">
+                <p className="text-sm font-semibold">Service Address *</p>
+                
+                <div>
+                  <Label htmlFor="address">Street Address *</Label>
+                  <Input
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    placeholder="123 Main St"
+                    required
+                    data-testid="input-address"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      placeholder="Austin"
+                      required
+                      data-testid="input-city"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="zip">ZIP Code *</Label>
+                    <Input
+                      id="zip"
+                      value={formData.zip}
+                      onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
+                      placeholder="78701"
+                      maxLength={5}
+                      required
+                      data-testid="input-zip"
+                    />
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Select value={formData.location} onValueChange={(value) => setFormData({ ...formData, location: value })}>
-                  <SelectTrigger id="location" data-testid="select-location">
-                    <SelectValue placeholder="Select your city" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="austin">Austin</SelectItem>
-                    <SelectItem value="cedar-park">Cedar Park</SelectItem>
-                    <SelectItem value="leander">Leander</SelectItem>
-                    <SelectItem value="round-rock">Round Rock</SelectItem>
-                    <SelectItem value="georgetown">Georgetown</SelectItem>
-                    <SelectItem value="marble-falls">Marble Falls</SelectItem>
-                    <SelectItem value="burnet">Burnet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="urgency">Urgency Level</Label>
-                <Select value={formData.urgency} onValueChange={(value) => setFormData({ ...formData, urgency: value })}>
-                  <SelectTrigger id="urgency" data-testid="select-urgency">
-                    <SelectValue placeholder="Select urgency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="emergency">Emergency (ASAP)</SelectItem>
-                    <SelectItem value="urgent">Urgent (Today)</SelectItem>
-                    <SelectItem value="normal">Normal (This Week)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="message">Describe Your Plumbing Issue</Label>
+              {/* Message Section */}
+              <div className="pt-4 border-t">
+                <Label htmlFor="message">How can we help? *</Label>
                 <Textarea
                   id="message"
                   value={formData.message}
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows={4}
+                  rows={5}
                   maxLength={500}
+                  placeholder="Tell us about your plumbing issue..."
+                  required
                   data-testid="textarea-message"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
                   {formData.message.length}/500 characters
                 </p>
-              </div>
-
-              {/* Address Fields */}
-              <div className="pt-4 border-t">
-                <p className="text-sm font-medium mb-3">Service Address (Optional - helps us serve you better)</p>
-                
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="address">Street Address</Label>
-                    <Input
-                      id="address"
-                      value={formData.address}
-                      onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                      placeholder="123 Main St"
-                      data-testid="input-address"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="city">City</Label>
-                      <Input
-                        id="city"
-                        value={formData.city}
-                        onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                        placeholder="Austin"
-                        data-testid="input-city"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="zip">ZIP Code</Label>
-                      <Input
-                        id="zip"
-                        value={formData.zip}
-                        onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
-                        placeholder="78701"
-                        maxLength={5}
-                        data-testid="input-zip"
-                      />
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* A2P Consent Checkboxes */}

@@ -27,17 +27,14 @@ import { eq } from 'drizzle-orm';
 // Validation schema for contact form
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
-  email: z.string().email('Invalid email address').optional().or(z.literal('')),
+  email: z.string().email('Invalid email address').min(1, 'Email is required'),
   phone: z.string().min(10, 'Phone number is required'),
   message: z.string().min(1, 'Message is required').max(1000),
-  service: z.string().optional(),
-  urgency: z.string().optional(),
-  location: z.string().optional(),
-  // Address fields
-  address: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  zip: z.string().optional(),
+  // Address fields (all required for ServiceTitan customer creation)
+  address: z.string().min(1, 'Street address is required'),
+  city: z.string().min(1, 'City is required'),
+  state: z.string().length(2, 'State must be 2 characters'),
+  zip: z.string().regex(/^\d{5}$/, 'ZIP code must be 5 digits'),
   // Consent fields
   smsConsent: z.boolean().optional().default(false),
   emailConsent: z.boolean().optional().default(false),
@@ -196,12 +193,12 @@ export async function POST(req: NextRequest) {
     // Save to database (this captures form submission + consent preferences)
     const submission = await storage.createContactSubmission({
       name: data.name,
-      email: data.email || null,
+      email: data.email,
       phone: data.phone,
       message: data.message,
-      service: data.service || null,
-      urgency: data.urgency || null,
-      location: data.location || null,
+      service: null, // Removed from form - will be determined when admin/tech reviews submission
+      urgency: null, // Removed from form - will be determined from message content
+      location: null, // Removed from form - extracted from address instead
       pageContext: data.pageContext || null,
       smsConsent: data.smsConsent || false,
       emailConsent: data.emailConsent || false,
