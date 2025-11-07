@@ -11,8 +11,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone } from 'lucide-react';
+import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key } from 'lucide-react';
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
@@ -56,6 +58,7 @@ interface ReviewStepProps {
 
 export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
+  const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
   const { toast } = useToast();
   const meta = getJobTypeMeta(jobType.name);
   const Icon = meta.icon;
@@ -74,7 +77,7 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
         preferredDate: new Date(timeSlot.start),
         arrivalWindowStart: timeSlot.start,
         arrivalWindowEnd: timeSlot.end,
-        specialInstructions: customer.notes,
+        specialInstructions: specialInstructions || undefined,
         bookingSource: 'scheduler_wizard',
         utm_source: 'website',
         ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
@@ -211,15 +214,29 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
             </p>
           </div>
 
-          {customer.notes && (
-            <>
-              <Separator />
-              <div className="text-sm">
-                <p className="text-muted-foreground mb-1">Additional Notes</p>
-                <p className="text-sm">{customer.notes}</p>
-              </div>
-            </>
-          )}
+        </div>
+      </Card>
+
+      {/* Special Instructions / Access Codes */}
+      <Card className="p-6">
+        <div className="space-y-3">
+          <Label htmlFor="specialInstructions" className="flex items-center gap-2 text-base font-semibold">
+            <Key className="w-5 h-5" />
+            Gate Code / Access Instructions (Optional)
+          </Label>
+          <Textarea
+            id="specialInstructions"
+            placeholder="Gate code, parking instructions, where to find you, pet warnings, etc."
+            value={specialInstructions}
+            onChange={(e) => setSpecialInstructions(e.target.value)}
+            rows={3}
+            maxLength={500}
+            className="resize-none"
+            data-testid="textarea-special-instructions"
+          />
+          <p className="text-xs text-muted-foreground">
+            Examples: "Gate code: #1234", "Park in driveway", "Use side entrance", "Dog in backyard"
+          </p>
         </div>
       </Card>
 
