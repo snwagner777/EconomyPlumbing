@@ -79,6 +79,12 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     const slotStartCT = toZonedTime(new Date(slot.start), SCHEDULER_TIMEZONE);
     const slotDateCT = formatInTimeZone(slotStartCT, SCHEDULER_TIMEZONE, 'yyyy-MM-dd');
     
+    // CRITICAL: Filter out ANY slots before today (not just same-day past times)
+    // This prevents yesterday's slots from showing as "available"
+    if (slotDateCT < todayDateCT) {
+      return false; // Slot is in the past - exclude it
+    }
+    
     // If slot is today (in Central Time), check if time has passed
     if (slotDateCT === todayDateCT) {
       return slotStartCT > nowCT; // Only show future times for today (Central Time)

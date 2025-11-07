@@ -53,10 +53,11 @@ interface ReviewStepProps {
   jobType: JobType;
   customer: CustomerInfo;
   timeSlot: TimeSlot;
+  problemDescription?: string;
   onSuccess: () => void;
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewStepProps) {
+export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onSuccess }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
   const { toast } = useToast();
@@ -78,6 +79,7 @@ export function ReviewStep({ jobType, customer, timeSlot, onSuccess }: ReviewSte
         arrivalWindowStart: timeSlot.start,
         arrivalWindowEnd: timeSlot.end,
         specialInstructions: specialInstructions || undefined,
+        problemDescription: problemDescription || undefined, // Customer's description of the issue
         bookingSource: 'scheduler_wizard',
         utm_source: 'website',
         ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),

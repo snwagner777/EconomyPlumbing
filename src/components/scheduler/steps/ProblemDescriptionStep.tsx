@@ -24,11 +24,7 @@ export function ProblemDescriptionStep({ onSubmit, initialDescription }: Problem
   const handleSubmit = () => {
     const trimmed = description.trim();
     
-    if (trimmed.length < 10) {
-      setError('Please provide more details (at least 10 characters)');
-      return;
-    }
-    
+    // Allow skip - no minimum length required
     if (trimmed.length > 500) {
       setError('Please keep your description under 500 characters');
       return;
@@ -77,12 +73,11 @@ export function ProblemDescriptionStep({ onSubmit, initialDescription }: Problem
 
       <Button
         onClick={handleSubmit}
-        disabled={description.trim().length < 10}
         size="lg"
         className="w-full"
         data-testid="button-continue-description"
       >
-        Continue
+        {description.trim() ? 'Continue' : 'Skip'}
       </Button>
 
       <p className="text-xs text-center text-muted-foreground">
