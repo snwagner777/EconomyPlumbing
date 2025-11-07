@@ -57,9 +57,15 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
       return await response.json();
     },
     onSuccess: (data: any) => {
+      console.log('[AI Analyzer] Response:', data);
       if (data.success && data.analysis) {
         setAnalysis(data.analysis);
+      } else {
+        console.error('[AI Analyzer] Invalid response structure:', data);
       }
+    },
+    onError: (error: any) => {
+      console.error('[AI Analyzer] Mutation failed:', error);
     },
   });
 
@@ -94,11 +100,21 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
     );
   }
 
-  if (analyzeMutation.isPending || !analysis) {
+  if (analyzeMutation.isPending) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-4">
         <Loader2 className="w-12 h-12 text-primary animate-spin" />
         <p className="text-muted-foreground">Finding the right service...</p>
+      </div>
+    );
+  }
+  
+  if (!analysis) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 space-y-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-muted-foreground">Analyzing... (analysis state not set)</p>
+        <p className="text-xs text-muted-foreground">Check console for details</p>
       </div>
     );
   }
