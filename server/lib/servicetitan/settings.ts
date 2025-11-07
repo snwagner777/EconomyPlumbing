@@ -320,11 +320,12 @@ export class ServiceTitanSettings {
     const endOfDay = new Date(params.date);
     endOfDay.setHours(17, 0, 0, 0); // 5 PM
 
-    const allSlots = await this.checkAvailability({
+    const allSlots = await this.checkCapacity({
       businessUnitId: params.businessUnitId,
       jobTypeId: params.jobTypeId,
       startDate: startOfDay,
       endDate: endOfDay,
+      skillBasedAvailability: true,
     });
 
     // Filter to only available slots

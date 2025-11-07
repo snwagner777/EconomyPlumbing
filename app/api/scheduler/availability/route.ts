@@ -1,7 +1,10 @@
 /**
  * Scheduler Availability API
  * 
+ * @deprecated Use /api/scheduler/smart-availability instead for proximity-optimized scheduling
+ * 
  * Returns available appointment time slots from ServiceTitan for a specific job type and date range.
+ * Now uses Capacity API (accounts for non-job appointments like lunch breaks, meetings, PTO).
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -42,12 +45,14 @@ export async function GET(req: NextRequest) {
       );
     }
     
-    // Fetch availability from ServiceTitan
-    const availability = await serviceTitanSettings.checkAvailability({
+    // Fetch availability from ServiceTitan Capacity API
+    // This correctly accounts for regular appointments AND non-job appointments (lunch, meetings, PTO)
+    const availability = await serviceTitanSettings.checkCapacity({
       businessUnitId: plumbingBU.id,
       jobTypeId: parseInt(jobTypeId),
       startDate: start,
       endDate: end,
+      skillBasedAvailability: true,
     });
     
     // Normalize time windows into scheduler-friendly format
