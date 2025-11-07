@@ -124,6 +124,14 @@ export default function NewServicePage() {
   - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access for new customers created via ServiceTitan API.
   - **DEPRECATED TABLE:** `service_titan_contacts` - Never reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
   - **API Services:** Custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
+  - **Scheduler Availability (CRITICAL):** Uses ServiceTitan Capacity API (`dispatch/v2/tenant/{tenant}/capacity`) as source of truth for availability. This correctly accounts for:
+    - Regular job appointments
+    - Non-job appointments (lunch breaks, meetings, PTO, etc.)
+    - Technician availability and skills matching
+    - Business unit capacity constraints
+    - Returns `isAvailable` boolean and `openAvailability` hours for each time slot
+    - Replaced manual appointment overlap checking which caused false positives (e.g., Monday 8-12 showing available when fully booked)
+  - **DEPRECATED:** Old `checkAvailability()` method and manual slot generation functions - all replaced by Capacity API integration
 - **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation. Campaign triggers: Review requests auto-created from invoice PDFs (4 emails over 21 days), Quote follow-ups auto-created from estimate PDFs (3 emails over 14 days), both check for existing campaigns to prevent duplicates.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
