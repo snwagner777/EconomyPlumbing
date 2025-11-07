@@ -110,24 +110,24 @@ export default function NewServicePage() {
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
-- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration.
+- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
 - **Admin Panels:** Unified admin dashboard for Marketing Automation, ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
 - **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
-- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers.
+- **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers, Quote Follow-up Campaigns, Customer Data Imports.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:**
   - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access for new customers created via ServiceTitan API.
   - **DEPRECATED TABLE:** `service_titan_contacts` - Never reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
   - **API Services:** Custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
-- **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation.
+- **Marketing Automation:** AI-powered system with email engagement tracking for Review Request, Referral Nurture, and Quote Follow-up campaigns. Includes AI customer segmentation, HTML preview/approval, campaign-specific phone tracking, and automatic UTM parameter generation. Campaign triggers: Review requests auto-created from invoice PDFs (4 emails over 21 days), Quote follow-ups auto-created from estimate PDFs (3 emails over 14 days), both check for existing campaigns to prevent duplicates.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
 - **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
-- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes. Vouchers auto-create reward for referrer when referee's voucher is redeemed.
+- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes. Vouchers auto-create reward for referrer when referee's voucher is redeemed. Referral page includes Header/Footer navigation and requires both phone numbers AND email addresses for referrer and friend.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
 
