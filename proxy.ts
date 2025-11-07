@@ -119,23 +119,25 @@ function handleProxy(request: NextRequest) {
 
   // Security headers (matching Express implementation)
   
-  // Content Security Policy
-  const cspDirectives = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.jsdelivr.net https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
-    "font-src 'self' https://fonts.gstatic.com https://*.cloudfront.net data:",
-    "img-src 'self' data: blob: https: http:",
-    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.facebook.com https://www.clarity.ms https://c.clarity.ms https://*.ingest.sentry.io https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev https://abc-icons.shopartisting.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://www.facebook.com https://servicetitan.com https://app.ecwid.com https://*.cloudfront.net",
-    "object-src 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-    "frame-ancestors 'none'",
-    "upgrade-insecure-requests"
-  ];
+  // Content Security Policy (skip for /store page due to Ecwid's dynamic resource loading)
+  if (pathname !== '/store') {
+    const cspDirectives = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.jsdelivr.net https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
+      "font-src 'self' https://fonts.gstatic.com https://*.cloudfront.net data:",
+      "img-src 'self' data: blob: https: http:",
+      "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.facebook.com https://www.clarity.ms https://c.clarity.ms https://*.ingest.sentry.io https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev https://abc-icons.shopartisting.com",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://www.facebook.com https://servicetitan.com https://app.ecwid.com https://*.cloudfront.net",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "upgrade-insecure-requests"
+    ];
 
-  response.headers.set('Content-Security-Policy', cspDirectives.join('; '));
+    response.headers.set('Content-Security-Policy', cspDirectives.join('; '));
+  }
   
   // HSTS (HTTP Strict Transport Security)
   response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
