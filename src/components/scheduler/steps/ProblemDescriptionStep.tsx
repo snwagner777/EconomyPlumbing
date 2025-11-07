@@ -46,22 +46,8 @@ export function ProblemDescriptionStep({ onSubmit, initialDescription }: Problem
 
   return (
     <div className="space-y-6">
-      <div className="text-center space-y-2">
-        <div className="flex items-center justify-center gap-2">
-          <MessageSquare className="w-6 h-6 text-primary" />
-          <h2 className="text-2xl font-bold">What's the problem?</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Describe your plumbing issue in your own words
-        </p>
-      </div>
-
       <Card className="p-6">
         <div className="space-y-4">
-          <Label htmlFor="description" className="text-base font-semibold">
-            Tell us what's happening
-          </Label>
-          
           <Textarea
             id="description"
             placeholder="Example: My water heater is leaking and making a loud banging noise..."
@@ -86,20 +72,6 @@ export function ProblemDescriptionStep({ onSubmit, initialDescription }: Problem
           {error && (
             <p className="text-sm text-destructive">{error}</p>
           )}
-        </div>
-      </Card>
-
-      <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-        <div className="flex items-start gap-3">
-          <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
-              AI-Powered Service Matching
-            </h3>
-            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-              Our AI will analyze your description and suggest the best service type for your needs.
-            </p>
-          </div>
         </div>
       </Card>
 
