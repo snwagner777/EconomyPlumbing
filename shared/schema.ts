@@ -2080,6 +2080,48 @@ export const referralNurtureCampaigns = pgTable("referral_nurture_campaigns", {
   createdAtIdx: index("referral_nurture_created_at_idx").on(table.createdAt),
 }));
 
+// Quote Follow-Up Campaigns - 3-email drip over 2-3 weeks for estimates
+export const quoteFollowupCampaigns = pgTable("quote_followup_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Links to customer and estimate
+  customerId: integer("customer_id").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerEmail: text("customer_email").notNull(),
+  customerPhone: text("customer_phone"),
+  estimateNumber: text("estimate_number"), // Job number from ServiceTitan
+  estimateAmount: integer("estimate_amount"), // Amount in cents
+  
+  // Campaign status
+  status: text("status").notNull().default('queued'), // 'queued', 'email1_sent', 'email2_sent', 'email3_sent', 'completed', 'paused', 'converted'
+  pauseReason: text("pause_reason"), // 'job_booked', 'opted_out', 'low_engagement', 'customer_declined'
+  
+  // Email tracking (3 emails over 2-3 weeks)
+  email1SentAt: timestamp("email1_sent_at"), // Day 2 after estimate
+  email2SentAt: timestamp("email2_sent_at"), // Day 7 after estimate
+  email3SentAt: timestamp("email3_sent_at"), // Day 14 after estimate
+  
+  // Engagement tracking
+  consecutiveUnopened: integer("consecutive_unopened").notNull().default(0), // Auto-pause after 2
+  totalOpens: integer("total_opens").notNull().default(0),
+  totalClicks: integer("total_clicks").notNull().default(0),
+  
+  // Conversion tracking
+  jobBookedAt: timestamp("job_booked_at"), // When customer scheduled job
+  jobNumber: text("job_number"), // ServiceTitan job number if converted
+  conversionSource: text("conversion_source"), // 'email_click', 'phone_call', 'scheduler_direct'
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  pausedAt: timestamp("paused_at"),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  statusIdx: index("quote_followup_status_idx").on(table.status),
+  customerIdIdx: index("quote_followup_customer_id_idx").on(table.customerId),
+  createdAtIdx: index("quote_followup_created_at_idx").on(table.createdAt),
+  estimateNumberIdx: index("quote_followup_estimate_number_idx").on(table.estimateNumber),
+}));
+
 // Review Email Templates - Customizable templates for campaign emails
 export const reviewEmailTemplates = pgTable("review_email_templates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

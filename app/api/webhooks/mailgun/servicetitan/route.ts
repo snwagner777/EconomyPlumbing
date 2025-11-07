@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { db } from '@/server/db';
-import { invoiceProcessingLog, estimateProcessingLog, customersXlsx } from '@shared/schema';
+import { invoiceProcessingLog, estimateProcessingLog, customersXlsx, quoteFollowupCampaigns, reviewRequests } from '@shared/schema';
 import { parsePDF } from '@/server/lib/pdfParser';
-import { or, sql } from 'drizzle-orm';
+import { or, sql, eq, and } from 'drizzle-orm';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60; // 60 seconds for PDF processing
@@ -220,8 +220,39 @@ export async function POST(request: NextRequest) {
       // Log estimate
       await db.insert(estimateProcessingLog).values(logEntry);
       
-      // TODO: Trigger quote follow-up campaign
-      console.log('[Mailgun Webhook] TODO: Trigger quote follow-up campaign for customer:', matchedCustomerId);
+      // Trigger quote follow-up campaign if customer matched and has email
+      if (matchedCustomerId && parsedData.customerEmail) {
+        try {
+          // Check if customer already has an active quote follow-up campaign
+          const existingCampaign = await db.query.quoteFollowupCampaigns.findFirst({
+            where: and(
+              eq(quoteFollowupCampaigns.customerId, matchedCustomerId),
+              eq(quoteFollowupCampaigns.status, 'queued')
+            ),
+          });
+
+          if (!existingCampaign) {
+            // Create new quote follow-up campaign
+            await db.insert(quoteFollowupCampaigns).values({
+              customerId: matchedCustomerId,
+              customerName: parsedData.customerName || 'Valued Customer',
+              customerEmail: parsedData.customerEmail,
+              customerPhone: parsedData.customerPhone || null,
+              estimateNumber: parsedData.documentNumber || null,
+              estimateAmount: parsedData.totalAmount || 0,
+              status: 'queued',
+            });
+            console.log('[Mailgun Webhook] Quote follow-up campaign created for customer:', matchedCustomerId);
+          } else {
+            console.log('[Mailgun Webhook] Customer already has active quote follow-up campaign, skipping');
+          }
+        } catch (campaignError) {
+          console.error('[Mailgun Webhook] Error creating quote follow-up campaign:', campaignError);
+          // Don't fail the webhook if campaign creation fails
+        }
+      } else {
+        console.log('[Mailgun Webhook] Skipping quote follow-up campaign - no customer match or email');
+      }
       
       console.log('[Mailgun Webhook] Estimate logged successfully');
       
@@ -236,8 +267,40 @@ export async function POST(request: NextRequest) {
       // Log invoice
       await db.insert(invoiceProcessingLog).values(logEntry);
       
-      // TODO: Trigger review request campaign
-      console.log('[Mailgun Webhook] TODO: Trigger review request campaign for customer:', matchedCustomerId);
+      // Trigger review request campaign if customer matched and has email
+      if (matchedCustomerId && parsedData.customerEmail) {
+        try {
+          // Check if customer already has an active review request campaign
+          const existingCampaign = await db.query.reviewRequests.findFirst({
+            where: and(
+              eq(reviewRequests.customerId, matchedCustomerId),
+              eq(reviewRequests.status, 'active')
+            ),
+          });
+
+          if (!existingCampaign) {
+            // Create new review request campaign
+            await db.insert(reviewRequests).values({
+              customerId: matchedCustomerId,
+              customerName: parsedData.customerName || 'Valued Customer',
+              customerEmail: parsedData.customerEmail,
+              customerPhone: parsedData.customerPhone || null,
+              jobId: null, // Will be updated when job is matched
+              serviceName: 'Plumbing Service', // Generic for now
+              invoiceTotal: parsedData.totalAmount || 0,
+              status: 'active',
+            });
+            console.log('[Mailgun Webhook] Review request campaign created for customer:', matchedCustomerId);
+          } else {
+            console.log('[Mailgun Webhook] Customer already has active review request campaign, skipping');
+          }
+        } catch (campaignError) {
+          console.error('[Mailgun Webhook] Error creating review request campaign:', campaignError);
+          // Don't fail the webhook if campaign creation fails
+        }
+      } else {
+        console.log('[Mailgun Webhook] Skipping review request campaign - no customer match or email');
+      }
       
       console.log('[Mailgun Webhook] Invoice logged successfully');
       
