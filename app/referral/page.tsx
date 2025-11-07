@@ -23,11 +23,11 @@ interface ReferralPageProps {
 
 export default async function ReferralPage({ searchParams }: ReferralPageProps) {
   await searchParams;
-  const { phoneConfig } = await getPhoneNumbers();
+  const phoneNumbers = await getPhoneNumbers();
 
   return (
     <>
-      <Header phoneConfig={phoneConfig} />
+      <Header />
       <div className="min-h-screen py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
@@ -75,7 +75,7 @@ export default async function ReferralPage({ searchParams }: ReferralPageProps) 
         </div>
       </div>
     </div>
-      <Footer phoneConfig={phoneConfig} />
+      <Footer />
     </>
   );
 }
