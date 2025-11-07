@@ -719,16 +719,42 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       const result = await response.json();
       
-      setMaskedEmail(result.maskedEmail);
-      setActualEmail(result.email); // Store actual email for sending verification code
-      setLookupToken(result.lookupToken);
-      setVerificationStep('phone-email-found');
-      setLookupSuccess(`We found your account! We'll send a verification code to ${result.maskedEmail}`);
+      // Handle multiple emails (requires selection)
+      if (result.requiresSelection && result.emailOptions) {
+        setAvailableEmails(result.emailOptions);
+        setLookupToken(result.lookupToken);
+        setVerificationStep('select-email');
+        setLookupSuccess('We found your account! Please select which email to use for verification.');
+      } 
+      // Handle SMS-only customers (no email)
+      else if (result.requiresSms) {
+        setLookupError('SMS verification is not yet implemented. Please contact support.');
+        // TODO: Implement SMS verification flow
+      }
+      // Handle single email (auto-select)
+      else {
+        setMaskedEmail(result.maskedEmail);
+        setActualEmail(result.email); // Store actual email for sending verification code
+        setLookupToken(result.lookupToken);
+        setVerificationStep('phone-email-found');
+        setLookupSuccess(`We found your account! We'll send a verification code to ${result.maskedEmail}`);
+      }
     } catch (err: any) {
       console.error('Phone lookup failed:', err);
       setLookupError(err.message || 'We couldn\'t find an account with that phone number.');
     } finally {
       setIsLookingUp(false);
+    }
+  };
+
+  const handleSelectEmail = () => {
+    // Find the selected email option
+    const selectedOption = availableEmails.find(email => email.value === selectedEmail);
+    if (selectedOption) {
+      setMaskedEmail(selectedOption.masked);
+      setActualEmail(selectedOption.value);
+      setVerificationStep('phone-email-found');
+      setLookupSuccess(`We'll send a verification code to ${selectedOption.masked}`);
     }
   };
 
