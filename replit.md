@@ -3,19 +3,6 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, manage operations, and drive growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement. Key ambitions include becoming a leading service provider by leveraging technology, increasing customer lifetime value through personalized engagement, and optimizing operational efficiency with intelligent automation.
 
-## Recent Changes
-
-### 2025-11-07: Scheduler Simplification & Capacity API Fix
-- **Scheduler UX:** Reverted from AI-powered service matching back to simple ServiceStep selection for reliability
-- **Problem Description:** Added conversational "problemDescription" field as first step in NewCustomerWizard
-  - Customer describes their plumbing issue upfront
-  - Description flows to ServiceTitan job summary: `${service} - ${problemDescription}`
-  - Allows skip (optional field)
-- **Capacity API Hardening:** Added defensive filtering to prevent "ghost availability"
-  - Double-checks both `isAvailable=true` AND `availableCapacity > 0`
-  - Comprehensive logging to identify discrepancies between ServiceTitan flags and actual capacity
-  - Prevents fully-booked slots from appearing available
-
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -120,7 +107,7 @@ export default function NewServicePage() {
 - **Static Pages:** Direct paths (e.g., `/contact`, `/faq`, `/services`)
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Vite, Wouter, TanStack Query. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Vite. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
@@ -129,56 +116,25 @@ export default function NewServicePage() {
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
-- **Data Layer:** Drizzle ORM for PostgreSQL with Neon serverless database.
+- **Data Layer:** Drizzle ORM for PostgreSQL.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers, Quote Follow-up Campaigns, Customer Data Imports.
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:**
-  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups without repeatedly querying ServiceTitan. Also enables remarketing campaigns via email and SMS. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access for new customers created via ServiceTitan API.
-  - **DEPRECATED TABLE:** `service_titan_contacts` - Never reference this table in any code. All customer lookups must use `customers_xlsx` table exclusively.
-  - **API Services:** Custom ServiceTitan scheduler with OAuth authentication, CRM, Jobs, and Settings services, supporting `utm_source` campaign tracking and real job types.
-  - **Scheduler Availability (CRITICAL):** Uses ServiceTitan Capacity API (`dispatch/v2/tenant/{tenant}/capacity`) as source of truth for availability. This correctly accounts for:
-    - Regular job appointments
-    - Non-job appointments (lunch breaks, meetings, PTO, etc.)
-    - Technician availability and skills matching
-    - Business unit capacity constraints
-    - Returns `isAvailable` boolean and `openAvailability` hours for each time slot
-    - Replaced manual appointment overlap checking which caused false positives (e.g., Monday 8-12 showing available when fully booked)
-  - **DEPRECATED:** Old `checkAvailability()` method and manual slot generation functions - all replaced by Capacity API integration
-  - **Unified Scheduler System:** Same Capacity API-based scheduler works across:
-    - Frontend scheduler component (`src/components/scheduler/steps/AvailabilityStep.tsx`)
-    - Customer portal reschedule flow (`app/customer-portal/CustomerPortalClient.tsx`)
-    - AI chatbot booking (`app/api/chatbot/route.ts`)
-    - All three call `/api/scheduler/smart-availability` which uses `checkCapacity()` for real-time availability
-- **Marketing Automation (DETAILED WORKFLOW):**
-  - **AI-Powered Email System:** Uses OpenAI GPT-4o to generate personalized campaign emails
-  - **Three Campaign Types:**
-    1. **Review Request** (4 emails over 21 days after invoice)
-    2. **Quote Follow-up** (3 emails over 14 days after estimate)
-    3. **Referral Nurture** (for 5-star reviewers, 6-month drip)
-  - **Customer Contact Retrieval Workflow:**
-    1. Mailgun webhook receives invoice/estimate PDF email from ServiceTitan
-    2. PDF parser (`server/lib/pdfParser.ts`) extracts: customer name, phone, email, document number, amount, line items
-    3. System matches customer in `customers_xlsx` database by phone (normalized) or email (fuzzy match)
-    4. If match found, campaign is auto-created with customer's contact info
-    5. No match = campaign skipped (logged but not created)
-  - **AI Email Personalization Process:**
-    1. Admin approves email template structure in unified admin dashboard
-    2. At send-time, AI personalizes each email using:
-       - Customer name, service type, job amount, location from PDF
-       - Current season context (winter freeze warnings, summer heat, etc.)
-       - Email sequence position (urgency increases over drip)
-       - Messaging strategy (value → trust → social proof → urgency)
-    3. AI generates: subject line, preheader, HTML body, plain text version
-    4. **CRITICAL: NO DISCOUNTS** - AI is explicitly instructed NOT to offer discounts, promotions, or special offers unless manually configured in template
-  - **Duplicate Prevention:** System checks for existing active campaigns before creating new ones
-  - **Campaign-Specific Phone Tracking:** Each campaign type can have dedicated tracking number
-  - **UTM Parameter Generation:** All links auto-tagged with campaign/source/medium for attribution
+  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups. Enables remarketing campaigns. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access.
+  - **CRITICAL: DEPRECATED TABLE `service_titan_contacts`** - Never reference this table; use `customers_xlsx` exclusively.
+  - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, and Settings services, supporting `utm_source` tracking and real job types.
+  - **Scheduler Availability (CRITICAL):** Uses ServiceTitan Capacity API (`dispatch/v2/tenant/{tenant}/capacity`) as the source of truth for availability, accounting for job appointments, non-job appointments, technician availability/skills, and business unit capacity. It returns `isAvailable` and `openAvailability` hours. The scheduler includes a conversational "problemDescription" field for new customers.
+  - **Unified Scheduler System:** The Capacity API-based scheduler is used across the frontend scheduler component, customer portal reschedule flow, and AI chatbot booking, all via `/api/scheduler/smart-availability`.
+- **Marketing Automation:**
+  - **AI-Powered Email System:** Uses OpenAI GPT-4o to generate personalized campaign emails for Review Request, Quote Follow-up, and Referral Nurture campaigns.
+  - **Customer Contact Retrieval Workflow:** Mailgun webhook receives invoice/estimate PDFs, which are parsed to extract customer data. System matches customer in `customers_xlsx` database to create campaigns.
+  - **AI Email Personalization Process:** Admin approves template; AI personalizes emails at send-time using customer data, seasonal context, sequence position, and messaging strategy. AI is explicitly instructed NOT to offer discounts unless manually configured.
 - **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
-- **Reputation Management System:** AI-powered review request automation with drip campaign engine, preview/edit/approve interface for email sequences. Automated review fetching.
-- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job requirement, 6-month expiration. Tech-scannable QR codes. Vouchers auto-create reward for referrer when referee's voucher is redeemed. Referral page includes Header/Footer navigation and requires both phone numbers AND email addresses for referrer and friend.
+- **Reputation Management System:** AI-powered review request automation, preview/edit/approve interface for email sequences, automated review fetching.
+- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job, 6-month expiration. Tech-scannable QR codes. Referrals require phone numbers and email addresses for both parties.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
-- **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification (Svix).
+- **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification.
 
 ### Analytics & Third-Party Script Management
 - **Tracking:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity.
