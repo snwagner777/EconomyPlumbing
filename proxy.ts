@@ -122,11 +122,11 @@ function handleProxy(request: NextRequest) {
   // Content Security Policy
   const cspDirectives = [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.jsdelivr.net https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudfront.net https://storefont.ecwid.dev",
-    "font-src 'self' https://fonts.gstatic.com data:",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://connect.facebook.net https://www.clarity.ms https://c.clarity.ms https://cdn.jsdelivr.net https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev",
+    "font-src 'self' https://fonts.gstatic.com https://*.cloudfront.net data:",
     "img-src 'self' data: blob: https: http:",
-    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.facebook.com https://www.clarity.ms https://c.clarity.ms https://*.ingest.sentry.io https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev",
+    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.facebook.com https://www.clarity.ms https://c.clarity.ms https://*.ingest.sentry.io https://app.ecwid.com https://*.cloudfront.net https://storefont.ecwid.dev https://storefont.ecom.dev https://abc-icons.shopartisting.com",
     "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://www.facebook.com https://servicetitan.com https://app.ecwid.com https://*.cloudfront.net",
     "object-src 'none'",
     "base-uri 'self'",
