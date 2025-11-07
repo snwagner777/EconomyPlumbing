@@ -24,9 +24,10 @@ import { apiRequest } from '@/lib/queryClient';
 const referralSchema = z.object({
   referrerName: z.string().min(2, 'Name must be at least 2 characters'),
   referrerPhone: z.string().min(10, 'Please enter a valid phone number'),
+  referrerEmail: z.string().email('Please enter a valid email'),
   refereeName: z.string().min(2, 'Name must be at least 2 characters'),
   refereePhone: z.string().min(10, 'Please enter a valid phone number'),
-  refereeEmail: z.string().email('Please enter a valid email').optional().or(z.literal('')),
+  refereeEmail: z.string().email('Please enter a valid email'),
 });
 
 type ReferralFormData = z.infer<typeof referralSchema>;
@@ -40,6 +41,7 @@ export function ReferralForm() {
     defaultValues: {
       referrerName: '',
       referrerPhone: '',
+      referrerEmail: '',
       refereeName: '',
       refereePhone: '',
       refereeEmail: '',
@@ -112,6 +114,25 @@ export function ReferralForm() {
           />
         </div>
 
+        <FormField
+          control={form.control}
+          name="referrerEmail"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Your Email</FormLabel>
+              <FormControl>
+                <Input 
+                  {...field} 
+                  type="email"
+                  data-testid="input-referrer-email"
+                  placeholder="john@example.com"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="border-t pt-6">
           <h3 className="font-semibold mb-4">Friend's Information</h3>
           <div className="grid md:grid-cols-2 gap-6">
@@ -157,7 +178,7 @@ export function ReferralForm() {
               name="refereeEmail"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Friend's Email (Optional)</FormLabel>
+                  <FormLabel>Friend's Email</FormLabel>
                   <FormControl>
                     <Input 
                       {...field} 

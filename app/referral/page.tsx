@@ -4,6 +4,9 @@
 
 import type { Metadata } from 'next';
 import { ReferralForm } from './referral-form';
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 
 export const metadata: Metadata = {
   title: 'Refer a Friend | Economy Plumbing Referral Program',
@@ -14,11 +17,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function ReferralPage() {
+interface ReferralPageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function ReferralPage({ searchParams }: ReferralPageProps) {
+  await searchParams;
+  const { phoneConfig } = await getPhoneNumbers();
+
   return (
-    <div className="min-h-screen py-16">
-      <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+    <>
+      <Header phoneConfig={phoneConfig} />
+      <div className="min-h-screen py-16">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6 text-center" data-testid="heading-referral">
             Refer a Friend
           </h1>
@@ -63,5 +75,7 @@ export default function ReferralPage() {
         </div>
       </div>
     </div>
+      <Footer phoneConfig={phoneConfig} />
+    </>
   );
 }
