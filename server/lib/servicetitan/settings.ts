@@ -219,7 +219,83 @@ export class ServiceTitanSettings {
   }
 
   /**
-   * Check appointment availability for a specific time window
+   * Check appointment availability using ServiceTitan Capacity API
+   * This API accounts for:
+   * - Regular job appointments
+   * - Non-job appointments (lunch, meetings, PTO)
+   * - Technician availability and skills
+   * - Business unit capacity
+   */
+  async checkCapacity(params: {
+    businessUnitId: number;
+    jobTypeId?: number;
+    startDate: Date;
+    endDate: Date;
+    skillBasedAvailability?: boolean;
+  }): Promise<AvailabilitySlot[]> {
+    try {
+      const requestBody = {
+        startsOnOrAfter: params.startDate.toISOString(),
+        endsOnOrBefore: params.endDate.toISOString(),
+        businessUnitIds: [params.businessUnitId],
+        jobTypeId: params.jobTypeId,
+        skillBasedAvailability: params.skillBasedAvailability ?? true,
+      };
+
+      console.log(`[ServiceTitan Capacity] Checking capacity from ${params.startDate.toISOString()} to ${params.endDate.toISOString()}`);
+
+      const response = await serviceTitanAuth.makeRequest<{
+        timeStamp: string;
+        availabilities: Array<{
+          start: string;
+          end: string;
+          startUtc: string;
+          endUtc: string;
+          businessUnitIds: number[];
+          totalAvailability: number;
+          openAvailability: number;
+          technicians: Array<{
+            id: number;
+            name: string;
+            status: 'Available' | 'Unavailable';
+            hasRequiredSkills?: boolean;
+          }>;
+          isAvailable: boolean;
+          isExceedingIdealBookingPercentage: boolean;
+        }>;
+      }>(
+        `dispatch/v2/tenant/${this.tenantId}/capacity`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      // Convert ServiceTitan capacity response to our AvailabilitySlot format
+      const slots = (response.availabilities || []).map(availability => ({
+        start: availability.startUtc,
+        end: availability.endUtc,
+        isAvailable: availability.isAvailable && availability.openAvailability > 0,
+        availableCapacity: availability.openAvailability,
+        totalCapacity: availability.totalAvailability,
+        technicianIds: availability.technicians
+          .filter(tech => tech.status === 'Available')
+          .map(tech => tech.id),
+      }));
+
+      console.log(`[ServiceTitan Capacity] Found ${slots.length} slots, ${slots.filter(s => s.isAvailable).length} available`);
+      return slots;
+    } catch (error) {
+      console.error('[ServiceTitan Capacity] Error checking capacity:', error);
+      return [];
+    }
+  }
+
+  /**
+   * @deprecated Use checkCapacity() instead - it accounts for non-job appointments
    */
   async checkAvailability(params: {
     businessUnitId: number;
@@ -227,34 +303,7 @@ export class ServiceTitanSettings {
     startDate: Date;
     endDate: Date;
   }): Promise<AvailabilitySlot[]> {
-    try {
-      const queryParams = new URLSearchParams({
-        startDate: params.startDate.toISOString(),
-        endDate: params.endDate.toISOString(),
-        businessUnitIds: params.businessUnitId.toString(),
-        jobTypeId: params.jobTypeId.toString(),
-        arrivalWindowType: 'FourHour',
-        includeTechnicianDetails: 'true',
-      });
-
-      const response = await serviceTitanAuth.makeRequest<CapacityResponse>(
-        `dispatch/v2/tenant/${this.tenantId}/capacity?${queryParams.toString()}`
-      );
-
-      const rawSlots = response.slots || response.data || [];
-      
-      // Normalize slots: ServiceTitan returns availableCapacity, not isAvailable
-      const normalizedSlots = rawSlots.map(slot => ({
-        ...slot,
-        isAvailable: (slot.availableCapacity || 0) > 0,
-      }));
-      
-      console.log(`[ServiceTitan Settings] Found ${rawSlots.length} total slots, ${normalizedSlots.filter(s => s.isAvailable).length} available`);
-      return normalizedSlots;
-    } catch (error) {
-      console.error('[ServiceTitan Settings] Error checking availability:', error);
-      return [];
-    }
+    return this.checkCapacity(params);
   }
 
   /**

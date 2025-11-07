@@ -80,17 +80,42 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] Fetching availability from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')} to ${formatInTimeZone(end, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')}`);
     
-    // Fetch existing appointments and jobs
-    const appointments = await fetchAppointments(start, end);
-    console.log(`[Smart Scheduler] Found ${appointments.length} existing appointments`);
+    // Get business unit (use provided or default to plumbing)
+    let actualBusinessUnitId = businessUnitId;
+    if (!actualBusinessUnitId) {
+      const businessUnits = await serviceTitanSettings.getBusinessUnits();
+      const plumbingBU = businessUnits.find(bu => bu.name.toLowerCase().includes('plumbing'));
+      actualBusinessUnitId = plumbingBU?.id;
+      
+      if (!actualBusinessUnitId) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'No business unit found',
+          },
+          { status: 500 }
+        );
+      }
+    }
     
-    // Get hardcoded arrival windows (business hours: 8-12, 9-1, 10-2, 11-3, 12-4, 1-5, 2-6, 3-7, 4-8)
-    const arrivalWindows = getArrivalWindows();
-    console.log(`[Smart Scheduler] Using ${arrivalWindows.length} hardcoded arrival windows`);
+    // Use ServiceTitan Capacity API to get REAL availability
+    // This accounts for:
+    // - Regular job appointments
+    // - Non-job appointments (lunch, meetings, PTO, etc.)
+    // - Technician availability and skills
+    // - Business unit capacity
+    const availableSlots = await serviceTitanSettings.checkCapacity({
+      businessUnitId: actualBusinessUnitId,
+      jobTypeId,
+      startDate: start,
+      endDate: end,
+      skillBasedAvailability: true,
+    });
     
-    // Generate available slots using arrival windows
-    const availableSlots = generateAvailableSlots(start, end, appointments, arrivalWindows);
-    console.log(`[Smart Scheduler] Generated ${availableSlots.length} available slots`);
+    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${availableSlots.length} slots, ${availableSlots.filter(s => s.isAvailable).length} available`);
+    
+    // Filter to only truly available slots (ServiceTitan says isAvailable=true)
+    const truelyAvailableSlots = availableSlots.filter(slot => slot.isAvailable);
     
     // Fetch scheduled jobs for proximity scoring (next 10 days)
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
@@ -149,7 +174,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Score each slot based on technician route contiguity and zone adjacency
-    const scoredSlots = availableSlots.map((slot, index): ScoredSlot | null => {
+    const scoredSlots = truelyAvailableSlots.map((slot, index): ScoredSlot | null => {
       const slotStart = new Date(slot.start);
       const slotEnd = new Date(slot.end);
       const slotDate = format(slotStart, 'yyyy-MM-dd');
@@ -474,155 +499,17 @@ function getTimePeriod(start: string): 'morning' | 'afternoon' | 'evening' {
 }
 
 /**
- * Fetch appointments from ServiceTitan for date range
+ * DEPRECATED FUNCTIONS - Now using ServiceTitan Capacity API
+ * 
+ * The following functions are no longer needed because the Capacity API:
+ * - Automatically accounts for regular job appointments
+ * - Automatically accounts for non-job appointments (lunch, meetings, PTO)
+ * - Automatically accounts for technician availability
+ * - Uses ServiceTitan's actual arrival windows (not hardcoded)
+ * - Returns only truly available slots
+ * 
+ * Removed:
+ * - fetchAppointments() - replaced by Capacity API
+ * - getArrivalWindows() - replaced by Capacity API
+ * - generateAvailableSlots() - replaced by Capacity API
  */
-async function fetchAppointments(startDate: Date, endDate: Date): Promise<Appointment[]> {
-  try {
-    const tenantId = serviceTitanAuth.getTenantId();
-    const queryParams = new URLSearchParams({
-      startsOnOrAfter: startDate.toISOString(),
-      startsOnOrBefore: endDate.toISOString(),
-      pageSize: '500',
-    });
-    
-    const response = await serviceTitanAuth.makeRequest<{ data: Appointment[] }>(
-      `jpm/v2/tenant/${tenantId}/appointments?${queryParams.toString()}`
-    );
-    
-    return response.data || [];
-  } catch (error) {
-    console.error('[Smart Scheduler] Error fetching appointments:', error);
-    return [];
-  }
-}
-
-/**
- * Get hardcoded arrival windows based on actual business hours
- * Windows: 8-12, 9-1, 10-2, 11-3, 12-4, 1-5, 2-6, 3-7, 4-8
- */
-function getArrivalWindows(): Array<{ start: string; end: string; durationHours: number }> {
-  return [
-    { start: '08:00', end: '12:00', durationHours: 4 }, // 8 AM - 12 PM
-    { start: '09:00', end: '13:00', durationHours: 4 }, // 9 AM - 1 PM
-    { start: '10:00', end: '14:00', durationHours: 4 }, // 10 AM - 2 PM
-    { start: '11:00', end: '15:00', durationHours: 4 }, // 11 AM - 3 PM
-    { start: '12:00', end: '16:00', durationHours: 4 }, // 12 PM - 4 PM
-    { start: '13:00', end: '17:00', durationHours: 4 }, // 1 PM - 5 PM
-    { start: '14:00', end: '18:00', durationHours: 4 }, // 2 PM - 6 PM
-    { start: '15:00', end: '19:00', durationHours: 4 }, // 3 PM - 7 PM
-    { start: '16:00', end: '20:00', durationHours: 4 }, // 4 PM - 8 PM
-  ];
-}
-
-/**
- * Generate available time slots based on arrival windows and existing appointments
- * CRITICAL: All date/time logic operates in Central Time to avoid timezone bugs
- */
-function generateAvailableSlots(
-  startDate: Date,
-  endDate: Date,
-  bookedAppointments: Appointment[],
-  arrivalWindows: Array<{ start: string; end: string; durationHours: number }>
-): Array<{ start: string; end: string }> {
-  const TIMEZONE = 'America/Chicago';
-  const slots: Array<{ start: string; end: string }> = [];
-  
-  // Convert UTC dates to Central Time for iteration
-  let currentDateCT = toZonedTime(startDate, TIMEZONE);
-  const endDateCT = toZonedTime(endDate, TIMEZONE);
-  
-  console.log(`[Slot Generation] Checking dates ${formatInTimeZone(currentDateCT, TIMEZONE, 'MMM d yyyy')} to ${formatInTimeZone(endDateCT, TIMEZONE, 'MMM d yyyy')}`);
-  console.log(`[Slot Generation] Found ${bookedAppointments.length} existing appointments to check for conflicts`);
-  
-  while (currentDateCT <= endDateCT) {
-    // Check day of week in Central Time
-    const dayOfWeek = currentDateCT.getDay(); // 0=Sunday, 6=Saturday
-    
-    // NEVER allow weekend bookings - skip Saturday and Sunday completely
-    if (dayOfWeek === 0 || dayOfWeek === 6) {
-      currentDateCT = addDays(currentDateCT, 1);
-      continue;
-    }
-    
-    // Extract date components in Central Time
-    const year = currentDateCT.getFullYear();
-    const month = currentDateCT.getMonth() + 1;
-    const day = currentDateCT.getDate();
-    
-    // Generate slots for each arrival window
-    arrivalWindows.forEach(window => {
-      const [startHour, startMin] = window.start.split(':').map(Number);
-      const [endHour, endMin] = window.end.split(':').map(Number);
-      
-      // Build ISO string for Central Time slot (YYYY-MM-DDTHH:MM:SS)
-      const slotStartStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(startHour).padStart(2, '0')}:${String(startMin || 0).padStart(2, '0')}:00`;
-      const slotEndStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}T${String(endHour).padStart(2, '0')}:${String(endMin || 0).padStart(2, '0')}:00`;
-      
-      // Convert Central Time to UTC
-      const slotStart = fromZonedTime(slotStartStr, TIMEZONE);
-      const slotEnd = fromZonedTime(slotEndStr, TIMEZONE);
-      
-      // Check for conflicts with existing appointments
-      // Arrival windows are 4 hours but actual work is ~2 hours within that window
-      // Only block if windows overlap by 3+ hours (meaning likely scheduling conflict)
-      let conflictingAppointment: any = null;
-      const hasConflict = bookedAppointments.some(apt => {
-        const aptStart = new Date(apt.start);
-        const aptEnd = new Date(apt.end);
-        
-        // Calculate overlap in milliseconds
-        const overlapStart = new Date(Math.max(slotStart.getTime(), aptStart.getTime()));
-        const overlapEnd = new Date(Math.min(slotEnd.getTime(), aptEnd.getTime()));
-        const overlapMs = Math.max(0, overlapEnd.getTime() - overlapStart.getTime());
-        const overlapHours = overlapMs / (1000 * 60 * 60);
-        
-        // Only block if overlap is 3+ hours (e.g., 10-2 and 11-3 overlap by 2 hours = OK)
-        // 10-2 vs 1-5 overlaps by 1 hour = OK
-        // 1-5 vs 2-6 overlaps by 3 hours = BLOCK
-        const isSignificantOverlap = overlapHours >= 3;
-        
-        if (isSignificantOverlap) {
-          conflictingAppointment = apt;
-        }
-        
-        return isSignificantOverlap;
-      });
-      
-      // Check if slot is still available (1 hour lead time in Central Time)
-      const now = new Date();
-      const leadTimeMs = 1 * 60 * 60 * 1000; // 1 hour minimum lead time
-      const minBookingTime = new Date(now.getTime() + leadTimeMs);
-      
-      const isSlotAvailable = !hasConflict && slotStart >= minBookingTime;
-      
-      // Debug logging for filtered slots
-      if (!isSlotAvailable) {
-        const slotDateStr = formatInTimeZone(slotStart, TIMEZONE, 'EEE MMM d, yyyy');
-        const slotTimeStr = formatInTimeZone(slotStart, TIMEZONE, 'h:mm a');
-        const endTimeStr = formatInTimeZone(slotEnd, TIMEZONE, 'h:mm a');
-        const nowStr = formatInTimeZone(now, TIMEZONE, 'MMM d h:mm a zzz');
-        const minBookStr = formatInTimeZone(minBookingTime, TIMEZONE, 'MMM d h:mm a zzz');
-        
-        if (hasConflict && conflictingAppointment) {
-          const aptStartCT = formatInTimeZone(new Date(conflictingAppointment.start), TIMEZONE, 'h:mm a');
-          const aptEndCT = formatInTimeZone(new Date(conflictingAppointment.end), TIMEZONE, 'h:mm a');
-          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: CONFLICT with appointment ${conflictingAppointment.id} (${aptStartCT}-${aptEndCT})`);
-        } else {
-          console.log(`[Filter] ${slotDateStr} ${slotTimeStr}-${endTimeStr}: TOO SOON (now: ${nowStr}, min: ${minBookStr})`);
-        }
-      }
-      
-      if (isSlotAvailable) {
-        slots.push({
-          start: slotStart.toISOString(),
-          end: slotEnd.toISOString(),
-        });
-      }
-    });
-    
-    // Move to next day in Central Time
-    currentDateCT = addDays(currentDateCT, 1);
-  }
-  
-  return slots;
-}
