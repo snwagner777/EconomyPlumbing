@@ -43,12 +43,9 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
   const hasAnalyzed = useRef(false); // Guard to prevent duplicate API calls in StrictMode
 
   // Fetch real job types from ServiceTitan (for ID lookup)
-  const { data: jobTypesData } = useQuery({
+  const { data: jobTypesData } = useQuery<{ success: boolean; jobTypes: any[] }>({
     queryKey: ['/api/scheduler/options'],
-    queryFn: async () => {
-      const response = await apiRequest('GET', '/api/scheduler/options', {});
-      return await response.json();
-    },
+    // queryFn not needed - uses default GET behavior
   });
 
   // Analyze problem description with AI
