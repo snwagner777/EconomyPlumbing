@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { storage } from '@/server/storage';
+import { JOB_TYPE_CATALOG } from '@/lib/schedulerJobCatalog';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -44,21 +45,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Fetch available job types from ServiceTitan
-    const jobTypesResponse = await fetch(`${req.nextUrl.origin}/api/scheduler/options`);
-    const jobTypesData = await jobTypesResponse.json();
-    
-    if (!jobTypesData.success || !jobTypesData.jobTypes) {
-      return NextResponse.json(
-        { error: 'Failed to load job types' },
-        { status: 500 }
-      );
-    }
-
-    const jobTypes = jobTypesData.jobTypes;
+    // Use pre-defined job catalog (no ServiceTitan API call needed)
+    // Convert catalog to list format with mock IDs (AI only needs names for matching)
+    const jobTypes = Object.keys(JOB_TYPE_CATALOG).map((name, index) => ({
+      id: index + 1, // Mock ID, not used
+      name,
+      code: name.toUpperCase().replace(/\s+/g, '_'),
+    }));
 
     // Build job type catalog for AI
-    const jobTypeCatalog = jobTypes.map((jt: any) => 
+    const jobTypeCatalog = jobTypes.map((jt) => 
       `ID: ${jt.id}, Name: "${jt.name}", Code: "${jt.code}"`
     ).join('\n');
 

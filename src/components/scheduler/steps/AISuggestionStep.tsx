@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -41,6 +41,15 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
   const [showManualSelection, setShowManualSelection] = useState(false);
   const [analysis, setAnalysis] = useState<AIAnalysis | null>(null);
   const hasAnalyzed = useRef(false); // Guard to prevent duplicate API calls in StrictMode
+
+  // Fetch real job types from ServiceTitan (for ID lookup)
+  const { data: jobTypesData } = useQuery({
+    queryKey: ['/api/scheduler/options'],
+    queryFn: async () => {
+      const response = await apiRequest('GET', '/api/scheduler/options', {});
+      return await response.json();
+    },
+  });
 
   // Analyze problem description with AI
   const analyzeMutation = useMutation({
@@ -91,16 +100,8 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
   if (analyzeMutation.isPending || !analysis) {
     return (
       <div className="flex flex-col items-center justify-center py-16 space-y-4">
-        <div className="relative">
-          <Sparkles className="w-12 h-12 text-primary animate-pulse" />
-          <Loader2 className="w-6 h-6 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-spin text-primary" />
-        </div>
-        <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold">Analyzing your issue...</h3>
-          <p className="text-sm text-muted-foreground max-w-md">
-            Our AI is reviewing your description to suggest the best service type
-          </p>
-        </div>
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-muted-foreground">Finding the right service...</p>
       </div>
     );
   }
@@ -112,9 +113,9 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
           <div className="flex items-start gap-3">
             <AlertCircle className="w-6 h-6 text-destructive mt-0.5" />
             <div className="flex-1">
-              <h3 className="font-semibold text-destructive mb-2">Analysis Failed</h3>
+              <h3 className="font-semibold text-destructive mb-2">Unable to Suggest Service</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                We couldn't automatically determine the best service type. Please select manually.
+                Please select the service type manually.
               </p>
               <Button
                 onClick={() => setShowManualSelection(true)}
@@ -139,21 +140,18 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
 
   return (
     <div className="space-y-6">
-      {/* AI Analysis Result */}
+      {/* Recommended Service */}
       <Card className="p-6 border-primary">
         <div className="flex items-start gap-4 mb-4">
           <div className="p-3 rounded-lg bg-primary/10">
-            <Sparkles className="w-6 h-6 text-primary" />
+            <Icon className="w-6 h-6 text-primary" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-lg mb-1">AI Suggestion</h3>
+            <h3 className="font-semibold text-lg mb-1">Recommended Service</h3>
             <p className="text-sm text-muted-foreground">
-              Based on your description, we recommend:
+              Based on your description:
             </p>
           </div>
-          <Badge className={confidenceColor}>
-            {analysis.confidence}% confident
-          </Badge>
         </div>
 
         <Separator className="my-4" />
@@ -223,15 +221,27 @@ export function AISuggestionStep({ problemDescription, onAccept, onManualSelect 
         </Button>
         <Button
           onClick={() => {
-            onAccept(
-              {
-                id: analysis.suggestedJobTypeId,
-                name: analysis.suggestedJobTypeName,
-                code: '', // Will be populated from full job type data
-              },
-              analysis.enrichedSummary
+            // Find the real ServiceTitan job type by name
+            const realJobType = jobTypesData?.jobTypes?.find(
+              (jt: any) => jt.name === analysis.suggestedJobTypeName
             );
+            
+            if (realJobType) {
+              onAccept(realJobType, analysis.enrichedSummary);
+            } else {
+              // Fallback if exact match not found
+              console.warn('Could not find matching job type:', analysis.suggestedJobTypeName);
+              onAccept(
+                {
+                  id: 0,
+                  name: analysis.suggestedJobTypeName,
+                  code: '',
+                },
+                analysis.enrichedSummary
+              );
+            }
           }}
+          disabled={!jobTypesData?.jobTypes}
           data-testid="button-accept-suggestion"
         >
           <CheckCircle className="w-4 h-4 mr-2" />

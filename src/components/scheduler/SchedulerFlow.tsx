@@ -114,8 +114,8 @@ const STEP_CONFIG: Record<number, { icon: any | null; title: string; subtitle: s
   },
   1.5: { 
     icon: Wrench, 
-    title: "Service Suggestion",
-    subtitle: "AI-powered service matching"
+    title: "Recommended Service",
+    subtitle: "Based on your description"
   },
   2: { 
     icon: User, 
