@@ -747,17 +747,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     }
   };
 
-  const handleSelectEmail = () => {
-    // Find the selected email option
-    const selectedOption = availableEmails.find(email => email.value === selectedEmail);
-    if (selectedOption) {
-      setMaskedEmail(selectedOption.masked);
-      setActualEmail(selectedOption.value);
-      setVerificationStep('phone-email-found');
-      setLookupSuccess(`We'll send a verification code to ${selectedOption.masked}`);
-    }
-  };
-
   const handleSendPhoneVerificationCode = async () => {
     setLookupError(null);
     setLookupSuccess(null);
