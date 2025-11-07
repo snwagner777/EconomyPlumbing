@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Loader2, Clock, Zap, MapPin, TrendingUp } from 'lucide-react';
 import { format, addDays } from 'date-fns';
+import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 
 interface TimeSlot {
   id: string;
@@ -66,7 +67,26 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     },
   });
 
-  const slots = data?.slots || [];
+  const rawSlots = data?.slots || [];
+  
+  // Filter out past time slots (ONLY for today, not future dates)
+  // CRITICAL: Use Central Time (business timezone) for comparison to avoid timezone bugs
+  const SCHEDULER_TIMEZONE = 'America/Chicago';
+  const nowCT = toZonedTime(new Date(), SCHEDULER_TIMEZONE); // Current time in Central
+  const todayDateCT = formatInTimeZone(nowCT, SCHEDULER_TIMEZONE, 'yyyy-MM-dd');
+  
+  const slots = rawSlots.filter(slot => {
+    const slotStartCT = toZonedTime(new Date(slot.start), SCHEDULER_TIMEZONE);
+    const slotDateCT = formatInTimeZone(slotStartCT, SCHEDULER_TIMEZONE, 'yyyy-MM-dd');
+    
+    // If slot is today (in Central Time), check if time has passed
+    if (slotDateCT === todayDateCT) {
+      return slotStartCT > nowCT; // Only show future times for today (Central Time)
+    }
+    
+    // For all future dates, show all slots
+    return true;
+  });
   
   // Sort ALL slots by proximity score (best first) - for top recommendations
   const allSortedSlots = [...slots].sort((a, b) => {
