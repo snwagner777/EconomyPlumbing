@@ -217,12 +217,17 @@ export async function POST(req: NextRequest) {
         console.log(`[Scheduler] Adding special instructions to appointment:\n${combinedInstructions}`);
       }
       
+      // Build summary with problemDescription if available
+      const summary = body.problemDescription && body.problemDescription.trim()
+        ? `${validated.requestedService} - ${body.problemDescription.trim()}`
+        : `${validated.requestedService} - Booked via website`;
+      
       const job = await serviceTitanJobs.createJob({
         customerId,
         locationId,
         businessUnitId,
         jobTypeId: jobType.id,
-        summary: `${validated.requestedService} - Booked via website`,
+        summary,
         preferredDate: validated.preferredDate || undefined,
         preferredTimeSlot: validated.preferredTimeSlot as any,
         arrivalWindowStart,

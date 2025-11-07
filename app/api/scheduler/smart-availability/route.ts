@@ -114,8 +114,17 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${availableSlots.length} slots, ${availableSlots.filter(s => s.isAvailable).length} available`);
     
-    // Filter to only truly available slots (ServiceTitan says isAvailable=true)
-    const truelyAvailableSlots = availableSlots.filter(slot => slot.isAvailable);
+    // CRITICAL: Filter to slots with BOTH isAvailable=true AND availableCapacity > 0
+    // This prevents ghost availability where slots show as available but are fully booked
+    const truelyAvailableSlots = availableSlots.filter(slot => {
+      const hasAvailability = slot.isAvailable && (slot.availableCapacity || 0) > 0;
+      if (slot.isAvailable && (!slot.availableCapacity || slot.availableCapacity === 0)) {
+        console.warn(`[Smart Scheduler] Filtered out slot ${slot.start} - marked available but zero capacity (isAvailable=${slot.isAvailable}, capacity=${slot.availableCapacity})`);
+      }
+      return hasAvailability;
+    });
+    
+    console.log(`[Smart Scheduler] After capacity filter: ${truelyAvailableSlots.length} slots with actual availability`);
     
     // Fetch scheduled jobs for proximity scoring (next 10 days)
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);

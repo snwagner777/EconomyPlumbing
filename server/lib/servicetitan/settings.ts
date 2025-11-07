@@ -275,18 +275,30 @@ export class ServiceTitanSettings {
       );
 
       // Convert ServiceTitan capacity response to our AvailabilitySlot format
-      const slots = (response.availabilities || []).map(availability => ({
-        start: availability.startUtc,
-        end: availability.endUtc,
-        isAvailable: availability.isAvailable && availability.openAvailability > 0,
-        availableCapacity: availability.openAvailability,
-        totalCapacity: availability.totalAvailability,
-        technicianIds: availability.technicians
-          .filter(tech => tech.status === 'Available')
-          .map(tech => tech.id),
-      }));
+      const slots = (response.availabilities || []).map(availability => {
+        const hasCapacity = availability.openAvailability > 0;
+        const stReportsAvailable = availability.isAvailable;
+        const truelyAvailable = stReportsAvailable && hasCapacity;
+        
+        // Log any discrepancies where ST says available but openAvailability is 0
+        if (stReportsAvailable && !hasCapacity) {
+          console.warn(`[ServiceTitan Capacity] WARNING: Slot ${availability.start} marked isAvailable=true but openAvailability=${availability.openAvailability}`);
+        }
+        
+        return {
+          start: availability.startUtc,
+          end: availability.endUtc,
+          isAvailable: truelyAvailable,
+          availableCapacity: availability.openAvailability,
+          totalCapacity: availability.totalAvailability,
+          technicianIds: availability.technicians
+            .filter(tech => tech.status === 'Available')
+            .map(tech => tech.id),
+        };
+      });
 
       console.log(`[ServiceTitan Capacity] Found ${slots.length} slots, ${slots.filter(s => s.isAvailable).length} available`);
+      console.log(`[ServiceTitan Capacity] Breakdown: ${slots.filter(s => s.availableCapacity && s.availableCapacity > 0).length} with capacity, ${slots.filter(s => !s.availableCapacity || s.availableCapacity === 0).length} at zero capacity`);
       return slots;
     } catch (error) {
       console.error('[ServiceTitan Capacity] Error checking capacity:', error);

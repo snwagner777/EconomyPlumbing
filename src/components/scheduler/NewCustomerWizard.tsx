@@ -7,6 +7,7 @@
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Loader2, User, Phone, Mail, MapPin, Building, Ticket, DoorClosed } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,6 +19,7 @@ interface NewCustomerWizardProps {
 }
 
 type ConversationStep = 
+  | 'problemDescription'
   | 'firstName' | 'lastName' | 'customerType' 
   | 'phone' | 'email' 
   | 'address' | 'unit' | 'city' | 'state' | 'zip'
@@ -25,7 +27,7 @@ type ConversationStep =
   | 'grouponVoucher' | 'specialInstructions';
 
 export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponService }: NewCustomerWizardProps) {
-  const [step, setStep] = useState<ConversationStep>('firstName');
+  const [step, setStep] = useState<ConversationStep>('problemDescription');
   const [data, setData] = useState<any>({
     customerType: 'Residential',
     sameAsBilling: true,
@@ -51,6 +53,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
 
   const advanceToNextStep = (currentData: any) => {
     const stepOrder: ConversationStep[] = [
+      'problemDescription',
       'firstName', 'lastName', 'customerType',
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
@@ -97,6 +100,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
 
   const goBack = () => {
     const stepOrder: ConversationStep[] = [
+      'problemDescription',
       'firstName', 'lastName', 'customerType',
       'phone', 'email',
       'address', 'unit', 'city', 'state', 'zip',
@@ -131,6 +135,24 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
 
   const renderQuestion = () => {
     switch (step) {
+      case 'problemDescription':
+        return (
+          <QuestionBoxTextarea
+            icon={<DoorClosed className="w-6 h-6" />}
+            question="What plumbing issue can we help you with?"
+            description="The more details you provide, the better we can prepare"
+            value={data.problemDescription || ''}
+            onChange={(v) => setData({ ...data, problemDescription: v })}
+            onEnter={() => {
+              // Textarea can be empty - allow skip
+              handleAnswer(data.problemDescription || '');
+            }}
+            placeholder="e.g., Kitchen sink is leaking under the cabinet, water heater making strange noises, toilet won't stop running..."
+            autoFocus
+            rows={4}
+          />
+        );
+      
       case 'firstName':
         return (
           <QuestionBox
@@ -231,12 +253,12 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<MapPin className="w-6 h-6" />}
-            question="What's your billing address?"
-            description="Where should we send invoices?"
+            question="What's the service address?"
+            description="Where do you need us to come?"
             value={data.address || ''}
             onChange={(v) => setData({ ...data, address: v })}
             onEnter={() => validateAndContinue(data.address || '')}
-            placeholder="123 Main Street"
+            placeholder="e.g., 123 Main Street"
             autoFocus
           />
         );
@@ -244,13 +266,12 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
       case 'unit':
         return (
           <QuestionBox
-            icon={<MapPin className="w-6 h-6" />}
-            question="Unit or apartment number?"
-            description="Leave blank if not applicable"
+            icon={<Building className="w-6 h-6" />}
+            question="Apartment or unit number?"
             value={data.unit || ''}
             onChange={(v) => setData({ ...data, unit: v })}
             onEnter={() => handleAnswer(data.unit || '')}
-            placeholder="Apt 5B (optional)"
+            placeholder="e.g., Apt 4B (optional)"
             autoFocus
             optional
           />
@@ -264,7 +285,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
             value={data.city || ''}
             onChange={(v) => setData({ ...data, city: v })}
             onEnter={() => validateAndContinue(data.city || '')}
-            placeholder="Austin"
+            placeholder="e.g., Austin"
             autoFocus
           />
         );
@@ -276,12 +297,8 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
             question="State?"
             value={data.state || ''}
             onChange={(v) => setData({ ...data, state: v.toUpperCase() })}
-            onEnter={() => validateAndContinue(
-              data.state || '',
-              /^[A-Z]{2}$/,
-              'Please enter a 2-letter state code'
-            )}
-            placeholder="TX"
+            onEnter={() => validateAndContinue(data.state || '')}
+            placeholder="e.g., TX"
             maxLength={2}
             autoFocus
           />
@@ -297,9 +314,9 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
             onEnter={() => validateAndContinue(
               data.zip || '',
               /^\d{5}(-\d{4})?$/,
-              'Please enter a valid ZIP code'
+              'Please enter a valid ZIP code (e.g., 78701)'
             )}
-            placeholder="78701"
+            placeholder="e.g., 78701"
             autoFocus
           />
         );
@@ -312,26 +329,26 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
               <div>
                 <h3 className="text-lg font-medium">Is the service location the same as your billing address?</h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Where we'll be doing the work
+                  We need to know where to send invoices
                 </p>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <Button
                 variant="outline"
-                className="h-20 text-base"
+                className="h-16 text-base"
                 onClick={() => handleAnswer(true)}
-                data-testid="button-same-location"
+                data-testid="button-same-address"
               >
-                ✓ Yes, same location
+                ✓ Yes, same address
               </Button>
               <Button
                 variant="outline"
-                className="h-20 text-base"
-                onClick={() => handleAnswer(false, 'locationName')}
-                data-testid="button-different-location"
+                className="h-16 text-base"
+                onClick={() => handleAnswer(false)}
+                data-testid="button-different-address"
               >
-                Different location
+                Different billing address
               </Button>
             </div>
           </div>
@@ -340,13 +357,13 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
       case 'locationName':
         return (
           <QuestionBox
-            icon={<MapPin className="w-6 h-6" />}
-            question="What would you like to call this service location?"
-            description="e.g., 'Vacation Home' or 'Downtown Office'"
+            icon={<Building className="w-6 h-6" />}
+            question="What should we call this billing location?"
+            description="A friendly name to help you identify it"
             value={data.locationName || ''}
             onChange={(v) => setData({ ...data, locationName: v })}
             onEnter={() => handleAnswer(data.locationName || '')}
-            placeholder="Location name (optional)"
+            placeholder="e.g., Home Office, Downtown Warehouse"
             autoFocus
             optional
           />
@@ -356,12 +373,11 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<MapPin className="w-6 h-6" />}
-            question="What's the service location address?"
-            description="Where we'll be doing the work"
+            question="What's the billing address street?"
             value={data.locationAddress || ''}
             onChange={(v) => setData({ ...data, locationAddress: v })}
             onEnter={() => validateAndContinue(data.locationAddress || '')}
-            placeholder="456 Oak Avenue"
+            placeholder="e.g., 456 Oak Avenue"
             autoFocus
           />
         );
@@ -369,13 +385,12 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
       case 'locationUnit':
         return (
           <QuestionBox
-            icon={<MapPin className="w-6 h-6" />}
-            question="Unit or suite number at service location?"
-            description="Leave blank if not applicable"
+            icon={<Building className="w-6 h-6" />}
+            question="Billing address unit number?"
             value={data.locationUnit || ''}
             onChange={(v) => setData({ ...data, locationUnit: v })}
             onEnter={() => handleAnswer(data.locationUnit || '')}
-            placeholder="Suite 100 (optional)"
+            placeholder="e.g., Suite 200 (optional)"
             autoFocus
             optional
           />
@@ -385,11 +400,11 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<MapPin className="w-6 h-6" />}
-            question="Service location city?"
+            question="Billing address city?"
             value={data.locationCity || ''}
             onChange={(v) => setData({ ...data, locationCity: v })}
             onEnter={() => validateAndContinue(data.locationCity || '')}
-            placeholder="Austin"
+            placeholder="e.g., Austin"
             autoFocus
           />
         );
@@ -398,15 +413,11 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<MapPin className="w-6 h-6" />}
-            question="Service location state?"
+            question="Billing address state?"
             value={data.locationState || ''}
             onChange={(v) => setData({ ...data, locationState: v.toUpperCase() })}
-            onEnter={() => validateAndContinue(
-              data.locationState || '',
-              /^[A-Z]{2}$/,
-              'Please enter a 2-letter state code'
-            )}
-            placeholder="TX"
+            onEnter={() => validateAndContinue(data.locationState || '')}
+            placeholder="e.g., TX"
             maxLength={2}
             autoFocus
           />
@@ -416,7 +427,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<MapPin className="w-6 h-6" />}
-            question="Service location ZIP code?"
+            question="Billing address ZIP?"
             value={data.locationZip || ''}
             onChange={(v) => setData({ ...data, locationZip: v })}
             onEnter={() => validateAndContinue(
@@ -424,7 +435,7 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
               /^\d{5}(-\d{4})?$/,
               'Please enter a valid ZIP code'
             )}
-            placeholder="78701"
+            placeholder="e.g., 78701"
             autoFocus
           />
         );
@@ -434,11 +445,10 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
           <QuestionBox
             icon={<Ticket className="w-6 h-6" />}
             question="Do you have a Groupon voucher code?"
-            description="Enter your voucher code, or leave blank if you don't have one"
             value={data.grouponVoucher || ''}
             onChange={(v) => setData({ ...data, grouponVoucher: v })}
             onEnter={() => handleAnswer(data.grouponVoucher || '')}
-            placeholder="Voucher code (optional)"
+            placeholder="e.g., GROUPON12345 (optional)"
             autoFocus
             optional
           />
@@ -448,8 +458,8 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
         return (
           <QuestionBox
             icon={<DoorClosed className="w-6 h-6" />}
-            question="Any special instructions for our technician?"
-            description="Gate code, door code, parking instructions, or other access details"
+            question="Any special access instructions?"
+            description="Gate codes, parking info, or anything we should know"
             value={data.specialInstructions || ''}
             onChange={(v) => setData({ ...data, specialInstructions: v })}
             onEnter={() => {
@@ -468,14 +478,15 @@ export function NewCustomerWizard({ onSubmit, onCancel, isSubmitting, isGrouponS
     }
   };
 
-  const canGoBack = step !== 'firstName';
+  const canGoBack = step !== 'problemDescription';
 
   return (
     <div className="space-y-6">
       {/* Progress dots */}
       <div className="flex items-center justify-center gap-1.5">
-        {['firstName', 'phone', 'address', 'sameAsBilling', 'final'].map((milestone) => {
+        {['problemDescription', 'firstName', 'phone', 'address', 'sameAsBilling', 'final'].map((milestone) => {
           const milestoneSteps: Record<string, ConversationStep[]> = {
+            problemDescription: ['problemDescription'],
             firstName: ['firstName', 'lastName', 'customerType'],
             phone: ['phone', 'email'],
             address: ['address', 'unit', 'city', 'state', 'zip'],
@@ -608,6 +619,58 @@ function QuestionBox({
         />
         <Button onClick={onEnter} size="lg" data-testid="button-continue">
           {optional && !value ? 'Skip' : 'Continue'}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+interface QuestionBoxTextareaProps {
+  icon: React.ReactNode;
+  question: string;
+  description?: string;
+  value: string;
+  onChange: (value: string) => void;
+  onEnter: () => void;
+  placeholder: string;
+  autoFocus?: boolean;
+  rows?: number;
+}
+
+function QuestionBoxTextarea({
+  icon,
+  question,
+  description,
+  value,
+  onChange,
+  onEnter,
+  placeholder,
+  autoFocus,
+  rows = 3,
+}: QuestionBoxTextareaProps) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-start gap-3">
+        <div className="text-primary mt-1">{icon}</div>
+        <div className="flex-1">
+          <h3 className="text-lg font-medium">{question}</h3>
+          {description && (
+            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+          )}
+        </div>
+      </div>
+      <div className="space-y-2">
+        <Textarea
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          autoFocus={autoFocus}
+          rows={rows}
+          className="text-base resize-none"
+          data-testid={`textarea-${question.toLowerCase().replace(/[^a-z]+/g, '-')}`}
+        />
+        <Button onClick={onEnter} size="lg" className="w-full" data-testid="button-continue">
+          {!value ? 'Skip' : 'Continue'}
         </Button>
       </div>
     </div>

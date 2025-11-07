@@ -9,9 +9,7 @@
 
 import { useState, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
-import { ProblemDescriptionStep } from './steps/ProblemDescriptionStep';
-import { AISuggestionStep } from './steps/AISuggestionStep';
+import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ServiceStep } from './steps/ServiceStep';
 import { CustomerStep } from './steps/CustomerStep';
 import { AvailabilityStep } from './steps/AvailabilityStep';
@@ -53,16 +51,13 @@ interface CustomerInfo {
 
 interface FlowState {
   step: number;
-  problemDescription: string | null;
-  enrichedSummary: string | null;
   jobType: JobType | null;
   customer: CustomerInfo | null;
   timeSlot: TimeSlot | null;
 }
 
 type FlowAction =
-  | { type: 'SET_PROBLEM_DESCRIPTION'; payload: string }
-  | { type: 'SELECT_JOB_TYPE'; payload: { jobType: JobType; enrichedSummary?: string } }
+  | { type: 'SELECT_JOB_TYPE'; payload: JobType }
   | { type: 'SET_CUSTOMER_INFO'; payload: CustomerInfo }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
   | { type: 'NEXT_STEP' }
@@ -71,17 +66,8 @@ type FlowAction =
 
 function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
-    case 'SET_PROBLEM_DESCRIPTION':
-      // Step 1 → Step 1.5 (AI Suggestion)
-      return { ...state, problemDescription: action.payload, step: 1.5 };
     case 'SELECT_JOB_TYPE':
-      // Step 1.5 or direct selection → Step 2 (Customer Info)
-      return { 
-        ...state, 
-        jobType: action.payload.jobType, 
-        enrichedSummary: action.payload.enrichedSummary || null,
-        step: 2 
-      };
+      return { ...state, jobType: action.payload, step: 2 };
     case 'SET_CUSTOMER_INFO':
       return { ...state, customer: action.payload, step: 3 };
     case 'SELECT_TIME_SLOT':
@@ -91,7 +77,7 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
     case 'PREV_STEP':
       return { ...state, step: Math.max(state.step - 1, 1) };
     case 'RESET':
-      return { step: 1, problemDescription: null, enrichedSummary: null, jobType: null, customer: null, timeSlot: null };
+      return { step: 1, jobType: null, customer: null, timeSlot: null };
     default:
       return state;
   }
@@ -108,14 +94,9 @@ interface SchedulerFlowProps {
 const STEP_CONFIG: Record<number, { icon: any | null; title: string; subtitle: string }> = {
   0: { icon: null, title: '', subtitle: '' },
   1: { 
-    icon: MessageSquare, 
-    title: "What's the problem?",
-    subtitle: "Describe your plumbing issue in your own words"
-  },
-  1.5: { 
     icon: Wrench, 
-    title: "Recommended Service",
-    subtitle: "Based on your description"
+    title: "What service do you need?",
+    subtitle: "Select the type of plumbing service"
   },
   2: { 
     icon: User, 
@@ -144,26 +125,14 @@ export function SchedulerFlow({
   const router = useRouter();
   const [state, dispatch] = useReducer(flowReducer, {
     step: 1,
-    problemDescription: null,
-    enrichedSummary: null,
     jobType: null,
     customer: null,
     timeSlot: null,
   });
   const [vipError, setVipError] = useState(false);
 
-  const handleProblemDescription = (description: string) => {
-    dispatch({ type: 'SET_PROBLEM_DESCRIPTION', payload: description });
-  };
-
-  const handleAIAccept = (jobType: JobType, enrichedSummary: string) => {
-    dispatch({ type: 'SELECT_JOB_TYPE', payload: { jobType, enrichedSummary } });
-    setVipError(false);
-  };
-
-  const handleManualSelect = (jobType: JobType, enrichedSummary: string) => {
-    // Even if user manually selects different job type, keep the enrichedSummary - it has valuable context
-    dispatch({ type: 'SELECT_JOB_TYPE', payload: { jobType, enrichedSummary } });
+  const handleSelectJobType = (jobType: JobType) => {
+    dispatch({ type: 'SELECT_JOB_TYPE', payload: jobType });
     setVipError(false);
   };
 
@@ -260,22 +229,11 @@ export function SchedulerFlow({
 
       {/* Step Content */}
       <div className="flex-1 overflow-y-auto">
-        {/* Step 1: Problem Description */}
+        {/* Step 1: Service Selection */}
         {state.step === 1 && (
-          <ProblemDescriptionStep 
-            onSubmit={handleProblemDescription}
-            initialDescription={state.problemDescription || undefined}
-            data-testid="step-problem-description"
-          />
-        )}
-
-        {/* Step 1.5: AI Suggestion */}
-        {state.step === 1.5 && state.problemDescription && (
-          <AISuggestionStep 
-            problemDescription={state.problemDescription}
-            onAccept={handleAIAccept}
-            onManualSelect={handleManualSelect}
-            data-testid="step-ai-suggestion"
+          <ServiceStep 
+            onSelect={handleSelectJobType}
+            data-testid="step-service"
           />
         )}
 
@@ -341,10 +299,7 @@ export function SchedulerFlow({
             </Button>
             <ReviewStep
               jobType={state.jobType}
-              customer={{
-                ...state.customer,
-                notes: state.enrichedSummary || state.customer.notes, // Use AI-enriched summary if available
-              }}
+              customer={state.customer}
               timeSlot={state.timeSlot}
               onSuccess={handleComplete}
               data-testid="step-review"

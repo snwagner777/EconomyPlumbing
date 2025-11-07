@@ -3,6 +3,19 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, manage operations, and drive growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement. Key ambitions include becoming a leading service provider by leveraging technology, increasing customer lifetime value through personalized engagement, and optimizing operational efficiency with intelligent automation.
 
+## Recent Changes
+
+### 2025-11-07: Scheduler Simplification & Capacity API Fix
+- **Scheduler UX:** Reverted from AI-powered service matching back to simple ServiceStep selection for reliability
+- **Problem Description:** Added conversational "problemDescription" field as first step in NewCustomerWizard
+  - Customer describes their plumbing issue upfront
+  - Description flows to ServiceTitan job summary: `${service} - ${problemDescription}`
+  - Allows skip (optional field)
+- **Capacity API Hardening:** Added defensive filtering to prevent "ghost availability"
+  - Double-checks both `isAvailable=true` AND `availableCapacity > 0`
+  - Comprehensive logging to identify discrepancies between ServiceTitan flags and actual capacity
+  - Prevents fully-booked slots from appearing available
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
