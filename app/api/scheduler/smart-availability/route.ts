@@ -112,19 +112,25 @@ export async function POST(req: NextRequest) {
       skillBasedAvailability: true,
     });
     
-    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${availableSlots.length} slots, ${availableSlots.filter(s => s.isAvailable).length} available`);
+    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${availableSlots.length} total slots`);
+    console.log(`[Smart Scheduler] Breakdown: isAvailable=true: ${availableSlots.filter(s => s.isAvailable).length}, capacity>0: ${availableSlots.filter(s => (s.availableCapacity || 0) > 0).length}`);
     
-    // CRITICAL: Filter to slots with BOTH isAvailable=true AND availableCapacity > 0
-    // This prevents ghost availability where slots show as available but are fully booked
+    // The checkCapacity() method already filters correctly in settings.ts (isAvailable = openAvailability > 0 && isAvailable)
+    // We just need to use the slots marked as available
     const truelyAvailableSlots = availableSlots.filter(slot => {
-      const hasAvailability = slot.isAvailable && (slot.availableCapacity || 0) > 0;
-      if (slot.isAvailable && (!slot.availableCapacity || slot.availableCapacity === 0)) {
-        console.warn(`[Smart Scheduler] Filtered out slot ${slot.start} - marked available but zero capacity (isAvailable=${slot.isAvailable}, capacity=${slot.availableCapacity})`);
+      // Double-check both conditions for safety
+      const passesFilter = slot.isAvailable && (slot.availableCapacity || 0) > 0;
+      
+      if (!passesFilter) {
+        console.log(`[Smart Scheduler] ❌ Filtered out: ${slot.start} (isAvailable=${slot.isAvailable}, capacity=${slot.availableCapacity})`);
+      } else {
+        console.log(`[Smart Scheduler] ✅ Keeping slot: ${slot.start} (capacity=${slot.availableCapacity}/${slot.totalCapacity})`);
       }
-      return hasAvailability;
+      
+      return passesFilter;
     });
     
-    console.log(`[Smart Scheduler] After capacity filter: ${truelyAvailableSlots.length} slots with actual availability`);
+    console.log(`[Smart Scheduler] Final result: ${truelyAvailableSlots.length} slots with actual availability`);
     
     // Fetch scheduled jobs for proximity scoring (next 10 days)
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);

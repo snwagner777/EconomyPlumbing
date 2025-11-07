@@ -78,6 +78,13 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`[Scheduler] Found ${customersWithContacts.length} active customer(s) from XLSX matching ${phone || email}`);
+    
+    if (customersWithContacts.length > 1) {
+      console.log(`[Scheduler] ⚠️ MULTIPLE CUSTOMERS FOUND - should show account selector UI`);
+      customersWithContacts.forEach((c, idx) => {
+        console.log(`[Scheduler]   ${idx + 1}. ${c.name} (ID: ${c.id}, ST ID: ${c.serviceTitanId})`);
+      });
+    }
 
     return NextResponse.json({
       success: true,
