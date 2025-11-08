@@ -629,11 +629,54 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
   const handleSelectAccount = async (accountId: number) => {
     try {
-      // If we're in the select-account step (initial auth), just set the customer ID
+      // If we're in the select-account step (initial auth from phone lookup)
       if (verificationStep === 'select-account') {
+        const selectedAccount = availableAccounts.find(a => a.id === accountId);
+        if (!selectedAccount) {
+          throw new Error('Selected account not found');
+        }
+
+        console.log(`[Portal] User selected account ${accountId}: ${selectedAccount.name}`);
+
+        // Check if account has email for verification
+        if (!selectedAccount.email) {
+          setLookupError('This account has no email address. SMS verification is not yet implemented. Please contact support.');
+          return;
+        }
+
+        // Parse emails (could be multiple comma-separated)
+        const emails = selectedAccount.email
+          .split(',')
+          .map(e => e.trim())
+          .filter(e => e.length > 0 && e.includes('@'));
+
+        if (emails.length === 0) {
+          setLookupError('This account has no valid email address. Please contact support.');
+          return;
+        }
+
+        // If multiple emails, show email selector
+        if (emails.length > 1) {
+          console.log(`[Portal] Account has ${emails.length} emails, showing selector`);
+          setAvailableEmails(emails.map((email, idx) => ({
+            email,
+            maskedEmail: selectedAccount.maskedEmail || email,
+            isDefault: idx === 0
+          })));
+          setVerificationStep('select-email');
+          setLookupSuccess('Please select which email to use for verification.');
+        } else {
+          // Single email - proceed directly to send verification code
+          const email = emails[0];
+          console.log(`[Portal] Account has single email, proceeding with verification`);
+          setActualEmail(email);
+          setMaskedEmail(selectedAccount.maskedEmail || email);
+          setVerificationStep('phone-email-found');
+          setLookupSuccess(`We'll send a verification code to ${selectedAccount.maskedEmail || email}`);
+        }
+
+        // Store the selected customer ID for later use
         setCustomerId(accountId.toString());
-        setVerificationStep('authenticated');
-        setShowAccountSelection(false);
       } else {
         // We're switching accounts - call the API
         const response = await fetch('/api/portal/switch-account', {
@@ -719,8 +762,26 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       const result = await response.json();
       
+      // Handle multiple accounts (requires account selection first)
+      if (result.requiresAccountSelection && result.customers) {
+        console.log(`[Portal] Found ${result.customers.length} accounts for this phone number`);
+        
+        // Map backend customers to frontend CustomerAccount format
+        const accounts: CustomerAccount[] = result.customers.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          email: c.email,
+          maskedEmail: c.maskedEmail,
+          phoneNumber: result.phone,
+        }));
+        
+        setAvailableAccounts(accounts);
+        setAvailableCustomerIds(accounts.map(a => a.id));
+        setVerificationStep('select-account');
+        setLookupSuccess(result.message || 'We found multiple accounts. Please select your account.');
+      }
       // Handle multiple emails (requires selection)
-      if (result.requiresSelection && result.emailOptions) {
+      else if (result.requiresSelection && result.emailOptions) {
         setAvailableEmails(result.emailOptions);
         setLookupToken(result.lookupToken);
         setVerificationStep('select-email');
