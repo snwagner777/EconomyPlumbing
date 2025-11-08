@@ -143,8 +143,11 @@ interface CustomerData {
 interface CustomerAccount {
   id: number;
   name: string;
-  type: string;
+  type?: string;
   address?: string;
+  email?: string | null;
+  maskedEmail?: string | null;
+  phoneNumber?: string;
 }
 
 interface CustomerPortalClientProps {
@@ -647,8 +650,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         // Parse emails (could be multiple comma-separated)
         const emails = selectedAccount.email
           .split(',')
-          .map(e => e.trim())
-          .filter(e => e.length > 0 && e.includes('@'));
+          .map((e: string) => e.trim())
+          .filter((e: string) => e.length > 0 && e.includes('@'));
 
         if (emails.length === 0) {
           setLookupError('This account has no valid email address. Please contact support.');
@@ -668,7 +671,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         if (emails.length > 1) {
           console.log(`[Portal] Account has ${emails.length} emails, showing selector`);
           // Use correct format: { masked, value }
-          setAvailableEmails(emails.map((email) => ({
+          setAvailableEmails(emails.map((email: string) => ({
             masked: maskEmail(email),
             value: email
           })));
