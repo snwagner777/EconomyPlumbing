@@ -65,7 +65,7 @@ export async function GET(req: NextRequest) {
       // We need customer name to generate the code
       // For now, we'll fetch from customers_xlsx table
       const customer = await db.query.customersXlsx.findFirst({
-        where: (customers, { eq }) => eq(customers.serviceTitanCustomerId, customerId),
+        where: (customers, { eq }) => eq(customers.id, customerId),
       });
       
       if (!customer) {
