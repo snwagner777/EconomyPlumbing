@@ -655,24 +655,37 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           return;
         }
 
+        // Helper to mask email
+        const maskEmail = (email: string) => {
+          const [localPart, domain] = email.split('@');
+          if (!localPart || !domain) return email;
+          const visibleChars = Math.min(2, localPart.length);
+          const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+          return `${maskedLocal}@${domain}`;
+        };
+
         // If multiple emails, show email selector
         if (emails.length > 1) {
           console.log(`[Portal] Account has ${emails.length} emails, showing selector`);
-          setAvailableEmails(emails.map((email, idx) => ({
-            email,
-            maskedEmail: selectedAccount.maskedEmail || email,
-            isDefault: idx === 0
+          // Use correct format: { masked, value }
+          setAvailableEmails(emails.map((email) => ({
+            masked: maskEmail(email),
+            value: email
           })));
           setVerificationStep('select-email');
           setLookupSuccess('Please select which email to use for verification.');
         } else {
           // Single email - proceed directly to send verification code
           const email = emails[0];
+          const maskedEmail = maskEmail(email);
           console.log(`[Portal] Account has single email, proceeding with verification`);
+          
+          // CRITICAL: Set lookupValue so verification code uses this email
+          setLookupValue(email);
           setActualEmail(email);
-          setMaskedEmail(selectedAccount.maskedEmail || email);
+          setMaskedEmail(maskedEmail);
           setVerificationStep('phone-email-found');
-          setLookupSuccess(`We'll send a verification code to ${selectedAccount.maskedEmail || email}`);
+          setLookupSuccess(`We'll send a verification code to ${maskedEmail}`);
         }
 
         // Store the selected customer ID for later use
