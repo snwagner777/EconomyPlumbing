@@ -47,15 +47,20 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [loadExtendedRange, setLoadExtendedRange] = useState(false);
   
-  // Always fetch from today (or earliest future date if today is past)
+  // Progressive loading: Start with 10 days, extend to 45 days if user clicks "Show More Dates"
+  const initialDays = 10;
+  const extendedDays = 45;
+  const daysToLoad = loadExtendedRange ? extendedDays : initialDays;
+  
   const fetchStartDate = today;
   const startDate = format(fetchStartDate, 'yyyy-MM-dd');
-  const endDate = format(addDays(fetchStartDate, 44), 'yyyy-MM-dd'); // 45 days of availability
+  const endDate = format(addDays(fetchStartDate, daysToLoad - 1), 'yyyy-MM-dd');
 
-  // Fetch smart availability (fuel-optimized) - always fetch 45 days from today
-  const { data, isLoading } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
-    queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip],
+  // Fetch smart availability (fuel-optimized) - progressive loading strategy
+  const { data, isLoading, isFetching } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
+    queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip, daysToLoad],
     queryFn: async () => {
       const response = await apiRequest('POST', '/api/scheduler/smart-availability', {
         jobTypeId,
@@ -327,7 +332,8 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               disabled={(date) => {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                return date < today || date > addDays(today, 45);
+                const maxDate = addDays(today, daysToLoad - 1);
+                return date < today || date > maxDate;
               }}
               modifiers={{
                 hasSlots: slots
@@ -349,6 +355,35 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                 <span>Available</span>
               </div>
             </div>
+            
+            {/* Show More Dates Button - only if not already loaded extended range */}
+            {!loadExtendedRange && (
+              <div className="mt-4 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                  onClick={() => setLoadExtendedRange(true)}
+                  disabled={isFetching}
+                  data-testid="button-show-more-dates"
+                >
+                  {isFetching ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-2 animate-spin" />
+                      Loading more dates...
+                    </>
+                  ) : (
+                    <>
+                      <Calendar className="w-3 h-3 mr-2" />
+                      Show More Dates (Up to {extendedDays} days)
+                    </>
+                  )}
+                </Button>
+                <p className="text-xs text-muted-foreground text-center mt-2">
+                  Currently showing next {initialDays} days
+                </p>
+              </div>
+            )}
           </Card>
         </div>
 
