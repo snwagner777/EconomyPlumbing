@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     const existingReferee = await db.query.customersXlsx.findFirst({
       where: (customers, { eq, or }) => or(
         eq(customers.phone, result.data.refereePhone),
-        result.data.refereePhone && eq(customers.mobilePhone, result.data.refereePhone)
+        eq(customers.mobilePhone, result.data.refereePhone)
       ),
     });
     
