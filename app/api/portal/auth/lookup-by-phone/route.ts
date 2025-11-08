@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
     console.log("[Portal Phone Auth] Querying database for phone:", normalizedPhone);
     
     // Search customers_xlsx for matching phone number (active customers only)
+    // RETURN ALL MATCHING CUSTOMERS (no .limit) to enable multi-account selector
     const customers = await db
       .select({
         id: customersXlsx.id,
@@ -58,8 +59,7 @@ export async function POST(req: NextRequest) {
           // Exact phone match using normalized numbers
           sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedPhone}`
         )
-      )
-      .limit(1);
+      );
 
     console.log("[Portal Phone Auth] Query results:", {
       found: customers.length > 0,
