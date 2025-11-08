@@ -346,3 +346,71 @@ export async function sendReferrerRewardEmail(data: {
     throw error;
   }
 }
+
+export async function sendReferrerThankYouEmail(data: {
+  referrerName: string;
+  referrerEmail: string;
+  refereeName: string;
+}) {
+  try {
+    const { client, fromEmail } = await getResendClient();
+    
+    const emailHtml = `
+      <html>
+        <body style="font-family: Arial, sans-serif; padding: 20px; background-color: #f9fafb;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <h2 style="color: #10b981; margin-top: 0;">Thank You for Your Referral!</h2>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              Hi ${data.referrerName},
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6;">
+              Thank you for referring ${data.refereeName} to Economy Plumbing Services! We truly appreciate you spreading the word about our services.
+            </p>
+            
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 20px 0;">
+              <p style="margin: 8px 0; font-size: 16px;">
+                <strong>What happens next?</strong>
+              </p>
+              <ol style="margin: 8px 0; padding-left: 20px; line-height: 1.8;">
+                <li>We've sent ${data.refereeName} a $25 welcome voucher</li>
+                <li>When they complete their first $200+ job, you'll receive your own $25 reward voucher!</li>
+                <li>There's no limit to how many people you can refer</li>
+              </ol>
+            </div>
+            
+            <div style="background-color: #f0f9ff; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p style="margin: 0; font-size: 14px; color: #0c4a6e;">
+                <strong>💡 Keep Referring & Earning!</strong><br/>
+                Share your unique referral link with more friends and family to earn $25 for each successful referral. You can find your referral link anytime in your customer portal.
+              </p>
+            </div>
+            
+            <p style="font-size: 16px; line-height: 1.6; margin-top: 20px;">
+              Thank you for being a valued customer!
+            </p>
+            
+            <p style="color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              Economy Plumbing Services<br/>
+              Licensed & Insured • Family Owned • Serving Austin Since 1995
+            </p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    const result = await client.emails.send({
+      from: fromEmail,
+      to: data.referrerEmail,
+      subject: `Thank you for referring ${data.refereeName}!`,
+      html: emailHtml,
+    });
+    
+    console.log(`[Resend] Referrer thank you email sent to ${data.referrerEmail}`);
+    return result;
+  } catch (error) {
+    console.error('[Resend] Failed to send referrer thank you email:', error);
+    throw error;
+  }
+}

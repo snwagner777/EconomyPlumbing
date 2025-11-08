@@ -9,7 +9,7 @@ import { db } from '@/server/db';
 import { referrals, serviceTitanCustomers, customersXlsx } from '@shared/schema';
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
-import { sendRefereeWelcomeEmail } from '@/server/lib/resendClient';
+import { sendRefereeWelcomeEmail, sendReferrerThankYouEmail } from '@/server/lib/resendClient';
 import { eq, or } from 'drizzle-orm';
 
 const referralSchema = z.object({
@@ -165,7 +165,21 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // TODO: Send thank you email to referrer
+    // Send thank you email to referrer
+    if (referral.referrerEmail) {
+      try {
+        await sendReferrerThankYouEmail({
+          referrerName: referral.referrerName,
+          referrerEmail: referral.referrerEmail,
+          refereeName: referral.refereeName,
+        });
+        console.log('[Referral] Referrer thank you email sent successfully');
+      } catch (emailError) {
+        console.error('[Referral] Failed to send referrer thank you email:', emailError);
+        // Don't fail the referral submission if email fails
+      }
+    }
+
     // TODO: Notify admin
 
     return NextResponse.json({
