@@ -98,39 +98,74 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Use ServiceTitan Capacity API to get REAL availability
-    // This accounts for:
-    // - Regular job appointments
-    // - Non-job appointments (lunch, meetings, PTO, etc.)
-    // - Technician availability and skills
-    // - Business unit capacity
-    const availableSlots = await serviceTitanSettings.checkCapacity({
-      businessUnitId: actualBusinessUnitId,
-      jobTypeId,
-      startDate: start,
-      endDate: end,
-      skillBasedAvailability: true,
-    });
+    // NEW STRATEGY: Check 2-hour blocks individually to ensure accurate availability
+    // We check: 8-10am, 10-12pm, 12-2pm, 2-4pm, 4-6pm for each day
+    // Then group into 4-hour arrival windows (8-12, 12-4, 4-8) for customer display
     
-    console.log(`[Smart Scheduler] ServiceTitan Capacity API returned ${availableSlots.length} total slots`);
-    console.log(`[Smart Scheduler] Breakdown: isAvailable=true: ${availableSlots.filter(s => s.isAvailable).length}, capacity>0: ${availableSlots.filter(s => (s.availableCapacity || 0) > 0).length}`);
+    // Define 2-hour blocks to check (Central Time hours)
+    const twoHourBlocks = [
+      { start: 8, end: 10, label: '8-10am' },
+      { start: 10, end: 12, label: '10am-12pm' },
+      { start: 12, end: 14, label: '12-2pm' },
+      { start: 14, end: 16, label: '2-4pm' },
+      { start: 16, end: 18, label: '4-6pm' },
+    ];
     
-    // The checkCapacity() method already filters correctly in settings.ts (isAvailable = openAvailability > 0 && isAvailable)
-    // We just need to use the slots marked as available
-    const truelyAvailableSlots = availableSlots.filter(slot => {
-      // Double-check both conditions for safety
-      const passesFilter = slot.isAvailable && (slot.availableCapacity || 0) > 0;
+    console.log(`[Smart Scheduler] Checking availability for ${twoHourBlocks.length} 2-hour blocks per day`);
+    
+    // Collect all available 2-hour slots across all days
+    const allAvailable2HourSlots: any[] = [];
+    
+    // Iterate through each day in the date range
+    let currentDay = new Date(start);
+    const endDay = new Date(end);
+    
+    while (currentDay <= endDay) {
+      const dayStr = formatInTimeZone(currentDay, TIMEZONE, 'yyyy-MM-dd');
+      console.log(`[Smart Scheduler] Checking ${dayStr}...`);
       
-      if (!passesFilter) {
-        console.log(`[Smart Scheduler] ❌ Filtered out: ${slot.start} (isAvailable=${slot.isAvailable}, capacity=${slot.availableCapacity})`);
-      } else {
-        console.log(`[Smart Scheduler] ✅ Keeping slot: ${slot.start} (capacity=${slot.availableCapacity}/${slot.totalCapacity})`);
+      // Check each 2-hour block for this day
+      for (const block of twoHourBlocks) {
+        // Create start/end times for this 2-hour block in Central Time
+        const blockStart = fromZonedTime(`${dayStr}T${String(block.start).padStart(2, '0')}:00:00`, TIMEZONE);
+        const blockEnd = fromZonedTime(`${dayStr}T${String(block.end).padStart(2, '0')}:00:00`, TIMEZONE);
+        
+        // Call ServiceTitan Capacity API for this specific 2-hour block
+        const capacityResponse = await serviceTitanSettings.checkCapacity({
+          businessUnitId: actualBusinessUnitId,
+          jobTypeId,
+          startDate: blockStart,
+          endDate: blockEnd,
+          skillBasedAvailability: true,
+        });
+        
+        // Filter to truly available slots (both isAvailable=true AND capacity>0)
+        const availableSlots = capacityResponse.filter(slot => 
+          slot.isAvailable && (slot.availableCapacity || 0) > 0
+        );
+        
+        if (availableSlots.length > 0) {
+          console.log(`[Smart Scheduler] ✅ ${dayStr} ${block.label}: ${availableSlots.length} available slot(s)`);
+          allAvailable2HourSlots.push(...availableSlots.map(slot => ({
+            ...slot,
+            blockLabel: block.label,
+            blockStart: block.start,
+            blockEnd: block.end,
+            dayStr,
+          })));
+        } else {
+          console.log(`[Smart Scheduler] ❌ ${dayStr} ${block.label}: No availability`);
+        }
       }
       
-      return passesFilter;
-    });
+      // Move to next day
+      currentDay = addDays(currentDay, 1);
+    }
     
-    console.log(`[Smart Scheduler] Final result: ${truelyAvailableSlots.length} slots with actual availability`);
+    console.log(`[Smart Scheduler] Total available 2-hour slots found: ${allAvailable2HourSlots.length}`);
+    
+    // Use the collected 2-hour slots for scoring (same variable name as before)
+    const truelyAvailableSlots = allAvailable2HourSlots;
     
     // Fetch scheduled jobs for proximity scoring (next 10 days)
     const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
@@ -265,12 +300,15 @@ export async function POST(req: NextRequest) {
         return distance <= 1; // Same zone or adjacent
       }).length;
 
+      // Get 4-hour arrival window for customer display
+      const arrivalWindow = get4HourArrivalWindow(slot.start, slot.end);
+      
       return {
         id: `slot-${index}`,
-        start: slot.start,
-        end: slot.end,
+        start: slot.start, // Actual 2-hour booking time (internal use only)
+        end: slot.end, // Actual 2-hour booking time (internal use only)
         date: slot.start.split('T')[0],
-        timeLabel: formatTimeWindow(slot.start, slot.end),
+        timeLabel: arrivalWindow.windowLabel, // 4-hour arrival window for customer display
         period: getTimePeriod(slot.start),
         proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
@@ -481,6 +519,61 @@ function calculateProximityScoreV2(
   return { 
     score: Math.min(bestScore, 100),
     technicianId: bestTechnicianId
+  };
+}
+
+/**
+ * Map a 2-hour slot to its corresponding 4-hour arrival window
+ * Customer sees 4-hour window, but we book the specific 2-hour slot
+ * 
+ * Mappings:
+ * - 8-10am or 10-12pm → 8am-12pm arrival window
+ * - 12-2pm or 2-4pm → 12pm-4pm arrival window
+ * - 4-6pm → 4pm-8pm arrival window
+ */
+function get4HourArrivalWindow(twoHourStart: string, twoHourEnd: string): { windowStart: string; windowEnd: string; windowLabel: string } {
+  const start = new Date(twoHourStart);
+  const startHour = parseInt(start.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: 'America/Chicago',
+  }));
+  
+  // Map 2-hour block to 4-hour arrival window
+  let windowStartHour: number;
+  let windowEndHour: number;
+  
+  if (startHour >= 8 && startHour < 12) {
+    // 8-10am or 10-12pm → 8am-12pm window
+    windowStartHour = 8;
+    windowEndHour = 12;
+  } else if (startHour >= 12 && startHour < 16) {
+    // 12-2pm or 2-4pm → 12pm-4pm window
+    windowStartHour = 12;
+    windowEndHour = 16;
+  } else {
+    // 4-6pm → 4pm-8pm window
+    windowStartHour = 16;
+    windowEndHour = 20;
+  }
+  
+  // Create window times
+  const dayStr = formatInTimeZone(start, 'America/Chicago', 'yyyy-MM-dd');
+  const windowStart = fromZonedTime(`${dayStr}T${String(windowStartHour).padStart(2, '0')}:00:00`, 'America/Chicago');
+  const windowEnd = fromZonedTime(`${dayStr}T${String(windowEndHour).padStart(2, '0')}:00:00`, 'America/Chicago');
+  
+  // Format label
+  const startLabel = windowStartHour <= 12 
+    ? `${windowStartHour}:00 AM`
+    : `${windowStartHour - 12}:00 PM`;
+  const endLabel = windowEndHour <= 12
+    ? `${windowEndHour}:00 PM` // Noon is PM
+    : `${windowEndHour - 12}:00 PM`;
+  
+  return {
+    windowStart: windowStart.toISOString(),
+    windowEnd: windowEnd.toISOString(),
+    windowLabel: `${startLabel} - ${endLabel}`,
   };
 }
 

@@ -74,6 +74,39 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Mask email for privacy (show first 2 chars and domain)
+    const maskEmail = (email: string) => {
+      const [localPart, domain] = email.split('@');
+      if (!localPart || !domain) return email;
+      
+      const visibleChars = Math.min(2, localPart.length);
+      const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+      return `${maskedLocal}@${domain}`;
+    };
+
+    // NEW: Handle MULTIPLE CUSTOMER ACCOUNTS with same phone number
+    if (customers.length > 1) {
+      console.log(`[Portal Phone Auth] Found ${customers.length} customer accounts with this phone number`);
+      customers.forEach((c, idx) => {
+        console.log(`[Portal Phone Auth]   ${idx + 1}. ${c.name} (ID: ${c.id}, Email: ${c.email || 'none'})`);
+      });
+      
+      // Return list of customer accounts for selection
+      return NextResponse.json({
+        found: true,
+        requiresAccountSelection: true,
+        customers: customers.map(c => ({
+          id: c.id,
+          name: c.name,
+          email: c.email,
+          maskedEmail: c.email ? maskEmail(c.email.split(',')[0].trim()) : null,
+        })),
+        phone: normalizedPhone,
+        message: 'We found multiple accounts with this phone number. Please select your account.'
+      });
+    }
+
+    // Single customer found - proceed with existing logic
     const customer = customers[0];
     console.log("[Portal Phone Auth] Found customer:", {
       customerId: customer.id,
@@ -104,16 +137,6 @@ export async function POST(req: NextRequest) {
 
     const emails = parseEmails(customer.email);
     const hasEmail = emails.length > 0;
-    
-    // Mask email for privacy (show first 2 chars and domain)
-    const maskEmail = (email: string) => {
-      const [localPart, domain] = email.split('@');
-      if (!localPart || !domain) return email;
-      
-      const visibleChars = Math.min(2, localPart.length);
-      const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
-      return `${maskedLocal}@${domain}`;
-    };
 
     // If customer has NO email, they must use SMS verification
     if (!hasEmail) {

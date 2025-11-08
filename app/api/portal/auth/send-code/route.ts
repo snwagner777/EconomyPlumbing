@@ -258,9 +258,18 @@ export async function POST(request: NextRequest) {
 
         console.log('[Portal Auth] Verification code email sent successfully');
 
+        // Mask email for privacy (show first 2 chars and domain)
+        const maskEmail = (email: string) => {
+          const [localPart, domain] = email.split('@');
+          if (!localPart || !domain) return email;
+          const visibleChars = Math.min(2, localPart.length);
+          const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
+          return `${maskedLocal}@${domain}`;
+        };
+
         return NextResponse.json({
           success: true,
-          message: `Verification code sent to ${contactValue}! Please check your email.`,
+          message: `Verification code sent to ${maskEmail(contactValue)}! Please check your email.`,
           expiresIn: expiryMinutes * 60, // seconds
         });
       } catch (error) {
