@@ -6,11 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { referrals, serviceTitanCustomers } from '@shared/schema';
+import { referrals, serviceTitanCustomers, customersXlsx } from '@shared/schema';
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
 import { sendRefereeWelcomeEmail } from '@/server/lib/resendClient';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 
 const referralSchema = z.object({
   referrerName: z.string().min(1).max(200),
@@ -74,6 +74,24 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Check if referee is already an existing customer (reject if so)
+    const existingReferee = await db.query.customersXlsx.findFirst({
+      where: (customers, { eq, or }) => or(
+        eq(customers.phone, result.data.refereePhone),
+        result.data.refereePhone && eq(customers.mobilePhone, result.data.refereePhone)
+      ),
+    });
+    
+    if (existingReferee) {
+      return NextResponse.json(
+        { 
+          error: 'This person is already a customer! Referral rewards are for bringing in new customers only.',
+          isExistingCustomer: true
+        },
+        { status: 400 }
+      );
+    }
+    
     // Look up referrer customer ID from ServiceTitan by phone
     let referrerCustomerId: number | undefined;
     const [referrerCustomer] = await db
@@ -86,7 +104,7 @@ export async function POST(req: NextRequest) {
       referrerCustomerId = referrerCustomer.id; // id is the ServiceTitan customer ID
     }
     
-    // Look up referee customer ID if they already exist
+    // Look up referee customer ID if they already exist (shouldn't happen after check above)
     let refereeCustomerId: number | undefined;
     const [refereeCustomer] = await db
       .select()
