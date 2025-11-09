@@ -55,9 +55,13 @@ interface ReviewStepProps {
   timeSlot: TimeSlot;
   problemDescription?: string;
   onSuccess: () => void;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  referralCode?: string;
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onSuccess }: ReviewStepProps) {
+export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
   const { toast } = useToast();
@@ -81,7 +85,10 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
         specialInstructions: specialInstructions || undefined,
         problemDescription: problemDescription || undefined, // Customer's description of the issue
         bookingSource: 'scheduler_wizard',
-        utm_source: 'website',
+        utm_source: utmSource || 'website',
+        ...(utmMedium && { utm_medium: utmMedium }),
+        ...(utmCampaign && { utm_campaign: utmCampaign }),
+        ...(referralCode && { referralToken: referralCode }),
         ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
         ...(customer.locationId && { locationId: customer.locationId }),
         ...(timeSlot.technicianId && { technicianId: timeSlot.technicianId }), // Pre-assigned technician from smart slot

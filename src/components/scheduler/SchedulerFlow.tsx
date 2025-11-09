@@ -94,6 +94,12 @@ interface SchedulerFlowProps {
   initialUtmCampaign?: string;
   initialReferralCode?: string;
   prefilledCustomerId?: number;
+  initialCustomerData?: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 const STEP_CONFIG: Record<number, { icon: any | null; title: string; subtitle: string }> = {
@@ -130,7 +136,8 @@ export function SchedulerFlow({
   initialUtmMedium,
   initialUtmCampaign,
   initialReferralCode,
-  prefilledCustomerId
+  prefilledCustomerId,
+  initialCustomerData
 }: SchedulerFlowProps) {
   const router = useRouter();
   const [state, dispatch] = useReducer(flowReducer, {
@@ -290,6 +297,7 @@ export function SchedulerFlow({
               onSubmit={handleCustomerSubmit}
               selectedService={state.jobType || undefined}
               onVipError={() => setVipError(true)}
+              initialData={initialCustomerData}
               data-testid="step-customer"
             />
           </div>
@@ -337,6 +345,10 @@ export function SchedulerFlow({
               timeSlot={state.timeSlot}
               problemDescription={state.problemDescription}
               onSuccess={handleComplete}
+              utmSource={initialUtmSource}
+              utmMedium={initialUtmMedium}
+              utmCampaign={initialUtmCampaign}
+              referralCode={initialReferralCode}
               data-testid="step-review"
             />
           </div>

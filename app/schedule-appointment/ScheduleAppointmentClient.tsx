@@ -13,6 +13,12 @@ interface ScheduleAppointmentClientProps {
   utmCampaign?: string;
   referralCode?: string;
   prefilledCustomerId?: number;
+  initialCustomerData?: {
+    firstName?: string;
+    lastName?: string;
+    phone?: string;
+    email?: string;
+  };
 }
 
 export function ScheduleAppointmentClient({
@@ -21,6 +27,7 @@ export function ScheduleAppointmentClient({
   utmCampaign,
   referralCode,
   prefilledCustomerId,
+  initialCustomerData,
 }: ScheduleAppointmentClientProps) {
   return (
     <>
@@ -94,6 +101,7 @@ export function ScheduleAppointmentClient({
                 initialUtmCampaign={utmCampaign}
                 initialReferralCode={referralCode}
                 prefilledCustomerId={prefilledCustomerId}
+                initialCustomerData={initialCustomerData}
               />
             </div>
           </div>
