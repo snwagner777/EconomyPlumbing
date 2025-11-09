@@ -4297,8 +4297,10 @@ function CustomerDataSection() {
     queryKey: ['/api/admin/customer-metrics'],
   });
 
-  const { data: importHistory, isLoading: historyLoading } = useQuery({
+  const { data: importHistory, isLoading: historyLoading, refetch: refetchImports, dataUpdatedAt: importsUpdatedAt } = useQuery({
     queryKey: ['/api/admin/customer-imports'],
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
+    refetchIntervalInBackground: false, // Only poll when tab is active
   });
 
   const { data: topCustomersData, isLoading: topCustomersLoading } = useQuery({
@@ -4463,13 +4465,27 @@ function CustomerDataSection() {
       {/* Import History */}
       <Card data-testid="card-import-history">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Import History
-          </CardTitle>
-          <CardDescription>
-            Recent customer data imports from ServiceTitan
-          </CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Import History
+              </CardTitle>
+              <CardDescription>
+                Recent customer data imports from ServiceTitan{importsUpdatedAt && !historyLoading && ` • Last updated: ${new Date(importsUpdatedAt).toLocaleTimeString()}`}
+              </CardDescription>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => refetchImports()}
+              data-testid="button-refresh-imports"
+              disabled={historyLoading}
+            >
+              <RefreshCcw className="h-4 w-4 mr-2" />
+              Refresh
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {imports.length === 0 ? (
@@ -8076,8 +8092,10 @@ function EmailProcessingSection() {
 
 // Invoice Logs Table
 function InvoiceLogsTable() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch, dataUpdatedAt } = useQuery({
     queryKey: ['/api/admin/invoice-logs'],
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
+    refetchIntervalInBackground: false, // Only poll when tab is active
   });
   
   if (isLoading) {
@@ -8124,11 +8142,28 @@ function InvoiceLogsTable() {
     );
   }
   
+  const lastUpdated = new Date(dataUpdatedAt);
+  
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Invoice Processing Logs</CardTitle>
-        <CardDescription>Recent invoice PDF webhook attempts</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Invoice Processing Logs</CardTitle>
+            <CardDescription>
+              Recent invoice PDF webhook attempts • Last updated: {lastUpdated.toLocaleTimeString()}
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetch()}
+            data-testid="button-refresh-invoices"
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -8190,8 +8225,10 @@ function InvoiceLogsTable() {
 
 // Estimate Logs Table
 function EstimateLogsTable() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading, isError, error, refetch, dataUpdatedAt } = useQuery({
     queryKey: ['/api/admin/estimate-logs'],
+    refetchInterval: 60000, // Auto-refresh every 60 seconds
+    refetchIntervalInBackground: false, // Only poll when tab is active
   });
   
   if (isLoading) {
@@ -8223,6 +8260,7 @@ function EstimateLogsTable() {
   }
   
   const logs = data?.logs || [];
+  const lastUpdated = new Date(dataUpdatedAt);
   
   if (logs.length === 0) {
     return (
@@ -8241,8 +8279,23 @@ function EstimateLogsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Estimate Processing Logs</CardTitle>
-        <CardDescription>Recent estimate PDF webhook attempts</CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Estimate Processing Logs</CardTitle>
+            <CardDescription>
+              Recent estimate PDF webhook attempts • Last updated: {lastUpdated.toLocaleTimeString()}
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => refetch()}
+            data-testid="button-refresh-estimates"
+          >
+            <RefreshCcw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
