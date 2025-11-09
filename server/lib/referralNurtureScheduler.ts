@@ -155,6 +155,60 @@ export class ReferralNurtureScheduler {
   }
 
   /**
+   * Inject referral link into email content
+   */
+  private injectReferralLink(htmlContent: string, plainTextContent: string, referralLink: string): { htmlContent: string; plainTextContent: string } {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.plumbersthatcare.com';
+    const portalUrl = `${baseUrl}/customer-portal?utm_source=referral_nurture_email&utm_medium=email`;
+    
+    // HTML injection - add a prominent referral link section before closing </body>
+    const htmlReferralSection = `
+      <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 8px; border: 2px solid #0ea5e9;">
+        <h3 style="margin: 0 0 15px 0; color: #0369a1; font-size: 20px;">🎁 Share & Earn $25</h3>
+        <p style="margin: 0 0 15px 0; font-size: 16px; line-height: 1.6; color: #334155;">
+          Love our service? Share your unique referral link with friends and family. When they book a service, you both get $25!
+        </p>
+        <div style="background: white; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #cbd5e1;">
+          <p style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #64748b;">Your Referral Link:</p>
+          <a href="${referralLink}" style="color: #0ea5e9; font-size: 16px; font-weight: 600; text-decoration: none; word-break: break-all;">${referralLink}</a>
+        </div>
+        <a href="${referralLink}" style="display: inline-block; margin-top: 10px; padding: 12px 24px; background: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+          Share Your Link
+        </a>
+      </div>
+    `;
+    
+    const updatedHtml = htmlContent.includes('</body>') 
+      ? htmlContent.replace('</body>', `${htmlReferralSection}</body>`)
+      : htmlContent + htmlReferralSection;
+    
+    // Plain text injection
+    const plainReferralSection = `
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🎁 SHARE & EARN $25
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Love our service? Share your unique referral link with friends and family. 
+When they book a service, you both get $25!
+
+YOUR REFERRAL LINK:
+${referralLink}
+
+Copy and share this link via text, email, Facebook, Instagram, or Nextdoor!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
+    
+    const updatedPlain = plainTextContent + plainReferralSection;
+    
+    return {
+      htmlContent: updatedHtml,
+      plainTextContent: updatedPlain,
+    };
+  }
+
+  /**
    * Get email content for a specific email in the sequence
    */
   private async getEmailContent(
@@ -166,6 +220,12 @@ export class ReferralNurtureScheduler {
     },
     settings: EmailSettings
   ): Promise<GeneratedEmail> {
+    // Generate referral link for this customer FIRST
+    const referralLink = await this.getReferralLink(customerData.id);
+    if (referralLink) {
+      console.log(`[Referral Nurture] Including referral link in email: ${referralLink}`);
+    }
+    
     // Try to get template from database
     const template = await db.query.reviewEmailTemplates.findFirst({
       where: and(
@@ -175,7 +235,18 @@ export class ReferralNurtureScheduler {
     });
 
     if (template) {
-      console.log(`[Referral Nurture] Using database template for email ${emailNumber}`);
+      console.log(`[Referral Nurture] Using database template for email ${emailNumber}, injecting referral link`);
+      
+      // Inject referral link into template
+      if (referralLink) {
+        const injected = this.injectReferralLink(template.htmlContent, template.plainTextContent, referralLink);
+        return {
+          subject: template.subject,
+          htmlContent: injected.htmlContent,
+          plainTextContent: injected.plainTextContent,
+        };
+      }
+      
       return {
         subject: template.subject,
         htmlContent: template.htmlContent,
@@ -183,13 +254,7 @@ export class ReferralNurtureScheduler {
       };
     }
 
-    // Generate referral link for this customer
-    const referralLink = await this.getReferralLink(customerData.id);
-    if (referralLink) {
-      console.log(`[Referral Nurture] Including referral link in email: ${referralLink}`);
-    }
-
-    // Fall back to AI generation
+    // Fall back to AI generation (AI will handle referral link inclusion via prompt)
     console.log(`[Referral Nurture] Generating AI content for email ${emailNumber}`);
     return await generateEmail({
       campaignType: 'referral_nurture',

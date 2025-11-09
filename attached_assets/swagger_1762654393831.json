@@ -1,0 +1,3501 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "SimpleTexting API Documentation",
+    "description": "# Introduction\n\n\nThousands of businesses rely on SimpleTexting to communicate with their audience via text message. With our API, developers can access many of our platform’s features and integrate them with other websites or applications. This document details the available SimpleTexting API functions and their parameters. For additional security, our API is by approval only. If you’d like access, sign up for a trial account and email [support@simpletexting.net](mailto:support@simpletexting.net) with details about your use case.\n\n**How it works**\n\nOur API is organized around [REST](https://en.wikipedia.org/wiki/Representational_state_transfer). It uses standard HTTP response codes and authentication. Before you get started, there a few things to keep in mind:\n\n- When using the POST request, you must specify that `content-type` is `application/json`.\n\n\n- The format of responses for all requests is JSON, you can skip the `Accept` request header or set it to `application/json`.\n\n# Authentication\n\nEach time you make a request to our API, we use a bearer token in your header to authenticate your account. API requests without authentication will fail. Your API token can be found under [settings](https://app2.simpletexting.com/integrations/webhooks).<br><br>\nPlease be sure to keep your bearer token secure. Don’t share it any public areas such as GitHub, client-side code, etc.\n\n<!-- ReDoc-Inject: <security-definitions> -->\n",
+    "termsOfService": "https://simpletexting.com/terms/",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://api-app2.simpletexting.com/v2"
+    }
+  ],
+  "security": [
+    {
+      "api_key": [432ea291ca0a0bdc35f39411a60f2fea]
+    }
+  ],
+  "tags": [
+    {
+      "name": "Webhooks",
+      "description": "Use webhooks to communicate between the SimpleTexting platform and your server. Webhooks can be used to forward messages as well as provide info about unsubscribes and message delivery.\n\nSimpleTexting can trigger webhooks for new incoming messages, delivery reports, unsubscribes, and more. Now you can build scripts that interpret and respond to events that occur in your SimpleTexting account! To set the URLs for your webhooks, visit the Webhooks tab on the API section of [settings](https://app2.simpletexting.com/integrations/webhooks)."
+    },
+    {
+      "name": "Contact Lists",
+      "description": "Create, update, and delete contact lists."
+    },
+    {
+      "name": "Contacts",
+      "description": "At a minimum, each contact in SimpleTexting must have a phone number. Contacts can also hold additional information including first name, last name, and email address. You can also create custom fields to store data specific to your website or app’s needs."
+    },
+    {
+      "name": "Campaigns",
+      "description": "Send and manage campaigns directly from the SimpleTexting API. The endpoint allows you to Create and Send a campaign, get a specific campaign by its name or ID, or list all of your SimpleTexting campaigns. \n\n**Note:** If the message contains a link from a common third-party link shortener such as bit.ly, it will appear from our URL shortener instead and occupy 20 characters. [Learn more](https://help.simpletexting.com/en/articles/3362741-why-carriers-don-t-allow-bit-ly-and-other-third-party-link-shorteners)."
+    },
+    {
+      "name": "Media Items",
+      "description": "When sending messages via the SimpleTexting platform, you may need to attach various media items. This API allows you to perform various operations needed to manage your media attachments. The size limitations of these items are discussed [here](#tag/File-Information)."
+    },
+    {
+      "name": "Contact Segments",
+      "description": "Get all of the segments on a given SimpleTexting account."
+    },
+    {
+      "name": "Messages",
+      "description": "In SimpleTexting, users can send and receive messages. With our API, this can be done programmatically.\n\n**Note:** If the message contains a link from a common third-party link shortener such as bit.ly, it will appear from our URL shortener instead and occupy 20 characters. [Learn more](https://help.simpletexting.com/en/articles/3362741-why-carriers-don-t-allow-bit-ly-and-other-third-party-link-shorteners)."
+    },
+    {
+      "name": "File Information",
+      "description": "We can accept a wide variety of file types over MMS. The industry standard maximum file\nsize limit is `600KB` for toll-free accounts and is `1MB` on shortcode accounts.\n\n\nWe support the following file type: `MPEG Audio, MPEG Video, MP4 Video, VCARDs, PDF`\n\n\nFor popular image types we can accept media up to `15MB`, our system will automatically\ncompress these to the `600KB` industry limitation. These media types include: `JPEG, PNG, GIF`\n"
+    },
+    {
+      "name": "Custom Fields",
+      "description": "SimpleTexting's Custom Fields feature plays a key role in managing your customer data. Not only does it give you enormous flexibility when it comes to [collecting](https://help.simpletexting.com/using-simpletexting/apps-and-features/collecting-subscriber-data) or [importing](https://help.simpletexting.com/using-simpletexting/lists-and-contacts/importing-contacts) data, it also lets you quickly and easily personalize each message in a [mass text](https://simpletexting.com/mass-texting/) campaign."
+    },
+    {
+      "name": "Contacts - Batch Operations",
+      "description": "An endpoint to assist in batch operations on your contacts. Using these operations, you can update specific contact information, or delete contacts, all using the contacts phone as an ID."
+    },
+    {
+      "name": "Tenant",
+      "description": "General information about account"
+    },
+    {
+      "name": "Webhook Reports",
+      "description": "Use webhooks to communicate between the SimpleTexting platform and your server. Webhooks can be used to forward messages as well as provide info about unsubscribes and message delivery. SimpleTexting can trigger webhooks for new incoming messages, delivery reports and unsubscribes."
+    }
+  ],
+  "paths": {
+    "/api/webhooks/{webhookId}": {
+      "put": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Update a Webhook",
+        "description": "Update an existing webhook using its unique ID.",
+        "operationId": "updateWebhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "description": "Webhook ID in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Webhook was updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error. Webhook not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Delete a Webhook",
+        "description": "Delete an existing Webhook by its unique ID.\n\n**Example:** Here we delete a Webhook whose ID is`507f1f77bcf86cd799439011`. You can use the [Get all Webhooks](#operation/getWebhooks) endpoint to retrieve message IDs for all of your Webhooks:\n\n`https://api-app2.simpletexting.com/v2/api/webhooks/507f1f77bcf86cd799439011`",
+        "operationId": "deleteWebhook",
+        "parameters": [
+          {
+            "name": "webhookId",
+            "in": "path",
+            "description": "Webhook ID in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success. Webhook was deleted."
+          }
+        }
+      }
+    },
+    "/api/contacts/{contactIdOrNumber}": {
+      "get": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Get a Contact",
+        "description": "Get a contact via their unique ID or phone number. Phone number is the preferred parameter for this call.\n\n**Example:** Below, we return the information associated with the Contact whose ID is `507f1f77bcf86cd799439011`. You can use the [Get all Contacts](#operation/getContacts) endpoint to retrieve contact IDs for all of your contacts:\n\n`https://api-app2.simpletexting.com/v2/api/contacts/507f1f77bcf86cd799439011`",
+        "operationId": "getContact",
+        "parameters": [
+          {
+            "name": "contactIdOrNumber",
+            "in": "path",
+            "description": "Phone number (preferred) or Contact ID in hexadecimal format\n\n**Example:** `3051234567 / 507f1f77bcf86cd799439011`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 3051234567
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Fetched contact.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Update a Contact",
+        "description": "Update a contact’s phone number or any other field.\n\n**Example:** Below we update our contact, 3051234567. We declared their custom field value for `zipcode` is `12345` and that they get added to the list with an ID `507f191e810c19729de860ea` and another list called `My First List`. In our URL, we requested that the contact gets added to a new list while remaining on the current one. We also requested not to update the contact's information if they already exist within the system:\n\nURL:\n\n`https://api-app2.simpletexting.com/v2/api/contacts/3051234567?listsReplacement=false&false`\n\nRequest Body:\n\n`{ \"contactPhone\": \"1234567890\", \"firstName\": \"John\", \"lastName\": \"Doe\", \"email\": \"john.doe@simpletexting.net\", \"birthday\": \"1985-05-15\", \"customFields\": { \"zipcode\": \"12345\" }, \"comment\": \"VIP client\", \"listIds\": [ \"507f191e810c19729de860ea\", \"My First List\" ] }`",
+        "operationId": "updateContact",
+        "parameters": [
+          {
+            "name": "contactIdOrNumber",
+            "in": "path",
+            "description": "Contact ID in hexadecimal format or the contact's phone number.\n\n**Example:** `3051234567 / 507f1f77bcf86cd799439011`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 3051234567
+          },
+          {
+            "name": "upsert",
+            "in": "query",
+            "description": "If a contact already exists with the phone number in your request body, the contact will be updated with the information in the request when upsert is set to true.\n\n**Example:** `false`",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          },
+          {
+            "name": "listsReplacement",
+            "in": "query",
+            "description": "If listsReplacement is set to true, a contact will be removed from their existing list. If set to false, a contact will be added to a new list and stay in their original list.\n\n**Example:** `false`",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleContactUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Contact is updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Delete a Contact",
+        "description": "Delete a contact via their unique ID or phone.\n\n**Example:** Here we delete a Contact whose ID is`507f1f77bcf86cd799439011`. You can use the [Get all Contacts](#operation/getContacts) endpoint to retrieve Contact IDs for all of your Contacts:\n\n`https://api-app2.simpletexting.com/v2/api/webhooks/507f1f77bcf86cd799439011`",
+        "operationId": "deleteContact",
+        "parameters": [
+          {
+            "name": "contactIdOrNumber",
+            "in": "path",
+            "description": "Contact ID in hexadecimal format or phone number\n\n**Example:** `3051234567 / 507f1f77bcf86cd799439011`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success. Contact is deleted."
+          }
+        }
+      }
+    },
+    "/api/contact-lists/{listId}": {
+      "put": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Update a List Name",
+        "description": "Update the name of an existing list.\n\n**Example:** Here we updated a list name with a new name `My Newer List`:\n\n`{ \"name\": \"My Newer List\" }`",
+        "operationId": "updateList",
+        "parameters": [
+          {
+            "name": "listId",
+            "in": "path",
+            "description": "List ID in hexadecimal format or name.\n\n**Example:** 507f1f77bcf86cd799439011 / My Newer list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success. List name updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/report/unsubscribe": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Webhook Reports"
+        ],
+        "summary": "Unsubscribe Report",
+        "description": "Triggers when a client sends STOP to your number.\n\n**Example:** We create the Unsubscribe report for `8005551234` for the status of the outgoing messages to `8001234567`:\n\n`{\"url\": \"http://www.yourdomain.com/unsubscribe.php\",\"triggers\": [\"UNSUBSCRIBE_REPORT\"],\"requestPerSecLimit\": 25,\"accountPhone\": \"8005551234\",\"contactPhone\": \"8001234567\"}`\n\nYour custom domain `http://www.yourdomain.com/unsubscribe.php` has been set as an unsubscribe report URL for this example. The SimpleTexting server will invoke the given call when the subscriber with the number 8001234567 unsubscribes.",
+        "operationId": "unsubscribeMessageReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleReportDtoWebhookUnsubscribeReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "servers": [
+          {
+            "url": "https://yourdomain.com/",
+            "variables": {}
+          }
+        ]
+      }
+    },
+    "/report/incoming": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Webhook Reports"
+        ],
+        "summary": "Incoming/Outgoing Message Report",
+        "description": "Triggers when an outgoing message or incoming message is handled.\n\n**Example:** We create the incoming webhook for `8005551234` from contact phone `8001234567`:\n\n`{\"url\": \"http://www.yourdomain.com/receivesms.php\",\"triggers\": [\"INCOMING_MESSAGE\"],\"requestPerSecLimit\": 25,\"accountPhone\": \"8005551234\",\"contactPhone\": \"8001234567\"}`",
+        "operationId": "incomingMessageReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleReportDtoWebhookMessageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "servers": [
+          {
+            "url": "https://yourdomain.com/",
+            "variables": {}
+          }
+        ]
+      }
+    },
+    "/report/delivery": {
+      "post": {
+        "security": [],
+        "tags": [
+          "Webhook Reports"
+        ],
+        "summary": "Delivery/Non Delivered Message Report",
+        "description": "Triggers when an outgoing message is reported as delivered or undelivered by the carrier.\n\n**Example:** We create the Delivery report for `8005551234` for the status of the outgoing messages to `8001234567`:\n\n`{\"url\": \"http://www.yourdomain.com/delivery.php\",\"triggers\": [\"DELIVERY_REPORT\"],\"requestPerSecLimit\": 25,\"accountPhone\": \"8005551234\",\"contactPhone\": \"8001234567\"}`\n\nYour custom domain `http://www.yourdomain.com/delivery.php` has been set as a delivery report webhook for this example. The SimpleTexting server will invoke the given call when a message with the messageId `507f191e810c19729de860ea` is delivered.",
+        "operationId": "deliveryMessageReport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleReportDtoWebhookDeliveryReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "servers": [
+          {
+            "url": "https://yourdomain.com/",
+            "variables": {}
+          }
+        ]
+      }
+    },
+    "/api/webhooks": {
+      "get": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Get all Webhooks",
+        "description": "Retrieve all the webhooks that you've created.\n\n**Example:** Here we return all Webhooks from an account:\n\n`https://api-app2.simpletexting.com/v2/api/webhooks`",
+        "operationId": "getWebhooks",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the webhooks of the given account). Please note that page numbering starts at zero (`0`)",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 5
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned webhooks to show per page",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns page of webhooks.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewWebhook"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Webhooks"
+        ],
+        "summary": "Create a Webhook",
+        "description": "Create a new webhook from scratch.",
+        "operationId": "createWebhook",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. Webhook was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error. Invalid phone format.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/messages": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get all Messages",
+        "description": "Retrieves a list of all messages sent to a specific contact from a specific number on your account.\n\n**Example:** Here we return all messages from an account:\n\n`https://api-app2.simpletexting.com/v2/api/messages?page=100&size=500`",
+        "operationId": "getMessages",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the messages of the given number). Please note that page numbering starts at zero (`0`)",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 25
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned messages to show per page",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          },
+          {
+            "name": "accountPhone",
+            "in": "query",
+            "description": "The phone number on your account the messages were sent to. If blank, the request will return the messages sent to the primary account phone",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": 8005551234
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "First sent/received timestamp. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          {
+            "name": "contactPhone",
+            "in": "query",
+            "description": "The contact's phone number",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": 8001234567
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a list of messages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewMessage"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Send a Message",
+        "description": "Send either an MMS or SMS message to a contact. Use this programmatically to send to multiple contacts.\n\nIf the message contains a link from a common third-party link shortener such as [bit.ly](http://bit.ly/), it will appear from our URL shortener instead and occupy 20 characters. [Learn more](https://help.simpletexting.com/en/articles/3362741-why-carriers-don-t-allow-bit-ly-and-other-third-party-link-shorteners).\n\nThere are limitations on Media Files with MMS messages. The size limitations of these items are discussed [here](#tag/File-Information).\n\n**Example:** Below, we have an example of an MMS message being sent. We specified that we wanted to send an `MMS` message to `1234567` from one of the numbers on our account - `8005551234`. We also provided some fallback text, should the receiving cell phone be unable to receive an MMS, and provided a link/ID to the media we wished to attach:\n\n`{ \"contactPhone\": \"1234567890\", \"accountPhone\": \"8005551234\", \"mode\": \"MMS_PREFERRED\", \"text\": \"Hello! How are you?\", \"subject\": \"Some message from SimpleTexting\", \"fallbackText\": \"[url=%%fallback_link%%]\", \"mediaItems\": [ \"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\" ] }`",
+        "operationId": "createMessage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful. Message was created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageRequestInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/messages/evaluate": {
+      "post": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Evaluate a Message",
+        "description": "Evaluate the body of your message before sending it to a contact or contacts.\n\n**Example:** We evaluate a message to determine a number of properties. These include the number of credits it will use, whether it is an extended SMS or a regular SMS and any potential errors that may occur:\n\n`https://api-app2.simpletexting.com/v2/api/messages/evaluate`",
+        "operationId": "evaluateMessage",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EvaluateMessageRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. You have a message to evaluate.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mediaitems/upload": {
+      "post": {
+        "tags": [
+          "Media Items"
+        ],
+        "summary": "Upload Media",
+        "description": "Upload a media file from a local directory to SimpleTexting.\n\n**Example:** Here we upload an image from our local directory using an HTTP request. We state that the media should be shared with teammates:\n\n`POST /api/mediaitems/upload?shared=true HTTP/1.1 Host: https://api-app2.simpletexting.com/v2/ accept: */* Authorization: Bearer {{YOUR_TOKEN}} Content-Length: 176 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW ----WebKitFormBound`",
+        "operationId": "upload",
+        "parameters": [
+          {
+            "name": "shared",
+            "in": "query",
+            "description": "Define whether a media file is shared with teammates",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "file"
+                ],
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "description": "The media file you want to upload",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Media is uploaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StFileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mediaitems/loadByLink": {
+      "post": {
+        "tags": [
+          "Media Items"
+        ],
+        "summary": "Upload Media Using a URL",
+        "description": "This endpoint allows you to upload media via a URL so that you can send it in a message to a contact.\n\n**Example:** Below we upload some media via a hosted URL to the SimpleTexting system:\n\n`{ \"link\": \"https://dropbox.com/uploads/2019/08/7kAnVTq5Pb9TxEJbBNMDwh-768-80-1.jpg\" }`",
+        "operationId": "uploadByLink",
+        "parameters": [
+          {
+            "name": "shared",
+            "in": "query",
+            "description": "Define whether a media file is shared with teammates",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadByLink"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Media is uploaded.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StFileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contacts": {
+      "get": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Get all Contacts",
+        "description": "For a given account, return all contacts that have been created in the account. A paginated list of contacts will be returned to you:\n\n**Example:** Here we return all Contacts from an account since April 28th 2021:\n\n`https://api-app2.simpletexting.com/v2/api/contacts?page=100&size=2&since=2021-04-28T23:20:08.489Z&direction=ASC`",
+        "operationId": "getContacts",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the contacts of the given account). Please note that page numbering starts at zero (`0`)\n\n**Example:** `250`",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 250
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned contacts to show per page\n\n**Example:** `150`",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 150
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "description": "List contacts updated since a specified date. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "description": "Specify the sort order of your results. By default, results are sorted by the 'updated' field:\n\n- **ASC:** Sort values in *ascending* order\n\n- **DESC:** Sort values in *descending* order\n\n**Example:** `desc`",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "desc"
+            },
+            "example": "desc"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a paginated list of contacts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewContact"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contacts"
+        ],
+        "summary": "Create a Contact",
+        "description": "Create a new contact and add them to a specific list.\n\n**Example:** Below we created our contact, John Doe. We declared his custom field value for `zipcode` is `12345` and that he gets added to the list with an ID `507f191e810c19729de860ea` and another list called `My First List`:\n\n`{ \"contactPhone\": \"1234567890\", \"firstName\": \"John\", \"lastName\": \"Doe\", \"email\": \"john.doe@simpletexting.net\", \"birthday\": \"1985-05-15\", \"customFields\": { \"zipcode\": \"12345\" }, \"comment\": \"VIP client\", \"listIds\": [ \"507f191e810c19729de860ea\", \"My First List\" ] }`",
+        "operationId": "createContact",
+        "parameters": [
+          {
+            "name": "upsert",
+            "in": "query",
+            "description": "If a contact already exists with the phone number in your request body, the contact will be updated with the information in the request when upsert is set to true.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          },
+          {
+            "name": "listsReplacement",
+            "in": "query",
+            "description": "If listsReplacement is set to true, a contact will be removed from their existing list. If set to false, a contact will be added to a new list and stay in their original list.",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            },
+            "example": false
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SingleContactUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. Contact created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contacts-batch/batch-update": {
+      "post": {
+        "tags": [
+          "Contacts - Batch Operations"
+        ],
+        "summary": "Update a Group of Contacts",
+        "description": "Update multiple fields at once for a batch of contacts. You can update their first name, last name, emails, lists, and more.\n\n**Example:** Here we are updating two contacts, seen in the array. The list replacement is set to true, so they will be removed from their existing list and added to a new one:\n\n`{ \"updates\": [ { \"contactPhone\": \"1234567890\", \"firstName\": \"John\", \"lastName\": \"Doe\", \"email\": \"john.doe@simpletexting.net\", \"birthday\": \"1985-05-15\", \"customFields\": { \"zipcode\": \"12345\" }, \"comment\": \"VIP client\", \"listIds\": [ \"507f191e810c19729de860ea\", \"My First List\" ] },{ \"contactPhone\": \"0987654321\", \"firstName\": \"Jane\", \"lastName\": \"Doe\", \"email\": \"jane.doe@simpletexting.net\", \"birthday\": \"1984-05-25\", \"customFields\": { \"zipcode\": \"54321\" }, \"comment\": \"VIP client\", \"listIds\": [ \"507f191e810c19729de860ea\", \"My First List\" ] } ], \"listsReplacement\": true }`\n\nStep 1: Start the task for the batch update with the above parameters. As a result, you receive the task ID.\n\nExample:\n\n`{ \"id\": \"6176fb3e141c0060668b2c03\" }`\n\nStep 2: Request the task result by adding task ID from Step 1 to the [Get update result](#operation/getBatchUpdateResults) request.\n\nExample:\n\n`{\n  \"status\": \"DONE\",\n  \"results\":\n[{ \"done\": true,\n  \"contactPhone\": \"1234567890\",\n  \"contactId\": \"6176f999141c0060668b258e\" },\n{ \"done\": true,\n\"contactPhone\": \"0987654321\",\n\"contactId\": \"1236f555141c0060668b123e\"}],\n\"requestedCount\": 2,\n\"processedCount\": 2\n}`",
+        "operationId": "processBatchUpdate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactsBatchUpdate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. Contacts were successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contacts-batch/batch-delete": {
+      "post": {
+        "tags": [
+          "Contacts - Batch Operations"
+        ],
+        "summary": "Delete a Group of Contacts",
+        "description": "Delete a group of contacts from SimpleTexting using their phone numbers.\n\n**Example:** Below, we delete a batch of contacts identified here by their phone number in the array:\n\n`{ \"contactPhones\": [ \"1234567890\", \"0987654321\", \"1122334455\" ] }`",
+        "operationId": "processBatchDelete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactsBatchDelete"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. Contacts were successfully deleted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactsBatchDeleteResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-lists": {
+      "get": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Get all Lists",
+        "description": "Retrieves all lists from your SimpleTexting account.\n\n**Example:** Here we return all lists from an account:\n\n`https://api-app2.simpletexting.com/v2/api/contact-lists?page=100&size=2`",
+        "operationId": "getLists",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the lists of the given account). Please note that page numbering starts at zero (`0`)\n\n**Example:** `15`",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 15
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned lists to show per page\n\n**Example:** `50`",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns all lists in a given SimpleTexting account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewList"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Create a List",
+        "description": "This endpoint is used to create a new contact list in a given SimpleTexting account.\n\n**Example:** Here we create a list whose name is `My New List`:\n\n`{ \"name\": \"My New List\" }`",
+        "operationId": "createList",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. List created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-lists/{listIdOrName}/contacts": {
+      "post": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Add Contact To List",
+        "description": "Add contact to specified list.",
+        "operationId": "addContactToList",
+        "parameters": [
+          {
+            "name": "listIdOrName",
+            "in": "path",
+            "description": "List ID or name to add the contact.\n\n**Example:** 507f191e810c19729de860ea / My First List",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f191e810c19729de860ea / My First List"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContactPhoneOrIdDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success. Fetched list."
+          }
+        }
+      }
+    },
+    "/api/campaigns": {
+      "get": {
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Get all Campaigns",
+        "description": "Get all immediate campaigns from the SimpleTexting system. Please note that none of your scheduled or recurring campaigns will be returned by this request.\n\n**Example:** We request all `SENT` campaigns sent from the `8005551234` number to the list `My  First List`:\n\n`https://api-app2.simpletexting.com/v2/api/campaigns?page=100&size=2&accountPhone=8005551234&state=SENT&listNameOrId=My First List&startDateFrom=2021-04-28T23:20:08.489Z&startDateTo=2021-05-28T23:20:08.489Z`",
+        "operationId": "getCampaigns",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the campaigns sent from the given number). Please note that page numbering starts at zero (`0`)",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 100
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned campaigns to show per page",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 2
+          },
+          {
+            "name": "accountPhone",
+            "in": "query",
+            "description": "The phone number the campaign was sent from",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": 8005551234
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "description": "The current state of the immediate campaigns you wish to retrieve:\n\n  - **ERROR:** Returns campaigns that were not sent because of errors\n\n  - **PAUSED:** Returns Paused campaigns on your account\n\n  - **SENDING:** Returns sending campaigns\n\n  - **COMPLETED:** Returns all successfully sent campaigns on your account\n\n  - **MONITORING:** Returns all campaigns that includes \"stop\" words or malicious links",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "PAUSED",
+                "SENDING",
+                "COMPLETED",
+                "ERROR",
+                "MONITORING"
+              ]
+            },
+            "example": "SENDING"
+          },
+          {
+            "name": "listNameOrId",
+            "in": "query",
+            "description": "The list name or list ID",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "My First List"
+          },
+          {
+            "name": "startDateFrom",
+            "in": "query",
+            "description": "List campaigns starting from a certain date. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          {
+            "name": "startDateTo",
+            "in": "query",
+            "description": "List campaigns up to a certain date. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "example": "2021-05-28T23:20:08.489Z"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Fetched list of campaigns",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewFetchedCampaignDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Send a Campaign",
+        "description": "Create and send a campaign.\n\n**Example:** Here we created a campaign from our short code `8005551234` and sent it to a segment identified here by its ID, along with a list called `My First List`. We also specified that the `First Name` custom field will only take up 20 characters. Finally, we specified that 2 pieces of media will be attached. One is housed on SimpleTexting and identified by its ID, the other is getting pulled from an external link:\n\n`{ \"title\": \"My first campaign\", \"listsOrSegments\": [ \"507f191e810c19729de860ea\", \"My First List\" ], \"accountPhone\": \"8005551234\", \"customFieldsMaxLength\": { \"firstName\": 20 }, \"messageTemplate\": { \"title\": \"My first campaign\", \"subject\": \"My first campaign\", \"text\": \"Hi %%firstname%%, welcome to our campaign!\", \"fallbackText\": \"My first campaign\", \"mediaItems\": [ \"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\" ] } }`",
+        "operationId": "createCampaign",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImmediatelyCampaignRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Success. Campaign was created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectIdDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tenant": {
+      "get": {
+        "tags": [
+          "Tenant"
+        ],
+        "summary": "Get general information",
+        "description": "Retrieves a general information about account.",
+        "operationId": "getTenantInfo",
+        "responses": {
+          "200": {
+            "description": "Success. Returns a list of messages.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TenantInfo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/phones": {
+      "get": {
+        "tags": [
+          "Tenant phones"
+        ],
+        "summary": "Get all phones",
+        "description": "Retrieve all phone numbers for account.",
+        "operationId": "getTenantPhones",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "The number of phone numbers returned with each request\n\n**Example:** `250`",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 250
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The size of the page\n\n**Example:** `150`",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 150
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a paginated list of contacts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewTenantPhone"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/messages/{messageId}": {
+      "get": {
+        "tags": [
+          "Messages"
+        ],
+        "summary": "Get a Message",
+        "description": "Retrieve a specific message from the system via its message ID.\n\n**Example:** Below, we return the information associated with the message whose ID is `507f1f77bcf86cd799439011`. You can use the [Get all Messages](#operation/getMessages) endpoint to retrieve message IDs for all of your messages:\n\n`https://api-app2.simpletexting.com/v2/api/messages/507f1f77bcf86cd799439011`",
+        "operationId": "getMessage",
+        "parameters": [
+          {
+            "name": "messageId",
+            "in": "path",
+            "description": "Message ID in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Retrieved a message.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Message"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mediaitems": {
+      "get": {
+        "tags": [
+          "Media Items"
+        ],
+        "summary": "Get Media Items",
+        "description": "This endpoint allows you to retrieve all Media Items.\n\n**Example:** Here we return all Media Items from an account:\n\n`https://api-app2.simpletexting.com/v2/api/mediaitems?page=100&size=500`",
+        "operationId": "getMediaItems",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Number of pages",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 29
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "Page size",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns a page of media items.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewStFileDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/mediaitems/{mediaItemId}": {
+      "get": {
+        "tags": [
+          "Media Items"
+        ],
+        "summary": "Get Media Item",
+        "operationId": "getMediaItem",
+        "parameters": [
+          {
+            "name": "mediaItemId",
+            "in": "path",
+            "description": "Media item ID in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful. Media item",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StFileDto"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Media Items"
+        ],
+        "summary": "Delete Media",
+        "description": "Remove media that you have previously uploaded to SimpleTexting.\n\n**Example:** Here we delete a Media Item whose ID is`507f1f77bcf86cd799439011`. You can use the [Get all Media Items](#operation/getMediaItems) endpoint to retrieve Media Items IDs for all of your Media Items:\n\n`https://api-app2.simpletexting.com/v2/api/contact-lists/507f1f77bcf86cd799439011`",
+        "operationId": "delete",
+        "parameters": [
+          {
+            "name": "mediaItemId",
+            "in": "path",
+            "description": "The mediaItemId in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success. Media was deleted."
+          }
+        }
+      }
+    },
+    "/api/custom-fields": {
+      "get": {
+        "tags": [
+          "Custom Fields"
+        ],
+        "summary": "Get all Custom Fields",
+        "description": "This endpoint allows you to retrieve all custom fields.\n\n**Example:** Here we return all Custom Fields from an account:\n\n`https://api-app2.simpletexting.com/v2/api/custom-fields?page=100&size=500`",
+        "operationId": "getCustomFields",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the custom fields of the given account). Please note that page numbering starts at zero (`0`)\n\n\n**Example:** `40`",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 40
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned custom fields to show per page\n\n**Example:** `50`",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. All custom fields retrieved.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewCustomField"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contacts-batch/batch-update/{taskId}": {
+      "get": {
+        "tags": [
+          "Contacts - Batch Operations"
+        ],
+        "summary": "Get the Result of a Batch Update Task",
+        "description": "Return the result of a batch update by the task id.",
+        "operationId": "getBatchUpdateResults",
+        "parameters": [
+          {
+            "name": "taskId",
+            "in": "path",
+            "description": "The ID of the task for the batch update\n\n**Example:** `6176fb3e141c0060668b2c03`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "6176fb3e141c0060668b2c03"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success. Contacts were successfully updated.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactsBatchUpdateResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-segments": {
+      "get": {
+        "tags": [
+          "Contact Segments"
+        ],
+        "summary": "Get all Segments",
+        "description": "Retrieves all segments from your SimpleTexting account.\n\n**Example:** Here we return all segments from an account:\n\n`https://api-app2.simpletexting.com/v2/api/contact-segments?page=100&size=2`",
+        "operationId": "getSegments",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "An ordinal number of the page to return with the results of a request (with the segments of the given account). Please note that page numbering starts at zero (`0`)",
+            "required": false,
+            "schema": {
+              "minimum": 0,
+              "type": "integer",
+              "format": "int32",
+              "default": 0
+            },
+            "example": 0
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "The number of the returned segments to show per page",
+            "required": false,
+            "schema": {
+              "maximum": 500,
+              "type": "integer",
+              "format": "int32",
+              "default": 50
+            },
+            "example": 50
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Returns all segments from your SimpleTexting account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageViewSegment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-lists/{listIdOrName}": {
+      "get": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Get a List",
+        "description": "Return a contact list by its unique list ID or name.\n\n**Example:** Below, we return the information associated with the List whose ID is `507f1f77bcf86cd799439011`. You can use the [Get all Lists](#operation/getLists) endpoint to retrieve List IDs for all of your Lists:\n\n`https://api-app2.simpletexting.com/v2/api/contact-lists/507f1f77bcf86cd799439011`",
+        "operationId": "getList",
+        "parameters": [
+          {
+            "name": "listIdOrName",
+            "in": "path",
+            "description": "List ID in hexadecimal format or name.\n\n**Example:** 507f1f77bcf86cd799439011 / My new list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Fetched list.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/List"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Delete a List",
+        "description": "Delete an existing list using the list ID or name.\n\n**Example:** Here we delete a List whose ID is`507f1f77bcf86cd799439011`. You can use the [Get all Lists] (#operation/getLists) endpoint to retrieve List IDs for all of your Lists:\n\n`https://api-app2.simpletexting.com/v2/api/contact-lists/507f1f77bcf86cd799439011`",
+        "operationId": "deleteList",
+        "parameters": [
+          {
+            "name": "listIdOrName",
+            "in": "path",
+            "description": "List ID in hexadecimal format or name.\n\n**Example:** 507f1f77bcf86cd799439011 / My new list",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success. List was deleted"
+          }
+        }
+      }
+    },
+    "/api/campaigns/{campaignId}": {
+      "get": {
+        "tags": [
+          "Campaigns"
+        ],
+        "summary": "Get a Campaign",
+        "description": "Get a campaign via its unique ID.\n\n**Example:** Below, we return the information associated with the campaign whose ID is `507f1f77bcf86cd799439011`. You can use the [Get all Campaigns](#operation/fetchCampaigns) endpoint to retrieve campaign IDs for all of your campaigns:\n\n`https://api-app2.simpletexting.com/v2/api/507f1f77bcf86cd799439011`",
+        "operationId": "getCampaign",
+        "parameters": [
+          {
+            "name": "campaignId",
+            "in": "path",
+            "description": "Campaign ID in hexadecimal format",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f1f77bcf86cd799439011"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success. Fetched campaign",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FetchedCampaignDto"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/contact-lists/{listIdOrName}/contacts/{contactPhoneOrId}": {
+      "delete": {
+        "tags": [
+          "Contact Lists"
+        ],
+        "summary": "Remove Contact From List",
+        "description": "Remove contact from specified list.",
+        "operationId": "removeContactFromGroup",
+        "parameters": [
+          {
+            "name": "listIdOrName",
+            "in": "path",
+            "description": "List ID or name to remove the contact from.\n\n**Example:** 507f191e810c19729de860ea / My First List",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "507f191e810c19729de860ea / My First List"
+          },
+          {
+            "name": "contactPhoneOrId",
+            "in": "path",
+            "description": "Contact ID in hexadecimal format or the contact's phone number.\n\n**Example:** `3051234567 / 507f1f77bcf86cd799439011`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": 3051234567
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Success. Contact was removed from list."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "api_key": {
+        "type": "apiKey",
+        "description": "Bearer authentication (also called token authentication) is an authentication scheme that involves security tokens called bearer tokens. The name “Bearer authentication” can be understood as “give access to the bearer of this token.” The bearer token is a cryptic string, usually generated by the server in response to a login request. The client must send this token in the `Authorization: Bearer <token>` header when making requests to protected resources. To understand more about bearer tokens, please take a look at the following [resource](https://swagger.io/docs/specification/authentication/bearer-authentication/).",
+        "name": "Authorization",
+        "in": "header"
+      }
+    },
+    "schemas": {
+      "WebhookRequest": {
+        "required": [
+          "triggers",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL for handling a POST request\n\n**Example:** `https://example.com`",
+            "example": "https://example.com"
+          },
+          "triggers": {
+            "type": "array",
+            "description": "Trigger a webhook based on a specific platform event:\n\n  - **INCOMING_MESSAGE:** Trigger a webhook event based on an incoming message\n\n  - **OUTGOING_MESSAGE:** Trigger a webhook event based on an outgoing message\n\n  - **DELIVERY_REPORT:** Trigger a webhook when a delivery confirmation is received from a contact\n\n  - **NON_DELIVERED_REPORT:** Trigger a webhook when a failed delivery is reported from a contact\n\n  - **UNSUBSCRIBE_REPORT:** Trigger a webhook when a contact unsubscribes\n\n**Example:** `UNSUBSCRIBE_REPORT`",
+            "example": [
+              "INCOMING_MESSAGE"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Trigger a webhook based on a specific platform event:\n\n  - **INCOMING_MESSAGE:** Trigger a webhook event based on an incoming message\n\n  - **OUTGOING_MESSAGE:** Trigger a webhook event based on an outgoing message\n\n  - **DELIVERY_REPORT:** Trigger a webhook when a delivery confirmation is received from a contact\n\n  - **NON_DELIVERED_REPORT:** Trigger a webhook when a failed delivery is reported from a contact\n\n  - **UNSUBSCRIBE_REPORT:** Trigger a webhook when a contact unsubscribes\n\n**Example:** `UNSUBSCRIBE_REPORT`",
+              "example": "[\"INCOMING_MESSAGE\"]",
+              "enum": [
+                "INCOMING_MESSAGE",
+                "OUTGOING_MESSAGE",
+                "DELIVERY_REPORT",
+                "NON_DELIVERED_REPORT",
+                "UNSUBSCRIBE_REPORT"
+              ]
+            }
+          },
+          "requestPerSecLimit": {
+            "maximum": 25,
+            "type": "integer",
+            "description": "The maximum number of requests that can be sent within a second\n\n**Example:** `15`",
+            "format": "int32",
+            "example": 15
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Optional: requests will come exclusively for the specified account phone number\n\n**Example:** `8881234567`",
+            "example": "8881234567"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Optional: requests will come exclusively for the specified contact's phone number\n\n**Example:** `3051234567`",
+            "example": "3051234567"
+          }
+        }
+      },
+      "ObjectIdDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of item in hexadecimal format.\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          }
+        },
+        "description": "ID of created or modified object"
+      },
+      "ContactList": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Existing list ID",
+            "example": "5f6c760379f4e93135aac72a"
+          },
+          "name": {
+            "type": "string",
+            "description": "Existing list name",
+            "example": "list name"
+          }
+        },
+        "description": "Array of objects (Contact list) All the lists where the contact is stored subscriptionStatus",
+        "example": [
+          {
+            "id": "5f6c760379f4e93135aac72b",
+            "name": "list name"
+          }
+        ]
+      },
+      "CustomFieldsOpenApiDescription": {
+        "title": "Key/value pairs",
+        "type": "object",
+        "properties": {
+          "Merge tag": {
+            "type": "string",
+            "description": "**Example:** `\"zipcode\": \"12345\"`",
+            "example": "{\"zipcode\":\"12345\"}"
+          }
+        },
+        "description": "Object that contains custom field values, where you should use a Name or a Merge tag in a property name and a field value as a property value.\n\nTo find a merge tag, please see the **Contacts > Custom Fields** section for your account.\n\nFor example: if you have a custom field with the name Street address and the merge tag `%%street_address%%`, you would use the `\"Street address\": \"1625 N Central Ave\"` parameter or the  `\"street_address\": \"1625 N Central Ave\"` parameter.",
+        "example": {
+          "zipcode": "12345"
+        }
+      },
+      "Contact": {
+        "required": [
+          "contactId",
+          "contactPhone",
+          "email",
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "description": "Existing contact ID in hexadecimal format\n\n**Example:** `607f0558a7c898629dd47d7a`",
+            "example": "607f0558a7c898629dd47d7a"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact's phone number\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "firstName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Contact's first name\n\n**Example:** `John`",
+            "example": "John"
+          },
+          "lastName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Contact's last name\n\n**Example:** `Doe`",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact's email\n\n**Example:** `john.doe@simpletext.org`",
+            "example": "john.doe@simpletext.org"
+          },
+          "birthday": {
+            "type": "string",
+            "description": "Contact's birthday in format (yyyy-mm-dd)\n\n**Example:** `1985-05-15`",
+            "format": "date",
+            "example": "1985-05-15"
+          },
+          "lists": {
+            "type": "array",
+            "description": "Array of objects (Contact list) All the lists where the contact is stored subscriptionStatus",
+            "example": [
+              {
+                "id": "5f6c760379f4e93135aac72b",
+                "name": "list name"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ContactList"
+            }
+          },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldsOpenApiDescription"
+          },
+          "comment": {
+            "maxLength": 1000,
+            "type": "string",
+            "description": "Notes about the contact\n\n**Example:** `VIP client`",
+            "example": "VIP client"
+          },
+          "subscriptionStatus": {
+            "type": "string",
+            "description": "Contact's subscription status\n\n**Example:** `OPT_IN`",
+            "example": "OPT_IN",
+            "enum": [
+              "OPT_IN",
+              "OPT_OUT",
+              "WAIT_SMS_CONFIRMATION",
+              "REJECT_CONFIRMATION"
+            ]
+          },
+          "created": {
+            "type": "string",
+            "description": "When the contact was created. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "updated": {
+            "type": "string",
+            "description": "When the contact was updated. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-05-28T20:20:08.489Z"
+          },
+          "updateSource": {
+            "type": "string",
+            "description": "How the contact was updated\n\n**Example:** `IMPORTED_FROM_FILE`",
+            "example": "IMPORTED_FROM_FILE",
+            "enum": [
+              "IMPORTED_FROM_FILE",
+              "PUBLIC_API",
+              "MAILCHIMP_SYNC",
+              "KEYWORD",
+              "WEB_FORM",
+              "MANUAL",
+              "REMINDER",
+              "ZAPIER",
+              "WORKATO",
+              "CONFIRMATION",
+              "INCOMING_MESSAGE"
+            ]
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "SingleContactUpdate": {
+        "type": "object",
+        "properties": {
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact's phone number\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "firstName": {
+            "type": "string",
+            "description": "Contact's first name\n\n**Example:** `John`",
+            "example": "John"
+          },
+          "lastName": {
+            "type": "string",
+            "description": "Contact's last name\n\n**Example:** `Doe`",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact's email\n\n**Example:** `john.doe@simpletexting.net`",
+            "example": "john.doe@simpletexting.net"
+          },
+          "birthday": {
+            "type": "string",
+            "description": "Contact's birthday in format: yyyy-mm-dd\n\n**Example:** `1985-05-15`",
+            "example": "1985-05-15"
+          },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldsOpenApiDescription"
+          },
+          "comment": {
+            "type": "string",
+            "description": "Notes about the contact.\n\n**Example:** `VIP client`",
+            "example": "VIP client"
+          },
+          "listIds": {
+            "type": "array",
+            "description": "All the lists (List IDs or names) to add the contact to or replace.\n\n**Example:** `[\"507f191e810c19729de860ea\", \"My First List\"]`",
+            "example": [
+              "507f191e810c19729de860ea",
+              "My First List"
+            ],
+            "items": {
+              "type": "string",
+              "description": "All the lists (List IDs or names) to add the contact to or replace.\n\n**Example:** `[\"507f191e810c19729de860ea\", \"My First List\"]`",
+              "example": "[\"507f191e810c19729de860ea\",\"My First List\"]"
+            }
+          }
+        }
+      },
+      "ListDto": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "A list name containing less than 42 characters\n\n**Example:** `My new list`",
+            "example": "My new list"
+          }
+        }
+      },
+      "WebhookUnsubscribeReportDto": {
+        "type": "object",
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "description": "Contact id in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Contact phone\n\n**Example:** `8001234567`",
+            "example": "8001234567"
+          }
+        },
+        "description": "Report content"
+      },
+      "SingleReportDtoWebhookUnsubscribeReportDto": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "description": "Unique report ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "webhookId": {
+            "type": "string",
+            "description": "Webhook ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "type": {
+            "type": "string",
+            "description": "Webhook report content type:\n\n **UNSUBSCRIBE_REPORT:** Triggered when a contact unsubscribes\n\n**Example:** `UNSUBSCRIBE_REPORT`",
+            "example": "UNSUBSCRIBE_REPORT",
+            "enum": [
+              "INCOMING_MESSAGE",
+              "OUTGOING_MESSAGE",
+              "DELIVERY_REPORT",
+              "NON_DELIVERED_REPORT",
+              "UNSUBSCRIBE_REPORT"
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/WebhookUnsubscribeReportDto"
+          }
+        }
+      },
+      "WebhookMessageDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject (available for MMS)\n\n**Example:** `Some message from SimpleTexting`",
+            "example": "Some message from SimpleTexting"
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "List of MMS media descriptors: ID in hexadecimal format for st-stored file\n\n**Example:** `[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]`",
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439333"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of MMS media descriptors: ID in hexadecimal format for st-stored file\n\n**Example:** `[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]`",
+              "example": "[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]"
+            }
+          },
+          "text": {
+            "type": "string",
+            "description": "Text\n\n**Example:** `Hello! How are you?`",
+            "example": "Hello! How are you?"
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Account phone (primary or secondary)\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact phone\n\n**Example:** `8001234567`",
+            "example": "8001234567"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Time of sending. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2020-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2020-04-28T23:20:08.489Z"
+          },
+          "category": {
+            "type": "string",
+            "description": "Message category:\n\n  - **SMS:** SMS are regular texts, 160 characters or below\n\n  - **MMS:** Multimedia messages. Messages over 306 characters, or with media attached\n\n  - **EXTENDED_SMS:** Messages which are above 160 characters, but below 306 characters\n\n**Example:** `SMS`",
+            "example": "SMS"
+          },
+          "referenceType": {
+            "type": "string",
+            "description": "Reference type (available only for MT messages)\n\n**Example:** `API`",
+            "example": "API"
+          }
+        },
+        "description": "Report content"
+      },
+      "SingleReportDtoWebhookMessageDto": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "description": "Unique report ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "webhookId": {
+            "type": "string",
+            "description": "Webhook ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "type": {
+            "type": "string",
+            "description": "Webhook report content type:\n\n **UNSUBSCRIBE_REPORT:** Triggered when a contact unsubscribes\n\n**Example:** `UNSUBSCRIBE_REPORT`",
+            "example": "UNSUBSCRIBE_REPORT",
+            "enum": [
+              "INCOMING_MESSAGE",
+              "OUTGOING_MESSAGE",
+              "DELIVERY_REPORT",
+              "NON_DELIVERED_REPORT",
+              "UNSUBSCRIBE_REPORT"
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/WebhookMessageDto"
+          }
+        }
+      },
+      "WebhookDeliveryReportDto": {
+        "type": "object",
+        "properties": {
+          "messageId": {
+            "type": "string",
+            "description": "Message ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "category": {
+            "type": "string",
+            "description": "Message category:\n\n  - **SMS:** SMS are regular texts, 160 characters or below\n\n  - **MMS:** Multimedia messages. Messages over 306 characters, or with media attached\n\n  - **EXTENDED_SMS:** Messages which are above 160 characters, but below 306 characters\n\n**Example:** `SMS`",
+            "example": "SMS"
+          },
+          "referenceType": {
+            "type": "string",
+            "description": "Reference type (available only for MT messages)\n\n**Example:** `API`",
+            "example": "API"
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Account phone (primary or secondary)\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact phone\n\n**Example:** `8001234567`",
+            "example": "8001234567"
+          },
+          "carrier": {
+            "type": "string",
+            "description": "Name of carrier\n\n**Example:** `Verizon`",
+            "example": "Verizon"
+          }
+        },
+        "description": "Report content"
+      },
+      "SingleReportDtoWebhookDeliveryReportDto": {
+        "type": "object",
+        "properties": {
+          "reportId": {
+            "type": "string",
+            "description": "Unique report ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "webhookId": {
+            "type": "string",
+            "description": "Webhook ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "type": {
+            "type": "string",
+            "description": "Webhook report content type:\n\n **UNSUBSCRIBE_REPORT:** Triggered when a contact unsubscribes\n\n**Example:** `UNSUBSCRIBE_REPORT`",
+            "example": "UNSUBSCRIBE_REPORT",
+            "enum": [
+              "INCOMING_MESSAGE",
+              "OUTGOING_MESSAGE",
+              "DELIVERY_REPORT",
+              "NON_DELIVERED_REPORT",
+              "UNSUBSCRIBE_REPORT"
+            ]
+          },
+          "values": {
+            "$ref": "#/components/schemas/WebhookDeliveryReportDto"
+          }
+        }
+      },
+      "Webhook": {
+        "required": [
+          "triggers",
+          "url"
+        ],
+        "type": "object",
+        "properties": {
+          "webhookId": {
+            "type": "string",
+            "description": "Webhook ID in hexadecimal format",
+            "example": "507f191e810c19729de860ea"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL for handling POST request\n\n**Example:** `https://example.com`",
+            "example": "https://example.com"
+          },
+          "triggers": {
+            "type": "array",
+            "description": "Trigger a webhook on specific platform events\n\n**Example:** `INCOMING_MESSAGE`",
+            "example": "INCOMING_MESSAGE",
+            "items": {
+              "type": "string",
+              "description": "Trigger a webhook on specific platform events\n\n**Example:** `INCOMING_MESSAGE`",
+              "example": "INCOMING_MESSAGE",
+              "enum": [
+                "INCOMING_MESSAGE",
+                "OUTGOING_MESSAGE",
+                "DELIVERY_REPORT",
+                "NON_DELIVERED_REPORT",
+                "UNSUBSCRIBE_REPORT"
+              ]
+            }
+          },
+          "requestPerSecLimit": {
+            "type": "integer",
+            "description": "The maximum number of requests that can be sent within one second\n\n**Example:** `20`",
+            "format": "int32",
+            "example": 20
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Optional: requests will come exclusively for the specified account phone number\n\n**Example:** `8881234567`",
+            "example": "8881234567"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Optional: requests will come exclusively for the specified contact phone number\n\n**Example:** `3051234567`",
+            "example": "3051234567"
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewWebhook": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/Webhook"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Message ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject (available for MMS)\n\n**Example:** `Some message from SimpleTexting`",
+            "example": "Some message from SimpleTexting"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text\n\n**Example:** `Hello! How are you?`",
+            "example": "Hello! How are you?"
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact phone\n\n**Example:** `8001234567`",
+            "example": "8001234567"
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Account phone (primary or secondary)\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "directionType": {
+            "type": "string",
+            "description": "The direction in which the message was sent:\n\n  - **MT:** Refers to `Mobile Terminating`, meaning messages sent *to* the contacts' cell phones\n\n  - **MO:** Refers to `Mobile Originating`, meaning messages sent *from* the contacts' cell phones",
+            "example": "MO",
+            "enum": [
+              "MT",
+              "MO"
+            ]
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "Time of sending. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2020-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2020-04-28T23:20:08.489Z"
+          },
+          "referenceType": {
+            "type": "string",
+            "description": "Reference type (available only for MT (Mobile-Terminating) messages)\n\n**Example:** `API`",
+            "example": "API_SEND"
+          },
+          "category": {
+            "type": "string",
+            "description": "Message category:\n\n  - **SMS:** SMS are regular texts, 160 characters or below\n\n  - **MMS:** Multimedia messages. Messages over 306 characters, or with media attached\n\n  - **EXTENDED_SMS:** Messages which are above 160 characters, but below 306 characters\n\n**Example:** `SMS`",
+            "example": "SMS",
+            "enum": [
+              "SMS",
+              "MMS",
+              "EXTENDED_SMS"
+            ]
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "List of MMS media descriptors: ID in hexadecimal format for st-stored file\n\n**Example:** `[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]`",
+            "example": [
+              "507f1f77bcf86cd799439011",
+              "507f1f77bcf86cd799439333"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of MMS media descriptors: ID in hexadecimal format for st-stored file\n\n**Example:** `[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]`",
+              "example": "[\"507f1f77bcf86cd799439011\",\"507f1f77bcf86cd799439333\"]"
+            }
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewMessage": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/Message"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "SendMessageRequest": {
+        "required": [
+          "contactPhone",
+          "mode",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact's phone\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "The account phone to send from. If this field is left blank, the primary account number will be used as a default\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "mode": {
+            "type": "string",
+            "description": "Determines how your message will be presented:\n\n  - **AUTO:** this means that SimpleTexting will find more relative types for your message content\n\n  - **SINGLE_SMS_STRICTLY:** this will send only a single SMS or return an error\n\n  - **MMS_PREFERRED:** this will send an MMS or fallback SMS if MMS is not enabled by your contacts' carriers\n\n**Example:** `MMS_PREFERRED`\n\n`AUTO` is the default value for this field.",
+            "example": "MMS_PREFERRED",
+            "enum": [
+              "AUTO",
+              "SINGLE_SMS_STRICTLY",
+              "MMS_PREFERRED"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "description": "MMS Subject (available for MMS)\n\n**Example:** `Some message from SimpleTexting`",
+            "example": "Some message from SimpleTexting"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text Body\n\n**Example:** `Hello! How are you?`",
+            "example": "Hello! How are you?"
+          },
+          "fallbackText": {
+            "type": "string",
+            "description": "Custom fallback text if MMS cannot be received. Should contain '[url=%%fallback_link%%]' placeholder that will be replaced with a link to the message\n\n**Example:** `[url=%%fallback_link%%]`",
+            "example": "[url=%%fallback_link%%]"
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\\\"https://txt.so/img.jpg\\\", \\\"507f1f77bcf86cd799439011\\\"]`",
+            "example": [
+              "https://txt.so/img.jpg",
+              "507f1f77bcf86cd799439011"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\\\"https://txt.so/img.jpg\\\", \\\"507f1f77bcf86cd799439011\\\"]`",
+              "example": "[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439011\"]"
+            }
+          }
+        }
+      },
+      "MessageRequestInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "title": "Object ID in hexadecimal format",
+            "type": "string",
+            "example": "507f191e810c19729de860ea"
+          },
+          "credits": {
+            "title": "Actual credits amount. Can be negative.",
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "EvaluateMessageRequest": {
+        "required": [
+          "mode",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "Determines how your message will be presented:\n\n  - **AUTO:** this means that SimpleTexting will find more relative types for your message content\n\n  - **SINGLE_SMS_STRICTLY:** this will send only a single SMS or return an error\n\n  - **MMS_PREFERRED:** this will send an MMS or fallback SMS if MMS is not enabled by your contacts' carriers\n\n**Example:** `MMS_PREFERRED`\n\n`AUTO` is the default value for this field.\n\n**Example:** `MMS_PREFERRED`",
+            "example": "MMS_PREFERRED",
+            "enum": [
+              "AUTO",
+              "SINGLE_SMS_STRICTLY",
+              "MMS_PREFERRED"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "description": "MMS Subject (available for MMS)\n\n**Example:** `New In Store`",
+            "example": "New In Store"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text Body\n\n**Example:** `Hello! How are you?`",
+            "example": "Hello! How are you?"
+          },
+          "fallbackText": {
+            "type": "string",
+            "description": "A custom fallback text if a contact can't receive an MMS message. It should contain a `[url=%%fallback_link%%]` placeholder that will be replaced with a link to the message.\n\n**Example:** `[url=%%fallback_link%%]`",
+            "example": "[url=%%fallback_link%%]"
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\"]`",
+            "example": [
+              "https://txt.so/img.jpg",
+              "507f1f77bcf86cd799439011"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\"]`",
+              "example": "[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439011\"]"
+            }
+          }
+        }
+      },
+      "MessageInfo": {
+        "type": "object",
+        "properties": {
+          "detectedCategory": {
+            "type": "string",
+            "description": "Autodetected category of message:\n\n  - **SMS:** SMS are regular texts, 160 characters or below\n\n  - **MMS:** Multimedia messages. Messages over 306 characters, or with media attached\n\n  - **EXTENDED_SMS:** Messages which are above 160 characters, but below 306 characters\n\n**Example:** `SMS`",
+            "example": "SMS",
+            "enum": [
+              "SMS",
+              "MMS",
+              "EXTENDED_SMS"
+            ]
+          },
+          "length": {
+            "type": "integer",
+            "description": "The message length in characters\n\n**Example:** `134`",
+            "format": "int32",
+            "example": 134
+          },
+          "remains": {
+            "type": "integer",
+            "description": "The remaining characters\n\n**Example:** `23`",
+            "format": "int32",
+            "example": 23
+          },
+          "maxLength": {
+            "type": "integer",
+            "description": "The maximum message length in characters with the current message type and encoding\n\n**Example:** `150`",
+            "format": "int32",
+            "example": 150
+          },
+          "unicode": {
+            "type": "boolean",
+            "description": "Returns true if there is some number of Latin-1 or GSM-7 characters present\n\n**Example:** `true`",
+            "example": true
+          },
+          "sumOfCredits": {
+            "type": "integer",
+            "description": "How much credits message will cost\n\n**Example:** `1`",
+            "format": "int32",
+            "example": 1
+          },
+          "warnings": {
+            "type": "array",
+            "description": "A list of warning messages if present\n\n**Example:** `[\"Text is blank\"]`",
+            "example": "Text is blank",
+            "items": {
+              "type": "string",
+              "description": "A list of warning messages if present\n\n**Example:** `[\"Text is blank\"]`",
+              "example": "Text is blank"
+            }
+          },
+          "errors": {
+            "type": "array",
+            "description": "List of error messages if present\n\n**Example:** `[\"Invalid phone number\"]`",
+            "example": [
+              "Invalid phone number"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of error messages if present\n\n**Example:** `[\"Invalid phone number\"]`",
+              "example": "[\"Invalid phone number\"]"
+            }
+          }
+        }
+      },
+      "StFileDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Existing media ID in hexadecimal format\n\n**Example:** `607f0558a7c898629dd47d7a`",
+            "example": "607f0558a7c898629dd47d7a"
+          },
+          "createdDate": {
+            "type": "string",
+            "description": "When the media was created. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "name": {
+            "type": "string",
+            "description": "File name\n\n**Example:** `test.jpg`",
+            "example": "myfile.jpg"
+          },
+          "gallery": {
+            "type": "string",
+            "description": "Gallery\n\n**Example:** `mms`",
+            "example": "mms"
+          },
+          "size": {
+            "type": "integer",
+            "description": "File size\n\n**Example:** `10`",
+            "format": "int64",
+            "example": 10
+          },
+          "status": {
+            "type": "string",
+            "description": "Status of the file\n\n**Example:** `PROCESSED`",
+            "example": "PROCESSED"
+          },
+          "link": {
+            "type": "string",
+            "description": "Location of file\n\n**Example:** `https://app2.simpletexting.com/content/public-files/607f0558a7c898629dd47d7a`",
+            "example": "https://app2.simpletexting.com/content/public-files/607f0558a7c898629dd47d7a"
+          },
+          "contentType": {
+            "type": "string",
+            "description": "File media type\n\n**Example:** `image/png`",
+            "example": "image/png"
+          },
+          "ext": {
+            "type": "string",
+            "description": "File extension\n\n**Example:** `png`",
+            "example": "png"
+          },
+          "canDelete": {
+            "type": "boolean",
+            "description": "Ability to delete file\n\n**Example:** `true`",
+            "example": true
+          }
+        }
+      },
+      "UploadByLink": {
+        "required": [
+          "link"
+        ],
+        "type": "object",
+        "properties": {
+          "link": {
+            "type": "string",
+            "description": "The URL you will upload your media to\n\n**Example:** `https://simpletexting.com/wp-content/uploads/2019/08/7kAnVTq5Pb9TxEJbBNMDwh-768-80-1.jpg`",
+            "example": "https://simpletexting.com/wp-content/uploads/2019/08/7kAnVTq5Pb9TxEJbBNMDwh-768-80-1.jpg"
+          }
+        },
+        "description": "UploadByLink Request"
+      },
+      "PageViewContact": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/Contact"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "ContactUpdate": {
+        "required": [
+          "contactPhone"
+        ],
+        "type": "object",
+        "properties": {
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact's phone number\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "firstName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Contact's first name.\n\n**Example:** `John`",
+            "example": "John"
+          },
+          "lastName": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "Contact's last name\n\n**Example:** `Doe`",
+            "example": "Doe"
+          },
+          "email": {
+            "type": "string",
+            "description": "Contact's email\n\n**Example:** `john.doe@simpletext.org`",
+            "example": "john.doe@simpletext.org"
+          },
+          "birthday": {
+            "type": "string",
+            "description": "Contact's birthday in format (yyyy-mm-dd)\n\n**Example:** `1985-05-15`",
+            "example": "1985-05-15"
+          },
+          "customFields": {
+            "$ref": "#/components/schemas/CustomFieldsOpenApiDescription"
+          },
+          "comment": {
+            "maxLength": 1000,
+            "type": "string",
+            "description": "Notes about the contact.\n\n**Example:** `VIP client`",
+            "example": "VIP client"
+          },
+          "listIds": {
+            "type": "array",
+            "description": "All the lists (List IDs or names) to add the contact to or replace.\n\n**Example:** `[\"507f191e810c19729de860ea\", \"My First List\"]`",
+            "example": [
+              "507f191e810c19729de860ea",
+              "My First List"
+            ],
+            "items": {
+              "type": "string",
+              "description": "All the lists (List IDs or names) to add the contact to or replace.\n\n**Example:** `[\"507f191e810c19729de860ea\", \"My First List\"]`",
+              "example": "[\"507f191e810c19729de860ea\",\"My First List\"]"
+            }
+          }
+        },
+        "description": "List of updates for contacts"
+      },
+      "ContactsBatchUpdate": {
+        "required": [
+          "updates"
+        ],
+        "type": "object",
+        "properties": {
+          "listsReplacement": {
+            "type": "boolean",
+            "description": "If listsReplacement is set to true, a contact will be removed from their existing list. If set to false, a contact will be added to a new list and stay in their original list.\n\n**Example:** `true`",
+            "example": true
+          },
+          "updates": {
+            "maxItems": 500,
+            "minItems": 0,
+            "type": "array",
+            "description": "List of updates for contacts",
+            "items": {
+              "$ref": "#/components/schemas/ContactUpdate"
+            }
+          }
+        },
+        "description": "Add new contacts or update existing, based on unique contact phone. One contact per object in the array"
+      },
+      "ContactsBatchDelete": {
+        "required": [
+          "contactPhones"
+        ],
+        "type": "object",
+        "properties": {
+          "contactPhones": {
+            "title": "List of contacts' phone numbers for deletion\n\n**Example:** `[\"1234567890\",\"1234567891\"]`",
+            "maxItems": 500,
+            "minItems": 0,
+            "type": "array",
+            "example": [
+              "1234567890"
+            ],
+            "items": {
+              "title": "List of contacts' phone numbers for deletion\n\n**Example:** `[\"1234567890\",\"1234567891\"]`",
+              "type": "string",
+              "example": "[\"1234567890\"]"
+            }
+          }
+        },
+        "description": "ContactsBatchDelete"
+      },
+      "ContactDeleteResult": {
+        "type": "object",
+        "properties": {
+          "done": {
+            "type": "boolean",
+            "description": "If operation was successful\n\n**Example:** `true`",
+            "example": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact's phone number from the delete request\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "contactId": {
+            "type": "string",
+            "description": "Contact ID if contact was found\n\n**Example:** `507f1f77bcf86cd799439011`",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Contact's phone number from the delete request\n\n  - **UNKNOWN_CONTACT_PHONE:** A contact with that phone number could not be found on your account\n\n  - **CONTACT_DELETE_INTERNAL_ERROR:** An internal error has occurred, please reach out to SimpleTexting support for further investigation\n\n**Example:** `UNKNOWN_CONTACT_PHONE`",
+            "example": "UNKNOWN_CONTACT_PHONE",
+            "enum": [
+              "UNKNOWN_CONTACT_PHONE",
+              "CONTACT_DELETE_INTERNAL_ERROR"
+            ]
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Additional error message if the operation has failed\n\n**Example:** `Contact with provided phone number is missing`",
+            "example": "Contact with provided phone number is missing"
+          }
+        },
+        "description": "List of the deleted contacts"
+      },
+      "ContactsBatchDeleteResult": {
+        "type": "object",
+        "properties": {
+          "results": {
+            "type": "array",
+            "description": "List of the deleted contacts",
+            "items": {
+              "$ref": "#/components/schemas/ContactDeleteResult"
+            }
+          }
+        }
+      },
+      "List": {
+        "type": "object",
+        "properties": {
+          "listId": {
+            "type": "string",
+            "description": "List ID in hexadecimal format\n\n**Example:** `507f191e810c19729de860ea`",
+            "example": "507f191e810c19729de860ea"
+          },
+          "name": {
+            "type": "string",
+            "description": "The list name\n\n**Example:** `My First List`",
+            "example": "My First List"
+          },
+          "created": {
+            "type": "string",
+            "description": "When the list was created. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "updated": {
+            "type": "string",
+            "description": "When the list was updated. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "description": {
+            "type": "string",
+            "description": "Title is present when list is created automatically by a keyword via the dashboard, otherwise defaults to null\n\n**Example:** `List for 'MYFIRSTKEYWORD' keyword`",
+            "example": "List for 'SALE' keyword"
+          },
+          "totalContactsCount": {
+            "type": "integer",
+            "description": "The number of contacts\n\n**Example:** `25`",
+            "format": "int32",
+            "example": 25
+          },
+          "activeContactsCount": {
+            "type": "integer",
+            "description": "The number of active contacts\n\n**Example:** `40`",
+            "format": "int32",
+            "example": 40
+          },
+          "invalidContactsCount": {
+            "type": "integer",
+            "description": "The number of invalid contacts\n\n**Example:** `1`",
+            "format": "int32",
+            "example": 1
+          },
+          "unsubscribedContactsCount": {
+            "type": "integer",
+            "description": "The number of unsubscribed contacts\n\n**Example:** `2`",
+            "format": "int32",
+            "example": 2
+          },
+          "keywords": {
+            "type": "array",
+            "description": "Keywords associated with the list\n\n**Example:** `[\"SALE\",\"MYFIRSTKEYWORD\"]`",
+            "example": "MYFIRSTKEYWORD",
+            "items": {
+              "type": "string",
+              "description": "Keywords associated with the list\n\n**Example:** `[\"SALE\",\"MYFIRSTKEYWORD\"]`",
+              "example": "MYFIRSTKEYWORD"
+            }
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewList": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/List"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "ContactPhoneOrIdDto": {
+        "type": "object",
+        "properties": {
+          "contactPhoneOrId": {
+            "type": "string",
+            "description": "Contact ID in hexadecimal format or the contact's phone number.\n\n**Example:** `3051234567 / 507f1f77bcf86cd799439011`",
+            "example": "3051234567 / 507f1f77bcf86cd799439011"
+          }
+        }
+      },
+      "Segment": {
+        "type": "object",
+        "properties": {
+          "segmentId": {
+            "title": "Segment ID in hexadecimal format",
+            "type": "string",
+            "example": "507f191e810c19729de860ea"
+          },
+          "name": {
+            "title": "Segment name",
+            "type": "string"
+          },
+          "created": {
+            "title": "Created timestamp",
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "title": "Updated timestamp",
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "FetchedMessageTemplate": {
+        "required": [
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string",
+            "description": "The detected category of the message:\n\n  - **SMS:** SMS are regular texts, 160 characters or below\n\n  - **MMS:** Multimedia messages. Messages over 306 characters, or with media attached\n\n  - **EXTENDED_SMS:** Messages which are above 160 characters, but below 306 characters\n\n**Example:** `SMS`",
+            "example": "MMS",
+            "enum": [
+              "SMS",
+              "MMS",
+              "EXTENDED_SMS"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "description": "The message Subject (available for MMS)\n\n**Example:** `Some message from SimpleTexting`",
+            "example": "Some message from SimpleTexting"
+          },
+          "text": {
+            "type": "string",
+            "description": "The message body\n\n**Example:** `Hello! How are you?`",
+            "example": "Hello! How are you?"
+          },
+          "fallbackText": {
+            "type": "string",
+            "description": "The fallback message (available for MMS)\n\n**Example:** `We sent you a message!`",
+            "example": "We sent you a message!"
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "A list of attached media item IDs or URLs\n\n**Example:** `[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439333\"]`",
+            "example": [
+              "https://txt.so/img.jpg",
+              "507f1f77bcf86cd799439333"
+            ],
+            "items": {
+              "type": "string",
+              "description": "A list of attached media item IDs or URLs\n\n**Example:** `[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439333\"]`",
+              "example": "[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439333\"]"
+            }
+          }
+        },
+        "description": "Template of message sent\n\n**Example:** `{\"mode\": \"MMS\",\"subject\": \"Some message from SimpleTexting\",\"text\": \"Hello! How are you?\",\"fallbackText\": \"Some text\",\"mediaItems\": [\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439333\"]}`"
+      },
+      "FetchedCampaignOutcomeDto": {
+        "type": "object",
+        "properties": {
+          "successRate": {
+            "type": "integer",
+            "description": "The success rate of the campaign",
+            "format": "int32",
+            "example": 100
+          },
+          "optOutRate": {
+            "type": "integer",
+            "description": "The opt out rate of the campaign",
+            "format": "int32",
+            "example": 0
+          },
+          "totalSent": {
+            "type": "integer",
+            "description": "The total number of messages sent in the campaign",
+            "format": "int32",
+            "example": 1000
+          },
+          "creditsTotal": {
+            "type": "integer",
+            "description": "The total number of credits used",
+            "format": "int32",
+            "example": 1000
+          }
+        },
+        "description": "The available stats for the campaign that was retrieved\n\n**Example:** `{\"successRate\": 100,\"optOutRate\": 0,\"totalSent\": 1000,\"creditsTotal\": 1000}`",
+        "example": {
+          "successRate": 100,
+          "optOutRate": 0,
+          "totalSent": 1000,
+          "creditsTotal": 1000
+        }
+      },
+      "TrackingLink": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The links that were tracked in the sent campaign",
+            "example": "www.simpletexting.net"
+          },
+          "clickCount": {
+            "type": "integer",
+            "description": "The number of clicks the links received",
+            "format": "int32",
+            "example": 550
+          }
+        },
+        "description": "The links that were tracked with the campaign, if available\n\n**Example:** `{\"url\": \"www.simpletexting.net\",\"clickCount\": 550}`",
+        "example": {
+          "url": "www.simpletexting.net",
+          "clickCount": 550
+        }
+      },
+      "FetchedCampaignDto": {
+        "required": [
+          "accountPhone",
+          "campaignId",
+          "lists",
+          "messageTemplate",
+          "segments",
+          "state",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "campaignId": {
+            "type": "string",
+            "description": "Existing campaign ID in hexadecimal format\n\n**Example:** `607f0558a7c898629dd47d7a`",
+            "example": "607f0558a7c898629dd47d7a"
+          },
+          "title": {
+            "type": "string",
+            "description": "Campaign name\n\n**Example:** `My first campaign`",
+            "example": "My first campaign"
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Number the campaign was sent from\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "customFieldsMaxLength": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "description": "Custom fields length in current campaign",
+              "format": "int32"
+            },
+            "description": "Custom fields length in current campaign",
+            "example": {
+              "firstname": "20"
+            }
+          },
+          "state": {
+            "type": "string",
+            "description": "The current state of the campaign\n\n**Example:** `COMPLETED`",
+            "example": "COMPLETED",
+            "enum": [
+              "PAUSED",
+              "SENDING",
+              "COMPLETED",
+              "ERROR",
+              "MONITORING"
+            ]
+          },
+          "lists": {
+            "type": "array",
+            "description": "List of lists campaign was sent to",
+            "example": [
+              {
+                "id": "5f6c760379f4e93135aac72b",
+                "name": "My First List"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/ContactList"
+            }
+          },
+          "segments": {
+            "type": "array",
+            "description": "List of segments campaign was sent to",
+            "example": [
+              {
+                "id": "5f6c760379f4e93135aac72b",
+                "name": "My First List"
+              }
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Segment"
+            }
+          },
+          "created": {
+            "type": "string",
+            "description": "Created timestamp. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "modified": {
+            "type": "string",
+            "description": "Modified timestamp. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "started": {
+            "type": "string",
+            "description": "Started timestamp. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "finished": {
+            "type": "string",
+            "description": "Finished timestamp. The time is in [ISO 8601](https://www.iso.org/iso-8601-date-and-time-format.html) format.\n\n**Example:** `2021-04-28T23:20:08.489Z`",
+            "format": "date-time",
+            "example": "2021-04-28T23:20:08.489Z"
+          },
+          "messageTemplate": {
+            "$ref": "#/components/schemas/FetchedMessageTemplate"
+          },
+          "origin": {
+            "type": "string",
+            "description": "The origin of the campaign will be `API_V2` if sent via the API, it will be `null` in all other cases\n\n**Example:** `API_V2`",
+            "example": "API_V2",
+            "enum": [
+              "API_V2"
+            ]
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/FetchedCampaignOutcomeDto"
+          },
+          "trackingLinks": {
+            "type": "array",
+            "description": "The links that were tracked with the campaign, if available\n\n**Example:** `{\"url\": \"www.simpletexting.net\",\"clickCount\": 550}`",
+            "example": {
+              "url": "www.simpletexting.net",
+              "clickCount": 550
+            },
+            "items": {
+              "$ref": "#/components/schemas/TrackingLink"
+            }
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewFetchedCampaignDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/FetchedCampaignDto"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "MessageTemplate": {
+        "required": [
+          "mode",
+          "text"
+        ],
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "description": "SMS or MMS? AUTO by default:\n\n  - **AUTO:** this means that SimpleTexting will automatically determine the type of message you would like to send\n\n  - **SINGLE_SMS_STRICTLY:** this will send only a single SMS or return an error\n\n  - **MMS_PREFERRED:** this will send an MMS or fallback SMS if MMS is not enabled by your contacts' carriers\n\n**Example:** `MMS_PREFERRED`\n\n`AUTO` is the default value for this field.\n\n**Example:** `MMS_PREFERRED`",
+            "example": "MMS_PREFERRED",
+            "enum": [
+              "AUTO",
+              "SINGLE_SMS_STRICTLY",
+              "MMS_PREFERRED"
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "description": "Subject (available for MMS)\n\n**Example:** `Some message from SimpleTexting`",
+            "example": "My first campaign"
+          },
+          "text": {
+            "type": "string",
+            "description": "Text body\n\n**Example:** `Hi %%firstname%%, welcome to our campaign!`",
+            "example": "Hi %%firstname%%, welcome to our campaign!"
+          },
+          "unsubscribeText": {
+            "type": "string",
+            "description": "Custom unsubscribe message will be appended to the message text. A default message will be appended if not specified.\n\n**Example:** `If you no longer wish to hear from us, reply STOP`",
+            "example": "If you no longer wish to hear from us, reply STOP"
+          },
+          "fallbackText": {
+            "type": "string",
+            "description": "Custom fallback text if MMS cannot be received. Should contain '[url=%%fallback_link%%]' placeholder that will be replaced with a link to the message\n\n**Example:** `Some text`",
+            "example": "My first campaign"
+          },
+          "fallbackUnsubscribeText": {
+            "type": "string",
+            "description": "Custom unsubscribe message will be appended to the fallback text. A default message will be appended if not specified.\n\n**Example:** `If you no longer wish to hear from us, reply STOP`",
+            "example": "If you no longer wish to hear from us, reply STOP"
+          },
+          "mediaItems": {
+            "type": "array",
+            "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\"]`",
+            "example": [
+              "https://txt.so/img.jpg",
+              "507f1f77bcf86cd799439011"
+            ],
+            "items": {
+              "type": "string",
+              "description": "List of MMS media URLs for temporal storing or media items IDs\n\n**Example:** `[\"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\"]`",
+              "example": "[\"https://txt.so/img.jpg\",\"507f1f77bcf86cd799439011\"]"
+            }
+          }
+        },
+        "description": "Campaign Template\n\n**Example:** `{ \"mode\": \"MMS_PREFERRED\", \"subject\": \"My first campaign\", \"text\": \"Hi %%firstname%%, welcome to our campaign!\", \"fallbackText\": \"My first campaign\", \"unsubscribeText\": \"If you no longer wish to hear from us, reply STOP\", \"fallbackUnsubscribeText\": \"If you no longer wish to hear from us, reply STOP\", \"mediaItems\": [ \"https://txt.so/img.jpg\", \"507f1f77bcf86cd799439011\" ] }`"
+      },
+      "ImmediatelyCampaignRequest": {
+        "required": [
+          "messageTemplate",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "title": {
+            "maxLength": 250,
+            "minLength": 1,
+            "type": "string",
+            "description": "Campaign title\n\n**Example:** `My first campaign`",
+            "example": "My first campaign"
+          },
+          "listIds": {
+            "type": "array",
+            "description": "Lists IDs or names\n\n**Example:** `[\"507f191e810c19729de860ea\",\"My First List\"]`",
+            "example": [
+              "507f191e810c19729de860ea",
+              "My First List"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Lists IDs or names\n\n**Example:** `[\"507f191e810c19729de860ea\",\"My First List\"]`",
+              "example": "[\"507f191e810c19729de860ea\",\"My First List\"]"
+            }
+          },
+          "segmentIds": {
+            "type": "array",
+            "description": "Segments IDs or names\n\n**Example:** `[\"507f191e810c19729de860ea\",\"My First List\"]`",
+            "example": [
+              "507f191e810c19729de860ea",
+              "My First List"
+            ],
+            "items": {
+              "type": "string",
+              "description": "Segments IDs or names\n\n**Example:** `[\"507f191e810c19729de860ea\",\"My First List\"]`",
+              "example": "[\"507f191e810c19729de860ea\",\"My First List\"]"
+            }
+          },
+          "accountPhone": {
+            "type": "string",
+            "description": "Account phone, primary number is default\n\n**Example:** `8005551234`",
+            "example": "8005551234"
+          },
+          "customFieldsMaxLength": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "description": "Custom fields length in current campaign, overwrite default settings. See /custom-fields\n\n**Example:** `{\"firstname\":\"20\"}`",
+              "format": "int32"
+            },
+            "description": "Custom fields length in current campaign, overwrite default settings. See /custom-fields\n\n**Example:** `{\"firstname\":\"20\"}`",
+            "example": {
+              "firstname": "20"
+            }
+          },
+          "messageTemplate": {
+            "$ref": "#/components/schemas/MessageTemplate"
+          }
+        }
+      },
+      "TenantInfo": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "title": "Account email",
+            "type": "string",
+            "example": "owner@example.com"
+          }
+        }
+      },
+      "TenantPhone": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "title": "Phone number",
+            "type": "string",
+            "example": "1234567890"
+          },
+          "name": {
+            "title": "Phone name",
+            "type": "string",
+            "example": "Primary phone"
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewTenantPhone": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/TenantPhone"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "PageViewStFileDto": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/StFileDto"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "CustomField": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "title": "Custom Field Name",
+            "type": "string",
+            "example": "My Custom Field"
+          },
+          "type": {
+            "title": "Field type",
+            "type": "string",
+            "example": "text"
+          },
+          "mergeTag": {
+            "title": "Merge Tag",
+            "type": "string",
+            "example": "my_custom_field"
+          },
+          "defaultMaxLength": {
+            "title": "Max Length",
+            "type": "integer",
+            "format": "int32",
+            "example": 30
+          }
+        },
+        "description": "Page content and number of elements is restricted by page size."
+      },
+      "PageViewCustomField": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/CustomField"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      },
+      "ContactUpdateResult": {
+        "type": "object",
+        "properties": {
+          "done": {
+            "type": "boolean",
+            "description": "If operation was successful\n\n**Example:** `true`",
+            "example": true
+          },
+          "contactPhone": {
+            "type": "string",
+            "description": "Contact phone from update request\n\n**Example:** `1234567890`",
+            "example": "1234567890"
+          },
+          "contactId": {
+            "type": "string",
+            "description": "Contact ID if contact exists\n\n**Example:** `507f1f77bcf86cd799439011`",
+            "example": "507f1f77bcf86cd799439011"
+          },
+          "errorCode": {
+            "type": "string",
+            "description": "Operation error code, if operation has failed:\n\n  - **CONTACT_CREATE_INTERNAL_ERROR:** An internal error has occurred, please reach out to SimpleTexting support for further investigation\n\n  - **CONTACT_UPDATE_INTERNAL_ERROR:** An internal error has occurred, please reach out to SimpleTexting support for further investigation\n\n  - **CONTACT_IMPORT_LIMIT_IS_REACHED:** Your account has reached its import limit. Please reach out to SimpleTexting support to raise this limit\n\n  - **CONTACT_CREATE_FAILED:** Some error occurred while creating your contact. Please reach out to SimpleTexting support for further investigation\n\n  - **CONTACT_IMPORT_LIMIT_IS_REACHED:** Your account has reached its import limit. Please reach out to SimpleTexting support to raise this limit\n\n  - **CONTACT_UPDATE_FAILED:** Some error occurred while updating your contact. Please reach out to SimpleTexting support for further investigation\n\n**Example:** `CONTACT_CREATE_FAILED`",
+            "example": "CONTACT_CREATE_FAILED",
+            "enum": [
+              "CONTACT_CREATE_INTERNAL_ERROR",
+              "CONTACT_UPDATE_INTERNAL_ERROR",
+              "CONTACT_IMPORT_LIMIT_IS_REACHED",
+              "CONTACT_CREATE_FAILED",
+              "CONTACT_UPDATE_FAILED"
+            ]
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "Additional error message if operation has failed",
+            "example": "Contacts limit is reached"
+          }
+        },
+        "description": "List of update results"
+      },
+      "ContactsBatchUpdateResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "title": "Task status",
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "DONE"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "description": "List of update results",
+            "items": {
+              "$ref": "#/components/schemas/ContactUpdateResult"
+            }
+          },
+          "requestedCount": {
+            "title": "Total count",
+            "type": "integer",
+            "description": "Contacts count that were requested to be updated/added",
+            "format": "int32",
+            "example": 400
+          },
+          "processedCount": {
+            "title": "Processed count",
+            "type": "integer",
+            "description": "Contacts count that were updated/added",
+            "format": "int32",
+            "example": 400
+          }
+        }
+      },
+      "PageViewSegment": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "array",
+            "description": "Page content and number of elements is restricted by page size.",
+            "items": {
+              "$ref": "#/components/schemas/Segment"
+            }
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "The total number of pages. This is the number of elements divided by the page size.",
+            "format": "int32"
+          },
+          "totalElements": {
+            "type": "integer",
+            "description": "Total number of elements.",
+            "format": "int64"
+          }
+        },
+        "description": "Page representation for search/fetch result"
+      }
+    }
+  },
+  "x-tagGroups": [
+    {
+      "name": "CAMPAIGNS & MESSAGES",
+      "tags": [
+        "Campaigns",
+        "Messages",
+        "Media Items",
+        "File Information"
+      ]
+    },
+    {
+      "name": "Contacts",
+      "tags": [
+        "Contacts",
+        "Contacts - Batch Operations",
+        "Contact Lists",
+        "Contact Segments",
+        "Custom Fields"
+      ]
+    },
+    {
+      "name": "Webhook Services",
+      "tags": [
+        "Webhooks",
+        "Webhook Reports"
+      ]
+    }
+  ]
+}
