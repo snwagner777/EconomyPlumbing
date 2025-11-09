@@ -87,7 +87,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 
-type AdminSection = 'dashboard' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
+type AdminSection = 'dashboard' | 'photos' | 'success-stories' | 'commercial-customers' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'reviews' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
 
 interface EmailTemplate {
   id: string;
@@ -243,6 +243,12 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: LayoutDashboard,
       section: 'dashboard' as AdminSection,
       description: "Overview & stats"
+    },
+    {
+      title: "Photo Management",
+      icon: ImageIcon,
+      section: 'photos' as AdminSection,
+      description: "Manage all photos"
     },
     {
       title: "Success Stories",
@@ -768,6 +774,374 @@ function DashboardOverview({ stats, photos }: { stats: any; photos: any[] }) {
   );
 }
 
+function PhotoManagement() {
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [qualityFilter, setQualityFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedPhotos, setSelectedPhotos] = useState<string[]>([]);
+  const [showSuccessStoryDialog, setShowSuccessStoryDialog] = useState(false);
+  const [showBlogPostDialog, setShowBlogPostDialog] = useState(false);
+  const { toast } = useToast();
+
+  const [isFocalPointDialogOpen, setIsFocalPointDialogOpen] = useState(false);
+  const [focalPointPhoto, setFocalPointPhoto] = useState<any | null>(null);
+  const [focalPoint, setFocalPoint] = useState<{ x: number; y: number } | null>(null);
+
+  // Fetch photos with filters
+  const { data: photosData, isLoading: photosLoading } = useQuery({
+    queryKey: ['/api/admin/photos', categoryFilter, qualityFilter, statusFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        category: categoryFilter,
+        quality: qualityFilter,
+        status: statusFilter,
+      });
+      return await fetch(`/api/admin/photos?${params}`, {
+        credentials: 'include',
+      }).then(res => res.json());
+    },
+  });
+
+  const photos = photosData?.photos || [];
+
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotos(prev => 
+      prev.includes(photoId) 
+        ? prev.filter(id => id !== photoId)
+        : [...prev, photoId]
+    );
+  };
+
+  const clearSelection = () => setSelectedPhotos([]);
+
+  const handleCreateSuccessStory = () => {
+    if (selectedPhotos.length !== 2) {
+      toast({
+        title: "Selection Error",
+        description: "Please select exactly 2 photos for a success story",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowSuccessStoryDialog(true);
+  };
+
+  const handleCreateBlogPost = () => {
+    if (selectedPhotos.length !== 1) {
+      toast({
+        title: "Selection Error",
+        description: "Please select exactly 1 photo for a blog post",
+        variant: "destructive",
+      });
+      return;
+    }
+    setShowBlogPostDialog(true);
+  };
+
+  const getSelectedPhotoObjects = () => {
+    return photos.filter((p: any) => selectedPhotos.includes(p.id));
+  };
+
+  const updateFocalPointMutation = useMutation({
+    mutationFn: async ({ id, focalPoint, photoSource }: { id: string; focalPoint: { x: number; y: number } | null; photoSource: string }) => {
+      return await apiRequest("PUT", `/api/admin/photos/${id}/focal-point`, {
+        focalPointX: focalPoint?.x,
+        focalPointY: focalPoint?.y,
+        photoSource,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Focal Point Updated",
+        description: "The photo's focal point has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photos'] });
+      setIsFocalPointDialogOpen(false);
+      setFocalPointPhoto(null);
+      setFocalPoint(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleOpenFocalPointEditor = (photo: any) => {
+    setFocalPointPhoto(photo);
+    setFocalPoint(
+      photo.focalPointX !== null && photo.focalPointY !== null
+        ? { x: photo.focalPointX, y: photo.focalPointY }
+        : { x: 50, y: 50 }
+    );
+    setIsFocalPointDialogOpen(true);
+  };
+
+  const handleSaveFocalPoint = () => {
+    if (!focalPointPhoto) return;
+
+    updateFocalPointMutation.mutate({
+      id: focalPointPhoto.id,
+      focalPoint,
+      photoSource: focalPointPhoto.photoSource || 'companycam',
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filters</CardTitle>
+          <CardDescription>Filter photos by category, quality, and status</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="category-filter">Category</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger id="category-filter" data-testid="select-category">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="companycam">CompanyCam</SelectItem>
+                  <SelectItem value="google_drive">Google Drive</SelectItem>
+                  <SelectItem value="servicetitan">ServiceTitan</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="quality-filter">Quality</Label>
+              <Select value={qualityFilter} onValueChange={setQualityFilter}>
+                <SelectTrigger id="quality-filter" data-testid="select-quality">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Quality</SelectItem>
+                  <SelectItem value="good">Good Quality</SelectItem>
+                  <SelectItem value="poor">Poor Quality</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="status-filter">Status</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger id="status-filter" data-testid="select-status">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="unused">Unused Only</SelectItem>
+                  <SelectItem value="used">Used Only</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Selection Actions */}
+      {selectedPhotos.length > 0 && (
+        <Card className="border-primary">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <p className="text-sm font-medium">{selectedPhotos.length} photo{selectedPhotos.length !== 1 ? 's' : ''} selected</p>
+                <Button variant="outline" size="sm" onClick={clearSelection} data-testid="button-clear-selection">
+                  Clear Selection
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={handleCreateBlogPost}
+                  disabled={selectedPhotos.length !== 1}
+                  data-testid="button-create-blog-post"
+                >
+                  <FileEdit className="h-4 w-4 mr-2" />
+                  Create Blog Post {selectedPhotos.length !== 1 && `(Select 1)`}
+                </Button>
+                <Button
+                  onClick={handleCreateSuccessStory}
+                  disabled={selectedPhotos.length !== 2}
+                  data-testid="button-create-success-story"
+                >
+                  <Star className="h-4 w-4 mr-2" />
+                  Create Success Story {selectedPhotos.length !== 2 && `(Select 2)`}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Photos Grid */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Photos ({photos.length})</CardTitle>
+          <CardDescription>Select photos to create content manually</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {photosLoading ? (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {[...Array(8)].map((_, i) => (
+                <Skeleton key={i} className="aspect-square rounded-lg" />
+              ))}
+            </div>
+          ) : photos.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No photos found with current filters</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {photos.map((photo: any) => (
+                <div key={photo.id} className="group relative">
+                  <div 
+                    className={`aspect-square relative rounded-lg overflow-hidden bg-muted cursor-pointer ${
+                      selectedPhotos.includes(photo.id) ? 'ring-4 ring-primary' : ''
+                    }`}
+                    onClick={() => togglePhotoSelection(photo.id)}
+                  >
+                    <img
+                      src={photo.photoUrl}
+                      alt={photo.aiDescription || 'Photo'}
+                      className="object-cover w-full h-full"
+                      loading="lazy"
+                    />
+                    {/* Selection Checkbox */}
+                    <div className="absolute top-2 left-2 z-10">
+                      <div
+                        className={`h-6 w-6 rounded-md border-2 flex items-center justify-center ${
+                          selectedPhotos.includes(photo.id) 
+                            ? 'bg-primary border-primary' 
+                            : 'bg-white/80 border-white'
+                        }`}
+                      >
+                        {selectedPhotos.includes(photo.id) && (
+                          <CheckCircle className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.open(photo.photoUrl, '_blank');
+                        }}
+                        data-testid={`view-photo-${photo.id}`}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenFocalPointEditor(photo);
+                        }}
+                        data-testid={`focal-point-photo-${photo.id}`}
+                      >
+                        <Sparkles className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge variant={photo.isGoodQuality ? 'default' : 'outline'}>
+                        {photo.isGoodQuality ? 'Good' : 'Poor'}
+                      </Badge>
+                      {(photo.usedInBlogPostId || photo.usedInPageUrl) && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          Used
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2">
+                      {photo.aiDescription || 'No description'}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Success Story Creation Dialog */}
+      {showSuccessStoryDialog && (
+        <ManualSuccessStoryDialog
+          photos={getSelectedPhotoObjects()}
+          onClose={() => {
+            setShowSuccessStoryDialog(false);
+            clearSelection();
+          }}
+        />
+      )}
+
+      {/* Blog Post Creation Dialog */}
+      {showBlogPostDialog && (
+        <ManualBlogPostDialog
+          photo={getSelectedPhotoObjects()[0]}
+          onClose={() => {
+            setShowBlogPostDialog(false);
+            clearSelection();
+          }}
+        />
+      )}
+
+      {/* Focal Point Editor Dialog */}
+      <Dialog open={isFocalPointDialogOpen} onOpenChange={setIsFocalPointDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Adjust Focal Point</DialogTitle>
+            <DialogDescription>
+              Click on the image to set where the main subject should be centered when this photo is used.
+            </DialogDescription>
+          </DialogHeader>
+          {focalPointPhoto && (
+            <div className="grid gap-6 py-4">
+              <FocalPointEditor
+                imageUrl={focalPointPhoto.photoUrl}
+                initialFocalPoint={focalPoint || undefined}
+                onFocalPointChange={setFocalPoint}
+                label="Click to set focal point"
+              />
+              <div className="flex justify-end gap-2 pt-4">
+                <Button variant="outline" onClick={() => setIsFocalPointDialogOpen(false)}>
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleSaveFocalPoint} 
+                  disabled={updateFocalPointMutation.isPending}
+                  data-testid="button-save-photo-focal-point"
+                >
+                  {updateFocalPointMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Save Focal Point
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
 function SuccessStoriesSection() {
   const { toast } = useToast();
@@ -7492,7 +7866,7 @@ export default function UnifiedAdminDashboard() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('admin-active-section');
-      if (saved && ['dashboard', 'success-stories', 'commercial-customers', 'page-metadata', 'tracking-numbers', 'products', 'referrals', 'reviews', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
+      if (saved && ['dashboard', 'photos', 'success-stories', 'commercial-customers', 'page-metadata', 'tracking-numbers', 'products', 'referrals', 'reviews', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
         setActiveSection(saved as AdminSection);
       }
     }
@@ -7553,6 +7927,8 @@ export default function UnifiedAdminDashboard() {
     switch (activeSection) {
       case 'dashboard':
         return <DashboardOverview stats={stats} photos={photos} />;
+      case 'photos':
+        return <PhotoManagement />;
       case 'success-stories':
         return <SuccessStoriesSection />;
       case 'reviews':
@@ -7587,6 +7963,7 @@ export default function UnifiedAdminDashboard() {
   const getSectionTitle = () => {
     const titles: Record<AdminSection, string> = {
       'dashboard': 'Dashboard',
+      'photos': 'Photo Management',
       'success-stories': 'Success Stories',
       'reviews': 'Reviews',
       'review-platforms': 'Review Platforms',
