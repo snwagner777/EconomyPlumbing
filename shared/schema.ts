@@ -2338,6 +2338,7 @@ export const reviewRequests = pgTable("review_requests", {
   linkClicks: integer("link_clicks").notNull().default(0),
   
   // Timestamps
+  scheduledStart: timestamp("scheduled_start"), // Optional: delay campaign start (null = immediate)
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
 }, (table) => ({

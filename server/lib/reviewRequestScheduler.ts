@@ -621,7 +621,12 @@ class ReviewRequestScheduler {
               eq(reviewRequests.status, 'email2_sent'),
               eq(reviewRequests.status, 'email3_sent')
             ),
-            isNull(reviewRequests.reviewSubmittedAt)
+            isNull(reviewRequests.reviewSubmittedAt),
+            // Only process campaigns that have reached their scheduled start time (or have no schedule)
+            or(
+              isNull(reviewRequests.scheduledStart),
+              sql`${reviewRequests.scheduledStart} <= ${now}`
+            )
           )
         );
 

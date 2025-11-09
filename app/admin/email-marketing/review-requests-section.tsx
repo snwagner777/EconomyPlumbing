@@ -168,16 +168,7 @@ export function ReviewRequestsSection() {
     return <Badge variant={config.variant}>{config.label}</Badge>;
   };
 
-  const handleGenerateEmail = () => {
-    const mockJobDetails = {
-      customerId: 12345,
-      customerName: "John Smith",
-      serviceType: "Water Heater Installation",
-      jobAmount: 185000,
-      jobDate: new Date(),
-      location: "Austin, TX"
-    };
-
+  const handleGenerateEmail = async () => {
     if (!settings?.reviewRequestPhoneNumber) {
       toast({
         title: "Phone Number Required",
@@ -186,14 +177,47 @@ export function ReviewRequestsSection() {
       });
       return;
     }
-    
-    generateMutation.mutate({
-      campaignType: generateCampaignType,
-      emailNumber: generateEmailNumber,
-      jobDetails: mockJobDetails,
-      phoneNumber: settings.reviewRequestPhoneNumber,
-      strategy: generateStrategy || undefined
-    });
+
+    // Fetch real customer data from ServiceTitan database
+    try {
+      const response = await fetch('/api/admin/emails/sample-customer');
+      if (!response.ok) {
+        throw new Error('Failed to fetch customer data');
+      }
+      const jobDetails = await response.json();
+      
+      generateMutation.mutate({
+        campaignType: generateCampaignType,
+        emailNumber: generateEmailNumber,
+        jobDetails,
+        phoneNumber: settings.reviewRequestPhoneNumber,
+        strategy: generateStrategy || undefined
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch customer data. Using sample data instead.",
+        variant: "destructive"
+      });
+
+      // Fallback to sample data if API fails
+      const fallbackJobDetails = {
+        customerId: 12345,
+        customerName: "John Smith",
+        serviceType: "Water Heater Installation",
+        jobAmount: 185000,
+        jobDate: new Date(),
+        location: "Austin, TX"
+      };
+      
+      generateMutation.mutate({
+        campaignType: generateCampaignType,
+        emailNumber: generateEmailNumber,
+        jobDetails: fallbackJobDetails,
+        phoneNumber: settings.reviewRequestPhoneNumber,
+        strategy: generateStrategy || undefined
+      });
+    }
   };
 
   const handleSaveGeneratedEmail = () => {
