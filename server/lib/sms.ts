@@ -62,7 +62,7 @@ async function sendViaSimpleTexting({ to, message }: SendSMSOptions): Promise<vo
       body: JSON.stringify({
         contactPhone: normalizedPhone,
         accountPhone: simpleTextingPhoneNumber,
-        mode: 'SMS',
+        mode: 'AUTO',
         text: message,
       }),
     });
