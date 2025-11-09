@@ -3362,7 +3362,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                               {referralLinkData.code}
                             </p>
                             
-                            <div className="mt-4 space-y-2">
+                            <div className="mt-4 space-y-3">
                               <Label htmlFor="referral-link" className="text-base font-semibold">Share This Link:</Label>
                               <div className="flex gap-2">
                                 <Input
@@ -3390,6 +3390,37 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                       Copy Link
                                     </>
                                   )}
+                                </Button>
+                              </div>
+                              
+                              {/* Quick Share Buttons */}
+                              <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                  onClick={() => {
+                                    const message = `Hey! I had a great experience with Economy Plumbing Services. Save $25 on your first service using my referral link: ${referralLinkData.url}\n\nThey're awesome! Call them at (512) 877-8234`;
+                                    window.location.href = `sms:?body=${encodeURIComponent(message)}`;
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full"
+                                  data-testid="button-share-sms"
+                                >
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Share via Text
+                                </Button>
+                                <Button
+                                  onClick={() => {
+                                    const subject = "Save $25 on Plumbing Services";
+                                    const body = `Hi!\n\nI wanted to share this with you - I recently used Economy Plumbing Services and they were fantastic!\n\nYou can save $25 on your first service using my referral link:\n${referralLinkData.url}\n\nThey're professional, reliable, and their work is top-notch. Give them a call at (512) 877-8234 if you need any plumbing work done.\n\nBest regards`;
+                                    window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full"
+                                  data-testid="button-share-email"
+                                >
+                                  <Mail className="w-4 h-4 mr-2" />
+                                  Share via Email
                                 </Button>
                               </div>
                             </div>
