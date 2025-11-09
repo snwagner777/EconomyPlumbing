@@ -325,15 +325,24 @@ export async function POST(req: NextRequest) {
       // Regular: 4-hour windows (8-12, 12-4, 4-8)
       const arrivalWindow = get4HourArrivalWindow(slot.start, slot.end, isBackflowJob);
       
+      // CRITICAL FIX: ServiceTitan Capacity API returns the FULL arrival window (e.g., 8am-12pm),
+      // NOT the specific 2-hour block we requested (e.g., 8-10am).
+      // We must use our requested block times for the appointment slot, not what ST returns.
+      const dayStr = slot.dayStr;
+      const blockStartHour = slot.blockStart;
+      const blockEndHour = slot.blockEnd;
+      const requestedBlockStart = fromZonedTime(`${dayStr}T${String(blockStartHour).padStart(2, '0')}:00:00`, TIMEZONE);
+      const requestedBlockEnd = fromZonedTime(`${dayStr}T${String(blockEndHour).padStart(2, '0')}:00:00`, TIMEZONE);
+      
       return {
         id: `slot-${index}`,
-        start: slot.start, // Actual appointment booking time
-        end: slot.end, // Actual appointment booking time
-        arrivalWindowStart: arrivalWindow.windowStart, // Customer promise window start
-        arrivalWindowEnd: arrivalWindow.windowEnd, // Customer promise window end
-        date: slot.start.split('T')[0],
+        start: requestedBlockStart.toISOString(), // Use OUR requested 2-hour block start
+        end: requestedBlockEnd.toISOString(), // Use OUR requested 2-hour block end
+        arrivalWindowStart: arrivalWindow.windowStart, // Customer promise window start (4-hour)
+        arrivalWindowEnd: arrivalWindow.windowEnd, // Customer promise window end (4-hour)
+        date: requestedBlockStart.toISOString().split('T')[0],
         timeLabel: arrivalWindow.windowLabel, // Arrival window label for customer display
-        period: getTimePeriod(slot.start),
+        period: getTimePeriod(requestedBlockStart.toISOString()),
         proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
         zone: serviceLocationZone || undefined,
