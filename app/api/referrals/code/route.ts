@@ -45,17 +45,31 @@ export async function GET(req: NextRequest) {
     
     // If no code exists, create one
     if (!existingCode) {
-      // We need customer name to generate the code
-      // For now, we'll fetch from customers_xlsx table
-      const customer = await db.query.customersXlsx.findFirst({
+      // Try to fetch from customers_xlsx table first
+      let customer = await db.query.customersXlsx.findFirst({
         where: (customers, { eq }) => eq(customers.id, customerId),
       });
       
+      // If not in customers_xlsx, fetch from ServiceTitan as fallback
       if (!customer) {
-        return NextResponse.json(
-          { error: 'Customer not found' },
-          { status: 404 }
-        );
+        const { getServiceTitanClient } = await import('@/server/lib/serviceTitanClient');
+        const st = await getServiceTitanClient();
+        
+        try {
+          const stCustomer = await st.getCustomer(customerId);
+          customer = {
+            id: stCustomer.id,
+            name: stCustomer.name,
+            phone: stCustomer.phoneNumber || '',
+            email: stCustomer.email || '',
+          };
+        } catch (error) {
+          console.error(`[Referral Code API] Customer ${customerId} not found in customers_xlsx or ServiceTitan:`, error);
+          return NextResponse.json(
+            { error: 'Customer not found' },
+            { status: 404 }
+          );
+        }
       }
       
       const code = generateReferralCode(customer.name, customerId);
@@ -67,7 +81,7 @@ export async function GET(req: NextRequest) {
           code,
           customerId,
           customerName: customer.name,
-          customerPhone: customer.phone,
+          customerPhone: customer.phone || '',
           createdAt: new Date(),
         })
         .returning();
