@@ -117,12 +117,11 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Create contact with audit trail (exclude phone from spread to avoid duplicate)
-    const { phone: _, ...contactData } = result.data;
+    // Create contact with audit trail
     const [contact] = await db
       .insert(smsContacts)
       .values({
-        ...contactData,
+        ...result.data,
         phone: normalizedPhone,
         createdBy: session?.user?.email || 'admin',
       })

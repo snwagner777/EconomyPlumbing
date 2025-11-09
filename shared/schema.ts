@@ -2163,7 +2163,7 @@ export const smsKeywords = pgTable("sms_keywords", {
 // Join table: SMS Campaign Segments (reuses existing customer_segments)
 export const smsCampaignSegments = pgTable("sms_campaign_segments", {
   campaignId: integer("campaign_id").notNull().references(() => smsCampaigns.id, { onDelete: 'cascade' }),
-  segmentId: integer("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }), // varchar to match customerSegments.id (UUID)
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
   pk: primaryKey({ columns: [table.campaignId, table.segmentId] }),
