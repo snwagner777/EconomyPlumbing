@@ -6,6 +6,9 @@ Economy Plumbing Services is a full-stack web application designed to enhance a 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**Owner Contact Information:**
+- Personal phone number: 512-755-5037 (for testing SMS, OTP, and other features)
+
 **CRITICAL RULE: NEVER Auto-Generate or Hardcode Phone Numbers**
 - **If you need a phone number, ASK the user for it**
 - Never use placeholder phone numbers in production code
