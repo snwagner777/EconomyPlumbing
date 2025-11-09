@@ -728,10 +728,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         const accountPromises = availableCustomerIds.map(async (id) => {
           const response = await fetch(`/api/servicetitan/customer/${id}`);
           const data = await response.json();
+          
           return {
             id: data.customer.id,
             name: data.customer.name,
-            type: data.customer.type || 'Residential', // Get actual type from customer data
+            type: 'Residential', // No longer displaying type, keeping for compatibility
             address: data.customer.address ? 
               [data.customer.address.street, data.customer.address.city, data.customer.address.state].filter(Boolean).join(', ') : 
               undefined
@@ -1935,18 +1936,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     >
                       <CardContent className="p-4">
                         <div className="flex items-start gap-3">
-                          {account.type === 'Commercial' ? (
-                            <Users className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                          ) : (
-                            <Home className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                          )}
+                          <User className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold">{account.name}</p>
-                              <span className={`text-xs px-2 py-1 rounded-md font-medium ${account.type === 'Commercial' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}`}>
-                                {account.type === 'Commercial' ? 'Business Account' : 'Home Account'}
-                              </span>
-                            </div>
+                            <p className="font-semibold mb-1">{account.name}</p>
                             {account.address && (
                               <p className="text-sm text-muted-foreground flex items-start gap-1">
                                 <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />
@@ -3362,34 +3354,60 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                         </div>
                       </CardHeader>
                       <CardContent className="space-y-6">
-                        {/* Referral Code */}
-                        <div className="p-4 bg-primary/10 rounded-lg border border-primary/20 text-center">
-                          <p className="text-sm font-medium text-muted-foreground mb-2">Your Referral Code</p>
-                          <p className="text-2xl font-bold text-primary tracking-wide" data-testid="text-referral-code">
-                            {referralLinkData.code}
-                          </p>
-                        </div>
-
-                        {/* Referral Link */}
-                        <div className="space-y-2">
-                          <Label htmlFor="referral-link">Your Unique Referral Link</Label>
-                          <div className="flex gap-2">
-                            <Input
-                              id="referral-link"
-                              value={referralLinkData.url}
-                              readOnly
-                              className="font-mono text-sm"
-                              data-testid="input-referral-link"
-                            />
-                            <Button
-                              onClick={copyReferralLink}
-                              variant={copied ? "default" : "outline"}
-                              size="icon"
-                              className={copied ? "bg-green-600 hover:bg-green-700" : ""}
-                              data-testid="button-copy-link"
-                            >
-                              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                            </Button>
+                        {/* Referral Code & Link - More Prominent */}
+                        <div className="space-y-4">
+                          <div className="p-6 bg-primary/10 rounded-lg border-2 border-primary/30">
+                            <p className="text-sm font-medium text-muted-foreground mb-2 text-center">Your Referral Code</p>
+                            <p className="text-3xl font-bold text-primary tracking-wide text-center mb-4" data-testid="text-referral-code">
+                              {referralLinkData.code}
+                            </p>
+                            
+                            <div className="mt-4 space-y-2">
+                              <Label htmlFor="referral-link" className="text-base font-semibold">Share This Link:</Label>
+                              <div className="flex gap-2">
+                                <Input
+                                  id="referral-link"
+                                  value={referralLinkData.url}
+                                  readOnly
+                                  className="font-mono text-sm bg-background"
+                                  data-testid="input-referral-link"
+                                />
+                                <Button
+                                  onClick={copyReferralLink}
+                                  variant={copied ? "default" : "default"}
+                                  size="lg"
+                                  className={copied ? "bg-green-600 hover:bg-green-700" : ""}
+                                  data-testid="button-copy-link"
+                                >
+                                  {copied ? (
+                                    <>
+                                      <Check className="w-4 h-4 mr-2" />
+                                      Copied!
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Copy className="w-4 h-4 mr-2" />
+                                      Copy Link
+                                    </>
+                                  )}
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          {/* Sharing Tips */}
+                          <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <p className="font-semibold text-sm mb-2 flex items-center gap-2">
+                              <Share2 className="w-4 h-4" />
+                              Great Places to Share Your Link:
+                            </p>
+                            <ul className="text-sm text-muted-foreground space-y-1 ml-6">
+                              <li>• <strong>Facebook</strong> - Post on your timeline or in local community groups</li>
+                              <li>• <strong>Instagram</strong> - Add to your bio or Stories</li>
+                              <li>• <strong>Nextdoor</strong> - Share with your neighbors</li>
+                              <li>• <strong>Text Messages</strong> - Send directly to friends and family</li>
+                              <li>• <strong>Email</strong> - Include in your email signature</li>
+                            </ul>
                           </div>
                         </div>
 
@@ -3465,55 +3483,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                 <h4 className="font-semibold text-lg">Be the First to Start Earning!</h4>
                                 <p className="text-muted-foreground max-w-md mx-auto">
                                   You haven't made any referrals yet, but there's great potential waiting! 
-                                  Share your unique link with friends and family to start earning $25 rewards.
+                                  Copy your link above and share it to start earning $25 rewards.
                                 </p>
                                 <p className="text-sm text-muted-foreground">
                                   It's simple: they save $25, you earn $25. Everyone wins!
                                 </p>
-                              </div>
-                              <div className="flex flex-wrap justify-center gap-3 pt-2">
-                                <Button 
-                                  onClick={() => {
-                                    const text = `Save $25 on your first plumbing service with Economy Plumbing! Use my referral link: ${referralLinkData.url}`;
-                                    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
-                                    window.open(url, '_blank', 'width=600,height=400');
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                  data-testid="button-share-twitter"
-                                >
-                                  <Share2 className="w-4 h-4" />
-                                  Share on X
-                                </Button>
-                                <Button 
-                                  onClick={() => {
-                                    const text = `Check out Economy Plumbing Services! Save $25 on your first service using my referral link: ${referralLinkData.url}`;
-                                    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLinkData.url)}&quote=${encodeURIComponent(text)}`;
-                                    window.open(url, '_blank', 'width=600,height=400');
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                  data-testid="button-share-facebook"
-                                >
-                                  <Share2 className="w-4 h-4" />
-                                  Share on Facebook
-                                </Button>
-                                <Button 
-                                  onClick={() => {
-                                    const text = `Hi! I wanted to share this with you - Economy Plumbing Services has been amazing for us. You can save $25 on your first service using my referral link: ${referralLinkData.url}`;
-                                    const url = `mailto:?subject=Save $25 on Plumbing Services&body=${encodeURIComponent(text)}`;
-                                    window.location.href = url;
-                                  }}
-                                  variant="outline"
-                                  size="sm"
-                                  className="gap-2"
-                                  data-testid="button-share-email"
-                                >
-                                  <Mail className="w-4 h-4" />
-                                  Share via Email
-                                </Button>
                               </div>
                             </div>
                           )
@@ -3541,15 +3515,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                           </div>
                         </div>
 
-                        {/* Action Button */}
+                        {/* Quick Refer Button */}
                         <Button
                           onClick={() => setShowReferralModal(true)}
                           className="w-full"
                           size="lg"
                           data-testid="button-share-referral"
                         >
-                          <Share2 className="w-4 h-4 mr-2" />
-                          Share Referral Link
+                          <User className="w-4 h-4 mr-2" />
+                          Refer Someone New
                         </Button>
                       </CardContent>
                     </Card>
@@ -5078,18 +5052,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               >
                 <CardContent className="p-4">
                   <div className="flex items-start gap-3">
-                    {account.type === 'Commercial' ? (
-                      <Users className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <Home className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
-                    )}
+                    <User className="w-6 h-6 text-primary flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="font-semibold">{account.name}</p>
-                        <span className={`text-xs px-2 py-1 rounded-md font-medium ${account.type === 'Commercial' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}`}>
-                          {account.type === 'Commercial' ? 'Business Account' : 'Home Account'}
-                        </span>
-                      </div>
+                      <p className="font-semibold mb-1">{account.name}</p>
                       {account.address && (
                         <p className="text-sm text-muted-foreground flex items-start gap-1">
                           <MapPin className="w-3 h-3 flex-shrink-0 mt-0.5" />

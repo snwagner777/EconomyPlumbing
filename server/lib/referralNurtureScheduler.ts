@@ -107,6 +107,54 @@ export class ReferralNurtureScheduler {
   }
 
   /**
+   * Get or create referral link for customer
+   */
+  private async getReferralLink(customerId: number): Promise<string | null> {
+    try {
+      const { referralCodes } = await import('@shared/schema');
+      
+      // Check if customer already has a referral code
+      let existingCode = await db.query.referralCodes.findFirst({
+        where: eq(referralCodes.customerId, customerId),
+      });
+      
+      // If no code exists, create one using customer ID
+      if (!existingCode) {
+        const code = customerId.toString(); // Simple format: just customer ID
+        
+        // Get customer name and phone for the record
+        const customer = await db.query.customersXlsx.findFirst({
+          where: (customers, { eq }) => eq(customers.id, customerId),
+        });
+        
+        if (!customer) {
+          console.error(`[Referral Nurture] Customer ${customerId} not found in customers_xlsx`);
+          return null;
+        }
+        
+        // Insert new referral code
+        [existingCode] = await db
+          .insert(referralCodes)
+          .values({
+            code,
+            customerId,
+            customerName: customer.name,
+            customerPhone: customer.phone,
+            createdAt: new Date(),
+          })
+          .returning();
+      }
+      
+      // Generate tracking URL
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.plumbersthatcare.com';
+      return `${baseUrl}/ref/${existingCode.code}`;
+    } catch (error) {
+      console.error(`[Referral Nurture] Error generating referral link for customer ${customerId}:`, error);
+      return null;
+    }
+  }
+
+  /**
    * Get email content for a specific email in the sequence
    */
   private async getEmailContent(
@@ -135,13 +183,23 @@ export class ReferralNurtureScheduler {
       };
     }
 
+    // Generate referral link for this customer
+    const referralLink = await this.getReferralLink(customerData.id);
+    if (referralLink) {
+      console.log(`[Referral Nurture] Including referral link in email: ${referralLink}`);
+    }
+
     // Fall back to AI generation
     console.log(`[Referral Nurture] Generating AI content for email ${emailNumber}`);
     return await generateEmail({
       campaignType: 'referral_nurture',
       emailNumber,
-      customer: customerData,
+      jobDetails: {
+        customerId: customerData.id,
+        customerName: customerData.customerName,
+      },
       phoneNumber: settings.referralNurturePhone!,
+      referralLink: referralLink || undefined,
     });
   }
 

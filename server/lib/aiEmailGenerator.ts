@@ -34,12 +34,12 @@ interface GenerateEmailOptions {
   strategy?: 'value' | 'trust' | 'urgency' | 'social_proof' | 'seasonal';
 }
 
-interface GeneratedEmail {
+export interface GeneratedEmail {
   subject: string;
-  preheader: string;
-  bodyHtml: string;
-  bodyPlain: string;
-  strategy: string;
+  preheader?: string;
+  htmlContent: string;
+  plainTextContent: string;
+  strategy?: string;
   seasonalContext?: string;
 }
 
@@ -411,8 +411,8 @@ Return as JSON:
     return {
       subject: parsed.subject,
       preheader: parsed.preheader,
-      bodyHtml: parsed.bodyHtml,
-      bodyPlain: parsed.bodyPlain,
+      htmlContent: parsed.bodyHtml,
+      plainTextContent: parsed.bodyPlain,
       strategy,
       seasonalContext: `${season}: ${seasonalContext}`
     };

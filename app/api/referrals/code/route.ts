@@ -11,28 +11,11 @@ import { referralCodes, referrals } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 
 /**
- * Generate a unique referral code based on customer name and ID
- * Format: FIRSTNAME-LAST-XXXX (e.g., "JOHN-SMITH-5127")
+ * Generate a unique referral code using customer ID
+ * Simple format: just the customer ID number
  */
 function generateReferralCode(customerName: string, customerId: number): string {
-  const nameParts = customerName
-    .trim()
-    .toUpperCase()
-    .replace(/[^A-Z\s]/g, '') // Remove non-letters
-    .split(/\s+/)
-    .filter(Boolean);
-  
-  const firstName = nameParts[0] || 'CUSTOMER';
-  const lastName = nameParts[nameParts.length - 1] || '';
-  
-  // Use last 4 digits of customer ID for uniqueness
-  const idSuffix = String(customerId).slice(-4).padStart(4, '0');
-  
-  if (lastName && lastName !== firstName) {
-    return `${firstName}-${lastName}-${idSuffix}`;
-  } else {
-    return `${firstName}-${idSuffix}`;
-  }
+  return customerId.toString();
 }
 
 export async function GET(req: NextRequest) {
