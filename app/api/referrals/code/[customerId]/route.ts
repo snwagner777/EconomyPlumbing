@@ -32,8 +32,15 @@ export async function GET(
       .limit(1);
 
     if (existingCode) {
+      // Generate tracking URL
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.plumbersthatcare.com';
+      const url = `${baseUrl}/ref/${existingCode.code}`;
+      
       return NextResponse.json({
         code: existingCode.code,
+        url,
+        clicks: 0, // TODO: Implement click tracking if needed
+        conversions: 0, // TODO: Track from referrals table
         customerId: existingCode.customerId,
         customerName: existingCode.customerName,
       });
@@ -72,8 +79,15 @@ export async function GET(
 
     console.log(`[Referral Code] Generated ${code} for customer ${customerIdNum}`);
 
+    // Generate tracking URL
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.plumbersthatcare.com';
+    const url = `${baseUrl}/ref/${newCode.code}`;
+
     return NextResponse.json({
       code: newCode.code,
+      url,
+      clicks: 0, // New code, no clicks yet
+      conversions: 0, // New code, no conversions yet
       customerId: newCode.customerId,
       customerName: newCode.customerName,
     });
