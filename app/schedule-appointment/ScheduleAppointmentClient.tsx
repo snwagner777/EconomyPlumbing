@@ -19,6 +19,8 @@ interface ScheduleAppointmentClientProps {
     phone?: string;
     email?: string;
   };
+  austinPhone: { display: string; tel: string };
+  marbleFallsPhone: { display: string; tel: string };
 }
 
 export function ScheduleAppointmentClient({
@@ -28,10 +30,12 @@ export function ScheduleAppointmentClient({
   referralCode,
   prefilledCustomerId,
   initialCustomerData,
+  austinPhone,
+  marbleFallsPhone,
 }: ScheduleAppointmentClientProps) {
   return (
     <>
-      <Header />
+      <Header austinPhone={austinPhone} marbleFallsPhone={marbleFallsPhone} />
       
       <main className="min-h-screen">
         {/* Hero Section */}

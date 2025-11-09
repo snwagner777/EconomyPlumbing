@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import { ScheduleAppointmentClient } from './ScheduleAppointmentClient';
 
 export const metadata: Metadata = {
@@ -12,6 +13,17 @@ export default async function ScheduleAppointment({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const params = await searchParams;
+  
+  // Fetch phone numbers server-side for SEO (UTM-based tracking)
+  const urlParams = new URLSearchParams(
+    Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== undefined) {
+        acc[key] = Array.isArray(value) ? value[0] : value;
+      }
+      return acc;
+    }, {} as Record<string, string>)
+  );
+  const { austin, marbleFalls } = await getPhoneNumbers(urlParams);
   
   // Capture referral code for pre-filling and automatic discount
   const referralCode = params.referral as string | undefined;
@@ -74,6 +86,8 @@ export default async function ScheduleAppointment({
       referralCode={referralCode}
       prefilledCustomerId={prefilledCustomerId}
       initialCustomerData={initialCustomerData}
+      austinPhone={austin}
+      marbleFallsPhone={marbleFalls}
     />
   );
 }
