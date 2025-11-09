@@ -131,7 +131,21 @@ export default function NewServicePage() {
   - **AI-Powered Email System:** Uses OpenAI GPT-4o to generate personalized campaign emails for Review Request, Quote Follow-up, and Referral Nurture campaigns.
   - **Customer Contact Retrieval Workflow:** Mailgun webhook receives invoice/estimate PDFs, which are parsed to extract customer data. System matches customer in `customers_xlsx` database to create campaigns.
   - **AI Email Personalization Process:** Admin approves template; AI personalizes emails at send-time using customer data, seasonal context, sequence position, and messaging strategy. AI is explicitly instructed NOT to offer discounts unless manually configured.
-- **SMS Marketing System:** AI-powered campaign generation, behavioral intelligence, TCPA-compliant opt-in/opt-out.
+- **SMS Marketing System:** 
+  - **SimpleTexting API Integration:** Base URL `https://api-app2.simpletexting.com/v2`, Bearer token authentication (API key: stored in environment).
+  - **Core Capabilities:** Contact/list management, campaign creation/scheduling, message sending, MMS support (<=600KB toll-free, <=1MB shortcode, auto-compression for images up to 15MB), custom fields, segments, webhooks (incoming messages, delivery reports, unsubscribes).
+  - **Key Endpoints:**
+    - Contacts: `/api/contacts` (CRUD, batch operations, upsert support)
+    - Contact Lists: `/api/contact-lists` (create, update, manage memberships)
+    - Campaigns: `/api/campaigns` (create, send, schedule with personalization tokens)
+    - Messages: `/api/messages` (ad-hoc sends, conversation management)
+    - Webhooks: `/api/webhooks` (delivery status, replies, opt-outs)
+    - Custom Fields: `/api/custom-fields` (flexible data capture for personalization)
+    - Tenant: `/api/tenant` (account limits, rate throttles)
+  - **Customer Sync Strategy:** Nightly sync from `customers_xlsx` to SimpleTexting contacts, maintain segments for targeting, track TCPA consent via custom fields and list assignments.
+  - **Compliance:** TCPA opt-in/opt-out tracking, STOP/HELP keyword handling, consent timestamp/source logging, audit trail via webhook acknowledgments.
+  - **Rate Limiting:** Respect tenant-level throttles from API (requests/min exposed via tenant endpoint).
+  - **AI-powered campaign generation, behavioral intelligence, personalization using customer data and custom fields.**
 - **Reputation Management System:** AI-powered review request automation, preview/edit/approve interface for email sequences, automated review fetching.
 - **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job, 6-month expiration. Tech-scannable QR codes. Referrals require phone numbers and email addresses for both parties.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
@@ -149,7 +163,7 @@ export default function NewServicePage() {
 - **Database:** Neon (PostgreSQL).
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
-- **SMS Providers:** Twilio, Zoom Phone.
+- **SMS Providers:** SimpleTexting (primary marketing platform), Twilio, Zoom Phone.
 - **AI Services:** OpenAI (GPT-4o, GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive.
 - **Google Services:** Google Places API, Google Maps.
