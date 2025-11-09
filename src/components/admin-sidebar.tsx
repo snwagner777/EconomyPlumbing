@@ -42,6 +42,7 @@ import {
   FileEdit,
   Package,
   BarChart3,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -66,6 +67,17 @@ const menuSections: MenuSection[] = [
         icon: LayoutDashboard,
         href: '/admin',
         description: 'Overview & stats',
+      },
+    ],
+  },
+  {
+    label: 'AI Marketing',
+    items: [
+      {
+        title: 'AI Campaigns',
+        icon: Sparkles,
+        href: '/admin/ai-campaigns',
+        description: 'GPT-4o generator',
       },
     ],
   },
