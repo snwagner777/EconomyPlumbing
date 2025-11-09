@@ -38,81 +38,96 @@ async function testCapacityAPI() {
   const jobTypeId = plumbingJob.id;
   
   console.log('\n========================================');
-  console.log('TEST 1: Request WHOLE DAY (8am-8pm)');
+  console.log('TEST 1: Request 10-DAY WINDOW');
   console.log('========================================\n');
   
-  const wholeDayStart = fromZonedTime(`${testDate}T08:00:00`, TIMEZONE);
-  const wholeDayEnd = fromZonedTime(`${testDate}T20:00:00`, TIMEZONE);
+  const tenDayStart = fromZonedTime(`${testDate}T08:00:00`, TIMEZONE);
+  const tenDayEnd = new Date(tenDayStart);
+  tenDayEnd.setDate(tenDayEnd.getDate() + 10);
+  tenDayEnd.setHours(20, 0, 0, 0); // 8pm on day 10
   
-  const wholeDayResults = await settings.checkCapacity({
+  console.log(`Requesting capacity for 10 days:`);
+  console.log(`  Start: ${tenDayStart.toLocaleString('en-US', { timeZone: TIMEZONE })}`);
+  console.log(`  End: ${tenDayEnd.toLocaleString('en-US', { timeZone: TIMEZONE })}\n`);
+  
+  const tenDayResults = await settings.checkCapacity({
     businessUnitId,
     jobTypeId,
-    startDate: wholeDayStart,
-    endDate: wholeDayEnd,
+    startDate: tenDayStart,
+    endDate: tenDayEnd,
     skillBasedAvailability: false,
   });
   
-  console.log(`Request: ${wholeDayStart.toISOString()} to ${wholeDayEnd.toISOString()}`);
-  console.log(`Results: ${wholeDayResults.length} slots returned\n`);
+  console.log(`\nResults: ${tenDayResults.length} slots returned\n`);
   
-  wholeDayResults.forEach((slot, i) => {
-    const startLocal = new Date(slot.start).toLocaleString('en-US', { timeZone: TIMEZONE });
-    const endLocal = new Date(slot.end).toLocaleString('en-US', { timeZone: TIMEZONE });
-    console.log(`Slot ${i + 1}:`);
-    console.log(`  Time (UTC): ${slot.start} to ${slot.end}`);
-    console.log(`  Time (Local): ${startLocal} to ${endLocal}`);
-    console.log(`  Available: ${slot.isAvailable}`);
-    console.log(`  Open/Total: ${slot.openAvailability}/${slot.totalAvailability}`);
-    console.log(`  Technicians: ${slot.availableTechnicians?.length || 0}`);
+  // Group by date for easier reading
+  const slotsByDate = new Map<string, typeof tenDayResults>();
+  tenDayResults.forEach(slot => {
+    const date = slot.start.split('T')[0];
+    if (!slotsByDate.has(date)) {
+      slotsByDate.set(date, []);
+    }
+    slotsByDate.get(date)!.push(slot);
+  });
+  
+  console.log('Slots grouped by date:\n');
+  Array.from(slotsByDate.entries()).sort().forEach(([date, slots]) => {
+    const localDate = new Date(date + 'T12:00:00Z').toLocaleDateString('en-US', { 
+      timeZone: TIMEZONE,
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric'
+    });
+    console.log(`${localDate} (${date}):`);
+    slots.forEach(slot => {
+      const startLocal = new Date(slot.start).toLocaleTimeString('en-US', { 
+        timeZone: TIMEZONE,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      const endLocal = new Date(slot.end).toLocaleTimeString('en-US', { 
+        timeZone: TIMEZONE,
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true
+      });
+      console.log(`  ${startLocal} - ${endLocal} ${slot.isAvailable ? '✓' : '✗'}`);
+    });
     console.log('');
   });
   
   console.log('\n========================================');
-  console.log('TEST 2: Request Individual 2-Hour Blocks');
+  console.log('ANALYSIS: Arrival Window Patterns');
   console.log('========================================\n');
   
-  const blocks = [
-    { start: 8, end: 10, label: '8-10am' },
-    { start: 10, end: 12, label: '10-12pm' },
-    { start: 12, end: 14, label: '12-2pm' },
-    { start: 14, end: 16, label: '2-4pm' },
-    { start: 16, end: 18, label: '4-6pm' },
-    { start: 18, end: 20, label: '6-8pm' },
-  ];
+  const windowDurations = new Map<number, number>();
+  tenDayResults.forEach(slot => {
+    const start = new Date(slot.start);
+    const end = new Date(slot.end);
+    const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+    windowDurations.set(durationHours, (windowDurations.get(durationHours) || 0) + 1);
+  });
   
-  for (const block of blocks) {
-    const blockStart = fromZonedTime(`${testDate}T${String(block.start).padStart(2, '0')}:00:00`, TIMEZONE);
-    const blockEnd = fromZonedTime(`${testDate}T${String(block.end).padStart(2, '0')}:00:00`, TIMEZONE);
-    
-    const blockResults = await settings.checkCapacity({
-      businessUnitId,
-      jobTypeId,
-      startDate: blockStart,
-      endDate: blockEnd,
-      skillBasedAvailability: false,
+  console.log('Window durations found:');
+  Array.from(windowDurations.entries()).sort((a, b) => b[1] - a[1]).forEach(([hours, count]) => {
+    console.log(`  ${hours}-hour windows: ${count} slots`);
+  });
+  
+  console.log('\nSample 4-hour windows (first 5):');
+  tenDayResults
+    .filter(slot => {
+      const start = new Date(slot.start);
+      const end = new Date(slot.end);
+      const durationHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60);
+      return durationHours === 4;
+    })
+    .slice(0, 5)
+    .forEach(slot => {
+      const startLocal = new Date(slot.start).toLocaleString('en-US', { timeZone: TIMEZONE });
+      const endLocal = new Date(slot.end).toLocaleString('en-US', { timeZone: TIMEZONE });
+      console.log(`  ${startLocal} to ${endLocal}`);
     });
-    
-    console.log(`\nBlock: ${block.label}`);
-    console.log(`Request: ${blockStart.toISOString()} to ${blockEnd.toISOString()}`);
-    console.log(`Results: ${blockResults.length} slots returned`);
-    
-    if (blockResults.length > 0) {
-      blockResults.forEach((slot, i) => {
-        const slotStartLocal = new Date(slot.start).toLocaleString('en-US', { timeZone: TIMEZONE });
-        const slotEndLocal = new Date(slot.end).toLocaleString('en-US', { timeZone: TIMEZONE });
-        
-        console.log(`  Slot ${i + 1}:`);
-        console.log(`    Returned Time: ${slotStartLocal} to ${slotEndLocal}`);
-        console.log(`    Available: ${slot.isAvailable}`);
-        console.log(`    Open/Total: ${slot.openAvailability}/${slot.totalAvailability}`);
-        console.log(`    Does returned time match requested block? ${
-          slot.start === blockStart.toISOString() && slot.end === blockEnd.toISOString() ? 'YES' : 'NO'
-        }`);
-      });
-    } else {
-      console.log('  No slots returned');
-    }
-  }
   
   console.log('\n========================================');
   console.log('KEY QUESTIONS TO ANSWER:');
