@@ -243,6 +243,7 @@ export class ServiceTitanSettings {
       };
 
       console.log(`[ServiceTitan Capacity] Checking capacity from ${params.startDate.toISOString()} to ${params.endDate.toISOString()}`);
+      console.log(`[ServiceTitan Capacity] Request body:`, JSON.stringify(requestBody, null, 2));
 
       const response = await serviceTitanAuth.makeRequest<{
         timeStamp: string;
@@ -273,6 +274,8 @@ export class ServiceTitanSettings {
           body: JSON.stringify(requestBody),
         }
       );
+      
+      console.log(`[ServiceTitan Capacity] Raw response:`, JSON.stringify(response, null, 2));
 
       // Convert ServiceTitan capacity response to our AvailabilitySlot format
       const slots = (response.availabilities || []).map(availability => {
