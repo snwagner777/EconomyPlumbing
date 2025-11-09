@@ -1943,22 +1943,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-semibold">{account.name}</p>
-                              <Badge 
-                                variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
-                                className={`text-xs flex items-center gap-1 ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                              >
-                                {account.type === 'Commercial' ? (
-                                  <>
-                                    <Briefcase className="w-3 h-3" />
-                                    Business
-                                  </>
-                                ) : (
-                                  <>
-                                    <Home className="w-3 h-3" />
-                                    Home
-                                  </>
-                                )}
-                              </Badge>
+                              <span className={`text-xs px-2 py-1 rounded-md font-medium ${account.type === 'Commercial' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}`}>
+                                {account.type === 'Commercial' ? 'Business Account' : 'Home Account'}
+                              </span>
                             </div>
                             {account.address && (
                               <p className="text-sm text-muted-foreground flex items-start gap-1">
@@ -5099,22 +5086,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-semibold">{account.name}</p>
-                        <Badge 
-                          variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
-                          className={`text-xs flex items-center gap-1 ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
-                        >
-                          {account.type === 'Commercial' ? (
-                            <>
-                              <Briefcase className="w-3 h-3" />
-                              Business
-                            </>
-                          ) : (
-                            <>
-                              <Home className="w-3 h-3" />
-                              Home
-                            </>
-                          )}
-                        </Badge>
+                        <span className={`text-xs px-2 py-1 rounded-md font-medium ${account.type === 'Commercial' ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white'}`}>
+                          {account.type === 'Commercial' ? 'Business Account' : 'Home Account'}
+                        </span>
                       </div>
                       {account.address && (
                         <p className="text-sm text-muted-foreground flex items-start gap-1">
