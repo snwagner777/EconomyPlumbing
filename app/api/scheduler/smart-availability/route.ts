@@ -51,8 +51,8 @@ interface CapacityWindow {
   start: string;
   end: string;
   isAvailable: boolean;
-  availableCapacity: number;
-  totalCapacity: number;
+  availableCapacity?: number;
+  totalCapacity?: number;
   technicianIds?: number[];
 }
 
@@ -74,15 +74,19 @@ export async function POST(req: NextRequest) {
       );
     }
     
-    // CRITICAL: Parse dates as Central Time midnight to avoid timezone bugs
-    // If frontend sends "2025-11-08", we want Nov 8 at 00:00 Central Time, not UTC
-    const TIMEZONE = 'America/Chicago';
-    const start = fromZonedTime(`${startDate}T00:00:00`, TIMEZONE);
-    const end = endDate 
-      ? fromZonedTime(`${endDate}T00:00:00`, TIMEZONE)
-      : addDays(start, 10);
+    // Check cache first
+    const cacheKey = `${jobTypeId}-${businessUnitId || 'default'}-${customerZip || 'nozip'}-${startDate}-${daysToLoad}`;
+    const cached = availabilityCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL_MS) {
+      console.log(`[Smart Scheduler] Cache hit for ${cacheKey}`);
+      return NextResponse.json(cached.data);
+    }
     
-    console.log(`[Smart Scheduler] Fetching availability from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')} to ${formatInTimeZone(end, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')}`);
+    // Parse dates as Central Time midnight to avoid timezone bugs
+    const start = fromZonedTime(`${startDate}T00:00:00`, TIMEZONE);
+    const endDate = addDays(start, daysToLoad - 1);
+    
+    console.log(`[Smart Scheduler] Fetching ${daysToLoad} days from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd')} to ${formatInTimeZone(endDate, TIMEZONE, 'yyyy-MM-dd')}`);
     
     // Get job type details to check if it's backflow testing
     const jobTypes = await serviceTitanSettings.getJobTypes();
@@ -99,132 +103,85 @@ export async function POST(req: NextRequest) {
       actualBusinessUnitId = plumbingBU?.id;
       
       if (!actualBusinessUnitId) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'No business unit found',
-          },
-          { status: 500 }
-        );
+        return NextResponse.json({ success: false, error: 'No business unit found' }, { status: 500 });
       }
     }
     
-    // BACKFLOW JOBS: Different arrival window strategy
-    // - Backflow testing shows ONLY 8am-8pm arrival window (single all-day slot)
-    // - Regular jobs use 4-hour windows (8-12, 12-4, 4-8) with 2-hour bookings inside
+    // STEP 1: Request full days (midnight-to-midnight) from Capacity API
+    // This ensures we get ALL arrival windows (including morning slots)
+    console.log(`[Smart Scheduler] Requesting ${daysToLoad} full days (midnight-to-midnight)...`);
     
-    // Define blocks to check based on job type
-    const twoHourBlocks = isBackflowJob
-      ? [
-          // Backflow: Check full 12-hour window as a single slot
-          { start: 8, end: 20, label: '8am-8pm (Backflow All-Day)' },
-        ]
-      : [
-          // Regular services: Check 2-hour blocks for standard 4-hour windows
-          { start: 8, end: 10, label: '8-10am' },
-          { start: 10, end: 12, label: '10am-12pm' },
-          { start: 12, end: 14, label: '12-2pm' },
-          { start: 14, end: 16, label: '2-4pm' },
-          { start: 16, end: 18, label: '4-6pm' },
-        ];
-    
-    console.log(`[Smart Scheduler] ${isBackflowJob ? 'Backflow mode - checking all-day availability' : `Checking ${twoHourBlocks.length} 2-hour blocks per day`}`);
-    
-    // Collect all available 2-hour slots across all days
-    const allAvailable2HourSlots: any[] = [];
-    
-    // Iterate through each day in the date range
-    let currentDay = new Date(start);
-    const endDay = new Date(end);
-    
-    while (currentDay <= endDay) {
-      const dayStr = formatInTimeZone(currentDay, TIMEZONE, 'yyyy-MM-dd');
-      console.log(`[Smart Scheduler] Checking ${dayStr}...`);
+    const capacityRequests = [];
+    for (let i = 0; i < daysToLoad; i++) {
+      const dayStart = fromZonedTime(formatInTimeZone(addDays(start, i), TIMEZONE, 'yyyy-MM-dd') + 'T00:00:00', TIMEZONE);
+      const dayEnd = fromZonedTime(formatInTimeZone(addDays(start, i), TIMEZONE, 'yyyy-MM-dd') + 'T23:59:59', TIMEZONE);
       
-      // Check each 2-hour block for this day
-      for (const block of twoHourBlocks) {
-        // Create start/end times for this 2-hour block in Central Time
-        const blockStart = fromZonedTime(`${dayStr}T${String(block.start).padStart(2, '0')}:00:00`, TIMEZONE);
-        const blockEnd = fromZonedTime(`${dayStr}T${String(block.end).padStart(2, '0')}:00:00`, TIMEZONE);
-        
-        // Call ServiceTitan Capacity API for this specific 2-hour block
-        const capacityResponse = await serviceTitanSettings.checkCapacity({
+      capacityRequests.push(
+        serviceTitanSettings.checkCapacity({
           businessUnitId: actualBusinessUnitId,
           jobTypeId,
-          startDate: blockStart,
-          endDate: blockEnd,
+          startDate: dayStart,
+          endDate: dayEnd,
           skillBasedAvailability: true,
-        });
-        
-        // Filter to truly available slots (both isAvailable=true AND capacity>0)
-        const availableSlots = capacityResponse.filter(slot => 
-          slot.isAvailable && (slot.availableCapacity || 0) > 0
-        );
-        
-        if (availableSlots.length > 0) {
-          console.log(`[Smart Scheduler] ✅ ${dayStr} ${block.label}: ${availableSlots.length} available slot(s)`);
-          // DEBUG: Log what Capacity API actually returned vs what we requested
-          if (availableSlots[0]) {
-            console.log(`[Smart Scheduler] DEBUG Requested: ${blockStart.toISOString()} to ${blockEnd.toISOString()}`);
-            console.log(`[Smart Scheduler] DEBUG Capacity API returned: ${availableSlots[0].start} to ${availableSlots[0].end}`);
-          }
-          allAvailable2HourSlots.push(...availableSlots.map(slot => ({
-            ...slot,
-            blockLabel: block.label,
-            blockStart: block.start,
-            blockEnd: block.end,
-            dayStr,
-          })));
-        } else {
-          console.log(`[Smart Scheduler] ❌ ${dayStr} ${block.label}: No availability`);
-        }
-      }
-      
-      // Move to next day
-      currentDay = addDays(currentDay, 1);
+        })
+      );
     }
     
-    console.log(`[Smart Scheduler] Total available 2-hour slots found: ${allAvailable2HourSlots.length}`);
-    
-    // Use the collected 2-hour slots for scoring (same variable name as before)
-    const truelyAvailableSlots = allAvailable2HourSlots;
-    
-    // Fetch scheduled jobs for proximity scoring (next 10 days)
-    const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, end);
-    console.log(`[Smart Scheduler] Found ${existingJobs.length} jobs for proximity scoring`);
-    
-    // Fetch technician assignments for all jobs
-    const appointmentIds = existingJobs.map(j => j.appointmentId);
-    const techAssignments = await serviceTitanJobs.getTechnicianAssignments(
-      appointmentIds,
-      start,
-      end
+    // Parallelize capacity requests for performance
+    const capacityResults = await Promise.all(capacityRequests);
+    const allCapacityWindows: CapacityWindow[] = capacityResults.flat().filter(w => 
+      w.isAvailable // Keep all available windows (backflow may not have availableCapacity defined)
     );
     
-    // Add technician IDs to jobs
+    console.log(`[Smart Scheduler] Capacity API returned ${allCapacityWindows.length} available windows across ${daysToLoad} days`);
+    
+    // STEP 2: Filter windows based on job type
+    // Regular services: 4-hour windows only (filter out 12-hour)
+    // Backflow: 12-hour windows only (filter out 4-hour)
+    const filteredWindows = allCapacityWindows.filter(window => {
+      const windowStart = new Date(window.start);
+      const windowEnd = new Date(window.end);
+      const durationHours = (windowEnd.getTime() - windowStart.getTime()) / (1000 * 60 * 60);
+      
+      if (isBackflowJob) {
+        // Backflow: Only show 12-hour windows (8am-8pm)
+        return durationHours === 12;
+      } else {
+        // Regular services: Only show 4-hour windows (8-12, 9-1, 10-2, etc.)
+        return durationHours === 4;
+      }
+    });
+    
+    console.log(`[Smart Scheduler] After filtering: ${filteredWindows.length} ${isBackflowJob ? '12-hour' : '4-hour'} windows`);
+    
+    // STEP 3: Fetch existing jobs for proximity scoring
+    const existingJobs = await serviceTitanJobs.getJobsForDateRange(start, endDate);
+    console.log(`[Smart Scheduler] Found ${existingJobs.length} existing jobs for proximity scoring`);
+    
+    // Fetch technician assignments
+    const appointmentIds = existingJobs.map(j => j.appointmentId);
+    const techAssignments = await serviceTitanJobs.getTechnicianAssignments(appointmentIds, start, endDate);
     existingJobs.forEach(job => {
       job.technicianId = techAssignments.get(job.appointmentId);
     });
     
-    // Extract SERVICE LOCATION zone from serviceTitanZones table
-    // NOTE: customerZip should be the service location ZIP, not billing address
+    // STEP 4: Generate 2-hour appointment slots within each arrival window
+    // Customer sees 4-hour window (e.g., "8am-12pm"), we book 2-hour slots internally
+    const allSlots: ScoredSlot[] = [];
+    
+    // Fetch customer zone info for proximity scoring
     const serviceLocationZone = customerZip ? await getZoneForZip(customerZip) : null;
     const serviceLocationZoneNumber = serviceLocationZone ? parseZoneNumber(serviceLocationZone) : null;
-    console.log(`[Smart Scheduler] Service location ZIP: ${customerZip}, Zone: ${serviceLocationZone} (zone #${serviceLocationZoneNumber || 'unknown'})`);
+    console.log(`[Smart Scheduler] Customer ZIP: ${customerZip}, Zone: ${serviceLocationZone} (#${serviceLocationZoneNumber || 'unknown'})`);
     
-    // Precompute zones for all job ZIPs (batch lookup for performance)
-    // Normalize to 5 digits to handle ZIP+4 format (e.g., "78701-1234" → "78701")
+    // Precompute ZIP-to-zone mapping for existing jobs
     const normalizeZip = (zip: string | null | undefined): string | null => {
       if (!zip) return null;
       const digits = zip.replace(/\D/g, '').substring(0, 5);
-      return digits.length === 5 ? digits : null; // Only return if valid 5-digit ZIP
+      return digits.length === 5 ? digits : null;
     };
     
-    const uniqueZips = [...new Set(
-      existingJobs
-        .map(j => normalizeZip(j.locationZip))
-        .filter((zip): zip is string => zip !== null)
-    )];
+    const uniqueZips = [...new Set(existingJobs.map(j => normalizeZip(j.locationZip)).filter((z): z is string => z !== null))];
     const zipToZone: Record<string, string> = {};
     
     if (uniqueZips.length > 0) {
@@ -232,7 +189,6 @@ export async function POST(req: NextRequest) {
         where: (zones) => sql`${zones.zipCodes} && ARRAY[${sql.join(uniqueZips.map(z => sql`${z}`), sql`, `)}]::text[]`,
       });
       
-      // Build ZIP to zone mapping (all ZIPs normalized to 5 digits)
       for (const zone of zones) {
         for (const zip of zone.zipCodes) {
           const normalized = normalizeZip(zip);
@@ -241,140 +197,133 @@ export async function POST(req: NextRequest) {
           }
         }
       }
-      
       console.log(`[Smart Scheduler] Mapped ${Object.keys(zipToZone).length} ZIPs to zones`);
     }
     
-    // Score each slot based on technician route contiguity and zone adjacency
-    const scoredSlots = truelyAvailableSlots.map((slot, index): ScoredSlot | null => {
-      const slotStart = new Date(slot.start);
-      const slotEnd = new Date(slot.end);
-      const slotDate = format(slotStart, 'yyyy-MM-dd');
+    // Generate 2-hour slots for each arrival window
+    for (const window of filteredWindows) {
+      const windowStart = new Date(window.start);
+      const windowEnd = new Date(window.end);
+      const windowDurationHours = (windowEnd.getTime() - windowStart.getTime()) / (1000 * 60 * 60);
       
-      // Find all jobs scheduled on the same day (not just time overlap!)
-      const sameDayJobs = existingJobs.filter(job => {
-        const jobDate = format(new Date(job.appointmentStart), 'yyyy-MM-dd');
-        return jobDate === slotDate;
-      });
+      // For backflow (12-hour), create one 12-hour slot
+      // For regular services (4-hour), create hourly-aligned 2-hour slots
+      const slotsInWindow: Array<{ start: Date; end: Date }> = [];
       
-      // HILL COUNTRY RESTRICTION:
-      // Block specific afternoon windows (10-2, 1-5, 2-6) unless there's already a Hill Country job that day
-      // This prevents single afternoon trips to Hill Country (fuel efficiency)
-      if (serviceLocationZone && serviceLocationZone.toLowerCase().includes('hill country')) {
-        const startHourCT = parseInt(slotStart.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          hour12: false,
-          timeZone: 'America/Chicago',
-        }));
-        
-        const endHourCT = parseInt(slotEnd.toLocaleTimeString('en-US', {
-          hour: 'numeric',
-          hour12: false,
-          timeZone: 'America/Chicago',
-        }));
-        
-        // Check if this is one of the blocked windows: 10-2, 11-3, 12-4, 1-5, or 2-6
-        const isBlockedWindow = 
-          (startHourCT === 10 && endHourCT === 14) || // 10 AM - 2 PM
-          (startHourCT === 11 && endHourCT === 15) || // 11 AM - 3 PM
-          (startHourCT === 12 && endHourCT === 16) || // 12 PM - 4 PM
-          (startHourCT === 13 && endHourCT === 17) || // 1 PM - 5 PM
-          (startHourCT === 14 && endHourCT === 18);   // 2 PM - 6 PM
-        // Note: 8-12 and 9-1 are allowed for Hill Country
-        
-        if (isBlockedWindow) {
-          // Count existing Hill Country jobs on the same day
-          const nearbyHillCountryJobs = sameDayJobs.filter(job => {
-            const jobZip = normalizeZip(job.locationZip);
-            const jobZoneName = jobZip ? zipToZone[jobZip] : null;
-            return jobZoneName && jobZoneName.toLowerCase().includes('hill country');
-          });
+      if (windowDurationHours === 12) {
+        // Backflow: One 12-hour appointment
+        slotsInWindow.push({ start: windowStart, end: windowEnd });
+      } else {
+        // Regular: Generate all possible 2-hour slots (hourly aligned)
+        // E.g., 8-12pm window → [8-10am, 9-11am, 10am-12pm]
+        for (let hour = 0; hour < windowDurationHours - 1; hour++) {
+          const slotStart = addHours(windowStart, hour);
+          const slotEnd = addHours(slotStart, 2);
           
-          // Block this window if no other Hill Country jobs that day
-          if (nearbyHillCountryJobs.length === 0) {
-            console.log(`[Hill Country Filter] Blocking ${formatTimeWindow(slot.start, slot.end)} - no Hill Country jobs scheduled that day`);
-            return null;
-          } else {
-            console.log(`[Hill Country Filter] Allowing ${formatTimeWindow(slot.start, slot.end)} - ${nearbyHillCountryJobs.length} Hill Country jobs found that day`);
+          // Ensure slot doesn't extend beyond window
+          if (slotEnd <= windowEnd) {
+            slotsInWindow.push({ start: slotStart, end: slotEnd });
           }
         }
       }
       
-      // Calculate proximity score and best technician for this slot
-      const proximityResult = calculateProximityScoreV2(
-        slotStart,
-        slotEnd,
-        serviceLocationZoneNumber,
-        sameDayJobs,
-        zipToZone,
-        normalizeZip,
-        parseZoneNumber
-      );
-      
-      // Count jobs in same/adjacent zones for display
-      const nearbyJobCount = sameDayJobs.filter(job => {
-        const jobZip = normalizeZip(job.locationZip);
-        const jobZoneName = jobZip ? zipToZone[jobZip] : null;
-        const jobZoneNum = parseZoneNumber(jobZoneName);
+      // Score each 2-hour slot and create ScoredSlot objects
+      for (let slotIndex = 0; slotIndex < slotsInWindow.length; slotIndex++) {
+        const slot = slotsInWindow[slotIndex];
+        const slotDate = format(slot.start, 'yyyy-MM-dd');
         
-        if (!serviceLocationZoneNumber || !jobZoneNum) return false;
-        const distance = Math.abs(serviceLocationZoneNumber - jobZoneNum);
-        return distance <= 1; // Same zone or adjacent
-      }).length;
-
-      // ServiceTitan Capacity API returns arrival windows (4-hour blocks)
-      // The returned start/end are what ServiceTitan says is actually available
-      // We use these as BOTH the appointment slot AND arrival window since ST manages capacity by arrival windows
-      const slotStart = new Date(slot.start);
-      const slotEnd = new Date(slot.end);
-      
-      // Format the label from the actual available slot times
-      const startLabel = slotStart.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: TIMEZONE,
-      });
-      const endLabel = slotEnd.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: TIMEZONE,
-      });
-      
-      return {
-        id: `slot-${index}`,
-        start: slot.start, // Use ServiceTitan's returned available slot (source of truth)
-        end: slot.end, // Use ServiceTitan's returned available slot (source of truth)
-        arrivalWindowStart: slot.start, // Same as appointment (ST manages by arrival windows)
-        arrivalWindowEnd: slot.end, // Same as appointment (ST manages by arrival windows)
-        date: slot.start.split('T')[0],
-        timeLabel: `${startLabel} - ${endLabel}`, // Show actual available window
-        period: getTimePeriod(slot.start),
-        proximityScore: proximityResult.score,
-        nearbyJobs: nearbyJobCount,
-        zone: serviceLocationZone || undefined,
-        technicianId: proximityResult.technicianId, // Pre-assigned technician for optimal routing
-      };
-    }).filter((slot): slot is ScoredSlot => slot !== null); // Remove filtered-out Hill Country afternoon slots
+        // Find jobs on same day for proximity scoring
+        const sameDayJobs = existingJobs.filter(job => {
+          const jobDate = format(new Date(job.appointmentStart), 'yyyy-MM-dd');
+          return jobDate === slotDate;
+        });
+        
+        // Hill Country restriction: block certain afternoon windows unless HC job exists
+        if (serviceLocationZone?.toLowerCase().includes('hill country')) {
+          const startHour = parseInt(slot.start.toLocaleTimeString('en-US', { hour: 'numeric', hour12: false, timeZone: TIMEZONE }));
+          const endHour = parseInt(slot.end.toLocaleTimeString('en-US', { hour: 'numeric', hour12: false, timeZone: TIMEZONE }));
+          
+          // Blocked windows: 10-2, 11-3, 12-4, 1-5, 2-6
+          const isBlockedWindow = [
+            [10, 14], [11, 15], [12, 16], [13, 17], [14, 18]
+          ].some(([s, e]) => startHour === s && endHour === e);
+          
+          if (isBlockedWindow) {
+            const hcJobsToday = sameDayJobs.filter(job => {
+              const jobZip = normalizeZip(job.locationZip);
+              const jobZone = jobZip ? zipToZone[jobZip] : null;
+              return jobZone?.toLowerCase().includes('hill country');
+            });
+            
+            if (hcJobsToday.length === 0) {
+              console.log(`[Hill Country] Blocking ${format(slot.start, 'ha')}-${format(slot.end, 'ha')} - no HC jobs that day`);
+              continue; // Skip this slot
+            }
+          }
+        }
+        
+        // Calculate proximity score
+        const proximityResult = calculateProximityScoreV2(
+          slot.start,
+          slot.end,
+          serviceLocationZoneNumber,
+          sameDayJobs,
+          zipToZone,
+          normalizeZip,
+          parseZoneNumber
+        );
+        
+        // Count nearby jobs
+        const nearbyJobCount = sameDayJobs.filter(job => {
+          const jobZip = normalizeZip(job.locationZip);
+          const jobZone = jobZip ? zipToZone[jobZip] : null;
+          const jobZoneNum = parseZoneNumber(jobZone);
+          if (!serviceLocationZoneNumber || !jobZoneNum) return false;
+          return Math.abs(serviceLocationZoneNumber - jobZoneNum) <= 1;
+        }).length;
+        
+        // Format time label
+        const startLabel = slot.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
+        const endLabel = slot.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
+        
+        allSlots.push({
+          id: `slot-${allSlots.length}`,
+          start: slot.start.toISOString(),
+          end: slot.end.toISOString(),
+          arrivalWindowStart: window.start,
+          arrivalWindowEnd: window.end,
+          date: slotDate,
+          timeLabel: `${startLabel} - ${endLabel}`,
+          period: getTimePeriod(slot.start.toISOString()),
+          proximityScore: proximityResult.score,
+          nearbyJobs: nearbyJobCount,
+          zone: serviceLocationZone || undefined,
+          technicianId: proximityResult.technicianId,
+          availableCapacity: window.availableCapacity,
+          totalCapacity: window.totalCapacity,
+        });
+      }
+    }
     
-    // Sort by proximity score (highest first), with slight preference for earlier times on ties
-    scoredSlots.sort((a, b) => {
+    console.log(`[Smart Scheduler] Generated ${allSlots.length} 2-hour appointment slots`);
+    
+    // STEP 5: Sort by proximity score (highest first), then by time for ties
+    const scoredSlots = allSlots.sort((a, b) => {
       const scoreDiff = b.proximityScore - a.proximityScore;
-      // Only use time as tie-breaker for exact score matches
       if (scoreDiff === 0) {
         return new Date(a.start).getTime() - new Date(b.start).getTime();
       }
       return scoreDiff;
     });
     
-    // Log top 10 slots with scores for debugging
+    // Log top 10 slots
     console.log(`[Smart Scheduler] Top 10 slots by score:`);
     scoredSlots.slice(0, 10).forEach((s, i) => {
-      console.log(`  ${i + 1}. ${s.timeLabel} - Score: ${s.proximityScore}`);
+      console.log(`  ${i + 1}. ${s.timeLabel} (arrival window ${new Date(s.arrivalWindowStart).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}-${new Date(s.arrivalWindowEnd).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}) - Score: ${s.proximityScore}`);
     });
     
-    return NextResponse.json({
+    // STEP 6: Build response and cache it
+    const response = {
       success: true,
       slots: scoredSlots,
       optimization: {
@@ -382,7 +331,17 @@ export async function POST(req: NextRequest) {
         totalSlots: scoredSlots.length,
         optimizedSlots: scoredSlots.filter(s => s.proximityScore > 50).length,
       },
+    };
+    
+    // Cache the response
+    availabilityCache.set(cacheKey, {
+      data: response,
+      timestamp: Date.now(),
     });
+    
+    console.log(`[Smart Scheduler] Cached response for ${cacheKey}`);
+    
+    return NextResponse.json(response);
   } catch (error: any) {
     console.error('[Smart Availability API] Error:', error);
     return NextResponse.json(
