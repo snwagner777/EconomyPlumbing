@@ -86,7 +86,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 
-type AdminSection = 'dashboard' | 'photos' | 'marketing-campaigns' | 'custom-campaigns' | 'email-processing';
+type AdminSection = 'dashboard' | 'photos' | 'custom-campaigns' | 'email-processing';
 
 interface EmailTemplate {
   id: string;
@@ -248,12 +248,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: ImageIcon,
       section: 'photos' as AdminSection,
       description: "Manage all photos"
-    },
-    {
-      title: "Marketing Campaigns",
-      icon: Mail,
-      section: 'marketing-campaigns' as AdminSection,
-      description: "Settings, templates & analytics"
     },
     {
       title: "Custom Campaigns",
@@ -1199,31 +1193,6 @@ function SerpApiStatusCard() {
 // Referral System Section (Combined: Tracking + Email Templates)
 
 // Marketing Campaigns Section (Combined: Settings + Templates + Analytics)
-function MarketingCampaignsSection() {
-  const [activeTab, setActiveTab] = useState<'settings' | 'templates' | 'analytics'>('settings');
-  
-  return (
-    <div className="space-y-6">
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList>
-          <TabsTrigger value="settings" data-testid="tab-settings">Campaign Settings</TabsTrigger>
-          <TabsTrigger value="templates" data-testid="tab-templates">Email Templates</TabsTrigger>
-          <TabsTrigger value="analytics" data-testid="tab-analytics">Analytics</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="settings" className="mt-6">
-          <ReviewRequestsSection />
-        </TabsContent>
-        
-        <TabsContent value="templates" className="mt-6">
-          <EmailTemplatesSection />
-        </TabsContent>
-        
-        <TabsContent value="analytics" className="mt-6">
-          <CampaignAnalyticsSection />
-        </TabsContent>
-      </Tabs>
-    </div>
   );
 }
 
@@ -4065,8 +4034,6 @@ export default function UnifiedAdminDashboard() {
         return <DashboardOverview stats={stats} photos={photos} />;
       case 'photos':
         return <PhotoManagement />;
-      case 'marketing-campaigns':
-        return <MarketingCampaignsSection />;
       case 'custom-campaigns':
         return <CustomCampaignsSection />;
       case 'email-processing':
@@ -4080,7 +4047,6 @@ export default function UnifiedAdminDashboard() {
     const titles: Record<AdminSection, string> = {
       'dashboard': 'Dashboard',
       'photos': 'Photo Management',
-      'marketing-campaigns': 'Marketing Campaigns',
       'custom-campaigns': 'Custom Campaigns',
       'email-processing': 'Email Processing',
     };
