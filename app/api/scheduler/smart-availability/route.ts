@@ -161,6 +161,11 @@ export async function POST(req: NextRequest) {
         
         if (availableSlots.length > 0) {
           console.log(`[Smart Scheduler] ✅ ${dayStr} ${block.label}: ${availableSlots.length} available slot(s)`);
+          // DEBUG: Log what Capacity API actually returned vs what we requested
+          if (availableSlots[0]) {
+            console.log(`[Smart Scheduler] DEBUG Requested: ${blockStart.toISOString()} to ${blockEnd.toISOString()}`);
+            console.log(`[Smart Scheduler] DEBUG Capacity API returned: ${availableSlots[0].start} to ${availableSlots[0].end}`);
+          }
           allAvailable2HourSlots.push(...availableSlots.map(slot => ({
             ...slot,
             blockLabel: block.label,
