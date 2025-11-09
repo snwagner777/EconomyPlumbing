@@ -90,6 +90,22 @@ export class ServiceTitanJobs {
       const appointments = response.data || [];
       console.log(`[ServiceTitan Jobs] API returned ${appointments.length} appointments`);
       
+      // Group appointments by day to see distribution
+      const appointmentsByDay = new Map<string, any[]>();
+      for (const apt of appointments) {
+        const startDate = new Date(apt.start || apt.arrivalWindowStart);
+        const dayKey = startDate.toISOString().split('T')[0];
+        if (!appointmentsByDay.has(dayKey)) {
+          appointmentsByDay.set(dayKey, []);
+        }
+        appointmentsByDay.get(dayKey)!.push(apt);
+      }
+      
+      console.log(`[ServiceTitan Jobs] Appointments by day:`);
+      for (const [day, apts] of appointmentsByDay.entries()) {
+        console.log(`  ${day}: ${apts.length} appointments`);
+      }
+      
       if (appointments.length > 0) {
         console.log(`[ServiceTitan Jobs] Sample appointment:`, JSON.stringify(appointments[0], null, 2));
       }
