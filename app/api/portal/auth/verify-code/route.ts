@@ -5,6 +5,11 @@ import { eq, and } from 'drizzle-orm';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 
+interface SessionData {
+  customerId?: number;
+  availableCustomerIds?: number[];
+}
+
 const sessionOptions = {
   password: process.env.SESSION_SECRET!,
   cookieName: 'customer_portal_session',
@@ -106,7 +111,7 @@ export async function POST(request: NextRequest) {
     
     // Create portal session
     const cookieStore = await cookies();
-    const session = await getIronSession(cookieStore, sessionOptions);
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
     session.customerId = customers[0].id;
     session.availableCustomerIds = verification.customerIds;
     await session.save();

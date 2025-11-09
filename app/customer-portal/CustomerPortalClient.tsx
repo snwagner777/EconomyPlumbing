@@ -708,8 +708,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         setCustomerId(accountId.toString());
         setShowAccountSelection(false);
         
-        // Invalidate and refetch customer data
-        queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer'] });
+        // Invalidate ALL queries to refresh all data for the new account
+        queryClient.invalidateQueries();
       }
     } catch (error: any) {
       console.error('Account switch error:', error);
@@ -728,7 +728,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           return {
             id: data.customer.id,
             name: data.customer.name,
-            type: 'Residential', // We don't have type in the customer data yet
+            type: data.customer.type || 'Residential', // Get actual type from customer data
             address: data.customer.address ? 
               [data.customer.address.street, data.customer.address.city, data.customer.address.state].filter(Boolean).join(', ') : 
               undefined
@@ -1938,7 +1938,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
                               <p className="font-semibold">{account.name}</p>
-                              <Badge variant="secondary" className="text-xs">
+                              <Badge 
+                                variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
+                                className={`text-xs ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                              >
                                 {account.type}
                               </Badge>
                             </div>
@@ -5071,7 +5074,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <p className="font-semibold">{account.name}</p>
-                        <Badge variant="secondary" className="text-xs">
+                        <Badge 
+                          variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
+                          className={`text-xs ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                        >
                           {account.type}
                         </Badge>
                       </div>
