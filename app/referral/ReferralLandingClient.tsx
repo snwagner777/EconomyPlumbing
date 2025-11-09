@@ -82,7 +82,7 @@ export default function ReferralLandingClient({ referralCode, referrerName }: Re
       toast({
         variant: 'destructive',
         title: 'Something went wrong',
-        description: `Please try again or call us at ${phoneConfig.austin.display}.`,
+        description: `Please try again or call us at ${phoneConfig.display}.`,
       });
       setIsSubmitting(false);
     }
@@ -278,8 +278,8 @@ export default function ReferralLandingClient({ referralCode, referrerName }: Re
         <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>
             Questions? Call us at{' '}
-            <a href={phoneConfig.austin.tel} className="text-primary hover:underline" data-testid="link-phone">
-              {phoneConfig.austin.display}
+            <a href={phoneConfig.tel} className="text-primary hover:underline" data-testid="link-phone">
+              {phoneConfig.display}
             </a>
           </p>
         </div>
