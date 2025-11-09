@@ -3392,7 +3392,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                               <div className="grid grid-cols-2 gap-2">
                                 <Button
                                   onClick={() => {
-                                    const message = `Hey! I had a great experience with Economy Plumbing Services. Save $25 on your first service using my referral link: ${referralLinkData.url}\n\nThey're awesome! Call them at (512) 877-8234`;
+                                    const message = `Hey! I had a great experience with Economy Plumbing Services. Save $25 on your first service using my referral link: ${referralLinkData.url}\n\nThey're awesome! Call them at ${phoneConfig.display}`;
                                     window.location.href = `sms:?body=${encodeURIComponent(message)}`;
                                   }}
                                   variant="outline"
@@ -3406,7 +3406,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                 <Button
                                   onClick={() => {
                                     const subject = "Save $25 on Plumbing Services";
-                                    const body = `Hi!\n\nI wanted to share this with you - I recently used Economy Plumbing Services and they were fantastic!\n\nYou can save $25 on your first service using my referral link:\n${referralLinkData.url}\n\nThey're professional, reliable, and their work is top-notch. Give them a call at (512) 877-8234 if you need any plumbing work done.\n\nBest regards`;
+                                    const body = `Hi!\n\nI wanted to share this with you - I recently used Economy Plumbing Services and they were fantastic!\n\nYou can save $25 on your first service using my referral link:\n${referralLinkData.url}\n\nThey're professional, reliable, and their work is top-notch. Give them a call at ${phoneConfig.display} if you need any plumbing work done.\n\nBest regards`;
                                     window.location.href = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                                   }}
                                   variant="outline"

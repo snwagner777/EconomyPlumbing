@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 import { Gift, CheckCircle, Sparkles, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { usePhoneConfig } from '@/contexts/PhoneConfigContext';
 
 const refereeFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -38,6 +39,7 @@ interface ReferralLandingClientProps {
 export default function ReferralLandingClient({ referralCode, referrerName }: ReferralLandingClientProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const phoneConfig = usePhoneConfig();
 
   const form = useForm<RefereeFormData>({
     resolver: zodResolver(refereeFormSchema),
@@ -80,7 +82,7 @@ export default function ReferralLandingClient({ referralCode, referrerName }: Re
       toast({
         variant: 'destructive',
         title: 'Something went wrong',
-        description: 'Please try again or call us at (512) 877-8234.',
+        description: `Please try again or call us at ${phoneConfig.austin.display}.`,
       });
       setIsSubmitting(false);
     }
@@ -276,8 +278,8 @@ export default function ReferralLandingClient({ referralCode, referrerName }: Re
         <div className="mt-8 text-center text-sm text-muted-foreground">
           <p>
             Questions? Call us at{' '}
-            <a href="tel:512-877-8234" className="text-primary hover:underline">
-              (512) 877-8234
+            <a href={phoneConfig.austin.tel} className="text-primary hover:underline" data-testid="link-phone">
+              {phoneConfig.austin.display}
             </a>
           </p>
         </div>
