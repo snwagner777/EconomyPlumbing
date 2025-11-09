@@ -23,11 +23,13 @@ Preferred communication style: Simple, everyday language.
 - Exception: Test data and documentation can use (512) 555-XXXX format ONLY
 
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
-- The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
-- NEVER create separate admin pages (e.g., `/admin/gmb-setup`) without first checking if the functionality already exists in the unified dashboard
-- When adding admin features, ALWAYS integrate them into the existing unified admin panel
+- The Admin Panel uses a modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`)
+- Main dashboard at `/admin` shows DashboardOverviewClient (metrics, stats, system health)
+- Specialized sections have dedicated routes: `/admin/photos`, `/admin/email-marketing`, `/admin/sms`, etc.
+- NEVER create duplicate admin pages without first checking AdminSidebar to see if route already exists
+- When adding new admin features, add route to AdminSidebar menu sections
 - Before implementing any new feature, search the codebase to verify it doesn't already exist
-- Consolidation over separation: One unified interface is better than multiple scattered pages
+- Consolidation over duplication: One implementation per feature, accessible via sidebar navigation
 
 **CRITICAL: Server-Side Rendering (SSR) Best Practices for SEO**
 This project uses Next.js 15 specifically for maximum SEO through server-side rendering. ALL new pages MUST follow these patterns:
@@ -120,7 +122,7 @@ export default function NewServicePage() {
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panels:** Unified admin dashboard for Marketing Automation, ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
+- **Admin Panel:** Modular admin architecture with shared sidebar navigation. Dashboard at `/admin` (DashboardOverviewClient) shows key metrics. Specialized pages accessible via routes: `/admin/photos` (photo management), `/admin/email-marketing` (campaigns), `/admin/sms` (SMS marketing), `/admin/servicetitan` (sync monitoring), `/admin/portal-analytics` (customer portal stats), and more. All pages wrapped in `app/admin/layout.tsx` with AdminSidebar for consistent navigation.
 - **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend

@@ -75,7 +75,7 @@ export default function DashboardOverviewClient() {
   });
 
   // Fetch photo stats - using photos API instead
-  const { data: photoStatsData, isLoading: photoStatsLoading } = useQuery({
+  const { data: photoStatsData, isLoading: photoStatsLoading } = useQuery<{ photos: any[] }>({
     queryKey: ['/api/admin/photos'],
     refetchInterval: 60000,
   });

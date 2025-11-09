@@ -1,16 +1,17 @@
 /**
  * Admin Dashboard - Main Page (Server Component)
  * 
- * Auth-gated entry point that loads the complete unified admin dashboard
+ * Auth-gated entry point that loads the dashboard overview
+ * Uses DashboardOverviewClient as single source of truth for admin metrics
  */
 
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
-import UnifiedAdminDashboard from './unified-admin-dashboard';
+import DashboardOverviewClient from './_components/dashboard-overview-client';
 
 export const metadata: Metadata = {
-  title: 'Unified Admin Panel | Economy Plumbing Services',
+  title: 'Admin Dashboard | Economy Plumbing Services',
   robots: {
     index: false,
     follow: false,
@@ -24,5 +25,5 @@ export default async function AdminDashboardPage() {
     redirect('/admin/login');
   }
 
-  return <UnifiedAdminDashboard />;
+  return <DashboardOverviewClient />;
 }

@@ -69,12 +69,6 @@ const menuSections: MenuSection[] = [
         href: '/admin',
         description: 'Overview & stats',
       },
-      {
-        title: 'Dashboard Overview',
-        icon: TrendingUp,
-        href: '/admin/dashboard',
-        description: 'Key metrics',
-      },
     ],
   },
   {
