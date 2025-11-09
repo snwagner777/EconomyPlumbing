@@ -1,23 +1,25 @@
 /**
- * Smart Scheduler Availability API
+ * Smart Scheduler Availability API V2
  * 
- * Intelligently suggests appointment slots based on:
- * - ServiceTitan Capacity API (actual available time slots)
- * - Customer location (address/zip) for proximity scoring
- * - Existing jobs scheduled for that day
- * - Proximity scoring to minimize driving distance
- * - Zone clustering for fuel efficiency
+ * Uses ServiceTitan's dynamic arrival windows with smart 2-hour appointment booking:
+ * - Requests 7 full days (midnight-to-midnight) to get ALL arrival windows
+ * - Uses API-returned windows dynamically (8-12pm, 9-1pm, 10-2pm, etc.)
+ * - Calculates optimal 2-hour appointment slots within each arrival window
+ * - Scores based on proximity to existing technician jobs for fuel efficiency
+ * - Customer sees 4-hour arrival windows, we book 2-hour appointments internally
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
-import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
 import { db } from '@/server/db';
 import { serviceTitanZones } from '@shared/schema';
 import { sql } from 'drizzle-orm';
-import { format, addDays } from 'date-fns';
-import { toZonedTime, fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+import { format, addDays, addHours } from 'date-fns';
+import { fromZonedTime, formatInTimeZone } from 'date-fns-tz';
+
+const TIMEZONE = 'America/Chicago';
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 
 interface SmartAvailabilityRequest {
   jobTypeId: number;
@@ -25,42 +27,42 @@ interface SmartAvailabilityRequest {
   customerZip?: string;
   customerAddress?: string;
   startDate: string;
-  endDate?: string;
+  daysToLoad?: number; // Support pagination (7, 14, 21, etc.)
 }
 
 interface ScoredSlot {
   id: string;
   start: string; // 2-hour appointment booking time start
   end: string; // 2-hour appointment booking time end
-  arrivalWindowStart: string; // 4-hour customer promise window start
-  arrivalWindowEnd: string; // 4-hour customer promise window end
+  arrivalWindowStart: string; // Customer-facing arrival window start
+  arrivalWindowEnd: string; // Customer-facing arrival window end
   date: string;
   timeLabel: string;
   period: 'morning' | 'afternoon' | 'evening';
   proximityScore: number; // 0-100, higher = more fuel efficient
   nearbyJobs: number; // Count of jobs in same zone during this window
-  zone?: string; // ZIP prefix or area code
+  zone?: string;
   technicianId?: number | null; // Pre-assigned technician for optimal routing
-  availableCapacity?: number; // From ServiceTitan Capacity API
-  totalCapacity?: number; // From ServiceTitan Capacity API
+  availableCapacity?: number;
+  totalCapacity?: number;
 }
 
-interface Appointment {
-  id: number;
+interface CapacityWindow {
   start: string;
   end: string;
-  arrivalWindowStart: string;
-  arrivalWindowEnd: string;
+  isAvailable: boolean;
+  availableCapacity: number;
+  totalCapacity: number;
+  technicianIds?: number[];
 }
 
-// Business hours: 8 AM - 5 PM, Monday - Friday
-const BUSINESS_START_HOUR = 8;
-const BUSINESS_END_HOUR = 17;
+// Simple in-memory cache
+const availabilityCache = new Map<string, { data: any; timestamp: number }>();
 
 export async function POST(req: NextRequest) {
   try {
     const body: SmartAvailabilityRequest = await req.json();
-    const { jobTypeId, businessUnitId, customerZip, customerAddress, startDate, endDate } = body;
+    const { jobTypeId, businessUnitId, customerZip, customerAddress, startDate, daysToLoad = 7 } = body;
     
     if (!jobTypeId || !startDate) {
       return NextResponse.json(
