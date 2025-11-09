@@ -392,7 +392,21 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     return isPast || isCompleted;
   });
 
-  // Check for magic link token OR server session on page load
+  // Clear session on page load/refresh
+  useEffect(() => {
+    const clearSession = async () => {
+      try {
+        await fetch('/api/portal/logout', { method: 'POST' });
+        console.log('[Portal] Session cleared on page load');
+      } catch (error) {
+        console.error('[Portal] Error clearing session:', error);
+      }
+    };
+    
+    clearSession();
+  }, []);
+
+  // Check for magic link token on page load
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -400,28 +414,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     if (token) {
       // Auto-verify email magic link
       handleMagicLinkVerification(token);
-    } else {
-      // Check if server has an active session
-      checkExistingSession();
     }
   }, []);
   
-  const checkExistingSession = async () => {
-    try {
-      const response = await fetch('/api/portal/session');
-      if (response.ok) {
-        const data = await response.json();
-        if (data.customerId) {
-          console.log('[Portal] Found active session, auto-logging in...');
-          setCustomerId(data.customerId.toString());
-          setAvailableCustomerIds(data.availableCustomerIds || [data.customerId]);
-          setVerificationStep('authenticated');
-        }
-      }
-    } catch (error) {
-      console.log('[Portal] No active session found');
-    }
-  };
 
   const handleMagicLinkVerification = async (token: string) => {
     setIsVerifying(true);
