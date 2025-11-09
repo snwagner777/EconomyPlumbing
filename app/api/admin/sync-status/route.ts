@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { db } from '@/server/db';
-import { customersXlsx, contactsXlsx } from '@shared/schema';
+import { customersXlsx, contactsXlsx, serviceTitanJobs } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
@@ -16,23 +16,41 @@ export async function GET(req: NextRequest) {
 
     const { isSyncRunning } = await import('@/server/lib/serviceTitanSync');
 
-    // Get customer and contact counts
-    const [customerCount, contactCount] = await Promise.all([
+    // Get customer, contact, and job counts
+    const [customerCount, contactCount, jobCount] = await Promise.all([
       db.select({ count: sql<number>`count(*)` }).from(customersXlsx),
-      db.select({ count: sql<number>`count(*)` }).from(contactsXlsx)
+      db.select({ count: sql<number>`count(*)` }).from(contactsXlsx),
+      db.select({ count: sql<number>`count(*)` }).from(serviceTitanJobs)
     ]);
 
-    // Get most recent sync timestamp
-    const recentCustomer = await db.select({ lastSynced: customersXlsx.lastSyncedAt })
-      .from(customersXlsx)
-      .orderBy(sql`${customersXlsx.lastSyncedAt} DESC`)
-      .limit(1);
+    // Get most recent sync timestamps
+    const [recentCustomer, recentJob] = await Promise.all([
+      db.select({ lastSynced: customersXlsx.lastSyncedAt })
+        .from(customersXlsx)
+        .orderBy(sql`${customersXlsx.lastSyncedAt} DESC`)
+        .limit(1),
+      db.select({ lastSynced: serviceTitanJobs.lastSyncedAt })
+        .from(serviceTitanJobs)
+        .orderBy(sql`${serviceTitanJobs.lastSyncedAt} DESC`)
+        .limit(1)
+    ]);
+
+    // Check OAuth connection (all required env vars present)
+    const oauthConnected = !!(
+      process.env.SERVICETITAN_CLIENT_ID &&
+      process.env.SERVICETITAN_CLIENT_SECRET &&
+      process.env.SERVICETITAN_TENANT_ID &&
+      process.env.SERVICETITAN_APP_KEY
+    );
 
     return NextResponse.json({
       totalCustomers: Number(customerCount[0]?.count || 0),
       totalContacts: Number(contactCount[0]?.count || 0),
-      lastSyncedAt: recentCustomer[0]?.lastSynced || null,
+      totalJobs: Number(jobCount[0]?.count || 0),
+      lastSyncTime: recentCustomer[0]?.lastSynced || null,
+      lastJobSync: recentJob[0]?.lastSynced || null,
       isRunning: isSyncRunning(),
+      oauthConnected,
     });
   } catch (error: any) {
     console.error("[Admin] Sync status error:", error);
