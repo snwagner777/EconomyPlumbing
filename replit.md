@@ -6,6 +6,17 @@ Economy Plumbing Services is a full-stack web application designed to enhance a 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**CRITICAL RULE: NEVER Auto-Generate or Hardcode Phone Numbers**
+- **If you need a phone number, ASK the user for it**
+- Never use placeholder phone numbers in production code
+- Never hardcode phone numbers (e.g., (512) 877-8234, (512) 368-9159, etc.)
+- Fallback/default phones in server code MUST be real business numbers provided by user
+- All phone numbers displayed to users must come from:
+  1. Database tracking_numbers table (preferred - allows dynamic tracking)
+  2. Environment variables set by user
+  3. User input via admin panel
+- Exception: Test data and documentation can use (512) 555-XXXX format ONLY
+
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
 - The Unified Admin Dashboard (`/admin`) is the single source of truth for all admin functionality
 - NEVER create separate admin pages (e.g., `/admin/gmb-setup`) without first checking if the functionality already exists in the unified dashboard
