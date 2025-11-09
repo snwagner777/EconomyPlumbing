@@ -4,9 +4,9 @@ import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Mail, FileText, TrendingUp } from 'lucide-react';
-import ReviewRequestsSection from './review-requests-section';
-import EmailTemplatesSection from './email-templates-section';
-import CampaignAnalyticsSection from './campaign-analytics-section';
+import { ReviewRequestsSection } from './review-requests-section';
+import { EmailTemplatesSection } from './email-templates-section';
+import { CampaignAnalyticsSection } from './campaign-analytics-section';
 
 export default function EmailMarketingClient() {
   const [activeTab, setActiveTab] = useState('campaigns');
