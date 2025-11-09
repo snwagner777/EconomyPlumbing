@@ -34,87 +34,174 @@ import {
   Bot,
   Database,
   LogOut,
+  MessageSquare,
+  Send,
+  UserPlus,
+  DollarSign,
+  MessageCircle,
+  FileEdit,
+  Package,
+  BarChart3,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const menuItems = [
+interface MenuItem {
+  title: string;
+  icon: any;
+  href: string;
+  description: string;
+}
+
+interface MenuSection {
+  label: string;
+  items: MenuItem[];
+}
+
+const menuSections: MenuSection[] = [
   {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
-    href: '/admin',
-    description: 'Overview & stats',
+    label: 'Overview',
+    items: [
+      {
+        title: 'Dashboard',
+        icon: LayoutDashboard,
+        href: '/admin',
+        description: 'Overview & stats',
+      },
+    ],
   },
   {
-    title: 'Customers',
-    icon: Users,
-    href: '/admin/customers',
-    description: 'Customer data',
+    label: 'Communications',
+    items: [
+      {
+        title: 'SMS',
+        icon: MessageSquare,
+        href: '/admin/sms',
+        description: '2-way messaging',
+      },
+      {
+        title: 'Email Campaigns',
+        icon: Mail,
+        href: '/admin/email',
+        description: 'Email automation',
+      },
+      {
+        title: 'Review Requests',
+        icon: Star,
+        href: '/admin/review-requests',
+        description: 'Email/SMS sequences',
+      },
+      {
+        title: 'Referrals',
+        icon: UserPlus,
+        href: '/admin/referrals',
+        description: 'Nurture campaigns',
+      },
+      {
+        title: 'Quote Follow-up',
+        icon: DollarSign,
+        href: '/admin/quote-followup',
+        description: 'Quote conversion',
+      },
+    ],
   },
   {
-    title: 'Marketing',
-    icon: Mail,
-    href: '/admin/marketing',
-    description: 'Email campaigns',
+    label: 'Content',
+    items: [
+      {
+        title: 'Photos',
+        icon: ImageIcon,
+        href: '/admin/photos',
+        description: 'Photo management',
+      },
+      {
+        title: 'Blog',
+        icon: FileText,
+        href: '/admin/blog',
+        description: 'Blog CMS',
+      },
+      {
+        title: 'Success Stories',
+        icon: Trophy,
+        href: '/admin/success-stories',
+        description: 'Testimonials',
+      },
+      {
+        title: 'Reviews Moderation',
+        icon: MessageCircle,
+        href: '/admin/reviews-moderation',
+        description: 'Approve reviews',
+      },
+    ],
   },
   {
-    title: 'Reputation',
-    icon: Star,
-    href: '/admin/reputation',
-    description: 'Review requests',
+    label: 'Customers',
+    items: [
+      {
+        title: 'Customers',
+        icon: Users,
+        href: '/admin/customers',
+        description: 'Customer data',
+      },
+      {
+        title: 'Contacts',
+        icon: Mail,
+        href: '/admin/contacts',
+        description: 'Form submissions',
+      },
+      {
+        title: 'Commercial',
+        icon: Building2,
+        href: '/admin/commercial',
+        description: 'Business clients',
+      },
+      {
+        title: 'Customer Data',
+        icon: Database,
+        href: '/admin/customer-data',
+        description: 'Import history',
+      },
+    ],
   },
   {
-    title: 'Blog',
-    icon: FileText,
-    href: '/admin/blog',
-    description: 'Blog CMS',
-  },
-  {
-    title: 'Contacts',
-    icon: Mail,
-    href: '/admin/contacts',
-    description: 'Form submissions',
-  },
-  {
-    title: 'Photos',
-    icon: ImageIcon,
-    href: '/admin/photos',
-    description: 'Photo management',
-  },
-  {
-    title: 'Success Stories',
-    icon: Trophy,
-    href: '/admin/success-stories',
-    description: 'Testimonials',
-  },
-  {
-    title: 'Commercial',
-    icon: Building2,
-    href: '/admin/commercial',
-    description: 'Commercial customers',
-  },
-  {
-    title: 'Tracking',
-    icon: Phone,
-    href: '/admin/tracking',
-    description: 'Phone numbers',
-  },
-  {
-    title: 'ServiceTitan',
-    icon: Database,
-    href: '/admin/servicetitan',
-    description: 'Sync monitoring',
-  },
-  {
-    title: 'AI Chatbot',
-    icon: Bot,
-    href: '/admin/chatbot',
-    description: 'Conversations',
-  },
-  {
-    title: 'Settings',
-    icon: Settings,
-    href: '/admin/settings',
-    description: 'Site configuration',
+    label: 'Site Configuration',
+    items: [
+      {
+        title: 'Tracking Numbers',
+        icon: Phone,
+        href: '/admin/tracking-numbers',
+        description: 'Campaign phones',
+      },
+      {
+        title: 'Page Metadata',
+        icon: FileEdit,
+        href: '/admin/page-metadata',
+        description: 'SEO settings',
+      },
+      {
+        title: 'Products',
+        icon: Package,
+        href: '/admin/products',
+        description: 'SKUs & pricing',
+      },
+      {
+        title: 'ServiceTitan',
+        icon: BarChart3,
+        href: '/admin/servicetitan',
+        description: 'Sync monitoring',
+      },
+      {
+        title: 'AI Chatbot',
+        icon: Bot,
+        href: '/admin/chatbot',
+        description: 'Conversations',
+      },
+      {
+        title: 'Settings',
+        icon: Settings,
+        href: '/admin/settings',
+        description: 'Site config',
+      },
+    ],
   },
 ];
 
@@ -138,36 +225,34 @@ export function AdminSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Management</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => {
-                const isActive = pathname === item.href || 
-                  (item.href !== '/admin' && pathname.startsWith(item.href));
-                
-                return (
-                  <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive}>
-                      <Link 
-                        href={item.href}
-                        data-testid={`link-admin-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <div className="flex flex-col items-start">
-                          <span className="text-sm font-medium">{item.title}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {item.description}
-                          </span>
-                        </div>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {menuSections.map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel>{section.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const isActive = pathname === item.href || 
+                    (item.href !== '/admin' && pathname.startsWith(item.href));
+                  
+                  return (
+                    <SidebarMenuItem key={item.href}>
+                      <SidebarMenuButton asChild isActive={isActive}>
+                        <Link 
+                          href={item.href}
+                          data-testid={`link-admin-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                          aria-current={isActive ? 'page' : undefined}
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="text-sm">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
