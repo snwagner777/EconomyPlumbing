@@ -320,29 +320,35 @@ export async function POST(req: NextRequest) {
         return distance <= 1; // Same zone or adjacent
       }).length;
 
-      // Get arrival window for customer display
-      // Backflow: 8am-8pm all-day window
-      // Regular: 4-hour windows (8-12, 12-4, 4-8)
-      const arrivalWindow = get4HourArrivalWindow(slot.start, slot.end, isBackflowJob);
+      // ServiceTitan Capacity API returns arrival windows (4-hour blocks)
+      // The returned start/end are what ServiceTitan says is actually available
+      // We use these as BOTH the appointment slot AND arrival window since ST manages capacity by arrival windows
+      const slotStart = new Date(slot.start);
+      const slotEnd = new Date(slot.end);
       
-      // CRITICAL FIX: ServiceTitan Capacity API returns the FULL arrival window (e.g., 8am-12pm),
-      // NOT the specific 2-hour block we requested (e.g., 8-10am).
-      // We must use our requested block times for the appointment slot, not what ST returns.
-      const dayStr = slot.dayStr;
-      const blockStartHour = slot.blockStart;
-      const blockEndHour = slot.blockEnd;
-      const requestedBlockStart = fromZonedTime(`${dayStr}T${String(blockStartHour).padStart(2, '0')}:00:00`, TIMEZONE);
-      const requestedBlockEnd = fromZonedTime(`${dayStr}T${String(blockEndHour).padStart(2, '0')}:00:00`, TIMEZONE);
+      // Format the label from the actual available slot times
+      const startLabel = slotStart.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: TIMEZONE,
+      });
+      const endLabel = slotEnd.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: TIMEZONE,
+      });
       
       return {
         id: `slot-${index}`,
-        start: requestedBlockStart.toISOString(), // Use OUR requested 2-hour block start
-        end: requestedBlockEnd.toISOString(), // Use OUR requested 2-hour block end
-        arrivalWindowStart: arrivalWindow.windowStart, // Customer promise window start (4-hour)
-        arrivalWindowEnd: arrivalWindow.windowEnd, // Customer promise window end (4-hour)
-        date: requestedBlockStart.toISOString().split('T')[0],
-        timeLabel: arrivalWindow.windowLabel, // Arrival window label for customer display
-        period: getTimePeriod(requestedBlockStart.toISOString()),
+        start: slot.start, // Use ServiceTitan's returned available slot (source of truth)
+        end: slot.end, // Use ServiceTitan's returned available slot (source of truth)
+        arrivalWindowStart: slot.start, // Same as appointment (ST manages by arrival windows)
+        arrivalWindowEnd: slot.end, // Same as appointment (ST manages by arrival windows)
+        date: slot.start.split('T')[0],
+        timeLabel: `${startLabel} - ${endLabel}`, // Show actual available window
+        period: getTimePeriod(slot.start),
         proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
         zone: serviceLocationZone || undefined,
