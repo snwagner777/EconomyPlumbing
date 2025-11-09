@@ -28,10 +28,13 @@ interface TimeSlot {
   id: string;
   start: string;
   end: string;
+  arrivalWindowStart: string; // 4-hour customer promise window start (REQUIRED)
+  arrivalWindowEnd: string; // 4-hour customer promise window end (REQUIRED)
   timeLabel: string;
   period: 'morning' | 'afternoon' | 'evening';
   proximityScore?: number;
   nearbyJobs?: number;
+  technicianId?: number | null; // Pre-assigned technician for optimal routing
 }
 
 interface CustomerInfo {

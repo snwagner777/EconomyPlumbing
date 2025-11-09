@@ -43,8 +43,8 @@ interface TimeSlot {
   id: string;
   start: string; // 2-hour appointment slot start
   end: string; // 2-hour appointment slot end
-  arrivalWindowStart?: string; // 4-hour customer promise window start (optional for backwards compatibility)
-  arrivalWindowEnd?: string; // 4-hour customer promise window end (optional for backwards compatibility)
+  arrivalWindowStart: string; // 4-hour customer promise window start (REQUIRED)
+  arrivalWindowEnd: string; // 4-hour customer promise window end (REQUIRED)
   timeLabel: string;
   proximityScore?: number;
   nearbyJobs?: number;
@@ -83,8 +83,8 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
         requestedService: jobType.name,
         preferredDate: new Date(timeSlot.start),
         // Arrival window = 4-hour customer promise (e.g., 8am-12pm)
-        arrivalWindowStart: timeSlot.arrivalWindowStart || timeSlot.start,
-        arrivalWindowEnd: timeSlot.arrivalWindowEnd || timeSlot.end,
+        arrivalWindowStart: timeSlot.arrivalWindowStart,
+        arrivalWindowEnd: timeSlot.arrivalWindowEnd,
         // Appointment slot = actual 2-hour booking (e.g., 10am-12pm within 8am-12pm window)
         appointmentStart: timeSlot.start,
         appointmentEnd: timeSlot.end,
