@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema } from '@shared/schema';
+import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema, pendingReferrals, referrals, referralCodes } from '@shared/schema';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
@@ -253,6 +253,102 @@ export async function POST(req: NextRequest) {
         .where(eq(schedulerRequests.id, schedulerRequest.id));
 
       console.log(`[Scheduler] Successfully booked job ${job.jobNumber}`);
+
+      // Track referral conversion if referralToken was provided
+      if (body.referralToken) {
+        try {
+          const [pendingReferral] = await db
+            .select()
+            .from(pendingReferrals)
+            .where(eq(pendingReferrals.trackingCookie, body.referralToken))
+            .limit(1);
+
+          if (pendingReferral && !pendingReferral.convertedAt) {
+            // Look up referrer's phone from referralCodes table
+            const [referrerCode] = await db
+              .select()
+              .from(referralCodes)
+              .where(eq(referralCodes.customerId, pendingReferral.referrerCustomerId))
+              .limit(1);
+
+            if (!referrerCode?.customerPhone) {
+              console.warn(`[Scheduler] Skipping referral conversion for ${pendingReferral.id}: referrer phone not found for customer ${pendingReferral.referrerCustomerId}`);
+              // Skip referral tracking but continue with normal booking flow
+            } else {
+
+            // Use verified phone from scheduler (just collected from customer)
+            // This is more reliable than the landing page phone which might be missing
+            const refereePhone = validated.customerPhone;
+
+            // Check if referral already exists (prevent duplicates)
+            let referral;
+            if (pendingReferral.referralId) {
+              // Already linked to a referral - update it
+              const [existing] = await db
+                .select()
+                .from(referrals)
+                .where(eq(referrals.id, pendingReferral.referralId))
+                .limit(1);
+              
+              if (existing) {
+                console.log(`[Scheduler] Updating existing referral ${existing.id}`);
+                [referral] = await db
+                  .update(referrals)
+                  .set({
+                    refereePhone, // Update with verified phone
+                    refereeCustomerId: customerId,
+                    status: 'contacted',
+                    firstJobId: job.id.toString(),
+                    firstJobDate: new Date(),
+                  })
+                  .where(eq(referrals.id, existing.id))
+                  .returning();
+              } else {
+                console.warn(`[Scheduler] Referral ID ${pendingReferral.referralId} not found, creating new one`);
+              }
+            }
+            
+            // Create new referral if none exists
+            if (!referral) {
+              [referral] = await db
+                .insert(referrals)
+                .values({
+                  referrerName: pendingReferral.referrerName,
+                  referrerPhone: referrerCode.customerPhone,
+                  referrerCustomerId: pendingReferral.referrerCustomerId,
+                  refereeName: pendingReferral.refereeName,
+                  refereePhone, // Use verified phone from scheduler
+                  refereeEmail: pendingReferral.refereeEmail || validated.customerEmail || undefined,
+                  refereeCustomerId: customerId,
+                  status: 'contacted',
+                  firstJobId: job.id.toString(),
+                  firstJobDate: new Date(),
+                })
+                .returning();
+            }
+
+            // Update pending referral to mark as converted and link to referral
+            await db
+              .update(pendingReferrals)
+              .set({
+                convertedAt: new Date(),
+                convertedToReferral: true,
+                referralId: referral.id,
+              })
+              .where(eq(pendingReferrals.id, pendingReferral.id));
+
+            console.log(`[Scheduler] Converted pending referral ${pendingReferral.id} to referral ${referral.id} for customer ${customerId}`);
+            }
+          } else if (pendingReferral) {
+            console.log(`[Scheduler] Referral ${pendingReferral.id} already converted`);
+          } else {
+            console.log(`[Scheduler] No pending referral found for token ${body.referralToken}`);
+          }
+        } catch (error: any) {
+          console.error('[Scheduler] Error tracking referral conversion:', error);
+          // Don't fail the booking if referral tracking fails
+        }
+      }
 
       return NextResponse.json({
         success: true,
