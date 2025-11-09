@@ -41,8 +41,10 @@ interface CustomerInfo {
 
 interface TimeSlot {
   id: string;
-  start: string;
-  end: string;
+  start: string; // 2-hour appointment slot start
+  end: string; // 2-hour appointment slot end
+  arrivalWindowStart?: string; // 4-hour customer promise window start (optional for backwards compatibility)
+  arrivalWindowEnd?: string; // 4-hour customer promise window end (optional for backwards compatibility)
   timeLabel: string;
   proximityScore?: number;
   nearbyJobs?: number;
@@ -80,8 +82,12 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
         zipCode: customer.zip,
         requestedService: jobType.name,
         preferredDate: new Date(timeSlot.start),
-        arrivalWindowStart: timeSlot.start,
-        arrivalWindowEnd: timeSlot.end,
+        // Arrival window = 4-hour customer promise (e.g., 8am-12pm)
+        arrivalWindowStart: timeSlot.arrivalWindowStart || timeSlot.start,
+        arrivalWindowEnd: timeSlot.arrivalWindowEnd || timeSlot.end,
+        // Appointment slot = actual 2-hour booking (e.g., 10am-12pm within 8am-12pm window)
+        appointmentStart: timeSlot.start,
+        appointmentEnd: timeSlot.end,
         specialInstructions: specialInstructions || undefined,
         problemDescription: problemDescription || undefined, // Customer's description of the issue
         bookingSource: 'scheduler_wizard',

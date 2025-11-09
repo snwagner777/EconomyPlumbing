@@ -30,8 +30,10 @@ interface SmartAvailabilityRequest {
 
 interface ScoredSlot {
   id: string;
-  start: string;
-  end: string;
+  start: string; // 2-hour appointment booking time start
+  end: string; // 2-hour appointment booking time end
+  arrivalWindowStart: string; // 4-hour customer promise window start
+  arrivalWindowEnd: string; // 4-hour customer promise window end
   date: string;
   timeLabel: string;
   period: 'morning' | 'afternoon' | 'evening';
@@ -80,6 +82,13 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] Fetching availability from ${formatInTimeZone(start, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')} to ${formatInTimeZone(end, TIMEZONE, 'yyyy-MM-dd HH:mm zzz')}`);
     
+    // Get job type details to check if it's backflow testing
+    const jobTypes = await serviceTitanSettings.getJobTypes();
+    const jobType = jobTypes.find(jt => jt.id === jobTypeId);
+    const isBackflowJob = jobType?.name?.toLowerCase().includes('backflow') || false;
+    
+    console.log(`[Smart Scheduler] Job Type: ${jobType?.name} (ID: ${jobTypeId}), Is Backflow: ${isBackflowJob}`);
+    
     // Get business unit (use provided or default to plumbing)
     let actualBusinessUnitId = businessUnitId;
     if (!actualBusinessUnitId) {
@@ -98,20 +107,26 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // NEW STRATEGY: Check 2-hour blocks individually to ensure accurate availability
-    // We check: 8-10am, 10-12pm, 12-2pm, 2-4pm, 4-6pm for each day
-    // Then group into 4-hour arrival windows (8-12, 12-4, 4-8) for customer display
+    // BACKFLOW JOBS: Different arrival window strategy
+    // - Backflow testing shows ONLY 8am-8pm arrival window (single all-day slot)
+    // - Regular jobs use 4-hour windows (8-12, 12-4, 4-8) with 2-hour bookings inside
     
-    // Define 2-hour blocks to check (Central Time hours)
-    const twoHourBlocks = [
-      { start: 8, end: 10, label: '8-10am' },
-      { start: 10, end: 12, label: '10am-12pm' },
-      { start: 12, end: 14, label: '12-2pm' },
-      { start: 14, end: 16, label: '2-4pm' },
-      { start: 16, end: 18, label: '4-6pm' },
-    ];
+    // Define blocks to check based on job type
+    const twoHourBlocks = isBackflowJob
+      ? [
+          // Backflow: Check full 12-hour window as a single slot
+          { start: 8, end: 20, label: '8am-8pm (Backflow All-Day)' },
+        ]
+      : [
+          // Regular services: Check 2-hour blocks for standard 4-hour windows
+          { start: 8, end: 10, label: '8-10am' },
+          { start: 10, end: 12, label: '10am-12pm' },
+          { start: 12, end: 14, label: '12-2pm' },
+          { start: 14, end: 16, label: '2-4pm' },
+          { start: 16, end: 18, label: '4-6pm' },
+        ];
     
-    console.log(`[Smart Scheduler] Checking availability for ${twoHourBlocks.length} 2-hour blocks per day`);
+    console.log(`[Smart Scheduler] ${isBackflowJob ? 'Backflow mode - checking all-day availability' : `Checking ${twoHourBlocks.length} 2-hour blocks per day`}`);
     
     // Collect all available 2-hour slots across all days
     const allAvailable2HourSlots: any[] = [];
@@ -300,15 +315,19 @@ export async function POST(req: NextRequest) {
         return distance <= 1; // Same zone or adjacent
       }).length;
 
-      // Get 4-hour arrival window for customer display
-      const arrivalWindow = get4HourArrivalWindow(slot.start, slot.end);
+      // Get arrival window for customer display
+      // Backflow: 8am-8pm all-day window
+      // Regular: 4-hour windows (8-12, 12-4, 4-8)
+      const arrivalWindow = get4HourArrivalWindow(slot.start, slot.end, isBackflowJob);
       
       return {
         id: `slot-${index}`,
-        start: slot.start, // Actual 2-hour booking time (internal use only)
-        end: slot.end, // Actual 2-hour booking time (internal use only)
+        start: slot.start, // Actual appointment booking time
+        end: slot.end, // Actual appointment booking time
+        arrivalWindowStart: arrivalWindow.windowStart, // Customer promise window start
+        arrivalWindowEnd: arrivalWindow.windowEnd, // Customer promise window end
         date: slot.start.split('T')[0],
-        timeLabel: arrivalWindow.windowLabel, // 4-hour arrival window for customer display
+        timeLabel: arrivalWindow.windowLabel, // Arrival window label for customer display
         period: getTimePeriod(slot.start),
         proximityScore: proximityResult.score,
         nearbyJobs: nearbyJobCount,
@@ -523,27 +542,39 @@ function calculateProximityScoreV2(
 }
 
 /**
- * Map a 2-hour slot to its corresponding 4-hour arrival window
- * Customer sees 4-hour window, but we book the specific 2-hour slot
+ * Map a 2-hour slot to its corresponding arrival window
  * 
- * Mappings:
+ * REGULAR SERVICES (4-hour windows):
  * - 8-10am or 10-12pm → 8am-12pm arrival window
  * - 12-2pm or 2-4pm → 12pm-4pm arrival window
  * - 4-6pm → 4pm-8pm arrival window
+ * 
+ * BACKFLOW TESTING (12-hour window):
+ * - 8am-8pm → 8am-8pm arrival window (all-day)
  */
-function get4HourArrivalWindow(twoHourStart: string, twoHourEnd: string): { windowStart: string; windowEnd: string; windowLabel: string } {
+function get4HourArrivalWindow(twoHourStart: string, twoHourEnd: string, isBackflow: boolean = false): { windowStart: string; windowEnd: string; windowLabel: string } {
   const start = new Date(twoHourStart);
+  const end = new Date(twoHourEnd);
   const startHour = parseInt(start.toLocaleTimeString('en-US', {
     hour: 'numeric',
     hour12: false,
     timeZone: 'America/Chicago',
   }));
   
-  // Map 2-hour block to 4-hour arrival window
+  const endHour = parseInt(end.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    hour12: false,
+    timeZone: 'America/Chicago',
+  }));
+  
   let windowStartHour: number;
   let windowEndHour: number;
   
-  if (startHour >= 8 && startHour < 12) {
+  // BACKFLOW: Return the full 12-hour window as-is
+  if (isBackflow && startHour === 8 && endHour === 20) {
+    windowStartHour = 8;
+    windowEndHour = 20;
+  } else if (startHour >= 8 && startHour < 12) {
     // 8-10am or 10-12pm → 8am-12pm window
     windowStartHour = 8;
     windowEndHour = 12;
@@ -563,8 +594,10 @@ function get4HourArrivalWindow(twoHourStart: string, twoHourEnd: string): { wind
   const windowEnd = fromZonedTime(`${dayStr}T${String(windowEndHour).padStart(2, '0')}:00:00`, 'America/Chicago');
   
   // Format label
-  const startLabel = windowStartHour <= 12 
+  const startLabel = windowStartHour < 12 
     ? `${windowStartHour}:00 AM`
+    : windowStartHour === 12
+    ? `12:00 PM`
     : `${windowStartHour - 12}:00 PM`;
   const endLabel = windowEndHour <= 12
     ? `${windowEndHour}:00 PM` // Noon is PM
