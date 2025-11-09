@@ -299,6 +299,13 @@ export class ServiceTitanSettings {
 
       console.log(`[ServiceTitan Capacity] Found ${slots.length} slots, ${slots.filter(s => s.isAvailable).length} available`);
       console.log(`[ServiceTitan Capacity] Breakdown: ${slots.filter(s => s.availableCapacity && s.availableCapacity > 0).length} with capacity, ${slots.filter(s => !s.availableCapacity || s.availableCapacity === 0).length} at zero capacity`);
+      
+      // DEBUG: Log first available slot details
+      const firstAvailable = slots.find(s => s.isAvailable);
+      if (firstAvailable) {
+        console.log(`[ServiceTitan Capacity] DEBUG First available slot: ${firstAvailable.start} to ${firstAvailable.end}`);
+      }
+      
       return slots;
     } catch (error) {
       console.error('[ServiceTitan Capacity] Error checking capacity:', error);
