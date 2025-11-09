@@ -87,7 +87,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 
-type AdminSection = 'dashboard' | 'photos' | 'page-metadata' | 'tracking-numbers' | 'products' | 'referrals' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
+type AdminSection = 'dashboard' | 'photos' | 'tracking-numbers' | 'products' | 'referrals' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
 
 interface EmailTemplate {
   id: string;
@@ -261,12 +261,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Package,
       section: 'products' as AdminSection,
       description: "SKUs & ServiceTitan setup"
-    },
-    {
-      title: "Page Metadata",
-      icon: FileEdit,
-      section: 'page-metadata' as AdminSection,
-      description: "SEO titles & descriptions"
     },
     {
       title: "Tracking Numbers",
@@ -1126,383 +1120,6 @@ function PhotoManagement() {
 }
 
 
-function PageMetadataSection() {
-  const [editingMetadata, setEditingMetadata] = useState<PageMetadata | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isAddingNew, setIsAddingNew] = useState(false);
-  const { toast } = useToast();
-
-  const [formData, setFormData] = useState({
-    path: "",
-    title: "",
-    description: "",
-  });
-
-  const { data: metadataResponse, isLoading, error } = useQuery<{ metadata: PageMetadata[] }>({
-    queryKey: ['/api/admin/page-metadata'],
-    retry: false, // Don't retry on error
-  });
-  
-  const customMetadata = metadataResponse?.metadata || [];
-
-  // Show error state if query fails
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <p className="text-destructive">Error loading page metadata</p>
-        <p className="text-sm text-muted-foreground">{(error as any)?.message || 'Unknown error'}</p>
-      </div>
-    );
-  }
-
-  const upsertMutation = useMutation({
-    mutationFn: async (data: typeof formData) => {
-      return await apiRequest("POST", "/api/admin/page-metadata", data);
-    },
-    onSuccess: () => {
-      toast({
-        title: isAddingNew ? "Metadata Added" : "Metadata Updated",
-        description: `Page metadata has been ${isAddingNew ? 'added' : 'updated'} successfully.`,
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/page-metadata'] });
-      handleCloseDialog();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Save Failed",
-        description: error.message || "An error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      return await apiRequest("DELETE", `/api/admin/page-metadata/${id}`);
-    },
-    onSuccess: () => {
-      toast({
-        title: "Metadata Deleted",
-        description: "Page metadata has been deleted successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/page-metadata'] });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Delete Failed",
-        description: error.message || "An error occurred",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleAddNew = (path: string) => {
-    setIsAddingNew(true);
-    setEditingMetadata(null);
-    setFormData({
-      path,
-      title: "",
-      description: "",
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleEdit = (metadata: PageMetadata) => {
-    setIsAddingNew(false);
-    setEditingMetadata(metadata);
-    setFormData({
-      path: metadata.path,
-      title: metadata.title || "",
-      description: metadata.description || "",
-    });
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this page metadata? The page will use default metadata.")) {
-      deleteMutation.mutate(id);
-    }
-  };
-
-  const handleCloseDialog = () => {
-    setIsDialogOpen(false);
-    setEditingMetadata(null);
-    setIsAddingNew(false);
-    setFormData({
-      path: "",
-      title: "",
-      description: "",
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!formData.path.trim()) {
-      toast({
-        title: "Validation Error",
-        description: "Page path is required",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (formData.description && formData.description.length > 0) {
-      if (formData.description.length < 120) {
-        toast({
-          title: "Validation Error",
-          description: "Meta description must be at least 120 characters for optimal SEO",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      if (formData.description.length > 160) {
-        toast({
-          title: "Validation Error",
-          description: "Meta description must not exceed 160 characters to avoid truncation in search results",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
-    upsertMutation.mutate(formData);
-  };
-
-  // Merge all pages with custom metadata
-  const allPagesWithMetadata = ALL_PAGES.map(page => {
-    const custom = customMetadata?.find(m => m.path === page.path);
-    return {
-      ...page,
-      customMetadata: custom,
-      hasCustom: !!custom
-    };
-  });
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center py-12"><p className="text-muted-foreground">Loading page metadata...</p></div>;
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold">Manage SEO Metadata</h2>
-        <p className="text-muted-foreground mt-1">
-          Control page titles and meta descriptions for all {ALL_PAGES.length} pages. Pages with custom metadata show their overrides.
-        </p>
-      </div>
-
-      {/* Metadata Table */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b bg-muted/30">
-                <tr>
-                  <th className="text-left p-3 font-medium text-sm">Page</th>
-                  <th className="text-left p-3 font-medium text-sm">Custom Title</th>
-                  <th className="text-left p-3 font-medium text-sm">Custom Description</th>
-                  <th className="text-center p-3 font-medium text-sm">Status</th>
-                  <th className="text-right p-3 font-medium text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allPagesWithMetadata.map((page) => (
-                  <tr key={page.path} className="border-b last:border-b-0 hover-elevate">
-                    <td className="p-3">
-                      <div>
-                        <div className="font-medium">{page.title}</div>
-                        <div className="text-xs text-muted-foreground font-mono">
-                          {page.path}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3">
-                      {page.customMetadata?.title ? (
-                        <div className="text-sm">{page.customMetadata.title}</div>
-                      ) : (
-                        <div className="max-w-md">
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {`${page.title} | Economy Plumbing`}
-                          </div>
-                          <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
-                        </div>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      {page.customMetadata?.description ? (
-                        <div className="max-w-md">
-                          <div className="text-sm line-clamp-2">{page.customMetadata.description}</div>
-                          <Badge variant="outline" className="mt-1 text-xs">
-                            {page.customMetadata.description.length} chars
-                          </Badge>
-                        </div>
-                      ) : (
-                        <div className="max-w-md">
-                          <div className="text-sm text-muted-foreground line-clamp-2">
-                            {`Professional ${page.title.toLowerCase()} services in Austin & Marble Falls, TX. Licensed plumbers, same-day service available.`}
-                          </div>
-                          <Badge variant="outline" className="mt-1 text-xs">Default from page</Badge>
-                        </div>
-                      )}
-                    </td>                    <td className="p-3 text-center">
-                      {page.hasCustom ? (
-                        <Badge variant="default" className="text-xs">Custom</Badge>
-                      ) : (
-                        <Badge variant="outline" className="text-xs">Default</Badge>
-                      )}
-                    </td>
-                    <td className="p-3">
-                      <div className="flex items-center justify-end gap-1">
-                        {page.hasCustom ? (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleEdit(page.customMetadata!)}
-                              data-testid={`button-edit-${page.path}`}
-                            >
-                              <Edit className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => handleDelete(page.customMetadata!.id)}
-                              data-testid={`button-delete-${page.path}`}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleAddNew(page.path)}
-                            data-testid={`button-add-${page.path}`}
-                          >
-                            <Plus className="w-4 h-4" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Edit Dialog */}
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              {isAddingNew ? "Add Page Metadata" : "Edit Page Metadata"}
-            </DialogTitle>
-            <DialogDescription>
-              {isAddingNew 
-                ? "Add custom SEO metadata for a page" 
-                : "Update SEO metadata for this page"}
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-4">
-              {/* Path */}
-              <div className="space-y-2">
-                <Label htmlFor="path">
-                  Page Path <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="path"
-                  value={formData.path}
-                  onChange={(e) => setFormData({ ...formData, path: e.target.value })}
-                  placeholder="/services/drain-cleaning"
-                  disabled={!isAddingNew}
-                  data-testid="input-path"
-                />
-                <p className="text-xs text-muted-foreground">
-                  The URL path of the page (e.g., /about, /services/plumbing)
-                </p>
-              </div>
-
-              {/* Title */}
-              <div className="space-y-2">
-                <Label htmlFor="title">
-                  Page Title
-                  <span className="text-xs text-muted-foreground ml-2">
-                    ({formData.title.length} characters)
-                  </span>
-                </Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Drain Cleaning Services | Economy Plumbing"
-                  data-testid="input-title"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Recommended: 50-60 characters for optimal display
-                </p>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">
-                  Meta Description
-                  <span className={`text-xs ml-2 ${
-                    formData.description.length >= 120 && formData.description.length <= 160 
-                      ? "text-green-600" 
-                      : "text-muted-foreground"
-                  }`}>
-                    ({formData.description.length} characters)
-                  </span>
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Professional drain cleaning services in Austin & Marble Falls. Call (512) 469-5858 for emergency service."
-                  rows={3}
-                  data-testid="input-description"
-                />
-                <p className="text-xs text-muted-foreground">
-                  Recommended: 120-160 characters. Include phone number for SEO.
-                  {formData.description.length > 160 && (
-                    <span className="text-destructive block mt-1">
-                      ⚠️ Over 160 characters - may be truncated in search results
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCloseDialog}
-                data-testid="button-cancel"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={upsertMutation.isPending}
-                data-testid="button-save"
-              >
-                {upsertMutation.isPending ? "Saving..." : "Save Metadata"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 
 function ProductsSection() {
   const { toast } = useToast();
@@ -6264,7 +5881,7 @@ export default function UnifiedAdminDashboard() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('admin-active-section');
-      if (saved && ['dashboard', 'photos', 'page-metadata', 'tracking-numbers', 'products', 'referrals', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
+      if (saved && ['dashboard', 'photos', 'tracking-numbers', 'products', 'referrals', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
         setActiveSection(saved as AdminSection);
       }
     }
@@ -6327,8 +5944,6 @@ export default function UnifiedAdminDashboard() {
         return <DashboardOverview stats={stats} photos={photos} />;
       case 'photos':
         return <PhotoManagement />;
-      case 'page-metadata':
-        return <PageMetadataSection />;
       case 'tracking-numbers':
         return <TrackingNumbersSection />;
       case 'products':
@@ -6357,7 +5972,6 @@ export default function UnifiedAdminDashboard() {
       'dashboard': 'Dashboard',
       'photos': 'Photo Management',
       'review-platforms': 'Review Platforms',
-      'page-metadata': 'Page Metadata',
       'tracking-numbers': 'Tracking Numbers',
       'products': 'Products & Memberships',
       'referrals': 'Referral System',
