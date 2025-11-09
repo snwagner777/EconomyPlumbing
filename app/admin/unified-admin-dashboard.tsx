@@ -87,7 +87,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 
-type AdminSection = 'dashboard' | 'photos' | 'products' | 'referrals' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
+type AdminSection = 'dashboard' | 'photos' | 'referrals' | 'review-platforms' | 'customer-data' | 'marketing-campaigns' | 'custom-campaigns' | 'chatbot' | 'email-processing';
 
 interface EmailTemplate {
   id: string;
@@ -255,12 +255,6 @@ function AdminSidebar({ activeSection, setActiveSection }: { activeSection: Admi
       icon: Star,
       section: 'review-platforms' as AdminSection,
       description: "Manage review links"
-    },
-    {
-      title: "Products & Memberships",
-      icon: Package,
-      section: 'products' as AdminSection,
-      description: "SKUs & ServiceTitan setup"
     },
     {
       title: "Referral System",
@@ -1115,210 +1109,6 @@ function PhotoManagement() {
 
 
 
-function ProductsSection() {
-  const { toast } = useToast();
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const { data, isLoading } = useQuery<{ products: any[]; count: number }>({
-    queryKey: ['/api/products'],
-  });
-  
-  const products = data?.products || [];
-
-  const updateProductMutation = useMutation({
-    mutationFn: async (data: { id: string; updates: any }) => {
-      const response = await apiRequest("PATCH", `/api/products/${data.id}`, data.updates);
-      const updatedProduct = await response.json();
-      return updatedProduct;
-    },
-    onSuccess: async (updatedProduct) => {
-      queryClient.setQueryData<any[]>(['/api/products'], (old) => {
-        if (!old) return old;
-        return old.map(p => p.id === updatedProduct.id ? updatedProduct : p);
-      });
-      
-      toast({
-        title: "Success",
-        description: "Product updated successfully",
-      });
-      setIsDialogOpen(false);
-      setEditingProduct(null);
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update product",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const handleEdit = (product: any) => {
-    setEditingProduct(product);
-    setIsDialogOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-
-    const formData = new FormData(e.currentTarget);
-    const updates: any = {
-      name: formData.get('name') as string,
-      description: formData.get('description') as string,
-      price: parseInt(formData.get('price') as string) * 100,
-      sku: formData.get('sku') as string || null,
-      durationBillingId: formData.get('durationBillingId') as string || null,
-      serviceTitanMembershipTypeId: formData.get('serviceTitanMembershipTypeId') as string || null,
-    };
-
-    updateProductMutation.mutate({ id: editingProduct.id, updates });
-  };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full" />
-      </div>
-    );
-  }
-
-  const memberships = products?.filter(p => p.category === 'membership') || [];
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-semibold mb-4">VIP Memberships</h2>
-        <div className="grid gap-4">
-          {memberships.map((product) => (
-            <Card key={product.id} className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-3 mb-3">
-                    <h3 className="text-xl font-semibold">{product.name}</h3>
-                    <span className="text-2xl font-bold text-primary">
-                      ${(product.price / 100).toFixed(2)}
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Package className="w-4 h-4" />
-                        <span className="font-medium">SKU</span>
-                      </div>
-                      <span className="text-foreground">{product.sku || 'Not set'}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Package className="w-4 h-4" />
-                        <span className="font-medium">Duration Billing ID</span>
-                      </div>
-                      <span className="text-foreground font-mono text-xs">{product.durationBillingId || 'Not set'}</span>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1 text-muted-foreground mb-1">
-                        <Package className="w-4 h-4" />
-                        <span className="font-medium">ServiceTitan Type ID</span>
-                      </div>
-                      <span className="text-foreground font-mono text-xs">{product.serviceTitanMembershipTypeId || 'Not set'}</span>
-                    </div>
-                  </div>
-                </div>
-                <Button
-                  onClick={() => handleEdit(product)}
-                  size="sm"
-                  variant="outline"
-                  data-testid={`button-edit-product-${product.id}`}
-                >
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Edit Product</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="name">Product Name</Label>
-              <Input
-                id="name"
-                name="name"
-                defaultValue={editingProduct?.name}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                name="description"
-                defaultValue={editingProduct?.description}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="price">Price (in dollars)</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                step="0.01"
-                defaultValue={editingProduct ? (editingProduct.price / 100).toFixed(2) : ''}
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="sku">SKU</Label>
-              <Input
-                id="sku"
-                name="sku"
-                defaultValue={editingProduct?.sku || ''}
-                placeholder="e.g., VIP-ANNUAL"
-              />
-            </div>
-            <div>
-              <Label htmlFor="durationBillingId">Duration Billing ID</Label>
-              <Input
-                id="durationBillingId"
-                name="durationBillingId"
-                defaultValue={editingProduct?.durationBillingId || ''}
-                placeholder="ServiceTitan billing ID"
-              />
-            </div>
-            <div>
-              <Label htmlFor="serviceTitanMembershipTypeId">ServiceTitan Membership Type ID</Label>
-              <Input
-                id="serviceTitanMembershipTypeId"
-                name="serviceTitanMembershipTypeId"
-                defaultValue={editingProduct?.serviceTitanMembershipTypeId || ''}
-                placeholder="ServiceTitan membership type ID"
-              />
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={updateProductMutation.isPending}>
-                {updateProductMutation.isPending ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
 
 function SerpApiStatusCard() {
   const { toast } = useToast();
@@ -5189,7 +4979,7 @@ export default function UnifiedAdminDashboard() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('admin-active-section');
-      if (saved && ['dashboard', 'photos', 'products', 'referrals', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
+      if (saved && ['dashboard', 'photos', 'referrals', 'review-platforms', 'customer-data', 'review-requests', 'email-templates', 'chatbot'].includes(saved)) {
         setActiveSection(saved as AdminSection);
       }
     }
@@ -5252,8 +5042,6 @@ export default function UnifiedAdminDashboard() {
         return <DashboardOverview stats={stats} photos={photos} />;
       case 'photos':
         return <PhotoManagement />;
-      case 'products':
-        return <ProductsSection />;
       case 'review-platforms':
         return <ReviewPlatformsSection />;
       case 'referrals':
@@ -5278,7 +5066,6 @@ export default function UnifiedAdminDashboard() {
       'dashboard': 'Dashboard',
       'photos': 'Photo Management',
       'review-platforms': 'Review Platforms',
-      'products': 'Products & Memberships',
       'referrals': 'Referral System',
       'marketing-campaigns': 'Marketing Campaigns',
       'custom-campaigns': 'Custom Campaigns',
