@@ -50,7 +50,8 @@ import {
   Edit2,
   Building2,
   Briefcase,
-  Receipt
+  Receipt,
+  Loader2
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "./SchedulerDialog";
@@ -169,6 +170,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [availableAccounts, setAvailableAccounts] = useState<CustomerAccount[]>([]);
   const [availableCustomerIds, setAvailableCustomerIds] = useState<number[]>([]);
   const [showAccountSelection, setShowAccountSelection] = useState(false);
+  const [isLoadingSwitcher, setIsLoadingSwitcher] = useState(false);
   
   // Verification state
   const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-email' | 'select-account' | 'authenticated'>('lookup');
@@ -720,6 +722,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const handleSwitchAccount = async () => {
     // If we have multiple accounts stored in availableCustomerIds, fetch their details
     if (availableCustomerIds.length > 1) {
+      setIsLoadingSwitcher(true);
       try {
         // Fetch account details for all available customer IDs
         const accountPromises = availableCustomerIds.map(async (id) => {
@@ -741,6 +744,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       } catch (error) {
         console.error('Failed to load account details:', error);
         setLookupError('Failed to load account details');
+      } finally {
+        setIsLoadingSwitcher(false);
       }
     }
   };
@@ -1940,9 +1945,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                               <p className="font-semibold">{account.name}</p>
                               <Badge 
                                 variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
-                                className={`text-xs ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                                className={`text-xs flex items-center gap-1 ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                               >
-                                {account.type}
+                                {account.type === 'Commercial' ? (
+                                  <>
+                                    <Briefcase className="w-3 h-3" />
+                                    Business
+                                  </>
+                                ) : (
+                                  <>
+                                    <Home className="w-3 h-3" />
+                                    Home
+                                  </>
+                                )}
                               </Badge>
                             </div>
                             {account.address && (
@@ -2110,10 +2125,20 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                             <Button
                               variant="outline"
                               onClick={handleSwitchAccount}
+                              disabled={isLoadingSwitcher}
                               data-testid="button-switch-account"
                             >
-                              <Users className="w-4 h-4 mr-2" />
-                              Switch
+                              {isLoadingSwitcher ? (
+                                <>
+                                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                  Loading...
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="w-4 h-4 mr-2" />
+                                  Switch Account
+                                </>
+                              )}
                             </Button>
                           )}
                         </div>
@@ -5076,9 +5101,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                         <p className="font-semibold">{account.name}</p>
                         <Badge 
                           variant={account.type === 'Commercial' ? 'default' : 'secondary'} 
-                          className={`text-xs ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
+                          className={`text-xs flex items-center gap-1 ${account.type === 'Commercial' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white'}`}
                         >
-                          {account.type}
+                          {account.type === 'Commercial' ? (
+                            <>
+                              <Briefcase className="w-3 h-3" />
+                              Business
+                            </>
+                          ) : (
+                            <>
+                              <Home className="w-3 h-3" />
+                              Home
+                            </>
+                          )}
                         </Badge>
                       </div>
                       {account.address && (
