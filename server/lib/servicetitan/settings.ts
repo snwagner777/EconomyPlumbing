@@ -239,7 +239,7 @@ export class ServiceTitanSettings {
         endsOnOrBefore: params.endDate.toISOString(),
         businessUnitIds: [params.businessUnitId],
         jobTypeId: params.jobTypeId,
-        skillBasedAvailability: params.skillBasedAvailability ?? true,
+        skillBasedAvailability: false, // Always false - show all techs regardless of skills
       };
 
       console.log(`[ServiceTitan Capacity] Checking capacity from ${params.startDate.toISOString()} to ${params.endDate.toISOString()}`);
@@ -344,7 +344,7 @@ export class ServiceTitanSettings {
       jobTypeId: params.jobTypeId,
       startDate: startOfDay,
       endDate: endOfDay,
-      skillBasedAvailability: true,
+      skillBasedAvailability: false, // Always false - show all techs
     });
 
     // Filter to only available slots

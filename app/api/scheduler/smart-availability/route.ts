@@ -122,7 +122,7 @@ export async function POST(req: NextRequest) {
           jobTypeId,
           startDate: dayStart,
           endDate: dayEnd,
-          skillBasedAvailability: true,
+          skillBasedAvailability: false, // Always false - show all techs
         })
       );
     }
