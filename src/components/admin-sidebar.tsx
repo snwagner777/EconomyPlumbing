@@ -43,6 +43,7 @@ import {
   Package,
   BarChart3,
   Sparkles,
+  TrendingUp,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -171,6 +172,12 @@ const menuSections: MenuSection[] = [
         icon: Database,
         href: '/admin/customer-data',
         description: 'Import history',
+      },
+      {
+        title: 'Portal Analytics',
+        icon: TrendingUp,
+        href: '/admin/portal-analytics',
+        description: 'Usage tracking',
       },
     ],
   },
