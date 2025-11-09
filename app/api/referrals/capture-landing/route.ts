@@ -1,89 +1,100 @@
 /**
  * Referral Landing Page Capture API
  * 
- * Captures referee contact info from referral landing page
+ * Captures referee contact info from referral landing page and redirects to scheduler
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { pendingReferrals, customersXlsx } from '@shared/schema';
-import { sql } from 'drizzle-orm';
+import { pendingReferrals, referralCodes } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 const captureLandingSchema = z.object({
-  referrerCustomerId: z.number(),
-  refereeName: z.string().min(2),
-  refereeEmail: z.string().email().optional(),
-  refereePhone: z.string().min(10).optional(),
+  referralCode: z.string(),
+  name: z.string().min(2),
+  phone: z.string().min(10),
+  email: z.string().email(),
+  serviceInterest: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
+    const data = captureLandingSchema.parse(body);
 
-    // Validate input
-    const result = captureLandingSchema.safeParse(body);
-    if (!result.success) {
-      return NextResponse.json(
-        { message: 'Missing required fields', details: result.error.errors },
-        { status: 400 }
-      );
-    }
-
-    const { referrerCustomerId, refereeName, refereeEmail, refereePhone } = result.data;
-
-    if (!refereeEmail && !refereePhone) {
-      return NextResponse.json(
-        { message: 'Either email or phone is required' },
-        { status: 400 }
-      );
-    }
-
-    // Get referrer info
+    // Look up the referrer from the referral code
     const [referrer] = await db
       .select({
-        name: customersXlsx.name,
+        customerId: referralCodes.customerId,
+        customerName: referralCodes.customerName,
       })
-      .from(customersXlsx)
-      .where(sql`${customersXlsx.id} = ${referrerCustomerId}`)
+      .from(referralCodes)
+      .where(eq(referralCodes.code, data.referralCode))
       .limit(1);
 
     if (!referrer) {
       return NextResponse.json(
-        { message: 'Referrer not found' },
-        { status: 404 }
+        { message: 'Invalid referral code' },
+        { status: 400 }
       );
     }
 
-    // Create pending referral with expiration (30 days)
+    // Generate unique tracking cookie/token
+    const trackingCookie = `ref_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+
+    // Create pending referral with 30-day expiration
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 30);
 
-    // Generate tracking cookie
-    const trackingCookie = `ref_${referrerCustomerId}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+    const [pendingReferral] = await db
+      .insert(pendingReferrals)
+      .values({
+        referrerCustomerId: referrer.customerId,
+        referrerName: referrer.customerName,
+        refereeName: data.name,
+        refereeEmail: data.email || null,
+        refereePhone: data.phone || null,
+        trackingCookie,
+        expiresAt,
+      })
+      .returning();
 
-    const [pendingReferral] = await db.insert(pendingReferrals).values({
-      referrerCustomerId,
-      referrerName: referrer.name,
-      refereeName,
-      refereeEmail: refereeEmail || null,
-      refereePhone: refereePhone || null,
-      trackingCookie,
-      expiresAt,
-    }).returning();
+    console.log(`[Referral Landing] Created pending referral ${pendingReferral.id} for referrer ${referrer.customerName} (Customer ID: ${referrer.customerId})`);
 
-    console.log(`[Referral] Created pending referral ${pendingReferral.id} - Referrer: ${referrer.name}, Referee: ${refereeName}`);
+    // Build scheduler URL with pre-filled contact info and referral tracking
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.plumbersthatcare.com';
+    const params = new URLSearchParams({
+      referral: trackingCookie,
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+    });
+    
+    if (data.serviceInterest) {
+      params.set('service', data.serviceInterest);
+    }
+
+    const schedulerUrl = `${baseUrl}/schedule-appointment?${params.toString()}`;
 
     return NextResponse.json({
       success: true,
-      message: 'Contact information captured successfully',
-      trackingCookie,
+      schedulerUrl,
+      trackingToken: trackingCookie,
     });
 
   } catch (error: any) {
-    console.error('[Referral Capture Landing API] Error:', error);
+    console.error('[Referral Landing API] Error:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { message: 'Invalid request data', errors: error.errors },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { message: 'Error capturing contact information' },
+      { message: 'Error processing referral' },
       { status: 500 }
     );
   }

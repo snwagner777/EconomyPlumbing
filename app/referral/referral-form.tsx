@@ -51,10 +51,15 @@ export function ReferralForm() {
   const onSubmit = async (data: ReferralFormData) => {
     setIsSubmitting(true);
     try {
-      await apiRequest('/api/referrals/submit', {
+      const response = await fetch('/api/referrals/submit', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
+
+      if (!response.ok) {
+        throw new Error('Failed to submit referral');
+      }
 
       toast({
         title: 'Referral Submitted!',

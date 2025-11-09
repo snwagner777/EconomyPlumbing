@@ -1,12 +1,19 @@
 /**
  * Referral Program Page
+ * Handles both:
+ * 1. Incoming referral links (with ?code=XXX) - shows landing page for referee
+ * 2. Regular referral submission form - for existing customers to refer friends
  */
 
 import type { Metadata } from 'next';
 import { ReferralForm } from './referral-form';
+import ReferralLandingClient from './ReferralLandingClient';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
+import { db } from '@/server/db';
+import { referralCodes } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export const metadata: Metadata = {
   title: 'Refer a Friend | Economy Plumbing Referral Program',
@@ -22,9 +29,36 @@ interface ReferralPageProps {
 }
 
 export default async function ReferralPage({ searchParams }: ReferralPageProps) {
-  await searchParams;
+  const params = await searchParams;
   const phoneNumbers = await getPhoneNumbers();
+  
+  // Check if this is an incoming referral link
+  const code = params.code;
+  
+  if (code && typeof code === 'string') {
+    // This is an incoming referral - show landing page for referee
+    // Look up the referrer information
+    const [referrerInfo] = await db
+      .select({
+        customerName: referralCodes.customerName,
+      })
+      .from(referralCodes)
+      .where(eq(referralCodes.code, code))
+      .limit(1);
+    
+    return (
+      <>
+        <Header />
+        <ReferralLandingClient 
+          referralCode={code}
+          referrerName={referrerInfo?.customerName || null}
+        />
+        <Footer />
+      </>
+    );
+  }
 
+  // Regular referral submission page (for existing customers to refer friends)
   return (
     <>
       <Header />
