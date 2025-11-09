@@ -43,7 +43,7 @@ export async function GET(
     const [customer] = await db
       .select({
         name: customersXlsx.name,
-        phone: customersXlsx.phoneNumber,
+        phone: customersXlsx.phone,
       })
       .from(customersXlsx)
       .where(sql`${customersXlsx.id} = ${customerIdNum}`)
