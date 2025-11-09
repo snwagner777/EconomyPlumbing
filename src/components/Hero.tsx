@@ -11,8 +11,8 @@ interface HeroProps {
 }
 
 export default function Hero({ austinPhone }: HeroProps) {
-  // Use server-provided phone or fallback
-  const phone = austinPhone || { display: '(512) 368-9159', tel: '+15123689159' };
+  // Use server-provided phone (required - pulled from admin panel tracking numbers)
+  const phone = austinPhone || { display: 'Loading...', tel: '#' };
   
   return (
     <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">

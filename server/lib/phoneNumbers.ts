@@ -23,16 +23,52 @@ interface DetectionRules {
   referrerIncludes?: string[];
 }
 
-// Default phone numbers - always available for SSR
-export const DEFAULT_AUSTIN_PHONE: PhoneConfig = {
-  display: '(512) 368-9159',
-  tel: 'tel:+15123689159'
-};
+// Default phone numbers from environment variables
+// These are ultimate fallbacks when database tracking numbers aren't available
+// Format: NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE=(512) 368-9159
+function normalizePhoneNumber(phone: string, label: string): PhoneConfig {
+  // Extract only digits
+  const cleanPhone = phone.replace(/\D/g, '');
+  
+  // Validate it's a 10-digit or 11-digit number
+  let digits = cleanPhone;
+  if (cleanPhone.length === 11 && cleanPhone.startsWith('1')) {
+    // Remove leading 1 (country code)
+    digits = cleanPhone.substring(1);
+  } else if (cleanPhone.length !== 10) {
+    throw new Error(`[PhoneNumbers] ${label} must be 10 digits (or 11 with leading 1). Got: ${phone} (${cleanPhone.length} digits)`);
+  }
+  
+  return {
+    display: phone, // Keep original formatting for display
+    tel: `tel:+1${digits}` // Always format as +1XXXXXXXXXX
+  };
+}
 
-export const DEFAULT_MARBLE_FALLS_PHONE: PhoneConfig = {
-  display: '(830) 460-3565',
-  tel: 'tel:+18304603565'
-};
+function getDefaultAustinPhone(): PhoneConfig {
+  const envPhone = process.env.NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE;
+  if (!envPhone) {
+    const errorMsg = '[PhoneNumbers] CRITICAL: NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE not set. Configure in .env.local or admin panel tracking numbers.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+  return normalizePhoneNumber(envPhone, 'NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE');
+}
+
+function getDefaultMarbleFallsPhone(): PhoneConfig {
+  const envPhone = process.env.NEXT_PUBLIC_DEFAULT_MARBLE_FALLS_PHONE;
+  if (!envPhone) {
+    const errorMsg = '[PhoneNumbers] CRITICAL: NEXT_PUBLIC_DEFAULT_MARBLE_FALLS_PHONE not set. Configure in .env.local or admin panel tracking numbers.';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+  return normalizePhoneNumber(envPhone, 'NEXT_PUBLIC_DEFAULT_MARBLE_FALLS_PHONE');
+}
+
+// Eager initialization - fails fast at startup if env vars missing
+// Plain objects are serializable for Next.js RSC (React Server Components)
+export const DEFAULT_AUSTIN_PHONE: PhoneConfig = getDefaultAustinPhone();
+export const DEFAULT_MARBLE_FALLS_PHONE: PhoneConfig = getDefaultMarbleFallsPhone();
 
 /**
  * Server-side tracking number detection based on URL parameters

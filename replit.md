@@ -10,11 +10,13 @@ Preferred communication style: Simple, everyday language.
 - **If you need a phone number, ASK the user for it**
 - Never use placeholder phone numbers in production code
 - Never hardcode phone numbers (e.g., (512) 877-8234, (512) 368-9159, etc.)
-- Fallback/default phones in server code MUST be real business numbers provided by user
+- Fallback/default phones in server code MUST be real business numbers provided by user via environment variables
 - All phone numbers displayed to users must come from:
   1. Database tracking_numbers table (preferred - allows dynamic tracking)
-  2. Environment variables set by user
+  2. Environment variables (NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE, NEXT_PUBLIC_DEFAULT_MARBLE_FALLS_PHONE)
   3. User input via admin panel
+- Server-side ultimate fallbacks: `server/lib/phoneNumbers.ts` uses environment variables, logs errors if not set
+- Client components: Should receive phone config from server via props; use "Loading..." fallback if not provided
 - Exception: Test data and documentation can use (512) 555-XXXX format ONLY
 
 **CRITICAL RULE: Always check existing functionality before creating new pages/features**
@@ -109,21 +111,14 @@ export default function NewServicePage() {
 
 ## System Architecture
 
-### URL Structure (CRITICAL)
-- **Blog Posts:** Served at root level `/{slug}` NOT `/blog/{slug}` via `app/[slug]/page.tsx`
-  - Example: `/austins-hard-water-plumbing-insights` (correct)
-  - Never use `/blog/austins-hard-water-plumbing-insights` (incorrect)
-  - Sitemap lists blog posts as `https://www.plumbersthatcare.com/{slug}`
-- **Service Areas:** `/service-areas/{slug}` (e.g., `/service-areas/austin`)
-- **Static Pages:** Direct paths (e.g., `/contact`, `/faq`, `/services`)
-
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Vite. UI uses Radix UI, Shadcn UI, Tailwind CSS, and CVA.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
 - **Admin Panels:** Unified admin dashboard for Marketing Automation, ServiceTitan sync monitoring, Customer Portal analytics, photo/metadata management, Reputation Management, SMS Marketing, and centralized tracking phone number management.
+- **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
@@ -133,32 +128,14 @@ export default function NewServicePage() {
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:**
   - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups. Enables remarketing campaigns. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access.
-  - **CRITICAL: DEPRECATED TABLE `service_titan_contacts`** - Never reference this table; use `customers_xlsx` exclusively.
   - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, and Settings services, supporting `utm_source` tracking and real job types.
   - **Scheduler Availability (CRITICAL):** Uses ServiceTitan Capacity API (`dispatch/v2/tenant/{tenant}/capacity`) as the source of truth for availability, accounting for job appointments, non-job appointments, technician availability/skills, and business unit capacity. It returns `isAvailable` and `openAvailability` hours. The scheduler includes a conversational "problemDescription" field for new customers.
   - **Arrival Windows vs Booking Times (CRITICAL):** Arrival windows shown to customers are 4 hours (e.g., 8am-12pm, 12pm-4pm, 4pm-8pm) for convenience. However, the actual appointment booked in ServiceTitan is for 2 hours within that window (e.g., 10am-12pm). The system checks 2-hour blocks (8-10am, 10-12pm, 12-2pm, 2-4pm, 4-6pm) for availability and books the earliest available slot within the customer's selected 4-hour window. Customers are never informed of the specific 2-hour booking time.
   - **Unified Scheduler System:** The Capacity API-based scheduler is used across the frontend scheduler component, customer portal reschedule flow, and AI chatbot booking, all via `/api/scheduler/smart-availability`.
-- **Marketing Automation:**
-  - **AI-Powered Email System:** Uses OpenAI GPT-4o to generate personalized campaign emails for Review Request, Quote Follow-up, and Referral Nurture campaigns.
-  - **Customer Contact Retrieval Workflow:** Mailgun webhook receives invoice/estimate PDFs, which are parsed to extract customer data. System matches customer in `customers_xlsx` database to create campaigns.
-  - **AI Email Personalization Process:** Admin approves template; AI personalizes emails at send-time using customer data, seasonal context, sequence position, and messaging strategy. AI is explicitly instructed NOT to offer discounts unless manually configured.
-- **SMS Marketing System:** 
-  - **SimpleTexting API Integration:** Base URL `https://api-app2.simpletexting.com/v2`, Bearer token authentication (API key: stored in environment).
-  - **Core Capabilities:** Contact/list management, campaign creation/scheduling, message sending, MMS support (<=600KB toll-free, <=1MB shortcode, auto-compression for images up to 15MB), custom fields, segments, webhooks (incoming messages, delivery reports, unsubscribes).
-  - **Key Endpoints:**
-    - Contacts: `/api/contacts` (CRUD, batch operations, upsert support)
-    - Contact Lists: `/api/contact-lists` (create, update, manage memberships)
-    - Campaigns: `/api/campaigns` (create, send, schedule with personalization tokens)
-    - Messages: `/api/messages` (ad-hoc sends, conversation management)
-    - Webhooks: `/api/webhooks` (delivery status, replies, opt-outs)
-    - Custom Fields: `/api/custom-fields` (flexible data capture for personalization)
-    - Tenant: `/api/tenant` (account limits, rate throttles)
-  - **Customer Sync Strategy:** Nightly sync from `customers_xlsx` to SimpleTexting contacts, maintain segments for targeting, track TCPA consent via custom fields and list assignments.
-  - **Compliance:** TCPA opt-in/opt-out tracking, STOP/HELP keyword handling, consent timestamp/source logging, audit trail via webhook acknowledgments.
-  - **Rate Limiting:** Respect tenant-level throttles from API (requests/min exposed via tenant endpoint).
-  - **AI-powered campaign generation, behavioral intelligence, personalization using customer data and custom fields.**
-- **Reputation Management System:** AI-powered review request automation, preview/edit/approve interface for email sequences, automated review fetching.
-- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes. $25 vouchers for both referee and referrer, $200 minimum job, 6-month expiration. Tech-scannable QR codes. Referrals require phone numbers and email addresses for both parties.
+- **Marketing Automation:** AI-powered personalized email campaigns (Review Request, Quote Follow-up, Referral Nurture) using OpenAI GPT-4o, with admin approval for templates. Customer contact retrieval via Mailgun webhook parsing.
+- **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, message sending, MMS support, custom fields, segments, and webhooks. Nightly sync from `customers_xlsx` and TCPA compliance.
+- **Reputation Management System:** AI-powered review request automation, preview/edit/approve interface, automated review fetching.
+- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes for $25 discount (referrer and referee) on jobs $200+, 6-month expiry. Requires phone/email for both parties.
 - **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification.
 
@@ -174,7 +151,7 @@ export default function NewServicePage() {
 - **Database:** Neon (PostgreSQL).
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
-- **SMS Providers:** SimpleTexting (primary marketing platform), Twilio, Zoom Phone.
+- **SMS Providers:** SimpleTexting, Twilio, Zoom Phone.
 - **AI Services:** OpenAI (GPT-4o, GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive.
 - **Google Services:** Google Places API, Google Maps.

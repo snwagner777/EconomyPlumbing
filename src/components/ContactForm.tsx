@@ -22,9 +22,10 @@ export default function ContactForm({
   austinPhone,
   marbleFallsPhone
 }: ContactFormProps) {
-  // Use server-provided phone numbers or fallback
-  const phoneConfig = austinPhone || { display: '(512) 368-9159', tel: '+15123689159' };
-  const marbleFallsPhoneConfig = marbleFallsPhone || { display: '(830) 460-3565', tel: '+18304603565' };
+  // Use server-provided phone numbers (required - pulled from admin panel tracking numbers)
+  // If not provided, phone numbers will be fetched client-side via PhoneConfigContext
+  const phoneConfig = austinPhone || { display: 'Loading...', tel: '#' };
+  const marbleFallsPhoneConfig = marbleFallsPhone || { display: 'Loading...', tel: '#' };
   const { toast } = useToast();
   const [formStartTime] = useState(Date.now()); // Track when form was loaded
   const [formData, setFormData] = useState({
