@@ -140,7 +140,11 @@ export default function NewServicePage() {
   - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups.
   - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, and Settings services, supporting `utm_source` tracking and real job types.
   - **Smart Scheduler Architecture:** Utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and Hill Country filtering. Includes 5-minute response caching.
-  - **Arrival Windows vs Booking Times:** Customers select 4-hour arrival windows, while the system internally books optimal 2-hour appointments.
+  - **Appointment Booking Rules:**
+    - **Regular Services:** Customers see 4-hour arrival windows (8am-12pm, 9am-1pm, etc.). System books 2-hour appointments internally.
+    - **Backflow Testing ONLY:** Uses 12-hour arrival windows (8am-8pm). NO other service uses 12-hour windows.
+    - **Capacity Filtering:** ServiceTitan capacity API returns hours available. Since we book 2-hour appointments, windows must have ≥2 hours available capacity to be offered.
+    - **Window Duration Filter:** Regular services show only 4-hour windows. Backflow shows only 12-hour windows. No mixing.
   - **Unified Scheduler System:** The smart scheduler (`/api/scheduler/smart-availability`) is used across frontend scheduler, customer portal reschedule flow, and AI chatbot booking.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o, with admin approval for templates.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.

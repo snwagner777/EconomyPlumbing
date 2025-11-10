@@ -284,18 +284,21 @@ export async function POST(req: NextRequest) {
           return Math.abs(serviceLocationZoneNumber - jobZoneNum) <= 1;
         }).length;
         
-        // Format time label
-        const startLabel = slot.start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
-        const endLabel = slot.end.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
+        // Format time label - use ARRIVAL WINDOW times (4-hour windows for customers)
+        // Internal booking uses 2-hour slots, but customer sees 4-hour arrival windows
+        const arrivalStart = new Date(window.start);
+        const arrivalEnd = new Date(window.end);
+        const startLabel = arrivalStart.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
+        const endLabel = arrivalEnd.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: TIMEZONE });
         
         allSlots.push({
           id: `slot-${allSlots.length}`,
-          start: slot.start.toISOString(),
-          end: slot.end.toISOString(),
-          arrivalWindowStart: window.start,
-          arrivalWindowEnd: window.end,
+          start: slot.start.toISOString(), // Internal 2-hour booking slot
+          end: slot.end.toISOString(),     // Internal 2-hour booking slot
+          arrivalWindowStart: window.start, // Customer-facing 4-hour window
+          arrivalWindowEnd: window.end,     // Customer-facing 4-hour window
           date: slotDate,
-          timeLabel: `${startLabel} - ${endLabel}`,
+          timeLabel: `${startLabel} - ${endLabel}`, // Show 4-hour arrival window to customer
           period: getTimePeriod(slot.start.toISOString()),
           proximityScore: proximityResult.score,
           nearbyJobs: nearbyJobCount,
