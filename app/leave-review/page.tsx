@@ -35,6 +35,14 @@ export default function LeaveReview() {
   const [selectedRating, setSelectedRating] = useState<number | null>(null);
   const [step, setStep] = useState<'rating' | 'form' | 'submitted'>('rating');
 
+  // Fetch enabled review platforms
+  const { data: platformsData } = useQuery<{ platforms: any[] }>({
+    queryKey: ['/api/review-platforms'],
+    select: (data: any) => ({ platforms: Array.isArray(data) ? data : (data?.platforms ?? []) }),
+  });
+
+  const reviewPlatforms = platformsData?.platforms ?? [];
+
   // Fetch pre-filled data if token provided
   const { data: requestData, isLoading: isLoadingRequest, error: requestError } = useQuery({
     queryKey: ['/api/review-request', token],
@@ -263,46 +271,34 @@ export default function LeaveReview() {
           </p>
         </div>
 
-        {showPublicReviewOptions && (
+        {showPublicReviewOptions && reviewPlatforms.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle data-testid="text-public-review-title">Share Your Experience Publicly</CardTitle>
               <CardDescription data-testid="text-public-review-description">
-                Help others find great service by reviewing us on Google or Yelp
+                Help others find great service by leaving a review
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button 
-                asChild 
-                className="w-full" 
-                size="lg"
-                data-testid="button-google-review"
-              >
-                <a 
-                  href="https://g.page/r/CRYwq5zqH7VGEBM/review" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
+              {reviewPlatforms.map((platform, index) => (
+                <Button 
+                  key={platform.id}
+                  asChild 
+                  variant={index === 0 ? "default" : "outline"}
+                  className="w-full" 
+                  size="lg"
+                  data-testid={`button-${platform.platform}-review`}
                 >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Review on Google
-                </a>
-              </Button>
-              <Button 
-                asChild 
-                variant="outline" 
-                className="w-full" 
-                size="lg"
-                data-testid="button-yelp-review"
-              >
-                <a 
-                  href="https://www.yelp.com/writeareview/biz/qKdYP8bnPGvnIbsYpYRkLQ" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="w-4 h-4 mr-2" />
-                  Review on Yelp
-                </a>
-              </Button>
+                  <a 
+                    href={platform.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Review on {platform.displayName}
+                  </a>
+                </Button>
+              ))}
               <div className="text-center text-sm text-muted-foreground my-4">
                 Or share your feedback privately below
               </div>
