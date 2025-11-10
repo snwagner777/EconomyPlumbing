@@ -1076,6 +1076,117 @@ export const contactsXlsx = pgTable("contacts_xlsx", {
   contactTypeIdx: index("contacts_xlsx_contact_type_idx").on(table.contactType),
 }));
 
+// SimpleTexting Integration - Lightweight ID mappings (SimpleTexting is source of truth)
+export const simpleTextingContacts = pgTable("simpletexting_contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  customerId: integer("customer_id").notNull(), // Links to customers_xlsx.id
+  simpleTextingContactId: text("simpletexting_contact_id").notNull().unique(), // External SimpleTexting contact ID
+  phoneNumber: text("phone_number").notNull(), // Phone number synced to SimpleTexting
+  consentSource: text("consent_source").notNull(), // 'form_submission', 'customer_portal', 'manual', 'import'
+  optInStatus: text("opt_in_status").notNull().default('opted_in'), // 'opted_in', 'opted_out', 'pending'
+  addedAt: timestamp("added_at").notNull().defaultNow(),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+}, (table) => ({
+  customerIdIdx: index("st_contacts_customer_id_idx").on(table.customerId),
+  simpleTextingIdIdx: index("st_contacts_simpletexting_id_idx").on(table.simpleTextingContactId),
+  phoneIdx: index("st_contacts_phone_idx").on(table.phoneNumber),
+  optInStatusIdx: index("st_contacts_opt_in_status_idx").on(table.optInStatus),
+}));
+
+// SMS Campaigns - Created in our admin panel, executed via SimpleTexting
+export const smsCampaigns = pgTable("sms_campaigns", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  simpleTextingCampaignId: text("simpletexting_campaign_id").unique(), // External campaign ID (set after creation)
+  
+  // Campaign details (created in our UI)
+  name: text("name").notNull(),
+  messageContent: text("message_content").notNull(),
+  audienceDefinition: jsonb("audience_definition").notNull(), // { listIds: [], tags: [], customCriteria: {} }
+  
+  // Scheduling
+  status: text("status").notNull().default('draft'), // 'draft', 'scheduled', 'sending', 'sent', 'failed'
+  scheduledFor: timestamp("scheduled_for"),
+  
+  // Admin tracking
+  createdBy: varchar("created_by"), // Admin user email
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  sentAt: timestamp("sent_at"),
+  
+  // Stats snapshot (updated via webhooks)
+  recipientCount: integer("recipient_count").notNull().default(0),
+  sentCount: integer("sent_count").notNull().default(0),
+  deliveredCount: integer("delivered_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  replyCount: integer("reply_count").notNull().default(0),
+  
+  lastUpdated: timestamp("last_updated").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("sms_campaigns_status_idx").on(table.status),
+  createdByIdx: index("sms_campaigns_created_by_idx").on(table.createdBy),
+  scheduledIdx: index("sms_campaigns_scheduled_idx").on(table.scheduledFor),
+  simpleTextingIdIdx: index("sms_campaigns_simpletexting_id_idx").on(table.simpleTextingCampaignId),
+}));
+
+// SMS Campaign Events - Lightweight event snapshots from SimpleTexting webhooks
+export const smsCampaignEvents = pgTable("sms_campaign_events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  campaignId: varchar("campaign_id").notNull(), // References sms_campaigns.id
+  eventType: text("event_type").notNull(), // 'sent', 'delivered', 'failed', 'replied', 'opt_out'
+  phoneNumber: text("phone_number"),
+  timestamp: timestamp("timestamp").notNull().defaultNow(),
+  metadata: jsonb("metadata"), // Additional event data from SimpleTexting
+}, (table) => ({
+  campaignIdIdx: index("sms_campaign_events_campaign_id_idx").on(table.campaignId),
+  eventTypeIdx: index("sms_campaign_events_event_type_idx").on(table.eventType),
+  timestampIdx: index("sms_campaign_events_timestamp_idx").on(table.timestamp),
+}));
+
+// SMS Conversations - 2-way messaging inbox
+export const smsConversations = pgTable("sms_conversations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  phoneNumber: text("phone_number").notNull().unique(), // Customer phone number
+  customerId: integer("customer_id"), // Links to customers_xlsx.id if known
+  customerName: text("customer_name"),
+  
+  lastMessageAt: timestamp("last_message_at").notNull().defaultNow(),
+  lastMessagePreview: text("last_message_preview"), // First 100 chars of last message
+  lastMessageDirection: text("last_message_direction"), // 'inbound' or 'outbound'
+  
+  unreadCount: integer("unread_count").notNull().default(0),
+  isArchived: boolean("is_archived").notNull().default(false),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  phoneIdx: index("sms_conversations_phone_idx").on(table.phoneNumber),
+  customerIdIdx: index("sms_conversations_customer_id_idx").on(table.customerId),
+  lastMessageIdx: index("sms_conversations_last_message_idx").on(table.lastMessageAt),
+  unreadIdx: index("sms_conversations_unread_idx").on(table.unreadCount),
+}));
+
+// SMS Messages - Individual messages in conversations
+export const smsMessages = pgTable("sms_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  conversationId: varchar("conversation_id").notNull(), // References sms_conversations.id
+  simpleTextingMessageId: text("simpletexting_message_id"), // External message ID
+  
+  direction: text("direction").notNull(), // 'inbound' or 'outbound'
+  content: text("content").notNull(),
+  phoneNumber: text("phone_number").notNull(), // Redundant but useful for queries
+  
+  status: text("status").notNull().default('sent'), // 'sent', 'delivered', 'failed'
+  sentBy: varchar("sent_by"), // Admin user email (for outbound messages)
+  
+  sentAt: timestamp("sent_at").notNull().defaultNow(),
+  deliveredAt: timestamp("delivered_at"),
+  
+  metadata: jsonb("metadata"), // Additional data from SimpleTexting
+}, (table) => ({
+  conversationIdIdx: index("sms_messages_conversation_id_idx").on(table.conversationId),
+  directionIdx: index("sms_messages_direction_idx").on(table.direction),
+  sentAtIdx: index("sms_messages_sent_at_idx").on(table.sentAt),
+  phoneIdx: index("sms_messages_phone_idx").on(table.phoneNumber),
+}));
+
 // Customer Data Import History - Tracks XLSX imports from ServiceTitan
 // Mailgun webhook attempt logging - tracks EVERY webhook hit (success or failure)
 export const mailgunWebhookLogs = pgTable("mailgun_webhook_logs", {
