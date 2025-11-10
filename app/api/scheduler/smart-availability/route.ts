@@ -129,11 +129,13 @@ export async function POST(req: NextRequest) {
     
     // Parallelize capacity requests for performance
     const capacityResults = await Promise.all(capacityRequests);
-    const allCapacityWindows: CapacityWindow[] = capacityResults.flat().filter(w => 
-      w.isAvailable // Keep all available windows (backflow may not have availableCapacity defined)
-    );
+    const allCapacityWindows: CapacityWindow[] = capacityResults.flat().filter(w => {
+      // Must be available AND have at least 2 hours capacity (for 2-hour appointments)
+      // Capacity represents hours available, we need minimum 2 hours to book
+      return w.isAvailable && (w.availableCapacity === undefined || w.availableCapacity >= 2);
+    });
     
-    console.log(`[Smart Scheduler] Capacity API returned ${allCapacityWindows.length} available windows across ${daysToLoad} days`);
+    console.log(`[Smart Scheduler] Capacity API returned ${allCapacityWindows.length} available windows with 2+ hours capacity across ${daysToLoad} days`);
     
     // STEP 2: Filter windows based on job type
     // Regular services: 4-hour windows only (filter out 12-hour)
