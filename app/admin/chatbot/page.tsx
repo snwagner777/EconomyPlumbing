@@ -133,6 +133,7 @@ export default function ChatbotAdmin() {
   // Fetch conversations
   const { data: conversations = [], isLoading: loadingConversations, refetch: refetchConversations } = useQuery<Conversation[]>({
     queryKey: ["/api/admin/chatbot/conversations"],
+    select: (data: any) => Array.isArray(data) ? data : (data?.conversations ?? []),
   });
 
   // Fetch analytics

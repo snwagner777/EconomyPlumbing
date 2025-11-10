@@ -102,22 +102,24 @@ export function ServiceTitanDashboard() {
 
   // Fetch invoice processing logs
   const {
-    data: invoiceLogsData,
+    data: invoiceLogsData = [],
     isLoading: invoiceLogsLoading,
     refetch: refetchInvoiceLogs,
   } = useQuery<any[]>({
     queryKey: ['/api/admin/invoice-logs'],
     enabled: activeTab === 'webhooks',
+    select: (data: any) => Array.isArray(data) ? data : (data?.logs ?? []),
   });
 
   // Fetch estimate processing logs
   const {
-    data: estimateLogsData,
+    data: estimateLogsData = [],
     isLoading: estimateLogsLoading,
     refetch: refetchEstimateLogs,
   } = useQuery<any[]>({
     queryKey: ['/api/admin/estimate-logs'],
     enabled: activeTab === 'webhooks',
+    select: (data: any) => Array.isArray(data) ? data : (data?.logs ?? []),
   });
 
   // Filter customers based on search and filters
