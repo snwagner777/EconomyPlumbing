@@ -122,7 +122,13 @@ export default function NewServicePage() {
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panel:** Modular admin architecture with shared sidebar navigation. Dashboard at `/admin` (DashboardOverviewClient) shows key metrics. Specialized pages accessible via routes: `/admin/photos` (photo management), `/admin/email-marketing` (campaigns), `/admin/sms` (SMS marketing), `/admin/servicetitan` (sync monitoring), `/admin/portal-analytics` (customer portal stats), and more. All pages wrapped in `app/admin/layout.tsx` with AdminSidebar for consistent navigation.
+- **Admin Panel (19 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections:
+  - **Overview:** `/admin` - DashboardOverviewClient showing customer database stats, portal analytics, photo metrics, conversion tracking
+  - **AI Marketing:** `/admin/ai-campaigns` - GPT-4o campaign generator with preview/approve workflow
+  - **Communications:** `/admin/sms` (2-way messaging with inbox/campaigns/contacts), `/admin/email-marketing` (campaigns, review requests, quote follow-up), `/admin/referrals` (nurture campaigns)
+  - **Content:** `/admin/photos` (Google Drive sync, usage tracking), `/admin/blog` (CMS with AI generation), `/admin/success-stories` (testimonials), `/admin/reputation` (review automation, moderation)
+  - **Customers:** `/admin/customers` (customer search), `/admin/contacts` (form submissions), `/admin/commercial` (business clients), `/admin/customer-data` (XLSX import logs, metrics, top customers by LTV), `/admin/portal-analytics` (usage tracking)
+  - **Site Configuration:** `/admin/tracking-numbers` (campaign phones), `/admin/page-metadata` (SEO settings), `/admin/products` (SKUs), `/admin/servicetitan` (sync monitoring with Overview/Customers/Webhook Processing tabs for invoice/estimate logs), `/admin/chatbot` (conversations), `/admin/settings` (site config)
 - **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend
