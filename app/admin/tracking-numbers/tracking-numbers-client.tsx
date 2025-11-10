@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 // Comprehensive list of channel types for tracking
 const CHANNEL_TYPES = [
   { category: "None/Custom", options: [
-    { value: "", label: "None (Custom Channel)" },
+    { value: "_custom", label: "None (Custom Channel)" },
   ]},
   { category: "Default", options: [
     { value: "default", label: "Default/Organic Traffic" },
@@ -369,9 +369,9 @@ export default function TrackingNumbersClient() {
                 <div className="grid gap-2">
                   <Label htmlFor="channelType">Channel Type</Label>
                   <Select
-                    value={isCustomChannelKey ? "" : editingNumber.channelKey}
+                    value={isCustomChannelKey ? "_custom" : editingNumber.channelKey}
                     onValueChange={(value) => {
-                      if (value === "") {
+                      if (value === "_custom") {
                         // Selected "None (Custom)" - enable custom mode
                         setIsCustomChannelKey(true);
                       } else {
