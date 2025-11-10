@@ -20,7 +20,7 @@ import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 // DEPRECATED: Old ServiceTitan job scanning system - replaced by voucher-based QR code system
 // import { getReferralProcessor } from "./lib/referralProcessor";
-import { startGMBAutomation } from "./lib/gmbAutomation";
+// GMB automation removed - rebuilding with SimpleTexting integration
 import { getReviewRequestScheduler } from "./lib/reviewRequestScheduler";
 import { getReferralNurtureScheduler } from "./lib/referralNurtureScheduler";
 import { startCustomCampaignScheduler } from "./lib/customCampaignScheduler";
@@ -43,9 +43,7 @@ startGoogleDriveMonitoring();
 console.log('[Worker] Starting photo cleanup job...');
 startPhotoCleanupJob();
 
-// Start GMB automation (fetches reviews every 6 hours, auto-replies every 15 minutes)
-console.log('[Worker] Starting GMB automation...');
-startGMBAutomation();
+// GMB automation temporarily disabled - rebuilding with SimpleTexting integration
 
 // Start review request and referral nurture email schedulers
 console.log('[Worker] Starting email schedulers...');

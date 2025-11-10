@@ -1,6 +1,4 @@
 import type { InsertSmsMessage, InsertSimpleTextingContact } from '../../shared/schema';
-import { db } from '../db';
-import { smsMessages } from '../../shared/schema';
 
 interface SimpleTextingConfig {
   apiToken: string;
@@ -189,37 +187,13 @@ export async function sendReferralSms(params: {
       message,
     });
 
-    // Log successful send to database
-    await db.insert(smsMessages).values({
-      to: params.recipientPhone,
-      message,
-      status: 'sent',
-      providerMessageId: response.id,
-      direction: 'outbound',
-      messageType: 'referral',
-    });
-
+    console.log(`[SimpleTexting] Referral SMS sent successfully: ${response.id}`);
     return {
       success: true,
       messageId: response.id,
     };
   } catch (error) {
-    console.error('Error sending referral SMS:', error);
-    
-    // Log failed send to database
-    try {
-      await db.insert(smsMessages).values({
-        to: params.recipientPhone,
-        message,
-        status: 'failed',
-        direction: 'outbound',
-        messageType: 'referral',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      });
-    } catch (logError) {
-      console.error('Failed to log SMS error:', logError);
-    }
-    
+    console.error('[SimpleTexting] Error sending referral SMS:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
@@ -241,37 +215,13 @@ export async function sendReviewRequestSms(params: {
       message,
     });
 
-    // Log successful send to database
-    await db.insert(smsMessages).values({
-      to: params.recipientPhone,
-      message,
-      status: 'sent',
-      providerMessageId: response.id,
-      direction: 'outbound',
-      messageType: 'review_request',
-    });
-
+    console.log(`[SimpleTexting] Review request SMS sent successfully: ${response.id}`);
     return {
       success: true,
       messageId: response.id,
     };
   } catch (error) {
-    console.error('Error sending review request SMS:', error);
-    
-    // Log failed send to database
-    try {
-      await db.insert(smsMessages).values({
-        to: params.recipientPhone,
-        message,
-        status: 'failed',
-        direction: 'outbound',
-        messageType: 'review_request',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error',
-      });
-    } catch (logError) {
-      console.error('Failed to log SMS error:', logError);
-    }
-    
+    console.error('[SimpleTexting] Error sending review request SMS:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',
