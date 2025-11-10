@@ -233,14 +233,52 @@ class ReviewRequestScheduler {
       const newJobsToProcess: JobCompletion[] = [];
 
       for (const stJob of stJobs) {
-        // Check if we've already created a job_completion for this ServiceTitan job
-        const existingCompletion = await db
+        // Check if we've already created a job_completion for this ServiceTitan job ID
+        const existingByJobId = await db
           .select()
           .from(jobCompletions)
           .where(eq(jobCompletions.jobId, stJob.id))
           .limit(1);
 
-        if (existingCompletion.length > 0) {
+        if (existingByJobId.length > 0) {
+          console.log(`[Review Request Scheduler] Job completion already exists for ST job ${stJob.id}, skipping`);
+          continue;
+        }
+
+        // Check for webhook-created completion that matches this job (reconciliation)
+        // Match by: customerId + completionDate (within 1 day) + invoiceTotal + source='webhook' + no jobId
+        const jobDate = new Date(stJob.completedOn);
+        const dayBefore = new Date(jobDate);
+        dayBefore.setDate(dayBefore.getDate() - 1);
+        const dayAfter = new Date(jobDate);
+        dayAfter.setDate(dayAfter.getDate() + 1);
+        const invoiceTotal = stJob.total ? Math.round(stJob.total * 100) : 0;
+        
+        const webhookCompletion = await db
+          .select()
+          .from(jobCompletions)
+          .where(
+            and(
+              eq(jobCompletions.customerId, stJob.customerId),
+              eq(jobCompletions.source, 'webhook'),
+              isNull(jobCompletions.jobId), // Only match webhook records without ST job ID
+              gte(jobCompletions.completionDate, dayBefore),
+              lt(jobCompletions.completionDate, dayAfter),
+              eq(jobCompletions.invoiceTotal, invoiceTotal) // Match on amount to prevent wrong-job association
+            )
+          )
+          .limit(1);
+
+        // If found webhook completion, reconcile by adding jobId
+        if (webhookCompletion.length > 0) {
+          console.log(`[Review Request Scheduler] Reconciling webhook completion ${webhookCompletion[0].id} with ST job ${stJob.id}`);
+          await db
+            .update(jobCompletions)
+            .set({ 
+              jobId: stJob.id,
+              sourceMetadata: sql`jsonb_set(COALESCE(${jobCompletions.sourceMetadata}, '{}'::jsonb), '{reconciledAt}', to_jsonb(now()))`,
+            })
+            .where(eq(jobCompletions.id, webhookCompletion[0].id));
           continue;
         }
 

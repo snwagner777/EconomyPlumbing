@@ -1955,8 +1955,9 @@ export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 export const jobCompletions = pgTable("job_completions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   
-  // ServiceTitan job details
-  jobId: integer("job_id").notNull().unique(),
+  // Dual-source identifiers (webhook vs polling)
+  jobId: integer("job_id").unique(), // ServiceTitan job ID (polling) - nullable for webhook-created records
+  invoiceNumber: text("invoice_number"), // Invoice number (webhook) - nullable for polling-created records
   customerId: integer("customer_id").notNull(),
   customerName: text("customer_name").notNull(),
   customerEmail: text("customer_email"),
@@ -1986,6 +1987,13 @@ export const jobCompletions = pgTable("job_completions", {
 }, (table) => ({
   completionDateIdx: index("job_completions_completion_date_idx").on(table.completionDate),
   customerIdIdx: index("job_completions_customer_id_idx").on(table.customerId),
+  // Partial unique indexes for dual-source idempotency
+  jobIdUnique: uniqueIndex("job_completions_job_id_not_null_idx")
+    .on(table.jobId)
+    .where(sql`${table.jobId} IS NOT NULL`),
+  customerInvoiceUnique: uniqueIndex("job_completions_customer_invoice_idx")
+    .on(table.customerId, table.invoiceNumber)
+    .where(sql`${table.invoiceNumber} IS NOT NULL`),
 }));
 
 // Invoice Processing Log - Track invoice PDF webhook attempts from ServiceTitan

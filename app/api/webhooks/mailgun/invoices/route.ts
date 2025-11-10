@@ -249,9 +249,13 @@ export async function POST(request: NextRequest) {
           // Create job completion record with source='webhook'
           const [newJob] = await tx.insert(jobCompletions).values({
             customerId: matchedCustomerId,
+            customerName: parsedData.customerName || 'Unknown',
+            customerEmail: parsedData.customerEmail,
+            customerPhone: parsedData.customerPhone,
             invoiceNumber: parsedData.documentNumber!,
-            completedDate: parsedData.documentDate || new Date(),
-            totalAmount: parsedData.totalAmount,
+            completionDate: parsedData.documentDate || new Date(),
+            invoiceTotal: parsedData.totalAmount,
+            serviceName: parsedData.services?.join(', '),
             source: 'webhook',
             sourceMetadata: {
               emailFrom: logEntry.emailFrom,
