@@ -13,17 +13,16 @@ Your automated campaigns (emails, blog posts, etc.) currently use `setInterval` 
 | Task | Frequency | Command | Purpose |
 |------|-----------|---------|---------|
 | **Frequent Emails** | Every 30 min | `npx tsx server/cron.ts emails-frequent` | Review requests, referral nurture, custom campaigns |
-| **GMB Reviews** | Every 6 hours | `npx tsx server/cron.ts gmb-reviews` | Fetch Google Business reviews |
+| **Reviews Fetch** | Every 6 hours | `npx tsx server/cron.ts reviews-fetch` | Fetch Google reviews via SerpAPI |
 | **Weekly Blog** | Monday 9am | `npx tsx server/cron.ts blog-weekly` | Generate AI blog post from photos |
-| **Photo Monitoring** | Every 5 min | `npx tsx server/cron.ts photos-monitor` | Check Google Drive for new photos |
+| **Photo Sync** | 2x daily (9am & 5pm) | `npx tsx server/cron.ts photos-sync` | Sync photos from Google Drive |
 | **Photo Cleanup** | Daily 3am | `npx tsx server/cron.ts photos-cleanup` | Delete old unused photos (60+ days) |
-| **Membership Sync** | Every 5 min | `npx tsx server/cron.ts membership-sync` | Sync VIP memberships to ServiceTitan |
 
 ---
 
 ## Pricing
 
-- **Scheduler fee**: $0.10/month per Scheduled Deployment (6 jobs = $0.60/month)
+- **Scheduler fee**: $0.10/month per Scheduled Deployment (5 jobs = $0.50/month)
 - **Runtime cost**: $0.000028/second (only when running)
 - **Replit Core members**: Get $25/month credits (covers all costs)
 
@@ -75,16 +74,31 @@ For **each task** in the table above, create a separate Scheduled Deployment:
 
 ---
 
-#### Example: Photo Cleanup (Daily 3am)
+#### Example: Photo Sync (2x daily at 9am & 5pm)
 
 **Schedule Tab:**
-- **Schedule description**: `Every day at 3:00 AM`
+- **Schedule description**: `Every day at 9:00 AM and 5:00 PM`
 - **Timezone**: `America/Chicago`
 - **Job timeout**: `10 minutes`
 
 **Build & Run Tab:**
 - **Build command**: `npm install`
-- **Run command**: `npx tsx server/cron.ts photos-cleanup`
+- **Run command**: `npx tsx server/cron.ts photos-sync`
+
+**Click Deploy** ✅
+
+---
+
+#### Example: Reviews Fetch (Every 6 hours)
+
+**Schedule Tab:**
+- **Schedule description**: `Every 6 hours`
+- **Timezone**: `America/Chicago`
+- **Job timeout**: `5 minutes`
+
+**Build & Run Tab:**
+- **Build command**: `npm install`
+- **Run command**: `npx tsx server/cron.ts reviews-fetch`
 
 **Click Deploy** ✅
 

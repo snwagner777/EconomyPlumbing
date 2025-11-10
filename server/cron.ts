@@ -10,11 +10,10 @@
  * 
  * Available tasks:
  *   - emails-frequent: Review requests, referrals, custom campaigns (every 30 min)
- *   - gmb-reviews: Fetch Google My Business reviews (every 6 hours)
+ *   - reviews-fetch: Fetch Google reviews via SerpAPI (every 6 hours)
  *   - blog-weekly: Generate weekly blog post (every Monday 9am)
- *   - photos-monitor: Google Drive photo monitoring (every 5 min)
+ *   - photos-sync: Sync photos from Google Drive (2x daily: 9am & 5pm)
  *   - photos-cleanup: Delete old unused photos (daily at 3am)
- *   - membership-sync: Sync VIP memberships to ServiceTitan (every 5 min)
  */
 
 import { storage } from "./storage";
@@ -26,11 +25,10 @@ if (!task) {
   console.error('Usage: npx tsx server/cron.ts <task-name>');
   console.error('\nAvailable tasks:');
   console.error('  - emails-frequent');
-  console.error('  - gmb-reviews');
+  console.error('  - reviews-fetch');
   console.error('  - blog-weekly');
-  console.error('  - photos-monitor');
+  console.error('  - photos-sync');
   console.error('  - photos-cleanup');
-  console.error('  - membership-sync');
   process.exit(1);
 }
 
@@ -45,24 +43,20 @@ async function runTask(taskName: string) {
         await runFrequentEmails();
         break;
 
-      case 'gmb-reviews':
-        await runGMBReviews();
+      case 'reviews-fetch':
+        await runReviewsFetch();
         break;
 
       case 'blog-weekly':
         await runWeeklyBlog();
         break;
 
-      case 'photos-monitor':
-        await runPhotosMonitor();
+      case 'photos-sync':
+        await runPhotosSync();
         break;
 
       case 'photos-cleanup':
         await runPhotosCleanup();
-        break;
-
-      case 'membership-sync':
-        await runMembershipSync();
         break;
 
       default:
@@ -128,18 +122,18 @@ async function runFrequentEmails() {
 }
 
 /**
- * GMB REVIEWS (Every 6 hours)
- * Fetch new Google My Business reviews
+ * REVIEWS FETCH (Every 6 hours)
+ * Fetch Google reviews via SerpAPI
  */
-async function runGMBReviews() {
-  console.log('⭐ Fetching GMB reviews...\n');
+async function runReviewsFetch() {
+  console.log('⭐ Fetching Google reviews via SerpAPI...\n');
 
   try {
-    const { autoFetchGMBReviews } = await import('./lib/gmbAutomation');
-    await autoFetchGMBReviews();
-    console.log('   ✓ GMB reviews fetched\n');
+    const { fetchGoogleReviewsViaSerpApi } = await import('./lib/serpApiReviews');
+    const result = await fetchGoogleReviewsViaSerpApi();
+    console.log(`   ✓ Reviews fetched: ${result.newReviews} new\n`);
   } catch (error: any) {
-    console.error('   ✗ GMB reviews failed:', error.message);
+    console.error('   ✗ Reviews fetch failed:', error.message);
   }
 }
 
@@ -160,18 +154,18 @@ async function runWeeklyBlog() {
 }
 
 /**
- * PHOTOS MONITOR (Every 5 minutes)
- * Check Google Drive for new photos
+ * PHOTOS SYNC (2x daily: 9am & 5pm)
+ * Sync photos from Google Drive
  */
-async function runPhotosMonitor() {
-  console.log('📸 Monitoring Google Drive for photos...\n');
+async function runPhotosSync() {
+  console.log('📸 Syncing photos from Google Drive...\n');
 
   try {
     const { monitorGoogleDriveFolder } = await import('./lib/googleDriveMonitor');
     await monitorGoogleDriveFolder();
-    console.log('   ✓ Photo monitoring complete\n');
+    console.log('   ✓ Photo sync complete\n');
   } catch (error: any) {
-    console.error('   ✗ Photo monitoring failed:', error.message);
+    console.error('   ✗ Photo sync failed:', error.message);
   }
 }
 
@@ -188,22 +182,6 @@ async function runPhotosCleanup() {
     console.log('   ✓ Photo cleanup complete\n');
   } catch (error: any) {
     console.error('   ✗ Photo cleanup failed:', error.message);
-  }
-}
-
-/**
- * MEMBERSHIP SYNC (Every 5 minutes)
- * Sync VIP membership purchases from Stripe to ServiceTitan
- */
-async function runMembershipSync() {
-  console.log('👥 Syncing VIP memberships to ServiceTitan...\n');
-
-  try {
-    const { processPendingMemberships } = await import('./lib/membershipSyncJob');
-    await processPendingMemberships();
-    console.log('   ✓ Membership sync complete\n');
-  } catch (error: any) {
-    console.error('   ✗ Membership sync failed:', error.message);
   }
 }
 
