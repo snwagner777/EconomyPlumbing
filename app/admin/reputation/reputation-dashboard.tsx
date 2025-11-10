@@ -216,7 +216,7 @@ export default function ReputationDashboard() {
                   >
                     <h3 className="font-semibold text-lg mb-2">Google My Business Reviews</h3>
                     <p className="text-sm text-muted-foreground">
-                      Automated fetching and AI-powered reply generation
+                      Automated review fetching and monitoring
                     </p>
                     <div className="mt-4 text-sm">
                       {gmbReviewsLoading ? (
@@ -435,7 +435,7 @@ export default function ReputationDashboard() {
                 </Button>
               </div>
               <p className="text-muted-foreground mb-6">
-                Automatically fetched GMB reviews with AI-powered reply generation and moderation workflow.
+                Automatically fetched GMB reviews with moderation workflow and manual reply management.
               </p>
               
               {gmbReviewsLoading ? (
@@ -490,16 +490,6 @@ export default function ReputationDashboard() {
                             {new Date(review.createTime).toLocaleDateString()}
                           </div>
                         </div>
-                        {!review.replyText && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            onClick={() => handlePlaceholderAction('Generate AI reply')}
-                            data-testid={`button-reply-${review.id}`}
-                          >
-                            Generate Reply
-                          </Button>
-                        )}
                       </div>
                     </div>
                   ))}
