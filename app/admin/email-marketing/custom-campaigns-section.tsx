@@ -914,40 +914,31 @@ function CreateCustomCampaignSection() {
   );
 }
 
-export default function CustomCampaignsPage() {
+export function CustomCampaignsSection() {
   const [activeTab, setActiveTab] = useState<'campaigns' | 'segments' | 'create'>('campaigns');
   
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-1">Custom Campaigns</h1>
-        <p className="text-muted-foreground mb-6">
-          Create AI-powered email campaigns with audience segmentation
-        </p>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-        <TabsList>
-          <TabsTrigger value="campaigns" data-testid="tab-campaigns">Campaigns</TabsTrigger>
-          <TabsTrigger value="segments" data-testid="tab-segments">Audience Segments</TabsTrigger>
-          <TabsTrigger value="create" data-testid="tab-create">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Campaign
-          </TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="campaigns" className="mt-6">
-          <CustomCampaignsListSection />
-        </TabsContent>
-        
-        <TabsContent value="segments" className="mt-6">
-          <CustomerSegmentsSection />
-        </TabsContent>
-        
-        <TabsContent value="create" className="mt-6">
-          <CreateCustomCampaignSection />
-        </TabsContent>
-      </Tabs>
-    </div>
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+      <TabsList>
+        <TabsTrigger value="campaigns" data-testid="tab-custom-campaigns">Campaigns</TabsTrigger>
+        <TabsTrigger value="segments" data-testid="tab-custom-segments">Audience Segments</TabsTrigger>
+        <TabsTrigger value="create" data-testid="tab-custom-create">
+          <Plus className="h-4 w-4 mr-2" />
+          Create Campaign
+        </TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="campaigns" className="mt-6">
+        <CustomCampaignsListSection />
+      </TabsContent>
+      
+      <TabsContent value="segments" className="mt-6">
+        <CustomerSegmentsSection />
+      </TabsContent>
+      
+      <TabsContent value="create" className="mt-6">
+        <CreateCustomCampaignSection />
+      </TabsContent>
+    </Tabs>
   );
 }

@@ -14,7 +14,7 @@ import { Edit } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-export default function ReviewPlatformsPage() {
+export function ProfilesSection() {
   const { data: platforms, isLoading } = useQuery<any[]>({
     queryKey: ['/api/admin/review-platforms'],
   });
@@ -65,13 +65,7 @@ export default function ReviewPlatformsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-1">Review Platform Links</h1>
-        <p className="text-muted-foreground mb-6">
-          Manage where customers can leave reviews
-        </p>
-      </div>
+    <div className="space-y-4">
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Star, Mail, MessageSquare, ThumbsUp } from 'lucide-react';
+import { AlertCircle, Star, Mail, MessageSquare, ThumbsUp, Globe } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { ProfilesSection } from './profiles-section';
 
 export default function ReputationDashboard() {
   const { toast } = useToast();
@@ -158,6 +159,10 @@ export default function ReputationDashboard() {
             <TabsTrigger value="gmb-reviews" data-testid="tab-gmb-reviews">
               GMB Reviews
             </TabsTrigger>
+            <TabsTrigger value="profiles" data-testid="tab-profiles">
+              <Globe className="h-4 w-4 mr-2" />
+              Review Platforms
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview">
@@ -231,25 +236,19 @@ export default function ReputationDashboard() {
                     </div>
                   </Link>
 
-                  <div
-                    className="p-6 bg-accent/50 rounded-lg"
-                    data-testid="card-settings"
+                  <Link
+                    href="/admin/reputation?tab=profiles"
+                    className="p-6 bg-accent/50 hover:bg-accent rounded-lg transition"
+                    data-testid="link-review-profiles"
                   >
-                    <h3 className="font-semibold text-lg mb-2">Campaign Settings</h3>
+                    <h3 className="font-semibold text-lg mb-2">Review Platform Links</h3>
                     <p className="text-sm text-muted-foreground">
-                      Master email switch and campaign-specific phone numbers
+                      Manage Google, Yelp, Facebook, and other review platform URLs
                     </p>
                     <div className="mt-4 text-sm">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handlePlaceholderAction('Settings')}
-                        data-testid="button-manage-settings"
-                      >
-                        Manage Settings
-                      </Button>
+                      <span className="font-medium">Configure platforms</span>
                     </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </Card>
@@ -504,6 +503,16 @@ export default function ReputationDashboard() {
                   </p>
                 </div>
               )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="profiles">
+            <Card className="p-8">
+              <h2 className="text-2xl font-bold mb-6">Review Platform Links</h2>
+              <p className="text-muted-foreground mb-6">
+                Manage where customers can leave reviews for your business
+              </p>
+              <ProfilesSection />
             </Card>
           </TabsContent>
         </Tabs>

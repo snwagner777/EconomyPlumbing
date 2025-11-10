@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, FileText, TrendingUp } from 'lucide-react';
+import { Mail, FileText, TrendingUp, Sparkles } from 'lucide-react';
 import { ReviewRequestsSection } from './review-requests-section';
 import { EmailTemplatesSection } from './email-templates-section';
 import { CampaignAnalyticsSection } from './campaign-analytics-section';
+import { CustomCampaignsSection } from './custom-campaigns-section';
 
 export default function EmailMarketingClient() {
   const [activeTab, setActiveTab] = useState('campaigns');
@@ -26,7 +27,7 @@ export default function EmailMarketingClient() {
 
       {/* Tabbed Interface */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
           <TabsTrigger value="campaigns" className="gap-2" data-testid="tab-campaigns">
             <Mail className="h-4 w-4" />
             Campaigns
@@ -38,6 +39,10 @@ export default function EmailMarketingClient() {
           <TabsTrigger value="analytics" className="gap-2" data-testid="tab-analytics">
             <TrendingUp className="h-4 w-4" />
             Analytics
+          </TabsTrigger>
+          <TabsTrigger value="custom" className="gap-2" data-testid="tab-custom">
+            <Sparkles className="h-4 w-4" />
+            Custom Campaigns
           </TabsTrigger>
         </TabsList>
 
@@ -79,6 +84,20 @@ export default function EmailMarketingClient() {
             </CardHeader>
             <CardContent>
               <CampaignAnalyticsSection />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="custom" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom AI-Powered Campaigns</CardTitle>
+              <CardDescription>
+                Create custom email campaigns with AI-generated content, audience segmentation, and drip sequences
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CustomCampaignsSection />
             </CardContent>
           </Card>
         </TabsContent>
