@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
+import { isAuthenticated } from '@/lib/auth';
 import { storage } from '@/server/storage';
 import { z } from 'zod';
 
@@ -22,8 +22,8 @@ const blogPostSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
+    const isAuth = await isAuthenticated();
+    if (!isAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -41,8 +41,8 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
+    const isAuth = await isAuthenticated();
+    if (!isAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 

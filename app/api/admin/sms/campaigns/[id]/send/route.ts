@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { isAdmin } from '@/lib/session';
+import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
 import { smsCampaigns, smsCampaignRuns, smsMessageEvents, smsContacts, smsCampaignMessages, smsCampaignSegments, customerSegments, customersXlsx } from '@shared/schema';
 import { eq, and, inArray } from 'drizzle-orm';
@@ -22,8 +22,8 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const isAdminUser = await isAdmin();
-    if (!isAdminUser) {
+    const isAuth = await isAuthenticated();
+    if (!isAuth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
@@ -214,12 +214,18 @@ export async function POST(
       let deliveredCount = 0;
       let failedCount = 0;
 
+      // TCPA-compliant opt-out footer
+      const optOutFooter = '\n\nReply STOP to opt-out';
+
       for (const contact of targetContacts) {
         try {
+          // Append opt-out footer to promotional messages
+          const messageBody = `${firstMessage.body}${optOutFooter}`;
+          
           // Send SMS
           await sendSMS({
             to: contact.phone,
-            message: firstMessage.body,
+            message: messageBody,
           });
 
           // Log message event
@@ -228,7 +234,7 @@ export async function POST(
             contactId: contact.id,
             phone: contact.phone,
             direction: 'outbound',
-            body: firstMessage.body,
+            body: messageBody,
             status: 'sent',
             sentAt: new Date(),
             provider: 'simpletexting',
@@ -247,7 +253,7 @@ export async function POST(
             contactId: contact.id,
             phone: contact.phone,
             direction: 'outbound',
-            body: firstMessage.body,
+            body: messageBody,
             status: 'failed',
             failedAt: new Date(),
             failureReason: error instanceof Error ? error.message : 'Unknown error',
