@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       .update(smsContacts)
       .set({
         optedOut: true,
-        optedOutAt: new Date(),
+        optOutTimestamp: new Date(),
         optOutMethod: 'keyword_reply',
         updatedAt: new Date(),
       })

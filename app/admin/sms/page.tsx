@@ -287,6 +287,64 @@ export default function SMSMarketingPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Bulk Opt-In Migration */}
+      <Card className="border-blue-200 dark:border-blue-900">
+        <CardHeader>
+          <div className="flex items-start gap-2">
+            <Users className="h-5 w-5 text-blue-600 dark:text-blue-500 mt-0.5" />
+            <div className="flex-1">
+              <CardTitle className="text-base">Bulk SMS Opt-In Migration</CardTitle>
+              <CardDescription>
+                Enroll all existing ServiceTitan customers for SMS marketing
+              </CardDescription>
+            </div>
+            <Button
+              data-testid="button-bulk-opt-in"
+              onClick={async () => {
+                if (!confirm('This will opt-in all active ServiceTitan customers for SMS. Existing opt-outs will be preserved. Continue?')) {
+                  return;
+                }
+                
+                try {
+                  const response = await fetch('/api/admin/sms/bulk-opt-in', {
+                    method: 'POST',
+                  });
+                  const data = await response.json();
+                  
+                  if (response.ok) {
+                    alert(`Success! Enrolled ${data.stats.optedIn} contacts. ${data.stats.optedOut} opt-outs preserved.`);
+                    window.location.reload();
+                  } else {
+                    alert(`Error: ${data.error}`);
+                  }
+                } catch (error) {
+                  alert('Failed to execute migration');
+                }
+              }}
+            >
+              Run Migration
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="text-sm space-y-2">
+          <p>
+            ✓ Uses "existing customer relationship" for TCPA compliance
+          </p>
+          <p>
+            ✓ Syncs all active customers from ServiceTitan to SMS contacts
+          </p>
+          <p>
+            ✓ Preserves existing opt-outs (will NOT re-enroll opted-out contacts)
+          </p>
+          <p>
+            ✓ All future messages include "Reply STOP to opt-out" footer
+          </p>
+          <p className="text-muted-foreground text-xs">
+            Run this once to initialize your SMS contact database from ServiceTitan
+          </p>
+        </CardContent>
+      </Card>
+
       {/* TCPA Compliance Notice */}
       <Card className="border-yellow-200 dark:border-yellow-900">
         <CardHeader>
