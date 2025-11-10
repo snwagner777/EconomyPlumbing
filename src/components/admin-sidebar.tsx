@@ -44,6 +44,7 @@ import {
   BarChart3,
   Sparkles,
   TrendingUp,
+  Webhook,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -195,6 +196,12 @@ const menuSections: MenuSection[] = [
         icon: BarChart3,
         href: '/admin/servicetitan',
         description: 'Sync monitoring',
+      },
+      {
+        title: 'Webhook Logs',
+        icon: Webhook,
+        href: '/admin/webhook-logs',
+        description: 'Import monitoring',
       },
       {
         title: 'AI Chatbot',

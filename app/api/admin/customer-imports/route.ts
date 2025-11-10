@@ -18,9 +18,12 @@ export async function GET(req: NextRequest) {
       .select()
       .from(customerDataImports)
       .orderBy(sql`${customerDataImports.startedAt} DESC`)
-      .limit(20);
+      .limit(50);
 
-    return NextResponse.json(imports);
+    return NextResponse.json({
+      imports,
+      count: imports.length,
+    });
   } catch (error: any) {
     console.error('[Admin] Error fetching customer imports:', error);
     return NextResponse.json(
