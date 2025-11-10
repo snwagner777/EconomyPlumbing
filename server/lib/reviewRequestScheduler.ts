@@ -20,6 +20,7 @@ import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, c
 import { eq, and, lt, gte, isNull, or, sql } from "drizzle-orm";
 import { generateEmail } from "./aiEmailGenerator";
 import { Resend } from "resend";
+import { sendReviewRequestSms } from "./simpletexting";
 
 interface ServiceTitanConfig {
   clientId: string;
@@ -294,6 +295,38 @@ class ReviewRequestScheduler {
         // Insert job_completion to database
         await db.insert(jobCompletions).values(jobCompletion);
         console.log(`[Review Request Scheduler] Created job_completion for job ${stJob.id}`);
+
+        // Send immediate SMS review request if customer has phone number
+        // Get customer phone from contacts_xlsx
+        const phoneContact = await db
+          .select()
+          .from(contactsXlsx)
+          .where(
+            and(
+              eq(contactsXlsx.customerId, stJob.customerId),
+              sql`LOWER(${contactsXlsx.contactType}) = 'phone'`
+            )
+          )
+          .limit(1);
+
+        if (phoneContact.length > 0 && phoneContact[0].normalizedValue) {
+          const customerPhone = phoneContact[0].normalizedValue.split(',')[0].trim();
+          
+          try {
+            const smsResult = await sendReviewRequestSms({
+              recipientPhone: customerPhone,
+              customerName: customer[0].name || 'Valued Customer',
+            });
+            
+            if (smsResult.success) {
+              console.log(`[Review Request Scheduler] SMS sent to customer ${stJob.customerId}, messageId: ${smsResult.messageId}`);
+            } else {
+              console.error(`[Review Request Scheduler] SMS failed for customer ${stJob.customerId}: ${smsResult.error}`);
+            }
+          } catch (smsError) {
+            console.error(`[Review Request Scheduler] Error sending review request SMS:`, smsError);
+          }
+        }
 
         newJobsToProcess.push(jobCompletion);
       }

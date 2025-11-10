@@ -10,6 +10,7 @@ import { referrals, serviceTitanCustomers, customersXlsx } from '@shared/schema'
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
 import { sendRefereeWelcomeEmail, sendReferrerThankYouEmail } from '@/server/lib/resendClient';
+import { sendReferralSms } from '@/server/lib/simpletexting';
 import { normalizePhone } from '@/server/lib/serviceTitan';
 import { eq, or, sql } from 'drizzle-orm';
 
@@ -219,6 +220,28 @@ export async function POST(req: NextRequest) {
           } catch (emailError) {
             console.error('[Referral] Failed to send referee welcome email:', emailError);
             // Don't fail the referral submission if email fails
+          }
+        }
+        
+        // Send welcome SMS to referee with voucher code
+        if (referral.refereePhone && voucherData?.refereeVoucher) {
+          try {
+            const smsResult = await sendReferralSms({
+              recipientPhone: referral.refereePhone,
+              recipientName: referral.refereeName,
+              referrerName: referral.referrerName,
+              voucherCode: voucherData.refereeVoucher.code,
+              discountAmount: 25, // $25
+            });
+            
+            if (smsResult.success) {
+              console.log('[Referral] Referee SMS sent successfully, messageId:', smsResult.messageId);
+            } else {
+              console.error('[Referral] SMS send failed:', smsResult.error);
+            }
+          } catch (smsError) {
+            console.error('[Referral] Failed to send referee SMS:', smsError);
+            // Don't fail the referral submission if SMS fails
           }
         }
       } catch (error) {
