@@ -191,10 +191,10 @@ const menuSections: MenuSection[] = [
         description: 'SEO settings',
       },
       {
-        title: 'Products',
+        title: 'Memberships',
         icon: Package,
         href: '/admin/products',
-        description: 'SKUs & pricing',
+        description: 'VIP memberships',
       },
       {
         title: 'ServiceTitan',
