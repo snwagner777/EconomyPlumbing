@@ -1296,6 +1296,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           city: newLocationData.city,
           state: newLocationData.state,
           zipCode: newLocationData.zipCode,
+          phone: customerData?.customer?.phoneNumber || customerData?.customer?.email || '',
+          email: customerData?.customer?.email,
           specialInstructions: newLocationData.specialInstructions || undefined,
         }),
       });

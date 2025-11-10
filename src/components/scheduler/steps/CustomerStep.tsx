@@ -616,6 +616,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
 
         <NewLocationWizard
           customerName={customerFound.name}
+          defaultPhone={customerFound.phone}
+          defaultEmail={customerFound.email}
           onSubmit={(locationData) => {
             if (customerFound && customerFound.serviceTitanId) {
               createLocationMutation.mutate({
@@ -628,8 +630,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
                   state: locationData.state,
                   zip: locationData.zip,
                 },
-                phone: customerFound.phone || '',
-                email: customerFound.email || '',
+                phone: locationData.phone,
+                email: locationData.email || undefined,
               });
             }
           }}

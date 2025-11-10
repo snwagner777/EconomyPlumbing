@@ -18,6 +18,8 @@ const locationSchema = z.object({
   city: z.string().min(1, 'City is required'),
   state: z.string().min(2, 'State is required').max(2),
   zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
+  phone: z.string().min(1, 'Phone number is required'),
+  email: z.string().email('Valid email is required').optional(),
 });
 
 interface NewLocationWizardProps {
@@ -25,13 +27,17 @@ interface NewLocationWizardProps {
   onCancel: () => void;
   isSubmitting?: boolean;
   customerName?: string;
+  defaultPhone?: string;
+  defaultEmail?: string;
 }
 
-export function NewLocationWizard({ onSubmit, onCancel, isSubmitting, customerName }: NewLocationWizardProps) {
+export function NewLocationWizard({ onSubmit, onCancel, isSubmitting, customerName, defaultPhone, defaultEmail }: NewLocationWizardProps) {
   const [currentStep, setCurrentStep] = useState<1 | 2>(1);
   const [wizardData, setWizardData] = useState<any>({
     city: 'Austin',
     state: 'TX',
+    phone: defaultPhone || '',
+    email: defaultEmail || '',
   });
 
   const step1Form = useForm({
@@ -50,6 +56,8 @@ export function NewLocationWizard({ onSubmit, onCancel, isSubmitting, customerNa
       city: z.string().min(1, 'City is required'),
       state: z.string().min(2, 'State is required').max(2),
       zip: z.string().regex(/^\d{5}(-\d{4})?$/, 'Valid ZIP code is required'),
+      phone: z.string().min(1, 'Phone number is required'),
+      email: z.string().email('Valid email is required').optional(),
     })),
     defaultValues: {
       address: wizardData.address || '',
@@ -57,6 +65,8 @@ export function NewLocationWizard({ onSubmit, onCancel, isSubmitting, customerNa
       city: wizardData.city || 'Austin',
       state: wizardData.state || 'TX',
       zip: wizardData.zip || '',
+      phone: wizardData.phone || defaultPhone || '',
+      email: wizardData.email || defaultEmail || '',
     },
   });
 
@@ -224,6 +234,35 @@ export function NewLocationWizard({ onSubmit, onCancel, isSubmitting, customerNa
                   )}
                 />
               </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={step2Form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="(512) 555-1234" {...field} data-testid="input-phone" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={step2Form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email (Optional)</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} data-testid="input-email" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className="flex gap-3">

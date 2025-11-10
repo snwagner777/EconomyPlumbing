@@ -10,13 +10,13 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { customerId, address, city, state, zipCode, specialInstructions } = body;
+    const { customerId, address, city, state, zipCode, phone, email, specialInstructions } = body;
 
-    if (!customerId || !address || !city || !state || !zipCode) {
+    if (!customerId || !address || !city || !state || !zipCode || !phone) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields',
+          error: 'Missing required fields (address, city, state, zipCode, phone)',
         },
         { status: 400 }
       );
@@ -33,6 +33,8 @@ export async function POST(req: NextRequest) {
         state,
         zip: zipCode,
       },
+      phone,
+      email,
     });
 
     // Add special instructions as pinned note if provided
