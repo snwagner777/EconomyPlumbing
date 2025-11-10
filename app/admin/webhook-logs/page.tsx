@@ -7,7 +7,7 @@
 import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { isAuthenticated } from '@/lib/auth';
-import WebhookLogsClient from './webhook-logs-client';
+import WebhookLogsClient from './webhook-logs-client.tsx';
 
 export const metadata: Metadata = {
   title: 'Webhook Logs | Admin',

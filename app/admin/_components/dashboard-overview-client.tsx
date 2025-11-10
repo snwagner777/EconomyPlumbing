@@ -163,15 +163,15 @@ export default function DashboardOverviewClient() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Customers</p>
-                <p className="text-2xl font-bold" data-testid="stat-customers">
+                <div className="text-2xl font-bold" data-testid="stat-customers">
                   {syncLoading ? <Skeleton className="h-8 w-20" /> : (syncStatus?.totalCustomers ?? 0).toLocaleString()}
-                </p>
+                </div>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Contacts</p>
-                <p className="text-2xl font-bold" data-testid="stat-contacts">
+                <div className="text-2xl font-bold" data-testid="stat-contacts">
                   {syncLoading ? <Skeleton className="h-8 w-20" /> : (syncStatus?.totalContacts ?? 0).toLocaleString()}
-                </p>
+                </div>
               </div>
             </div>
             
@@ -212,15 +212,15 @@ export default function DashboardOverviewClient() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-sm text-muted-foreground">Total Searches</p>
-                <p className="text-2xl font-bold" data-testid="stat-portal-searches">
+                <div className="text-2xl font-bold" data-testid="stat-portal-searches">
                   {statsLoading ? <Skeleton className="h-8 w-16" /> : portalStats?.totalSearches || 0}
-                </p>
+                </div>
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">Customers Found</p>
-                <p className="text-2xl font-bold" data-testid="stat-portal-found">
+                <div className="text-2xl font-bold" data-testid="stat-portal-found">
                   {statsLoading ? <Skeleton className="h-8 w-16" /> : (portalStats?.recentSearches?.filter(s => s.found).length ?? 0)}
-                </p>
+                </div>
               </div>
             </div>
 
@@ -385,9 +385,9 @@ export default function DashboardOverviewClient() {
                 <Calendar className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Scheduler Opens</p>
               </div>
-              <p className="text-2xl font-bold" data-testid="stat-scheduler-opens">
+              <div className="text-2xl font-bold" data-testid="stat-scheduler-opens">
                 {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.schedulerOpens || 0)}
-              </p>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 ServiceTitan scheduler clicks
               </p>
@@ -398,9 +398,9 @@ export default function DashboardOverviewClient() {
                 <Phone className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Phone Clicks</p>
               </div>
-              <p className="text-2xl font-bold" data-testid="stat-phone-clicks">
+              <div className="text-2xl font-bold" data-testid="stat-phone-clicks">
                 {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.phoneClicks || 0)}
-              </p>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Click-to-call conversions
               </p>
@@ -411,9 +411,9 @@ export default function DashboardOverviewClient() {
                 <Mail className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Form Submissions</p>
               </div>
-              <p className="text-2xl font-bold" data-testid="stat-form-submissions">
+              <div className="text-2xl font-bold" data-testid="stat-form-submissions">
                 {conversionLoading ? <Skeleton className="h-8 w-16" /> : (conversionStats?.formSubmissions || 0)}
-              </p>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Contact form completions
               </p>
@@ -424,9 +424,9 @@ export default function DashboardOverviewClient() {
                 <FileText className="w-4 h-4 text-primary" />
                 <p className="text-sm font-medium">Portal Searches</p>
               </div>
-              <p className="text-2xl font-bold" data-testid="stat-conversion-portal">
+              <div className="text-2xl font-bold" data-testid="stat-conversion-portal">
                 {portalStats?.totalSearches || 0}
-              </p>
+              </div>
               <p className="text-xs text-muted-foreground mt-1">
                 Customer portal lookups
               </p>
