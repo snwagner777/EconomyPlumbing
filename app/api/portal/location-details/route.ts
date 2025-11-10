@@ -19,17 +19,22 @@ interface SessionData {
   availableCustomerIds?: number[];
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } = await params;
-    const customerId = parseInt(id);
+    const { searchParams } = new URL(request.url);
+    const customerId = parseInt(searchParams.get('customerId') || '0');
+    const locationId = parseInt(searchParams.get('locationId') || '0');
     
     if (!customerId || isNaN(customerId)) {
       return NextResponse.json(
         { error: 'Valid customer ID required' },
+        { status: 400 }
+      );
+    }
+
+    if (isNaN(locationId)) {
+      return NextResponse.json(
+        { error: 'Valid location ID required' },
         { status: 400 }
       );
     }
@@ -48,21 +53,39 @@ export async function GET(
     // SECURITY: Verify this customer is in the authorized list
     const availableCustomerIds = session.availableCustomerIds || [session.customerId];
     if (!availableCustomerIds.includes(customerId)) {
-      console.error(`[Portal] Security violation: Customer ${session.customerId} attempted to access data for customer ${customerId}`);
+      console.error(`[Portal] Security violation: Customer ${session.customerId} attempted to access location data for customer ${customerId}`);
       return NextResponse.json(
         { error: 'Unauthorized - This account does not belong to you' },
         { status: 403 }
       );
     }
     
-    // Fetch real-time customer data from ServiceTitan
-    const customerData = await serviceTitanPortalService.getCustomerPortalData(customerId);
+    // Fetch location details from ServiceTitan
+    const locationDetails = await serviceTitanPortalService.getLocationDetails(customerId, locationId);
     
-    return NextResponse.json(customerData);
+    return NextResponse.json(locationDetails);
   } catch (error: any) {
-    console.error('[Portal Customer Data] Error:', error);
+    console.error('[Portal Location Details] Error:', error);
+    
+    // Return 403 for authorization errors (location doesn't belong to customer)
+    if (error.message && error.message.includes('Unauthorized')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 403 }
+      );
+    }
+    
+    // Return 404 for not found errors
+    if (error.message && error.message.includes('not found')) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: 404 }
+      );
+    }
+    
+    // Return 500 for other errors
     return NextResponse.json(
-      { error: error.message || 'Failed to load customer data' },
+      { error: error.message || 'Failed to load location details' },
       { status: 500 }
     );
   }
