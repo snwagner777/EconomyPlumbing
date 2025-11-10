@@ -122,7 +122,7 @@ export default function NewServicePage() {
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panel (19 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections include Overview, AI Marketing, Communications, Content, Customers, and Site Configuration.
+- **Admin Panel (21 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections include Overview, AI Marketing, Communications, Content, Customers, and Site Configuration. Features consolidated tabbed interfaces for Email Marketing (includes Custom Campaigns tab) and Reputation (includes GMB Reviews and Profiles tabs). GMB Setup accessible via sidebar for Google OAuth connection setup.
 - **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend
