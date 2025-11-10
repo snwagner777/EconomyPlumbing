@@ -42,6 +42,8 @@ import {
   AlertTriangle,
   Clock,
   Activity,
+  FileText,
+  DollarSign,
 } from 'lucide-react';
 import { queryClient } from '@/lib/queryClient';
 
@@ -96,6 +98,26 @@ export function ServiceTitanDashboard() {
   } = useQuery<{ customers?: Customer[]; total?: number }>({
     queryKey: ['/api/admin/customers'],
     enabled: activeTab === 'customers',
+  });
+
+  // Fetch invoice processing logs
+  const {
+    data: invoiceLogsData,
+    isLoading: invoiceLogsLoading,
+    refetch: refetchInvoiceLogs,
+  } = useQuery<any[]>({
+    queryKey: ['/api/admin/invoice-logs'],
+    enabled: activeTab === 'webhooks',
+  });
+
+  // Fetch estimate processing logs
+  const {
+    data: estimateLogsData,
+    isLoading: estimateLogsLoading,
+    refetch: refetchEstimateLogs,
+  } = useQuery<any[]>({
+    queryKey: ['/api/admin/estimate-logs'],
+    enabled: activeTab === 'webhooks',
   });
 
   // Filter customers based on search and filters
@@ -158,6 +180,10 @@ export function ServiceTitanDashboard() {
           <TabsTrigger value="customers" data-testid="tab-customers">
             <Users className="h-4 w-4 mr-2" />
             Customers
+          </TabsTrigger>
+          <TabsTrigger value="webhooks" data-testid="tab-webhooks">
+            <Mail className="h-4 w-4 mr-2" />
+            Webhook Processing
           </TabsTrigger>
         </TabsList>
 
@@ -500,6 +526,171 @@ export function ServiceTitanDashboard() {
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+            )}
+          </Card>
+        </TabsContent>
+
+        {/* WEBHOOK PROCESSING TAB */}
+        <TabsContent value="webhooks" className="space-y-6">
+          {/* Invoice Processing */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <DollarSign className="h-5 w-5" />
+                  Invoice Processing
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  ServiceTitan invoice PDFs processed for review requests
+                </p>
+              </div>
+              <Button
+                onClick={() => refetchInvoiceLogs()}
+                variant="outline"
+                size="sm"
+                data-testid="button-refresh-invoices"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+
+            {invoiceLogsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            ) : !invoiceLogsData || invoiceLogsData.length === 0 ? (
+              <div className="text-center p-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No invoice processing logs yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {invoiceLogsData.slice(0, 20).map((log: any) => (
+                  <div
+                    key={log.id}
+                    className="p-4 border rounded-lg"
+                    data-testid={`invoice-log-${log.id}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium">{log.fileName}</h3>
+                          <Badge variant={log.status === 'completed' ? 'default' : log.status === 'failed' ? 'destructive' : 'secondary'}>
+                            {log.status}
+                          </Badge>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(log.processedAt).toLocaleString()}
+                          </div>
+                          {log.customerEmail && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3 w-3" />
+                              {log.customerEmail}
+                            </div>
+                          )}
+                          {log.processingTimeMs && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3" />
+                              {log.processingTimeMs}ms
+                            </div>
+                          )}
+                        </div>
+                        {log.errorMessage && (
+                          <div className="mt-2 p-2 bg-destructive/10 rounded text-xs text-destructive">
+                            {log.errorMessage}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
+          {/* Estimate Processing */}
+          <Card className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Estimate Processing
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  ServiceTitan estimate PDFs processed for quote follow-up
+                </p>
+              </div>
+              <Button
+                onClick={() => refetchEstimateLogs()}
+                variant="outline"
+                size="sm"
+                data-testid="button-refresh-estimates"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh
+              </Button>
+            </div>
+
+            {estimateLogsLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-20 w-full" />
+                ))}
+              </div>
+            ) : !estimateLogsData || estimateLogsData.length === 0 ? (
+              <div className="text-center p-8 text-muted-foreground">
+                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No estimate processing logs yet</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {estimateLogsData.slice(0, 20).map((log: any) => (
+                  <div
+                    key={log.id}
+                    className="p-4 border rounded-lg"
+                    data-testid={`estimate-log-${log.id}`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-medium">{log.fileName}</h3>
+                          <Badge variant={log.status === 'completed' ? 'default' : log.status === 'failed' ? 'destructive' : 'secondary'}>
+                            {log.status}
+                          </Badge>
+                        </div>
+                        <div className="grid md:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            {new Date(log.processedAt).toLocaleString()}
+                          </div>
+                          {log.customerEmail && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="h-3 w-3" />
+                              {log.customerEmail}
+                            </div>
+                          )}
+                          {log.processingTimeMs && (
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-3 w-3" />
+                              {log.processingTimeMs}ms
+                            </div>
+                          )}
+                        </div>
+                        {log.errorMessage && (
+                          <div className="mt-2 p-2 bg-destructive/10 rounded text-xs text-destructive">
+                            {log.errorMessage}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </Card>
