@@ -11,9 +11,24 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Mail, Phone, CheckCircle, Calendar, FileText, Gift, 
-  DollarSign, MapPin, User, Shield, LogOut, Loader2 
+  DollarSign, MapPin, User, Shield, LogOut, Loader2, Building, AlertCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+
+interface LocationSummary {
+  id: number;
+  name: string;
+  address: string;
+}
+
+interface LocationDetails {
+  id: number;
+  name: string;
+  address: string;
+  appointments: any[];
+  invoices: any[];
+  memberships: any[];
+}
 
 interface CustomerData {
   id: number;
@@ -21,11 +36,14 @@ interface CustomerData {
   email: string;
   phone: string;
   address: string;
-  appointments: any[];
-  invoices: any[];
-  memberships: any[];
+  locations: LocationSummary[];
   referrals: any[];
   credits: number;
+}
+
+interface PortalSession {
+  customerId: number;
+  availableCustomerIds: number[];
 }
 
 type VerificationStep = 'lookup' | 'verify-code' | 'authenticated';
@@ -39,12 +57,17 @@ export default function CustomerPortal() {
   const [lookupValue, setLookupValue] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [customerId, setCustomerId] = useState<string | null>(null);
+  const [session, setSession] = useState<PortalSession | null>(null);
   const [lookupToken, setLookupToken] = useState('');
   
   // Customer data
   const [customerData, setCustomerData] = useState<CustomerData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
+  
+  // Location-specific data (lazy loaded)
+  const [locationData, setLocationData] = useState<Map<number, LocationDetails>>(new Map());
+  const [loadingLocations, setLoadingLocations] = useState<Set<number>>(new Set());
+  const [selectedLocationId, setSelectedLocationId] = useState<number | null>(null);
   
   // Referral submission state
   const [showReferralModal, setShowReferralModal] = useState(false);
@@ -60,10 +83,10 @@ export default function CustomerPortal() {
   
   // Load customer data when authenticated
   useEffect(() => {
-    if (verificationStep === 'authenticated' && customerId) {
-      loadCustomerData();
+    if (verificationStep === 'authenticated' && session?.customerId) {
+      loadCustomerData(session.customerId);
     }
-  }, [verificationStep, customerId]);
+  }, [verificationStep, session?.customerId]);
   
   const checkExistingSession = async () => {
     try {
@@ -71,7 +94,15 @@ export default function CustomerPortal() {
       if (response.ok) {
         const data = await response.json();
         if (data.customerId) {
-          setCustomerId(data.customerId.toString());
+          // Defensive: Ensure availableCustomerIds always exists
+          const availableIds = Array.isArray(data.availableCustomerIds) && data.availableCustomerIds.length > 0
+            ? data.availableCustomerIds
+            : [data.customerId];
+          
+          setSession({
+            customerId: data.customerId,
+            availableCustomerIds: availableIds,
+          });
           setVerificationStep('authenticated');
         }
       }
@@ -141,13 +172,18 @@ export default function CustomerPortal() {
       
       // Handle single or multiple accounts
       if (data.customers && data.customers.length > 0) {
-        // For now, use first customer (TODO: add account selection UI)
-        setCustomerId(data.customers[0].id.toString());
+        const customerIds = data.customers.map((c: any) => c.id);
+        setSession({
+          customerId: customerIds[0],
+          availableCustomerIds: customerIds.length > 0 ? customerIds : [customerIds[0]],
+        });
         setVerificationStep('authenticated');
         
         toast({
           title: 'Welcome!',
-          description: 'Successfully logged in to your portal.',
+          description: data.customers.length > 1 
+            ? `Found ${data.customers.length} accounts. You can switch between them.`
+            : 'Successfully logged in to your portal.',
         });
       } else {
         throw new Error('No customer account found');
@@ -163,9 +199,7 @@ export default function CustomerPortal() {
     }
   };
   
-  const loadCustomerData = async () => {
-    if (!customerId) return;
-    
+  const loadCustomerData = async (customerId: number) => {
     setIsLoadingData(true);
     try {
       const response = await fetch(`/api/portal/customer/${customerId}`);
@@ -176,6 +210,13 @@ export default function CustomerPortal() {
       
       const data = await response.json();
       setCustomerData(data);
+      
+      // Auto-select first location if available
+      if (data.locations && data.locations.length > 0) {
+        const firstLocationId = data.locations[0].id;
+        setSelectedLocationId(firstLocationId);
+        loadLocationDetails(customerId, firstLocationId);
+      }
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -187,11 +228,70 @@ export default function CustomerPortal() {
     }
   };
   
+  const loadLocationDetails = async (customerId: number, locationId: number) => {
+    // Check if already loaded
+    if (locationData.has(locationId)) {
+      return;
+    }
+    
+    // Check if already loading
+    if (loadingLocations.has(locationId)) {
+      return;
+    }
+    
+    setLoadingLocations(prev => new Set(prev).add(locationId));
+    
+    try {
+      const response = await fetch(
+        `/api/portal/location-details?customerId=${customerId}&locationId=${locationId}`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to load location details');
+      }
+      
+      const data = await response.json();
+      setLocationData(prev => new Map(prev).set(locationId, data));
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: `Failed to load location data: ${error.message}`,
+        variant: 'destructive',
+      });
+    } finally {
+      setLoadingLocations(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(locationId);
+        return newSet;
+      });
+    }
+  };
+  
+  const handleSwitchAccount = (customerId: number) => {
+    if (session?.customerId !== customerId) {
+      setSession(prev => prev ? { ...prev, customerId } : null);
+      setCustomerData(null);
+      setLocationData(new Map());
+      setSelectedLocationId(null);
+      loadCustomerData(customerId);
+    }
+  };
+  
+  const handleLocationTabChange = (locationId: string) => {
+    const locId = parseInt(locationId, 10);
+    setSelectedLocationId(locId);
+    
+    if (session?.customerId) {
+      loadLocationDetails(session.customerId, locId);
+    }
+  };
+  
   const handleLogout = async () => {
     try {
       await fetch('/api/portal/auth/logout', { method: 'POST' });
-      setCustomerId(null);
+      setSession(null);
       setCustomerData(null);
+      setLocationData(new Map());
       setVerificationStep('lookup');
       setLookupValue('');
       setVerificationCode('');
@@ -222,11 +322,9 @@ export default function CustomerPortal() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          // Referrer info (logged-in customer)
           referrerName: customerData?.name || 'Customer',
           referrerEmail: customerData?.email || '',
           referrerPhone: customerData?.phone || '',
-          // Referee info (friend being referred)
           refereeName: referralName.trim(),
           refereePhone: referralPhone.trim(),
           refereeEmail: referralEmail.trim() || '',
@@ -244,14 +342,14 @@ export default function CustomerPortal() {
         description: 'Thank you for referring a friend. We\'ll contact them soon!',
       });
       
-      // Reset form and close modal
       setReferralName('');
       setReferralPhone('');
       setReferralEmail('');
       setShowReferralModal(false);
       
-      // Reload customer data to refresh referrals list
-      loadCustomerData();
+      if (session?.customerId) {
+        loadCustomerData(session.customerId);
+      }
     } catch (error: any) {
       toast({
         title: 'Submission Failed',
@@ -267,101 +365,101 @@ export default function CustomerPortal() {
   if (verificationStep === 'lookup') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-          <Card className="w-full max-w-md" data-testid="card-portal-login">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl" data-testid="text-portal-title">
-                Customer Portal
-              </CardTitle>
-              <CardDescription data-testid="text-portal-subtitle">
-                Sign in to view your service history and account details
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <Tabs value={lookupType} onValueChange={(v) => setLookupType(v as 'phone' | 'email')}>
-                <TabsList className="grid w-full grid-cols-2" data-testid="tabs-login-method">
-                  <TabsTrigger value="email" data-testid="tab-email-login">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Email
-                  </TabsTrigger>
-                  <TabsTrigger value="phone" data-testid="tab-phone-login">
-                    <Phone className="w-4 h-4 mr-2" />
-                    Phone
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="email" className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email" data-testid="label-email">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      value={lookupValue}
-                      onChange={(e) => setLookupValue(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-                      data-testid="input-email"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleLookup}
-                    disabled={isLoading || !lookupValue.trim()}
-                    className="w-full"
-                    data-testid="button-send-email-code"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Mail className="w-4 h-4 mr-2" />
-                        Send Verification Email
-                      </>
-                    )}
-                  </Button>
-                </TabsContent>
-                
-                <TabsContent value="phone" className="space-y-4 mt-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" data-testid="label-phone">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="(512) 555-0123"
-                      value={lookupValue}
-                      onChange={(e) => setLookupValue(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-                      data-testid="input-phone"
-                    />
-                  </div>
-                  <Button
-                    onClick={handleLookup}
-                    disabled={isLoading || !lookupValue.trim()}
-                    className="w-full"
-                    data-testid="button-send-phone-code"
-                  >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Phone className="w-4 h-4 mr-2" />
-                        Send Verification Code
-                      </>
-                    )}
-                  </Button>
-                </TabsContent>
-              </Tabs>
+        <Card className="w-full max-w-md" data-testid="card-portal-login">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl" data-testid="text-portal-title">
+              Customer Portal
+            </CardTitle>
+            <CardDescription data-testid="text-portal-subtitle">
+              Sign in to view your service history and account details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <Tabs value={lookupType} onValueChange={(v) => setLookupType(v as 'phone' | 'email')}>
+              <TabsList className="grid w-full grid-cols-2" data-testid="tabs-login-method">
+                <TabsTrigger value="email" data-testid="tab-email-login">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email
+                </TabsTrigger>
+                <TabsTrigger value="phone" data-testid="tab-phone-login">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Phone
+                </TabsTrigger>
+              </TabsList>
               
-              <div className="text-center text-sm text-muted-foreground">
-                <p>We'll send you a secure code to verify your identity</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              <TabsContent value="email" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" data-testid="label-email">Email Address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="your@email.com"
+                    value={lookupValue}
+                    onChange={(e) => setLookupValue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
+                    data-testid="input-email"
+                  />
+                </div>
+                <Button
+                  onClick={handleLookup}
+                  disabled={isLoading || !lookupValue.trim()}
+                  className="w-full"
+                  data-testid="button-send-email-code"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="w-4 h-4 mr-2" />
+                      Send Verification Email
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
+              
+              <TabsContent value="phone" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" data-testid="label-phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(512) 555-0123"
+                    value={lookupValue}
+                    onChange={(e) => setLookupValue(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
+                    data-testid="input-phone"
+                  />
+                </div>
+                <Button
+                  onClick={handleLookup}
+                  disabled={isLoading || !lookupValue.trim()}
+                  className="w-full"
+                  data-testid="button-send-phone-code"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-4 h-4 mr-2" />
+                      Send Verification Code
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
+            </Tabs>
+            
+            <div className="text-center text-sm text-muted-foreground">
+              <p>We'll send you a secure code to verify your identity</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
   
@@ -369,76 +467,80 @@ export default function CustomerPortal() {
   if (verificationStep === 'verify-code') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-          <Card className="w-full max-w-md" data-testid="card-verify-code">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl" data-testid="text-verify-title">
-                Verify Your Code
-              </CardTitle>
-              <CardDescription data-testid="text-verify-subtitle">
-                Enter the code we sent to {lookupValue}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="code" data-testid="label-code">Verification Code</Label>
-                <Input
-                  id="code"
-                  type="text"
-                  placeholder="123456"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
-                  data-testid="input-code"
-                />
-              </div>
-              
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setVerificationStep('lookup');
-                    setVerificationCode('');
-                  }}
-                  className="flex-1"
-                  data-testid="button-back"
-                >
-                  Back
-                </Button>
-                <Button
-                  onClick={handleVerifyCode}
-                  disabled={isLoading || !verificationCode.trim()}
-                  className="flex-1"
-                  data-testid="button-verify"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Verifying...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                      Verify
-                    </>
-                  )}
-                </Button>
-              </div>
-              
-              <div className="text-center">
-                <Button
-                  variant="ghost"
-                  onClick={handleLookup}
-                  disabled={isLoading}
-                  data-testid="button-resend"
-                >
-                  Resend Code
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <Card className="w-full max-w-md" data-testid="card-verify-code">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl" data-testid="text-verify-title">
+              Verify Your Code
+            </CardTitle>
+            <CardDescription data-testid="text-verify-subtitle">
+              Enter the code we sent to {lookupValue}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="code" data-testid="label-code">Verification Code</Label>
+              <Input
+                id="code"
+                type="text"
+                placeholder="123456"
+                value={verificationCode}
+                onChange={(e) => setVerificationCode(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleVerifyCode()}
+                data-testid="input-code"
+              />
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setVerificationStep('lookup');
+                  setVerificationCode('');
+                }}
+                className="flex-1"
+                data-testid="button-back"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleVerifyCode}
+                disabled={isLoading || !verificationCode.trim()}
+                className="flex-1"
+                data-testid="button-verify"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Verifying...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Verify
+                  </>
+                )}
+              </Button>
+            </div>
+            
+            <div className="text-center">
+              <Button
+                variant="ghost"
+                onClick={handleLookup}
+                disabled={isLoading}
+                data-testid="button-resend"
+              >
+                Resend Code
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
+  
+  // Get current location data
+  const currentLocation = selectedLocationId !== null ? locationData.get(selectedLocationId) : null;
+  const isLoadingLocation = selectedLocationId !== null && loadingLocations.has(selectedLocationId);
   
   // Dashboard UI (authenticated)
   return (
@@ -453,7 +555,7 @@ export default function CustomerPortal() {
                   Welcome{customerData?.name ? `, ${customerData.name}` : ''}
                 </h1>
                 <p className="text-sm text-muted-foreground" data-testid="text-account-id">
-                  Account #{customerId}
+                  Account #{session?.customerId}
                 </p>
               </div>
               <Button variant="outline" onClick={handleLogout} data-testid="button-logout">
@@ -465,299 +567,378 @@ export default function CustomerPortal() {
         </div>
         
         <div className="container mx-auto px-4 py-8">
+          {/* Multi-Account Switcher */}
+          {session && session.availableCustomerIds.length > 1 && (
+            <Card className="mb-6" data-testid="card-account-switcher">
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <Building className="w-5 h-5" />
+                  Your Accounts
+                </CardTitle>
+                <CardDescription>
+                  You have {session.availableCustomerIds.length} accounts
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-2">
+                  {session.availableCustomerIds.map((id, idx) => (
+                    <Button
+                      key={id}
+                      variant={id === session.customerId ? 'default' : 'outline'}
+                      onClick={() => handleSwitchAccount(id)}
+                      data-testid={`button-account-${id}`}
+                    >
+                      <User className="w-4 h-4 mr-2" />
+                      {customerData && id === session.customerId 
+                        ? customerData.name || `Account #${id}`
+                        : `Account #${id}`}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+          
           {isLoadingData ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" data-testid="loader-data" />
             </div>
           ) : customerData ? (
             <div className="grid gap-6">
-              {/* Stats Cards */}
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <Card data-testid="card-stat-appointments">
-                  <CardHeader className="pb-3">
-                    <CardDescription>Upcoming Appointments</CardDescription>
-                    <CardTitle className="text-3xl">
-                      {customerData.appointments?.length || 0}
-                    </CardTitle>
+              {/* Location-Independent Section */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold">Account Overview</h2>
+                
+                {/* Contact Info */}
+                <Card data-testid="card-contact-info">
+                  <CardHeader>
+                    <CardTitle>Contact Information</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <CardContent className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-muted-foreground" />
+                      <span>{customerData.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-muted-foreground" />
+                      <span>{customerData.phone}</span>
+                    </div>
+                    {customerData.address && (
+                      <div className="flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-muted-foreground" />
+                        <span>{customerData.address}</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
                 
-                <Card data-testid="card-stat-invoices">
-                  <CardHeader className="pb-3">
-                    <CardDescription>Recent Invoices</CardDescription>
-                    <CardTitle className="text-3xl">
-                      {customerData.invoices?.length || 0}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <FileText className="w-4 h-4 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-                
-                <Card data-testid="card-stat-memberships">
-                  <CardHeader className="pb-3">
-                    <CardDescription>Memberships</CardDescription>
-                    <CardTitle className="text-3xl">
-                      {customerData.memberships?.length || 0}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Shield className="w-4 h-4 text-muted-foreground" />
-                  </CardContent>
-                </Card>
-                
-                <Card data-testid="card-stat-credits">
-                  <CardHeader className="pb-3">
-                    <CardDescription>Referral Credits</CardDescription>
-                    <CardTitle className="text-3xl">
-                      ${customerData.credits || 0}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Gift className="w-4 h-4 text-muted-foreground" />
-                  </CardContent>
-                </Card>
+                {/* Referrals & Credits */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <Card data-testid="card-referrals">
+                    <CardHeader>
+                      <CardDescription>Your Referrals</CardDescription>
+                      <CardTitle className="text-3xl">
+                        {customerData.referrals?.length || 0}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => setShowReferralModal(true)}
+                        data-testid="button-submit-referral"
+                      >
+                        <Gift className="w-4 h-4 mr-2" />
+                        Refer a Friend
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card data-testid="card-credits">
+                    <CardHeader>
+                      <CardDescription>Referral Credits</CardDescription>
+                      <CardTitle className="text-3xl text-primary">
+                        ${customerData.credits || 0}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground">
+                        Available for your next service
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
               
-              {/* Tabs for different sections */}
-              <Tabs defaultValue="appointments" className="w-full">
-                <TabsList className="grid w-full grid-cols-4" data-testid="tabs-sections">
-                  <TabsTrigger value="appointments" data-testid="tab-appointments">
-                    Appointments
-                  </TabsTrigger>
-                  <TabsTrigger value="invoices" data-testid="tab-invoices">
-                    Invoices
-                  </TabsTrigger>
-                  <TabsTrigger value="memberships" data-testid="tab-memberships">
-                    Memberships
-                  </TabsTrigger>
-                  <TabsTrigger value="referrals" data-testid="tab-referrals">
-                    Referrals
-                  </TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="appointments" className="space-y-4">
-                  <Card data-testid="card-appointments-list">
-                    <CardHeader>
-                      <CardTitle>Your Appointments</CardTitle>
-                      <CardDescription>View and manage your scheduled services</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {customerData.appointments?.length > 0 ? (
-                        <div className="space-y-4">
-                          {customerData.appointments.map((apt: any, idx: number) => (
-                            <div key={idx} className="flex items-center justify-between p-4 border rounded-lg" data-testid={`appointment-${idx}`}>
-                              <div>
-                                <p className="font-medium">{apt.serviceName || 'Service'}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {apt.start ? new Date(apt.start).toLocaleDateString() : 'Date TBD'}
-                                </p>
-                              </div>
-                              <Badge data-testid={`badge-appointment-status-${idx}`}>
-                                {apt.status || 'Scheduled'}
-                              </Badge>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-8" data-testid="text-no-appointments">
-                          No appointments scheduled
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="invoices" className="space-y-4">
-                  <Card data-testid="card-invoices-list">
-                    <CardHeader>
-                      <CardTitle>Your Invoices</CardTitle>
-                      <CardDescription>View your service history and payments</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {customerData.invoices?.length > 0 ? (
-                        <div className="space-y-4">
-                          {customerData.invoices.map((inv: any, idx: number) => (
-                            <div key={idx} className="flex items-center justify-between p-4 border rounded-lg" data-testid={`invoice-${idx}`}>
-                              <div>
-                                <p className="font-medium">Invoice #{inv.number || idx + 1}</p>
-                                <p className="text-sm text-muted-foreground">
-                                  {inv.date ? new Date(inv.date).toLocaleDateString() : 'Date unknown'}
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="font-medium">${inv.total || '0.00'}</p>
-                                <Badge variant={inv.paid ? 'default' : 'secondary'} data-testid={`badge-invoice-status-${idx}`}>
-                                  {inv.paid ? 'Paid' : 'Pending'}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-muted-foreground text-center py-8" data-testid="text-no-invoices">
-                          No invoices available
-                        </p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="memberships" className="space-y-4">
-                  <Card data-testid="card-memberships-list">
-                    <CardHeader>
-                      <CardTitle>Your Memberships</CardTitle>
-                      <CardDescription>Active membership plans and benefits</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {customerData.memberships?.length > 0 ? (
-                        <div className="space-y-4">
-                          {customerData.memberships.map((mem: any, idx: number) => (
-                            <div key={idx} className="p-4 border rounded-lg" data-testid={`membership-${idx}`}>
-                              <div className="flex items-center justify-between mb-2">
-                                <p className="font-medium">{mem.name || 'VIP Membership'}</p>
-                                <Badge data-testid={`badge-membership-status-${idx}`}>
-                                  {mem.status || 'Active'}
-                                </Badge>
-                              </div>
-                              <p className="text-sm text-muted-foreground">
-                                Expires: {mem.expiresAt ? new Date(mem.expiresAt).toLocaleDateString() : 'N/A'}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8">
-                          <p className="text-muted-foreground mb-4" data-testid="text-no-memberships">
-                            No active memberships
-                          </p>
-                          <Button variant="outline" data-testid="button-learn-membership">
-                            Learn About VIP Membership
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-                
-                <TabsContent value="referrals" className="space-y-4">
-                  <Card data-testid="card-referrals-list">
-                    <CardHeader>
-                      <CardTitle>Your Referrals</CardTitle>
-                      <CardDescription>
-                        Track your referrals and earn ${customerData.credits || 0} in credits
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="p-4 bg-accent/10 rounded-lg text-center">
-                          <Gift className="w-12 h-12 text-primary mx-auto mb-2" />
-                          <p className="font-medium mb-1">Refer friends and earn rewards!</p>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            Get $25 off your next service for every referral
-                          </p>
-                          <Button 
-                            onClick={() => setShowReferralModal(true)}
-                            data-testid="button-submit-referral"
+              <Separator />
+              
+              {/* Location Tabs */}
+              {customerData.locations && customerData.locations.length > 0 && 
+               customerData.locations.filter(loc => loc.id !== 0).length > 0 ? (
+                <div className="space-y-4">
+                  <h2 className="text-xl font-semibold">Service Locations</h2>
+                  
+                  <Tabs 
+                    value={selectedLocationId?.toString() || ''} 
+                    onValueChange={handleLocationTabChange}
+                  >
+                    <TabsList className="w-full" data-testid="tabs-locations">
+                      {customerData.locations
+                        .filter(loc => loc.id !== 0)
+                        .map((loc) => (
+                          <TabsTrigger 
+                            key={loc.id} 
+                            value={loc.id.toString()}
+                            data-testid={`tab-location-${loc.id}`}
+                            className="flex-1"
                           >
-                            Submit a Referral
-                          </Button>
-                        </div>
-                        
-                        {customerData.referrals?.length > 0 && (
-                          <div className="space-y-2">
-                            <h3 className="font-medium text-sm">Your Referrals</h3>
-                            {customerData.referrals.map((ref: any, idx: number) => (
-                              <div key={idx} className="flex items-center justify-between p-3 border rounded-lg" data-testid={`referral-${idx}`}>
-                                <div>
-                                  <p className="font-medium text-sm">{ref.name}</p>
-                                  <p className="text-xs text-muted-foreground">{ref.status}</p>
-                                </div>
-                                <Badge variant="secondary" data-testid={`badge-referral-status-${idx}`}>
-                                  {ref.credited ? 'Credited' : 'Pending'}
-                                </Badge>
-                              </div>
-                            ))}
+                            <MapPin className="w-4 h-4 mr-2" />
+                            {loc.name}
+                          </TabsTrigger>
+                        ))}
+                    </TabsList>
+                    
+                    {customerData.locations
+                      .filter(loc => loc.id !== 0)
+                      .map((loc) => (
+                        <TabsContent key={loc.id} value={loc.id.toString()} className="space-y-4">
+                        {isLoadingLocation && selectedLocationId === loc.id ? (
+                          <div className="flex items-center justify-center py-12">
+                            <Loader2 className="w-8 h-8 animate-spin text-primary" data-testid="loader-location" />
+                          </div>
+                        ) : currentLocation && selectedLocationId === loc.id ? (
+                          <>
+                            {/* Location Address */}
+                            <Card data-testid="card-location-address">
+                              <CardHeader>
+                                <CardTitle>{currentLocation.name}</CardTitle>
+                                <CardDescription>
+                                  <MapPin className="w-4 h-4 inline mr-1" />
+                                  {currentLocation.address}
+                                </CardDescription>
+                              </CardHeader>
+                            </Card>
+                            
+                            {/* Location Stats */}
+                            <div className="grid sm:grid-cols-3 gap-4">
+                              <Card data-testid="card-stat-appointments">
+                                <CardHeader className="pb-3">
+                                  <CardDescription>Upcoming Appointments</CardDescription>
+                                  <CardTitle className="text-3xl">
+                                    {currentLocation.appointments?.length || 0}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                                </CardContent>
+                              </Card>
+                              
+                              <Card data-testid="card-stat-invoices">
+                                <CardHeader className="pb-3">
+                                  <CardDescription>Recent Invoices</CardDescription>
+                                  <CardTitle className="text-3xl">
+                                    {currentLocation.invoices?.length || 0}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <FileText className="w-4 h-4 text-muted-foreground" />
+                                </CardContent>
+                              </Card>
+                              
+                              <Card data-testid="card-stat-memberships">
+                                <CardHeader className="pb-3">
+                                  <CardDescription>Memberships</CardDescription>
+                                  <CardTitle className="text-3xl">
+                                    {currentLocation.memberships?.length || 0}
+                                  </CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <Shield className="w-4 h-4 text-muted-foreground" />
+                                </CardContent>
+                              </Card>
+                            </div>
+                            
+                            {/* Appointments List */}
+                            <Card data-testid="card-appointments-list">
+                              <CardHeader>
+                                <CardTitle>Upcoming Appointments</CardTitle>
+                                <CardDescription>Your scheduled services at this location</CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                {currentLocation.appointments && currentLocation.appointments.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {currentLocation.appointments.map((apt: any, idx: number) => (
+                                      <div 
+                                        key={apt.id} 
+                                        className="flex items-center justify-between p-4 border rounded-lg" 
+                                        data-testid={`appointment-${idx}`}
+                                      >
+                                        <div>
+                                          <p className="font-medium">{apt.serviceName || 'Service'}</p>
+                                          <p className="text-sm text-muted-foreground">
+                                            {apt.start ? new Date(apt.start).toLocaleDateString() : 'Date TBD'}
+                                          </p>
+                                          {apt.arrivalWindow && (
+                                            <p className="text-sm text-muted-foreground">
+                                              {apt.arrivalWindow}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <Badge data-testid={`badge-appointment-status-${idx}`}>
+                                          {apt.status || 'Scheduled'}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-muted-foreground text-center py-8" data-testid="text-no-appointments">
+                                    No appointments scheduled at this location
+                                  </p>
+                                )}
+                              </CardContent>
+                            </Card>
+                            
+                            {/* Invoices List */}
+                            <Card data-testid="card-invoices-list">
+                              <CardHeader>
+                                <CardTitle>Recent Invoices</CardTitle>
+                                <CardDescription>Service history and payments at this location</CardDescription>
+                              </CardHeader>
+                              <CardContent>
+                                {currentLocation.invoices && currentLocation.invoices.length > 0 ? (
+                                  <div className="space-y-4">
+                                    {currentLocation.invoices.map((inv: any, idx: number) => (
+                                      <div 
+                                        key={inv.id} 
+                                        className="flex items-center justify-between p-4 border rounded-lg" 
+                                        data-testid={`invoice-${idx}`}
+                                      >
+                                        <div>
+                                          <p className="font-medium">Invoice #{inv.number}</p>
+                                          <p className="text-sm text-muted-foreground">
+                                            {inv.date ? new Date(inv.date).toLocaleDateString() : 'Date unknown'}
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="font-medium">${inv.total?.toFixed(2) || '0.00'}</p>
+                                          <Badge variant={inv.paid ? 'default' : 'secondary'} data-testid={`badge-invoice-status-${idx}`}>
+                                            {inv.paid ? 'Paid' : `Due: $${inv.balance?.toFixed(2) || '0.00'}`}
+                                          </Badge>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <p className="text-muted-foreground text-center py-8" data-testid="text-no-invoices">
+                                    No invoices found for this location
+                                  </p>
+                                )}
+                              </CardContent>
+                            </Card>
+                            
+                            {/* Memberships List */}
+                            {currentLocation.memberships && currentLocation.memberships.length > 0 && (
+                              <Card data-testid="card-memberships-list">
+                                <CardHeader>
+                                  <CardTitle>Active Memberships</CardTitle>
+                                  <CardDescription>Your membership plans at this location</CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                  <div className="space-y-4">
+                                    {currentLocation.memberships.map((mem: any, idx: number) => (
+                                      <div 
+                                        key={mem.id} 
+                                        className="flex items-center justify-between p-4 border rounded-lg" 
+                                        data-testid={`membership-${idx}`}
+                                      >
+                                        <div>
+                                          <p className="font-medium">{mem.name}</p>
+                                          <p className="text-sm text-muted-foreground">
+                                            {mem.startDate ? `Started: ${new Date(mem.startDate).toLocaleDateString()}` : ''}
+                                          </p>
+                                        </div>
+                                        <Badge data-testid={`badge-membership-status-${idx}`}>
+                                          {mem.status || 'Active'}
+                                        </Badge>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center justify-center py-12">
+                            <div className="text-center">
+                              <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                              <p className="text-muted-foreground">Click a location tab to view details</p>
+                            </div>
                           </div>
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
+                      </TabsContent>
+                    ))}
+                  </Tabs>
+                </div>
+              ) : (
+                <Card data-testid="card-no-locations">
+                  <CardContent className="py-12">
+                    <div className="text-center">
+                      <MapPin className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground">No service locations found</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </div>
-          ) : (
-            <Card>
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground" data-testid="text-no-data">
-                  Unable to load account data
-                </p>
-              </CardContent>
-            </Card>
-          )}
+          ) : null}
         </div>
       </div>
       
-      {/* Referral Submission Modal */}
+      {/* Referral Modal */}
       <Dialog open={showReferralModal} onOpenChange={setShowReferralModal}>
-        <DialogContent data-testid="dialog-referral-submission">
+        <DialogContent data-testid="dialog-referral">
           <DialogHeader>
-            <DialogTitle data-testid="text-referral-modal-title">Submit a Referral</DialogTitle>
-            <DialogDescription data-testid="text-referral-modal-description">
-              Refer a friend and earn $25 off your next service!
+            <DialogTitle>Refer a Friend</DialogTitle>
+            <DialogDescription>
+              Get rewarded when your friends use our services
             </DialogDescription>
           </DialogHeader>
-          
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="referral-name" data-testid="label-referral-name">
-                Friend's Name *
-              </Label>
+              <Label htmlFor="referral-name">Friend's Name *</Label>
               <Input
                 id="referral-name"
-                placeholder="John Doe"
                 value={referralName}
                 onChange={(e) => setReferralName(e.target.value)}
+                placeholder="John Doe"
                 data-testid="input-referral-name"
               />
             </div>
-            
             <div className="space-y-2">
-              <Label htmlFor="referral-phone" data-testid="label-referral-phone">
-                Friend's Phone *
-              </Label>
+              <Label htmlFor="referral-phone">Friend's Phone *</Label>
               <Input
                 id="referral-phone"
                 type="tel"
-                placeholder="(512) 555-0123"
                 value={referralPhone}
                 onChange={(e) => setReferralPhone(e.target.value)}
+                placeholder="(512) 555-0123"
                 data-testid="input-referral-phone"
               />
             </div>
-            
             <div className="space-y-2">
-              <Label htmlFor="referral-email" data-testid="label-referral-email">
-                Friend's Email (Optional)
-              </Label>
+              <Label htmlFor="referral-email">Friend's Email (optional)</Label>
               <Input
                 id="referral-email"
                 type="email"
-                placeholder="friend@example.com"
                 value={referralEmail}
                 onChange={(e) => setReferralEmail(e.target.value)}
+                placeholder="friend@email.com"
                 data-testid="input-referral-email"
               />
             </div>
-            
-            <div className="flex gap-2 pt-4">
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 onClick={() => setShowReferralModal(false)}
-                disabled={isSubmittingReferral}
                 className="flex-1"
                 data-testid="button-cancel-referral"
               >
@@ -767,7 +948,7 @@ export default function CustomerPortal() {
                 onClick={handleSubmitReferral}
                 disabled={isSubmittingReferral || !referralName.trim() || !referralPhone.trim()}
                 className="flex-1"
-                data-testid="button-submit-referral-form"
+                data-testid="button-submit-referral-modal"
               >
                 {isSubmittingReferral ? (
                   <>
@@ -775,7 +956,10 @@ export default function CustomerPortal() {
                     Submitting...
                   </>
                 ) : (
-                  'Submit Referral'
+                  <>
+                    <Gift className="w-4 h-4 mr-2" />
+                    Submit Referral
+                  </>
                 )}
               </Button>
             </div>
