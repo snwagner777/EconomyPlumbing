@@ -217,6 +217,9 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         setLocations(prev => [...prev, data.location]);
         setSelectedLocation(data.location);
         setShowAddLocation(false);
+        
+        // Automatically proceed with the new location
+        handleLocationSelect(data.location);
       }
     },
   });
