@@ -132,6 +132,12 @@ const menuSections: MenuSection[] = [
         href: '/admin/reputation',
         description: 'Review automation',
       },
+      {
+        title: 'GMB Setup',
+        icon: Star,
+        href: '/admin/gmb-setup',
+        description: 'Google OAuth setup',
+      },
     ],
   },
   {

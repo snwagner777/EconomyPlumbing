@@ -38,13 +38,17 @@ export default function SMSMarketingPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Inbox ({stats?.inbox?.unreadConversations ?? 0})
+          <Button variant="outline" size="sm" asChild>
+            <a href="/admin/sms/inbox">
+              <MessageSquare className="w-4 h-4 mr-2" />
+              Inbox ({stats?.inbox?.unreadConversations ?? 0})
+            </a>
           </Button>
-          <Button data-testid="button-new-campaign">
-            <Send className="w-4 h-4 mr-2" />
-            New Campaign
+          <Button data-testid="button-new-campaign" asChild>
+            <a href="/admin/sms/campaigns">
+              <Send className="w-4 h-4 mr-2" />
+              New Campaign
+            </a>
           </Button>
         </div>
       </div>
