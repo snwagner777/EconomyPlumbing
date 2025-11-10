@@ -10,7 +10,8 @@
  * - Service details
  */
 
-import * as pdfParse from 'pdf-parse';
+// pdf-parse is a CommonJS module, need to use require
+const pdfParse = require('pdf-parse');
 
 export interface ParsedPDFData {
   // Customer information
