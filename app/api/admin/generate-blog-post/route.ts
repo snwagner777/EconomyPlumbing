@@ -70,8 +70,20 @@ Write in a professional yet friendly tone.`;
     return NextResponse.json({ title, content: blogContent });
   } catch (error: any) {
     console.error("[Manual Blog Post] Error generating blog post:", error);
+    
+    // Enhanced error logging for OpenAI API errors
+    if (error.response) {
+      console.error("[Manual Blog Post] OpenAI API error status:", error.response.status);
+      console.error("[Manual Blog Post] OpenAI API error data:", JSON.stringify(error.response.data, null, 2));
+    }
+    
+    // Return detailed error message
+    const errorMessage = error.response?.data?.error?.message 
+      || error.message 
+      || "Unknown error occurred";
+    
     return NextResponse.json(
-      { error: error.message },
+      { error: errorMessage },
       { status: 500 }
     );
   }
