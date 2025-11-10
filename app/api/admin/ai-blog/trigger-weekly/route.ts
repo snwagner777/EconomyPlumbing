@@ -62,7 +62,6 @@ export async function POST(req: NextRequest) {
     }
     
     // Step 4: Save to database
-    const currentDate = new Date();
     const savedBlog = await storage.createBlogPost({
       title: blogPost.title,
       slug: blogPost.slug,
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
       excerpt: blogPost.excerpt,
       metaDescription: blogPost.metaDescription,
       category: blogPost.category,
-      publishedAt: currentDate,
+      published: true,
       featuredImage,
       jpegFeaturedImage,
       focalPointX,
