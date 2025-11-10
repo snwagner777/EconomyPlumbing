@@ -51,9 +51,16 @@ export async function POST(request: NextRequest) {
     
     const normalizedValue = lookupValue.trim().toLowerCase();
     
+    // Normalize for rate limiting to prevent bypass via formatting
+    // Phone: use last 10 digits only
+    // Email: use lowercase
+    const rateLimitKey = lookupType === 'phone'
+      ? normalizedValue.replace(/\D/g, '').slice(-10)
+      : normalizedValue.toLowerCase();
+    
     // Rate limiting check
-    if (!checkRateLimit(normalizedValue)) {
-      console.warn(`[Portal Lookup] Rate limit exceeded for: ${normalizedValue}`);
+    if (!checkRateLimit(rateLimitKey)) {
+      console.warn(`[Portal Lookup] Rate limit exceeded for: ${rateLimitKey}`);
       return NextResponse.json(
         { error: 'Too many verification requests. Please try again later.' },
         { status: 429 }
@@ -111,12 +118,19 @@ export async function POST(request: NextRequest) {
     const expiryMinutes = lookupType === 'phone' ? 10 : 60;
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
     
+    // Normalize contact value for consistent lookups
+    // Phone: store last 10 digits only
+    // Email: store lowercase
+    const normalizedContact = lookupType === 'phone'
+      ? (customers[0].phone || '').replace(/\D/g, '').slice(-10)
+      : normalizedValue.toLowerCase();
+    
     // Store verification in database
     const [verification] = await db
       .insert(portalVerifications)
       .values({
         verificationType: lookupType === 'phone' ? 'sms' : 'email',
-        contactValue: lookupType === 'phone' ? customers[0].phone : normalizedValue,
+        contactValue: normalizedContact, // Normalized for consistent lookups
         code,
         customerIds,
         expiresAt,
@@ -129,13 +143,23 @@ export async function POST(request: NextRequest) {
     
     // Send verification code
     if (lookupType === 'phone') {
+      const customerPhone = customers[0].phone;
+      if (!customerPhone) {
+        return NextResponse.json(
+          { error: 'Customer phone number not found in database' },
+          { status: 404 }
+        );
+      }
+      
       try {
-        await sendOTP(customers[0].phone, code);
-        console.log(`[Portal Lookup] ✅ SMS OTP sent to: ${customers[0].phone}`);
+        await sendOTP(customerPhone, code);
+        console.log(`[Portal Lookup] ✅ SMS OTP sent to: ${customerPhone}`);
       } catch (error: any) {
         console.error('[Portal Lookup] Failed to send SMS:', error);
         // Delete the verification since we couldn't send it
-        await db.delete(portalVerifications).where(eq(portalVerifications.id, verification.id));
+        if (verification?.id) {
+          await db.delete(portalVerifications).where(eq(portalVerifications.id, verification.id));
+        }
         return NextResponse.json(
           { error: 'Failed to send verification code. Please try again.' },
           { status: 500 }

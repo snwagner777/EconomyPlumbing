@@ -53,7 +53,7 @@ export default function CustomerPortal() {
   
   // Authentication state
   const [verificationStep, setVerificationStep] = useState<VerificationStep>('lookup');
-  const [lookupType, setLookupType] = useState<'phone' | 'email'>('email');
+  const [lookupType, setLookupType] = useState<'phone' | 'email'>('phone'); // Phone login is now default
   const [lookupValue, setLookupValue] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -492,15 +492,51 @@ export default function CustomerPortal() {
           <CardContent className="space-y-6">
             <Tabs value={lookupType} onValueChange={(v) => setLookupType(v as 'phone' | 'email')}>
               <TabsList className="grid w-full grid-cols-2" data-testid="tabs-login-method">
-                <TabsTrigger value="email" data-testid="tab-email-login">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email
-                </TabsTrigger>
                 <TabsTrigger value="phone" data-testid="tab-phone-login">
                   <Phone className="w-4 h-4 mr-2" />
                   Phone
                 </TabsTrigger>
+                <TabsTrigger value="email" data-testid="tab-email-login">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email
+                </TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="phone" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" data-testid="label-phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="(512) 555-1234"
+                    value={lookupValue}
+                    onChange={(e) => setLookupValue(e.target.value)}
+                    disabled={isLoading}
+                    data-testid="input-phone"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    We'll send you a verification code via SMS
+                  </p>
+                </div>
+                <Button
+                  onClick={handleLookup}
+                  disabled={isLoading || !lookupValue.trim()}
+                  className="w-full"
+                  data-testid="button-send-code"
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Phone className="w-4 h-4 mr-2" />
+                      Send Verification Code
+                    </>
+                  )}
+                </Button>
+              </TabsContent>
               
               <TabsContent value="email" className="space-y-4 mt-4">
                 <div className="space-y-2">
@@ -530,39 +566,6 @@ export default function CustomerPortal() {
                     <>
                       <Mail className="w-4 h-4 mr-2" />
                       Send Verification Email
-                    </>
-                  )}
-                </Button>
-              </TabsContent>
-              
-              <TabsContent value="phone" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="phone" data-testid="label-phone">Phone Number</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    placeholder="(512) 555-0123"
-                    value={lookupValue}
-                    onChange={(e) => setLookupValue(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-                    data-testid="input-phone"
-                  />
-                </div>
-                <Button
-                  onClick={handleLookup}
-                  disabled={isLoading || !lookupValue.trim()}
-                  className="w-full"
-                  data-testid="button-send-phone-code"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Phone className="w-4 h-4 mr-2" />
-                      Send Verification Code
                     </>
                   )}
                 </Button>
