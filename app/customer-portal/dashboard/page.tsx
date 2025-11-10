@@ -119,17 +119,17 @@ export default async function CustomerDashboardPage() {
                   <div key={job.id} className="border-b pb-4 last:border-0">
                     <div className="flex justify-between items-start mb-2">
                       <div>
-                        <p className="font-semibold">{job.description || 'Service Call'}</p>
+                        <p className="font-semibold">{job.serviceName || 'Service Call'}</p>
                         <p className="text-sm text-muted-foreground">
-                          {new Date(job.completedDate).toLocaleDateString()}
+                          {new Date(job.completionDate).toLocaleDateString()}
                         </p>
                       </div>
                       <span className="text-sm font-semibold">
-                        ${(job.totalAmount || 0).toFixed(2)}
+                        ${((job.invoiceTotal || 0) / 100).toFixed(2)}
                       </span>
                     </div>
-                    {job.serviceType && (
-                      <p className="text-sm text-muted-foreground">{job.serviceType}</p>
+                    {job.technicianName && (
+                      <p className="text-sm text-muted-foreground">Technician: {job.technicianName}</p>
                     )}
                   </div>
                 ))}

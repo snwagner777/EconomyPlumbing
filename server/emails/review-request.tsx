@@ -15,7 +15,7 @@ interface ReviewRequestEmailProps {
   firstName?: string;
   technicianName?: string;
   jobType?: string;
-  completedDate?: string;
+  completionDate?: string;
   reviewUrl: string;
   googleReviewUrl?: string;
   facebookReviewUrl?: string;
@@ -27,7 +27,7 @@ export default function ReviewRequestEmail({
   firstName,
   technicianName = 'our team',
   jobType = 'plumbing service',
-  completedDate,
+  completionDate,
   reviewUrl,
   googleReviewUrl,
   facebookReviewUrl,
