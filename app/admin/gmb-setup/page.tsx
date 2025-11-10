@@ -18,7 +18,7 @@ interface PageProps {
 
 export default async function GMBSetupPage({ searchParams }: PageProps) {
   const session = await getSession();
-  if (!session.user) {
+  if (!session.isAuthenticated) {
     redirect('/admin/login');
   }
 
