@@ -9,9 +9,8 @@
 
 import { useState, useReducer } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ServiceStep } from './steps/ServiceStep';
-import { ProblemDescriptionStep } from './steps/ProblemDescriptionStep';
 import { CustomerStep } from './steps/CustomerStep';
 import { AvailabilityStep } from './steps/AvailabilityStep';
 import { ReviewStep } from './steps/ReviewStep';
@@ -74,13 +73,13 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
     case 'SELECT_JOB_TYPE':
       return { ...state, jobType: action.payload, step: 2 };
     case 'SET_PROBLEM_DESCRIPTION':
-      return { ...state, problemDescription: action.payload, step: 3 };
+      return { ...state, problemDescription: action.payload };
     case 'SET_CUSTOMER_INFO':
-      return { ...state, customer: action.payload, step: 4 };
+      return { ...state, customer: action.payload, step: 3 };
     case 'SELECT_TIME_SLOT':
-      return { ...state, timeSlot: action.payload, step: 5 };
+      return { ...state, timeSlot: action.payload, step: 4 };
     case 'NEXT_STEP':
-      return { ...state, step: Math.min(state.step + 1, 5) };
+      return { ...state, step: Math.min(state.step + 1, 4) };
     case 'PREV_STEP':
       return { ...state, step: Math.max(state.step - 1, 1) };
     case 'RESET':
@@ -112,21 +111,16 @@ const STEP_CONFIG: Record<number, { icon: any | null; title: string; subtitle: s
     subtitle: "Select the type of plumbing service"
   },
   2: { 
-    icon: MessageSquare, 
-    title: "What's the issue?",
-    subtitle: "Tell us about your plumbing problem (optional)"
-  },
-  3: { 
     icon: User, 
     title: "Let's get your details",
     subtitle: "We'll use this to create your appointment"
   },
-  4: { 
+  3: { 
     icon: Calendar, 
     title: "When works best for you?",
     subtitle: "We've optimized these times for your area"
   },
-  5: { 
+  4: { 
     icon: CheckCircle2, 
     title: "You're all set!",
     subtitle: "Review and confirm your booking"
@@ -261,29 +255,8 @@ export function SchedulerFlow({
           />
         )}
 
-        {/* Step 2: Problem Description */}
+        {/* Step 2: Customer Information */}
         {state.step === 2 && (
-          <div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleBack}
-              className="mb-6 gap-2 -ml-2"
-              data-testid="button-back"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              Back
-            </Button>
-            <ProblemDescriptionStep
-              onSubmit={handleProblemDescription}
-              initialDescription={state.problemDescription}
-              data-testid="step-problem-description"
-            />
-          </div>
-        )}
-
-        {/* Step 3: Customer Information */}
-        {state.step === 3 && (
           <div>
             <Button
               variant="ghost"
@@ -305,8 +278,8 @@ export function SchedulerFlow({
           </div>
         )}
 
-        {/* Step 4: Availability Selection */}
-        {state.step === 4 && state.jobType && state.customer && (
+        {/* Step 3: Availability Selection */}
+        {state.step === 3 && state.jobType && state.customer && (
           <div>
             <Button
               variant="ghost"
@@ -328,8 +301,8 @@ export function SchedulerFlow({
           </div>
         )}
 
-        {/* Step 5: Review & Confirm */}
-        {state.step === 5 && state.jobType && state.customer && state.timeSlot && (
+        {/* Step 4: Review & Confirm */}
+        {state.step === 4 && state.jobType && state.customer && state.timeSlot && (
           <div>
             <Button
               variant="ghost"
@@ -346,6 +319,7 @@ export function SchedulerFlow({
               customer={state.customer}
               timeSlot={state.timeSlot}
               problemDescription={state.problemDescription}
+              onProblemDescriptionChange={handleProblemDescription}
               onSuccess={handleComplete}
               utmSource={initialUtmSource}
               utmMedium={initialUtmMedium}

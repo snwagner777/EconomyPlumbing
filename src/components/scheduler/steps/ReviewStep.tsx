@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key } from 'lucide-react';
+import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key, Wrench } from 'lucide-react';
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
@@ -56,6 +56,7 @@ interface ReviewStepProps {
   customer: CustomerInfo;
   timeSlot: TimeSlot;
   problemDescription?: string;
+  onProblemDescriptionChange?: (description: string) => void;
   onSuccess: () => void;
   utmSource?: string;
   utmMedium?: string;
@@ -63,12 +64,18 @@ interface ReviewStepProps {
   referralCode?: string;
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
+export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
+  const [problem, setProblem] = useState(problemDescription || '');
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
-  const { toast } = useToast();
+  const { toast} = useToast();
   const meta = getJobTypeMeta(jobType.name);
   const Icon = meta.icon;
+
+  const handleProblemChange = (value: string) => {
+    setProblem(value);
+    onProblemDescriptionChange?.(value);
+  };
 
   const bookMutation = useMutation({
     mutationFn: async () => {
@@ -89,7 +96,7 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
         appointmentStart: timeSlot.start,
         appointmentEnd: timeSlot.end,
         specialInstructions: specialInstructions || undefined,
-        problemDescription: problemDescription || undefined, // Customer's description of the issue
+        problemDescription: problem || undefined, // Customer's description of the issue
         bookingSource: 'scheduler_wizard',
         utm_source: utmSource || 'website',
         ...(utmMedium && { utm_medium: utmMedium }),
@@ -229,6 +236,30 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
             </p>
           </div>
 
+        </div>
+      </Card>
+
+      {/* Problem Description */}
+      <Card className="p-6">
+        <div className="space-y-3">
+          <Label htmlFor="problemDescription" className="flex items-center gap-2 text-base font-semibold">
+            <Wrench className="w-5 h-5" />
+            What's going on? (Optional)
+          </Label>
+          <Textarea
+            id="problemDescription"
+            placeholder="Example: Water heater is leaking and making a loud banging noise..."
+            value={problem}
+            onChange={(e) => handleProblemChange(e.target.value)}
+            rows={4}
+            maxLength={500}
+            className="resize-none"
+            data-testid="textarea-problem-description"
+          />
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <p>Be specific: location, sounds, when it started, what you've tried, etc.</p>
+            <p>{problem.length}/500</p>
+          </div>
         </div>
       </Card>
 

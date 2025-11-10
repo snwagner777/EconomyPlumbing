@@ -55,12 +55,14 @@ interface CustomerInfo {
 interface WizardState {
   step: number;
   jobType: JobType | null;
+  problemDescription: string;
   customer: CustomerInfo | null;
   timeSlot: TimeSlot | null;
 }
 
 type WizardAction =
   | { type: 'SELECT_JOB_TYPE'; payload: JobType }
+  | { type: 'SET_PROBLEM_DESCRIPTION'; payload: string }
   | { type: 'SET_CUSTOMER_INFO'; payload: CustomerInfo }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
   | { type: 'NEXT_STEP' }
@@ -71,6 +73,8 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case 'SELECT_JOB_TYPE':
       return { ...state, jobType: action.payload, step: 2 };
+    case 'SET_PROBLEM_DESCRIPTION':
+      return { ...state, problemDescription: action.payload };
     case 'SET_CUSTOMER_INFO':
       return { ...state, customer: action.payload, step: 3 };
     case 'SELECT_TIME_SLOT':
@@ -80,7 +84,7 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
     case 'PREV_STEP':
       return { ...state, step: Math.max(state.step - 1, 1) };
     case 'RESET':
-      return { step: 1, jobType: null, customer: null, timeSlot: null };
+      return { step: 1, jobType: null, problemDescription: '', customer: null, timeSlot: null };
     default:
       return state;
   }
@@ -120,6 +124,7 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
   const [state, dispatch] = useReducer(wizardReducer, {
     step: 1,
     jobType: null,
+    problemDescription: '',
     customer: null,
     timeSlot: null,
   });
@@ -157,6 +162,10 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
 
   const handleSelectTimeSlot = (slot: TimeSlot) => {
     dispatch({ type: 'SELECT_TIME_SLOT', payload: slot });
+  };
+
+  const handleProblemDescription = (description: string) => {
+    dispatch({ type: 'SET_PROBLEM_DESCRIPTION', payload: description });
   };
 
   const handleBack = () => {
@@ -266,6 +275,8 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
                 jobType={state.jobType}
                 customer={state.customer}
                 timeSlot={state.timeSlot}
+                problemDescription={state.problemDescription}
+                onProblemDescriptionChange={handleProblemDescription}
                 onSuccess={handleClose}
               />
             </div>
