@@ -122,13 +122,7 @@ export default function NewServicePage() {
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panel (19 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections:
-  - **Overview:** `/admin` - DashboardOverviewClient showing customer database stats, portal analytics, photo metrics, conversion tracking
-  - **AI Marketing:** `/admin/ai-campaigns` - GPT-4o campaign generator with preview/approve workflow
-  - **Communications:** `/admin/sms` (2-way messaging with inbox/campaigns/contacts), `/admin/email-marketing` (campaigns, review requests, quote follow-up), `/admin/referrals` (nurture campaigns)
-  - **Content:** `/admin/photos` (Google Drive sync, usage tracking), `/admin/blog` (CMS with AI generation), `/admin/success-stories` (testimonials), `/admin/reputation` (review automation, moderation)
-  - **Customers:** `/admin/customers` (customer search), `/admin/contacts` (form submissions), `/admin/commercial` (business clients), `/admin/customer-data` (XLSX import logs, metrics, top customers by LTV), `/admin/portal-analytics` (usage tracking)
-  - **Site Configuration:** `/admin/tracking-numbers` (campaign phones), `/admin/page-metadata` (SEO settings), `/admin/products` (SKUs), `/admin/servicetitan` (sync monitoring with Overview/Customers/Webhook Processing tabs for invoice/estimate logs), `/admin/chatbot` (conversations), `/admin/settings` (site config)
+- **Admin Panel (19 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections include Overview, AI Marketing, Communications, Content, Customers, and Site Configuration.
 - **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend
@@ -138,23 +132,16 @@ export default function NewServicePage() {
 - **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
 - **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:**
-  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups. Enables remarketing campaigns. Primary data source is hourly Mailgun XLSX imports. Bi-directional sync ensures instant portal/scheduler access.
+  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups.
   - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, and Settings services, supporting `utm_source` tracking and real job types.
-  - **Smart Scheduler Architecture (CRITICAL):**
-    - **Parallel Capacity Requests:** Requests 7 full days (midnight-to-midnight) from ServiceTitan Capacity API in parallel using Promise.all() to fetch all arrival windows including morning slots. Must use full-day ranges to avoid filtering issues.
-    - **Dynamic Arrival Windows:** Uses API-returned windows instead of hard-coded 4-hour blocks. Supports variable-length windows: 4-hour for regular services (8am-12pm, 9am-1pm, etc.), 12-hour for backflow testing (8am-8pm). Filters windows by `isAvailable` flag only, preserving backflow windows that lack `availableCapacity` fields.
-    - **2-Hour Appointment Slot Generation:** For each arrival window, generates hourly-aligned 2-hour appointment slots (e.g., 8am-12pm window → [8-10am, 9-11am, 10am-12pm]). Backflow windows create single 12-hour appointments.
-    - **Smart Proximity Scoring:** Scores each 2-hour slot based on technician proximity to existing jobs in same/adjacent zones. Uses ZIP-to-zone mapping from `serviceTitanZones` table. Higher scores indicate better clustering for fuel efficiency.
-    - **Hill Country Filtering:** Blocks certain afternoon windows (10-2, 11-3, 12-4, 1-5, 2-6) for Hill Country locations unless an existing Hill Country job exists that day, preventing single afternoon trips.
-    - **5-Minute Response Caching:** Caches availability responses keyed by `jobTypeId-businessUnitId-customerZip-startDate-daysToLoad` to minimize API calls and improve load times.
-    - **Server-Side Phone Numbers:** Schedule-appointment page fetches phone configuration server-side for SEO, passing to client components via props.
-  - **Arrival Windows vs Booking Times (CRITICAL):** Customers see and select 4-hour arrival windows (e.g., 8am-12pm). System internally books optimal 2-hour appointments (e.g., 10am-12pm) based on smart proximity scoring. Customers are never informed of specific 2-hour booking time - only the 4-hour window promise.
-  - **Unified Scheduler System:** The smart scheduler (`/api/scheduler/smart-availability`) is used across frontend scheduler, customer portal reschedule flow, and AI chatbot booking. Includes conversational "problemDescription" field for new customers.
-- **Marketing Automation:** AI-powered personalized email campaigns (Review Request, Quote Follow-up, Referral Nurture) using OpenAI GPT-4o, with admin approval for templates. Customer contact retrieval via Mailgun webhook parsing.
-- **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, message sending, MMS support, custom fields, segments, and webhooks. Nightly sync from `customers_xlsx` and TCPA compliance.
-- **Reputation Management System:** AI-powered review request automation, preview/edit/approve interface, automated review fetching.
-- **Referral System (QR Voucher-Based):** Instant voucher generation with QR codes for $25 discount (referrer and referee) on jobs $200+, 6-month expiry. Requires phone/email for both parties.
-- **Email Preference Center:** Granular subscription management with token-based public UI and API endpoints.
+  - **Smart Scheduler Architecture:** Utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and Hill Country filtering. Includes 5-minute response caching.
+  - **Arrival Windows vs Booking Times:** Customers select 4-hour arrival windows, while the system internally books optimal 2-hour appointments.
+  - **Unified Scheduler System:** The smart scheduler (`/api/scheduler/smart-availability`) is used across frontend scheduler, customer portal reschedule flow, and AI chatbot booking.
+- **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o, with admin approval for templates.
+- **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
+- **Reputation Management System:** AI-powered review request automation.
+- **Referral System:** Instant voucher generation with QR codes for discounts.
+- **Email Preference Center:** Granular subscription management.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification.
 
 ### Analytics & Third-Party Script Management
