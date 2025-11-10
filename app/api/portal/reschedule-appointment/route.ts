@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { appointmentId, newStart, newEnd } = await req.json();
+    const { appointmentId, jobId, newStart, newEnd, technicianId } = await req.json();
 
     if (!appointmentId || !newStart || !newEnd) {
       return NextResponse.json(
@@ -40,6 +40,15 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+    
+    console.log(`[Portal] Reschedule request:`, { 
+      appointmentId, 
+      jobId, 
+      newStart, 
+      newEnd, 
+      technicianId,
+      customerId: session.customerId 
+    });
 
     console.log(`[Portal] Reschedule request for appointment ${appointmentId} by customer ${session.customerId}`);
 
@@ -98,14 +107,19 @@ export async function POST(req: NextRequest) {
       appKey: process.env.SERVICETITAN_APP_KEY!,
     });
 
-    // Reschedule the appointment
+    // Reschedule the appointment with optional technician assignment
     const updatedAppointment = await serviceTitan.rescheduleAppointment(
       parseInt(appointmentId),
       newStart,
-      newEnd
+      newEnd,
+      technicianId ? parseInt(technicianId) : undefined
     );
 
-    console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully for customer ${session.customerId}`);
+    console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully for customer ${session.customerId}`, {
+      newStart,
+      newEnd,
+      technicianId
+    });
 
     return NextResponse.json({ 
       success: true, 

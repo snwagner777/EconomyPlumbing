@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { 
   Mail, Phone, CheckCircle, Calendar, FileText, Gift, 
-  DollarSign, MapPin, User, Shield, LogOut, Loader2, Building, AlertCircle
+  DollarSign, MapPin, User, Shield, LogOut, Loader2, Building, AlertCircle, CalendarClock
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -75,6 +75,15 @@ export default function CustomerPortal() {
   const [referralPhone, setReferralPhone] = useState('');
   const [referralEmail, setReferralEmail] = useState('');
   const [isSubmittingReferral, setIsSubmittingReferral] = useState(false);
+  
+  // Reschedule state
+  const [showRescheduleModal, setShowRescheduleModal] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState<any | null>(null);
+  const [rescheduleDate, setRescheduleDate] = useState('');
+  const [availableSlots, setAvailableSlots] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+  const [isRescheduling, setIsRescheduling] = useState(false);
   
   // Check for existing session on mount
   useEffect(() => {
@@ -228,9 +237,9 @@ export default function CustomerPortal() {
     }
   };
   
-  const loadLocationDetails = async (customerId: number, locationId: number) => {
-    // Check if already loaded
-    if (locationData.has(locationId)) {
+  const loadLocationDetails = async (customerId: number, locationId: number, forceRefresh: boolean = false) => {
+    // Check if already loaded (unless force refresh)
+    if (!forceRefresh && locationData.has(locationId)) {
       return;
     }
     
@@ -359,6 +368,112 @@ export default function CustomerPortal() {
     } finally {
       setIsSubmittingReferral(false);
     }
+  };
+  
+  const handleOpenReschedule = (appointment: any) => {
+    setSelectedAppointment(appointment);
+    setShowRescheduleModal(true);
+    setRescheduleDate('');
+    setAvailableSlots([]);
+    setSelectedSlot(null);
+  };
+  
+  const handleDateChange = async (date: string) => {
+    setRescheduleDate(date);
+    setAvailableSlots([]);
+    setSelectedSlot(null);
+    
+    if (!date || !customerData) return;
+    
+    setIsLoadingSlots(true);
+    try {
+      // Fetch available slots for the selected date
+      const response = await fetch('/api/scheduler/smart-availability', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobTypeId: 140551181, // Default plumbing job type
+          customerZip: customerData.address ? extractZip(customerData.address) : undefined,
+          startDate: date,
+          daysToLoad: 1, // Just load one day
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || 'Failed to load available slots');
+      }
+      
+      setAvailableSlots(data.slots || []);
+    } catch (error: any) {
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to load available time slots',
+        variant: 'destructive',
+      });
+      setAvailableSlots([]);
+    } finally {
+      setIsLoadingSlots(false);
+    }
+  };
+  
+  const handleConfirmReschedule = async () => {
+    if (!selectedAppointment || !selectedSlot) return;
+    
+    const slot = availableSlots.find(s => s.id === selectedSlot);
+    if (!slot) return;
+    
+    setIsRescheduling(true);
+    try {
+      const response = await fetch('/api/portal/reschedule-appointment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          appointmentId: selectedAppointment.id,
+          jobId: selectedAppointment.jobId,
+          newStart: slot.start,
+          newEnd: slot.end,
+          technicianId: slot.technicianId,
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reschedule appointment');
+      }
+      
+      toast({
+        title: 'Appointment Rescheduled!',
+        description: `Your appointment has been moved to ${new Date(slot.start).toLocaleDateString()} ${slot.timeLabel}`,
+      });
+      
+      // Reset state
+      setShowRescheduleModal(false);
+      setSelectedAppointment(null);
+      setRescheduleDate('');
+      setAvailableSlots([]);
+      setSelectedSlot(null);
+      
+      // Reload location data with force refresh
+      if (session?.customerId && selectedLocationId) {
+        loadLocationDetails(session.customerId, selectedLocationId, true);
+      }
+    } catch (error: any) {
+      toast({
+        title: 'Reschedule Failed',
+        description: error.message || 'Failed to reschedule appointment. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsRescheduling(false);
+    }
+  };
+  
+  const extractZip = (address: string): string | undefined => {
+    const match = address.match(/\b\d{5}\b/);
+    return match ? match[0] : undefined;
   };
   
   // Login UI
@@ -772,7 +887,7 @@ export default function CustomerPortal() {
                                         className="flex items-center justify-between p-4 border rounded-lg" 
                                         data-testid={`appointment-${idx}`}
                                       >
-                                        <div>
+                                        <div className="flex-1">
                                           <p className="font-medium">{apt.serviceName || 'Service'}</p>
                                           <p className="text-sm text-muted-foreground">
                                             {apt.start ? new Date(apt.start).toLocaleDateString() : 'Date TBD'}
@@ -783,9 +898,22 @@ export default function CustomerPortal() {
                                             </p>
                                           )}
                                         </div>
-                                        <Badge data-testid={`badge-appointment-status-${idx}`}>
-                                          {apt.status || 'Scheduled'}
-                                        </Badge>
+                                        <div className="flex items-center gap-2">
+                                          <Badge data-testid={`badge-appointment-status-${idx}`}>
+                                            {apt.status || 'Scheduled'}
+                                          </Badge>
+                                          {apt.status === 'Scheduled' && (
+                                            <Button
+                                              variant="outline"
+                                              size="sm"
+                                              onClick={() => handleOpenReschedule(apt)}
+                                              data-testid={`button-reschedule-${idx}`}
+                                            >
+                                              <CalendarClock className="w-4 h-4 mr-2" />
+                                              Reschedule
+                                            </Button>
+                                          )}
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
@@ -964,6 +1092,135 @@ export default function CustomerPortal() {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Reschedule Modal */}
+      <Dialog open={showRescheduleModal} onOpenChange={setShowRescheduleModal}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-reschedule">
+          <DialogHeader>
+            <DialogTitle>Reschedule Appointment</DialogTitle>
+            <DialogDescription>
+              Select a new date and time for your appointment
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedAppointment && (
+            <div className="space-y-6">
+              {/* Current Appointment Info */}
+              <Card data-testid="card-current-appointment">
+                <CardHeader className="pb-3">
+                  <CardDescription>Current Appointment</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    <span className="font-medium">
+                      {selectedAppointment.start ? new Date(selectedAppointment.start).toLocaleDateString() : 'Date TBD'}
+                    </span>
+                  </div>
+                  {selectedAppointment.arrivalWindow && (
+                    <div className="flex items-center gap-2">
+                      <CalendarClock className="w-4 h-4 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground">
+                        {selectedAppointment.arrivalWindow}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{selectedAppointment.serviceName || 'Service'}</span>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Date Picker */}
+              <div className="space-y-2">
+                <Label htmlFor="reschedule-date">Select New Date</Label>
+                <Input
+                  id="reschedule-date"
+                  type="date"
+                  value={rescheduleDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]} // Today or later
+                  data-testid="input-reschedule-date"
+                />
+              </div>
+              
+              {/* Loading Slots */}
+              {isLoadingSlots && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" data-testid="loader-slots" />
+                </div>
+              )}
+              
+              {/* Available Slots */}
+              {!isLoadingSlots && rescheduleDate && availableSlots.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Available Time Slots</Label>
+                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto" data-testid="slots-grid">
+                    {availableSlots.map((slot) => (
+                      <Button
+                        key={slot.id}
+                        variant={selectedSlot === slot.id ? 'default' : 'outline'}
+                        onClick={() => setSelectedSlot(slot.id)}
+                        className="justify-start"
+                        data-testid={`button-slot-${slot.id}`}
+                      >
+                        <CalendarClock className="w-4 h-4 mr-2" />
+                        {slot.timeLabel}
+                        {slot.proximityScore > 75 && (
+                          <Badge variant="secondary" className="ml-auto" data-testid={`badge-slot-score-${slot.id}`}>
+                            Optimal
+                          </Badge>
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* No Slots Message */}
+              {!isLoadingSlots && rescheduleDate && availableSlots.length === 0 && (
+                <div className="text-center py-8">
+                  <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground" data-testid="text-no-slots">
+                    No available slots for this date. Please try another date.
+                  </p>
+                </div>
+              )}
+              
+              {/* Action Buttons */}
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowRescheduleModal(false)}
+                  className="flex-1"
+                  data-testid="button-cancel-reschedule"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleConfirmReschedule}
+                  disabled={!selectedSlot || isRescheduling}
+                  className="flex-1"
+                  data-testid="button-confirm-reschedule"
+                >
+                  {isRescheduling ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Rescheduling...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-4 h-4 mr-2" />
+                      Confirm Reschedule
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </>
