@@ -256,6 +256,7 @@ export interface IStorage {
   // Review Platforms
   getEnabledReviewPlatforms(): Promise<ReviewPlatform[]>;
   getAllReviewPlatforms(): Promise<ReviewPlatform[]>;
+  createReviewPlatform(data: InsertReviewPlatform): Promise<ReviewPlatform>;
   updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform>;
   
   // Reputation / Review Management System
@@ -3510,6 +3511,14 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(reviewPlatforms)
       .orderBy(reviewPlatforms.sortOrder);
+  }
+
+  async createReviewPlatform(data: InsertReviewPlatform): Promise<ReviewPlatform> {
+    const [result] = await db
+      .insert(reviewPlatforms)
+      .values(data)
+      .returning();
+    return result;
   }
 
   async updateReviewPlatform(id: string, updates: Partial<InsertReviewPlatform>): Promise<ReviewPlatform> {

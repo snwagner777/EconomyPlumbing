@@ -1,12 +1,13 @@
 /**
  * Bulk SMS Opt-In Migration
  * 
- * POST: Migrate all active ServiceTitan customers to SMS opt-in
+ * POST: Migrate all active ServiceTitan customers to SMS contacts for transactional messaging
  * 
  * TCPA Compliance Strategy:
- * - Uses "existing customer relationship" justification
- * - Sets opt-in method and source for audit trail
- * - First message sent will include STOP instructions
+ * - Uses "existing_customer_relationship" for transactional messages
+ * - Transactional = appointment reminders, service updates, customer portal invitations, referral program announcements
+ * - All messages include "Reply STOP to opt-out" footer
+ * - Opt-out requests automatically synced via webhook
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
         customer_id,
         true,
         'existing_customer_relationship',
-        'servicetitan_bulk_enrollment',
+        'transactional_messaging_enrollment',
         NOW(),
         'simpletexting',
         NOW(),

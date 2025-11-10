@@ -293,15 +293,15 @@ export default function SMSMarketingPage() {
           <div className="flex items-start gap-2">
             <Users className="h-5 w-5 text-blue-600 dark:text-blue-500 mt-0.5" />
             <div className="flex-1">
-              <CardTitle className="text-base">Bulk SMS Opt-In Migration</CardTitle>
+              <CardTitle className="text-base">Transactional SMS Enrollment</CardTitle>
               <CardDescription>
-                Enroll all existing ServiceTitan customers for SMS marketing
+                Enroll existing customers for service updates and transactional messaging
               </CardDescription>
             </div>
             <Button
               data-testid="button-bulk-opt-in"
               onClick={async () => {
-                if (!confirm('This will opt-in all active ServiceTitan customers for SMS. Existing opt-outs will be preserved. Continue?')) {
+                if (!confirm('This will enroll all active ServiceTitan customers for transactional SMS (appointment reminders, service updates, portal invitations). Existing opt-outs preserved. Continue?')) {
                   return;
                 }
                 
@@ -312,7 +312,7 @@ export default function SMSMarketingPage() {
                   const data = await response.json();
                   
                   if (response.ok) {
-                    alert(`Success! Enrolled ${data.stats.optedIn} contacts. ${data.stats.optedOut} opt-outs preserved.`);
+                    alert(`Success! Enrolled ${data.stats.optedIn} contacts for transactional messaging. ${data.stats.optedOut} opt-outs preserved.`);
                     window.location.reload();
                   } else {
                     alert(`Error: ${data.error}`);
@@ -322,25 +322,28 @@ export default function SMSMarketingPage() {
                 }
               }}
             >
-              Run Migration
+              Enroll Customers
             </Button>
           </div>
         </CardHeader>
         <CardContent className="text-sm space-y-2">
           <p>
-            ✓ Uses "existing customer relationship" for TCPA compliance
+            <strong>Transactional Messages:</strong> Appointment reminders, service updates, customer portal invitations, referral program announcements
           </p>
           <p>
-            ✓ Syncs all active customers from ServiceTitan to SMS contacts
+            ✓ Uses existing customer relationship (TCPA-compliant for transactional messaging)
           </p>
           <p>
-            ✓ Preserves existing opt-outs (will NOT re-enroll opted-out contacts)
+            ✓ All messages include "Reply STOP to opt-out" footer
           </p>
           <p>
-            ✓ All future messages include "Reply STOP to opt-out" footer
+            ✓ Automatic opt-out sync via webhook
+          </p>
+          <p>
+            ✓ Preserves existing opt-outs (will NOT re-enroll)
           </p>
           <p className="text-muted-foreground text-xs">
-            Run this once to initialize your SMS contact database from ServiceTitan
+            Run once to sync ServiceTitan customers to SMS contacts
           </p>
         </CardContent>
       </Card>
