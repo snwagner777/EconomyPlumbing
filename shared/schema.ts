@@ -1,7 +1,14 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, boolean, index, uniqueIndex, bigint, jsonb, serial, numeric, primaryKey } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, boolean, index, uniqueIndex, bigint, jsonb, serial, numeric, primaryKey, pgEnum } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+// Source tracking for dual-mode review request triggering (webhook + polling fallback)
+export const reviewSource = pgEnum("review_source", ["webhook", "polling", "manual", "api"]);
 
 // Legacy admin users (username/password)
 export const users = pgTable("users", {
@@ -996,10 +1003,10 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
   isPrimary: boolean("is_primary").notNull().default(false),
   lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
 }, (table) => ({
-  customerIdIdx: index("st_contacts_customer_id_idx").on(table.customerId),
+  customerIdIdx: index("service_titan_contacts_customer_id_idx").on(table.customerId),
   // Critical: Fast O(1) lookup by normalized phone/email
-  normalizedValueIdx: index("st_contacts_normalized_value_idx").on(table.normalizedValue),
-  contactTypeIdx: index("st_contacts_contact_type_idx").on(table.contactType),
+  normalizedValueIdx: index("service_titan_contacts_normalized_value_idx").on(table.normalizedValue),
+  contactTypeIdx: index("service_titan_contacts_contact_type_idx").on(table.contactType),
 }));
 
 // ServiceTitan Zones - Maps ZIP codes to service zones for smart scheduling
@@ -1970,6 +1977,10 @@ export const jobCompletions = pgTable("job_completions", {
   marketingOptedOut: boolean("marketing_opted_out").notNull().default(false),
   isQuoteOnly: boolean("is_quote_only").notNull().default(false), // $0 jobs - quotes/estimates without completed work
   
+  // Source tracking for dual-mode operation (webhook primary + polling fallback)
+  source: reviewSource("source").notNull().default("polling"), // 'webhook', 'polling', 'manual', 'api'
+  sourceMetadata: jsonb("source_metadata"), // {mailgunMessageId, invoiceNumber, etc}
+  
   // Tracking
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
@@ -2103,6 +2114,10 @@ export const reviewRequests = pgTable("review_requests", {
   // Engagement
   emailOpens: integer("email_opens").notNull().default(0),
   linkClicks: integer("link_clicks").notNull().default(0),
+  
+  // Source tracking (cascaded from parent jobCompletion)
+  source: reviewSource("source").notNull().default("polling"), // Inherited from jobCompletion
+  sourceMetadata: jsonb("source_metadata"), // Inherited or override metadata
   
   // Timestamps
   scheduledStart: timestamp("scheduled_start"), // Optional: delay campaign start (null = immediate)
