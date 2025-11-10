@@ -612,6 +612,7 @@ function CustomerSegmentsSection() {
       name: newSegmentName,
       description: newSegmentDescription,
       segmentType: newSegmentType,
+      targetCriteria: {}, // Required by schema - empty for manual/static segments
     });
   };
 
