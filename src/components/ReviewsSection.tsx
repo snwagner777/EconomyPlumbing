@@ -9,12 +9,24 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { createReviewSchema } from "@/components/SEO/JsonLd";
+import { formatDistanceToNow } from "date-fns";
 
 interface ReviewsSectionProps {
   category?: string;
   minRating?: number;
   title?: string;
   maxReviews?: number;
+}
+
+// Helper to calculate relative time from Unix timestamp
+function getRelativeTime(timestamp: number): string {
+  try {
+    // Convert Unix timestamp (seconds) to milliseconds
+    const date = new Date(timestamp * 1000);
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch (error) {
+    return 'recently';
+  }
 }
 
 // Helper to get platform icon and colors
@@ -320,7 +332,7 @@ export default function ReviewsSection({
                     <h3 className="font-semibold text-foreground">
                       {review.authorName === 'Anonymous' ? 'Google Customer' : review.authorName}
                     </h3>
-                    <p className="text-sm text-muted-foreground">{review.relativeTime}</p>
+                    <p className="text-sm text-muted-foreground">{getRelativeTime(review.timestamp)}</p>
                   </div>
                 </div>
               </Card>
