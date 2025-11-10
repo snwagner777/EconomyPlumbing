@@ -1937,6 +1937,350 @@ export type SyncWatermark = typeof syncWatermarks.$inferSelect;
 
 // Review Email Preferences - SEPARATE from marketing preferences (transactional)
 
+// =====================================================
+// SMS MARKETING SYSTEM (8 TABLES)
+// Complete SMS infrastructure with SimpleTexting integration
+// TCPA-compliant with explicit opt-in/opt-out management
+// Supports broadcast/drip campaigns, 2-way inbox, MMS, segmentation
+// =====================================================
+
+// 1. SMS Contacts - Per-contact consent + SimpleTexting mapping
+export const smsContacts = pgTable("sms_contacts", {
+  id: serial("id").primaryKey(),
+  
+  // Contact info
+  phone: text("phone").notNull().unique(), // Normalized 10 digits
+  phoneFormatted: text("phone_formatted"), // Display: (512) 555-1234
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  email: text("email"),
+  
+  // ServiceTitan linkage
+  customerId: integer("customer_id"), // From customers_xlsx
+  
+  // SimpleTexting provider integration
+  provider: text("provider").notNull().default('simpletexting'), // 'simpletexting', 'twilio'
+  providerContactId: text("provider_contact_id"), // SimpleTexting contact ID
+  providerListIds: text("provider_list_ids").array(), // SimpleTexting list memberships
+  
+  // TCPA Compliance
+  optedIn: boolean("opted_in").notNull().default(false),
+  optInMethod: text("opt_in_method"), // 'web_form', 'sms_keyword', 'manual', 'api'
+  optInSource: text("opt_in_source"), // Form URL, campaign name, keyword
+  optInTimestamp: timestamp("opt_in_timestamp"),
+  consentProofUrl: text("consent_proof_url"), // Link to form submission/recording
+  
+  optedOut: boolean("opted_out").notNull().default(false),
+  optOutMethod: text("opt_out_method"), // 'sms_reply', 'web_form', 'manual'
+  optOutTimestamp: timestamp("opt_out_timestamp"),
+  optOutReason: text("opt_out_reason"),
+  
+  // Tags & metadata
+  tags: text("tags").array(), // ['vip', 'commercial', 'seasonal']
+  customFields: jsonb("custom_fields"), // {zip: '78701', serviceHistory: [...]}
+  
+  // Sync tracking
+  lastSyncedAt: timestamp("last_synced_at"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  phoneIdx: index("sms_contacts_phone_idx").on(table.phone),
+  customerIdIdx: index("sms_contacts_customer_id_idx").on(table.customerId),
+  optedInIdx: index("sms_contacts_opted_in_idx").on(table.optedIn),
+  providerContactIdIdx: index("sms_contacts_provider_contact_id_idx").on(table.providerContactId),
+}));
+
+// 2. SMS Contact Sync Runs - Nightly customers_xlsx sync audit
+export const smsContactSyncRuns = pgTable("sms_contact_sync_runs", {
+  id: serial("id").primaryKey(),
+  
+  // Sync metadata
+  syncType: text("sync_type").notNull().default('nightly'), // 'nightly', 'manual', 'on_demand'
+  status: text("status").notNull().default('running'), // 'running', 'completed', 'failed', 'partial'
+  
+  // Results
+  totalProcessed: integer("total_processed").notNull().default(0),
+  newContacts: integer("new_contacts").notNull().default(0),
+  updatedContacts: integer("updated_contacts").notNull().default(0),
+  skippedContacts: integer("skipped_contacts").notNull().default(0),
+  errorCount: integer("error_count").notNull().default(0),
+  errors: jsonb("errors"), // [{phone, reason}]
+  
+  // Timing
+  startedAt: timestamp("started_at").notNull().defaultNow(),
+  completedAt: timestamp("completed_at"),
+  durationMs: integer("duration_ms"),
+}, (table) => ({
+  startedAtIdx: index("sms_contact_sync_runs_started_at_idx").on(table.startedAt),
+  statusIdx: index("sms_contact_sync_runs_status_idx").on(table.status),
+}));
+
+// 3. SMS Campaigns - Broadcast/drip metadata
+export const smsCampaigns = pgTable("sms_campaigns", {
+  id: serial("id").primaryKey(),
+  
+  // Campaign metadata
+  name: text("name").notNull(),
+  description: text("description"),
+  campaignType: text("campaign_type").notNull().default('one_time'), // 'one_time', 'drip'
+  
+  // Status
+  status: text("status").notNull().default('draft'), // 'draft', 'scheduled', 'active', 'paused', 'completed', 'cancelled'
+  
+  // Scheduling
+  scheduledFor: timestamp("scheduled_for"),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  
+  // Targeting (reuses existing customer_segments via join table)
+  targetAudience: text("target_audience").notNull().default('all'), // 'all', 'segments', 'custom'
+  
+  // Tracking phone number
+  trackingPhone: text("tracking_phone"), // 10 digits
+  trackingPhoneFormatted: text("tracking_phone_formatted"),
+  
+  // Created by
+  createdBy: text("created_by"), // Admin user email
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  statusIdx: index("sms_campaigns_status_idx").on(table.status),
+  scheduledForIdx: index("sms_campaigns_scheduled_for_idx").on(table.scheduledFor),
+  campaignTypeIdx: index("sms_campaigns_campaign_type_idx").on(table.campaignType),
+}));
+
+// 4. SMS Campaign Messages - Sequence steps + MMS asset references
+export const smsCampaignMessages = pgTable("sms_campaign_messages", {
+  id: serial("id").primaryKey(),
+  
+  // Campaign linkage
+  campaignId: integer("campaign_id").notNull().references(() => smsCampaigns.id, { onDelete: 'cascade' }),
+  
+  // Sequence position (for drip campaigns)
+  sequenceNumber: integer("sequence_number").notNull().default(1), // 1, 2, 3...
+  daysAfterStart: integer("days_after_start").notNull().default(0), // 0, 3, 7, 14...
+  
+  // Message content
+  messageText: text("message_text").notNull(), // Max 1600 chars
+  mmsAssetUrl: text("mms_asset_url"), // Image/video URL for MMS
+  mmsAssetType: text("mms_asset_type"), // 'image/jpeg', 'image/png', 'video/mp4'
+  
+  // Personalization tokens used
+  hasPersonalization: boolean("has_personalization").notNull().default(false),
+  personalizationFields: text("personalization_fields").array(), // ['firstName', 'serviceName']
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignIdIdx: index("sms_campaign_messages_campaign_id_idx").on(table.campaignId),
+  sequenceIdx: index("sms_campaign_messages_sequence_idx").on(table.campaignId, table.sequenceNumber),
+}));
+
+// 5. SMS Campaign Runs - Execution instance snapshot and status
+export const smsCampaignRuns = pgTable("sms_campaign_runs", {
+  id: serial("id").primaryKey(),
+  
+  // Campaign linkage
+  campaignId: integer("campaign_id").notNull().references(() => smsCampaigns.id, { onDelete: 'cascade' }),
+  messageId: integer("message_id").references(() => smsCampaignMessages.id, { onDelete: 'set null' }),
+  
+  // Run metadata
+  runType: text("run_type").notNull().default('scheduled'), // 'scheduled', 'manual', 'test'
+  status: text("status").notNull().default('pending'), // 'pending', 'running', 'completed', 'failed', 'cancelled'
+  
+  // Targeting snapshot (audience at time of execution)
+  targetContactCount: integer("target_contact_count").notNull().default(0),
+  targetSegmentIds: integer("target_segment_ids").array(),
+  
+  // Results
+  sentCount: integer("sent_count").notNull().default(0),
+  deliveredCount: integer("delivered_count").notNull().default(0),
+  failedCount: integer("failed_count").notNull().default(0),
+  repliedCount: integer("replied_count").notNull().default(0),
+  optOutCount: integer("opt_out_count").notNull().default(0),
+  
+  // Timing
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  durationMs: integer("duration_ms"),
+  
+  // Error tracking
+  errorMessage: text("error_message"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  campaignIdIdx: index("sms_campaign_runs_campaign_id_idx").on(table.campaignId),
+  statusIdx: index("sms_campaign_runs_status_idx").on(table.status),
+  startedAtIdx: index("sms_campaign_runs_started_at_idx").on(table.startedAt),
+}));
+
+// 6. SMS Message Events - Unified outbound/inbound log with delivery webhooks + threading
+export const smsMessageEvents = pgTable("sms_message_events", {
+  id: serial("id").primaryKey(),
+  
+  // Direction
+  direction: text("direction").notNull(), // 'outbound', 'inbound'
+  
+  // Contact
+  contactId: integer("contact_id").references(() => smsContacts.id, { onDelete: 'set null' }),
+  phone: text("phone").notNull(), // Denormalized for fast queries
+  
+  // Campaign context (null for manual/conversational messages)
+  campaignRunId: integer("campaign_run_id").references(() => smsCampaignRuns.id, { onDelete: 'set null' }),
+  messageOrder: integer("message_order"), // Sequence within campaign run
+  
+  // Message content
+  messageText: text("message_text").notNull(),
+  mmsAssetUrl: text("mms_asset_url"),
+  
+  // Provider integration
+  provider: text("provider").notNull().default('simpletexting'),
+  providerMessageId: text("provider_message_id"), // SimpleTexting message ID (webhook reconciliation)
+  providerStatus: text("provider_status"), // 'queued', 'sent', 'delivered', 'failed', 'undelivered'
+  
+  // Delivery tracking
+  status: text("status").notNull().default('pending'), // 'pending', 'sent', 'delivered', 'failed', 'replied'
+  sentAt: timestamp("sent_at"),
+  deliveredAt: timestamp("delivered_at"),
+  failedAt: timestamp("failed_at"),
+  failureReason: text("failure_reason"),
+  
+  // Conversation threading
+  conversationId: integer("conversation_id"), // Links to sms_conversations
+  isFirstReply: boolean("is_first_reply").notNull().default(false), // First inbound from contact
+  
+  // Opt-out detection
+  isOptOut: boolean("is_opt_out").notNull().default(false), // STOP, UNSUBSCRIBE keywords
+  
+  // Idempotency & deduplication
+  dedupeHash: text("dedupe_hash"), // Hash of (phone, messageText, timestamp) for exact duplicate detection
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  phoneIdx: index("sms_message_events_phone_idx").on(table.phone),
+  contactIdIdx: index("sms_message_events_contact_id_idx").on(table.contactId),
+  campaignRunIdIdx: index("sms_message_events_campaign_run_id_idx").on(table.campaignRunId),
+  conversationIdIdx: index("sms_message_events_conversation_id_idx").on(table.conversationId),
+  providerMessageIdIdx: index("sms_message_events_provider_message_id_idx").on(table.providerMessageId),
+  directionIdx: index("sms_message_events_direction_idx").on(table.direction),
+  createdAtIdx: index("sms_message_events_created_at_idx").on(table.createdAt),
+  dedupeHashIdx: index("sms_message_events_dedupe_hash_idx").on(table.dedupeHash),
+  // Idempotency: unique constraint on campaign sends
+  campaignSendUnique: uniqueIndex("sms_message_events_campaign_send_unique").on(table.campaignRunId, table.contactId, table.messageOrder),
+}));
+
+// 7. SMS Conversations - Active thread per contact with SLA/tags
+export const smsConversations = pgTable("sms_conversations", {
+  id: serial("id").primaryKey(),
+  
+  // Contact
+  contactId: integer("contact_id").notNull().references(() => smsContacts.id, { onDelete: 'cascade' }),
+  phone: text("phone").notNull(),
+  contactName: text("contact_name"),
+  
+  // Status
+  status: text("status").notNull().default('active'), // 'active', 'resolved', 'spam', 'archived'
+  
+  // Assignment
+  assignedTo: text("assigned_to"), // Admin user email
+  assignedAt: timestamp("assigned_at"),
+  
+  // Tags & priority
+  tags: text("tags").array(), // ['urgent', 'quote_request', 'complaint']
+  priority: text("priority").notNull().default('normal'), // 'low', 'normal', 'high', 'urgent'
+  
+  // Message counts
+  totalMessages: integer("total_messages").notNull().default(0),
+  unreadCount: integer("unread_count").notNull().default(0),
+  
+  // Timestamps
+  lastMessageAt: timestamp("last_message_at"),
+  lastInboundAt: timestamp("last_inbound_at"),
+  lastOutboundAt: timestamp("last_outbound_at"),
+  
+  // SLA tracking
+  firstResponseAt: timestamp("first_response_at"), // When admin first replied
+  responseTimeMinutes: integer("response_time_minutes"), // Time to first response
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  contactIdIdx: index("sms_conversations_contact_id_idx").on(table.contactId),
+  statusIdx: index("sms_conversations_status_idx").on(table.status),
+  assignedToIdx: index("sms_conversations_assigned_to_idx").on(table.assignedTo),
+  lastMessageAtIdx: index("sms_conversations_last_message_at_idx").on(table.lastMessageAt),
+  unreadCountIdx: index("sms_conversations_unread_count_idx").on(table.unreadCount),
+}));
+
+// 8a. SMS Quick Replies - Operator templates for manual responses
+export const smsQuickReplies = pgTable("sms_quick_replies", {
+  id: serial("id").primaryKey(),
+  
+  // Template metadata
+  label: text("label").notNull(), // "Quote Follow-up", "Appointment Confirmation"
+  messageText: text("message_text").notNull(),
+  category: text("category"), // 'scheduling', 'billing', 'general'
+  
+  // Personalization
+  hasPersonalization: boolean("has_personalization").notNull().default(false),
+  personalizationFields: text("personalization_fields").array(),
+  
+  // Usage tracking
+  usageCount: integer("usage_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
+  
+  // Management
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  categoryIdx: index("sms_quick_replies_category_idx").on(table.category),
+  isActiveIdx: index("sms_quick_replies_is_active_idx").on(table.isActive),
+}));
+
+// 8b. SMS Keywords - TCPA keyword automation (STOP, START, HELP)
+export const smsKeywords = pgTable("sms_keywords", {
+  id: serial("id").primaryKey(),
+  
+  // Keyword
+  keyword: text("keyword").notNull().unique(), // 'STOP', 'START', 'HELP', 'PLUMBER'
+  keywordType: text("keyword_type").notNull(), // 'opt_out', 'opt_in', 'info', 'custom'
+  
+  // Auto-response
+  autoReply: text("auto_reply"), // "You've been unsubscribed. Reply START to opt back in."
+  
+  // Action
+  action: text("action"), // 'opt_out', 'opt_in', 'send_info', 'tag_contact'
+  actionParams: jsonb("action_params"), // {tags: ['inquiry'], assignTo: 'admin@example.com'}
+  
+  // Stats
+  usageCount: integer("usage_count").notNull().default(0),
+  lastUsedAt: timestamp("last_used_at"),
+  
+  // Management
+  isActive: boolean("is_active").notNull().default(true),
+  isSystemKeyword: boolean("is_system_keyword").notNull().default(false), // STOP, START, HELP are system keywords
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  keywordIdx: index("sms_keywords_keyword_idx").on(table.keyword),
+  keywordTypeIdx: index("sms_keywords_keyword_type_idx").on(table.keywordType),
+  isActiveIdx: index("sms_keywords_is_active_idx").on(table.isActive),
+}));
+
+// Join table: SMS Campaign Segments (reuses existing customer_segments)
+export const smsCampaignSegments = pgTable("sms_campaign_segments", {
+  campaignId: integer("campaign_id").notNull().references(() => smsCampaigns.id, { onDelete: 'cascade' }),
+  segmentId: varchar("segment_id").notNull().references(() => customerSegments.id, { onDelete: 'cascade' }), // varchar to match customerSegments.id (UUID)
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  pk: primaryKey({ columns: [table.campaignId, table.segmentId] }),
+  campaignIdIdx: index("sms_campaign_segments_campaign_id_idx").on(table.campaignId),
+  segmentIdIdx: index("sms_campaign_segments_segment_id_idx").on(table.segmentId),
+}));
 
 // Reputation management schemas removed - will be rebuilt
 
@@ -2351,32 +2695,61 @@ export const webhookFailureQueue = pgTable("webhook_failure_queue", {
 
 // Campaign Send Idempotency - Prevents duplicate email/SMS sends
 
-// SimpleTexting Integration - Insert schemas
-export const insertSimpleTextingContactSchema = createInsertSchema(simpleTextingContacts).omit({
+// SMS Marketing insert schemas
+export const insertSmsContactSchema = createInsertSchema(smsContacts).omit({
   id: true,
-  addedAt: true,
-  lastSyncedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmsContactSyncRunSchema = createInsertSchema(smsContactSyncRuns).omit({
+  id: true,
+  startedAt: true,
+  completedAt: true,
 });
 
 export const insertSmsCampaignSchema = createInsertSchema(smsCampaigns).omit({
   id: true,
   createdAt: true,
-  lastUpdated: true,
+  updatedAt: true,
 });
 
-export const insertSmsCampaignEventSchema = createInsertSchema(smsCampaignEvents).omit({
+export const insertSmsCampaignMessageSchema = createInsertSchema(smsCampaignMessages).omit({
   id: true,
-  timestamp: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmsCampaignRunSchema = createInsertSchema(smsCampaignRuns).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSmsMessageEventSchema = createInsertSchema(smsMessageEvents).omit({
+  id: true,
+  createdAt: true,
 });
 
 export const insertSmsConversationSchema = createInsertSchema(smsConversations).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });
 
-export const insertSmsMessageSchema = createInsertSchema(smsMessages).omit({
+export const insertSmsQuickReplySchema = createInsertSchema(smsQuickReplies).omit({
   id: true,
-  sentAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmsKeywordSchema = createInsertSchema(smsKeywords).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertSmsCampaignSegmentSchema = createInsertSchema(smsCampaignSegments).omit({
+  createdAt: true,
 });
 
 // System Reliability & Monitoring insert schemas
@@ -2389,17 +2762,30 @@ export const insertWebhookFailureQueueSchema = createInsertSchema(webhookFailure
   lastAttemptAt: true,
 });
 
-// SimpleTexting Integration - Type exports
-export type SimpleTextingContact = typeof simpleTextingContacts.$inferSelect;
-export type InsertSimpleTextingContact = z.infer<typeof insertSimpleTextingContactSchema>;
+
+// System health check schema removed - will be rebuilt
+
+// SMS Marketing type exports
+export type SmsContact = typeof smsContacts.$inferSelect;
+export type InsertSmsContact = z.infer<typeof insertSmsContactSchema>;
+export type SmsContactSyncRun = typeof smsContactSyncRuns.$inferSelect;
+export type InsertSmsContactSyncRun = z.infer<typeof insertSmsContactSyncRunSchema>;
 export type SmsCampaign = typeof smsCampaigns.$inferSelect;
 export type InsertSmsCampaign = z.infer<typeof insertSmsCampaignSchema>;
-export type SmsCampaignEvent = typeof smsCampaignEvents.$inferSelect;
-export type InsertSmsCampaignEvent = z.infer<typeof insertSmsCampaignEventSchema>;
+export type SmsCampaignMessage = typeof smsCampaignMessages.$inferSelect;
+export type InsertSmsCampaignMessage = z.infer<typeof insertSmsCampaignMessageSchema>;
+export type SmsCampaignRun = typeof smsCampaignRuns.$inferSelect;
+export type InsertSmsCampaignRun = z.infer<typeof insertSmsCampaignRunSchema>;
+export type SmsMessageEvent = typeof smsMessageEvents.$inferSelect;
+export type InsertSmsMessageEvent = z.infer<typeof insertSmsMessageEventSchema>;
 export type SmsConversation = typeof smsConversations.$inferSelect;
 export type InsertSmsConversation = z.infer<typeof insertSmsConversationSchema>;
-export type SmsMessage = typeof smsMessages.$inferSelect;
-export type InsertSmsMessage = z.infer<typeof insertSmsMessageSchema>;
+export type SmsQuickReply = typeof smsQuickReplies.$inferSelect;
+export type InsertSmsQuickReply = z.infer<typeof insertSmsQuickReplySchema>;
+export type SmsKeyword = typeof smsKeywords.$inferSelect;
+export type InsertSmsKeyword = z.infer<typeof insertSmsKeywordSchema>;
+export type SmsCampaignSegment = typeof smsCampaignSegments.$inferSelect;
+export type InsertSmsCampaignSegment = z.infer<typeof insertSmsCampaignSegmentSchema>;
 
 export type WebhookFailureQueue = typeof webhookFailureQueue.$inferSelect;
 export type InsertWebhookFailureQueue = z.infer<typeof insertWebhookFailureQueueSchema>;
