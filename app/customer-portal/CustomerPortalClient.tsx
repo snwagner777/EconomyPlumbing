@@ -2879,6 +2879,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             </>
           ) : null}
         </div>
+      </div>
       </main>
 
       <Footer />
