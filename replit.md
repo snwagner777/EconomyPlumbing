@@ -117,62 +117,41 @@ export default function NewServicePage() {
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
-- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration. Customer Portal supports phone-based login with automatic email selection UI when multiple emails are found.
+- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration supporting phone-based login.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panel (21 Routes):** Modular architecture with shared sidebar navigation (`src/components/admin-sidebar.tsx`). All pages wrapped in `app/admin/layout.tsx` with AdminSidebar. Main sections include Overview, AI Marketing, Communications, Content, Customers, and Site Configuration. Features consolidated tabbed interfaces for Email Marketing (includes Custom Campaigns tab) and Reputation (includes GMB Reviews and Profiles tabs). GMB Setup accessible via sidebar for Google OAuth connection setup.
-- **Settings Page (`/admin/settings`):** Central configuration hub controlling:
-  - Company Information (name, phone, email, notification email)
-  - Marketing Settings (email from name, default tracking number)
-  - Feature Toggles (review requests, referral nurture, AI blog generation, Google Drive sync)
-  - Pricing Configuration (referral credit amount, VIP membership price)
-- **URL Structure:** Blog Posts at root level `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
+- **Admin Panel:** Modular architecture with 21 routes, shared sidebar (`src/components/admin-sidebar.tsx`), wrapped in `app/admin/layout.tsx`. Main sections: Overview, AI Marketing, Communications, Content, Customers, Site Configuration. Features consolidated tabbed interfaces for Email Marketing (Custom Campaigns) and Reputation (GMB Reviews, Profiles, GMB Setup).
+- **Settings Page (`/admin/settings`):** Central hub for Company Info, Marketing Settings, Feature Toggles (review requests, referral nurture, AI blog generation, Google Drive sync), and Pricing Configuration.
+- **URL Structure:** Blog Posts at `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 
 ### Backend
-- **Framework & API:** Next.js 15 App Router (API routes) and a separate `worker.ts` process for background jobs.
+- **Framework & API:** Next.js 15 App Router (API routes) and a `worker.ts` process for background jobs.
 - **Data Layer:** Drizzle ORM for PostgreSQL.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers, Quote Follow-up Campaigns, Customer Data Imports.
-- **Dynamic Phone Number Tracking:** Server-side resolution of tracking numbers based on UTMs during SSR, enhanced client-side with cookies/referrer. Database-driven rules for campaign-specific numbers.
-- **Security & Type Safety:** Session-based authentication using `iron-session` for `/admin` routes, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
+- **Dynamic Phone Number Tracking:** Server-side UTM-based resolution during SSR, enhanced client-side with cookies/referrer.
+- **Security & Type Safety:** Session-based authentication (`iron-session`) for admin, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
 - **ServiceTitan Integration:**
-  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and email addresses to match them to ServiceTitan customer IDs for fast API lookups.
-  - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, and Settings services, supporting `utm_source` tracking and real job types.
-  - **Smart Scheduler Architecture:** Utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and Hill Country filtering. Includes 5-minute response caching.
-  - **Appointment Booking Rules:**
-    - **Regular Services:** Customers see 4-hour arrival windows (8am-12pm, 9am-1pm, etc.). System books 2-hour appointments internally.
-    - **Backflow Testing ONLY:** Uses 12-hour arrival windows (8am-8pm). NO other service uses 12-hour windows.
-    - **Capacity Filtering:** ServiceTitan capacity API returns hours available. Since we book 2-hour appointments, windows must have ≥2 hours available capacity to be offered.
-    - **Window Duration Filter:** Regular services show only 4-hour windows. Backflow shows only 12-hour windows. No mixing.
-  - **Unified Scheduler System:** The smart scheduler (`/api/scheduler/smart-availability`) is used across frontend scheduler, customer portal reschedule flow, and AI chatbot booking.
-- **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o, with admin approval for templates.
+  - **Customer Contact Database (`customers_xlsx`):** Tracks customer phone numbers and emails for ServiceTitan ID matching.
+  - **API Services:** Custom ServiceTitan scheduler with OAuth, CRM, Jobs, Settings services.
+  - **Smart Scheduler Architecture:** Utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and Hill Country filtering with 5-minute response caching.
+  - **Appointment Booking Rules:** Regular services show 4-hour arrival windows, internally book 2-hour appointments. Backflow Testing ONLY uses 12-hour windows (8am-8pm). Capacity API dictates available hours, windows offered only if ≥2 hours capacity.
+  - **Unified Scheduler System:** Frontend, customer portal reschedule, and AI chatbot all use `/api/scheduler/smart-availability`.
+- **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o with admin approval.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
-- **Reputation Management System:** Webhook-triggered review request automation with immediate email + SMS sending:
-  - **Architecture:** WEBHOOK-ONLY system (no ServiceTitan API polling). Mailgun forwards ServiceTitan invoice PDFs → webhook creates job_completion → review_request → sends Email 1 + SMS immediately.
-  - **Database Schema:**
-    - `job_completions`: Stores completed jobs from webhook (source='webhook') with customer data, invoice details, completion date, and sourceMetadata (mailgunMessageId for idempotency).
-    - `review_requests`: Campaign records linked to job_completions via jobCompletionId (NOT NULL foreign key). Tracks status (queued/active/paused/completed/stopped), email send history, and review submission.
-  - **Webhook Flow (`/api/webhooks/mailgun/servicetitan`):**
-    1. Verify Mailgun signature
-    2. Parse invoice PDF (extracts customer info, invoice total in cents, document number)
-    3. Match customer by phone/email → customers_xlsx table
-    4. Check idempotency: Skip if mailgunMessageId already processed OR customer has existing queued/active/paused review request
-    5. Create job_completion record (source='webhook', invoiceTotal stored as-is in cents)
-    6. Create review_request linked to job_completion
-    7. **Send Email 1 immediately** (via reviewRequestScheduler.sendReviewEmail())
-    8. **Send SMS immediately** if customer has phone (via simpletexting.sendReviewRequestSms())
-  - **Worker Role (`server/worker.ts`):** Runs every 30 minutes to send follow-up emails 2, 3, 4 on Days 7, 14, 21 based on completionDate. Does NOT send Email 1 (webhook handles that).
-  - **Idempotency Protections:**
-    - Webhook checks mailgunMessageId in job_completions.sourceMetadata to prevent duplicate processing
-    - Webhook checks for existing queued/active/paused review_requests before creating new campaigns
-    - Email suppression list integration (hard bounces, spam complaints)
-  - **Invoice Total Handling:** Parser returns amounts in cents. Webhook stores as-is (no multiplication). Prevents 100x inflation bug.
-- **Referral System:** Instant voucher generation with QR codes for discounts.
+- **Reputation Management System:** Webhook-triggered review request automation:
+  - **Architecture:** WEBHOOK-ONLY (no ServiceTitan API polling). Mailgun forwards ServiceTitan invoice PDFs → webhook creates `job_completion` → `review_request` → sends Email 1 + SMS immediately.
+  - **Database Schema:** `job_completions` (from webhook, idempotency via `mailgunMessageId`), `review_requests` (linked to `job_completions`, tracks status, sends).
+  - **Webhook Flow (`/api/webhooks/mailgun/servicetitan`):** Verifies signature, parses invoice PDF, matches customer, checks idempotency (existing messageId or active review request), creates `job_completion`, creates `review_request`, sends Email 1 and SMS immediately.
+  - **Worker Role (`server/worker.ts`):** Runs every 30 minutes to send follow-up emails 2, 3, 4 on Days 7, 14, 21 based on `completionDate`.
+  - **Idempotency:** Webhook checks `mailgunMessageId` and existing `review_requests`.
+  - **Invoice Total Handling:** Parser returns amounts in cents, stored as-is in DB.
+- **Referral System:** Instant voucher generation with QR codes.
 - **Email Preference Center:** Granular subscription management.
-- **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification.
+- **Production Infrastructure:** Automated schedulers, database transactions, idempotency, health monitoring, admin alerting, webhook signature verification.
 
 ### Analytics & Third-Party Script Management
 - **Tracking:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity.
 - **Optimization:** Aggressive deferral for script loading.
-- **Conversion Tracking:** Comprehensive tracking for forms, phone clicks, scheduler opens, and memberships.
+- **Conversion Tracking:** Comprehensive for forms, phone clicks, scheduler opens, memberships.
 - **Privacy:** Cookie consent integration.
 
 ## External Dependencies
@@ -181,7 +160,7 @@ export default function NewServicePage() {
 - **Database:** Neon (PostgreSQL).
 - **Online Scheduler:** ServiceTitan.
 - **Email Integration:** Resend (transactional), Mailgun (webhook-based XLSX imports).
-- **SMS Providers:** SimpleTexting, Twilio, Zoom Phone.
+- **SMS Provider:** SimpleTexting.
 - **AI Services:** OpenAI (GPT-4o, GPT-4o-mini).
 - **Photo Management:** CompanyCam, Google Drive.
 - **Google Services:** Google Places API, Google Maps.
