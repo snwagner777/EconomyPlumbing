@@ -40,14 +40,20 @@ export async function GET(
       .limit(1)
       .then(rows => rows[0]);
 
+    // Import new services for estimates and pricebook
+    const { serviceTitanEstimates } = await import('@/server/lib/servicetitan/estimates');
+    
     // Fetch all customer data in parallel from ServiceTitan APIs
-    const [customer, appointments, invoices, memberships, estimates] = await Promise.all([
+    const [customer, appointments, invoices, memberships, rawEstimates] = await Promise.all([
       serviceTitan.getCustomer(customerIdNum),
       serviceTitan.getCustomerAppointments(customerIdNum).catch(() => []),
       serviceTitan.getCustomerInvoices(customerIdNum).catch(() => []),
       serviceTitan.getCustomerMemberships(customerIdNum).catch(() => []),
-      serviceTitan.getCustomerEstimates(customerIdNum).catch(() => [])
+      serviceTitanEstimates.getEstimates(customerIdNum).catch(() => [])
     ]);
+    
+    // Enrich estimates with pricebook data (images, descriptions, etc.)
+    const estimates = await serviceTitanEstimates.enrichEstimatesWithPricebook(rawEstimates);
     
     if (!customer) {
       return NextResponse.json(

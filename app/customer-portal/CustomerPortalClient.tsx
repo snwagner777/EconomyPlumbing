@@ -227,6 +227,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   
   // Scheduler dialog state
   const [schedulerOpen, setSchedulerOpen] = useState(false);
+  const [schedulerEstimateId, setSchedulerEstimateId] = useState<number | null>(null);
+  const [schedulerSoldHours, setSchedulerSoldHours] = useState<number>(0);
   const [reviewFeedback, setReviewFeedback] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   // Estimate detail modal state
@@ -2951,17 +2953,43 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
               {/* Actions */}
               <div className="flex flex-col gap-3 pt-4 border-t">
-                <Button
-                  size="lg"
-                  className="w-full"
-                  onClick={() => {
-                    setShowAcceptanceDialog(true);
-                  }}
-                  data-testid="button-accept-estimate"
-                >
-                  <CheckCircle className="w-5 h-5 mr-2" />
-                  Accept This Estimate
-                </Button>
+                {/* Schedule button for sold estimates */}
+                {selectedEstimate.status === 'Sold' && (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      // Calculate soldHours for validation
+                      const totalSoldHours = selectedEstimate.items
+                        .filter(item => item.type === 'Service' && item.soldHours)
+                        .reduce((total, item) => total + ((item.soldHours || 0) * item.quantity), 0);
+                      
+                      setSchedulerEstimateId(selectedEstimate.id);
+                      setSchedulerSoldHours(totalSoldHours);
+                      setEstimateDetailOpen(false);
+                      setSchedulerOpen(true);
+                    }}
+                    data-testid="button-schedule-estimate"
+                  >
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Schedule Service ({formatCurrency(selectedEstimate.total)})
+                  </Button>
+                )}
+                
+                {/* Accept button for open estimates */}
+                {selectedEstimate.status === 'Open' && (
+                  <Button
+                    size="lg"
+                    className="w-full"
+                    onClick={() => {
+                      setShowAcceptanceDialog(true);
+                    }}
+                    data-testid="button-accept-estimate"
+                  >
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Accept This Estimate
+                  </Button>
+                )}
                 <div className="flex gap-3">
                   <Button
                     variant="outline"
