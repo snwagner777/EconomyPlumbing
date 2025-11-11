@@ -267,39 +267,106 @@ export async function POST(request: NextRequest) {
       // Log invoice
       await db.insert(invoiceProcessingLog).values(logEntry);
       
-      // Trigger review request campaign if customer matched and has email
+      // Create job_completion → review_request → send Email 1 + SMS immediately
       if (matchedCustomerId && parsedData.customerEmail) {
         try {
-          // Check if customer already has an active review request campaign
+          const { jobCompletions } = await import('@shared/schema');
+          const { sendReviewRequestSms } = await import('@/server/lib/simpletexting');
+          const { getReviewRequestScheduler } = await import('@/server/lib/reviewRequestScheduler');
+          
+          // Step 0: Check if messageId already processed (idempotency)
+          const existingJobByMessageId = await db
+            .select()
+            .from(jobCompletions)
+            .where(sql`${jobCompletions.sourceMetadata}->>'mailgunMessageId' = ${messageId}`)
+            .limit(1);
+          
+          if (existingJobByMessageId.length > 0) {
+            console.log('[Mailgun Webhook] MessageId already processed, skipping duplicate:', messageId);
+            return NextResponse.json({ 
+              message: 'Invoice already processed (duplicate)',
+              documentType: 'invoice',
+              jobCompletionId: existingJobByMessageId[0].id,
+            }, { status: 200 });
+          }
+          
+          // Step 1: Create job_completion record (webhook source)
+          const [jobCompletion] = await db.insert(jobCompletions).values({
+            customerId: matchedCustomerId,
+            customerName: parsedData.customerName || 'Valued Customer',
+            customerEmail: parsedData.customerEmail,
+            customerPhone: parsedData.customerPhone || null,
+            invoiceNumber: parsedData.documentNumber || null,
+            invoiceTotal: parsedData.totalAmount || 0, // Parser already returns cents, don't multiply!
+            completionDate: new Date(),
+            source: 'webhook',
+            sourceMetadata: {
+              mailgunMessageId: messageId,
+              pdfFilename: pdfFilename,
+              receivedAt: new Date().toISOString(),
+            },
+          }).returning();
+          
+          console.log('[Mailgun Webhook] Created job_completion:', jobCompletion.id);
+
+          // Step 2: Check if customer already has ANY non-terminal review request (stronger idempotency)
           const existingCampaign = await db.query.reviewRequests.findFirst({
             where: and(
               eq(reviewRequests.customerId, matchedCustomerId),
-              eq(reviewRequests.status, 'active')
+              or(
+                eq(reviewRequests.status, 'queued'),
+                eq(reviewRequests.status, 'active'),
+                eq(reviewRequests.status, 'paused')
+              )
             ),
           });
 
           if (!existingCampaign) {
-            // Create new review request campaign
-            await db.insert(reviewRequests).values({
+            // Step 3: Create review_request linked to job_completion
+            const [reviewRequest] = await db.insert(reviewRequests).values({
+              jobCompletionId: jobCompletion.id, // Link to job_completion
               customerId: matchedCustomerId,
-              customerName: parsedData.customerName || 'Valued Customer',
               customerEmail: parsedData.customerEmail,
-              customerPhone: parsedData.customerPhone || null,
-              jobId: null, // Will be updated when job is matched
-              serviceName: 'Plumbing Service', // Generic for now
-              invoiceTotal: parsedData.totalAmount || 0,
-              status: 'active',
-            });
-            console.log('[Mailgun Webhook] Review request campaign created for customer:', matchedCustomerId);
+              status: 'queued',
+              source: 'webhook',
+              sourceMetadata: {
+                triggeredBy: 'mailgun_invoice',
+                invoiceNumber: parsedData.documentNumber,
+              },
+            }).returning();
+            
+            console.log('[Mailgun Webhook] Created review_request:', reviewRequest.id);
+
+            // Step 4: Send immediate Email 1 + SMS (don't wait for worker)
+            const scheduler = getReviewRequestScheduler();
+            
+            // Send Email 1 immediately
+            console.log('[Mailgun Webhook] Sending immediate Email 1...');
+            await scheduler.sendReviewEmail(reviewRequest.id, 1);
+            
+            // Send SMS if customer has phone
+            if (parsedData.customerPhone) {
+              console.log('[Mailgun Webhook] Sending immediate SMS...');
+              const smsResult = await sendReviewRequestSms({
+                recipientPhone: parsedData.customerPhone,
+                customerName: parsedData.customerName || 'Valued Customer',
+              });
+              
+              if (smsResult.success) {
+                console.log('[Mailgun Webhook] SMS sent successfully, messageId:', smsResult.messageId);
+              } else {
+                console.error('[Mailgun Webhook] SMS failed:', smsResult.error);
+              }
+            }
           } else {
             console.log('[Mailgun Webhook] Customer already has active review request campaign, skipping');
           }
         } catch (campaignError) {
-          console.error('[Mailgun Webhook] Error creating review request campaign:', campaignError);
+          console.error('[Mailgun Webhook] Error creating review campaign:', campaignError);
           // Don't fail the webhook if campaign creation fails
         }
       } else {
-        console.log('[Mailgun Webhook] Skipping review request campaign - no customer match or email');
+        console.log('[Mailgun Webhook] Skipping review request - no customer match or email');
       }
       
       console.log('[Mailgun Webhook] Invoice logged successfully');

@@ -228,11 +228,15 @@ class ReviewRequestScheduler {
       const settings = await this.getEmailSettings();
       
       // Check suppression list FIRST (hard bounces, spam complaints)
-      const suppressed = await db.query.emailSuppressionList.findFirst({
-        where: (fields, { eq }) => eq(fields.email, jobCompletion.customerEmail),
-      });
+      const { emailSuppressionList } = await import('@shared/schema');
+      const suppressedResults = await db
+        .select()
+        .from(emailSuppressionList)
+        .where(eq(emailSuppressionList.email, jobCompletion.customerEmail || ''))
+        .limit(1);
       
-      if (suppressed) {
+      if (suppressedResults.length > 0) {
+        const suppressed = suppressedResults[0];
         console.log(`[Review Request Scheduler] Email ${jobCompletion.customerEmail} is suppressed (${suppressed.reason}), stopping campaign permanently`);
         await db
           .update(reviewRequests)
