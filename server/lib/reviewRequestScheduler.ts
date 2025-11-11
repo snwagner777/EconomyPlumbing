@@ -22,89 +22,8 @@ import { generateEmail } from "./aiEmailGenerator";
 import { Resend } from "resend";
 import { sendReviewRequestSms } from "./simpletexting";
 
-interface ServiceTitanConfig {
-  clientId: string;
-  clientSecret: string;
-  tenantId: string;
-  appKey: string;
-}
-
-interface ServiceTitanJob {
-  id: number;
-  customerId: number;
-  completedOn: string;
-  total: number;
-  summary: string;
-  jobTypeId: number;
-  soldById: number;
-}
-
-interface ServiceTitanJobsResponse {
-  page: number;
-  pageSize: number;
-  hasMore: boolean;
-  totalCount?: number;
-  data: ServiceTitanJob[];
-}
-
-class ServiceTitanJobsAPI {
-  private config: ServiceTitanConfig;
-  private baseUrl: string;
-  private accessToken: string | null = null;
-  private tokenExpiry: number = 0;
-
-  constructor(config: ServiceTitanConfig) {
-    this.config = config;
-    this.baseUrl = `https://api.servicetitan.io/jpm/v2/tenant/${config.tenantId}`;
-  }
-
-  private async authenticate(): Promise<void> {
-    if (this.accessToken && Date.now() < this.tokenExpiry) {
-      return;
-    }
-
-    const tokenUrl = 'https://auth.servicetitan.io/connect/token';
-    const credentials = Buffer.from(`${this.config.clientId}:${this.config.clientSecret}`).toString('base64');
-
-    const response = await fetch(tokenUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${credentials}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: 'grant_type=client_credentials',
-    });
-
-    if (!response.ok) {
-      throw new Error(`ServiceTitan auth failed: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    this.accessToken = data.access_token;
-    this.tokenExpiry = Date.now() + (data.expires_in * 1000) - 60000;
-  }
-
-  async getCompletedJobs(completedOnOrAfter: Date): Promise<ServiceTitanJob[]> {
-    await this.authenticate();
-
-    const isoDate = completedOnOrAfter.toISOString();
-    const url = `${this.baseUrl}/jobs?jobStatus=Completed&completedOnOrAfter=${encodeURIComponent(isoDate)}&pageSize=50`;
-
-    const response = await fetch(url, {
-      headers: {
-        'Authorization': `Bearer ${this.accessToken}`,
-        'ST-App-Key': this.config.appKey,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch jobs: ${response.statusText}`);
-    }
-
-    const data: ServiceTitanJobsResponse = await response.json();
-    return data.data || [];
-  }
-}
+// ServiceTitan API polling removed - system is webhook-only
+// Mailgun forwards all ServiceTitan invoice emails → webhook processes PDFs instantly
 
 interface EmailSettings {
   masterEmailEnabled: boolean;
@@ -131,8 +50,7 @@ interface JobCompletion {
 }
 
 class ReviewRequestScheduler {
-  private isRunning: boolean = false;
-  private intervalId: NodeJS.Timeout | null = null;
+  // Scheduler now only processes pending emails - webhook creates review requests
 
   /**
    * Get email campaign settings from database
@@ -206,209 +124,8 @@ class ReviewRequestScheduler {
     return { allowed: true };
   }
 
-  /**
-   * Detect new completed jobs from ServiceTitan
-   */
-  async detectCompletedJobs(): Promise<JobCompletion[]> {
-    try {
-      console.log("[Review Request Scheduler] Checking for new completed jobs...");
-
-      // Initialize ServiceTitan API
-      const config: ServiceTitanConfig = {
-        clientId: process.env.SERVICETITAN_CLIENT_ID!,
-        clientSecret: process.env.SERVICETITAN_CLIENT_SECRET!,
-        tenantId: process.env.SERVICETITAN_TENANT_ID!,
-        appKey: process.env.SERVICETITAN_APP_KEY!,
-      };
-
-      const stApi = new ServiceTitanJobsAPI(config);
-
-      // Fetch jobs completed in last 24 hours
-      const yesterday = new Date();
-      yesterday.setHours(yesterday.getHours() - 24);
-
-      const stJobs = await stApi.getCompletedJobs(yesterday);
-      console.log(`[Review Request Scheduler] Found ${stJobs.length} completed jobs from ServiceTitan API`);
-
-      const newJobsToProcess: JobCompletion[] = [];
-
-      for (const stJob of stJobs) {
-        // Check if we've already created a job_completion for this ServiceTitan job ID
-        const existingByJobId = await db
-          .select()
-          .from(jobCompletions)
-          .where(eq(jobCompletions.jobId, stJob.id))
-          .limit(1);
-
-        if (existingByJobId.length > 0) {
-          console.log(`[Review Request Scheduler] Job completion already exists for ST job ${stJob.id}, skipping`);
-          continue;
-        }
-
-        // Check for webhook-created completion that matches this job (reconciliation)
-        // Match by: customerId + completionDate (within 1 day) + invoiceTotal + source='webhook' + no jobId
-        const jobDate = new Date(stJob.completedOn);
-        const dayBefore = new Date(jobDate);
-        dayBefore.setDate(dayBefore.getDate() - 1);
-        const dayAfter = new Date(jobDate);
-        dayAfter.setDate(dayAfter.getDate() + 1);
-        const invoiceTotal = stJob.total ? Math.round(stJob.total * 100) : 0;
-        
-        const webhookCompletion = await db
-          .select()
-          .from(jobCompletions)
-          .where(
-            and(
-              eq(jobCompletions.customerId, stJob.customerId),
-              eq(jobCompletions.source, 'webhook'),
-              isNull(jobCompletions.jobId), // Only match webhook records without ST job ID
-              gte(jobCompletions.completionDate, dayBefore),
-              lt(jobCompletions.completionDate, dayAfter),
-              eq(jobCompletions.invoiceTotal, invoiceTotal) // Match on amount to prevent wrong-job association
-            )
-          )
-          .limit(1);
-
-        // If found webhook completion, reconcile by adding jobId
-        if (webhookCompletion.length > 0) {
-          console.log(`[Review Request Scheduler] Reconciling webhook completion ${webhookCompletion[0].id} with ST job ${stJob.id}`);
-          await db
-            .update(jobCompletions)
-            .set({ 
-              jobId: stJob.id,
-              sourceMetadata: sql`jsonb_set(COALESCE(${jobCompletions.sourceMetadata}, '{}'::jsonb), '{reconciledAt}', to_jsonb(now()))`,
-            })
-            .where(eq(jobCompletions.id, webhookCompletion[0].id));
-          continue;
-        }
-
-        // Get customer details from customers_xlsx
-        const customer = await db
-          .select()
-          .from(customersXlsx)
-          .where(eq(customersXlsx.id, stJob.customerId))
-          .limit(1);
-
-        if (customer.length === 0) {
-          console.log(`[Review Request Scheduler] No customer found for ST customer ID ${stJob.customerId}, skipping`);
-          continue;
-        }
-
-        // Get customer email from contacts_xlsx
-        const emailContact = await db
-          .select()
-          .from(contactsXlsx)
-          .where(
-            and(
-              eq(contactsXlsx.customerId, stJob.customerId),
-              sql`LOWER(${contactsXlsx.contactType}) = 'email'`
-            )
-          )
-          .limit(1);
-
-        if (emailContact.length === 0 || !emailContact[0].normalizedValue) {
-          console.log(`[Review Request Scheduler] No email for customer ${stJob.customerId}, skipping`);
-          continue;
-        }
-
-        // Extract first email if comma-separated
-        const customerEmail = emailContact[0].normalizedValue.split(',')[0].trim();
-
-        // Create job_completion entry
-        // (invoiceTotal already calculated above for reconciliation check)
-        const isQuoteOnly = invoiceTotal === 0; // Flag $0 jobs as quotes/estimates
-        
-        const jobCompletion: JobCompletion = {
-          id: `job-${stJob.id}`,
-          jobId: stJob.id,
-          customerId: stJob.customerId,
-          customerName: customer[0].name || 'Valued Customer',
-          customerEmail: customerEmail,
-          serviceName: stJob.summary || 'Service',
-          invoiceTotal: invoiceTotal || undefined,
-          completionDate: new Date(stJob.completedOn),
-          isQuoteOnly,
-        };
-
-        // Insert job_completion to database
-        await db.insert(jobCompletions).values(jobCompletion);
-        console.log(`[Review Request Scheduler] Created job_completion for job ${stJob.id}`);
-
-        // Send immediate SMS review request if customer has phone number
-        // Get customer phone from contacts_xlsx
-        const phoneContact = await db
-          .select()
-          .from(contactsXlsx)
-          .where(
-            and(
-              eq(contactsXlsx.customerId, stJob.customerId),
-              sql`LOWER(${contactsXlsx.contactType}) = 'phone'`
-            )
-          )
-          .limit(1);
-
-        if (phoneContact.length > 0 && phoneContact[0].normalizedValue) {
-          const customerPhone = phoneContact[0].normalizedValue.split(',')[0].trim();
-          
-          try {
-            const smsResult = await sendReviewRequestSms({
-              recipientPhone: customerPhone,
-              customerName: customer[0].name || 'Valued Customer',
-            });
-            
-            if (smsResult.success) {
-              console.log(`[Review Request Scheduler] SMS sent to customer ${stJob.customerId}, messageId: ${smsResult.messageId}`);
-            } else {
-              console.error(`[Review Request Scheduler] SMS failed for customer ${stJob.customerId}: ${smsResult.error}`);
-            }
-          } catch (smsError) {
-            console.error(`[Review Request Scheduler] Error sending review request SMS:`, smsError);
-          }
-        }
-
-        newJobsToProcess.push(jobCompletion);
-      }
-
-      console.log(`[Review Request Scheduler] Processed ${newJobsToProcess.length} new completed jobs`);
-      return newJobsToProcess;
-    } catch (error) {
-      console.error("[Review Request Scheduler] Error detecting completed jobs:", error);
-      return [];
-    }
-  }
-
-  /**
-   * Create review request entry for a completed job
-   */
-  async createReviewRequest(job: JobCompletion, settings: EmailSettings): Promise<string | null> {
-    try {
-      // Determine campaign type and validate BEFORE creating request
-      const campaignType = job.isQuoteOnly ? 'quote_followup' : 'review_request';
-      const validation = this.canSendCampaign(campaignType, settings);
-      
-      if (!validation.allowed) {
-        console.log(`[Review Request Scheduler] Skipping ${campaignType} creation for job ${job.jobId}: ${validation.reason}`);
-        return null;
-      }
-
-      const [reviewRequest] = await db
-        .insert(reviewRequests)
-        .values({
-          jobCompletionId: job.id, // Link to job_completions table
-          customerId: job.customerId,
-          customerEmail: job.customerEmail,
-          status: 'queued', // Initial status
-          createdAt: new Date(),
-        })
-        .returning();
-
-      console.log(`[Review Request Scheduler] Created ${campaignType} request ${reviewRequest.id} for job ${job.jobId}`);
-      return reviewRequest.id;
-    } catch (error) {
-      console.error(`[Review Request Scheduler] Error creating review request for job ${job.jobId}:`, error);
-      return null;
-    }
-  }
+  // REMOVED: detectCompletedJobs() - ServiceTitan API polling removed (webhook-only system)
+  // REMOVED: createReviewRequest() - Review requests now created by webhook, not scheduler
 
   /**
    * Get email template from database or generate with AI
@@ -462,8 +179,8 @@ class ReviewRequestScheduler {
 
       return {
         subject: generated.subject,
-        htmlContent: generated.bodyHtml,
-        plainTextContent: generated.bodyPlain,
+        htmlContent: generated.htmlContent,
+        plainTextContent: generated.plainTextContent,
       };
     } catch (error) {
       console.error(`[Review Request Scheduler] Error getting email content for email ${emailNumber}:`, error);
@@ -511,19 +228,18 @@ class ReviewRequestScheduler {
       const settings = await this.getEmailSettings();
       
       // Check suppression list FIRST (hard bounces, spam complaints)
-      const { emailSuppressionList } = await import('@shared/schema');
       const suppressed = await db.query.emailSuppressionList.findFirst({
-        where: eq(emailSuppressionList.email, jobCompletion.email),
+        where: (fields, { eq }) => eq(fields.email, jobCompletion.customerEmail),
       });
       
       if (suppressed) {
-        console.log(`[Review Request Scheduler] Email ${jobCompletion.email} is suppressed (${suppressed.reason}), pausing campaign permanently`);
+        console.log(`[Review Request Scheduler] Email ${jobCompletion.customerEmail} is suppressed (${suppressed.reason}), stopping campaign permanently`);
         await db
           .update(reviewRequests)
           .set({
-            status: 'paused',
-            pausedAt: new Date(),
-            pauseReason: `suppressed_${suppressed.reason}`, // e.g., 'suppressed_hard_bounce', 'suppressed_spam_complaint'
+            status: 'stopped',
+            completedAt: new Date(),
+            stopReason: `suppressed_${suppressed.reason}`, // e.g., 'suppressed_hard_bounce', 'suppressed_spam_complaint'
           })
           .where(eq(reviewRequests.id, reviewRequestId));
         return false;
@@ -563,7 +279,7 @@ class ReviewRequestScheduler {
         emailNumber,
         {
           id: jobCompletion.id,
-          jobId: jobCompletion.jobId,
+          jobId: jobCompletion.jobId || 0, // Default to 0 if webhook-created without ST job ID
           customerId: jobCompletion.customerId,
           customerName: jobCompletion.customerName,
           customerEmail: jobCompletion.customerEmail || '',
@@ -743,62 +459,8 @@ class ReviewRequestScheduler {
     }
   }
 
-  /**
-   * Main scheduler loop
-   */
-  async run() {
-    console.log("[Review Request Scheduler] Running campaign check...");
-
-    try {
-      // Step 1: Detect new completed jobs and create review requests
-      const completedJobs = await this.detectCompletedJobs();
-      const settings = await this.getEmailSettings();
-
-      for (const job of completedJobs) {
-        await this.createReviewRequest(job, settings);
-      }
-
-      // Step 2: Process pending emails for existing review requests
-      await this.processPendingEmails();
-
-      console.log("[Review Request Scheduler] Campaign check completed");
-    } catch (error) {
-      console.error("[Review Request Scheduler] Error in run loop:", error);
-    }
-  }
-
-  /**
-   * Start the scheduler (runs every hour)
-   */
-  start() {
-    if (this.isRunning) {
-      console.log("[Review Request Scheduler] Already running");
-      return;
-    }
-
-    console.log("[Review Request Scheduler] Starting scheduler (runs every hour)");
-    this.isRunning = true;
-
-    // Run immediately
-    this.run();
-
-    // Run every hour
-    this.intervalId = setInterval(() => {
-      this.run();
-    }, 60 * 60 * 1000); // 1 hour
-  }
-
-  /**
-   * Stop the scheduler
-   */
-  stop() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
-    this.isRunning = false;
-    console.log("[Review Request Scheduler] Stopped");
-  }
+  // REMOVED: run(), start(), stop() - Worker now only calls processPendingEmails() directly
+  // No need for scheduler loop since webhook creates review requests automatically
 }
 
 // Singleton instance
