@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
       name: name || undefined,
       address: {
         street: address.street,
+        unit: address.unit, // CRITICAL: Pass through unit field for apartments/suites
         city: address.city,
         state: address.state,
         zip: address.zip,

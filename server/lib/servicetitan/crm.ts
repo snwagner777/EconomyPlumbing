@@ -68,6 +68,7 @@ interface CreateLocationData {
   name?: string;
   address: {
     street: string;
+    unit?: string; // CRITICAL: Unit field for apartments/suites
     city: string;
     state: string;
     zip: string;
@@ -258,6 +259,7 @@ export class ServiceTitanCRM {
         body: `Service location: ${locationName}`,
         address: {
           street: data.address.street,
+          unit: data.address.unit || undefined, // CRITICAL: Include unit for apartments/suites
           city: data.address.city,
           state: data.address.state,
           zip: data.address.zip,
