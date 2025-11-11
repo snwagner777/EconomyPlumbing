@@ -110,12 +110,17 @@ export interface CustomerLocation {
 
 /**
  * POST /api/scheduler/smart-availability - Request body
+ * 
+ * CRITICAL: Uses daysToLoad instead of endDate for 7-day analysis windows.
+ * Frontend calculates daysToLoad from startDate/endDate using differenceInDays.
  */
 export interface SmartAvailabilityRequest {
   jobTypeId: number;
   customerZip: string;
   startDate: string; // YYYY-MM-DD format
-  endDate: string; // YYYY-MM-DD format
+  daysToLoad?: number; // Number of days to analyze (default: 7)
+  businessUnitId?: number; // Optional business unit filter
+  customerAddress?: string; // Optional for enhanced proximity scoring
 }
 
 /**

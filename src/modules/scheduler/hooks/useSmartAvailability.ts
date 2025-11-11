@@ -11,6 +11,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import type { SmartAvailabilityRequest, SmartAvailabilityResponse } from '@shared/types/scheduler';
+import { differenceInDays } from 'date-fns';
 
 export interface UseSmartAvailabilityOptions {
   jobTypeId: number;
@@ -63,11 +64,14 @@ export function useSmartAvailability({
   } = useQuery<SmartAvailabilityResponse>({
     queryKey,
     queryFn: async () => {
-      const requestBody: SmartAvailabilityRequest = {
+      // CRITICAL FIX: Calculate daysToLoad from startDate/endDate (API expects daysToLoad, not endDate)
+      const daysToLoad = differenceInDays(new Date(endDate), new Date(startDate)) + 1;
+      
+      const requestBody = {
         jobTypeId,
         customerZip,
         startDate,
-        endDate,
+        daysToLoad, // API expects daysToLoad, not endDate
       };
       
       const response = await apiRequest('POST', '/api/scheduler/smart-availability', requestBody);
