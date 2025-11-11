@@ -315,7 +315,7 @@ class ReviewRequestScheduler {
         const customerEmail = emailContact[0].normalizedValue.split(',')[0].trim();
 
         // Create job_completion entry
-        const invoiceTotal = stJob.total ? Math.round(stJob.total * 100) : 0;
+        // (invoiceTotal already calculated above for reconciliation check)
         const isQuoteOnly = invoiceTotal === 0; // Flag $0 jobs as quotes/estimates
         
         const jobCompletion: JobCompletion = {
