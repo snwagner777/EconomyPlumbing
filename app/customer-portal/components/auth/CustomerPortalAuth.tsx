@@ -165,6 +165,7 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
       const result = await response.json();
       
       if (result.requiresAccountSelection && result.customers) {
+        // Store accounts but DON'T show selector yet - verify 2FA first
         const normalizedPhone = result.phone || phoneLoginNumber;
         setPhoneLoginNumber(normalizedPhone);
         setLookupValue(normalizedPhone);
@@ -179,9 +180,12 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
           phoneNumber: normalizedPhone,
         }));
         
+        // Store accounts for post-verification selector
         setAvailableAccounts(accounts);
-        setVerificationStep('select-account');
-        setLookupSuccess(result.message || 'We found multiple accounts. Please select your account.');
+        
+        // Go straight to verification step - selector shows AFTER 2FA
+        setVerificationStep('phone-email-found');
+        setLookupSuccess(`We found ${accounts.length} accounts. We'll send a verification code via SMS to ${normalizedPhone}`);
       } else if (result.requiresSelection && result.emailOptions) {
         setAvailableEmails(result.emailOptions);
         setLookupToken(result.lookupToken);
