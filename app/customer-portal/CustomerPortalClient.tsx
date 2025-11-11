@@ -392,16 +392,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const accountSummaries = accountSummariesData?.accounts || [];
 
   // Separate upcoming and completed appointments
+  // Filter by location if activeLocationTab is set
   const upcomingAppointments = (customerData?.appointments || []).filter(apt => {
     const isUpcoming = new Date(apt.start) > new Date();
     const isNotCompleted = !['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    return isUpcoming && isNotCompleted;
+    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
+    return isUpcoming && isNotCompleted && matchesLocation;
   });
 
   const completedAppointments = (customerData?.appointments || []).filter(apt => {
     const isPast = new Date(apt.start) <= new Date();
     const isCompleted = ['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    return isPast || isCompleted;
+    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
+    return (isPast || isCompleted) && matchesLocation;
   });
 
   // Clear session on page load/refresh
@@ -1225,6 +1228,47 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       >
                         <Users className="w-4 h-4 mr-2" />
                         + New Account
+                      </Button>
+                    </div>
+                  </Tabs>
+                </div>
+              )}
+            
+              {/* Location Tabs - Nested under selected account */}
+              {customerLocations.length > 0 && (
+                <div className="mb-6">
+                  <Tabs value={activeLocationTab} onValueChange={(value) => {
+                    setActiveLocationTab(value);
+                  }}>
+                    <div className="flex items-center justify-between gap-4">
+                      <TabsList>
+                        {customerLocations.map((location) => {
+                          const locationName = location.name || location.address || 'Unnamed Location';
+                          return (
+                            <TabsTrigger
+                              key={location.id}
+                              value={location.id.toString()}
+                              data-testid={`tab-location-${location.id}`}
+                            >
+                              <MapPin className="w-4 h-4 mr-2" />
+                              {locationName}
+                            </TabsTrigger>
+                          );
+                        })}
+                      </TabsList>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Add New Location",
+                            description: "This feature is coming soon!",
+                          });
+                        }}
+                        data-testid="button-create-location"
+                      >
+                        <MapPin className="w-4 h-4 mr-2" />
+                        + New Location
                       </Button>
                     </div>
                   </Tabs>
@@ -2148,7 +2192,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   {/* Open Estimates - Redesigned with urgency indicators */}
                   {(() => {
                     // Backend now filters for unsold estimates (where soldOn is null)
-                    const openEstimates = customerData?.estimates || [];
+                    // Also filter by location if activeLocationTab is set
+                    const openEstimates = (customerData?.estimates || []).filter(est => {
+                      const matchesLocation = !activeLocationTab || est.locationId?.toString() === activeLocationTab;
+                      return matchesLocation;
+                    });
 
                     if (openEstimates.length === 0) return null;
 
