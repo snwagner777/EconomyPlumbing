@@ -2918,7 +2918,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     </Card>
                   )}
               </div>
-            </>
           ) : null}
         </div>
       </div>
