@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "./SchedulerDialog";
+import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
 
 interface ServiceTitanContact {
   id: number;
@@ -256,23 +257,16 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   });
   const [isAddingLocation, setIsAddingLocation] = useState(false);
   
-  // Add customer contact state
+  // Contact dialogs state (forms managed by ContactForm component)
   const [addContactOpen, setAddContactOpen] = useState(false);
-  const [newContactType, setNewContactType] = useState<'Phone' | 'MobilePhone' | 'Email'>('Phone');
-  const [newContactValue, setNewContactValue] = useState("");
-  const [newContactMemo, setNewContactMemo] = useState("");
-  const [isAddingContact, setIsAddingContact] = useState(false);
-
-  // Manage location contacts state
   const [manageLocationContactsOpen, setManageLocationContactsOpen] = useState(false);
   const [selectedLocationForContacts, setSelectedLocationForContacts] = useState<any>(null);
-  const [newLocationContactType, setNewLocationContactType] = useState<'Phone' | 'MobilePhone' | 'Email'>('Phone');
-  const [newLocationContactValue, setNewLocationContactValue] = useState("");
-  const [newLocationContactName, setNewLocationContactName] = useState("");
-  const [newLocationContactMemo, setNewLocationContactMemo] = useState("");
-  const [isAddingLocationContact, setIsAddingLocationContact] = useState(false);
   
   const { toast } = useToast();
+  
+  // Contact mutation hooks
+  const addCustomerContact = useAddCustomerContact();
+  const addLocationContact = useAddLocationContact();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
     queryKey: ['/api/servicetitan/customer', customerId],
@@ -4155,110 +4149,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               Add a new phone number or email address to your account
             </DialogDescription>
           </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="contact-type">Contact Type *</Label>
-              <Select
-                value={newContactType}
-                onValueChange={(value: any) => setNewContactType(value)}
-              >
-                <SelectTrigger id="contact-type" data-testid="select-contact-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Phone">Phone</SelectItem>
-                  <SelectItem value="MobilePhone">Mobile Phone</SelectItem>
-                  <SelectItem value="Email">Email</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contact-value">
-                {newContactType === 'Email' ? 'Email Address' : 'Phone Number'} *
-              </Label>
-              <Input
-                id="contact-value"
-                type={newContactType === 'Email' ? 'email' : 'tel'}
-                value={newContactValue}
-                onChange={(e) => setNewContactValue(e.target.value)}
-                placeholder={newContactType === 'Email' ? 'you@example.com' : '(512) 555-1234'}
-                data-testid="input-contact-value"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="contact-memo">Label (Optional)</Label>
-              <Input
-                id="contact-memo"
-                value={newContactMemo}
-                onChange={(e) => setNewContactMemo(e.target.value)}
-                placeholder="e.g., Work, Home, Personal"
-                data-testid="input-contact-memo"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setAddContactOpen(false);
-                setNewContactValue("");
-                setNewContactMemo("");
-              }}
-              disabled={isAddingContact}
-              data-testid="button-cancel-add-contact"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!customerId || !newContactValue.trim()) return;
-                
-                setIsAddingContact(true);
-                try {
-                  const response = await fetch('/api/portal/customer-contacts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      customerId,
-                      type: newContactType,
-                      value: newContactValue.trim(),
-                      memo: newContactMemo.trim() || undefined
-                    }),
-                  });
-
-                  if (!response.ok) throw new Error('Failed to add contact');
-
-                  toast({
-                    title: 'Contact added',
-                    description: 'Your contact information has been updated.',
-                  });
-
-                  setAddContactOpen(false);
-                  setNewContactValue("");
-                  setNewContactMemo("");
-                  
-                  queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', customerId] });
-                } catch (error) {
-                  console.error('Add contact error:', error);
-                  toast({
-                    title: 'Error',
-                    description: 'Failed to add contact. Please try again.',
-                    variant: 'destructive',
-                  });
-                } finally {
-                  setIsAddingContact(false);
-                }
-              }}
-              disabled={isAddingContact || !newContactValue.trim()}
-              data-testid="button-submit-add-contact"
-            >
-              {isAddingContact ? 'Adding...' : 'Add Contact'}
-            </Button>
-          </DialogFooter>
+          <ContactForm
+            onSubmit={async (data) => {
+              if (!customerId) return;
+              await addCustomerContact.mutateAsync({
+                customerId: parseInt(customerId, 10),
+                ...data,
+              });
+              setAddContactOpen(false);
+            }}
+            onCancel={() => setAddContactOpen(false)}
+            isSubmitting={addCustomerContact.isPending}
+            submitText="Add Contact"
+          />
         </DialogContent>
       </Dialog>
 
@@ -4296,48 +4199,18 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             {/* Add new contact form */}
             <div className="border-t pt-4">
               <Label className="mb-3 block">Add New Contact</Label>
-              
-              <div className="space-y-3">
-                <div className="space-y-2">
-                  <Label htmlFor="loc-contact-type">Type</Label>
-                  <Select
-                    value={newLocationContactType}
-                    onValueChange={(value: any) => setNewLocationContactType(value)}
-                  >
-                    <SelectTrigger id="loc-contact-type">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Phone">Phone</SelectItem>
-                      <SelectItem value="MobilePhone">Mobile Phone</SelectItem>
-                      <SelectItem value="Email">Email</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="loc-contact-name">Contact Name (Optional)</Label>
-                  <Input
-                    id="loc-contact-name"
-                    value={newLocationContactName}
-                    onChange={(e) => setNewLocationContactName(e.target.value)}
-                    placeholder="e.g., Property Manager, Office Manager"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="loc-contact-value">
-                    {newLocationContactType === 'Email' ? 'Email' : 'Phone Number'}
-                  </Label>
-                  <Input
-                    id="loc-contact-value"
-                    type={newLocationContactType === 'Email' ? 'email' : 'tel'}
-                    value={newLocationContactValue}
-                    onChange={(e) => setNewLocationContactValue(e.target.value)}
-                    placeholder={newLocationContactType === 'Email' ? 'contact@example.com' : '(512) 555-1234'}
-                  />
-                </div>
-              </div>
+              <ContactForm
+                showNameField={true}
+                onSubmit={async (data) => {
+                  if (!selectedLocationForContacts?.id) return;
+                  await addLocationContact.mutateAsync({
+                    locationId: selectedLocationForContacts.id,
+                    ...data,
+                  });
+                }}
+                isSubmitting={addLocationContact.isPending}
+                submitText="Add Contact"
+              />
             </div>
           </div>
 
@@ -4347,59 +4220,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               onClick={() => {
                 setManageLocationContactsOpen(false);
                 setSelectedLocationForContacts(null);
-                setNewLocationContactValue("");
-                setNewLocationContactName("");
-                setNewLocationContactMemo("");
               }}
-              disabled={isAddingLocationContact}
             >
               Close
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!customerId || !selectedLocationForContacts || !newLocationContactValue.trim()) return;
-                
-                setIsAddingLocationContact(true);
-                try {
-                  const response = await fetch('/api/portal/location-contacts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      customerId,
-                      locationId: selectedLocationForContacts.id,
-                      type: newLocationContactType,
-                      value: newLocationContactValue.trim(),
-                      name: newLocationContactName.trim() || undefined,
-                      memo: newLocationContactMemo.trim() || undefined
-                    }),
-                  });
-
-                  if (!response.ok) throw new Error('Failed to add location contact');
-
-                  toast({
-                    title: 'Contact added',
-                    description: 'Location contact has been added successfully.',
-                  });
-
-                  setNewLocationContactValue("");
-                  setNewLocationContactName("");
-                  setNewLocationContactMemo("");
-                  
-                  queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', customerId] });
-                } catch (error) {
-                  console.error('Add location contact error:', error);
-                  toast({
-                    title: 'Error',
-                    description: 'Failed to add location contact. Please try again.',
-                    variant: 'destructive',
-                  });
-                } finally {
-                  setIsAddingLocationContact(false);
-                }
-              }}
-              disabled={isAddingLocationContact || !newLocationContactValue.trim()}
-            >
-              {isAddingLocationContact ? 'Adding...' : 'Add Contact'}
             </Button>
           </DialogFooter>
         </DialogContent>

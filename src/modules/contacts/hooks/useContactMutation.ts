@@ -43,14 +43,15 @@ export function useAddCustomerContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Added',
         description: 'Your contact information has been updated.',
       });
       
-      // Invalidate customer data to refresh contacts list
+      // Invalidate customer data to refresh contacts list (both new and legacy keys)
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -102,8 +103,14 @@ export function useAddLocationContact() {
         description: 'Location contact information has been updated.',
       });
       
-      // Invalidate location data to refresh contacts list
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/locations'] });
+      // CRITICAL: Invalidate customer-locations queries (used by portal)
+      // Use predicate to match both array and template string patterns
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
+      });
+      // Also invalidate main customer query to refresh all data
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
     },
     onError: (error: Error) => {
       toast({
