@@ -7,7 +7,7 @@ import { queryClient } from '@/lib/queryClient';
 import { PhoneConfigProvider } from '@/contexts/PhoneConfigProvider';
 import { SchedulerProvider } from '@/contexts/SchedulerContext';
 import { Toaster } from '@/components/ui/toaster';
-import { SchedulerModal } from '@/components/SchedulerModal';
+import { SchedulerBridge } from '@/modules/scheduler/components/SchedulerBridge';
 
 const AIChatbot = dynamic(() => import('@/components/AIChatbot'), {
   ssr: false,
@@ -20,7 +20,7 @@ export function ClientProviders({ children }: { children: ReactNode }) {
         <SchedulerProvider>
           {children}
           <AIChatbot />
-          <SchedulerModal />
+          <SchedulerBridge />
           <Toaster />
         </SchedulerProvider>
       </PhoneConfigProvider>

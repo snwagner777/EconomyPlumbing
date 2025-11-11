@@ -8,6 +8,7 @@
 // Components
 export { SchedulerDialog } from './components/SchedulerDialog';
 export type { SchedulerDialogProps } from './components/SchedulerDialog';
+export { SchedulerBridge } from './components/SchedulerBridge';
 
 // Provider & Hooks (Advanced - for future complex flows)
 export {
