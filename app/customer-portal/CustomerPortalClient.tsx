@@ -16,6 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { openScheduler } from "@/lib/scheduler";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 import { ReferralModal } from "@/components/ReferralModal";
@@ -161,6 +162,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   // Auth state - only what's needed post-authentication
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [availableCustomerIds, setAvailableCustomerIds] = useState<number[]>([]);
+  
+  // Tab state for accounts and locations
+  const [activeAccountTab, setActiveAccountTab] = useState<string>("");
+  const [activeLocationTab, setActiveLocationTab] = useState<string>("");
   
   // UI state
   const [copied, setCopied] = useState(false);
@@ -357,8 +362,34 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     enabled: !!customerId,
   });
 
+  // Fetch account summaries for ALL available customer IDs
+  const { data: accountSummariesData } = useQuery<{
+    accounts: Array<{
+      id: number;
+      name: string;
+      type: string;
+      email: string | null;
+      phoneNumber: string | null;
+      locationCount: number;
+      primaryLocationId: number | null;
+    }>;
+  }>({
+    queryKey: ['/api/portal/customer-accounts', availableCustomerIds],
+    enabled: availableCustomerIds.length > 0,
+    queryFn: async () => {
+      const response = await fetch('/api/portal/customer-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerIds: availableCustomerIds }),
+      });
+      if (!response.ok) throw new Error('Failed to fetch account summaries');
+      return response.json();
+    },
+  });
+
   const timeWindows = arrivalWindowsData?.windows || [];
   const customerLocations = locationsData?.locations || [];
+  const accountSummaries = accountSummariesData?.accounts || [];
 
   // Separate upcoming and completed appointments
   const upcomingAppointments = (customerData?.appointments || []).filter(apt => {
@@ -386,6 +417,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     
     clearSession();
   }, []);
+
+  // Initialize active tabs when customer ID or locations change
+  useEffect(() => {
+    if (customerId && !activeAccountTab) {
+      setActiveAccountTab(customerId);
+    }
+  }, [customerId, activeAccountTab]);
+
+  useEffect(() => {
+    if (customerLocations.length > 0 && !activeLocationTab) {
+      setActiveLocationTab(customerLocations[0].id.toString());
+    }
+  }, [customerLocations, activeLocationTab]);
 
   // POST-AUTH account switching only (initial auth handled by CustomerPortalAuth)
   const handleSelectAccount = async (accountId: number) => {
@@ -1141,8 +1185,51 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               }
             />
           ) : (
-            <div className="space-y-6">
-              {isLoading ? (
+            <>
+              {/* Account Tabs - Always visible for account switching */}
+              <Tabs value={activeAccountTab} onValueChange={(value) => {
+                const newCustomerId = parseInt(value);
+                handleSelectAccount(newCustomerId);
+                setActiveAccountTab(value);
+              }}>
+                <div className="flex items-center justify-between gap-4 mb-6">
+                  <TabsList className="flex-1">
+                    {accountSummaries.map((account) => (
+                      <TabsTrigger 
+                        key={account.id}
+                        value={account.id.toString()}
+                        data-testid={`tab-account-${account.id}`}
+                      >
+                        <User className="w-4 h-4 mr-2" />
+                        {account.name}
+                        {account.type && account.type !== 'Residential' && (
+                          <Badge variant="outline" className="ml-2 text-xs">
+                            {account.type}
+                          </Badge>
+                        )}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      // TODO: Implement create new account flow
+                      toast({
+                        title: "Create New Account",
+                        description: "This feature is coming soon!",
+                      });
+                    }}
+                    data-testid="button-create-account"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    + New Account
+                  </Button>
+                </div>
+
+                {/* Account Tab Content - wraps all dashboard sections */}
+                <TabsContent value={activeAccountTab} className="space-y-6 mt-0">
+                  {isLoading ? (
                 <div className="relative">
                   {/* Full-screen loading overlay */}
                   <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
