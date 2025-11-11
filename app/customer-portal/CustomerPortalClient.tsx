@@ -96,6 +96,7 @@ interface ServiceTitanAppointment {
   jobNumber?: string;
   summary?: string;
   businessUnitName?: string;
+  locationId?: number;
 }
 
 interface ServiceTitanInvoice {
@@ -134,6 +135,9 @@ interface ServiceTitanEstimate {
   jobNumber?: string;
   summary: string;
   items?: any[];
+  locationId?: number;
+  expirationStatus?: string;
+  daysUntilExpiration?: number;
 }
 
 interface CustomerData {
@@ -334,6 +338,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         state: string;
         zip: string;
       };
+      contacts?: any[];
     }>;
   }>({
     queryKey: [`/api/portal/customer-locations/${customerId}`],
@@ -1237,7 +1242,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     <div className="flex items-center justify-between gap-4">
                       <TabsList>
                         {customerLocations.map((location) => {
-                          const locationName = location.name || location.address || 'Unnamed Location';
+                          const locationName = location.name || (typeof location.address === 'string' ? location.address : `${location.address.street}, ${location.address.city}`) || 'Unnamed Location';
                           return (
                             <TabsTrigger
                               key={location.id}
@@ -1678,7 +1683,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                     🎉 First Time Customer
                                   </Badge>
                                   <p className="text-xs text-muted-foreground mt-1 px-2 line-clamp-3">
-                                    We're excited to serve you! Schedule your first service or call us at {phoneConfig.displayNumber} for any plumbing needs.
+                                    We're excited to serve you! Schedule your first service or call us at {phoneConfig.display} for any plumbing needs.
                                   </p>
                                   <p className="text-xs text-primary mt-2 absolute bottom-2">Get Started →</p>
                                 </CardContent>
@@ -1715,7 +1720,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                             badgeVariant = "secondary";
                           } else {
                             // Encourage more engagement
-                            message = `We're here when you need us! Remember, we offer maintenance plans, emergency services, and more. Give us a call anytime at ${phoneConfig.displayNumber}!`;
+                            message = `We're here when you need us! Remember, we offer maintenance plans, emergency services, and more. Give us a call anytime at ${phoneConfig.display}!`;
                             icon = Phone;
                             emoji = '📞';
                             badgeVariant = "outline";
@@ -2370,7 +2375,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                 </div>
                                 <div className="text-sm space-y-1">
                                   <p className="text-muted-foreground">
-                                    Completed: {formatDate(job.completionDate)}
+                                    Completed: {formatDate(job.completionDate instanceof Date ? job.completionDate.toISOString() : job.completionDate)}
                                   </p>
                                   {job.invoiceTotal && (
                                     <p className="text-muted-foreground">
@@ -2397,7 +2402,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                                         ))}
                                       </div>
                                       <p className="text-xs text-muted-foreground">
-                                        (Rated {formatDate(job.ratedAt!)})
+                                        (Rated {formatDate(job.ratedAt instanceof Date ? job.ratedAt.toISOString() : String(job.ratedAt))})
                                       </p>
                                     </div>
                                   ) : (
@@ -2869,6 +2874,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </CardContent>
                     </Card>
                   )}
+                </>
+              ) : null}
                   </div>
 
                   {/* Vouchers Section */}
@@ -2917,11 +2924,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </CardContent>
                     </Card>
                   )}
-              </>
+            </>
           )}
-        </div>
-      </div>
-      </main>
+          </div>
+        </main>
 
       <Footer />
       
@@ -3091,7 +3097,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     className="w-full"
                     onClick={() => {
                       // Calculate soldHours for validation
-                      const totalSoldHours = selectedEstimate.items
+                      const totalSoldHours = (selectedEstimate.items || [])
                         .filter(item => item.type === 'Service' && item.soldHours)
                         .reduce((total, item) => total + ((item.soldHours || 0) * item.quantity), 0);
                       
