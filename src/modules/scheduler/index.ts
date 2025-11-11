@@ -5,7 +5,11 @@
  * Import from this barrel file to keep imports clean and consistent.
  */
 
-// Provider & Hooks
+// Components
+export { SchedulerDialog } from './components/SchedulerDialog';
+export type { SchedulerDialogProps } from './components/SchedulerDialog';
+
+// Provider & Hooks (Advanced - for future complex flows)
 export {
   SchedulerProvider,
   useScheduler,
@@ -13,12 +17,24 @@ export {
   useSchedulerDispatch,
 } from './SchedulerProvider';
 
-// Custom Hooks
+// Custom Hooks (Lightweight - for simple dialogs)
 export {
   useSmartAvailability,
   type UseSmartAvailabilityOptions,
   type UseSmartAvailabilityReturn,
 } from './hooks/useSmartAvailability';
+
+export {
+  useSchedulerFlow,
+  useLocationSelector,
+  useVipGuard,
+  SCHEDULER_STEP_CONFIG,
+  type UseSchedulerFlowReturn,
+  type UseLocationSelectorOptions,
+  type UseLocationSelectorReturn,
+  type UseVipGuardOptions,
+  type UseVipGuardReturn,
+} from './hooks';
 
 // Types (re-export for convenience)
 export type {

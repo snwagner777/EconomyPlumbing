@@ -18,38 +18,7 @@ import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key, 
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
-
-interface JobType {
-  id: number;
-  name: string;
-  code: string;
-}
-
-interface CustomerInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  notes?: string;
-  serviceTitanId?: number;
-  locationId?: number;
-}
-
-interface TimeSlot {
-  id: string;
-  start: string; // 2-hour appointment slot start
-  end: string; // 2-hour appointment slot end
-  arrivalWindowStart: string; // 4-hour customer promise window start (REQUIRED)
-  arrivalWindowEnd: string; // 4-hour customer promise window end (REQUIRED)
-  timeLabel: string;
-  proximityScore?: number;
-  nearbyJobs?: number;
-  technicianId?: number | null; // Pre-assigned technician for optimal routing
-}
+import type { JobType, CustomerInfo, TimeSlot } from '@shared/types/scheduler';
 
 interface ReviewStepProps {
   jobType: JobType;
@@ -81,7 +50,7 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/scheduler/book', {
         customerName: `${customer.firstName} ${customer.lastName}`,
-        customerEmail: customer.email,
+        customerEmail: customer.email || '', // Handle optional email - ServiceTitan may require empty string
         customerPhone: customer.phone,
         address: customer.address,
         city: customer.city,

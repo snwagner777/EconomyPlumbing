@@ -15,20 +15,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Loader2, Clock, Zap, MapPin, TrendingUp } from 'lucide-react';
 import { format, addDays } from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
-
-interface TimeSlot {
-  id: string;
-  start: string;
-  end: string;
-  arrivalWindowStart: string; // 4-hour customer promise window start (REQUIRED)
-  arrivalWindowEnd: string; // 4-hour customer promise window end (REQUIRED)
-  timeLabel: string;
-  period: 'morning' | 'afternoon' | 'evening';
-  proximityScore?: number;
-  nearbyJobs?: number;
-  zone?: string;
-  technicianId?: number | null; // Pre-assigned technician for optimal routing
-}
+import type { TimeSlot } from '@shared/types/scheduler';
 
 interface AvailabilityStepProps {
   jobTypeId: number;
@@ -37,10 +24,11 @@ interface AvailabilityStepProps {
   selectedSlot?: TimeSlot;
 }
 
-const PERIOD_LABELS = {
+const PERIOD_LABELS: Record<string, string> = {
   morning: 'Morning',
   afternoon: 'Afternoon',
   evening: 'Evening',
+  'all-day': 'All Day', // Support for backflow slots
 };
 
 export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlot }: AvailabilityStepProps) {

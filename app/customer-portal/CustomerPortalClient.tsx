@@ -56,7 +56,7 @@ import {
   Loader2
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
-import { SchedulerDialog } from "./SchedulerDialog";
+import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
 
 interface ServiceTitanContact {
@@ -2917,8 +2917,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </CardContent>
                     </Card>
                   )}
-              </div>
-          ) : null}
+              </>
+          )}
         </div>
       </div>
       </main>
