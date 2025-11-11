@@ -28,6 +28,19 @@ Preferred communication style: Simple, everyday language.
 - Before implementing any new feature, search the codebase to verify it doesn't already exist
 - Consolidation over duplication: One implementation per feature, accessible via sidebar navigation
 
+**CRITICAL RULE: ServiceTitan API Implementation - ALWAYS Verify Before Writing**
+- NEVER assume API response structures - ALWAYS check actual code first
+- NEVER search the web for ServiceTitan API docs - use ONLY our existing implementation as source of truth
+- Before writing ANY code that filters/maps ServiceTitan data:
+  1. Read the actual API wrapper code in `server/lib/servicetitan/`
+  2. Check the endpoint implementation in `app/api/servicetitan/`
+  3. Verify the EXACT fields available in the response
+  4. Confirm field names match what ServiceTitan actually returns
+- Example: Appointments have `jobId` (not `locationId`), must join with jobs to get location
+- Example: Invoices require per-location queries (`invoices?customerId=X&locationId=Y`)
+- If unsure about a field's existence, grep the codebase for actual usage before assuming
+- Document any new API patterns discovered in this file for future reference
+
 **CRITICAL: Server-Side Rendering (SSR) Best Practices for SEO**
 This project uses Next.js 15 specifically for maximum SEO through server-side rendering. ALL new pages MUST follow these patterns:
 

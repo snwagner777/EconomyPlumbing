@@ -392,19 +392,18 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const accountSummaries = accountSummariesData?.accounts || [];
 
   // Separate upcoming and completed appointments
-  // Filter by location if activeLocationTab is set
+  // NOTE: Location filtering removed - appointments don't have locationId, they have jobId
+  // Jobs have locationId. Backend enrichment needed to properly filter by location.
   const upcomingAppointments = (customerData?.appointments || []).filter(apt => {
     const isUpcoming = new Date(apt.start) > new Date();
     const isNotCompleted = !['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
-    return isUpcoming && isNotCompleted && matchesLocation;
+    return isUpcoming && isNotCompleted;
   });
 
   const completedAppointments = (customerData?.appointments || []).filter(apt => {
     const isPast = new Date(apt.start) <= new Date();
     const isCompleted = ['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
-    return (isPast || isCompleted) && matchesLocation;
+    return isPast || isCompleted;
   });
 
   // Clear session on page load/refresh
@@ -2192,11 +2191,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   {/* Open Estimates - Redesigned with urgency indicators */}
                   {(() => {
                     // Backend now filters for unsold estimates (where soldOn is null)
-                    // Also filter by location if activeLocationTab is set
-                    const openEstimates = (customerData?.estimates || []).filter(est => {
-                      const matchesLocation = !activeLocationTab || est.locationId?.toString() === activeLocationTab;
-                      return matchesLocation;
-                    });
+                    // NOTE: Location filtering removed - estimates don't have locationId, they have jobId
+                    // Jobs have locationId. Backend enrichment needed to properly filter by location.
+                    const openEstimates = customerData?.estimates || [];
 
                     if (openEstimates.length === 0) return null;
 
