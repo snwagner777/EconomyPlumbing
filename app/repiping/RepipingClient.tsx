@@ -1,5 +1,7 @@
 'use client';
 
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import type { PhoneConfig } from '@/server/lib/phoneNumbers';
 
 interface RepipingClientProps {
@@ -8,7 +10,9 @@ interface RepipingClientProps {
 
 export default function RepipingClient({ phoneConfig }: RepipingClientProps) {
   return (
-    <div className="min-h-screen py-16">
+    <>
+      <Header austinPhone={phoneConfig} />
+      <div className="min-h-screen py-16">
       <div className="container mx-auto px-4">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold mb-6">Whole Home Repiping</h1>
@@ -96,5 +100,7 @@ export default function RepipingClient({ phoneConfig }: RepipingClientProps) {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
