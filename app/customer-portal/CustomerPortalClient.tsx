@@ -160,6 +160,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [lookupValue, setLookupValue] = useState("");
   const [lookupType, setLookupType] = useState<"phone" | "email">("phone");
   const [customerId, setCustomerId] = useState<string | null>(null);
+  const [pendingAccountId, setPendingAccountId] = useState<string | null>(null);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [lookupSuccess, setLookupSuccess] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
@@ -173,7 +174,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [isLoadingSwitcher, setIsLoadingSwitcher] = useState(false);
   
   // Verification state
-  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-email' | 'select-account' | 'authenticated'>('lookup');
+  const [verificationStep, setVerificationStep] = useState<'lookup' | 'verify-code' | 'phone-lookup' | 'phone-email-found' | 'select-email' | 'select-account' | 'authenticated'>('phone-lookup');
   const [verificationCode, setVerificationCode] = useState("");
   const [verificationMessage, setVerificationMessage] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -592,8 +593,16 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       const result = await response.json();
       
-      // Check if multiple accounts exist
-      if (result.customers && result.customers.length > 1) {
+      // Check if we have a pending account ID from phone lookup multi-account selection
+      if (pendingAccountId) {
+        // User already selected their account during phone lookup, now verified via SMS
+        setCustomerId(pendingAccountId);
+        setPendingAccountId(null); // Clear pending state
+        setVerificationStep('authenticated');
+        setLookupSuccess("Welcome to your customer portal!");
+      }
+      // Check if multiple accounts exist (from email verification flow)
+      else if (result.customers && result.customers.length > 1) {
         setAvailableAccounts(result.customers);
         setAvailableCustomerIds(result.customers.map((c: any) => c.id));
         setVerificationStep('select-account');
@@ -638,58 +647,30 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
         console.log(`[Portal] User selected account ${accountId}: ${selectedAccount.name}`);
 
-        // Check if account has email for verification
-        if (!selectedAccount.email) {
-          setLookupError('This account has no email address. SMS verification is not yet implemented. Please contact support.');
+        // Use normalized phone number for SMS verification
+        const normalizedPhone = selectedAccount.phoneNumber || lookupValue || phoneLoginNumber;
+        if (!normalizedPhone) {
+          setLookupError('Phone number not found. Please try again.');
           return;
         }
 
-        // Parse emails (could be multiple comma-separated)
-        const emails = selectedAccount.email
-          .split(',')
-          .map((e: string) => e.trim())
-          .filter((e: string) => e.length > 0 && e.includes('@'));
-
-        if (emails.length === 0) {
-          setLookupError('This account has no valid email address. Please contact support.');
-          return;
+        console.log(`[Portal] Account selected, will send SMS verification to ${normalizedPhone}`);
+        
+        // Store email for reference if available
+        if (selectedAccount.email) {
+          setActualEmail(selectedAccount.email);
+          setMaskedEmail(selectedAccount.maskedEmail || selectedAccount.email);
         }
+        
+        // Set up for phone verification using normalized phone
+        setLookupValue(normalizedPhone);
+        setLookupType('phone');
+        setVerificationStep('phone-email-found');
+        setLookupSuccess(`We'll send a verification code via SMS to ${normalizedPhone}`);
 
-        // Helper to mask email
-        const maskEmail = (email: string) => {
-          const [localPart, domain] = email.split('@');
-          if (!localPart || !domain) return email;
-          const visibleChars = Math.min(2, localPart.length);
-          const maskedLocal = localPart.substring(0, visibleChars) + '*'.repeat(Math.max(3, localPart.length - visibleChars));
-          return `${maskedLocal}@${domain}`;
-        };
-
-        // If multiple emails, show email selector
-        if (emails.length > 1) {
-          console.log(`[Portal] Account has ${emails.length} emails, showing selector`);
-          // Use correct format: { masked, value }
-          setAvailableEmails(emails.map((email: string) => ({
-            masked: maskEmail(email),
-            value: email
-          })));
-          setVerificationStep('select-email');
-          setLookupSuccess('Please select which email to use for verification.');
-        } else {
-          // Single email - proceed directly to send verification code
-          const email = emails[0];
-          const maskedEmail = maskEmail(email);
-          console.log(`[Portal] Account has single email, proceeding with verification`);
-          
-          // CRITICAL: Set lookupValue so verification code uses this email
-          setLookupValue(email);
-          setActualEmail(email);
-          setMaskedEmail(maskedEmail);
-          setVerificationStep('phone-email-found');
-          setLookupSuccess(`We'll send a verification code to ${maskedEmail}`);
-        }
-
-        // Store the selected customer ID for later use
-        setCustomerId(accountId.toString());
+        // Store the selected account ID for use AFTER SMS verification succeeds
+        // DO NOT set customerId here - security risk!
+        setPendingAccountId(accountId.toString());
       } else {
         // We're switching accounts - call the API
         const response = await fetch('/api/portal/switch-account', {
@@ -783,13 +764,20 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       if (result.requiresAccountSelection && result.customers) {
         console.log(`[Portal] Found ${result.customers.length} accounts for this phone number`);
         
+        // Store normalized phone and token for later use
+        const normalizedPhone = result.phone || phoneLoginNumber;
+        setPhoneLoginNumber(normalizedPhone);
+        setLookupValue(normalizedPhone);
+        setLookupType('phone');
+        setLookupToken(result.lookupToken || '');
+        
         // Map backend customers to frontend CustomerAccount format
         const accounts: CustomerAccount[] = result.customers.map((c: any) => ({
           id: c.id,
           name: c.name,
           email: c.email,
           maskedEmail: c.maskedEmail,
-          phoneNumber: result.phone,
+          phoneNumber: normalizedPhone,
         }));
         
         setAvailableAccounts(accounts);
@@ -804,17 +792,23 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         setVerificationStep('select-email');
         setLookupSuccess('We found your account! Please select which email to use for verification.');
       } 
-      // Handle SMS-only customers (no email) - extremely rare edge case
+      // Handle SMS-only customers (no email) - use phone for SMS verification
       else if (result.requiresSms) {
-        setLookupError('SMS verification is not yet implemented. Please contact support.');
+        setLookupToken(result.lookupToken || '');
+        setLookupValue(result.phone || phoneLoginNumber);
+        setLookupType('phone');
+        setVerificationStep('phone-email-found');
+        setLookupSuccess(`We found your account! We'll send a verification code via SMS to ${result.phone || phoneLoginNumber}`);
       }
-      // Handle single email (auto-select)
+      // Handle single email (auto-select) - but use phone for SMS verification
       else {
         setMaskedEmail(result.maskedEmail);
-        setActualEmail(result.email); // Store actual email for sending verification code
+        setActualEmail(result.email); // Store email for reference
         setLookupToken(result.lookupToken);
+        setLookupValue(result.phone || phoneLoginNumber);
+        setLookupType('phone');
         setVerificationStep('phone-email-found');
-        setLookupSuccess(`We found your account! We'll send a verification code to ${result.maskedEmail}`);
+        setLookupSuccess(`We found your account! We'll send a verification code via SMS to ${result.phone || phoneLoginNumber}`);
       }
     } catch (err: any) {
       console.error('Phone lookup failed:', err);
@@ -830,12 +824,16 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     setIsSendingLink(true);
 
     try {
+      // Use lookupValue if set (normalized phone from backend), otherwise phoneLoginNumber
+      const phoneToVerify = lookupValue || phoneLoginNumber;
+      
       const response = await fetch('/api/portal/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          contactValue: actualEmail, // Use the actual email from phone lookup
-          verificationType: 'email',
+          contactValue: phoneToVerify, // Use normalized phone for SMS
+          verificationType: 'sms',
+          lookupToken: lookupToken || undefined,
         }),
       });
       
@@ -846,11 +844,16 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       const result = await response.json();
       
+      // Set lookup state for verification (use the phone we just verified with)
+      const phoneToVerify = lookupValue || phoneLoginNumber;
+      setLookupValue(phoneToVerify);
+      setLookupType('phone');
+      
       setVerificationStep('verify-code');
-      setLookupSuccess(result.message || `Verification code sent to ${maskedEmail}!`);
+      setLookupSuccess(result.message || `Verification code sent via SMS!`);
       toast({
-        title: "Check your email!",
-        description: `We've sent a 6-digit code to ${maskedEmail}`,
+        title: "Check your phone!",
+        description: `We've sent a 6-digit code to ${phoneToVerify}`,
       });
     } catch (err: any) {
       console.error('Send verification code failed:', err);
@@ -1590,10 +1593,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     variant="outline"
                     onClick={() => setVerificationStep('phone-lookup')}
                     className="w-full"
-                    data-testid="button-phone-login"
+                    data-testid="button-back-to-phone"
                   >
                     <Phone className="w-4 h-4 mr-2" />
-                    Login with Phone Number
+                    Use Phone Instead
                   </Button>
 
                   {lookupSuccess && (
@@ -1626,7 +1629,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 <CardHeader>
                   <CardTitle>Login with Phone Number</CardTitle>
                   <CardDescription>
-                    Enter your phone number and we'll send a verification code to your email
+                    Enter your phone number and we'll send a verification code via SMS
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1654,13 +1657,25 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                     {isLookingUp ? 'Looking up...' : 'Find My Account'}
                   </Button>
 
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        Or
+                      </span>
+                    </div>
+                  </div>
+
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     onClick={handleBackToLookup}
                     className="w-full"
-                    data-testid="button-back-to-email"
+                    data-testid="button-use-email"
                   >
-                    Back to Email Login
+                    <Mail className="w-4 h-4 mr-2" />
+                    Use Email Instead
                   </Button>
 
                   {lookupSuccess && (
@@ -1693,20 +1708,20 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 <CardHeader>
                   <CardTitle>Account Found!</CardTitle>
                   <CardDescription>
-                    We'll send a verification code to your email address
+                    We'll send a verification code via SMS to your phone number
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <Mail className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                      <Phone className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
                       <div>
-                        <p className="font-medium mb-1">Email Address</p>
+                        <p className="font-medium mb-1">Phone Number</p>
                         <p className="text-sm text-muted-foreground">
-                          {maskedEmail}
+                          {phoneLoginNumber}
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          For security, we've hidden part of your email address
+                          We'll text a 6-digit code to this number
                         </p>
                       </div>
                     </div>
