@@ -1186,50 +1186,53 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             />
           ) : (
             <>
-              {/* Account Tabs - Always visible for account switching */}
-              <Tabs value={activeAccountTab} onValueChange={(value) => {
-                const newCustomerId = parseInt(value);
-                handleSelectAccount(newCustomerId);
-                setActiveAccountTab(value);
-              }}>
-                <div className="flex items-center justify-between gap-4 mb-6">
-                  <TabsList className="flex-1">
-                    {accountSummaries.map((account) => (
-                      <TabsTrigger 
-                        key={account.id}
-                        value={account.id.toString()}
-                        data-testid={`tab-account-${account.id}`}
+              {/* Account Switcher Header - Lightweight tabs above dashboard */}
+              {accountSummaries.length > 0 && (
+                <div className="mb-6">
+                  <Tabs value={activeAccountTab} onValueChange={(value) => {
+                    const newCustomerId = parseInt(value);
+                    handleSelectAccount(newCustomerId);
+                    setActiveAccountTab(value);
+                  }}>
+                    <div className="flex items-center justify-between gap-4">
+                      <TabsList>
+                        {accountSummaries.map((account) => (
+                          <TabsTrigger
+                            key={account.id}
+                            value={account.id.toString()}
+                            data-testid={`tab-account-${account.id}`}
+                          >
+                            <User className="w-4 h-4 mr-2" />
+                            {account.name}
+                            {account.type && account.type !== 'Residential' && (
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                {account.type}
+                              </Badge>
+                            )}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          toast({
+                            title: "Create New Account",
+                            description: "This feature is coming soon!",
+                          });
+                        }}
+                        data-testid="button-create-account"
                       >
-                        <User className="w-4 h-4 mr-2" />
-                        {account.name}
-                        {account.type && account.type !== 'Residential' && (
-                          <Badge variant="outline" className="ml-2 text-xs">
-                            {account.type}
-                          </Badge>
-                        )}
-                      </TabsTrigger>
-                    ))}
-                  </TabsList>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      // TODO: Implement create new account flow
-                      toast({
-                        title: "Create New Account",
-                        description: "This feature is coming soon!",
-                      });
-                    }}
-                    data-testid="button-create-account"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    + New Account
-                  </Button>
+                        <Users className="w-4 h-4 mr-2" />
+                        + New Account
+                      </Button>
+                    </div>
+                  </Tabs>
                 </div>
-
-                {/* Account Tab Content - wraps all dashboard sections */}
-                <TabsContent value={activeAccountTab} className="space-y-6 mt-0">
-                  {isLoading ? (
+              )}
+            
+              <div className="space-y-6">
+                {isLoading ? (
                 <div className="relative">
                   {/* Full-screen loading overlay */}
                   <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
@@ -2872,10 +2875,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                       </CardContent>
                     </Card>
                   )}
-                </>
-              ) : null}
-            </div>
-          )}
+              </div>
+            </>
+          ) : null}
         </div>
       </main>
 
@@ -3547,7 +3549,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      
       {/* Edit Address Dialog */}
       <Dialog open={editAddressOpen} onOpenChange={setEditAddressOpen}>
         <DialogContent data-testid="dialog-edit-address">
