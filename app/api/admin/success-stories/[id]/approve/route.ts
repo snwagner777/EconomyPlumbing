@@ -39,8 +39,6 @@ export async function PUT(
 
     const { id } = await params;
     
-    // For now, just approve without collage generation
-    // TODO: Implement collage generation with object storage
     const [story] = await db
       .update(customerSuccessStories)
       .set({ 

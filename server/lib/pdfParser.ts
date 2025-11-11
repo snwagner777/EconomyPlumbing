@@ -138,12 +138,6 @@ export async function parsePDF(
  * Looks for patterns like "Customer: John Doe" or "Bill To: John Doe"
  */
 function extractCustomerName(text: string, errors: string[]): string | null {
-  // TODO: Implement pattern matching for ServiceTitan PDFs
-  // Common patterns:
-  // - "Customer: [Name]"
-  // - "Bill To: [Name]"
-  // - "Name: [Name]"
-  
   const patterns = [
     /Customer:\s*(.+?)(?:\n|$)/i,
     /Bill To:\s*(.+?)(?:\n|$)/i,

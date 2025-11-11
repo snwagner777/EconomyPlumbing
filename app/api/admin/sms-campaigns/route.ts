@@ -7,16 +7,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
 import { db } from '@/server/db';
-import { customCampaignEmails } from '@shared/schema';
+import { smsCampaigns } from '@shared/schema';
 import { desc } from 'drizzle-orm';
 import { z } from 'zod';
 
 const smsCampaignSchema = z.object({
   name: z.string().min(1).max(200),
-  message: z.string().min(1).max(1600),
-  segmentCriteria: z.record(z.any()).optional(),
+  messageContent: z.string().min(1).max(1600),
+  audienceDefinition: z.object({
+    listIds: z.array(z.string()).optional(),
+    tags: z.array(z.string()).optional(),
+    customCriteria: z.record(z.any()).optional(),
+  }).optional(),
   scheduledFor: z.string().datetime().optional(),
-  provider: z.enum(['twilio', 'zoom_phone']).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -26,12 +29,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // TODO: SMS campaigns table not yet created
-    // Using customCampaignEmails temporarily
     const campaigns = await db
       .select()
-      .from(customCampaignEmails)
-      .orderBy(desc(customCampaignEmails.createdAt));
+      .from(smsCampaigns)
+      .orderBy(desc(smsCampaigns.createdAt));
 
     return NextResponse.json({
       campaigns,
@@ -61,8 +62,18 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // TODO: SMS campaigns table not yet created
-    return NextResponse.json({ error: 'SMS campaigns temporarily unavailable' }, { status: 503 });
+    const data = result.data;
+
+    const [campaign] = await db.insert(smsCampaigns).values({
+      name: data.name,
+      messageContent: data.messageContent,
+      audienceDefinition: data.audienceDefinition || { listIds: [], tags: [], customCriteria: {} },
+      scheduledFor: data.scheduledFor ? new Date(data.scheduledFor) : null,
+      status: 'draft',
+      createdBy: 'admin',
+    }).returning();
+
+    return NextResponse.json({ success: true, campaign });
   } catch (error) {
     console.error('[Admin SMS Campaigns API] Error:', error);
     return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });

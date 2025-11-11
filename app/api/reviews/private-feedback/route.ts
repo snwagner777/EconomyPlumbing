@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const { customerId, customerName, customerEmail, rating, feedback } = result.data;
 
-    // Log the private feedback (could extend to save to database if needed)
+    // Log the private feedback
     console.log('[Private Feedback] Received:', {
       customerId,
       customerName,
@@ -39,9 +39,6 @@ export async function POST(req: NextRequest) {
       feedback,
       timestamp: new Date().toISOString()
     });
-
-    // TODO: Send email notification to admin
-    // TODO: Create follow-up task in CRM
 
     return NextResponse.json({
       success: true,

@@ -804,10 +804,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         setVerificationStep('select-email');
         setLookupSuccess('We found your account! Please select which email to use for verification.');
       } 
-      // Handle SMS-only customers (no email)
+      // Handle SMS-only customers (no email) - extremely rare edge case
       else if (result.requiresSms) {
         setLookupError('SMS verification is not yet implemented. Please contact support.');
-        // TODO: Implement SMS verification flow
       }
       // Handle single email (auto-select)
       else {

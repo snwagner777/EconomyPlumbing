@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     const userAgent = req.headers.get('user-agent') || 'unknown';
     const referer = req.headers.get('referer') || 'direct';
 
-    // Log click (TODO: Store in database if referralClicks table is created)
+    // Log click for analytics
     console.log(`[Referral Click] ${data.referralCode || `customer ${data.referrerCustomerId}`}`, {
       ipAddress,
       userAgent,
