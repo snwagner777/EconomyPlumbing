@@ -28,6 +28,14 @@ Preferred communication style: Simple, everyday language.
 - Before implementing any new feature, search the codebase to verify it doesn't already exist
 - Consolidation over duplication: One implementation per feature, accessible via sidebar navigation
 
+**CRITICAL RULE: Every new public page MUST have Header, Footer, and SEO optimization**
+- ALL public-facing pages must import and render Header and Footer components
+- Header receives phoneConfig prop from server-side getPhoneNumbers() for UTM tracking
+- Every page MUST have proper SEO metadata (title, description, Open Graph tags)
+- Use `getPageMetadata()` helper or manual metadata export for SEO
+- Example pattern: Server component passes phoneConfig → Client component renders <Header austinPhone={phoneConfig} /> + content + <Footer />
+- Pages without Header/Footer will confuse users and hurt SEO - this is non-negotiable
+
 **CRITICAL RULE: ServiceTitan API Implementation - ALWAYS Verify Before Writing**
 - NEVER assume API response structures - ALWAYS check actual code first
 - NEVER search the web for ServiceTitan API docs - use ONLY our existing implementation as source of truth

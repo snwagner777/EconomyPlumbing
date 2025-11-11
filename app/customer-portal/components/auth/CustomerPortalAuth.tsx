@@ -359,30 +359,20 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
         throw new Error('Selected account not found');
       }
 
+      // CRITICAL FIX: If we're at select-account step, user already verified
+      // Just complete login immediately - NO second verification code!
+      if (verificationStep === 'select-account') {
+        const allIds = availableAccounts.map(a => a.id);
+        onAuthenticated(accountId.toString(), allIds);
+        return;
+      }
+
       // If this is post-auth account switching, just notify parent immediately
       if (verificationStep !== 'select-account') {
         const allIds = availableAccounts.map(a => a.id);
         onAuthenticated(accountId.toString(), allIds);
         return;
       }
-
-      // Otherwise, need phone verification for initial auth
-      const normalizedPhone = selectedAccount.phoneNumber || lookupValue || phoneLoginNumber;
-      if (!normalizedPhone) {
-        setLookupError('Phone number not found. Please try again.');
-        return;
-      }
-      
-      if (selectedAccount.email) {
-        setActualEmail(selectedAccount.email);
-        setMaskedEmail(selectedAccount.maskedEmail || selectedAccount.email);
-      }
-      
-      setLookupValue(normalizedPhone);
-      setLookupType('phone');
-      setVerificationStep('phone-email-found');
-      setLookupSuccess(`We'll send a verification code via SMS to ${normalizedPhone}`);
-      setPendingAccountId(accountId.toString());
     } catch (error: any) {
       console.error('Account select error:', error);
       const errorMsg = 'Failed to select account. Please try again.';
@@ -546,15 +536,34 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
           )}
 
           {lookupError && (
-            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
-                <div className="text-destructive">
-                  <p className="font-medium mb-1">Error</p>
-                  <p>{lookupError}</p>
+            <>
+              <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4 text-sm">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                  <div className="text-destructive">
+                    <p className="font-medium mb-1">Error</p>
+                    <p>{lookupError}</p>
+                  </div>
                 </div>
               </div>
-            </div>
+              
+              <div className="bg-muted/50 border rounded-lg p-4">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Don't have an account yet? We'd love to serve you!
+                </p>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    window.location.href = '/contact?ref=portal-signup';
+                  }}
+                  className="w-full"
+                  data-testid="button-create-account"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Create New Account
+                </Button>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
