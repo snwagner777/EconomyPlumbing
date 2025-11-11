@@ -145,7 +145,26 @@ export default function NewServicePage() {
   - **Unified Scheduler System:** The smart scheduler (`/api/scheduler/smart-availability`) is used across frontend scheduler, customer portal reschedule flow, and AI chatbot booking.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o, with admin approval for templates.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
-- **Reputation Management System:** AI-powered review request automation.
+- **Reputation Management System:** Webhook-triggered review request automation with immediate email + SMS sending:
+  - **Architecture:** WEBHOOK-ONLY system (no ServiceTitan API polling). Mailgun forwards ServiceTitan invoice PDFs → webhook creates job_completion → review_request → sends Email 1 + SMS immediately.
+  - **Database Schema:**
+    - `job_completions`: Stores completed jobs from webhook (source='webhook') with customer data, invoice details, completion date, and sourceMetadata (mailgunMessageId for idempotency).
+    - `review_requests`: Campaign records linked to job_completions via jobCompletionId (NOT NULL foreign key). Tracks status (queued/active/paused/completed/stopped), email send history, and review submission.
+  - **Webhook Flow (`/api/webhooks/mailgun/servicetitan`):**
+    1. Verify Mailgun signature
+    2. Parse invoice PDF (extracts customer info, invoice total in cents, document number)
+    3. Match customer by phone/email → customers_xlsx table
+    4. Check idempotency: Skip if mailgunMessageId already processed OR customer has existing queued/active/paused review request
+    5. Create job_completion record (source='webhook', invoiceTotal stored as-is in cents)
+    6. Create review_request linked to job_completion
+    7. **Send Email 1 immediately** (via reviewRequestScheduler.sendReviewEmail())
+    8. **Send SMS immediately** if customer has phone (via simpletexting.sendReviewRequestSms())
+  - **Worker Role (`server/worker.ts`):** Runs every 30 minutes to send follow-up emails 2, 3, 4 on Days 7, 14, 21 based on completionDate. Does NOT send Email 1 (webhook handles that).
+  - **Idempotency Protections:**
+    - Webhook checks mailgunMessageId in job_completions.sourceMetadata to prevent duplicate processing
+    - Webhook checks for existing queued/active/paused review_requests before creating new campaigns
+    - Email suppression list integration (hard bounces, spam complaints)
+  - **Invoice Total Handling:** Parser returns amounts in cents. Webhook stores as-is (no multiplication). Prevents 100x inflation bug.
 - **Referral System:** Instant voucher generation with QR codes for discounts.
 - **Email Preference Center:** Granular subscription management.
 - **Production-Hardening Infrastructure:** Automated schedulers, database transactions, idempotency protection, health monitoring, admin alerting, and webhook signature verification.
