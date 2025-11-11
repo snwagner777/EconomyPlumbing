@@ -21,6 +21,8 @@ interface TimeSlot {
   id: string;
   start: string;
   end: string;
+  arrivalWindowStart: string; // 4-hour customer promise window start
+  arrivalWindowEnd: string; // 4-hour customer promise window end
   timeLabel: string;
   period: 'morning' | 'afternoon' | 'evening';
   proximityScore?: number;
