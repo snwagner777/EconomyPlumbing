@@ -96,6 +96,18 @@ export interface CreateLocationData {
 // Jobs & Appointments
 // ============================================================================
 
+export interface ServiceTitanJobType {
+  id: number;
+  name: string;
+  code?: string;
+}
+
+export interface ServiceTitanBusinessUnit {
+  id: number;
+  name: string;
+  active?: boolean;
+}
+
 export interface ServiceTitanJob {
   id: number;
   jobNumber: string;
@@ -104,10 +116,40 @@ export interface ServiceTitanJob {
   businessUnitId: number;
   jobTypeId: number;
   summary: string;
-  status: string;
+  status: string; // 'Active', 'Completed', 'Cancelled', etc.
+  statusCategory?: string; // Broader status grouping
   appointmentCount: number;
   firstAppointmentId: number;
   createdOn: string;
+  completedOn?: string; // ISO timestamp when job completed
+  total?: number; // Job total amount
+  
+  // Nested objects (returned when API allows expanding)
+  businessUnit?: ServiceTitanBusinessUnit;
+  jobType?: ServiceTitanJobType;
+  customerName?: string; // Customer full name
+  locationName?: string; // Location name (from location object)
+  location?: {
+    id: number;
+    name?: string;
+    address?: ServiceTitanAddress;
+  };
+}
+
+export interface ServiceTitanTechnician {
+  id: number;
+  name: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface ServiceTitanTechnicianAssignment {
+  id: number;
+  appointmentId: number;
+  technicianId: number;
+  assignedTechnicianId?: number; // Alternative field name in some responses
+  technicianName?: string;
+  status: string; // 'Scheduled', 'Dispatched', 'Working', etc.
 }
 
 export interface ServiceTitanAppointment {
@@ -117,7 +159,12 @@ export interface ServiceTitanAppointment {
   end: string; // ISO 8601 timestamp
   arrivalWindowStart: string; // Customer promise window start
   arrivalWindowEnd: string; // Customer promise window end
-  status: string;
+  status: string; // 'Scheduled', 'Completed', 'Cancelled', etc.
+  appointmentNumber?: string; // Human-readable appointment number
+  
+  // Nested objects (when expanded)
+  technicianAssignments?: ServiceTitanTechnicianAssignment[];
+  businessUnit?: ServiceTitanBusinessUnit;
 }
 
 export interface CreateJobData {

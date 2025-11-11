@@ -30,7 +30,7 @@ interface BaseTimeSlot {
  * Uses morning/afternoon/evening periods.
  */
 export interface RegularTimeSlot extends BaseTimeSlot {
-  isBackflow?: false; // Regular service (default)
+  isBackflow: false; // Regular service (REQUIRED for type discrimination)
   period: 'morning' | 'afternoon' | 'evening'; // Time of day classification
 }
 
