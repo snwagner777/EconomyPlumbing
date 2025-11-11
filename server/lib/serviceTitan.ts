@@ -1242,6 +1242,7 @@ class ServiceTitanAPI {
           
           return (appointmentsResult.data || []).map((apt: any) => ({
             id: apt.id,
+            jobId: job.id,  // Add jobId for location enrichment
             start: apt.start || apt.scheduledOn || apt.arrivalWindowStart,
             end: apt.end || apt.arrivalWindowEnd,
             status: apt.appointmentStatus || apt.status || 'Scheduled',
@@ -1256,6 +1257,7 @@ class ServiceTitanAPI {
           console.log(`[ServiceTitan] Could not fetch appointments for job ${job.id}, using job data`);
           return [{
             id: job.id,
+            jobId: job.id,  // Add jobId for location enrichment
             start: job.createdOn,
             end: job.completedOn,
             status: job.jobStatus || 'Unknown',

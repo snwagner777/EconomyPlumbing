@@ -42,9 +42,10 @@ export async function GET(
 
     // Import new services for estimates and pricebook
     const { serviceTitanEstimates } = await import('@/server/lib/servicetitan/estimates');
+    const { serviceTitanAuth } = await import('@/server/lib/servicetitan/auth');
     
     // Fetch all customer data in parallel from ServiceTitan APIs
-    const [customer, appointments, invoices, memberships, rawEstimates] = await Promise.all([
+    const [customer, rawAppointments, rawInvoices, memberships, rawEstimates] = await Promise.all([
       serviceTitan.getCustomer(customerIdNum),
       serviceTitan.getCustomerAppointments(customerIdNum).catch(() => []),
       serviceTitan.getCustomerInvoices(customerIdNum).catch(() => []),
@@ -52,8 +53,63 @@ export async function GET(
       serviceTitanEstimates.getEstimates(customerIdNum).catch(() => [])
     ]);
     
+    // Enrich appointments with locationId from jobs
+    const tenantId = serviceTitanAuth.getTenantId();
+    const jobCache = new Map<number, any>();
+    
+    // Helper to get job and extract locationId
+    const getJobLocationId = async (jobId: number): Promise<number | null> => {
+      if (jobCache.has(jobId)) {
+        return jobCache.get(jobId)?.locationId || null;
+      }
+      
+      try {
+        const job = await serviceTitanAuth.makeRequest<any>(
+          `jpm/v2/tenant/${tenantId}/jobs/${jobId}`
+        );
+        jobCache.set(jobId, job);
+        return job?.locationId || null;
+      } catch (error) {
+        console.error(`[ServiceTitan] Error fetching job ${jobId}:`, error);
+        return null;
+      }
+    };
+    
+    // Enrich appointments with locationId
+    const appointments = await Promise.all(
+      rawAppointments.map(async (apt: any) => {
+        // Extract jobId from jobNumber if needed (format: "JOB-12345")
+        const jobIdFromNumber = apt.jobNumber ? parseInt(apt.jobNumber.replace(/\D/g, ''), 10) : null;
+        const jobId = apt.jobId || jobIdFromNumber;
+        
+        const locationId = jobId ? await getJobLocationId(jobId) : null;
+        
+        return {
+          ...apt,
+          locationId,
+        };
+      })
+    );
+    
+    // Enrich estimates with locationId from jobs
+    const enrichedEstimates = await Promise.all(
+      rawEstimates.map(async (est: any) => {
+        const locationId = est.jobId ? await getJobLocationId(est.jobId) : null;
+        
+        return {
+          ...est,
+          locationId,
+        };
+      })
+    );
+    
     // Enrich estimates with pricebook data (images, descriptions, etc.)
-    const estimates = await serviceTitanEstimates.enrichEstimatesWithPricebook(rawEstimates);
+    const estimates = await serviceTitanEstimates.enrichEstimatesWithPricebook(enrichedEstimates);
+    
+    // Enrich invoices with locationId (try to extract from jobNumber or query per-location)
+    // For now, invoices will remain without locationId since they don't have jobId
+    // TODO: Query invoices per-location in future enhancement
+    const invoices = rawInvoices;
     
     if (!customer) {
       return NextResponse.json(
