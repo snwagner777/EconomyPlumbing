@@ -73,6 +73,23 @@ Preferred communication style: Simple, everyday language.
   - **Smart Scheduler Architecture:** Utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and Hill Country filtering with 5-minute response caching.
   - **Appointment Booking Rules:** Regular services show 4-hour arrival windows, internally book 2-hour appointments. Backflow Testing ONLY uses 12-hour windows (8am-8pm). Capacity API dictates available hours, windows offered only if ≥2 hours capacity.
   - **Unified Scheduler System:** Frontend, customer portal reschedule, and AI chatbot all use `/api/scheduler/smart-availability`.
+  - **ServiceTitan CRM v2 Refactoring (Jan 2025):** Removed deprecated v1 embedded contacts from customer/location creation, restored multi-address email normalization, fixed locationId linking regression in contact workflow.
+- **Customer Portal Backend API (Production-Ready):**
+  - **Architecture:** Phone-first SMS 2FA login, ServiceTitan API v2 as single source of truth, modular route design (account/locations/contacts).
+  - **Self-Service Permissions:** Customers CAN edit: billing address, location names, contact phone/email. Customers CANNOT edit: service addresses, customer type, business data, Fax/Landline contacts.
+  - **Production Security:**
+    - Rate Limiting: 10 mutations per 5 minutes per session (per-session limits via in-memory store).
+    - Audit Logging: All ServiceTitan write operations logged with traceId capture from RFC7807 errors.
+    - Standardized Errors: All API responses use `{code, message, traceId?, details?}` format for consistent client handling.
+    - Session-based authentication via iron-session, ownership validation on all operations.
+  - **Business Rules:** Min 1 contact enforcement (cannot delete last contact), only MobilePhone/Email contact methods exposed (Fax/Landline hidden).
+  - **API Routes:**
+    - `PATCH /api/customer-portal/account`: Update billing address only (NOT service address).
+    - `PATCH /api/customer-portal/locations/[id]`: Rename location only (ownership validated).
+    - `POST /api/customer-portal/contacts`: Create new contact (phone required, email optional, auto-linked to customer+location).
+    - `PATCH /api/customer-portal/contacts/[id]`: Update contact name/phone/email (ownership validated).
+    - `DELETE /api/customer-portal/contacts/[id]`: Delete contact (min 1 contact rule enforced, ownership validated).
+  - **Chatbot Security:** Public chatbot can CREATE customers (via ServiceTitan CRM), but UPDATE/DELETE operations require authentication.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o with admin approval.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
 - **Reputation Management System:** Webhook-triggered review request automation:
