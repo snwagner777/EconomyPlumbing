@@ -79,6 +79,7 @@ export default function Header({
     { name: "Retail Plumbing", path: "/commercial/retail", section: "Commercial", indent: true },
     { name: "Office Buildings", path: "/commercial/office-buildings", section: "Commercial", indent: true },
     { name: "Property Management", path: "/commercial/property-management", section: "Commercial", indent: true },
+    { name: "Airbnb & Rental Properties", path: "/services/airbnb", section: "Commercial", indent: true },
     { name: "Winter Freeze Protection", path: "/winter-freeze-protection", section: "Seasonal" },
     { name: "Summer Plumbing Prep", path: "/summer-plumbing-prep", section: "Seasonal" },
   ];
@@ -240,6 +241,24 @@ export default function Header({
                     </Link>
                     <div className="border-t border-border my-2"></div>
                     <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                      Just For Fun
+                    </div>
+                    <Link
+                      href="/dogs-plumbing"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-dogs-plumbing"
+                    >
+                      Dogs Doing Plumbing
+                    </Link>
+                    <Link
+                      href="/cats-plumbing"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-cats-plumbing"
+                    >
+                      Cats Doing Plumbing
+                    </Link>
+                    <div className="border-t border-border my-2"></div>
+                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
                       Service Areas
                     </div>
                     {serviceAreas.map((area) => (
@@ -387,15 +406,19 @@ export default function Header({
           </nav>
 
           <div className="hidden lg:flex items-center gap-2 xl:gap-3">
-            <a 
-              href={phoneConfig.tel} 
-              className="flex items-center gap-1.5 text-foreground font-poppins font-bold text-base xl:text-lg hover-elevate px-2 py-1 rounded-md whitespace-nowrap"
-              data-testid="link-phone-austin"
+            <Button
+              variant="outline"
+              size="sm"
+              asChild
+              className="whitespace-nowrap"
+              data-testid="button-call-now"
             >
-              <Phone className="w-4 h-4 xl:w-5 xl:h-5" />
-              <span className="hidden xl:inline">{phoneConfig.display}</span>
-              <span className="xl:hidden">{phoneConfig.display.replace(/\s/g, '')}</span>
-            </a>
+              <a href={phoneConfig.tel}>
+                <Phone className="w-4 h-4 xl:w-4 xl:h-4 mr-1.5" />
+                <span className="hidden xl:inline">{phoneConfig.display}</span>
+                <span className="xl:hidden">Call</span>
+              </a>
+            </Button>
             {isPortalAuthenticated && location === "/customer-portal" && (
               <Button 
                 onClick={onPortalLogout}
@@ -494,6 +517,16 @@ export default function Header({
                   </Link>
                   <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
                     Membership Benefits
+                  </Link>
+                  <div className="border-t border-border my-2 mx-4"></div>
+                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                    Just For Fun
+                  </div>
+                  <Link href="/dogs-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-dogs-plumbing" onClick={() => setMobileMenuOpen(false)}>
+                    Dogs Doing Plumbing
+                  </Link>
+                  <Link href="/cats-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cats-plumbing" onClick={() => setMobileMenuOpen(false)}>
+                    Cats Doing Plumbing
                   </Link>
                   <div className="border-t border-border my-2 mx-4"></div>
                   <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">

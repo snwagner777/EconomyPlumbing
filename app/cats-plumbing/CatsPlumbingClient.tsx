@@ -6,7 +6,7 @@ import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import type { PhoneConfig } from '@/server/lib/phoneNumbers';
-import { Wand2, Loader2 } from 'lucide-react';
+import { Wand2, Loader2, Rss } from 'lucide-react';
 import type { GeneratedPlumbingImage } from '@shared/schema';
 
 interface CatsPlumbingClientProps {
@@ -116,9 +116,22 @@ export default function CatsPlumbingClient({ phoneConfig }: CatsPlumbingClientPr
         ) : images.length > 0 ? (
           <section className="py-16 lg:py-20">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <h2 className="text-3xl font-bold text-center mb-12">
-                Recent Generated Cat Plumbers
-              </h2>
+              <div className="flex items-center justify-between mb-12">
+                <h2 className="text-3xl font-bold">
+                  Recent Generated Cat Plumbers
+                </h2>
+                <a
+                  href="/rss/cats-plumbing.xml"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover-elevate px-3 py-2 rounded-md"
+                  data-testid="link-rss-feed"
+                  title="Subscribe to RSS feed for social media automation"
+                >
+                  <Rss className="w-4 h-4" />
+                  RSS Feed
+                </a>
+              </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {images.map((image, index) => (
                   <Card key={image.id} className="overflow-hidden hover-elevate" data-testid={`card-cat-${index}`}>
