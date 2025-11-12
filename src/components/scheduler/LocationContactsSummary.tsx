@@ -42,7 +42,31 @@ export function LocationContactsSummary({ customerId, locationId, sessionToken }
   
   // Fetch location-specific contacts
   const { data, isLoading, error, refetch } = useQuery<{ success: boolean; contacts: Contact[] }>({
-    queryKey: ['/api/scheduler/customer-contacts', customerId, locationId],
+    queryKey: ['/api/scheduler/customer-contacts', customerId, locationId, !!sessionToken],
+    queryFn: async () => {
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      
+      // SECURITY: Send session token via Authorization header if authenticated
+      if (sessionToken) {
+        headers['Authorization'] = `Bearer ${sessionToken}`;
+      }
+      
+      // Build query params with locationId for server-side filtering
+      const params = new URLSearchParams({ customerId: String(customerId) });
+      if (locationId) {
+        params.append('locationId', String(locationId));
+      }
+      
+      const response = await fetch(`/api/scheduler/customer-contacts?${params}`, {
+        headers,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch location contacts');
+      }
+      
+      return response.json();
+    },
     enabled: !!customerId && !!locationId, // Only fetch if both IDs are present
     retry: 1,
   });

@@ -10,10 +10,23 @@ import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema, pendi
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
+import { validateSchedulerSession } from '@/server/lib/schedulerSession';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
+    // Optional: Check for authenticated session (for audit trail)
+    let authenticatedCustomerId: number | null = null;
+    const authHeader = req.headers.get('authorization');
+    if (authHeader?.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      const session = validateSchedulerSession(token);
+      if (session && session.customerId) {
+        authenticatedCustomerId = session.customerId;
+        console.log(`[Scheduler] Authenticated booking for customer ${authenticatedCustomerId}`);
+      }
+    }
+
     const body = await req.json();
 
     // Validate request data

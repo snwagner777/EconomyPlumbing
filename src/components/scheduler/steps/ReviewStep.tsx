@@ -59,7 +59,7 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
 
   const bookMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest('POST', '/api/scheduler/book', {
+      const payload = {
         customerName: `${customer.firstName} ${customer.lastName}`,
         customerEmail: customer.email || '', // Handle optional email - ServiceTitan may require empty string
         customerPhone: customer.phone,
@@ -86,7 +86,25 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
         ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
         ...(customer.locationId && { locationId: customer.locationId }),
         ...(timeSlot.technicianId && { technicianId: timeSlot.technicianId }), // Pre-assigned technician from smart slot
+      };
+
+      // Add Authorization header if session token is present (optional - for audit trail)
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (session?.token) {
+        headers['Authorization'] = `Bearer ${session.token}`;
+      }
+
+      const response = await fetch('/api/scheduler/book', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
       });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ message: 'Booking failed' }));
+        throw new Error(error.message || 'Booking failed');
+      }
+
       return await response.json();
     },
     onSuccess: (data: any) => {
