@@ -38,43 +38,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json(
+        { error: 'API key not configured' },
+        { status: 500 }
+      );
+    }
+
     // Get random prompt
     const prompts = animal === 'dog' ? dogPrompts : catPrompts;
     const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-    // Generate image using Anthropic
+    // Generate image using Anthropic with proper image generation setup
     const message = await anthropic.messages.create({
       model: 'claude-3-7-sonnet-20250219',
       max_tokens: 1024,
+      modalities: ['image'] as any, // Enable image generation
       messages: [
         {
           role: 'user',
-          content: [
-            {
-              type: 'document',
-              source: {
-                type: 'text',
-                media_type: 'text/plain',
-                data: Buffer.from(`Generate an image with this description:\n\n${randomPrompt}`).toString('base64'),
-              },
-              cache_control: { type: 'ephemeral' },
-            },
-            {
-              type: 'text',
-              text: 'Please generate this image.',
-            },
-          ],
+          content: randomPrompt,
         },
       ],
     });
 
-    // Extract image URL from response
+    // Extract image from response
     const imageBlock: any = message.content.find((block: any) => block.type === 'image');
-    if (!imageBlock) {
-      throw new Error('No image generated');
+    if (!imageBlock || !imageBlock.source || !imageBlock.source.data) {
+      console.error('[Generate Plumbing Image] No image in response:', message.content);
+      return NextResponse.json(
+        { error: 'Image generation failed - no image returned' },
+        { status: 500 }
+      );
     }
 
-    const imageUrl = `data:image/png;base64,${imageBlock.source.data}`;
+    const imageUrl = `data:${imageBlock.source.media_type || 'image/png'};base64,${imageBlock.source.data}`;
 
     // Save to database
     await db.insert(generatedPlumbingImages).values({
@@ -82,7 +80,7 @@ export async function POST(request: NextRequest) {
       imageUrl,
     });
 
-    // Get all images for this animal type
+    // Get all images for this animal type (newest first)
     const allImages = await db
       .select()
       .from(generatedPlumbingImages)
@@ -99,11 +97,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ imageUrl });
-  } catch (error) {
+    // Return the latest 12 images after generation
+    const images = await db
+      .select()
+      .from(generatedPlumbingImages)
+      .where(eq(generatedPlumbingImages.animalType, animal))
+      .orderBy(desc(generatedPlumbingImages.createdAt))
+      .limit(12);
+
+    return NextResponse.json({ images });
+  } catch (error: any) {
     console.error('[Generate Plumbing Image] Error:', error);
+    const errorMessage = error?.message || 'Failed to generate image';
     return NextResponse.json(
-      { error: 'Failed to generate image' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

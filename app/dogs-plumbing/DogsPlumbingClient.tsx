@@ -22,11 +22,14 @@ export default function DogsPlumbingClient({ phoneConfig }: DogsPlumbingClientPr
   async function fetchImages() {
     try {
       const response = await fetch('/api/generate-plumbing-image?animal=dog');
-      if (!response.ok) throw new Error('Failed to fetch images');
+      if (!response.ok) {
+        throw new Error('Failed to fetch images');
+      }
       const data = await response.json();
       setImages(data.images || []);
-    } catch (err) {
-      console.error('Failed to fetch images:', err);
+    } catch (err: any) {
+      console.error('[Fetch Dog Images]', err);
+      setError('Failed to load gallery. Please refresh the page.');
     } finally {
       setIsLoading(false);
     }
@@ -48,13 +51,16 @@ export default function DogsPlumbingClient({ phoneConfig }: DogsPlumbingClientPr
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate image');
+        const errorData = await response.json().catch(() => ({ error: 'Failed to generate image' }));
+        throw new Error(errorData.error || 'Failed to generate image');
       }
 
-      await fetchImages();
-    } catch (err) {
-      setError('Oops! Failed to generate image. Please try again.');
-      console.error(err);
+      const data = await response.json();
+      setImages(data.images || []);
+    } catch (err: any) {
+      const errorMessage = err?.message || 'Oops! Failed to generate image. Please try again.';
+      setError(errorMessage);
+      console.error('[Generate Dog Image]', err);
     } finally {
       setIsGenerating(false);
     }
