@@ -3,9 +3,18 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { updateSessionCustomerId } from '@/server/lib/schedulerSession';
 
 export async function POST(req: NextRequest) {
   try {
+    // Extract session token from Authorization header
+    const authHeader = req.headers.get('authorization');
+    let sessionToken: string | null = null;
+    
+    if (authHeader?.startsWith('Bearer ')) {
+      sessionToken = authHeader.substring(7);
+    }
+    
     const body = await req.json();
     const { 
       firstName, lastName, 
@@ -109,6 +118,18 @@ export async function POST(req: NextRequest) {
     });
 
     console.log(`[Scheduler] ✅ Customer ${customer.id} synced to customers_xlsx (immediate access)`);
+
+    // CRITICAL FIX: Update session with customerId so future requests (contact creation, booking) work
+    if (sessionToken) {
+      const updated = updateSessionCustomerId(sessionToken, customer.id);
+      if (updated) {
+        console.log(`[Scheduler] ✅ Session updated with customerId ${customer.id}`);
+      } else {
+        console.warn(`[Scheduler] ⚠️ Failed to update session with customerId (session may be invalid)`);
+      }
+    } else {
+      console.warn(`[Scheduler] ⚠️ No session token provided - session not linked to customer ${customer.id}`);
+    }
 
     return NextResponse.json({
       success: true,

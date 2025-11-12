@@ -9,7 +9,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { apiRequest, authenticatedApiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -302,7 +302,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   // Fetch locations from ServiceTitan
   const fetchLocationsMutation = useMutation({
     mutationFn: async (serviceTitanCustomerId: number) => {
-      const response = await apiRequest('POST', '/api/scheduler/fetch-locations', {
+      const response = await authenticatedApiRequest('POST', '/api/scheduler/fetch-locations', 'scheduler', {
         serviceTitanCustomerId,
       });
       return await response.json();
@@ -318,7 +318,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   // Fetch contacts from ServiceTitan (read-only)
   const fetchContactsMutation = useMutation({
     mutationFn: async (serviceTitanCustomerId: number) => {
-      const response = await fetch(`/api/scheduler/customer-contacts?customerId=${serviceTitanCustomerId}`);
+      const response = await authenticatedApiRequest('GET', `/api/scheduler/customer-contacts?customerId=${serviceTitanCustomerId}`, 'scheduler');
       return await response.json();
     },
     onSuccess: (data: any) => {
@@ -332,7 +332,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   // Create new location for existing customer
   const createLocationMutation = useMutation({
     mutationFn: async (locationData: any) => {
-      const response = await apiRequest('POST', '/api/scheduler/create-location', locationData);
+      const response = await authenticatedApiRequest('POST', '/api/scheduler/create-location', 'scheduler', locationData);
       return await response.json();
     },
     onSuccess: (data: any) => {
@@ -436,7 +436,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   // Create new customer in ServiceTitan
   const createCustomerMutation = useMutation({
     mutationFn: async (customerData: any) => {
-      const response = await apiRequest('POST', '/api/scheduler/ensure-customer', customerData);
+      // CRITICAL: Use authenticatedApiRequest to pass session token
+      const response = await authenticatedApiRequest('POST', '/api/scheduler/ensure-customer', 'scheduler', customerData);
       return await response.json();
     },
     onSuccess: (data: any, variables: CustomerFormData) => {

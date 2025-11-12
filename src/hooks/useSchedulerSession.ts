@@ -1,11 +1,15 @@
 /**
  * useSchedulerSession Hook
  * 
- * Manages scheduler session state with sessionStorage persistence.
+ * Manages scheduler session state with shared session module.
  * Handles token storage, hydration on load, and expiration warnings.
+ * 
+ * UPDATED: Now uses shared session module for cross-context compatibility
  */
 
 import { useEffect, useCallback, useRef } from 'react';
+import { getSession, setSession as saveSession, clearToken } from '@/modules/session';
+import type { SessionData } from '@/modules/session';
 
 interface SchedulerSession {
   token: string | null;
@@ -20,8 +24,6 @@ interface UseSchedulerSessionProps {
   onSessionUpdate: (session: Partial<SchedulerSession>) => void;
 }
 
-const SESSION_STORAGE_KEY = 'scheduler_session';
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const WARNING_THRESHOLD_MS = 5 * 60 * 1000; // Warn 5 minutes before expiry
 
 export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSessionProps) {
@@ -29,57 +31,46 @@ export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSe
   const hasHydratedRef = useRef(false);
   
   /**
-   * Hydrate session from localStorage on mount ONLY
-   * Uses localStorage instead of sessionStorage to persist across tab closes
+   * Hydrate session from shared session module on mount ONLY
    */
   useEffect(() => {
     // Only hydrate once on initial mount
     if (hasHydratedRef.current) return;
     
-    const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+    const stored = getSession('scheduler');
     if (!stored) {
       hasHydratedRef.current = true;
       return;
     }
     
-    try {
-      const parsed: SchedulerSession = JSON.parse(stored);
-      
-      // CRITICAL: Invalidate old sessions with customerId=null (from before phone normalization fix)
-      // These sessions are broken and cause "No customer associated with session" errors
-      if (parsed.customerId === null) {
-        console.warn('[Scheduler Session] Invalidating old session with customerId=null - please re-verify');
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-        hasHydratedRef.current = true;
-        return;
-      }
-      
-      // Check if session is still valid (24-hour TTL)
-      if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
-        console.log('[Scheduler Session] Restored valid session from localStorage');
-        onSessionUpdate(parsed);
-      } else {
-        // Session expired - clear it
-        console.log('[Scheduler Session] Session expired, clearing');
-        localStorage.removeItem(SESSION_STORAGE_KEY);
-      }
-    } catch (error) {
-      console.error('[Scheduler Session] Error hydrating session:', error);
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    }
+    // Session is valid (getSession checks expiration)
+    console.log('[Scheduler Session] Restored valid session from shared module');
+    onSessionUpdate({
+      token: stored.token,
+      verificationMethod: stored.verificationMethod,
+      verifiedAt: stored.verifiedAt,
+      customerId: stored.customerId,
+      expiresAt: stored.expiresAt,
+    });
     
     hasHydratedRef.current = true;
   }, []); // Empty deps - only run on mount
   
   /**
-   * Persist session to localStorage whenever it changes
-   * Uses localStorage for cross-tab persistence (24-hour TTL)
+   * Persist session to shared session module whenever it changes
    */
   useEffect(() => {
-    if (session.token) {
-      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
-    } else {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
+    if (session.token && session.verificationMethod && session.verifiedAt && session.expiresAt) {
+      const sessionData: SessionData = {
+        token: session.token,
+        verificationMethod: session.verificationMethod,
+        verifiedAt: session.verifiedAt,
+        customerId: session.customerId,
+        expiresAt: session.expiresAt,
+      };
+      saveSession('scheduler', sessionData);
+    } else if (!session.token) {
+      clearToken('scheduler');
     }
   }, [session]);
   
@@ -113,7 +104,7 @@ export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSe
       customerId: null,
       expiresAt: null,
     });
-    localStorage.removeItem(SESSION_STORAGE_KEY);
+    clearToken('scheduler'); // Use shared session module
   }, [onSessionUpdate]);
   
   /**
