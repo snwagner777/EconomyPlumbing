@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, manage operations, and drive growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, ultimately expanding market reach and customer engagement. Key ambitions include becoming a leading service provider by leveraging technology, increasing customer lifetime value through personalized engagement, and optimizing operational efficiency with intelligent automation.
+Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence, streamlining operations, and fostering growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates. Key ambitions include becoming a leading service provider through technology, increasing customer lifetime value, and optimizing operational efficiency with intelligent automation.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -11,8 +11,8 @@ Preferred communication style: Simple, everyday language.
 This is the foundational principle of our entire codebase. ALWAYS develop in modules.
 
 **Why Modular Development:**
-- One bug fix applies everywhere (e.g., changing `link.id` to `link.contactId` fixed scheduler AND customer portal simultaneously)
-- New features instantly available in all contexts (portal, scheduler, chatbot)
+- One bug fix applies everywhere
+- New features instantly available in all contexts
 - Eliminates duplicate code and reduces maintenance burden
 - Ensures consistency across user experiences
 - Makes testing and debugging faster
@@ -22,25 +22,21 @@ This is the foundational principle of our entire codebase. ALWAYS develop in mod
    - NO authentication logic
    - NO route-specific concerns
    - ONLY business operations and data transformations
-   - Example: `server/lib/servicetitan/crm.ts` → `getCustomerContacts(customerId)`, `createCompleteContact(customerId, data)`
 
 2. **API Routes (Context Wrappers):** Thin authentication/authorization layers in `app/api/[context]/`
-   - Validate authentication (session tokens, API keys, etc.)
+   - Validate authentication
    - Extract user identity from auth context
    - Call core business logic functions
    - Handle errors and return responses
-   - Example: `app/api/customer-portal/contacts/route.ts` → validates portal session → calls `serviceTitanCRM.getCustomerContacts(customerId)`
-   - Example: `app/api/scheduler/customer-contacts/route.ts` → validates scheduler token → calls same `serviceTitanCRM.getCustomerContacts(customerId)`
 
 3. **React Hooks & Components:** Accept auth context as parameters
    - Never hardcode authentication assumptions
    - Accept tokens/sessions as hook parameters
    - Work in any context (portal, scheduler, chatbot)
-   - Example: `useSchedulerContacts(sessionToken)` can be adapted for portal via `usePortalContacts(portalSession)`
 
 **Implementation Checklist:**
 Before writing ANY new feature:
-- [ ] Does similar functionality already exist? (grep/search first)
+- [ ] Does similar functionality already exist?
 - [ ] Can this be used in portal, scheduler, AND chatbot contexts?
 - [ ] Am I putting business logic in a reusable module, not in API routes?
 - [ ] Are my API routes just thin wrappers around core functions?
@@ -52,12 +48,6 @@ Before writing ANY new feature:
 - ❌ Hardcoding authentication in core modules
 - ❌ Copy-pasting functions between portal/scheduler/chatbot code
 - ❌ Creating context-specific versions of the same functionality
-
-**Real Example - Contact Management:**
-- ✅ Core: `server/lib/servicetitan/crm.ts` → `getCustomerContacts()`, `createCompleteContact()`, `updateContact()`, `deleteContact()`
-- ✅ Portal API: `app/api/customer-portal/contacts/route.ts` → validates portal session → calls core functions
-- ✅ Scheduler API: `app/api/scheduler/customer-contacts/route.ts` → validates scheduler token → calls same core functions
-- ✅ Result: ONE bug fix in `crm.ts` fixed contact fetching in BOTH contexts simultaneously
 
 **CRITICAL RULE: NEVER Auto-Generate or Hardcode Phone Numbers**
 - If you need a phone number, ASK the user for it
@@ -97,8 +87,6 @@ Before writing ANY new feature:
   2. Check the endpoint implementation in `app/api/servicetitan/`
   3. Verify the EXACT fields available in the response
   4. Confirm field names match what ServiceTitan actually returns
-- Example: Appointments have `jobId` (not `locationId`), must join with jobs to get location
-- Example: Invoices require per-location queries (`invoices?customerId=X&locationId=Y`)
 - If unsure about a field's existence, grep the codebase for actual usage before assuming
 - Document any new API patterns discovered in this file for future reference
 
@@ -129,31 +117,30 @@ Before writing ANY new feature:
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters for crawlers.
+- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and a Customer Portal with ServiceTitan integration supporting phone-based login.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot.
-- **Admin Panel:** Modular architecture with 21 routes, shared sidebar (`src/components/admin-sidebar.tsx`). Main sections: Overview, AI Marketing, Communications, Content, Customers, Site Configuration. Features consolidated tabbed interfaces for Email Marketing (Custom Campaigns) and Reputation (GMB Reviews, Profiles, GMB Setup). Settings Page (`/admin/settings`) is a central hub for Company Info, Marketing Settings, Feature Toggles, and Pricing Configuration.
-- **URL Structure:** Blog Posts at `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
-- **Scheduler Architecture:** Full implementation at `src/components/scheduler/` (ServiceStep, AvailabilityStep, CustomerStep, ReviewStep). Public access via `SchedulerBridge` in a modal. Customer Portal uses `SchedulerDialog` for authenticated customers. Type safety is maintained via `@shared/types/scheduler`.
-- **2FA Authentication:** Dual-mode phone/email verification with SMS OTP (SimpleTexting) and email codes (Resend), including rate limiting and comprehensive error handling.
-- **Session Management:** Secure server-side session tokens with HMAC-SHA256 signatures, 24-hour TTL, and customer ID resolution from database, persisted via `useSchedulerSession` hook using localStorage (survives tab closes).
-- **Scheduler Contact Management:** Full CRUD operations via `app/api/scheduler/customer-contacts/route.ts`. All endpoints use Authorization header for session tokens, audit logging on mutations, rate limiting. ContactsManager component provides add/edit/delete dialogs when authenticated, read-only masked view when unauthenticated. React hooks reuse shared ServiceTitan CRM functions.
+- **Admin Panel:** Modular architecture with 21 routes, shared sidebar. Main sections: Overview, AI Marketing, Communications, Content, Customers, Site Configuration. Settings Page (`/admin/settings`) for Company Info, Marketing Settings, Feature Toggles, and Pricing Configuration.
+- **Scheduler Architecture:** Full implementation at `src/components/scheduler/` with Service, Availability, Customer, and Review steps. Public access via `SchedulerBridge` modal. Customer Portal uses `SchedulerDialog`.
+- **2FA Authentication:** Dual-mode phone/email verification with SMS OTP (SimpleTexting) and email codes (Resend), including rate limiting and error handling.
+- **Session Management:** Secure server-side session tokens with HMAC-SHA256 signatures, 24-hour TTL, and customer ID resolution, persisted via `useSchedulerSession` hook.
+- **Scheduler Contact Management:** Full CRUD operations via `app/api/scheduler/customer-contacts/route.ts` with authorization, audit logging, and rate limiting.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a `worker.ts` process for background jobs.
 - **Data Layer:** Drizzle ORM for PostgreSQL.
 - **Data Models:** Users, Blog Posts, Products, Contact Submissions, Service Areas, Google Reviews, Commercial Customers, Vouchers, Quote Follow-up Campaigns, Customer Data Imports.
 - **Dynamic Phone Number Tracking:** Server-side UTM-based resolution during SSR, enhanced client-side with cookies/referrer.
-- **Security & Type Safety:** Session-based authentication (`iron-session`) for admin, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, 100% type-safe TypeScript.
-- **ServiceTitan Integration:** Includes customer contact database tracking, custom scheduler with OAuth, CRM, Jobs, Settings services. Smart Scheduler Architecture utilizes parallel capacity requests, dynamic arrival windows, 2-hour appointment slot generation, smart proximity scoring, and response caching. Appointment booking rules dictate specific window types for regular services and backflow testing. Unified scheduler system across frontend, customer portal, and AI chatbot. CRM v2 Refactoring includes removal of deprecated v1 embedded contacts and fixes for locationId linking.
-- **Customer Portal Backend API:** Production-ready with phone-first SMS 2FA login, ServiceTitan API v2 as single source of truth, and modular route design. Self-service permissions allow customers to edit billing address, location names, and contact phone/email. Production security includes rate limiting, audit logging, standardized error responses, and session-based authentication with ownership validation. Business rules enforce a minimum of 1 contact and expose only MobilePhone/Email contact methods. API routes support updating accounts and locations, and CRUD operations for contacts. Public chatbot can create customers but update/delete operations require authentication.
+- **Security & Type Safety:** Session-based authentication (`iron-session`) for admin, rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, and 100% type-safe TypeScript.
+- **ServiceTitan Integration:** Customer contact database tracking, custom scheduler with OAuth, CRM, Jobs, Settings services. Smart Scheduler Architecture uses parallel capacity requests, dynamic arrival windows, proximity scoring. Unified scheduler system across frontend, customer portal, and AI chatbot. CRM v2 Refactoring includes removal of deprecated v1 embedded contacts and fixes for locationId linking.
+- **Customer Portal Backend API:** Production-ready with phone-first SMS 2FA login, ServiceTitan API v2 as single source of truth, modular route design. Self-service permissions allow customers to edit billing address, location names, and contact phone/email. Production security includes rate limiting, audit logging, standardized error responses, and session-based authentication.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o with admin approval.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
-- **Reputation Management System:** Webhook-triggered review request automation. Mailgun forwards ServiceTitan invoice PDFs, triggering a webhook that creates job completion and review request records, then sends immediate email and SMS. A worker process sends follow-up emails.
+- **Reputation Management System:** Webhook-triggered review request automation via Mailgun.
 - **Referral System:** Instant voucher generation with QR codes.
 - **Email Preference Center:** Granular subscription management.
 - **Production Infrastructure:** Automated schedulers, database transactions, idempotency, health monitoring, admin alerting, webhook signature verification.
-- **Analytics & Third-Party Script Management:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity. Aggressive deferral for script loading, comprehensive conversion tracking, and cookie consent integration for privacy.
+- **Analytics & Third-Party Script Management:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity. Aggressive deferral for script loading and cookie consent integration.
 
 ## External Dependencies
 
