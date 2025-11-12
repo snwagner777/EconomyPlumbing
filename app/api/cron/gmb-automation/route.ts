@@ -3,11 +3,13 @@
  * 
  * Combines GMB review fetching and auto-reply.
  * Schedule: Every 30 minutes
+ * 
+ * NOTE: GMB automation implementation is pending. This endpoint
+ * is a placeholder for future Google My Business review automation.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { validateCronAuth } from '@/server/lib/cronAuth';
-import { autoFetchGMBReviews } from '@/server/lib/gmbAutomation';
 
 export async function POST(req: NextRequest) {
   // Validate authentication
@@ -15,13 +17,12 @@ export async function POST(req: NextRequest) {
   if (authError) return authError;
 
   try {
-    console.log('[Cron] GMB Automation: Starting...');
-    await autoFetchGMBReviews();
-    console.log('[Cron] GMB Automation: Completed');
+    console.log('[Cron] GMB Automation: Placeholder - not yet implemented');
 
     return NextResponse.json({ 
       success: true, 
-      message: 'GMB automation completed successfully' 
+      message: 'GMB automation placeholder - implementation pending',
+      implemented: false
     });
   } catch (error: any) {
     console.error('[Cron] GMB Automation: Error:', error);
