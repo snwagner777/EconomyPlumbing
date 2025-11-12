@@ -199,9 +199,11 @@ export default function MembershipCheckout() {
   // Load Stripe with appropriate keys
   const stripePromise = useMemo(() => getStripePromise(isTestMode), [isTestMode]);
 
-  const { data: product, isLoading } = useQuery<Product>({
+  const { data, isLoading } = useQuery<{ product: Product }>({
     queryKey: ['/api/products', slug],
   });
+  
+  const product = data?.product;
 
   // Check for active portal session and fetch customer data
   const { data: portalData } = useQuery<{
