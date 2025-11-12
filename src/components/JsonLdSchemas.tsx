@@ -17,6 +17,15 @@ interface ServiceSchemaProps {
   };
 }
 
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface FAQPageSchemaProps {
+  faqs: FAQItem[];
+}
+
 export function LocalBusinessSchema({ telephone }: LocalBusinessSchemaProps) {
   const schema = {
     "@context": "https://schema.org",
@@ -230,6 +239,33 @@ export function ServiceSchema({
   return (
     <Script
       id={`service-schema-${name.toLowerCase().replace(/\s+/g, '-')}`}
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+    />
+  );
+}
+
+export function FAQPageSchema({ faqs }: FAQPageSchemaProps) {
+  if (!faqs || faqs.length === 0) {
+    return null;
+  }
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": faqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
+  return (
+    <Script
+      id="faq-page-schema"
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
     />
