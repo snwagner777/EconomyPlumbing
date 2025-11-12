@@ -102,6 +102,28 @@ Before writing ANY new feature:
 - If unsure about a field's existence, grep the codebase for actual usage before assuming
 - Document any new API patterns discovered in this file for future reference
 
+**CRITICAL RULE: Next.js Server-Side Rendering (SSR) - NEVER Break It**
+- This is a Next.js 15 App Router project - ALL pages are server-rendered by default for SEO
+- NEVER wrap server components in 'use client' providers - this defeats the entire purpose of Next.js
+- NEVER create wrapper components that force entire pages to be client-side
+- Red Flags - NEVER do this:
+  - ❌ Creating a `<MarketingPageShell>` that wraps pages in a client provider
+  - ❌ Creating a `<PhoneNumberProvider>` context that makes pages client-side
+  - ❌ Wrapping server components in any 'use client' context providers
+  - ❌ Making entire pages client-side just to pass props down
+- Correct Pattern - ALWAYS follow this:
+  - ✅ Server page (`page.tsx`) fetches data server-side (getPhoneNumbers, database queries, etc.)
+  - ✅ Server page passes data as props to client component
+  - ✅ Client component receives props and renders UI
+  - ✅ Example: `app/(public)/page.tsx` (server) → fetches phone config → passes to `HomeClient.tsx` (client)
+- Why This Matters:
+  - SEO: Google crawlers need server-rendered HTML with phone numbers, content, metadata
+  - Performance: Server-side data fetching is faster than client-side
+  - UTM Tracking: Phone numbers are dynamically resolved based on URL params during SSR
+  - Type Safety: Props are statically typed, contexts can be misused
+- If you're tempted to create a provider/wrapper: STOP and ask "Can I pass this as a prop instead?"
+- Exception: Only use 'use client' for interactive components that truly need client-side state (forms, modals, etc.)
+
 ## System Architecture
 
 ### Frontend
@@ -115,7 +137,7 @@ Before writing ANY new feature:
 - **Scheduler Architecture:** Full implementation at `src/components/scheduler/` (ServiceStep, AvailabilityStep, CustomerStep, ReviewStep). Public access via `SchedulerBridge` in a modal. Customer Portal uses `SchedulerDialog` for authenticated customers. Type safety is maintained via `@shared/types/scheduler`.
 - **2FA Authentication:** Dual-mode phone/email verification with SMS OTP (SimpleTexting) and email codes (Resend), including rate limiting and comprehensive error handling.
 - **Session Management:** Secure server-side session tokens with HMAC-SHA256 signatures, 24-hour TTL, and customer ID resolution from database, persisted via `useSchedulerSession` hook using localStorage (survives tab closes).
-- **Scheduler Contact Management (Nov 2025):** Full CRUD operations (GET/POST/PATCH/DELETE) via `app/api/scheduler/customer-contacts/route.ts`. All endpoints use Authorization header for session tokens (no query strings/body), audit logging on mutations, rate limiting. ContactsManager component provides add/edit/delete dialogs when authenticated, read-only masked view when unauthenticated. React hooks (useSchedulerAddContact, useSchedulerUpdateContact, useSchedulerDeleteContact) reuse shared ServiceTitan CRM functions. Modular pattern documented for extension to chatbot/portal - PRODUCTION READY
+- **Scheduler Contact Management:** Full CRUD operations via `app/api/scheduler/customer-contacts/route.ts`. All endpoints use Authorization header for session tokens, audit logging on mutations, rate limiting. ContactsManager component provides add/edit/delete dialogs when authenticated, read-only masked view when unauthenticated. React hooks reuse shared ServiceTitan CRM functions.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a `worker.ts` process for background jobs.
@@ -127,7 +149,7 @@ Before writing ANY new feature:
 - **Customer Portal Backend API:** Production-ready with phone-first SMS 2FA login, ServiceTitan API v2 as single source of truth, and modular route design. Self-service permissions allow customers to edit billing address, location names, and contact phone/email. Production security includes rate limiting, audit logging, standardized error responses, and session-based authentication with ownership validation. Business rules enforce a minimum of 1 contact and expose only MobilePhone/Email contact methods. API routes support updating accounts and locations, and CRUD operations for contacts. Public chatbot can create customers but update/delete operations require authentication.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o with admin approval.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
-- **Reputation Management System:** Webhook-triggered review request automation. Mailgun forwards ServiceTitan invoice PDFs, triggering a webhook that creates job completion and review request records, then sends immediate email and SMS. A worker process sends follow-up emails. Idempotency is ensured via `mailgunMessageId` and existing `review_requests`.
+- **Reputation Management System:** Webhook-triggered review request automation. Mailgun forwards ServiceTitan invoice PDFs, triggering a webhook that creates job completion and review request records, then sends immediate email and SMS. A worker process sends follow-up emails.
 - **Referral System:** Instant voucher generation with QR codes.
 - **Email Preference Center:** Granular subscription management.
 - **Production Infrastructure:** Automated schedulers, database transactions, idempotency, health monitoring, admin alerting, webhook signature verification.
