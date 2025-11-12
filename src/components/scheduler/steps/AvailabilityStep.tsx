@@ -377,19 +377,18 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
                   {isFetching ? (
                     <>
                       <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                      Loading more dates...
+                      Loading...
                     </>
                   ) : (
-                    <>
-                      <Calendar className="w-3 h-3 mr-2" />
-                      Show More Dates (Up to {extendedDays} days)
-                    </>
+                    `View Next ${extendedDays} Days`
                   )}
                 </Button>
-                <p className="text-xs text-muted-foreground text-center mt-2">
-                  Currently showing next {initialDays} days
-                </p>
               </div>
+            )}
+            {loadExtendedRange && (
+              <p className="text-xs text-muted-foreground text-center mt-3">
+                Showing next {extendedDays} days
+              </p>
             )}
           </Card>
         </div>

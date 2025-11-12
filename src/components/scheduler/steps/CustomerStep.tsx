@@ -90,6 +90,7 @@ const normalizeState = (state: string): string => {
 
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError }: CustomerStepProps) {
   const [lookupValue, setLookupValue] = useState('');
+  const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
   const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
   const [locations, setLocations] = useState<STLocation[]>([]);
@@ -462,33 +463,42 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         
         <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-center block">What's the best phone number to reach you?</label>
+            <label className="text-sm font-medium text-center block">
+              {lookupMode === 'phone' 
+                ? 'What\'s your cell phone number?' 
+                : 'What\'s your email address?'
+              }
+            </label>
             <div className="flex gap-2 max-w-md mx-auto">
               <Input
-                type="tel"
-                placeholder="(512) 555-0123"
+                type={lookupMode === 'phone' ? 'tel' : 'email'}
+                placeholder={lookupMode === 'phone' ? '(512) 555-0123' : 'your.email@example.com'}
                 value={lookupValue}
                 className="max-w-xs"
                 onChange={(e) => {
-                  let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
-                  
-                  // Format phone number as user types: (512) 555-0123
-                  if (value.length >= 10) {
-                    value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
-                  } else if (value.length >= 6) {
-                    value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
-                  } else if (value.length >= 3) {
-                    value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                  if (lookupMode === 'phone') {
+                    let value = e.target.value.replace(/\D/g, ''); // Remove non-digits
+                    
+                    // Format phone number as user types: (512) 555-0123
+                    if (value.length >= 10) {
+                      value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6, 10)}`;
+                    } else if (value.length >= 6) {
+                      value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`;
+                    } else if (value.length >= 3) {
+                      value = `(${value.slice(0, 3)}) ${value.slice(3)}`;
+                    }
+                    
+                    setLookupValue(value);
+                  } else {
+                    setLookupValue(e.target.value);
                   }
-                  
-                  setLookupValue(value);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && lookupValue.trim()) {
                     handleLookup();
                   }
                 }}
-                data-testid="input-phone"
+                data-testid={lookupMode === 'phone' ? 'input-phone' : 'input-email'}
               />
               <Button
                 onClick={handleLookup}
@@ -503,8 +513,28 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               </Button>
             </div>
             <p className="text-xs text-muted-foreground text-center">
-              We'll use this to send appointment reminders
+              {lookupMode === 'phone' 
+                ? 'We need a cell phone to send SMS verification codes and appointment reminders'
+                : 'We\'ll use this to send email verification and appointment confirmations'
+              }
             </p>
+            <div className="text-center">
+              <Button
+                variant="link"
+                size="sm"
+                onClick={() => {
+                  setLookupMode(lookupMode === 'phone' ? 'email' : 'phone');
+                  setLookupValue('');
+                }}
+                className="text-xs"
+                data-testid="button-toggle-lookup-mode"
+              >
+                {lookupMode === 'phone' 
+                  ? 'Use email instead (for landlines/offices)'
+                  : 'Use cell phone instead'
+                }
+              </Button>
+            </div>
           </div>
         </div>
       </div>
