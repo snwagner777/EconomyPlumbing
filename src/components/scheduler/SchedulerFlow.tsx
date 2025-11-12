@@ -30,6 +30,7 @@ interface SchedulerSession {
 interface FlowState {
   step: number;
   jobType: JobType | null;
+  voucherCode: string;
   problemDescription: string;
   customer: CustomerInfo | null;
   timeSlot: TimeSlot | null;
@@ -37,11 +38,12 @@ interface FlowState {
 }
 
 type FlowAction =
-  | { type: 'SELECT_JOB_TYPE'; payload: JobType }
+  | { type: 'SELECT_JOB_TYPE'; payload: { jobType: JobType; voucherCode?: string } }
   | { type: 'SET_PROBLEM_DESCRIPTION'; payload: string }
   | { type: 'SET_CUSTOMER_INFO'; payload: CustomerInfo }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
   | { type: 'SET_SESSION'; payload: Partial<SchedulerSession> }
+  | { type: 'SET_VOUCHER'; payload: string }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'RESET' };
@@ -49,7 +51,14 @@ type FlowAction =
 function flowReducer(state: FlowState, action: FlowAction): FlowState {
   switch (action.type) {
     case 'SELECT_JOB_TYPE':
-      return { ...state, jobType: action.payload, step: 2 };
+      return { 
+        ...state, 
+        jobType: action.payload.jobType, 
+        voucherCode: action.payload.voucherCode || '', 
+        step: 2 
+      };
+    case 'SET_VOUCHER':
+      return { ...state, voucherCode: action.payload };
     case 'SET_PROBLEM_DESCRIPTION':
       return { ...state, problemDescription: action.payload };
     case 'SET_CUSTOMER_INFO':
@@ -65,7 +74,8 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
     case 'RESET':
       return { 
         step: 1, 
-        jobType: null, 
+        jobType: null,
+        voucherCode: '',
         problemDescription: '', 
         customer: null, 
         timeSlot: null,
@@ -132,6 +142,7 @@ export function SchedulerFlow({
   const [state, dispatch] = useReducer(flowReducer, {
     step: 1,
     jobType: null,
+    voucherCode: '',
     problemDescription: '',
     customer: null,
     timeSlot: null,
@@ -163,8 +174,8 @@ export function SchedulerFlow({
     dispatch({ type: 'SET_SESSION', payload: sessionData });
   }, []);
 
-  const handleSelectJobType = (jobType: JobType) => {
-    dispatch({ type: 'SELECT_JOB_TYPE', payload: jobType });
+  const handleSelectJobType = (data: { jobType: JobType; voucherCode?: string }) => {
+    dispatch({ type: 'SELECT_JOB_TYPE', payload: data });
     setVipError(false);
   };
 
@@ -269,6 +280,7 @@ export function SchedulerFlow({
         {state.step === 1 && (
           <ServiceStep 
             onSelect={handleSelectJobType}
+            initialVoucherCode={state.voucherCode}
             data-testid="step-service"
           />
         )}
@@ -290,7 +302,10 @@ export function SchedulerFlow({
               onSubmit={handleCustomerSubmit}
               selectedService={state.jobType || undefined}
               onVipError={() => setVipError(true)}
-              initialData={initialCustomerData}
+              initialData={{
+                ...initialCustomerData,
+                grouponVoucher: state.voucherCode || undefined
+              }}
               onSessionUpdate={handleSessionUpdate}
               data-testid="step-customer"
             />
@@ -337,6 +352,7 @@ export function SchedulerFlow({
               jobType={state.jobType}
               customer={state.customer}
               timeSlot={state.timeSlot}
+              voucherCode={state.voucherCode || undefined}
               problemDescription={state.problemDescription}
               onProblemDescriptionChange={handleProblemDescription}
               onSuccess={handleComplete}

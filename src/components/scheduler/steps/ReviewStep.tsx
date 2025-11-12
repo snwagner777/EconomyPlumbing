@@ -24,6 +24,7 @@ interface ReviewStepProps {
   jobType: JobType;
   customer: CustomerInfo;
   timeSlot: TimeSlot;
+  voucherCode?: string;
   problemDescription?: string;
   onProblemDescriptionChange?: (description: string) => void;
   onSuccess: () => void;
@@ -33,7 +34,7 @@ interface ReviewStepProps {
   referralCode?: string;
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
+export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
   const [problem, setProblem] = useState(problemDescription || '');
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
@@ -66,6 +67,7 @@ export function ReviewStep({ jobType, customer, timeSlot, problemDescription, on
         appointmentEnd: timeSlot.end,
         specialInstructions: specialInstructions || undefined,
         problemDescription: problem || undefined, // Customer's description of the issue
+        ...(voucherCode && { grouponVoucher: voucherCode }), // Groupon or promotional voucher code
         bookingSource: 'scheduler_wizard',
         utm_source: utmSource || 'website',
         ...(utmMedium && { utm_medium: utmMedium }),

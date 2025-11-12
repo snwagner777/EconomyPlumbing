@@ -11,6 +11,8 @@ import { useQuery } from '@tanstack/react-query';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { 
   Wrench, 
   Flame, 
@@ -20,7 +22,8 @@ import {
   Shield, 
   Tag, 
   Loader2, 
-  ArrowLeft 
+  ArrowLeft,
+  ChevronRight
 } from 'lucide-react';
 
 interface JobType {
@@ -30,8 +33,9 @@ interface JobType {
 }
 
 interface ServiceStepProps {
-  onSelect: (jobType: JobType) => void;
+  onSelect: (data: { jobType: JobType; voucherCode?: string }) => void;
   preselectedService?: string;
+  initialVoucherCode?: string;
 }
 
 type MainCategory = 'special-offers' | 'backflow' | 'water-heater' | 'gas' | 'vip' | 'food-truck' | 'repair';
@@ -102,8 +106,10 @@ const MAIN_CATEGORIES = [
   },
 ];
 
-export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) {
+export function ServiceStep({ onSelect, preselectedService, initialVoucherCode }: ServiceStepProps) {
   const [selectedCategory, setSelectedCategory] = useState<MainCategory | null>(null);
+  const [selectedService, setSelectedService] = useState<JobType | null>(null);
+  const [voucherCode, setVoucherCode] = useState(initialVoucherCode || '');
 
   // Fetch job types from ServiceTitan
   const { data, isLoading } = useQuery<{ success: boolean; jobTypes: JobType[] }>({
@@ -160,7 +166,14 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
         jt.name.toLowerCase().includes(preselectedService.toLowerCase())
       );
       if (match) {
-        onSelect(match);
+        // For special offers, show voucher input instead of auto-selecting
+        const isSpecialOffer = match.name.toLowerCase().includes('groupon') || match.name.toLowerCase().includes('$49');
+        if (isSpecialOffer) {
+          setSelectedService(match);
+          setSelectedCategory('special-offers');
+        } else {
+          onSelect({ jobType: match });
+        }
       }
     }
   }, [preselectedService, jobTypes, onSelect]);
@@ -197,7 +210,13 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
             const isSingleService = servicesCount === 1;
             const handleClick = () => {
               if (isSingleService) {
-                onSelect(services[0]);
+                // For special offers, show voucher input
+                if (category.key === 'special-offers') {
+                  setSelectedService(services[0]);
+                  setSelectedCategory(category.key);
+                } else {
+                  onSelect({ jobType: services[0] });
+                }
               } else {
                 setSelectedCategory(category.key);
               }
@@ -237,6 +256,79 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
     );
   }
 
+  // Step 2a: If special offer selected, show voucher input
+  if (selectedService && selectedCategory === 'special-offers') {
+    const categoryData = MAIN_CATEGORIES.find(c => c.key === 'special-offers')!;
+    
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSelectedService(null);
+              setSelectedCategory(null);
+            }}
+            data-testid="button-back-services"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Button>
+          
+          <div className="flex items-center gap-2">
+            <categoryData.icon className={`w-5 h-5 ${categoryData.color}`} />
+            <h3 className="text-lg font-bold">{selectedService.name}</h3>
+          </div>
+        </div>
+
+        <Card className="p-6">
+          <div className="space-y-4">
+            <div className="text-center space-y-2">
+              <div className={`inline-flex p-3 rounded-xl ${categoryData.bgColor} border border-current/20 ${categoryData.color}`}>
+                <Tag className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold">Enter Your Voucher Code</h3>
+              <p className="text-sm text-muted-foreground">
+                Please enter your Groupon or promotional voucher code to continue
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="voucher-code">Voucher Code</Label>
+              <Input
+                id="voucher-code"
+                type="text"
+                placeholder="Enter your voucher code"
+                value={voucherCode}
+                onChange={(e) => setVoucherCode(e.target.value)}
+                data-testid="input-voucher-code"
+                className="text-center text-lg font-mono uppercase"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && voucherCode.trim()) {
+                    onSelect({ jobType: selectedService, voucherCode: voucherCode.trim() });
+                  }
+                }}
+              />
+            </div>
+
+            <Button
+              className="w-full"
+              size="lg"
+              onClick={() => onSelect({ jobType: selectedService, voucherCode: voucherCode.trim() })}
+              disabled={!voucherCode.trim()}
+              data-testid="button-continue-voucher"
+            >
+              Continue
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   // Step 2: Show specific services within selected category
   const selectedCategoryData = MAIN_CATEGORIES.find(c => c.key === selectedCategory);
   const services = categorizedServices[selectedCategory] || [];
@@ -267,12 +359,19 @@ export function ServiceStep({ onSelect, preselectedService }: ServiceStepProps) 
         {services.map((jt) => {
           const categoryData = selectedCategoryData;
           const Icon = categoryData?.icon || Wrench;
+          const isSpecialOffer = selectedCategory === 'special-offers';
           
           return (
             <Card
               key={jt.id}
               className="p-3 cursor-pointer border-2 transition-all hover:border-primary hover:shadow-md active:scale-[0.98]"
-              onClick={() => onSelect(jt)}
+              onClick={() => {
+                if (isSpecialOffer) {
+                  setSelectedService(jt);
+                } else {
+                  onSelect({ jobType: jt });
+                }
+              }}
               data-testid={`card-service-${jt.id}`}
             >
               <div className="flex flex-col items-center text-center gap-2">
