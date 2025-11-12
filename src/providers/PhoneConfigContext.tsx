@@ -35,13 +35,31 @@ const DEFAULT_MARBLE_FALLS_PHONE: PhoneConfig = {
 /**
  * React Context for Phone Configuration
  * 
- * This context is populated by PhoneConfigProvider (server component)
+ * This context is populated by PhoneConfigClientProvider (client component)
  * and consumed by client components like Header
  */
 export const PhoneConfigContext = createContext<PhoneConfigContextValue>({
   austin: DEFAULT_AUSTIN_PHONE,
   marbleFalls: DEFAULT_MARBLE_FALLS_PHONE,
 });
+
+/**
+ * Client Component Wrapper for Phone Config Context
+ * This receives phone config from server component as props
+ */
+export function PhoneConfigClientProvider({ 
+  children, 
+  value 
+}: { 
+  children: React.ReactNode; 
+  value: PhoneConfigContextValue 
+}) {
+  return (
+    <PhoneConfigContext.Provider value={value}>
+      {children}
+    </PhoneConfigContext.Provider>
+  );
+}
 
 /**
  * Hook to access phone configuration in client components

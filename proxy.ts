@@ -114,9 +114,20 @@ function handleProxy(request: NextRequest) {
     }
   }
 
-  // 4. Set security headers on response
+  // 4. Inject URL search parameters into request headers for server components
+  // This allows PhoneConfigProvider to access UTM tracking params during SSR
+  const searchParams = request.nextUrl.searchParams;
   const response = NextResponse.next();
+  
+  if (searchParams.size > 0) {
+    const paramsObject: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+      paramsObject[key] = value;
+    });
+    response.headers.set('x-search-params', JSON.stringify(paramsObject));
+  }
 
+  // 5. Set security headers on response
   // Security headers (matching Express implementation)
   
   // Content Security Policy (skip for /store page due to Ecwid's dynamic resource loading)

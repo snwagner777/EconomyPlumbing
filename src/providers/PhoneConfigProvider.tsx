@@ -1,15 +1,16 @@
 import { headers } from 'next/headers';
 import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
-import { PhoneConfigContext } from '@/providers/PhoneConfigContext';
+import { PhoneConfigClientProvider } from '@/providers/PhoneConfigContext';
 
 /**
  * Server Component Provider for Phone Configuration
  * 
  * This provider:
  * 1. Runs on the server during SSR
- * 2. Reads URL search params from middleware-injected header
+ * 2. Reads URL search params from proxy-injected header
  * 3. Calls getPhoneNumbers() with UTM tracking
- * 4. Provides phone configs to all client components via context
+ * 4. Passes phone configs to client provider component
+ * 5. Client provider shares data via React context
  * 
  * Architecture Benefits:
  * - One centralized phone number resolution
@@ -19,7 +20,7 @@ import { PhoneConfigContext } from '@/providers/PhoneConfigContext';
  * - Still supports prop overrides for special cases
  */
 export async function PhoneConfigProvider({ children }: { children: React.ReactNode }) {
-  // Get search params from middleware-injected header
+  // Get search params from proxy-injected header
   const headersList = await headers();
   const searchParamsJson = headersList.get('x-search-params');
   
@@ -34,12 +35,13 @@ export async function PhoneConfigProvider({ children }: { children: React.ReactN
     }
   }
   
-  // Fetch phone numbers with UTM tracking
+  // Fetch phone numbers with UTM tracking (server-side)
   const phoneConfig = await getPhoneNumbers(searchParams);
   
+  // Pass data to client provider component
   return (
-    <PhoneConfigContext.Provider value={phoneConfig}>
+    <PhoneConfigClientProvider value={phoneConfig}>
       {children}
-    </PhoneConfigContext.Provider>
+    </PhoneConfigClientProvider>
   );
 }
