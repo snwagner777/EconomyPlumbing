@@ -16,40 +16,7 @@ import { AvailabilityStep } from './steps/AvailabilityStep';
 import { ReviewStep } from './steps/ReviewStep';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-interface JobType {
-  id: number;
-  name: string;
-  code: string;
-}
-
-interface TimeSlot {
-  id: string;
-  start: string;
-  end: string;
-  arrivalWindowStart: string; // 4-hour customer promise window start (REQUIRED)
-  arrivalWindowEnd: string; // 4-hour customer promise window end (REQUIRED)
-  timeLabel: string;
-  period: 'morning' | 'afternoon' | 'evening';
-  proximityScore?: number;
-  nearbyJobs?: number;
-  technicianId?: number | null; // Pre-assigned technician for optimal routing
-}
-
-interface CustomerInfo {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zip: string;
-  notes?: string;
-  serviceTitanId?: number;
-  customerTags?: string[];
-  locationId?: number;
-}
+import type { TimeSlot, JobType, CustomerInfo } from '@shared/types/scheduler';
 
 interface FlowState {
   step: number;

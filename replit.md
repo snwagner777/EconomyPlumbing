@@ -60,6 +60,12 @@ Preferred communication style: Simple, everyday language.
 - **Admin Panel:** Modular architecture with 21 routes, shared sidebar (`src/components/admin-sidebar.tsx`), wrapped in `app/admin/layout.tsx`. Main sections: Overview, AI Marketing, Communications, Content, Customers, Site Configuration. Features consolidated tabbed interfaces for Email Marketing (Custom Campaigns) and Reputation (GMB Reviews, Profiles, GMB Setup).
 - **Settings Page (`/admin/settings`):** Central hub for Company Info, Marketing Settings, Feature Toggles (review requests, referral nurture, AI blog generation, Google Drive sync), and Pricing Configuration.
 - **URL Structure:** Blog Posts at `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
+- **Scheduler Architecture (Refactored Nov 2025):**
+  - **Working Scheduler:** Full implementation at `src/components/scheduler/` (ServiceStep, AvailabilityStep, CustomerStep, ReviewStep) with 450+ lines per component - PRODUCTION READY
+  - **Public Access:** SchedulerBridge (`src/modules/scheduler/components/SchedulerBridge.tsx`) wraps SchedulerFlow in a modal, triggered by header "Schedule Service" buttons via SchedulerContext
+  - **Customer Portal:** SchedulerDialog (`src/modules/scheduler/components/SchedulerDialog.tsx`) uses the same working scheduler components for authenticated customers
+  - **Stub Cleanup:** Deleted all placeholder step components from `src/modules/scheduler/components/steps/` (Nov 2025) - no stubs remain
+  - **Type Safety:** All scheduler components use shared types from `@shared/types/scheduler` with proper TimeSlot discriminated union (isBackflow: boolean for regular vs backflow slots)
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a `worker.ts` process for background jobs.

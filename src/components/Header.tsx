@@ -5,8 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
+import logoImageUrl from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
+
+const logoImage = typeof logoImageUrl === 'string' ? { src: logoImageUrl } : logoImageUrl;
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
@@ -106,7 +108,7 @@ export default function Header({
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center">
             <img 
-              src={logoImage.src} 
+              src={logoImage.src}
               alt="Economy Plumbing Services logo" 
               width="85"
               height="48"
@@ -406,7 +408,7 @@ export default function Header({
               </Button>
             )}
             <Button 
-              onClick={openScheduler}
+              onClick={() => openScheduler()}
               className="bg-primary text-primary-foreground whitespace-nowrap"
               size="sm"
               data-testid="button-schedule-header"
