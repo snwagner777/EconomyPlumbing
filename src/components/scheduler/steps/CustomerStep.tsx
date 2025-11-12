@@ -45,6 +45,14 @@ const customerSchema = z.object({
 
 type CustomerFormData = z.infer<typeof customerSchema>;
 
+interface SchedulerSession {
+  token: string;
+  verificationMethod: 'phone' | 'email';
+  verifiedAt: number;
+  customerId: number | null;
+  expiresAt: number;
+}
+
 interface CustomerStepProps {
   onSubmit: (data: CustomerFormData & { locationId?: number; serviceTitanId?: number; customerTags?: string[] }) => void;
   initialData?: Partial<CustomerFormData>;
@@ -54,6 +62,7 @@ interface CustomerStepProps {
     code: string;
   };
   onVipError?: () => void;
+  onSessionUpdate?: (session: Partial<SchedulerSession>) => void;
 }
 
 interface STLocation {
@@ -89,7 +98,7 @@ const normalizeState = (state: string): string => {
   return normalized || state.substring(0, 2).toUpperCase();
 };
 
-export function CustomerStep({ onSubmit, initialData, selectedService, onVipError }: CustomerStepProps) {
+export function CustomerStep({ onSubmit, initialData, selectedService, onVipError, onSessionUpdate }: CustomerStepProps) {
   const { toast } = useToast();
   const [lookupValue, setLookupValue] = useState('');
   const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
@@ -206,9 +215,12 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       return await response.json();
     },
     onSuccess: (data: any) => {
-      if (data.verified) {
+      if (data.verified && data.session) {
+        // Update session state in parent
+        onSessionUpdate?.(data.session);
+        
         setIsVerified(true);
-        setVerifiedContact(data.contact);
+        setVerifiedContact(data.session.verificationMethod === 'phone' ? lookupValue : lookupValue);
         setShowVerification(false);
         toast({
           title: "Verified!",

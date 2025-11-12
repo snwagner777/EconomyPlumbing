@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useReducer } from 'react';
+import { useState, useReducer, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, Wrench, User, Calendar, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ServiceStep } from './steps/ServiceStep';
@@ -16,7 +16,16 @@ import { AvailabilityStep } from './steps/AvailabilityStep';
 import { ReviewStep } from './steps/ReviewStep';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useSchedulerSession } from '@/hooks/useSchedulerSession';
 import type { TimeSlot, JobType, CustomerInfo } from '@shared/types/scheduler';
+
+interface SchedulerSession {
+  token: string | null;
+  verificationMethod: 'phone' | 'email' | null;
+  verifiedAt: number | null;
+  customerId: number | null;
+  expiresAt: number | null;
+}
 
 interface FlowState {
   step: number;
@@ -24,6 +33,7 @@ interface FlowState {
   problemDescription: string;
   customer: CustomerInfo | null;
   timeSlot: TimeSlot | null;
+  session: SchedulerSession;
 }
 
 type FlowAction =
@@ -31,6 +41,7 @@ type FlowAction =
   | { type: 'SET_PROBLEM_DESCRIPTION'; payload: string }
   | { type: 'SET_CUSTOMER_INFO'; payload: CustomerInfo }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
+  | { type: 'SET_SESSION'; payload: Partial<SchedulerSession> }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
   | { type: 'RESET' };
@@ -45,12 +56,27 @@ function flowReducer(state: FlowState, action: FlowAction): FlowState {
       return { ...state, customer: action.payload, step: 3 };
     case 'SELECT_TIME_SLOT':
       return { ...state, timeSlot: action.payload, step: 4 };
+    case 'SET_SESSION':
+      return { ...state, session: { ...state.session, ...action.payload } };
     case 'NEXT_STEP':
       return { ...state, step: Math.min(state.step + 1, 4) };
     case 'PREV_STEP':
       return { ...state, step: Math.max(state.step - 1, 1) };
     case 'RESET':
-      return { step: 1, jobType: null, problemDescription: '', customer: null, timeSlot: null };
+      return { 
+        step: 1, 
+        jobType: null, 
+        problemDescription: '', 
+        customer: null, 
+        timeSlot: null,
+        session: {
+          token: null,
+          verificationMethod: null,
+          verifiedAt: null,
+          customerId: null,
+          expiresAt: null,
+        }
+      };
     default:
       return state;
   }
@@ -109,8 +135,33 @@ export function SchedulerFlow({
     problemDescription: '',
     customer: null,
     timeSlot: null,
+    session: {
+      token: null,
+      verificationMethod: null,
+      verifiedAt: null,
+      customerId: null,
+      expiresAt: null,
+    }
   });
   const [vipError, setVipError] = useState(false);
+  
+  // Wire scheduler session management with sessionStorage persistence
+  const {
+    setSession,
+    clearSession,
+    isSessionValid,
+    isSessionExpiringSoon,
+  } = useSchedulerSession({
+    session: state.session,
+    onSessionUpdate: (sessionData) => {
+      dispatch({ type: 'SET_SESSION', payload: sessionData });
+    },
+  });
+  
+  // Handle session updates from CustomerStep
+  const handleSessionUpdate = useCallback((sessionData: Partial<SchedulerSession>) => {
+    dispatch({ type: 'SET_SESSION', payload: sessionData });
+  }, []);
 
   const handleSelectJobType = (jobType: JobType) => {
     dispatch({ type: 'SELECT_JOB_TYPE', payload: jobType });
@@ -240,6 +291,7 @@ export function SchedulerFlow({
               selectedService={state.jobType || undefined}
               onVipError={() => setVipError(true)}
               initialData={initialCustomerData}
+              onSessionUpdate={handleSessionUpdate}
               data-testid="step-customer"
             />
           </div>

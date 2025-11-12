@@ -72,29 +72,29 @@ class OTPStore {
 
   /**
    * Verify an OTP code for a contact (phone or email)
-   * Returns true if valid, false otherwise
+   * Returns object with contact and method if valid, null otherwise
    */
-  verifyOTP(contact: string, code: string): boolean {
+  verifyOTP(contact: string, code: string): { contact: string; method: 'phone' | 'email' } | null {
     const normalized = this.normalizeContact(contact);
     const entry = this.store.get(normalized);
 
     if (!entry) {
       console.log(`[OTP] No code found for ${normalized}`);
-      return false;
+      return null;
     }
 
     // Check expiration
     if (Date.now() > entry.expiresAt) {
       console.log(`[OTP] Expired code for ${normalized}`);
       this.store.delete(normalized);
-      return false;
+      return null;
     }
 
     // Check attempts
     if (entry.attempts >= this.MAX_ATTEMPTS) {
       console.log(`[OTP] Max attempts exceeded for ${normalized}`);
       this.store.delete(normalized);
-      return false;
+      return null;
     }
 
     // Increment attempts
@@ -104,11 +104,14 @@ class OTPStore {
     if (entry.code === code) {
       console.log(`[OTP] ✅ Valid code for ${normalized}`);
       this.store.delete(normalized); // Remove after successful verification
-      return true;
+      
+      // Determine method based on normalized format
+      const method = normalized.includes('@') ? 'email' : 'phone';
+      return { contact: normalized, method };
     }
 
     console.log(`[OTP] ❌ Invalid code for ${normalized} (${entry.attempts}/${this.MAX_ATTEMPTS} attempts)`);
-    return false;
+    return null;
   }
 
   /**

@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { mintSchedulerSession } from '@/server/lib/schedulerSession';
+import { db } from '@/server/db';
+import { customersXlsx } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,22 +18,54 @@ export async function POST(req: NextRequest) {
     // Verify OTP
     const { getOTPStore } = await import('@/server/lib/otpStore');
     const otpStore = getOTPStore();
-    const valid = otpStore.verifyOTP(contact, code);
+    const verificationResult = otpStore.verifyOTP(contact, code);
     
-    if (!valid) {
+    if (!verificationResult) {
       return NextResponse.json(
         { message: "Invalid or expired code" },
         { status: 401 }
       );
     }
 
-    console.log(`[Scheduler OTP] ✅ Verified ${contact}`);
+    const { contact: verifiedContact, method } = verificationResult;
+    console.log(`[Scheduler OTP] ✅ Verified ${verifiedContact} via ${method}`);
     
-    // Return success - client can now proceed with authenticated scheduler
+    // Look up customer ID from our database (if they exist)
+    let customerId: number | null = null;
+    try {
+      if (method === 'phone') {
+        const normalizedPhone = verifiedContact.replace(/\D/g, '');
+        const customer = await db.query.customersXlsx.findFirst({
+          where: eq(customersXlsx.phone, normalizedPhone)
+        });
+        customerId = customer?.id || null; // id is the ServiceTitan customer ID
+      } else {
+        const customer = await db.query.customersXlsx.findFirst({
+          where: eq(customersXlsx.email, verifiedContact.toLowerCase())
+        });
+        customerId = customer?.id || null; // id is the ServiceTitan customer ID
+      }
+    } catch (error) {
+      console.error('[Scheduler OTP] Error looking up customer:', error);
+      // Continue without customer ID - they might be creating a new account
+    }
+    
+    // Mint a scheduler session token
+    const session = mintSchedulerSession(verifiedContact, method, customerId);
+    
+    console.log(`[Scheduler OTP] 🎟️  Minted session token for customer ${customerId || 'new'}`);
+    
+    // Return session token and metadata (no PII)
     return NextResponse.json({ 
       verified: true,
       message: "Verification successful!",
-      contact
+      session: {
+        token: session.token,
+        verificationMethod: session.verificationMethod,
+        verifiedAt: session.verifiedAt,
+        customerId: session.customerId,
+        expiresAt: session.expiresAt,
+      }
     });
   } catch (error: any) {
     console.error('[Scheduler OTP] Error verifying code:', error);
