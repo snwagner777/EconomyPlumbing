@@ -17,7 +17,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Phone, Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Phone, Mail, Loader2, CheckCircle, AlertCircle, Home, Building2 } from 'lucide-react';
 
 const phoneSchema = z.object({
   lookupType: z.literal('phone'),
@@ -51,9 +52,13 @@ export function PhoneLookupModal({
   title = 'Find Your Account',
   description = 'We\'ll look up your account or create a new one for you.',
 }: PhoneLookupModalProps) {
+  const [step, setStep] = useState<'lookup' | 'customerType' | 'complete'>('lookup');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [lookupType, setLookupType] = useState<'phone' | 'email'>('phone');
+  const [customerType, setCustomerType] = useState<'residential' | 'commercial'>('residential');
+  const [pendingLookupData, setPendingLookupData] = useState<LookupFormData | null>(null);
+  const [customerData, setCustomerData] = useState<{ customerId: number; customerName: string; phone: string } | null>(null);
 
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
@@ -84,14 +89,70 @@ export function PhoneLookupModal({
         throw new Error(result.error || 'Failed to lookup customer');
       }
 
+      // If this is a new customer, ask for customer type
+      if (result.isNewCustomer) {
+        setPendingLookupData(data);
+        setStep('customerType');
+        setStatus('idle');
+      } else {
+        // Existing customer - proceed directly to success
+        setStatus('success');
+        setCustomerData({
+          customerId: result.customerId,
+          customerName: result.customerName,
+          phone: data.lookupType === 'phone' ? data.phone : result.phone || '',
+        });
+        
+        setTimeout(() => {
+          onSuccess({
+            customerId: result.customerId,
+            customerName: result.customerName,
+            phone: data.lookupType === 'phone' ? data.phone : result.phone || '',
+          });
+        }, 500);
+      }
+
+    } catch (error: any) {
+      setStatus('error');
+      setErrorMessage(error.message || 'An error occurred');
+    }
+  }
+
+  async function handleCustomerTypeSubmit() {
+    if (!pendingLookupData) return;
+
+    setStatus('loading');
+    setErrorMessage('');
+
+    try {
+      const payload = pendingLookupData.lookupType === 'phone' 
+        ? { phone: pendingLookupData.phone, customerType }
+        : { email: pendingLookupData.email, customerType };
+
+      const response = await fetch('/api/public/lookup-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Failed to create customer');
+      }
+
       setStatus('success');
+      setCustomerData({
+        customerId: result.customerId,
+        customerName: result.customerName,
+        phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : result.phone || '',
+      });
       
-      // Call success callback with customer data
       setTimeout(() => {
         onSuccess({
           customerId: result.customerId,
           customerName: result.customerName,
-          phone: data.lookupType === 'phone' ? data.phone : result.phone || '',
+          phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : result.phone || '',
         });
       }, 500);
 
@@ -110,8 +171,12 @@ export function PhoneLookupModal({
 
   function handleClose() {
     if (status !== 'loading') {
+      setStep('lookup');
       setStatus('idle');
       setErrorMessage('');
+      setCustomerType('residential');
+      setPendingLookupData(null);
+      setCustomerData(null);
       form.reset();
       onOpenChange(false);
     }
@@ -121,24 +186,31 @@ export function PhoneLookupModal({
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+          <DialogTitle>
+            {step === 'lookup' ? title : 'Select Customer Type'}
+          </DialogTitle>
+          <DialogDescription>
+            {step === 'lookup' 
+              ? description 
+              : 'Are you a residential or commercial customer?'}
+          </DialogDescription>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <Tabs value={lookupType} onValueChange={(value) => handleLookupTypeChange(value as 'phone' | 'email')}>
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="phone" data-testid="tab-phone">
-                  <Phone className="w-4 h-4 mr-2" />
-                  Phone
-                </TabsTrigger>
-                <TabsTrigger value="email" data-testid="tab-email">
-                  <Mail className="w-4 h-4 mr-2" />
-                  Email
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+        {step === 'lookup' ? (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              <Tabs value={lookupType} onValueChange={(value) => handleLookupTypeChange(value as 'phone' | 'email')}>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="phone" data-testid="tab-phone">
+                    <Phone className="w-4 h-4 mr-2" />
+                    Phone
+                  </TabsTrigger>
+                  <TabsTrigger value="email" data-testid="tab-email">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Email
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
             {lookupType === 'phone' ? (
               <FormField
@@ -230,6 +302,83 @@ export function PhoneLookupModal({
             </DialogFooter>
           </form>
         </Form>
+        ) : (
+          <div className="space-y-6">
+            <RadioGroup
+              value={customerType}
+              onValueChange={(value) => setCustomerType(value as 'residential' | 'commercial')}
+              className="grid gap-4"
+            >
+              <div 
+                className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover-elevate"
+                onClick={() => setCustomerType('residential')}
+              >
+                <RadioGroupItem value="residential" id="new-residential" data-testid="radio-new-residential" />
+                <label htmlFor="new-residential" className="flex items-center gap-3 cursor-pointer flex-1">
+                  <Home className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Residential</p>
+                    <p className="text-sm text-muted-foreground">For your home or personal property</p>
+                  </div>
+                </label>
+              </div>
+              
+              <div 
+                className="flex items-center space-x-3 border rounded-lg p-4 cursor-pointer hover-elevate"
+                onClick={() => setCustomerType('commercial')}
+              >
+                <RadioGroupItem value="commercial" id="new-commercial" data-testid="radio-new-commercial" />
+                <label htmlFor="new-commercial" className="flex items-center gap-3 cursor-pointer flex-1">
+                  <Building2 className="w-6 h-6 text-primary" />
+                  <div className="flex-1">
+                    <p className="font-semibold">Commercial</p>
+                    <p className="text-sm text-muted-foreground">For your business or commercial property</p>
+                  </div>
+                </label>
+              </div>
+            </RadioGroup>
+
+            {status === 'error' && (
+              <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <p className="font-medium text-destructive">Error Creating Account</p>
+                  <p className="text-sm text-muted-foreground mt-1">{errorMessage}</p>
+                </div>
+              </div>
+            )}
+
+            {status === 'success' && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <p className="text-sm text-green-900 dark:text-green-100 font-medium">
+                  Account created! Proceeding to checkout...
+                </p>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep('lookup')}
+                disabled={status === 'loading' || status === 'success'}
+                data-testid="button-back-to-lookup"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleCustomerTypeSubmit}
+                disabled={status === 'loading' || status === 'success'}
+                data-testid="button-submit-customer-type"
+              >
+                {status === 'loading' && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                {status === 'success' && <CheckCircle className="w-4 h-4 mr-2" />}
+                {status === 'idle' || status === 'error' ? 'Continue' : status === 'loading' ? 'Creating Account...' : 'Success!'}
+              </Button>
+            </DialogFooter>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

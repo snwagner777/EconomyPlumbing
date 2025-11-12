@@ -15,10 +15,12 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 const phoneSchema = z.object({
   phone: z.string()
     .regex(/^\d{10}$/, 'Phone must be 10 digits'),
+  customerType: z.enum(['residential', 'commercial']).optional(),
 });
 
 const emailSchema = z.object({
   email: z.string().email('Valid email is required'),
+  customerType: z.enum(['residential', 'commercial']).optional(),
 });
 
 const lookupSchema = z.union([phoneSchema, emailSchema]);
@@ -78,10 +80,16 @@ export async function POST(req: NextRequest) {
     // Customer not found - create placeholder (details will be collected during checkout)
     console.log(`[Public Lookup] Customer not found, creating placeholder record`);
     
+    // Convert customer type to ServiceTitan format
+    const customerType = 'customerType' in data && data.customerType
+      ? data.customerType.charAt(0).toUpperCase() + data.customerType.slice(1) as 'Residential' | 'Commercial'
+      : 'Residential'; // Default to residential
+    
     const newCustomer = await serviceTitanCRM.ensureCustomer({
       name: 'Web Visitor', // Placeholder - will be updated during checkout
       phone: phone || '0000000000', // Placeholder if email lookup
       email: email,
+      customerType: customerType,
       address: {
         street: 'To be provided',
         city: 'Austin',
