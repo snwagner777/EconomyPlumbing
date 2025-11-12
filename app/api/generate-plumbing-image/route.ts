@@ -2,6 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { generatedPlumbingImages } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY!,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL!,
+});
 
 const dogPrompts = [
   "Professional product photography of a friendly golden retriever dog wearing a blue plumber's cap and work vest, carefully fixing a modern kitchen sink with chrome faucet, holding a wrench in paw, bright clean kitchen background, warm natural lighting, highly detailed, photorealistic",
@@ -37,41 +43,23 @@ export async function POST(request: NextRequest) {
     const prompts = animal === 'dog' ? dogPrompts : catPrompts;
     const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-    // Generate image using Replit's image generation API
-    const imageResponse = await fetch('https://ai-integrations.replit.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.AI_INTEGRATIONS_IMAGE_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-image-1',
-        prompt: randomPrompt,
-        n: 1,
-        size: '1024x1024',
-      }),
+    // Generate image using OpenAI via Replit AI Integrations
+    const response = await openai.images.generate({
+      model: 'gpt-image-1',
+      prompt: randomPrompt,
+      n: 1,
+      size: '1024x1024',
     });
 
-    if (!imageResponse.ok) {
-      const errorText = await imageResponse.text();
-      console.error('[Generate Plumbing Image] API Error:', errorText);
-      return NextResponse.json(
-        { error: 'Image generation service error' },
-        { status: 500 }
-      );
-    }
-
-    const imageData = await imageResponse.json();
-    
-    if (!imageData.data || !imageData.data[0] || !imageData.data[0].url) {
-      console.error('[Generate Plumbing Image] Invalid response:', imageData);
+    if (!response.data || !response.data[0] || !response.data[0].url) {
+      console.error('[Generate Plumbing Image] Invalid response:', response);
       return NextResponse.json(
         { error: 'No image returned from service' },
         { status: 500 }
       );
     }
 
-    const imageUrl = imageData.data[0].url;
+    const imageUrl = response.data[0].url;
 
     // Save to database
     await db.insert(generatedPlumbingImages).values({
