@@ -866,24 +866,16 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowAddLocation(true)}
-                data-testid="button-add-location"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Location
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setShowContactsDialog(true)}
-                data-testid="button-manage-contacts"
-              >
-                <User className="w-4 h-4 mr-2" />
-                {isVerified ? 'Manage Contacts' : 'View Contacts'}
-              </Button>
-            </div>
+            {/* Add Location Button - Contacts management moved to ReviewStep */}
+            <Button
+              variant="outline"
+              onClick={() => setShowAddLocation(true)}
+              data-testid="button-add-location"
+              className="w-full"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Location
+            </Button>
           </>
         )}
 
@@ -901,21 +893,14 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           Back to Lookup
         </Button>
 
-        {/* Contacts Manager - Full CRUD when authenticated, read-only when not */}
-        {isVerified && sessionToken && customerFound?.serviceTitanId ? (
-          <ContactsManager
-            open={showContactsDialog}
-            onOpenChange={setShowContactsDialog}
-            sessionToken={sessionToken}
-            customerId={customerFound.serviceTitanId}
-          />
-        ) : (
+        {/* Contacts Manager removed from CustomerStep - moved to ReviewStep where location is selected */}
+        {showContactsDialog && (
           <Dialog open={showContactsDialog} onOpenChange={setShowContactsDialog}>
             <DialogContent className="max-w-md" data-testid="dialog-customer-contacts">
               <DialogHeader>
-                <DialogTitle>Contact Information</DialogTitle>
+                <DialogTitle>Contact Management</DialogTitle>
                 <DialogDescription>
-                  Review your contact information on file. To update, please visit the customer portal.
+                  Contact management has been moved to the final review step where you can manage contacts for your selected service location.
                 </DialogDescription>
               </DialogHeader>
 

@@ -14,7 +14,7 @@ if (!SESSION_SECRET) {
   throw new Error('SESSION_SECRET environment variable must be configured for scheduler session management');
 }
 
-const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface SchedulerSessionData {
   sessionId: string;

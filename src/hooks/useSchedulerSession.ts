@@ -5,7 +5,7 @@
  * Handles token storage, hydration on load, and expiration warnings.
  */
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 
 interface SchedulerSession {
   token: string | null;
@@ -21,41 +21,56 @@ interface UseSchedulerSessionProps {
 }
 
 const SESSION_STORAGE_KEY = 'scheduler_session';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 const WARNING_THRESHOLD_MS = 5 * 60 * 1000; // Warn 5 minutes before expiry
 
 export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSessionProps) {
+  // Track if we've already hydrated to prevent infinite loops
+  const hasHydratedRef = useRef(false);
   
   /**
-   * Hydrate session from sessionStorage on mount
+   * Hydrate session from localStorage on mount ONLY
+   * Uses localStorage instead of sessionStorage to persist across tab closes
    */
   useEffect(() => {
-    const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
-    if (!stored) return;
+    // Only hydrate once on initial mount
+    if (hasHydratedRef.current) return;
+    
+    const stored = localStorage.getItem(SESSION_STORAGE_KEY);
+    if (!stored) {
+      hasHydratedRef.current = true;
+      return;
+    }
     
     try {
       const parsed: SchedulerSession = JSON.parse(stored);
       
-      // Check if session is still valid
+      // Check if session is still valid (24-hour TTL)
       if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
+        console.log('[Scheduler Session] Restored valid session from localStorage');
         onSessionUpdate(parsed);
       } else {
         // Session expired - clear it
-        sessionStorage.removeItem(SESSION_STORAGE_KEY);
+        console.log('[Scheduler Session] Session expired, clearing');
+        localStorage.removeItem(SESSION_STORAGE_KEY);
       }
     } catch (error) {
       console.error('[Scheduler Session] Error hydrating session:', error);
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
-  }, [onSessionUpdate]);
+    
+    hasHydratedRef.current = true;
+  }, []); // Empty deps - only run on mount
   
   /**
-   * Persist session to sessionStorage whenever it changes
+   * Persist session to localStorage whenever it changes
+   * Uses localStorage for cross-tab persistence (24-hour TTL)
    */
   useEffect(() => {
     if (session.token) {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+      localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
     } else {
-      sessionStorage.removeItem(SESSION_STORAGE_KEY);
+      localStorage.removeItem(SESSION_STORAGE_KEY);
     }
   }, [session]);
   
@@ -89,7 +104,7 @@ export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSe
       customerId: null,
       expiresAt: null,
     });
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
   }, [onSessionUpdate]);
   
   /**

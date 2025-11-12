@@ -114,7 +114,7 @@ Before writing ANY new feature:
 - **URL Structure:** Blog Posts at `/{slug}`, Service Areas at `/service-areas/{slug}`, Static Pages at direct paths (e.g., `/contact`).
 - **Scheduler Architecture:** Full implementation at `src/components/scheduler/` (ServiceStep, AvailabilityStep, CustomerStep, ReviewStep). Public access via `SchedulerBridge` in a modal. Customer Portal uses `SchedulerDialog` for authenticated customers. Type safety is maintained via `@shared/types/scheduler`.
 - **2FA Authentication:** Dual-mode phone/email verification with SMS OTP (SimpleTexting) and email codes (Resend), including rate limiting and comprehensive error handling.
-- **Session Management:** Secure server-side session tokens with HMAC-SHA256 signatures, 30-minute TTL, and customer ID resolution from database, persisted via `useSchedulerSession` hook.
+- **Session Management:** Secure server-side session tokens with HMAC-SHA256 signatures, 24-hour TTL, and customer ID resolution from database, persisted via `useSchedulerSession` hook using localStorage (survives tab closes).
 - **Scheduler Contact Management (Nov 2025):** Full CRUD operations (GET/POST/PATCH/DELETE) via `app/api/scheduler/customer-contacts/route.ts`. All endpoints use Authorization header for session tokens (no query strings/body), audit logging on mutations, rate limiting. ContactsManager component provides add/edit/delete dialogs when authenticated, read-only masked view when unauthenticated. React hooks (useSchedulerAddContact, useSchedulerUpdateContact, useSchedulerDeleteContact) reuse shared ServiceTitan CRM functions. Modular pattern documented for extension to chatbot/portal - PRODUCTION READY
 
 ### Backend
