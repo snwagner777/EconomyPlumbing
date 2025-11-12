@@ -7,6 +7,7 @@ import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImageUrl from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
+import { usePhoneConfig } from "@/providers/PhoneConfigContext";
 
 const logoImage = typeof logoImageUrl === 'string' ? { src: logoImageUrl } : logoImageUrl;
 declare global {
@@ -43,10 +44,11 @@ export default function Header({
   
   const location = usePathname() || '/';
   
-  // Phone numbers MUST be passed from server-side getPhoneNumbers() for UTM tracking
-  // Each page.tsx should fetch and pass these props for proper SEO and tracking
-  const phoneConfig = austinPhone || { display: 'Loading...', tel: '#' };
-  const marbleFallsPhoneConfig = marbleFallsPhone || { display: 'Loading...', tel: '#' };
+  // Get phone numbers from context (automatically fetched server-side with UTM tracking)
+  // Props can still override for special cases, but context provides automatic defaults
+  const contextPhoneConfig = usePhoneConfig();
+  const phoneConfig = austinPhone || contextPhoneConfig.austin;
+  const marbleFallsPhoneConfig = marbleFallsPhone || contextPhoneConfig.marbleFalls;
 
   const services = [
     { name: "All Services", path: "/services", featured: true },
