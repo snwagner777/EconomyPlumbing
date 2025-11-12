@@ -73,11 +73,21 @@ Before writing ANY new feature:
 
 **CRITICAL RULE: Every new public page MUST have Header, Footer, and SEO optimization**
 - ALL public-facing pages must import and render Header and Footer components
-- Header receives phoneConfig prop from server-side getPhoneNumbers() for UTM tracking
+- Header automatically receives phone numbers from global PhoneConfigProvider (no props needed)
+- Props can still override for special cases, but context provides automatic defaults
 - Every page MUST have proper SEO metadata (title, description, Open Graph tags)
 - Use `getPageMetadata()` helper or manual metadata export for SEO
-- Example pattern: Server component passes phoneConfig → Client component renders <Header austinPhone={phoneConfig} /> + content + <Footer />
+- Example pattern: Server page → Client component renders `<Header />` + content + `<Footer />`
 - Pages without Header/Footer will confuse users and hurt SEO - this is non-negotiable
+
+**UPDATED: Global Phone Number Architecture (November 2025)**
+- **Middleware** (`proxy.ts`): Injects URL searchParams into `x-search-params` header for server components
+- **PhoneConfigProvider** (`src/providers/PhoneConfigProvider.tsx`): Server component that fetches phone numbers via `getPhoneNumbers()` with UTM tracking, wraps app in React context
+- **PhoneConfigContext** (`src/providers/PhoneConfigContext.tsx`): Client context + `usePhoneConfig()` hook for consuming phone data
+- **Header Component** (`src/components/Header.tsx`): Automatically reads from context via `usePhoneConfig()`, props still work as override
+- **Root Layout** (`app/layout.tsx`): Wraps entire app with `<PhoneConfigProvider>` for global availability
+- **Benefits**: One centralized phone resolution, automatic UTM tracking across all pages, no per-page prop plumbing, bug fixes apply everywhere
+- **Migration**: Pages no longer need to pass phone props to Header - context handles it automatically
 
 **CRITICAL RULE: ServiceTitan API Implementation - ALWAYS Verify Before Writing**
 - NEVER assume API response structures - ALWAYS check actual code first
