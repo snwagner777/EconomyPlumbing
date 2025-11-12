@@ -36,24 +36,23 @@ const reportWebVitals = async (metric: Metric) => {
  * Core Web Vitals monitoring component
  * Measures and reports:
  * - LCP (Largest Contentful Paint)
- * - FID (First Input Delay) - deprecated, replaced by INP
- * - INP (Interaction to Next Paint) - new responsiveness metric
+ * - INP (Interaction to Next Paint) - responsiveness metric
  * - CLS (Cumulative Layout Shift)
  * - FCP (First Contentful Paint)
  * - TTFB (Time to First Byte)
  * 
  * Sends metrics to Google Analytics 4 via gtag
+ * Note: FID (First Input Delay) is deprecated in web-vitals v4+
  */
 export function WebVitals() {
   useEffect(() => {
     // Dynamically import web-vitals only on client-side
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB, onINP }) => {
+    import('web-vitals').then(({ onCLS, onFCP, onLCP, onTTFB, onINP }) => {
       onCLS(reportWebVitals);
-      onFID(reportWebVitals);
       onFCP(reportWebVitals);
       onLCP(reportWebVitals);
       onTTFB(reportWebVitals);
-      onINP(reportWebVitals); // New responsiveness metric replacing FID
+      onINP(reportWebVitals); // Responsiveness metric (replaces deprecated FID)
     });
   }, []);
 
