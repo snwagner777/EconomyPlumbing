@@ -461,13 +461,22 @@ function calculateProximityScoreV2(
 
   // Group jobs by technician
   const jobsByTech = new Map<number, any[]>();
+  const jobsWithoutTech: any[] = [];
+  
   for (const job of sameDayJobs) {
     if (job.technicianId) {
       if (!jobsByTech.has(job.technicianId)) {
         jobsByTech.set(job.technicianId, []);
       }
       jobsByTech.get(job.technicianId)!.push(job);
+    } else {
+      jobsWithoutTech.push(job);
     }
+  }
+  
+  // Warn about jobs without technician assignments
+  if (jobsWithoutTech.length > 0 && process.env.NODE_ENV === 'development') {
+    console.warn(`[Proximity] Warning: ${jobsWithoutTech.length} jobs have no technician assignment - cannot optimize routing`);
   }
 
   let bestScore = 50; // Base score
@@ -530,20 +539,35 @@ function calculateProximityScoreV2(
     return distance <= 1; // Same zone or adjacent
   });
 
-  // Bonus for clustering (more jobs nearby that day = better)
-  if (jobsInNearbyZones.length >= 3) {
-    bestScore = Math.min(100, bestScore + 10);
-  } else if (jobsInNearbyZones.length >= 2) {
-    bestScore = Math.min(100, bestScore + 5);
+  // BUGFIX: Only apply clustering bonus if we actually found a contiguous proximity match
+  // Otherwise slots with zero proximity get boosted incorrectly
+  if (bestTechnicianId !== null) {
+    // We found a contiguous match - apply clustering bonus
+    if (jobsInNearbyZones.length >= 3) {
+      bestScore = Math.min(100, bestScore + 10);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Proximity] Clustering bonus +10: ${jobsInNearbyZones.length} nearby jobs → score ${bestScore}`);
+      }
+    } else if (jobsInNearbyZones.length >= 2) {
+      bestScore = Math.min(100, bestScore + 5);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Proximity] Clustering bonus +5: ${jobsInNearbyZones.length} nearby jobs → score ${bestScore}`);
+      }
+    }
   }
 
   // FALLBACK: If no proximity match found, assign any technician working that day
+  // This ensures we have a tech assignment even when routing optimization doesn't apply
   if (bestTechnicianId === null && sameDayJobs.length > 0) {
     // Find first technician with jobs that day
     const firstTech = sameDayJobs.find(job => job.technicianId)?.technicianId;
     if (firstTech) {
       bestTechnicianId = firstTech;
-      console.log(`[Proximity] No proximity match - assigning fallback tech ${firstTech} for same-day job`);
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[Proximity] No proximity match - assigning fallback tech ${firstTech} for same-day coverage`);
+      }
+    } else if (process.env.NODE_ENV === 'development') {
+      console.warn(`[Proximity] No technicians available - all ${sameDayJobs.length} same-day jobs lack tech assignments`);
     }
   }
 
