@@ -1,12 +1,10 @@
 import { db } from '@/server/db';
-import { schedulerRequests, trackingNumbers } from '@shared/schema';
+import { schedulerRequests } from '@shared/schema';
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
 import { eq } from 'drizzle-orm';
-import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
-import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
-import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
+import { createMembershipSale } from '@/server/lib/membershipSales';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-09-30.clover',
@@ -105,12 +103,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Parse booking data from metadata
+    // Parse booking data and ServiceTitan IDs from metadata
     const bookingData = JSON.parse(session.metadata!.bookingData);
     const membershipId = session.metadata!.membershipId;
     const membershipName = session.metadata!.membershipName;
+    const saleTaskId = parseInt(session.metadata!.saleTaskId || '0');
+    const durationBillingId = parseInt(session.metadata!.durationBillingId || '0');
     const referralCode = session.metadata!.referralCode || '';
     const referralDiscount = parseFloat(session.metadata!.referralDiscount || '0');
+    
+    // Validate ServiceTitan IDs
+    if (!saleTaskId || !durationBillingId) {
+      throw new Error(
+        'Missing ServiceTitan IDs in Stripe metadata. ' +
+        'Please ensure the product has saleTaskId (SKU) and durationBillingId configured.'
+      );
+    }
 
     // Create validated request object
     const validated = {
@@ -195,139 +203,70 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      // Step 1: Resolve campaign from tracking number mapping
-      console.log(`[Membership Booking] Looking up campaign for utm_source: ${utmSource}`);
+      // Use modular membership sale helper - replaces Zapier flow
+      console.log(`[Membership Booking] Creating membership sale for ${validated.customerName}`);
       
-      let campaignId: number | undefined;
-      const [trackingNumber] = await db.select()
-        .from(trackingNumbers)
-        .where(eq(trackingNumbers.channelKey, utmSource))
-        .limit(1);
-      
-      if (trackingNumber?.serviceTitanCampaignId) {
-        campaignId = trackingNumber.serviceTitanCampaignId;
-        console.log(`[Membership Booking] Found campaign from tracking number: ${trackingNumber.serviceTitanCampaignName || trackingNumber.channelName} (ID: ${campaignId})`);
-      } else {
-        console.log(`[Membership Booking] No tracking number mapping for ${utmSource}, looking for default "website" campaign`);
-        const campaigns = await serviceTitanSettings.getCampaigns();
-        const websiteCampaign = campaigns.find(c => 
-          c.name.toLowerCase() === 'website' || 
-          c.source?.toLowerCase() === 'website'
-        );
+      const paymentAmount = session.amount_total!; // in cents
+      const result = await createMembershipSale({
+        // Customer info
+        customerName: validated.customerName,
+        customerPhone: validated.customerPhone,
+        customerEmail: validated.customerEmail || undefined,
         
-        if (websiteCampaign) {
-          campaignId = websiteCampaign.id;
-          console.log(`[Membership Booking] Using default website campaign (ID: ${campaignId})`);
-        } else {
-          throw new Error(
-            `No ServiceTitan campaign found for utm_source="${utmSource}". ` +
-            `Please configure a tracking number mapping at /admin/tracking-numbers ` +
-            `or create a "website" campaign in ServiceTitan as the default.`
-          );
-        }
-      }
-
-      // Step 2: Resolve job type for VIP Membership
-      console.log(`[Membership Booking] Looking up job type for: VIP Membership`);
-      const jobType = await serviceTitanSettings.findJobTypeByName('VIP Membership');
-      
-      if (!jobType) {
-        throw new Error('Job type not found for VIP Membership - please create it in ServiceTitan');
-      }
-      
-      console.log(`[Membership Booking] Found job type: ${jobType.name} (ID: ${jobType.id})`);
-
-      // Step 3: Get business unit
-      const businessUnits = await serviceTitanSettings.getBusinessUnits();
-      if (businessUnits.length === 0) {
-        throw new Error('No active business units found in ServiceTitan');
-      }
-      
-      const businessUnitId = jobType.defaultBusinessUnitId || businessUnits[0].id;
-      console.log(`[Membership Booking] Using business unit ID: ${businessUnitId}`);
-
-      // Step 4: Ensure customer exists in ServiceTitan
-      console.log(`[Membership Booking] Creating/finding customer for ${validated.customerName}`);
-      const customer = await serviceTitanCRM.ensureCustomer({
-        name: validated.customerName,
-        phone: validated.customerPhone,
-        email: validated.customerEmail || undefined,
+        // Location
         address: {
           street: validated.address,
           city: validated.city || 'Austin',
           state: validated.state || 'TX',
           zip: validated.zipCode || '78701',
         },
+        
+        // ServiceTitan IDs from Stripe metadata
+        saleTaskId,
+        durationBillingId,
+        
+        // Campaign resolution
+        utmSource,
+        
+        // Payment context for logging
+        paymentIntentId,
+        paymentAmount,
+        referralCode: referralCode || undefined,
       });
-
-      // Step 5: Ensure location exists for customer
-      console.log(`[Membership Booking] Creating/finding location for customer ${customer.id}`);
-      const location = await serviceTitanCRM.ensureLocation(customer.id, {
-        customerId: customer.id,
-        address: {
-          street: validated.address,
-          city: validated.city || 'Austin',
-          state: validated.state || 'TX',
-          zip: validated.zipCode || '78701',
-        },
-        phone: validated.customerPhone,
-        email: validated.customerEmail || undefined,
-      });
-
-      // TODO: Migrate to serviceTitanMemberships.createMembershipSale() for proper membership invoicing
-      // Current implementation uses generic createJob() which works but doesn't create proper membership records
-      // To use createMembershipSale(), we need to:
-      // 1. Store ServiceTitan membershipTypeId, durationBillingId, saleTaskId in Stripe checkout metadata
-      // 2. Fetch these from membership types API when building checkout session
-      // 3. Pass saleTaskId and durationBillingId to createMembershipSale() here
-      // Reference: server/lib/servicetitan/memberships.ts - createMembershipSale()
       
-      // Step 6: Create ServiceTitan job with membership details
-      const paymentAmount = session.amount_total! / 100; // Convert cents to dollars
-      const specialInstructions = [
-        `VIP Membership Purchase: ${membershipName}`,
-        `PREPAID via Stripe: $${paymentAmount.toFixed(2)}`,
-        `Stripe Payment Intent: ${paymentIntentId}`,
-        `Stripe Session ID: ${session.id}`,
-        referralCode ? `Referral Code: ${referralCode} ($${referralDiscount} discount applied)` : '',
-        validated.specialInstructions || '',
-      ].filter(Boolean).join('\n');
+      // SECURITY: Handle membership sale failure properly
+      if (!result.success) {
+        // Mark scheduler request as failed with clear error
+        await db.update(schedulerRequests)
+          .set({
+            status: 'failed',
+            updatedAt: new Date(),
+          })
+          .where(eq(schedulerRequests.id, schedulerRequest.id));
+        
+        throw new Error(result.error || 'Membership sale failed');
+      }
 
-      console.log(`[Membership Booking] Creating job for membership: ${membershipName}`);
-      const job = await serviceTitanJobs.createJob({
-        customerId: customer.id,
-        locationId: location.id,
-        businessUnitId,
-        jobTypeId: jobType.id,
-        summary: `${membershipName} - PREPAID Online Purchase`,
-        specialInstructions,
-        preferredDate: validated.preferredDate || undefined,
-        preferredTimeSlot: validated.preferredTimeSlot as any,
-        campaignId, // Guaranteed to be defined by this point
-      });
-
-      // Step 7: Update scheduler request with ServiceTitan IDs
+      // Update scheduler request with ServiceTitan IDs
       await db.update(schedulerRequests)
         .set({
-          serviceTitanCustomerId: customer.id,
-          serviceTitanLocationId: location.id,
-          serviceTitanJobId: job.id,
-          serviceTitanAppointmentId: job.firstAppointmentId,
+          serviceTitanCustomerId: result.customerId,
+          serviceTitanLocationId: result.locationId,
+          serviceTitanJobId: result.invoiceId, // Store invoice ID in jobId field
           status: 'confirmed',
           bookedAt: new Date(),
           updatedAt: new Date(),
         })
         .where(eq(schedulerRequests.id, schedulerRequest.id));
 
-      console.log(`[Membership Booking] Successfully created ServiceTitan job ${job.jobNumber} for membership ${membershipName}`);
+      console.log(`[Membership Booking] Success - Invoice: ${result.invoiceId}, Membership: ${result.customerMembershipId}`);
 
       return NextResponse.json({
         success: true,
         requestId: schedulerRequest.id,
-        jobNumber: job.jobNumber,
-        jobId: job.id,
-        appointmentId: job.firstAppointmentId,
-        message: `VIP Membership successfully purchased! Job #${job.jobNumber}`,
+        invoiceId: result.invoiceId,
+        customerMembershipId: result.customerMembershipId,
+        message: `VIP Membership successfully purchased! Invoice #${result.invoiceId}`,
       });
     } catch (error: any) {
       console.error('[Membership Booking] Failed:', error);

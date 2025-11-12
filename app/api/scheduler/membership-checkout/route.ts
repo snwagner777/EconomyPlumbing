@@ -61,6 +61,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // SECURITY: Validate ServiceTitan IDs BEFORE creating checkout
+    // This prevents customers from paying for misconfigured memberships
+    const saleTaskId = membership.sku ? parseInt(membership.sku) : 0;
+    const durationBillingId = membership.durationBillingId ? parseInt(membership.durationBillingId) : 0;
+
+    if (!saleTaskId || isNaN(saleTaskId) || !durationBillingId || isNaN(durationBillingId)) {
+      console.error(`[Membership Checkout] Product ${membership.slug} missing ServiceTitan IDs - SKU: ${membership.sku}, DurationBillingId: ${membership.durationBillingId}`);
+      return NextResponse.json(
+        { 
+          error: 'This membership is not properly configured. Please contact support.',
+          details: 'Missing ServiceTitan integration IDs (saleTaskId or durationBillingId)'
+        },
+        { status: 500 }
+      );
+    }
+
     const hostname = req.headers.get('host') || 'www.plumbersthatcare.com';
     const protocol = hostname.includes('localhost') ? 'http' : 'https';
 
@@ -94,8 +110,14 @@ export async function POST(req: NextRequest) {
         type: 'vip_membership',
         membershipId: data.membershipId,
         membershipName: membership.name,
+        // ServiceTitan IDs for createMembershipSale() - validated above
+        saleTaskId: saleTaskId.toString(),
+        durationBillingId: durationBillingId.toString(),
+        serviceTitanMembershipTypeId: membership.serviceTitanMembershipTypeId || '',
+        // Referral info
         referralCode: data.referralCode || '',
         referralDiscount: data.referralDiscount?.toString() || '0',
+        // Customer/booking data
         bookingData: JSON.stringify({
           customerName: data.customerName,
           customerEmail: data.customerEmail,
