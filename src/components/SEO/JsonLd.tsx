@@ -1,3 +1,13 @@
+import Script from 'next/script';
+import { 
+  BUSINESS_INFO, 
+  AUSTIN_LOCATION, 
+  MARBLE_FALLS_LOCATION,
+  BUSINESS_HOURS,
+  SERVICE_AREAS,
+  SOCIAL_PROFILES 
+} from '@/lib/businessMetadata';
+
 export interface JsonLdProps {
   data: Record<string, any>;
 }
@@ -5,6 +15,23 @@ export interface JsonLdProps {
 export function JsonLd({ data }: JsonLdProps) {
   return (
     <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+    />
+  );
+}
+
+// Next.js Script wrapper for client components
+export function JsonLdScript({ 
+  id, 
+  data 
+}: { 
+  id: string; 
+  data: Record<string, any> 
+}) {
+  return (
+    <Script
+      id={id}
       type="application/ld+json"
       dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
     />
@@ -28,137 +55,42 @@ export function createLocalBusinessSchema(
   const schema: any = {
     "@context": "https://schema.org",
     "@type": "Plumber",
-    "@id": "https://www.plumbersthatcare.com/#austin",
-    "name": "Economy Plumbing Services",
-    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
+    "@id": `${BUSINESS_INFO.url}/#localbusiness`,
+    "name": BUSINESS_INFO.name,
+    "image": BUSINESS_INFO.logo,
     "logo": {
       "@type": "ImageObject",
-      "url": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
+      "url": BUSINESS_INFO.logo,
       "width": "1024",
       "height": "1024"
     },
-    "description": "Professional plumbing services in Austin and Marble Falls, Texas. Water heater repair & replacement, drain cleaning, leak repair, and emergency plumbing services.",
-    "url": "https://www.plumbersthatcare.com",
-    "telephone": "+15123689159",
-    "email": "hello@plumbersthatcare.com",
-    "priceRange": "$$",
+    "description": BUSINESS_INFO.description,
+    "url": BUSINESS_INFO.url,
+    "telephone": AUSTIN_LOCATION.telephone,
+    "email": BUSINESS_INFO.email,
+    "priceRange": BUSINESS_INFO.priceRange,
     "paymentAccepted": "Cash, Credit Card, Check",
     "currenciesAccepted": "USD",
-    "hasMap": "https://maps.google.com/?q=701+Tillery+St+%2312+Austin+TX+78702",
-    "sameAs": [
-      "https://www.facebook.com/econoplumbing",
-      "https://www.instagram.com/plumbersthatcare_atx",
-      "https://www.yelp.com/biz/economy-plumbing-services-austin-3",
-      "https://www.nextdoor.com/agency-detail/tx/austin/economy-plumbing-services/",
-      "https://www.plumbersthatcare.com"
-    ],
+    "hasMap": AUSTIN_LOCATION.hasMap,
+    "sameAs": SOCIAL_PROFILES,
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "701 Tillery St #12",
-      "addressLocality": "Austin",
-      "addressRegion": "TX",
-      "postalCode": "78702",
-      "addressCountry": "US"
+      ...AUSTIN_LOCATION.address
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "30.2672",
-      "longitude": "-97.7431"
+      ...AUSTIN_LOCATION.geo
     },
-    "areaServed": [
-      {
-        "@type": "City",
-        "name": "Austin",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Cedar Park",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Leander",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Round Rock",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Georgetown",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Pflugerville",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Liberty Hill",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Buda",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Kyle",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Marble Falls",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Burnet",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Horseshoe Bay",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Kingsland",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Granite Shoals",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Bertram",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Spicewood",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      }
-    ],
-    "openingHoursSpecification": {
+    "areaServed": SERVICE_AREAS.map(area => ({
+      "@type": "City",
+      "name": area.name
+    })),
+    "openingHoursSpecification": BUSINESS_HOURS.map(hours => ({
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday"
-      ],
-      "opens": "07:30",
-      "closes": "17:30"
-    },
+      "dayOfWeek": hours.dayOfWeek,
+      "opens": hours.opens,
+      "closes": hours.closes
+    })),
     "aggregateRating": aggregateRating ? {
       "@type": "AggregateRating",
       "ratingValue": aggregateRating.ratingValue,
@@ -203,41 +135,30 @@ export function createMarbleFallsLocationSchema() {
   return {
     "@context": "https://schema.org",
     "@type": "Plumber",
-    "name": "Economy Plumbing Services - Marble Falls",
-    "@id": "https://www.plumbersthatcare.com/#marblefalls",
-    "image": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
+    "name": MARBLE_FALLS_LOCATION.name,
+    "@id": `${BUSINESS_INFO.url}/#marblefalls`,
+    "image": BUSINESS_INFO.logo,
     "description": "Professional plumbing services in Marble Falls and the Highland Lakes area.",
-    "telephone": "+18304603565",
-    "email": "hello@plumbersthatcare.com",
-    "priceRange": "$$",
+    "telephone": MARBLE_FALLS_LOCATION.telephone,
+    "email": BUSINESS_INFO.email,
+    "priceRange": BUSINESS_INFO.priceRange,
     "paymentAccepted": "Cash, Credit Card, Check",
     "currenciesAccepted": "USD",
-    "hasMap": "https://maps.google.com/?q=2409+Commerce+Street+Marble+Falls+TX+78654",
+    "hasMap": MARBLE_FALLS_LOCATION.hasMap,
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "2409 Commerce Street",
-      "addressLocality": "Marble Falls",
-      "addressRegion": "TX",
-      "postalCode": "78654",
-      "addressCountry": "US"
+      ...MARBLE_FALLS_LOCATION.address
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "30.5744",
-      "longitude": "-98.2734"
+      ...MARBLE_FALLS_LOCATION.geo
     },
-    "openingHoursSpecification": {
+    "openingHoursSpecification": BUSINESS_HOURS.map(hours => ({
       "@type": "OpeningHoursSpecification",
-      "dayOfWeek": [
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday"
-      ],
-      "opens": "07:30",
-      "closes": "17:30"
-    }
+      "dayOfWeek": hours.dayOfWeek,
+      "opens": hours.opens,
+      "closes": hours.closes
+    }))
   };
 }
 
@@ -272,81 +193,129 @@ export function createOrganizationSchema() {
 
 export const localBusinessSchema = createLocalBusinessSchema();
 
-export function createServiceSchema(serviceName: string, serviceDescription: string, serviceUrl: string) {
-  return {
+export function createServiceSchema(
+  serviceName: string, 
+  serviceDescription: string, 
+  serviceUrl: string,
+  serviceImage?: string,
+  priceRange?: string,
+  aggregateRating?: { ratingValue: number; reviewCount: number }
+) {
+  const schema: Record<string, any> = {
     "@context": "https://schema.org",
-    "@type": "Service",
-    "@id": serviceUrl,
+    "@type": "PlumbingService",
     "name": serviceName,
     "serviceType": serviceName,
     "description": serviceDescription,
+    "url": serviceUrl,
     "provider": {
       "@type": "Plumber",
-      "@id": "https://www.plumbersthatcare.com/#austin",
-      "name": "Economy Plumbing Services",
-      "telephone": ["+15123689159", "+18304603565"],
-      "url": "https://www.plumbersthatcare.com",
-      "address": {
-        "@type": "PostalAddress",
-        "streetAddress": "701 Tillery St #12",
-        "addressLocality": "Austin",
-        "addressRegion": "TX",
-        "postalCode": "78702",
-        "addressCountry": "US"
-      },
-      "geo": {
-        "@type": "GeoCoordinates",
-        "latitude": "30.2672",
-        "longitude": "-97.7431"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "495",
-        "bestRating": "5",
-        "worstRating": "1"
-      }
+      "@id": `${BUSINESS_INFO.url}/#localbusiness`
     },
-    "areaServed": [
-      {
-        "@type": "City",
-        "name": "Austin",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Cedar Park",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Leander",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Round Rock",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Georgetown",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Pflugerville",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      },
-      {
-        "@type": "City",
-        "name": "Marble Falls",
-        "containedIn": { "@type": "State", "name": "Texas" }
-      }
-    ],
-    "url": serviceUrl,
+    "areaServed": SERVICE_AREAS.map(area => ({
+      "@type": "City",
+      "name": area.name
+    })),
     "category": "Plumbing Services"
   };
+
+  if (serviceImage) {
+    schema.image = serviceImage;
+  }
+
+  if (priceRange) {
+    const numericPrice = parseFloat(priceRange);
+    if (!isNaN(numericPrice)) {
+      schema.offers = {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "price": numericPrice.toString(),
+        "availability": "https://schema.org/InStock"
+      };
+    } else {
+      schema.offers = {
+        "@type": "Offer",
+        "priceCurrency": "USD",
+        "description": priceRange,
+        "availability": "https://schema.org/InStock"
+      };
+    }
+  }
+
+  if (aggregateRating && aggregateRating.reviewCount >= 5) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": aggregateRating.ratingValue,
+      "reviewCount": aggregateRating.reviewCount,
+      "bestRating": "5",
+      "worstRating": "1"
+    };
+  }
+
+  return schema;
+}
+
+// Service Area LocalBusiness schema (city-specific)
+export function createServiceAreaSchema(
+  city: string,
+  state: string,
+  slug: string,
+  area: "austin" | "marble-falls",
+  coordinates?: { latitude: string; longitude: string },
+  aggregateRating?: { ratingValue: string; reviewCount: string }
+) {
+  const baseLocation = area === "austin" ? AUSTIN_LOCATION : MARBLE_FALLS_LOCATION;
+  
+  const schema: Record<string, any> = {
+    "@context": "https://schema.org",
+    "@type": "Plumber",
+    "name": `${BUSINESS_INFO.name} - ${city}`,
+    "@id": `${BUSINESS_INFO.url}/service-areas/${slug}#localbusiness`,
+    "image": BUSINESS_INFO.logo,
+    "logo": {
+      "@type": "ImageObject",
+      "url": BUSINESS_INFO.logo
+    },
+    "telephone": baseLocation.telephone,
+    "email": BUSINESS_INFO.email,
+    "priceRange": BUSINESS_INFO.priceRange,
+    "address": {
+      "@type": "PostalAddress",
+      ...baseLocation.address
+    },
+    "areaServed": {
+      "@type": "City",
+      "name": city
+    },
+    "url": `${BUSINESS_INFO.url}/service-areas/${slug}`,
+    "paymentAccepted": "Cash, Credit Card, Check",
+    "currenciesAccepted": "USD",
+    "hasMap": `https://maps.google.com/?q=${encodeURIComponent(`${city}, ${state}`)}`,
+    "provider": {
+      "@type": "Plumber",
+      "@id": `${BUSINESS_INFO.url}/#localbusiness`
+    }
+  };
+
+  if (coordinates) {
+    schema.geo = {
+      "@type": "GeoCoordinates",
+      "latitude": coordinates.latitude,
+      "longitude": coordinates.longitude
+    };
+  }
+
+  if (aggregateRating && aggregateRating.reviewCount && parseInt(aggregateRating.reviewCount) >= 5) {
+    schema.aggregateRating = {
+      "@type": "AggregateRating",
+      "ratingValue": aggregateRating.ratingValue,
+      "reviewCount": aggregateRating.reviewCount,
+      "bestRating": "5",
+      "worstRating": "1"
+    };
+  }
+
+  return schema;
 }
 
 export function createProductSchema(product: any) {
@@ -471,6 +440,12 @@ export function createFAQSchema(faqs: { question: string; answer: string }[]) {
 }
 
 export function createBreadcrumbListSchema(items: { name: string; url?: string }[]) {
+  // Normalize URLs by removing trailing slashes for consistency
+  const normalizeUrl = (url?: string): string | undefined => {
+    if (!url) return undefined;
+    return url.endsWith('/') && url.length > 1 ? url.slice(0, -1) : url;
+  };
+
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -478,7 +453,7 @@ export function createBreadcrumbListSchema(items: { name: string; url?: string }
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      ...(item.url && { "item": item.url })
+      ...(item.url && { "item": normalizeUrl(item.url) })
     }))
   };
 }

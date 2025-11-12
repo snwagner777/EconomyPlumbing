@@ -17,7 +17,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
-import { ServiceSchema, FAQPageSchema } from "@/components/JsonLdSchemas";
+import { JsonLdScript, createServiceSchema, createFAQSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
@@ -116,18 +116,28 @@ export default function ServicePage({
       <Header />
       
       {/* Service JSON-LD Schema */}
-      <ServiceSchema
-        name={heroTitle}
-        description={overviewDescription}
-        canonical={canonical}
-        image={heroImage}
-        serviceType={title}
+      <JsonLdScript 
+        id={`service-schema-${title.toLowerCase().replace(/\s+/g, '-')}`}
+        data={createServiceSchema(heroTitle, overviewDescription, canonical, heroImage)}
       />
       
       {/* FAQ JSON-LD Schema */}
       {faqs && faqs.length > 0 && (
-        <FAQPageSchema faqs={faqs} />
+        <JsonLdScript 
+          id={`faq-schema-${title.toLowerCase().replace(/\s+/g, '-')}`}
+          data={createFAQSchema(faqs)}
+        />
       )}
+      
+      {/* Breadcrumb JSON-LD Schema */}
+      <JsonLdScript 
+        id={`breadcrumb-schema-${title.toLowerCase().replace(/\s+/g, '-')}`}
+        data={createBreadcrumbListSchema([
+          { name: "Home", url: "https://plumbersthatcare.com" },
+          { name: "Services", url: "https://plumbersthatcare.com/services" },
+          { name: heroTitle, url: canonical }
+        ])}
+      />
 
       {/* Breadcrumbs */}
       <div className="bg-muted/30 border-b">

@@ -10,7 +10,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
-import { JsonLd } from "@/components/SEO/JsonLd";
+import { JsonLdScript, createServiceAreaSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
 import defaultHeroImage from "@assets/optimized/plumber_working_resi_a03913c7.webp";
 import { openScheduler } from "@/lib/scheduler";
@@ -73,38 +73,6 @@ export default function ServiceAreaPage({
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   const coordinates = getCoordinates(slug);
-  const schemaPhone = area === "austin" ? austinPhoneConfig.tel.replace('tel:', '') : marbleFallsPhoneConfig.tel.replace('tel:', '');
-
-  const localBusinessSchema = {
-    "@context": "https://schema.org",
-    "@type": "Plumber",
-    "name": `Economy Plumbing Services - ${city}`,
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": city,
-      "addressRegion": state,
-      "addressCountry": "US"
-    },
-    "telephone": schemaPhone,
-    "geo": coordinates ? {
-      "@type": "GeoCoordinates",
-      "latitude": coordinates.latitude,
-      "longitude": coordinates.longitude
-    } : undefined,
-    "areaServed": {
-      "@type": "City",
-      "name": city,
-      "containedIn": { "@type": "State", "name": "Texas" }
-    },
-    "url": `https://www.plumbersthatcare.com/service-areas/${slug}`,
-    "aggregateRating": {
-      "@type": "AggregateRating",
-      "ratingValue": "4.3",
-      "reviewCount": "495",
-      "bestRating": "5",
-      "worstRating": "1"
-    }
-  };
 
   return (
     <div className="min-h-screen">
@@ -114,7 +82,28 @@ export default function ServiceAreaPage({
         canonical={canonical}
       />
 
-      <JsonLd data={localBusinessSchema} />
+      {/* Service Area LocalBusiness Schema */}
+      <JsonLdScript 
+        id={`localbusiness-schema-${slug}`}
+        data={createServiceAreaSchema(
+          city,
+          state,
+          slug,
+          area,
+          coordinates || undefined,
+          { ratingValue: "4.3", reviewCount: "495" }
+        )}
+      />
+      
+      {/* Breadcrumb JSON-LD Schema */}
+      <JsonLdScript 
+        id={`breadcrumb-schema-${slug}`}
+        data={createBreadcrumbListSchema([
+          { name: "Home", url: "https://plumbersthatcare.com" },
+          { name: "Service Areas", url: "https://plumbersthatcare.com/service-areas" },
+          { name: `${city}, ${state}`, url: canonical }
+        ])}
+      />
 
       <Header />
 
