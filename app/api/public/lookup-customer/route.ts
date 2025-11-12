@@ -11,6 +11,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
+
+const TENANT_ID = process.env.SERVICETITAN_TENANT_ID!;
 
 const phoneSchema = z.object({
   phone: z.string()
@@ -53,16 +56,50 @@ export async function POST(req: NextRequest) {
       console.log(`[Public Lookup] Searching for customer by email: ${email}`);
     }
 
-    // Use existing findCustomer method (reuses scheduler/portal modules)
-    const existingCustomer = await serviceTitanCRM.findCustomer(phone || '0000000000', email);
+    // Search ServiceTitan directly to check for multiple matches
+    let allMatches: any[] = [];
+    
+    if (phone) {
+      const phoneSearch = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+        `crm/v2/tenant/${TENANT_ID}/customers?phone=${encodeURIComponent(phone)}&active=true`
+      );
+      allMatches = phoneSearch.data || [];
+    } else if (email) {
+      const emailSearch = await serviceTitanAuth.makeRequest<{ data: any[] }>(
+        `crm/v2/tenant/${TENANT_ID}/customers?email=${encodeURIComponent(email)}&active=true`
+      );
+      allMatches = emailSearch.data || [];
+    }
 
-    if (existingCustomer) {
+    // If multiple customers found, return all matches for selection
+    if (allMatches.length > 1) {
+      console.log(`[Public Lookup] Found ${allMatches.length} matching customers`);
+      return NextResponse.json({
+        success: true,
+        multipleMatches: true,
+        matches: allMatches.map((customer: any) => ({
+          customerId: customer.id,
+          customerName: customer.name,
+          customerType: customer.type,
+          address: customer.address ? {
+            street: customer.address.street,
+            city: customer.address.city,
+            state: customer.address.state,
+            zip: customer.address.zip,
+          } : null,
+        })),
+      });
+    }
+
+    // Single customer found
+    if (allMatches.length === 1) {
+      const existingCustomer = allMatches[0];
       console.log(`[Public Lookup] Found existing customer: ${existingCustomer.id}`);
       
       // Extract phone from customer contacts if found by email
       let resultPhone = phone;
       if (!phone && existingCustomer.contacts) {
-        const phoneContact = existingCustomer.contacts.find(c => 
+        const phoneContact = existingCustomer.contacts.find((c: any) => 
           c.type === 'MobilePhone' || c.type === 'Phone'
         );
         resultPhone = phoneContact?.value.replace(/\D/g, '') || '';
@@ -72,6 +109,7 @@ export async function POST(req: NextRequest) {
         success: true,
         customerId: existingCustomer.id,
         customerName: existingCustomer.name,
+        customerType: existingCustomer.type,
         phone: resultPhone,
         isNewCustomer: false,
       });

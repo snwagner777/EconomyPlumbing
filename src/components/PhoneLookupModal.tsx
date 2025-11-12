@@ -45,6 +45,18 @@ interface PhoneLookupModalProps {
   description?: string;
 }
 
+interface CustomerMatch {
+  customerId: number;
+  customerName: string;
+  customerType: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  } | null;
+}
+
 export function PhoneLookupModal({
   open,
   onOpenChange,
@@ -52,13 +64,15 @@ export function PhoneLookupModal({
   title = 'Find Your Account',
   description = 'We\'ll look up your account or create a new one for you.',
 }: PhoneLookupModalProps) {
-  const [step, setStep] = useState<'lookup' | 'customerType' | 'complete'>('lookup');
+  const [step, setStep] = useState<'lookup' | 'accountSelection' | 'customerType' | 'complete'>('lookup');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
   const [lookupType, setLookupType] = useState<'phone' | 'email'>('phone');
   const [customerType, setCustomerType] = useState<'residential' | 'commercial'>('residential');
   const [pendingLookupData, setPendingLookupData] = useState<LookupFormData | null>(null);
   const [customerData, setCustomerData] = useState<{ customerId: number; customerName: string; phone: string } | null>(null);
+  const [accountMatches, setAccountMatches] = useState<CustomerMatch[]>([]);
+  const [selectedAccountId, setSelectedAccountId] = useState<number | null>(null);
 
   const form = useForm<LookupFormData>({
     resolver: zodResolver(lookupSchema),
@@ -89,13 +103,22 @@ export function PhoneLookupModal({
         throw new Error(result.error || 'Failed to lookup customer');
       }
 
+      // Multiple accounts found - show selection
+      if (result.multipleMatches) {
+        setAccountMatches(result.matches);
+        setPendingLookupData(data);
+        setStep('accountSelection');
+        setStatus('idle');
+        return;
+      }
+
       // If this is a new customer, ask for customer type
       if (result.isNewCustomer) {
         setPendingLookupData(data);
         setStep('customerType');
         setStatus('idle');
       } else {
-        // Existing customer - proceed directly to success
+        // Single existing customer - proceed directly to success
         setStatus('success');
         setCustomerData({
           customerId: result.customerId,
@@ -116,6 +139,28 @@ export function PhoneLookupModal({
       setStatus('error');
       setErrorMessage(error.message || 'An error occurred');
     }
+  }
+
+  function handleAccountSelect() {
+    if (!selectedAccountId || !pendingLookupData) return;
+
+    const selectedAccount = accountMatches.find(a => a.customerId === selectedAccountId);
+    if (!selectedAccount) return;
+
+    setStatus('success');
+    setCustomerData({
+      customerId: selectedAccount.customerId,
+      customerName: selectedAccount.customerName,
+      phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : '',
+    });
+    
+    setTimeout(() => {
+      onSuccess({
+        customerId: selectedAccount.customerId,
+        customerName: selectedAccount.customerName,
+        phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : '',
+      });
+    }, 500);
   }
 
   async function handleCustomerTypeSubmit() {
@@ -177,6 +222,8 @@ export function PhoneLookupModal({
       setCustomerType('residential');
       setPendingLookupData(null);
       setCustomerData(null);
+      setAccountMatches([]);
+      setSelectedAccountId(null);
       form.reset();
       onOpenChange(false);
     }
@@ -187,12 +234,14 @@ export function PhoneLookupModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>
-            {step === 'lookup' ? title : 'Select Customer Type'}
+            {step === 'lookup' && title}
+            {step === 'accountSelection' && 'Select Your Account'}
+            {step === 'customerType' && 'Select Customer Type'}
           </DialogTitle>
           <DialogDescription>
-            {step === 'lookup' 
-              ? description 
-              : 'Are you a residential or commercial customer?'}
+            {step === 'lookup' && description}
+            {step === 'accountSelection' && 'We found multiple accounts. Please select the one you want to use.'}
+            {step === 'customerType' && 'Are you a residential or commercial customer?'}
           </DialogDescription>
         </DialogHeader>
 
@@ -302,6 +351,85 @@ export function PhoneLookupModal({
             </DialogFooter>
           </form>
         </Form>
+        ) : step === 'accountSelection' ? (
+          <div className="space-y-6">
+            <RadioGroup
+              value={selectedAccountId?.toString() || ''}
+              onValueChange={(value) => setSelectedAccountId(parseInt(value))}
+              className="grid gap-4"
+            >
+              {accountMatches.map((account) => (
+                <div 
+                  key={account.customerId}
+                  className="flex items-start space-x-3 border rounded-lg p-4 cursor-pointer hover-elevate"
+                  onClick={() => setSelectedAccountId(account.customerId)}
+                >
+                  <RadioGroupItem 
+                    value={account.customerId.toString()} 
+                    id={`account-${account.customerId}`}
+                    data-testid={`radio-account-${account.customerId}`}
+                  />
+                  <label 
+                    htmlFor={`account-${account.customerId}`} 
+                    className="flex-1 cursor-pointer"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">
+                        <p className="font-semibold">{account.customerName}</p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {account.customerType === 'Residential' ? (
+                            <span className="inline-flex items-center gap-1">
+                              <Home className="w-3 h-3" />
+                              Residential
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1">
+                              <Building2 className="w-3 h-3" />
+                              Commercial
+                            </span>
+                          )}
+                        </p>
+                        {account.address && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {account.address.street}, {account.address.city}, {account.address.state} {account.address.zip}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              ))}
+            </RadioGroup>
+
+            {status === 'success' && (
+              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-3">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <p className="text-sm text-green-900 dark:text-green-100 font-medium">
+                  Account selected! Proceeding to checkout...
+                </p>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep('lookup')}
+                disabled={status === 'loading' || status === 'success'}
+                data-testid="button-back-from-account-select"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={handleAccountSelect}
+                disabled={!selectedAccountId || status === 'loading' || status === 'success'}
+                data-testid="button-submit-account-select"
+              >
+                {status === 'success' && <CheckCircle className="w-4 h-4 mr-2" />}
+                {status === 'success' ? 'Success!' : 'Continue'}
+              </Button>
+            </DialogFooter>
+          </div>
         ) : (
           <div className="space-y-6">
             <RadioGroup
