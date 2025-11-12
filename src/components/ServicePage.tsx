@@ -17,6 +17,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
+import RelatedLinksSection from "@/components/RelatedLinksSection";
 import { JsonLdScript, createServiceSchema, createFAQSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
@@ -391,26 +392,11 @@ export default function ServicePage({
         className="py-16 lg:py-24 bg-muted/30"
       />
 
-      <section className="py-16 lg:py-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl lg:text-4xl font-bold text-center mb-12">
-            Related Services
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedServices.map((service) => (
-              <Link key={service.path} href={service.path}>
-                <Card className="p-6 hover-elevate cursor-pointer h-full" data-testid={`link-related-${service.path.slice(1)}`}>
-                  <h3 className="text-lg font-semibold mb-2">{service.title}</h3>
-                  <div className="flex items-center text-primary mt-4">
-                    <span className="text-sm">Learn more about {service.title}</span>
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </div>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
+      <RelatedLinksSection 
+        heading="Related Plumbing Services"
+        description="Explore our other professional plumbing services to find the solution you need."
+        items={relatedServices}
+      />
 
       {/* Related Blog Posts - adds internal links to blog posts for better SEO */}
       {blogCategory && (

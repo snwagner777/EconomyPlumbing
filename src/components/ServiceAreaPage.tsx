@@ -9,6 +9,7 @@ import { Phone, MapPin, CheckCircle } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ContactFormSection from "@/components/ContactFormSection";
+import RelatedLinksSection from "@/components/RelatedLinksSection";
 import { SEOHead } from "@/components/SEO/SEOHead";
 import { JsonLdScript, createServiceAreaSchema, createBreadcrumbListSchema } from "@/components/SEO/JsonLd";
 import { getCoordinates } from "@shared/serviceAreaCoordinates";
@@ -73,6 +74,10 @@ export default function ServiceAreaPage({
   const displaySubtitle = heroSubtitle || `Expert plumbing services for ${city} residents. Same-day service, upfront pricing, and 100% satisfaction guaranteed.`;
 
   const coordinates = getCoordinates(slug);
+  const coordinatesForSchema = coordinates ? {
+    latitude: coordinates.latitude.toString(),
+    longitude: coordinates.longitude.toString()
+  } : undefined;
 
   return (
     <div className="min-h-screen">
@@ -90,7 +95,7 @@ export default function ServiceAreaPage({
           state,
           slug,
           area,
-          coordinates || undefined,
+          coordinatesForSchema,
           { ratingValue: "4.3", reviewCount: "495" }
         )}
       />
@@ -262,31 +267,13 @@ export default function ServiceAreaPage({
         </div>
       </section>
 
-      {nearbyCities.length > 0 && (
-        <section className="py-16 lg:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl lg:text-4xl font-bold text-center mb-8" data-testid="heading-nearby">
-              We Also Serve Nearby Cities
-            </h2>
-            <div className="flex flex-wrap justify-center gap-3 max-w-4xl mx-auto">
-              {nearbyCities.map((nearbyCity) => (
-                <Link 
-                  key={nearbyCity.path} 
-                  href={nearbyCity.path}
-                >
-                  <Badge 
-                    variant="outline" 
-                    className="text-base px-4 py-2 hover-elevate cursor-pointer"
-                    data-testid={`link-city-${nearbyCity.path.split('/').pop()}`}
-                  >
-                    {nearbyCity.name}
-                  </Badge>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      <RelatedLinksSection 
+        heading="Plumbing Services in Nearby Cities"
+        description={`We provide the same trusted plumbing services throughout Central Texas. Find a plumber near you in these nearby communities.`}
+        items={nearbyCities}
+        linkPrefix="Plumber in"
+        testIdPrefix="link-city"
+      />
 
       <section className="py-16 lg:py-24 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
