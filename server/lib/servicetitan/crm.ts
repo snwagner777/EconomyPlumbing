@@ -240,7 +240,8 @@ export class ServiceTitanCRM {
     try {
       // Use service location if provided, otherwise use billing address
       const locationAddress = data.serviceLocation || data.address;
-      const locationName = data.serviceLocation?.name || `${data.name} - Primary`;
+      // Use address for location name instead of appending "- Primary" to customer name
+      const locationName = data.serviceLocation?.name || `${locationAddress.street}, ${locationAddress.city}`;
 
       const payload = {
         name: data.name,
