@@ -22,6 +22,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info, Phone, Mail, User, AlertCircle } from 'lucide-react';
 import { NewCustomerWizard } from '../NewCustomerWizard';
 import { NewLocationWizard } from '../NewLocationWizard';
+import { ContactsManager } from '../ContactsManager';
 
 const customerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -106,6 +107,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
   const [verifiedContact, setVerifiedContact] = useState('');
+  const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [sendError, setSendError] = useState<string | null>(null);
   const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
@@ -219,6 +221,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         // Update session state in parent
         onSessionUpdate?.(data.session);
         
+        // Store session token for contact CRUD operations
+        setSessionToken(data.session.token);
         setIsVerified(true);
         setVerifiedContact(data.session.verificationMethod === 'phone' ? lookupValue : lookupValue);
         setShowVerification(false);
@@ -874,10 +878,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               <Button
                 variant="outline"
                 onClick={() => setShowContactsDialog(true)}
-                data-testid="button-view-contacts"
+                data-testid="button-manage-contacts"
               >
                 <User className="w-4 h-4 mr-2" />
-                View Contacts
+                {isVerified ? 'Manage Contacts' : 'View Contacts'}
               </Button>
             </div>
           </>
@@ -897,76 +901,85 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           Back to Lookup
         </Button>
 
-        {/* Contacts Dialog */}
-        <Dialog open={showContactsDialog} onOpenChange={setShowContactsDialog}>
-          <DialogContent className="max-w-md" data-testid="dialog-customer-contacts">
-            <DialogHeader>
-              <DialogTitle>Contact Information</DialogTitle>
-              <DialogDescription>
-                Review your contact information on file. To update, please visit the customer portal.
-              </DialogDescription>
-            </DialogHeader>
+        {/* Contacts Manager - Full CRUD when authenticated, read-only when not */}
+        {isVerified && sessionToken && customerFound?.serviceTitanId ? (
+          <ContactsManager
+            open={showContactsDialog}
+            onOpenChange={setShowContactsDialog}
+            sessionToken={sessionToken}
+            customerId={customerFound.serviceTitanId}
+          />
+        ) : (
+          <Dialog open={showContactsDialog} onOpenChange={setShowContactsDialog}>
+            <DialogContent className="max-w-md" data-testid="dialog-customer-contacts">
+              <DialogHeader>
+                <DialogTitle>Contact Information</DialogTitle>
+                <DialogDescription>
+                  Review your contact information on file. To update, please visit the customer portal.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="space-y-4">
-              {fetchContactsMutation.isPending ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                </div>
-              ) : fetchContactsMutation.isError ? (
-                <div className="text-center py-8">
-                  <p className="text-sm text-destructive mb-2">Failed to load contact information</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fetchContactsMutation.mutate(customerFound.serviceTitanId)}
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : customerContacts.length > 0 ? (
-                customerContacts.map((contact) => (
-                  <div key={contact.id} className="space-y-2">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                      <User className="w-4 h-4 text-muted-foreground" />
-                      {contact.name}
-                    </div>
-                    {contact.methods.map((method: any) => (
-                      <div
-                        key={method.id}
-                        className="flex items-start gap-3 p-3 rounded-md bg-muted/50"
-                        data-testid={`contact-method-${method.id}`}
-                      >
-                        {method.type === 'Email' ? (
-                          <Mail className="w-4 h-4 text-muted-foreground mt-0.5" />
-                        ) : (
-                          <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="text-sm">{method.value}</div>
-                          {method.memo && (
-                            <div className="text-xs text-muted-foreground mt-0.5">
-                              {method.memo}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
+              <div className="space-y-4">
+                {fetchContactsMutation.isPending ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  No contact information on file
-                </div>
-              )}
-            </div>
+                ) : fetchContactsMutation.isError ? (
+                  <div className="text-center py-8">
+                    <p className="text-sm text-destructive mb-2">Failed to load contact information</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fetchContactsMutation.mutate(customerFound.serviceTitanId)}
+                    >
+                      Retry
+                    </Button>
+                  </div>
+                ) : customerContacts.length > 0 ? (
+                  customerContacts.map((contact) => (
+                    <div key={contact.id} className="space-y-2">
+                      <div className="flex items-center gap-2 text-sm font-medium">
+                        <User className="w-4 h-4 text-muted-foreground" />
+                        {contact.name}
+                      </div>
+                      {contact.methods.map((method: any) => (
+                        <div
+                          key={method.id}
+                          className="flex items-start gap-3 p-3 rounded-md bg-muted/50"
+                          data-testid={`contact-method-${method.id}`}
+                        >
+                          {method.type === 'Email' ? (
+                            <Mail className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          ) : (
+                            <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm">{method.value}</div>
+                            {method.memo && (
+                              <div className="text-xs text-muted-foreground mt-0.5">
+                                {method.memo}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground text-sm">
+                    No contact information on file
+                  </div>
+                )}
+              </div>
 
-            <DialogFooter>
-              <Button onClick={() => setShowContactsDialog(false)} data-testid="button-close-contacts">
-                Close
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+              <DialogFooter>
+                <Button onClick={() => setShowContactsDialog(false)} data-testid="button-close-contacts">
+                  Close
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     );
   }
