@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
 import { generatedPlumbingImages } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
-import Anthropic from '@anthropic-ai/sdk';
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
 
 const dogPrompts = [
   "Professional product photography of a friendly golden retriever dog wearing a blue plumber's cap and work vest, carefully fixing a modern kitchen sink with chrome faucet, holding a wrench in paw, bright clean kitchen background, warm natural lighting, highly detailed, photorealistic",
@@ -38,41 +33,45 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.ANTHROPIC_API_KEY) {
-      return NextResponse.json(
-        { error: 'API key not configured' },
-        { status: 500 }
-      );
-    }
-
     // Get random prompt
     const prompts = animal === 'dog' ? dogPrompts : catPrompts;
     const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
 
-    // Generate image using Anthropic with proper image generation setup
-    const message = await anthropic.messages.create({
-      model: 'claude-3-7-sonnet-20250219',
-      max_tokens: 1024,
-      modalities: ['image'] as any, // Enable image generation
-      messages: [
-        {
-          role: 'user',
-          content: randomPrompt,
-        },
-      ],
+    // Generate image using Replit's image generation API
+    const imageResponse = await fetch('https://ai-integrations.replit.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.AI_INTEGRATIONS_IMAGE_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: randomPrompt,
+        n: 1,
+        size: '1024x1024',
+      }),
     });
 
-    // Extract image from response
-    const imageBlock: any = message.content.find((block: any) => block.type === 'image');
-    if (!imageBlock || !imageBlock.source || !imageBlock.source.data) {
-      console.error('[Generate Plumbing Image] No image in response:', message.content);
+    if (!imageResponse.ok) {
+      const errorText = await imageResponse.text();
+      console.error('[Generate Plumbing Image] API Error:', errorText);
       return NextResponse.json(
-        { error: 'Image generation failed - no image returned' },
+        { error: 'Image generation service error' },
         { status: 500 }
       );
     }
 
-    const imageUrl = `data:${imageBlock.source.media_type || 'image/png'};base64,${imageBlock.source.data}`;
+    const imageData = await imageResponse.json();
+    
+    if (!imageData.data || !imageData.data[0] || !imageData.data[0].url) {
+      console.error('[Generate Plumbing Image] Invalid response:', imageData);
+      return NextResponse.json(
+        { error: 'No image returned from service' },
+        { status: 500 }
+      );
+    }
+
+    const imageUrl = imageData.data[0].url;
 
     // Save to database
     await db.insert(generatedPlumbingImages).values({
@@ -137,7 +136,7 @@ export async function GET(request: NextRequest) {
       .limit(12);
 
     return NextResponse.json({ images });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Get Plumbing Images] Error:', error);
     return NextResponse.json(
       { error: 'Failed to fetch images' },
