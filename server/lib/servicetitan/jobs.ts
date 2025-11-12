@@ -500,6 +500,76 @@ export class ServiceTitanJobs {
       throw error;
     }
   }
+
+  /**
+   * Upload file attachment to a job
+   * MODULAR - Use from scheduler, customer portal, chatbot, or any context
+   * 
+   * @param jobId - ServiceTitan job ID
+   * @param file - File buffer or Blob
+   * @param fileName - Original filename
+   * @returns Uploaded filename from ServiceTitan
+   */
+  async uploadJobAttachment(
+    jobId: number,
+    file: Buffer | Blob,
+    fileName: string
+  ): Promise<{ fileName: string }> {
+    try {
+      const formData = new FormData();
+      
+      // Convert Buffer to Blob if needed
+      const blob = file instanceof Buffer 
+        ? new Blob([file])
+        : file;
+      
+      formData.append('file', blob, fileName);
+
+      const response = await serviceTitanAuth.makeRequest<{ fileName: string }>(
+        `forms/v2/tenant/${this.tenantId}/jobs/${jobId}/attachments`,
+        {
+          method: 'POST',
+          body: formData,
+          // Let fetch set Content-Type with boundary for multipart/form-data
+          headers: {},
+        }
+      );
+
+      console.log(`[ServiceTitan Jobs] Uploaded attachment "${response.fileName}" to job ${jobId}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error uploading attachment to job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Upload multiple file attachments to a job
+   * MODULAR - Batch upload for efficiency
+   * 
+   * @param jobId - ServiceTitan job ID
+   * @param files - Array of { buffer, fileName } objects
+   * @returns Array of uploaded filenames
+   */
+  async uploadJobAttachments(
+    jobId: number,
+    files: Array<{ buffer: Buffer | Blob; fileName: string }>
+  ): Promise<string[]> {
+    try {
+      const uploadPromises = files.map(({ buffer, fileName }) =>
+        this.uploadJobAttachment(jobId, buffer, fileName)
+      );
+
+      const results = await Promise.all(uploadPromises);
+      const uploadedFileNames = results.map(r => r.fileName);
+
+      console.log(`[ServiceTitan Jobs] Uploaded ${uploadedFileNames.length} attachments to job ${jobId}`);
+      return uploadedFileNames;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error uploading attachments to job ${jobId}:`, error);
+      throw error;
+    }
+  }
 }
 
 export const serviceTitanJobs = new ServiceTitanJobs();

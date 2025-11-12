@@ -60,6 +60,7 @@ import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/mod
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import { ReferralModal } from "@/components/ReferralModal";
 import { VouchersSection } from "./VouchersSection";
+import { MembershipsSection } from "./components/MembershipsSection";
 
 /**
  * Props for AuthenticatedPortal component
@@ -958,163 +959,9 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                     );
                   })()}
 
-                  {/* VIP Membership Status - Shows real data from ServiceTitan */}
+                  {/* VIP Membership Status - Live ServiceTitan API data via modular wrapper */}
                   <div id="vip-membership-section">
-                  {customerData.memberships && customerData.memberships.length > 0 ? (
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                      <CardHeader>
-                        <div className="flex items-center justify-between gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <Crown className="w-6 h-6 text-primary" />
-                            <div>
-                              <CardTitle>VIP Member</CardTitle>
-                              <CardDescription className="mt-1">
-                                {customerData.memberships[0].membershipType}
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <Badge variant="default" className="text-xs bg-primary">
-                            {customerData.memberships[0].status}
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="grid gap-3">
-                          {customerData.memberships[0].startDate && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Member Since</span>
-                              <span className="font-medium">
-                                {new Date(customerData.memberships[0].startDate).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  year: 'numeric' 
-                                })}
-                              </span>
-                            </div>
-                          )}
-                          {customerData.memberships[0].expirationDate && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Expires</span>
-                              <span className="font-medium">
-                                {new Date(customerData.memberships[0].expirationDate).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric',
-                                  year: 'numeric' 
-                                })}
-                              </span>
-                            </div>
-                          )}
-                          {customerData.memberships[0].renewalDate && (
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-muted-foreground">Next Renewal</span>
-                              <span className="font-medium">
-                                {new Date(customerData.memberships[0].renewalDate).toLocaleDateString('en-US', { 
-                                  month: 'short', 
-                                  day: 'numeric',
-                                  year: 'numeric' 
-                                })}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Member Benefits */}
-                        <div className="pt-3 border-t">
-                          <p className="text-xs font-medium text-muted-foreground mb-2">Your Benefits</p>
-                          <div className="grid gap-2">
-                            <div className="flex items-center gap-2 text-sm">
-                              <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Savings on EVERY service call</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Star className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Priority same-day service</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>No trip charges</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Annual plumbing inspection included</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>After-hours service at regular rates</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-sm">
-                              <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                              <span>Waived diagnostic fees</span>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ) : (
-                    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-background">
-                      <CardHeader>
-                        <div className="flex items-center justify-between gap-4 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <Crown className="w-6 h-6 text-primary" />
-                            <div>
-                              <CardTitle>VIP Membership</CardTitle>
-                              <CardDescription className="mt-1">
-                                Not a VIP member yet
-                              </CardDescription>
-                            </div>
-                          </div>
-                          <Badge variant="outline" className="text-xs">
-                            Available
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                          Join our VIP Membership program and save on every service call, plus enjoy priority same-day service, no trip charges, and more!
-                        </p>
-
-                        {/* Member Benefits Preview */}
-                        <div className="grid gap-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <DollarSign className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Savings on EVERY service call</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Star className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Priority same-day service</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Shield className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">No trip charges</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Wrench className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Annual plumbing inspection</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <Clock className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">After-hours service at regular rates</span>
-                          </div>
-                          <div className="flex items-center gap-2 text-sm">
-                            <CheckCircle className="w-4 h-4 text-primary flex-shrink-0" />
-                            <span className="text-muted-foreground">Waived diagnostic fees</span>
-                          </div>
-                        </div>
-
-                        <div className="pt-2 border-t">
-                          <Button
-                            asChild
-                            className="w-full"
-                            data-testid="button-vip-membership"
-                          >
-                            <a href="/membership-benefits">
-                              <Crown className="w-4 h-4 mr-2" />
-                              Learn About VIP Membership
-                            </a>
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  )}
+                    <MembershipsSection />
                   </div>
 
                   {/* Service Locations */}
