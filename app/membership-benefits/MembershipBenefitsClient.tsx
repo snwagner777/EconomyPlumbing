@@ -212,8 +212,8 @@ export default function MembershipBenefitsClient({ phoneConfig }: MembershipBene
         open={lookupModalOpen}
         onOpenChange={setLookupModalOpen}
         onSuccess={handleLookupSuccess}
-        title="Enter Your Phone Number"
-        description="We'll look up your account to complete your VIP membership purchase."
+        title="Find Your Account"
+        description="Enter your phone number or email to look up your account and complete your VIP membership purchase."
       />
     </div>
   );

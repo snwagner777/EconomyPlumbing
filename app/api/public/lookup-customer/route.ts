@@ -1,8 +1,9 @@
 /**
  * Public Customer Lookup API
  * 
- * Finds existing ServiceTitan customer by phone OR creates a placeholder
+ * Finds existing ServiceTitan customer by phone OR email, or creates a placeholder
  * Returns customer ID for subsequent checkout/scheduler flows
+ * Reuses same modules as scheduler and customer portal
  * 
  * Note: This creates minimal customer records. Full details collected during checkout.
  */
@@ -11,10 +12,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 
-const lookupSchema = z.object({
+const phoneSchema = z.object({
   phone: z.string()
     .regex(/^\d{10}$/, 'Phone must be 10 digits'),
 });
+
+const emailSchema = z.object({
+  email: z.string().email('Valid email is required'),
+});
+
+const lookupSchema = z.union([phoneSchema, emailSchema]);
 
 export async function POST(req: NextRequest) {
   try {
@@ -28,19 +35,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { phone } = result.data;
+    const data = result.data;
+    
+    // Determine lookup type and extract values
+    let phone: string;
+    let email: string | undefined;
+    
+    if ('phone' in data) {
+      phone = data.phone;
+      email = undefined;
+      console.log(`[Public Lookup] Searching for customer by phone: ${phone}`);
+    } else {
+      phone = ''; // Required parameter, will be filled if customer found
+      email = data.email;
+      console.log(`[Public Lookup] Searching for customer by email: ${email}`);
+    }
 
-    console.log(`[Public Lookup] Searching for customer with phone: ${phone}`);
-
-    // Try to find existing customer
-    const existingCustomer = await serviceTitanCRM.findCustomerByPhone(phone);
+    // Use existing findCustomer method (reuses scheduler/portal modules)
+    const existingCustomer = await serviceTitanCRM.findCustomer(phone || '0000000000', email);
 
     if (existingCustomer) {
       console.log(`[Public Lookup] Found existing customer: ${existingCustomer.id}`);
+      
+      // Extract phone from customer contacts if found by email
+      let resultPhone = phone;
+      if (!phone && existingCustomer.contacts) {
+        const phoneContact = existingCustomer.contacts.find(c => 
+          c.type === 'MobilePhone' || c.type === 'Phone'
+        );
+        resultPhone = phoneContact?.value.replace(/\D/g, '') || '';
+      }
+      
       return NextResponse.json({
         success: true,
         customerId: existingCustomer.id,
         customerName: existingCustomer.name,
+        phone: resultPhone,
         isNewCustomer: false,
       });
     }
@@ -50,8 +80,8 @@ export async function POST(req: NextRequest) {
     
     const newCustomer = await serviceTitanCRM.ensureCustomer({
       name: 'Web Visitor', // Placeholder - will be updated during checkout
-      phone,
-      email: undefined,
+      phone: phone || '0000000000', // Placeholder if email lookup
+      email: email,
       address: {
         street: 'To be provided',
         city: 'Austin',
@@ -66,6 +96,7 @@ export async function POST(req: NextRequest) {
       success: true,
       customerId: newCustomer.id,
       customerName: 'Web Visitor',
+      phone: phone || '',
       isNewCustomer: true,
     });
 

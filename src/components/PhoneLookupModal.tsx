@@ -1,8 +1,9 @@
 /**
- * Phone Lookup Modal - Public Pages
+ * Customer Lookup Modal - Public Pages
  * 
- * Reusable modal for phone-based customer lookup/creation
+ * Reusable modal for phone/email-based customer lookup/creation
  * Used for: membership purchases, quote requests, scheduler (public)
+ * Reuses same modules as scheduler and customer portal
  */
 
 'use client';
@@ -15,16 +16,25 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Phone, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Phone, Mail, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 
 const phoneSchema = z.object({
+  lookupType: z.literal('phone'),
   phone: z.string()
     .regex(/^[\d\s\-\(\)\.]+$/, 'Phone number can only contain numbers and formatting characters')
     .transform(val => val.replace(/\D/g, ''))
     .refine(val => val.length === 10, 'Phone number must be exactly 10 digits'),
 });
 
-type PhoneFormData = z.infer<typeof phoneSchema>;
+const emailSchema = z.object({
+  lookupType: z.literal('email'),
+  email: z.string().email('Valid email is required'),
+});
+
+const lookupSchema = z.discriminatedUnion('lookupType', [phoneSchema, emailSchema]);
+
+type LookupFormData = z.infer<typeof lookupSchema>;
 
 interface PhoneLookupModalProps {
   open: boolean;
@@ -38,28 +48,34 @@ export function PhoneLookupModal({
   open,
   onOpenChange,
   onSuccess,
-  title = 'Enter Your Phone Number',
+  title = 'Find Your Account',
   description = 'We\'ll look up your account or create a new one for you.',
 }: PhoneLookupModalProps) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+  const [lookupType, setLookupType] = useState<'phone' | 'email'>('phone');
 
-  const form = useForm<PhoneFormData>({
-    resolver: zodResolver(phoneSchema),
+  const form = useForm<LookupFormData>({
+    resolver: zodResolver(lookupSchema),
     defaultValues: {
+      lookupType: 'phone',
       phone: '',
     },
   });
 
-  async function handleSubmit(data: PhoneFormData) {
+  async function handleSubmit(data: LookupFormData) {
     setStatus('loading');
     setErrorMessage('');
 
     try {
+      const payload = data.lookupType === 'phone' 
+        ? { phone: data.phone }
+        : { email: data.email };
+
       const response = await fetch('/api/public/lookup-customer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: data.phone }),
+        body: JSON.stringify(payload),
       });
 
       const result = await response.json();
@@ -75,7 +91,7 @@ export function PhoneLookupModal({
         onSuccess({
           customerId: result.customerId,
           customerName: result.customerName,
-          phone: data.phone,
+          phone: data.lookupType === 'phone' ? data.phone : result.phone || '',
         });
       }, 500);
 
@@ -83,6 +99,13 @@ export function PhoneLookupModal({
       setStatus('error');
       setErrorMessage(error.message || 'An error occurred');
     }
+  }
+
+  function handleLookupTypeChange(type: 'phone' | 'email') {
+    setLookupType(type);
+    form.setValue('lookupType', type);
+    setStatus('idle');
+    setErrorMessage('');
   }
 
   function handleClose() {
@@ -104,28 +127,67 @@ export function PhoneLookupModal({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                      <Input
-                        {...field}
-                        placeholder="(512) 555-1234"
-                        className="pl-10"
-                        disabled={status === 'loading' || status === 'success'}
-                        data-testid="input-phone-lookup"
-                      />
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <Tabs value={lookupType} onValueChange={(value) => handleLookupTypeChange(value as 'phone' | 'email')}>
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="phone" data-testid="tab-phone">
+                  <Phone className="w-4 h-4 mr-2" />
+                  Phone
+                </TabsTrigger>
+                <TabsTrigger value="email" data-testid="tab-email">
+                  <Mail className="w-4 h-4 mr-2" />
+                  Email
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+
+            {lookupType === 'phone' ? (
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Phone Number</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          {...field}
+                          placeholder="(512) 555-1234"
+                          className="pl-10"
+                          disabled={status === 'loading' || status === 'success'}
+                          data-testid="input-phone-lookup"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : (
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email Address</FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Input
+                          {...field}
+                          type="email"
+                          placeholder="you@example.com"
+                          className="pl-10"
+                          disabled={status === 'loading' || status === 'success'}
+                          data-testid="input-email-lookup"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {status === 'error' && (
               <div className="bg-destructive/10 border border-destructive/30 rounded-lg p-4 flex items-start gap-3">
