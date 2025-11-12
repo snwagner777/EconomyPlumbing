@@ -7,20 +7,57 @@ Economy Plumbing Services is a full-stack web application designed to enhance a 
 Preferred communication style: Simple, everyday language.
 
 **CRITICAL RULE: Modular, Reusable API Architecture**
-- ALL business logic and API calls MUST be modular and context-agnostic
-- Core ServiceTitan operations live in `server/lib/servicetitan/` as pure functions
-- Authentication happens at the API route level, then delegates to core functions
-- React hooks accept authentication context (portal session, scheduler token, chatbot context)
-- Example: Contact management works identically in customer portal, scheduler, and AI chatbot
-- Pattern:
-  1. Core logic: `server/lib/servicetitan/crm.ts` → `createCompleteContact(customerId, data)`
-  2. Portal API: `app/api/customer-portal/contacts/route.ts` → validates portal session → calls core
-  3. Scheduler API: `app/api/scheduler/customer-contacts/route.ts` → validates scheduler token → calls same core
-  4. Chatbot API: `app/api/chatbot/route.ts` → validates chatbot context → calls same core
-  5. React hooks: Accept auth token/session as parameter, call appropriate API endpoint
-- NEVER duplicate business logic across different API routes
-- ALWAYS reuse existing ServiceTitan functions when adding new features
-- When building new functionality, ask: "Can portal/scheduler/chatbot all use this?"
+
+This is the foundational principle of our entire codebase. ALWAYS develop in modules.
+
+**Why Modular Development:**
+- One bug fix applies everywhere (e.g., changing `link.id` to `link.contactId` fixed scheduler AND customer portal simultaneously)
+- New features instantly available in all contexts (portal, scheduler, chatbot)
+- Eliminates duplicate code and reduces maintenance burden
+- Ensures consistency across user experiences
+- Makes testing and debugging faster
+
+**Architecture Pattern:**
+1. **Core Business Logic:** Pure functions in `server/lib/servicetitan/` (or equivalent module directories)
+   - NO authentication logic
+   - NO route-specific concerns
+   - ONLY business operations and data transformations
+   - Example: `server/lib/servicetitan/crm.ts` → `getCustomerContacts(customerId)`, `createCompleteContact(customerId, data)`
+
+2. **API Routes (Context Wrappers):** Thin authentication/authorization layers in `app/api/[context]/`
+   - Validate authentication (session tokens, API keys, etc.)
+   - Extract user identity from auth context
+   - Call core business logic functions
+   - Handle errors and return responses
+   - Example: `app/api/customer-portal/contacts/route.ts` → validates portal session → calls `serviceTitanCRM.getCustomerContacts(customerId)`
+   - Example: `app/api/scheduler/customer-contacts/route.ts` → validates scheduler token → calls same `serviceTitanCRM.getCustomerContacts(customerId)`
+
+3. **React Hooks & Components:** Accept auth context as parameters
+   - Never hardcode authentication assumptions
+   - Accept tokens/sessions as hook parameters
+   - Work in any context (portal, scheduler, chatbot)
+   - Example: `useSchedulerContacts(sessionToken)` can be adapted for portal via `usePortalContacts(portalSession)`
+
+**Implementation Checklist:**
+Before writing ANY new feature:
+- [ ] Does similar functionality already exist? (grep/search first)
+- [ ] Can this be used in portal, scheduler, AND chatbot contexts?
+- [ ] Am I putting business logic in a reusable module, not in API routes?
+- [ ] Are my API routes just thin wrappers around core functions?
+- [ ] Can someone else add a new context (e.g., mobile app API) without duplicating my work?
+
+**Red Flags - NEVER do this:**
+- ❌ Duplicating ServiceTitan API calls across different routes
+- ❌ Writing business logic inside API route handlers
+- ❌ Hardcoding authentication in core modules
+- ❌ Copy-pasting functions between portal/scheduler/chatbot code
+- ❌ Creating context-specific versions of the same functionality
+
+**Real Example - Contact Management:**
+- ✅ Core: `server/lib/servicetitan/crm.ts` → `getCustomerContacts()`, `createCompleteContact()`, `updateContact()`, `deleteContact()`
+- ✅ Portal API: `app/api/customer-portal/contacts/route.ts` → validates portal session → calls core functions
+- ✅ Scheduler API: `app/api/scheduler/customer-contacts/route.ts` → validates scheduler token → calls same core functions
+- ✅ Result: ONE bug fix in `crm.ts` fixed contact fetching in BOTH contexts simultaneously
 
 **CRITICAL RULE: NEVER Auto-Generate or Hardcode Phone Numbers**
 - If you need a phone number, ASK the user for it
