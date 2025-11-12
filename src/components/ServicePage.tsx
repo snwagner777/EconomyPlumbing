@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
@@ -139,14 +140,13 @@ export default function ServicePage({
 
       <section className="relative min-h-[400px] lg:min-h-[500px] flex items-center">
         <div className="absolute inset-0">
-          <img
+          <Image
             src={heroImage}
             alt={heroImageAlt}
-            width="1920"
-            height="1080"
-            fetchPriority="high"
-            decoding="async"
-            className="w-full h-full object-cover"
+            fill={true}
+            priority={true}
+            className="object-cover"
+            sizes="100vw"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/50" />
         </div>

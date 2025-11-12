@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -61,15 +62,13 @@ export default function InlineBlogCard({ category }: InlineBlogCardProps) {
       >
         {/* Featured Image */}
         {randomPost.featuredImage && (
-          <div className="mb-4 -mx-6 -mt-6">
-            <img
+          <div className="relative mb-4 -mx-6 -mt-6 h-40 overflow-hidden rounded-t-lg">
+            <Image
               src={randomPost.featuredImage}
               alt={`Featured image for: ${randomPost.title}`}
-              width="800"
-              height="400"
-              loading="lazy"
-              decoding="async"
-              className="w-full h-40 object-cover rounded-t-lg"
+              fill={true}
+              sizes="(max-width: 768px) 100vw, 400px"
+              className="object-cover"
             />
           </div>
         )}

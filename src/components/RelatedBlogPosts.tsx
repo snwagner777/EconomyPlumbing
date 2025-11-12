@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
@@ -55,12 +56,13 @@ export default function RelatedBlogPosts({
             <Card key={post.id} className="hover-elevate overflow-hidden" data-testid={`card-blog-${post.id}`}>
               <Link href={`/${post.slug}`}>
                 {post.featuredImage && (
-                  <div className="aspect-video overflow-hidden">
-                    <img
+                  <div className="relative aspect-video overflow-hidden">
+                    <Image
                       src={post.featuredImage}
                       alt={post.title}
-                      loading="lazy"
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      fill={true}
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      className="object-cover hover:scale-105 transition-transform duration-300"
                       style={{
                         objectPosition: post.focalPointX && post.focalPointY 
                           ? `${post.focalPointX}% ${post.focalPointY}%`

@@ -1,4 +1,5 @@
 import { memo } from "react";
+import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, User, ArrowRight } from "lucide-react";
@@ -12,42 +13,26 @@ interface BlogCardProps {
 }
 
 const BlogCard = memo(({ post, priority = false }: BlogCardProps) => {
-  // Generate responsive image srcset from the base image URL
-  const getResponsiveSrcSet = (imagePath: string | null) => {
-    if (!imagePath) return '';
-    
-    // Check if this is a new responsive image (has _1200w suffix)
-    if (imagePath.includes('_1200w.webp')) {
-      const base = imagePath.replace('_1200w.webp', '');
-      return `${base}_400w.webp 400w, ${base}_800w.webp 800w, ${base}_1200w.webp 1200w`;
-    }
-    
-    // For older images without responsive variants, just return the single image
-    return `${imagePath} 1200w`;
-  };
-
   return (
     <Card className="flex flex-col h-full hover-elevate active-elevate-2 overflow-hidden">
       <div className="overflow-hidden">
         {post.featuredImage ? (
           <Link href={`/${post.slug}`} data-testid={`link-image-${post.slug}`}>
-            <img
-              src={post.featuredImage}
-              srcSet={getResponsiveSrcSet(post.featuredImage)}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              alt={`Featured image for: ${post.title}`}
-              width="1200"
-              height="675"
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              decoding="async"
-              className="w-full h-56 object-cover cursor-pointer transition-transform hover:scale-105"
-              style={{
-                objectPosition: post.focalPointX && post.focalPointY 
-                  ? `${post.focalPointX}% ${post.focalPointY}%`
-                  : 'center center'
-              }}
-            />
+            <div className="relative w-full h-56 overflow-hidden">
+              <Image
+                src={post.featuredImage}
+                alt={`Featured image for: ${post.title}`}
+                fill={true}
+                priority={priority}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover cursor-pointer transition-transform hover:scale-105"
+                style={{
+                  objectPosition: post.focalPointX && post.focalPointY 
+                    ? `${post.focalPointX}% ${post.focalPointY}%`
+                    : 'center center'
+                }}
+              />
+            </div>
           </Link>
         ) : (
           <div className="w-full h-56 bg-muted flex items-center justify-center">

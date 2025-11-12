@@ -1,6 +1,7 @@
 'use client';
 
 import Link from "next/link";
+import Image from "next/image";
 import { Facebook, Instagram, MapPin } from "lucide-react";
 import { SiYelp, SiNextdoor, SiGooglemaps } from "react-icons/si";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
@@ -11,14 +12,14 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <img 
-              src={typeof logoImage === 'string' ? logoImage : logoImage.src} 
-              alt="Economy Plumbing Services" 
-              width="85"
-              height="48"
-              className="h-12 w-auto mb-4 rounded-lg"
-              loading="lazy"
-            />
+            <div className="relative h-12 w-[85px] mb-4 rounded-lg overflow-hidden">
+              <Image 
+                src={logoImage} 
+                alt="Economy Plumbing Services" 
+                width={85}
+                height={48}
+              />
+            </div>
             <p className="text-sm mb-4">
               Central Texas' Best Little Plumbing Company Since 2012
             </p>

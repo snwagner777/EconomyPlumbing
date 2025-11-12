@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, Phone, ChevronDown, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logoImageUrl from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig } from "@/providers/PhoneConfigContext";
-
-const logoImage = typeof logoImageUrl === 'string' ? { src: logoImageUrl } : logoImageUrl;
 declare global {
   interface Window {
     STWidgetManager: (action: string) => void;
@@ -109,15 +108,16 @@ export default function Header({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <Link href="/" className="flex items-center">
-            <img 
-              src={logoImage.src}
-              alt="Economy Plumbing Services logo" 
-              width="85"
-              height="48"
-              decoding="async"
-              className="h-12 w-auto"
-              data-testid="logo-image"
-            />
+            <div className="relative h-12 w-[85px]">
+              <Image 
+                src={logoImageUrl}
+                alt="Economy Plumbing Services logo" 
+                width={85}
+                height={48}
+                priority={true}
+                data-testid="logo-image"
+              />
+            </div>
           </Link>
 
           <nav className="hidden lg:flex items-center gap-2 xl:gap-4">
