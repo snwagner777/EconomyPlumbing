@@ -149,6 +149,31 @@ export class ServiceTitanCRM {
   }
 
   /**
+   * Get customer by ID from ServiceTitan
+   */
+  async getCustomer(customerId: number): Promise<ServiceTitanCustomer | null> {
+    try {
+      const response = await serviceTitanAuth.makeRequest<ServiceTitanCustomer>(
+        `crm/v2/tenant/${this.tenantId}/customers/${customerId}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      return response;
+    } catch (error: any) {
+      // If 404, customer doesn't exist
+      if (error.response?.status === 404) {
+        console.log(`[ServiceTitan CRM] Customer ${customerId} not found`);
+        return null;
+      }
+
+      console.error('[ServiceTitan CRM] Error fetching customer:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Find customer by phone or email (duplicate check)
    */
   async findCustomer(phone: string, email?: string): Promise<ServiceTitanCustomer | null> {
