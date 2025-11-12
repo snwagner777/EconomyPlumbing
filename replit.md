@@ -100,6 +100,16 @@ Before writing ANY new feature:
 - If unsure about a field's existence, grep the codebase for actual usage before assuming
 - Document any new API patterns discovered in this file for future reference
 
+**CRITICAL RULE: ServiceTitan Campaign ID Tracking**
+- Campaign IDs are REQUIRED for all ServiceTitan job creation (per API contract)
+- Campaign resolution flow:
+  1. First, look up UTM source (`utm_source` param) in `tracking_numbers` table
+  2. If found, use `serviceTitanCampaignId` from that tracking number
+  3. If not found, fall back to "website" campaign from ServiceTitan API
+  4. If neither exists, throw clear error directing user to `/admin/tracking-numbers`
+- Admin Panel at `/admin/tracking-numbers` manages UTM source → Campaign ID mappings
+- Never allow undefined campaignId to reach ServiceTitan API - always validate before job creation
+
 **CRITICAL RULE: Next.js Server-Side Rendering (SSR) - NEVER Break It**
 - This is a Next.js 15 App Router project - ALL pages are server-rendered by default for SEO
 - NEVER wrap server components in 'use client' providers - this defeats the entire purpose of Next.js

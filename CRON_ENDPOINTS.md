@@ -36,22 +36,7 @@ curl -X POST https://your-site.replit.app/api/cron/google-reviews \
 
 ---
 
-### 2. Membership Sync
-**Endpoint:** `POST /api/cron/membership-sync`  
-**Schedule:** Every 5 minutes  
-**Cron Expression:** `*/5 * * * *`  
-**Description:** Syncs VIP membership data from ServiceTitan (event-driven fallback sweep).
-
-**Example cURL:**
-```bash
-curl -X POST https://your-site.replit.app/api/cron/membership-sync \
-  -H "Authorization: Bearer YOUR_CRON_SECRET" \
-  -H "Content-Type: application/json"
-```
-
----
-
-### 3. Auto Blog Generation
+### 2. Auto Blog Generation
 **Endpoint:** `POST /api/cron/auto-blog`  
 **Schedule:** Weekly on Mondays at 9:00 AM  
 **Cron Expression:** `0 9 * * 1`  
@@ -66,7 +51,7 @@ curl -X POST https://your-site.replit.app/api/cron/auto-blog \
 
 ---
 
-### 4. Google Drive Photo Monitoring
+### 3. Google Drive Photo Monitoring
 **Endpoint:** `POST /api/cron/google-drive`  
 **Schedule:** Every 5 minutes  
 **Cron Expression:** `*/5 * * * *`  
@@ -81,7 +66,7 @@ curl -X POST https://your-site.replit.app/api/cron/google-drive \
 
 ---
 
-### 5. Photo Cleanup (Combined)
+### 4. Photo Cleanup (Combined)
 **Endpoint:** `POST /api/cron/photo-cleanup`  
 **Schedule:** Daily at 3:00 AM  
 **Cron Expression:** `0 3 * * *`  
@@ -96,7 +81,7 @@ curl -X POST https://your-site.replit.app/api/cron/photo-cleanup \
 
 ---
 
-### 6. GMB Automation (Placeholder)
+### 5. GMB Automation (Placeholder)
 **Endpoint:** `POST /api/cron/gmb-automation`  
 **Schedule:** Every 30 minutes  
 **Cron Expression:** `*/30 * * * *`  
@@ -111,7 +96,7 @@ curl -X POST https://your-site.replit.app/api/cron/gmb-automation \
 
 ---
 
-### 7. Review Request Emails
+### 6. Review Request Emails
 **Endpoint:** `POST /api/cron/review-requests`  
 **Schedule:** Every 30 minutes  
 **Cron Expression:** `*/30 * * * *`  
@@ -126,7 +111,7 @@ curl -X POST https://your-site.replit.app/api/cron/review-requests \
 
 ---
 
-### 8. Referral Nurture Campaigns
+### 7. Referral Nurture Campaigns
 **Endpoint:** `POST /api/cron/referral-nurture`  
 **Schedule:** Every 30 minutes  
 **Cron Expression:** `*/30 * * * *`  
@@ -141,7 +126,7 @@ curl -X POST https://your-site.replit.app/api/cron/referral-nurture \
 
 ---
 
-### 9. Custom Marketing Campaigns
+### 8. Custom Marketing Campaigns
 **Endpoint:** `POST /api/cron/custom-campaigns`  
 **Schedule:** Every 30 minutes  
 **Cron Expression:** `*/30 * * * *`  
@@ -156,7 +141,7 @@ curl -X POST https://your-site.replit.app/api/cron/custom-campaigns \
 
 ---
 
-### 10. Health Monitoring & Alerts
+### 9. Health Monitoring & Alerts
 **Endpoint:** `POST /api/cron/health-alerter`  
 **Schedule:** Every 5 minutes  
 **Cron Expression:** `*/5 * * * *`  
@@ -227,7 +212,6 @@ curl -X POST https://your-site.replit.app/api/cron/google-reviews \
 | Endpoint | Schedule | Frequency | Critical? |
 |----------|----------|-----------|-----------|
 | `/api/cron/google-reviews` | `0 3 * * *` | Daily 3AM | Medium |
-| `/api/cron/membership-sync` | `*/5 * * * *` | Every 5min | High |
 | `/api/cron/auto-blog` | `0 9 * * 1` | Mon 9AM | Low |
 | `/api/cron/google-drive` | `*/5 * * * *` | Every 5min | Medium |
 | `/api/cron/photo-cleanup` | `0 3 * * *` | Daily 3AM | Low |
@@ -261,7 +245,6 @@ curl -X POST https://your-site.replit.app/api/cron/google-reviews \
 The following worker.ts schedulers have been migrated to cron endpoints:
 
 - ✅ `google-reviews` → `/api/cron/google-reviews`
-- ✅ `membership-sync` → `/api/cron/membership-sync`
 - ✅ `auto-blog` → `/api/cron/auto-blog`
 - ✅ `google-drive` → `/api/cron/google-drive`
 - ✅ `photo-cleanup` + `automated-photo-cleanup` → `/api/cron/photo-cleanup`
@@ -270,6 +253,7 @@ The following worker.ts schedulers have been migrated to cron endpoints:
 - ✅ `referral-nurture` → `/api/cron/referral-nurture`
 - ✅ `custom-campaigns` → `/api/cron/custom-campaigns`
 - ✅ `health-alerter` → `/api/cron/health-alerter`
+- ❌ `membership-sync` → (removed - dead code, never populated)
 - ❌ `daily-composite` → (disabled, not needed)
 
-**Total:** 10 working endpoints + 1 placeholder (GMB)
+**Total:** 9 working endpoints + 1 placeholder (GMB)

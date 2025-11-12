@@ -129,7 +129,7 @@ export async function POST(req: NextRequest) {
       status: 'pending' as const,
       // Payment info
       paymentIntentId,
-      paymentAmount: session.amount_total || 0,
+      paymentAmount: session.amount_total ? session.amount_total.toString() : '0', // Convert to string for numeric column
       paymentStatus: 'succeeded' as const,
       isPrepaid: true,
     };
@@ -218,6 +218,12 @@ export async function POST(req: NextRequest) {
         if (websiteCampaign) {
           campaignId = websiteCampaign.id;
           console.log(`[Membership Booking] Using default website campaign (ID: ${campaignId})`);
+        } else {
+          throw new Error(
+            `No ServiceTitan campaign found for utm_source="${utmSource}". ` +
+            `Please configure a tracking number mapping at /admin/tracking-numbers ` +
+            `or create a "website" campaign in ServiceTitan as the default.`
+          );
         }
       }
 
@@ -289,7 +295,7 @@ export async function POST(req: NextRequest) {
         specialInstructions,
         preferredDate: validated.preferredDate || undefined,
         preferredTimeSlot: validated.preferredTimeSlot as any,
-        campaignId: campaignId || undefined,
+        campaignId, // Guaranteed to be defined by this point
       });
 
       // Step 7: Update scheduler request with ServiceTitan IDs

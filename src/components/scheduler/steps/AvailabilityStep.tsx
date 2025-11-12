@@ -37,22 +37,15 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [daysToLoad, setDaysToLoad] = useState(14); // Adaptive progressive loading: start with 14 days
+  const [daysToLoad, setDaysToLoad] = useState(14); // Start with 14 days, user can manually load more
   
-  // Adaptive Progressive Loading: Auto-expand when user navigates beyond loaded range
-  // Keeps initial load fast (14 days) while preventing "No availability" errors
-  useEffect(() => {
-    const daysDiff = differenceInDays(selectedDate, today);
-    
-    // If user selected a date beyond 80% of loaded range, expand by 14 days
-    if (daysDiff > daysToLoad * 0.8) {
-      const newDaysToLoad = Math.min(daysToLoad + 14, 45); // Cap at 45 days max
-      if (newDaysToLoad > daysToLoad) {
-        console.log(`[Scheduler] Auto-expanding availability window: ${daysToLoad} → ${newDaysToLoad} days`);
-        setDaysToLoad(newDaysToLoad);
-      }
-    }
-  }, [selectedDate, today, daysToLoad]);
+  // Manual "Load More Dates" handler
+  const handleLoadMoreDates = () => {
+    const newDaysToLoad = Math.min(daysToLoad + 14, 45); // Expand by 14 days, cap at 45 max
+    setDaysToLoad(newDaysToLoad);
+  };
+  
+  const canLoadMore = daysToLoad < 45; // Can load more if under 45 days cap
   
   const fetchStartDate = today;
   const startDate = format(fetchStartDate, 'yyyy-MM-dd');
@@ -373,10 +366,34 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               </div>
             </div>
             
-            {/* REMOVED: "View Next 45 Days" button - now always loads 45 days upfront */}
-            <p className="text-xs text-muted-foreground text-center mt-3">
-              Showing next {daysToLoad} days
-            </p>
+            {/* Load More Dates Button */}
+            <div className="mt-4 space-y-2">
+              <p className="text-xs text-muted-foreground text-center">
+                Showing next {daysToLoad} days
+              </p>
+              {canLoadMore && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLoadMoreDates}
+                  disabled={isFetching}
+                  className="w-full gap-2"
+                  data-testid="button-load-more-dates"
+                >
+                  {isFetching ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <Clock className="w-3 h-3" />
+                      Load More Dates
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </Card>
         </div>
 
