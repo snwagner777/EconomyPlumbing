@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { mintSchedulerSession } from '@/server/lib/schedulerSession';
 import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
   try {
@@ -36,9 +36,12 @@ export async function POST(req: NextRequest) {
       if (method === 'phone') {
         const normalizedPhone = verifiedContact.replace(/\D/g, '');
         console.log(`[Scheduler OTP] Looking up customer by phone: ${normalizedPhone}`);
+        
+        // BUGFIX: Use SQL to normalize phone in database for comparison (handles different formats)
         const customer = await db.query.customersXlsx.findFirst({
-          where: eq(customersXlsx.phone, normalizedPhone)
+          where: sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedPhone}`
         });
+        
         customerId = customer?.id || null; // id is the ServiceTitan customer ID
         console.log(`[Scheduler OTP] Customer lookup result: ${customerId ? `Found customer ${customerId}` : 'No customer found'}`);
       } else {
