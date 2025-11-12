@@ -1079,7 +1079,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     <>
       <Header 
         isPortalAuthenticated={!!customerId} 
-        onPortalLogout={handleLogout} 
+        onPortalLogout={handleLogout}
+        austinPhone={phoneConfig}
+        marbleFallsPhone={marbleFallsPhoneConfig}
       />
 
       <main className="min-h-screen py-12 px-4">
