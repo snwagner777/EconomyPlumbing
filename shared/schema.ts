@@ -2640,3 +2640,18 @@ export type CustomCampaignSendLog = typeof customCampaignSendLog.$inferSelect;
 export type InsertCustomCampaignSendLog = z.infer<typeof insertCustomCampaignSendLogSchema>;
 export type SchedulerRequest = typeof schedulerRequests.$inferSelect;
 export type InsertSchedulerRequest = z.infer<typeof insertSchedulerRequestSchema>;
+
+// Generated plumbing images (dogs/cats doing plumbing - fun marketing pages)
+export const generatedPlumbingImages = pgTable("generated_plumbing_images", {
+  id: serial("id").primaryKey(),
+  animalType: varchar("animal_type", { length: 10 }).notNull(), // 'dog' or 'cat'
+  imageUrl: text("image_url").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  createdAtIdx: index("generated_plumbing_images_created_at_idx").on(table.createdAt),
+  animalTypeIdx: index("generated_plumbing_images_animal_type_idx").on(table.animalType),
+}));
+
+export const insertGeneratedPlumbingImageSchema = createInsertSchema(generatedPlumbingImages).omit({ id: true, createdAt: true });
+export type GeneratedPlumbingImage = typeof generatedPlumbingImages.$inferSelect;
+export type InsertGeneratedPlumbingImage = z.infer<typeof insertGeneratedPlumbingImageSchema>;

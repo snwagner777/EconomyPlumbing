@@ -1,109 +1,155 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import type { PhoneConfig } from '@/server/lib/phoneNumbers';
-import catFaucet from '@assets/generated_images/Orange_tabby_cat_fixing_faucet_fb7ef999.png';
-import catTools from '@assets/generated_images/Maine_Coon_cat_with_tools_1fca7db7.png';
-import catPipes from '@assets/generated_images/Siamese_cat_inspecting_pipes_ace92494.png';
-import catToolbox from '@assets/generated_images/British_Shorthair_cat_with_toolbox_ae5feec4.png';
+import { Wand2, Loader2 } from 'lucide-react';
+import type { GeneratedPlumbingImage } from '@shared/schema';
 
 interface CatsPlumbingClientProps {
   phoneConfig: PhoneConfig;
 }
 
 export default function CatsPlumbingClient({ phoneConfig }: CatsPlumbingClientProps) {
-  const cats = [
-    {
-      name: 'Whiskers the Tabby',
-      title: 'Faucet Repair Specialist',
-      image: catFaucet,
-      specialty: 'Precision work on all fixtures',
-    },
-    {
-      name: 'Fluffy the Maine Coon',
-      title: 'Heavy Equipment Operator',
-      image: catTools,
-      specialty: 'Tackles the big jobs with ease',
-    },
-    {
-      name: 'Shadow the Siamese',
-      title: 'Pipe Inspector Extraordinaire',
-      image: catPipes,
-      specialty: 'Meticulous attention to detail',
-    },
-    {
-      name: 'Mittens the British Shorthair',
-      title: 'Emergency Service Technician',
-      image: catToolbox,
-      specialty: 'Always prepared and professional',
-    },
-  ];
+  const [images, setImages] = useState<GeneratedPlumbingImage[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  async function fetchImages() {
+    try {
+      const response = await fetch('/api/generate-plumbing-image?animal=cat');
+      if (!response.ok) throw new Error('Failed to fetch images');
+      const data = await response.json();
+      setImages(data.images || []);
+    } catch (err) {
+      console.error('Failed to fetch images:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchImages();
+  }, []);
+
+  async function generateCatImage() {
+    setIsGenerating(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/generate-plumbing-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ animal: 'cat' }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate image');
+      }
+
+      await fetchImages();
+    } catch (err) {
+      setError('Oops! Failed to generate image. Please try again.');
+      console.error(err);
+    } finally {
+      setIsGenerating(false);
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header phoneConfig={phoneConfig} />
+      <Header austinPhone={{ display: phoneConfig.display, tel: phoneConfig.tel }} />
       
       <main className="flex-1">
         <section className="bg-gradient-to-b from-primary/10 to-background py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 className="text-4xl lg:text-5xl font-bold mb-6">
-              Meet Our Feline Plumbing Experts!
+              Cats Doing Plumbing!
             </h1>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
-              Just for fun - if cats could do plumbing, these would be our top performers! 
-              For real plumbing needs, our expert human team is standing by 24/7.
+            <p className="text-xl text-muted-foreground mb-8">
+              Just for fun - click the button below to generate an AI image of a talented feline plumber at work!
             </p>
-            <p className="text-lg text-muted-foreground">
-              Call us at <a href={`tel:${phoneConfig.phoneNumber}`} className="text-primary font-semibold hover:underline">{phoneConfig.displayNumber}</a> for professional service
-            </p>
+            
+            <Button
+              size="lg"
+              onClick={generateCatImage}
+              disabled={isGenerating}
+              className="px-8"
+              data-testid="button-generate-cat"
+            >
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-5 h-5 mr-2" />
+                  Generate Cat Plumber Image
+                </>
+              )}
+            </Button>
+
+            {error && (
+              <p className="mt-4 text-destructive" data-testid="text-error">{error}</p>
+            )}
           </div>
         </section>
 
-        <section className="py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid md:grid-cols-2 gap-8">
-              {cats.map((cat, index) => (
-                <Card key={index} className="overflow-hidden hover-elevate" data-testid={`card-cat-${index}`}>
-                  <div className="aspect-[4/3] relative overflow-hidden">
-                    <img
-                      src={cat.image}
-                      alt={`${cat.name} - ${cat.title}`}
-                      className="w-full h-full object-cover"
-                      loading={index < 2 ? 'eager' : 'lazy'}
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-2xl font-bold mb-2">{cat.name}</h3>
-                    <p className="text-primary font-semibold mb-2">{cat.title}</p>
-                    <p className="text-muted-foreground">{cat.specialty}</p>
-                  </div>
-                </Card>
-              ))}
+        {isLoading ? (
+          <section className="py-16">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-muted-foreground" />
+              <p className="mt-4 text-muted-foreground">Loading gallery...</p>
             </div>
-          </div>
-        </section>
+          </section>
+        ) : images.length > 0 ? (
+          <section className="py-16 lg:py-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <h2 className="text-3xl font-bold text-center mb-12">
+                Recent Generated Cat Plumbers
+              </h2>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {images.map((image, index) => (
+                  <Card key={image.id} className="overflow-hidden hover-elevate" data-testid={`card-cat-${index}`}>
+                    <div className="aspect-[4/3] relative overflow-hidden">
+                      <img
+                        src={image.imageUrl}
+                        alt={`AI generated cat plumber ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        loading={index < 3 ? 'eager' : 'lazy'}
+                      />
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+        ) : null}
 
         <section className="bg-muted/50 py-16 lg:py-20">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-3xl font-bold mb-6">Need Real Plumbing Service?</h2>
             <p className="text-lg text-muted-foreground mb-8">
-              While our feline friends are incredibly talented, our professional human plumbers are who you really want on the job! 
-              We provide expert plumbing services throughout the Austin area with purr-fect precision and care.
+              While these AI-generated felines are incredibly talented, our professional human plumbers are who you really want on the job! 
+              We provide expert plumbing services throughout the Austin area with purr-fect precision.
             </p>
             <a
-              href={`tel:${phoneConfig.phoneNumber}`}
+              href={`tel:${phoneConfig.tel}`}
               className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover-elevate active-elevate-2"
               data-testid="button-call-now"
             >
-              Call Now: {phoneConfig.displayNumber}
+              Call Now: {phoneConfig.display}
             </a>
           </div>
         </section>
       </main>
 
-      <Footer phoneConfig={phoneConfig} />
+      <Footer />
     </div>
   );
 }
