@@ -89,8 +89,25 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
     return true;
   });
   
+  // Deduplicate slots by arrival window (date + arrivalWindowStart + arrivalWindowEnd)
+  // Multiple 2-hour internal slots share the same 4-hour customer arrival window
+  // Only show ONE slot per unique arrival window (the best-scored one)
+  const uniqueSlotsByWindow = new Map<string, TimeSlot>();
+  
+  for (const slot of slots) {
+    const windowKey = `${format(new Date(slot.start), 'yyyy-MM-dd')}-${slot.arrivalWindowStart}-${slot.arrivalWindowEnd}`;
+    const existing = uniqueSlotsByWindow.get(windowKey);
+    
+    // Keep the slot with higher proximity score
+    if (!existing || (slot.proximityScore || 0) > (existing.proximityScore || 0)) {
+      uniqueSlotsByWindow.set(windowKey, slot);
+    }
+  }
+  
+  const deduplicatedSlots = Array.from(uniqueSlotsByWindow.values());
+  
   // Sort ALL slots by proximity score (best first) - for top recommendations
-  const allSortedSlots = [...slots].sort((a, b) => {
+  const allSortedSlots = [...deduplicatedSlots].sort((a, b) => {
     const scoreA = a.proximityScore || 0;
     const scoreB = b.proximityScore || 0;
     return scoreB - scoreA; // Higher scores first

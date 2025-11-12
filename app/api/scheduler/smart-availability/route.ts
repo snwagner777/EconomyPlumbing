@@ -312,8 +312,34 @@ export async function POST(req: NextRequest) {
     
     console.log(`[Smart Scheduler] Generated ${allSlots.length} 2-hour appointment slots`);
     
-    // STEP 5: Sort by proximity score (highest first), then by time for ties
-    const scoredSlots = allSlots.sort((a, b) => {
+    // STEP 5: Deduplicate by arrival window (customer-facing contract)
+    // Multiple 2-hour internal slots share the same 4-hour arrival window
+    // Group by window and select the best-scored slot for each
+    const slotsByWindow = new Map<string, ScoredSlot[]>();
+    
+    for (const slot of allSlots) {
+      const windowKey = `${slot.date}-${slot.arrivalWindowStart}-${slot.arrivalWindowEnd}`;
+      if (!slotsByWindow.has(windowKey)) {
+        slotsByWindow.set(windowKey, []);
+      }
+      slotsByWindow.get(windowKey)!.push(slot);
+    }
+    
+    // For each window, keep only the best-scored 2-hour booking slot
+    const deduplicatedSlots: ScoredSlot[] = [];
+    for (const [windowKey, windowSlots] of slotsByWindow) {
+      // Sort by proximity score (highest first)
+      windowSlots.sort((a, b) => b.proximityScore - a.proximityScore);
+      
+      // Keep the best-scored slot for this arrival window
+      const bestSlot = windowSlots[0];
+      deduplicatedSlots.push(bestSlot);
+    }
+    
+    console.log(`[Smart Scheduler] Deduplicated ${allSlots.length} slots → ${deduplicatedSlots.length} unique arrival windows`);
+    
+    // STEP 6: Sort by proximity score (highest first), then by time for ties
+    const scoredSlots = deduplicatedSlots.sort((a, b) => {
       const scoreDiff = b.proximityScore - a.proximityScore;
       if (scoreDiff === 0) {
         return new Date(a.start).getTime() - new Date(b.start).getTime();
@@ -322,12 +348,12 @@ export async function POST(req: NextRequest) {
     });
     
     // Log top 10 slots
-    console.log(`[Smart Scheduler] Top 10 slots by score:`);
+    console.log(`[Smart Scheduler] Top 10 unique arrival windows by score:`);
     scoredSlots.slice(0, 10).forEach((s, i) => {
-      console.log(`  ${i + 1}. ${s.timeLabel} (arrival window ${new Date(s.arrivalWindowStart).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}-${new Date(s.arrivalWindowEnd).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}) - Score: ${s.proximityScore}`);
+      console.log(`  ${i + 1}. ${s.timeLabel} (internal booking: ${new Date(s.start).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}-${new Date(s.end).toLocaleTimeString('en-US', { hour: 'numeric', timeZone: TIMEZONE })}) - Score: ${s.proximityScore}`);
     });
     
-    // STEP 6: Build response and cache it
+    // STEP 7: Build response and cache it
     const response = {
       success: true,
       slots: scoredSlots,
