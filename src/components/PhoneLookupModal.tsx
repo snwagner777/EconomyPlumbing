@@ -50,10 +50,8 @@ interface CustomerMatch {
   customerName: string;
   customerType: string;
   address: {
-    street: string;
     city: string;
     state: string;
-    zip: string;
   } | null;
 }
 
@@ -120,6 +118,7 @@ export function PhoneLookupModal({
       } else {
         // Single existing customer - proceed directly to success
         setStatus('success');
+        setStep('complete');
         setCustomerData({
           customerId: result.customerId,
           customerName: result.customerName,
@@ -132,7 +131,7 @@ export function PhoneLookupModal({
             customerName: result.customerName,
             phone: data.lookupType === 'phone' ? data.phone : result.phone || '',
           });
-        }, 500);
+        }, 1000);
       }
 
     } catch (error: any) {
@@ -148,6 +147,7 @@ export function PhoneLookupModal({
     if (!selectedAccount) return;
 
     setStatus('success');
+    setStep('complete');
     setCustomerData({
       customerId: selectedAccount.customerId,
       customerName: selectedAccount.customerName,
@@ -160,7 +160,7 @@ export function PhoneLookupModal({
         customerName: selectedAccount.customerName,
         phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : '',
       });
-    }, 500);
+    }, 1000);
   }
 
   async function handleCustomerTypeSubmit() {
@@ -187,6 +187,7 @@ export function PhoneLookupModal({
       }
 
       setStatus('success');
+      setStep('complete');
       setCustomerData({
         customerId: result.customerId,
         customerName: result.customerName,
@@ -199,7 +200,7 @@ export function PhoneLookupModal({
           customerName: result.customerName,
           phone: pendingLookupData.lookupType === 'phone' ? pendingLookupData.phone : result.phone || '',
         });
-      }, 500);
+      }, 1000);
 
     } catch (error: any) {
       setStatus('error');
@@ -391,7 +392,7 @@ export function PhoneLookupModal({
                         </p>
                         {account.address && (
                           <p className="text-sm text-muted-foreground mt-1">
-                            {account.address.street}, {account.address.city}, {account.address.state} {account.address.zip}
+                            {account.address.city}, {account.address.state}
                           </p>
                         )}
                       </div>

@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
     }
 
     // If multiple customers found, return all matches for selection
+    // Only return minimal metadata to avoid PII leak
     if (allMatches.length > 1) {
       console.log(`[Public Lookup] Found ${allMatches.length} matching customers`);
       return NextResponse.json({
@@ -81,11 +82,10 @@ export async function POST(req: NextRequest) {
           customerId: customer.id,
           customerName: customer.name,
           customerType: customer.type,
+          // Only return city/state for privacy - not full street address
           address: customer.address ? {
-            street: customer.address.street,
             city: customer.address.city,
             state: customer.address.state,
-            zip: customer.address.zip,
           } : null,
         })),
       });
