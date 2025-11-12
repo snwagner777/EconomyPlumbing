@@ -25,7 +25,7 @@ interface Contact {
   name?: string;
   methods: Array<{
     id: string;
-    type: 'MobilePhone' | 'Email';
+    type: 'Phone' | 'MobilePhone' | 'Email';
     value: string; // May be masked if unauthenticated
     memo?: string;
   }>;
@@ -189,7 +189,7 @@ export function LocationContactsSummary({ customerId, locationId, sessionToken }
                     key={method.id}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
-                    {method.type === 'MobilePhone' ? (
+                    {(method.type === 'Phone' || method.type === 'MobilePhone') ? (
                       <Phone className="w-4 h-4 flex-shrink-0" />
                     ) : (
                       <Mail className="w-4 h-4 flex-shrink-0" />

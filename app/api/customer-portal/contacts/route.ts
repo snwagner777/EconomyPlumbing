@@ -2,8 +2,8 @@
  * Customer Portal - Contact Management API
  * 
  * AUTHENTICATED ENDPOINT - Requires customer login via phone-based SMS 2FA
- * Allows customers to add new contacts (MobilePhone + Email only)
- * Customers cannot manage Fax or Landline contacts (office-managed)
+ * Allows customers to add new contacts (Phone, MobilePhone, Email)
+ * Customers cannot manage Fax contacts (office-managed)
  * 
  * Security: ServiceTitan v2 API as single source of truth, session-based authentication with ownership validation
  * Business Rule: Must maintain at least 1 active contact at all times
@@ -42,11 +42,11 @@ export async function GET(req: NextRequest) {
     // Fetch all contacts for customer from ServiceTitan
     const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
 
-    // Filter to only show MobilePhone and Email contact methods (hide Fax/Landline)
+    // Filter to show Phone, MobilePhone, and Email contact methods (hide only Fax)
     const customerFacingContacts = contacts.map(contact => ({
       ...contact,
-      methods: contact.methods?.filter(m => m.type === 'MobilePhone' || m.type === 'Email') || [],
-    })).filter(contact => contact.methods.length > 0); // Only show contacts with mobile/email
+      methods: contact.methods?.filter(m => m.type === 'Phone' || m.type === 'MobilePhone' || m.type === 'Email') || [],
+    })).filter(contact => contact.methods.length > 0); // Only show contacts with phone/email
 
     return NextResponse.json({
       success: true,

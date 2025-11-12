@@ -109,13 +109,14 @@ export async function GET(req: NextRequest) {
       ? await serviceTitanCRM.getLocationContacts(locationId)
       : await serviceTitanCRM.getCustomerContacts(customerId);
 
-    // Filter to only show MobilePhone and Email (hide Fax/Landline)
+    // Filter to show Phone, MobilePhone, and Email (hide Fax only)
+    // CRITICAL: ServiceTitan supports both 'Phone' and 'MobilePhone' types - we must show both!
     const displayContacts = contacts
       .map(contact => ({
         id: contact.id,
         name: contact.name,
         methods: contact.methods
-          ?.filter(m => m.type === 'MobilePhone' || m.type === 'Email')
+          ?.filter(m => m.type === 'MobilePhone' || m.type === 'Phone' || m.type === 'Email')
           .map(m => ({
             id: m.id,
             type: m.type,

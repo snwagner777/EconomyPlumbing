@@ -47,7 +47,7 @@ interface Contact {
   name?: string;
   methods: Array<{
     id: string;
-    type: 'MobilePhone' | 'Email';
+    type: 'Phone' | 'MobilePhone' | 'Email';
     value: string;
     memo?: string;
   }>;
@@ -239,7 +239,7 @@ export function ContactsManager({
                     
                     {contact.methods.map((method) => (
                       <div key={method.id} className="flex items-start gap-2 text-sm">
-                        {method.type === 'MobilePhone' ? (
+                        {(method.type === 'Phone' || method.type === 'MobilePhone') ? (
                           <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
                         ) : (
                           <Mail className="w-4 h-4 text-muted-foreground mt-0.5" />
@@ -251,7 +251,7 @@ export function ContactsManager({
                           )}
                         </div>
                         <Badge variant="outline" className="text-xs">
-                          {method.type === 'MobilePhone' ? 'Phone' : 'Email'}
+                          {(method.type === 'Phone' || method.type === 'MobilePhone') ? 'Phone' : 'Email'}
                         </Badge>
                         {isAuthenticated && (
                           <div className="flex items-center gap-1">
@@ -326,21 +326,21 @@ export function ContactsManager({
           <DialogHeader>
             <DialogTitle>Edit Contact</DialogTitle>
             <DialogDescription>
-              Update the {editTarget?.type === 'MobilePhone' ? 'phone number' : 'email address'} below.
+              Update the {(editTarget?.type === 'Phone' || editTarget?.type === 'MobilePhone') ? 'phone number' : 'email address'} below.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="edit-value">
-                {editTarget?.type === 'MobilePhone' ? 'Phone Number' : 'Email Address'}
+                {(editTarget?.type === 'Phone' || editTarget?.type === 'MobilePhone') ? 'Phone Number' : 'Email Address'}
               </Label>
               <Input
                 id="edit-value"
                 type={editTarget?.type === 'Email' ? 'email' : 'tel'}
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                placeholder={editTarget?.type === 'MobilePhone' ? '(512) 555-1234' : 'email@example.com'}
+                placeholder={(editTarget?.type === 'Phone' || editTarget?.type === 'MobilePhone') ? '(512) 555-1234' : 'email@example.com'}
                 data-testid="input-edit-contact-value"
               />
             </div>

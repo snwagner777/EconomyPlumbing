@@ -1,14 +1,13 @@
 'use client';
 
-import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import ServiceCard from "@/components/ServiceCard";
 import WhyChooseCard from "@/components/WhyChooseCard";
 import ServiceAreaCard from "@/components/ServiceAreaCard";
 import ReviewsSection from "@/components/ReviewsSection";
 import ContactForm from "@/components/ContactForm";
-import Footer from "@/components/Footer";
 import SMSOptInWidget from "@/components/SMSOptInWidget";
+import { usePhoneNumbers } from "@/components/PhoneNumberProvider";
 import Link from "next/link";
 import {
   Droplets,
@@ -37,14 +36,10 @@ import {
   createMarbleFallsLocationSchema,
   createOrganizationSchema,
 } from "@/components/SEO/JsonLd";
-import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
-interface HomeClientProps {
-  phoneConfig: PhoneConfig;
-  marbleFallsPhoneConfig: PhoneConfig;
-}
-
-export default function HomeClient({ phoneConfig, marbleFallsPhoneConfig }: HomeClientProps) {
+export default function HomeClient() {
+  // Get phone numbers from context (provided by MarketingPageShell)
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = usePhoneNumbers();
   const marbleFallsSchema = createMarbleFallsLocationSchema();
   const organizationSchema = createOrganizationSchema();
   const faqSchema = createFAQSchema([
@@ -248,7 +243,6 @@ export default function HomeClient({ phoneConfig, marbleFallsPhoneConfig }: Home
   return (
     <>
       <div className="min-h-screen">
-        <Header />
         <Hero />
         
         {/* SMS Opt-in Section - Hidden until SMS system is fully configured */}
@@ -429,7 +423,6 @@ export default function HomeClient({ phoneConfig, marbleFallsPhoneConfig }: Home
         </section>
 
         <ContactForm />
-        <Footer />
       </div>
     </>
   );

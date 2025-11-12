@@ -4,8 +4,18 @@ import Link from "next/link";
 import { Facebook, Instagram, MapPin } from "lucide-react";
 import { SiYelp, SiNextdoor, SiGooglemaps } from "react-icons/si";
 import logoImage from "@assets/optimized/Economy_Plumbing_Services_logo_1759801055079.webp";
+import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
-export default function Footer() {
+interface FooterProps {
+  austinPhone?: PhoneConfig;
+  marbleFallsPhone?: PhoneConfig;
+}
+
+export default function Footer({ austinPhone, marbleFallsPhone }: FooterProps) {
+  // Use server-provided phone numbers or fallback to "Loading..."
+  const phoneConfig = austinPhone || { display: 'Loading...', tel: '#' };
+  const marbleFallsPhoneConfig = marbleFallsPhone || { display: 'Loading...', tel: '#' };
+
   return (
     <footer className="bg-gray-900 text-gray-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -45,6 +45,15 @@ export function useSchedulerSession({ session, onSessionUpdate }: UseSchedulerSe
     try {
       const parsed: SchedulerSession = JSON.parse(stored);
       
+      // CRITICAL: Invalidate old sessions with customerId=null (from before phone normalization fix)
+      // These sessions are broken and cause "No customer associated with session" errors
+      if (parsed.customerId === null) {
+        console.warn('[Scheduler Session] Invalidating old session with customerId=null - please re-verify');
+        localStorage.removeItem(SESSION_STORAGE_KEY);
+        hasHydratedRef.current = true;
+        return;
+      }
+      
       // Check if session is still valid (24-hour TTL)
       if (parsed.expiresAt && parsed.expiresAt > Date.now()) {
         console.log('[Scheduler Session] Restored valid session from localStorage');
