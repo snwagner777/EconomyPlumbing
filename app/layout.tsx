@@ -4,6 +4,7 @@ import './globals.css';
 import { ClientProviders } from '@/components/ClientProviders';
 import { PhoneConfigProvider } from '@/providers/PhoneConfigProvider';
 import { JsonLd, createLocalBusinessSchema } from '@/components/SEO/JsonLd';
+import { WebVitals } from '@/components/WebVitals';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://plumbersthatcare.com'),
@@ -80,6 +81,7 @@ export default function RootLayout({
         <JsonLd data={createLocalBusinessSchema()} />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
+        <WebVitals />
         <PhoneConfigProvider>
           <ClientProviders>
             {children}
