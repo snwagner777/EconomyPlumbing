@@ -7,7 +7,7 @@
 
 interface OTPEntry {
   code: string;
-  phoneNumber: string;
+  contact: string; // Phone number or email
   expiresAt: number;
   attempts: number;
 }
@@ -31,18 +31,23 @@ class OTPStore {
   }
 
   /**
-   * Normalize phone number to digits only
+   * Normalize contact (phone or email) for storage key
    */
-  private normalizePhone(phone: string): string {
-    return phone.replace(/\D/g, '');
+  private normalizeContact(contact: string): string {
+    // If it looks like an email, lowercase it
+    if (contact.includes('@')) {
+      return contact.toLowerCase().trim();
+    }
+    // Otherwise treat as phone number - digits only
+    return contact.replace(/\D/g, '');
   }
 
   /**
-   * Create and store a new OTP code for a phone number
+   * Create and store a new OTP code for a contact (phone or email)
    * Returns the code if successful, or null if rate limited
    */
-  createOTP(phoneNumber: string): string | null {
-    const normalized = this.normalizePhone(phoneNumber);
+  createOTP(contact: string): string | null {
+    const normalized = this.normalizeContact(contact);
     
     // Check rate limiting
     const existing = this.store.get(normalized);
@@ -56,7 +61,7 @@ class OTPStore {
 
     this.store.set(normalized, {
       code,
-      phoneNumber: normalized,
+      contact: normalized,
       expiresAt,
       attempts: 0
     });
@@ -66,11 +71,11 @@ class OTPStore {
   }
 
   /**
-   * Verify an OTP code for a phone number
+   * Verify an OTP code for a contact (phone or email)
    * Returns true if valid, false otherwise
    */
-  verifyOTP(phoneNumber: string, code: string): boolean {
-    const normalized = this.normalizePhone(phoneNumber);
+  verifyOTP(contact: string, code: string): boolean {
+    const normalized = this.normalizeContact(contact);
     const entry = this.store.get(normalized);
 
     if (!entry) {
@@ -114,9 +119,9 @@ class OTPStore {
     let cleaned = 0;
 
     const entries = Array.from(this.store.entries());
-    for (const [phone, entry] of entries) {
+    for (const [contact, entry] of entries) {
       if (now > entry.expiresAt) {
-        this.store.delete(phone);
+        this.store.delete(contact);
         cleaned++;
       }
     }
