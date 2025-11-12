@@ -66,6 +66,8 @@ Preferred communication style: Simple, everyday language.
   - **Customer Portal:** SchedulerDialog (`src/modules/scheduler/components/SchedulerDialog.tsx`) uses the same working scheduler components for authenticated customers
   - **Stub Cleanup:** Deleted all placeholder step components from `src/modules/scheduler/components/steps/` (Nov 2025) - no stubs remain
   - **Type Safety:** All scheduler components use shared types from `@shared/types/scheduler` with proper TimeSlot discriminated union (isBackflow: boolean for regular vs backflow slots)
+  - **2FA Authentication (Nov 2025):** Dual-mode phone/email verification with SMS OTP (SimpleTexting) and email codes (Resend), rate limiting (10 sends/hour, 5 verify attempts/hour), comprehensive error handling with toast notifications and inline alerts, differentiated messaging for rate limits vs service outages - PRODUCTION READY
+  - **Session Management (Nov 2025):** Secure server-side session tokens (HMAC-SHA256 signatures, mandatory SESSION_SECRET, timing-safe verification via crypto.timingSafeEqual), 30-minute TTL with cleanup sweeper, customer ID resolution from database, sessionStorage persistence via useSchedulerSession hook, FlowState integration for verified contact tracking - PRODUCTION READY
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (API routes) and a `worker.ts` process for background jobs.
