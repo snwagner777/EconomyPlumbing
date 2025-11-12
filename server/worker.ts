@@ -18,6 +18,7 @@ import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
+import { syncZonesFromServiceTitan } from "./lib/zoneSyncService";
 // DEPRECATED: Old ServiceTitan job scanning system - replaced by voucher-based QR code system
 // import { getReferralProcessor } from "./lib/referralProcessor";
 // GMB automation removed - rebuilding with SimpleTexting integration
@@ -103,6 +104,43 @@ startCustomCampaignScheduler();
 //     console.error('[Referral Processor] Error during hourly processing:', err);
 //   });
 // }, 60 * 60 * 1000); // Every hour
+
+// Zone sync - runs daily at 3 AM CT (same as photo cleanup)
+const scheduleZoneSync = () => {
+  const now = new Date();
+  
+  // Convert current time to Central Time to find next 3 AM CT
+  const nowCT = new Date(now.toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  const todayAt3AMCT = new Date(nowCT);
+  todayAt3AMCT.setHours(3, 0, 0, 0);
+  
+  // Calculate next 3 AM CT in UTC
+  const next3AMCT = nowCT > todayAt3AMCT 
+    ? new Date(todayAt3AMCT.getTime() + 24 * 60 * 60 * 1000) // Tomorrow at 3 AM CT
+    : todayAt3AMCT; // Today at 3 AM CT
+  
+  // Convert back to UTC for setTimeout
+  const ctOffset = now.getTime() - nowCT.getTime();
+  const next3AMUTC = new Date(next3AMCT.getTime() + ctOffset);
+  
+  const msUntilSync = next3AMUTC.getTime() - now.getTime();
+  console.log(`[Zone Sync] Next sync scheduled for ${next3AMUTC.toLocaleString('en-US', { timeZone: 'America/Chicago' })} CT (in ${Math.round(msUntilSync / 1000 / 60 / 60)} hours)`);
+
+  setTimeout(async () => {
+    try {
+      console.log('[Zone Sync] Starting daily zone sync...');
+      await syncZonesFromServiceTitan();
+    } catch (error) {
+      console.error('[Zone Sync] Error during sync:', error);
+    }
+    
+    // Schedule next sync (24 hours from now)
+    scheduleZoneSync();
+  }, msUntilSync);
+};
+
+console.log('[Worker] Starting zone sync scheduler...');
+scheduleZoneSync();
 
 console.log('[Worker] All background jobs started successfully');
 console.log('[Worker] Process will run indefinitely...');

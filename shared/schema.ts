@@ -1013,6 +1013,7 @@ export const serviceTitanContacts = pgTable("service_titan_contacts", {
 // Enables fuel-efficient route clustering by grouping appointments in same zone
 export const serviceTitanZones = pgTable("service_titan_zones", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  serviceTitanId: integer("servicetitan_id").unique(), // ServiceTitan's zone ID for syncing
   name: text("name").notNull(), // e.g., "North Austin", "Central", "Hill Country"
   zipCodes: text("zip_codes").array().notNull(), // Array of 5-digit ZIP codes in this zone
   cities: text("cities").array(), // Optional: City names for display
@@ -1023,6 +1024,7 @@ export const serviceTitanZones = pgTable("service_titan_zones", {
 }, (table) => ({
   activeIdx: index("st_zones_active_idx").on(table.active),
   sortOrderIdx: index("st_zones_sort_order_idx").on(table.sortOrder),
+  serviceTitanIdIdx: index("st_zones_servicetitan_id_idx").on(table.serviceTitanId),
   // Note: GIN index for zipCodes array will be created manually via migration
   // Standard B-tree index works for small datasets, GIN optimal for large-scale
 }));
