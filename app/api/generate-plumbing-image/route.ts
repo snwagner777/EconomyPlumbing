@@ -73,56 +73,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Handle both URL and base64 formats
-    let imageUrl: string;
-    if (response.data[0].url) {
-      // Direct URL from API (rare)
-      imageUrl = response.data[0].url;
-    } else if (response.data[0].b64_json) {
+    // Get image buffer (handle both URL and base64 formats)
+    let imageBuffer: Buffer;
+    if (response.data[0].b64_json) {
       // Convert base64 to buffer
       const base64Data = response.data[0].b64_json;
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-      
-      // Add watermark using sharp
-      const logoPath = path.join(process.cwd(), 'attached_assets', 'Economy Plumbing Services logo_1759801055079.jpg');
-      
-      // Resize logo to 150px wide (maintain aspect ratio)
-      const watermarkBuffer = await sharp(logoPath)
-        .resize(150, null, { fit: 'inside' })
-        .toBuffer();
-      
-      // Get watermark dimensions
-      const watermarkMetadata = await sharp(watermarkBuffer).metadata();
-      const watermarkWidth = watermarkMetadata.width || 150;
-      const watermarkHeight = watermarkMetadata.height || 50;
-      
-      // Composite watermark in bottom-right corner with 20px padding
-      const watermarkedImage = await sharp(imageBuffer)
-        .composite([{
-          input: watermarkBuffer,
-          gravity: 'southeast',
-          blend: 'over'
-        }])
-        .toBuffer();
-      
-      // Generate unique filename
-      const timestamp = Date.now();
-      const randomId = randomBytes(4).toString('hex');
-      const filename = `${animal}-plumber-${timestamp}-${randomId}.png`;
-      
-      // Upload to object storage in public directory
-      const publicPaths = objectStorage.getPublicObjectSearchPaths();
-      const bucketPath = publicPaths[0]; // Use first public path
-      const destinationPath = `${bucketPath}/${animal}s-plumbing/${filename}`;
-      
-      console.log(`[Generate Plumbing Image] Uploading ${filename} with watermark to ${destinationPath}`);
-      
-      await objectStorage.uploadBuffer(watermarkedImage, destinationPath, 'image/png');
-      
-      // Store the public path (proxy will rewrite this to a public URL)
-      imageUrl = destinationPath;
-      
-      console.log(`[Generate Plumbing Image] Saved watermarked image to object storage: ${imageUrl}`);
+      imageBuffer = Buffer.from(base64Data, 'base64');
+      console.log('[Generate Plumbing Image] Received base64 image from OpenAI');
+    } else if (response.data[0].url) {
+      // Download from URL
+      const imageResponse = await fetch(response.data[0].url);
+      const arrayBuffer = await imageResponse.arrayBuffer();
+      imageBuffer = Buffer.from(arrayBuffer);
+      console.log('[Generate Plumbing Image] Downloaded image from URL:', response.data[0].url);
     } else {
       console.error('[Generate Plumbing Image] No URL or base64 data in response');
       return NextResponse.json(
@@ -130,6 +93,44 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+    
+    // Add watermark using sharp (ALWAYS apply watermark)
+    const logoPath = path.join(process.cwd(), 'attached_assets', 'Economy Plumbing Services logo_1759801055079.jpg');
+    
+    // Resize logo to 150px wide (maintain aspect ratio) with 15% opacity
+    const watermarkBuffer = await sharp(logoPath)
+      .resize(150, null, { fit: 'inside' })
+      .png()
+      .toBuffer();
+    
+    // Composite watermark in bottom-right corner with 20px padding and 15% opacity
+    const watermarkedImage = await sharp(imageBuffer)
+      .composite([{
+        input: watermarkBuffer,
+        gravity: 'southeast',
+        blend: 'over'
+      }])
+      .png()
+      .toBuffer();
+    
+    // Generate unique filename
+    const timestamp = Date.now();
+    const randomId = randomBytes(4).toString('hex');
+    const filename = `${animal}-plumber-${timestamp}-${randomId}.png`;
+    
+    // Upload to object storage in public directory
+    const publicPaths = objectStorage.getPublicObjectSearchPaths();
+    const bucketPath = publicPaths[0]; // Use first public path
+    const destinationPath = `${bucketPath}/${animal}s-plumbing/${filename}`;
+    
+    console.log(`[Generate Plumbing Image] Uploading ${filename} with watermark to ${destinationPath}`);
+    
+    await objectStorage.uploadBuffer(watermarkedImage, destinationPath, 'image/png');
+    
+    // Store the public path (proxy will rewrite this to a public URL)
+    const imageUrl = destinationPath;
+    
+    console.log(`[Generate Plumbing Image] Saved watermarked image to object storage: ${imageUrl}`);
 
     // Save to database
     await db.insert(generatedPlumbingImages).values({
