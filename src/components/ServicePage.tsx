@@ -162,7 +162,7 @@ export default function ServicePage({
             <div className="flex flex-wrap gap-4">
               <Button 
                 size="lg" 
-                onClick={openScheduler}
+                onClick={() => openScheduler()}
                 className="bg-primary text-primary-foreground"
                 data-testid="button-schedule-hero"
               >
@@ -341,7 +341,7 @@ export default function ServicePage({
 
           <Button 
             size="lg"
-            onClick={openScheduler}
+            onClick={() => openScheduler()}
             className="bg-white text-primary hover:bg-white/90"
             data-testid="button-schedule-cta"
           >
