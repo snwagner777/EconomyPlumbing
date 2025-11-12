@@ -1,0 +1,224 @@
+/**
+ * Customer Portal - Individual Contact Management API
+ * 
+ * AUTHENTICATED ENDPOINT - Requires customer login via phone-based SMS 2FA
+ * Allows customers to update or delete individual contacts
+ * 
+ * Security: ServiceTitan v2 API as single source of truth, session-based authentication with ownership validation
+ * Business Rule: Cannot delete last remaining contact (min 1 contact required)
+ */
+
+import { NextRequest, NextResponse } from 'next/server';
+import { getIronSession } from 'iron-session';
+import { cookies } from 'next/headers';
+import { SessionData, sessionOptions } from '@/lib/session';
+import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+
+interface RouteParams {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+/**
+ * PATCH /api/customer-portal/contacts/[id]
+ * Update contact person or contact method
+ * 
+ * Body can contain:
+ * - name: Update contact person name
+ * - phone: Update mobile phone number
+ * - email: Update email address
+ * 
+ * Security: Validates contact belongs to authenticated customer
+ */
+export async function PATCH(req: NextRequest, context: RouteParams) {
+  try {
+    const { id } = await context.params;
+    const contactId = id; // ServiceTitan contact IDs are GUIDs (strings)
+
+    // Get session
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    
+    if (!session.customerPortalAuth?.customerId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const customerId = session.customerPortalAuth.customerId;
+    const body = await req.json();
+    const { name, phone, email, phoneMethodId, emailMethodId } = body;
+
+    // Validation
+    if (!name && !phone && !email) {
+      return NextResponse.json(
+        { error: 'At least one field (name, phone, or email) must be provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate phone if provided
+    if (phone) {
+      const phoneDigits = phone.replace(/\D/g, '');
+      if (phoneDigits.length !== 10) {
+        return NextResponse.json(
+          { error: 'Phone number must be 10 digits' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate email if provided
+    if (email && typeof email === 'string' && email.trim().length > 0) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email.trim())) {
+        return NextResponse.json(
+          { error: 'Invalid email format' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Verify ownership: contact must belong to authenticated customer
+    const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    const contactToUpdate = contacts.find(c => c.id === contactId);
+
+    if (!contactToUpdate) {
+      console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to update contact ${contactId}`);
+      return NextResponse.json(
+        { error: 'Unauthorized: Contact does not belong to your account' },
+        { status: 403 }
+      );
+    }
+
+    console.log(`[Customer Portal] Updating contact ${contactId} for customer ${customerId}`);
+
+    // Update contact person name if provided
+    if (name) {
+      await serviceTitanCRM.updateContactPerson(contactId, { name });
+    }
+
+    // Update phone number if provided
+    if (phone && phoneMethodId) {
+      await serviceTitanCRM.updateContactMethod(phoneMethodId, {
+        value: phone.replace(/\D/g, ''),
+      });
+    }
+
+    // Update email if provided
+    if (email && emailMethodId) {
+      await serviceTitanCRM.updateContactMethod(emailMethodId, {
+        value: email.trim(),
+      });
+    }
+
+    console.log(`[Customer Portal] ✅ Contact ${contactId} updated for customer ${customerId}`);
+
+    // Fetch updated contact
+    const updatedContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    const updatedContact = updatedContacts.find(c => c.id === contactId);
+
+    return NextResponse.json({
+      success: true,
+      contact: updatedContact,
+      message: 'Contact updated successfully',
+    });
+
+  } catch (error: any) {
+    console.error('[Customer Portal] Update contact error:', error);
+    
+    // Parse ServiceTitan RFC7807 error if present
+    if (error.response?.data?.traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    }
+
+    return NextResponse.json(
+      { 
+        error: 'Failed to update contact', 
+        details: error.message || 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * DELETE /api/customer-portal/contacts/[id]
+ * Delete a contact
+ * 
+ * Security: Validates contact belongs to authenticated customer
+ * Business Rule: Cannot delete if this is the last remaining contact
+ */
+export async function DELETE(req: NextRequest, context: RouteParams) {
+  try {
+    const { id } = await context.params;
+    const contactId = id; // ServiceTitan contact IDs are GUIDs (strings)
+
+    // Get session
+    const cookieStore = await cookies();
+    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    
+    if (!session.customerPortalAuth?.customerId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    const customerId = session.customerPortalAuth.customerId;
+    console.log(`[Customer Portal] Deleting contact ${contactId} for customer ${customerId}`);
+
+    // Verify ownership: contact must belong to authenticated customer
+    const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    const contactToDelete = contacts.find(c => c.id === contactId);
+
+    if (!contactToDelete) {
+      console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to delete contact ${contactId}`);
+      return NextResponse.json(
+        { error: 'Unauthorized: Contact does not belong to your account' },
+        { status: 403 }
+      );
+    }
+
+    // Enforce minimum 1 contact rule
+    // Count contacts with mobile phone or email (customer-facing contacts)
+    const customerFacingContacts = contacts.filter(contact => 
+      contact.methods?.some(m => m.type === 'MobilePhone' || m.type === 'Email')
+    );
+
+    if (customerFacingContacts.length <= 1) {
+      return NextResponse.json(
+        { error: 'Cannot delete the last contact. Your account must have at least one contact method.' },
+        { status: 400 }
+      );
+    }
+
+    // Delete the contact
+    await serviceTitanCRM.deleteContact(contactId);
+
+    console.log(`[Customer Portal] ✅ Contact ${contactId} deleted for customer ${customerId}`);
+
+    return NextResponse.json({
+      success: true,
+      message: 'Contact deleted successfully',
+    });
+
+  } catch (error: any) {
+    console.error('[Customer Portal] Delete contact error:', error);
+    
+    // Parse ServiceTitan RFC7807 error if present
+    if (error.response?.data?.traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    }
+
+    return NextResponse.json(
+      { 
+        error: 'Failed to delete contact', 
+        details: error.message || 'Unknown error'
+      },
+      { status: 500 }
+    );
+  }
+}

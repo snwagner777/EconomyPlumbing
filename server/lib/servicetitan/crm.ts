@@ -174,6 +174,31 @@ export class ServiceTitanCRM {
   }
 
   /**
+   * Get location by ID from ServiceTitan
+   */
+  async getLocation(locationId: number): Promise<ServiceTitanLocation | null> {
+    try {
+      const response = await serviceTitanAuth.makeRequest<ServiceTitanLocation>(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}`,
+        {
+          method: 'GET',
+        }
+      );
+
+      return response;
+    } catch (error: any) {
+      // If 404, location doesn't exist
+      if (error.response?.status === 404) {
+        console.log(`[ServiceTitan CRM] Location ${locationId} not found`);
+        return null;
+      }
+
+      console.error('[ServiceTitan CRM] Error fetching location:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Find customer by phone or email (duplicate check)
    */
   async findCustomer(phone: string, email?: string): Promise<ServiceTitanCustomer | null> {
@@ -303,6 +328,64 @@ export class ServiceTitanCRM {
       return locations;
     } catch (error) {
       console.error(`[ServiceTitan CRM] Error fetching locations for customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all contacts for a customer with their contact methods
+   */
+  async getCustomerContacts(customerId: number): Promise<Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>> {
+    try {
+      console.log(`[ServiceTitan CRM] Fetching all contacts for customer ${customerId}`);
+      
+      // Step 1: Get all contact person IDs linked to customer
+      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ id: string }> }>(
+        `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts`
+      );
+
+      const contactIds = contactLinksResponse.data?.map(link => link.id) || [];
+      
+      if (contactIds.length === 0) {
+        console.log(`[ServiceTitan CRM] No contacts found for customer ${customerId}`);
+        return [];
+      }
+
+      console.log(`[ServiceTitan CRM] Found ${contactIds.length} contact links for customer ${customerId}`);
+
+      // Step 2: Fetch details for each contact person
+      const contactsWithMethods = await Promise.all(
+        contactIds.map(async (contactId) => {
+          try {
+            // Get contact person details
+            const contact = await serviceTitanAuth.makeRequest<ServiceTitanContact>(
+              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}`
+            );
+
+            // Get contact methods (phone, email, etc.)
+            const methodsResponse = await serviceTitanAuth.makeRequest<{ data: ServiceTitanContactMethod[] }>(
+              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}/contact-methods`
+            );
+
+            return {
+              ...contact,
+              methods: methodsResponse.data || [],
+            };
+          } catch (error) {
+            console.error(`[ServiceTitan CRM] Error fetching contact ${contactId}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out any null results from failed fetches
+      const validContacts = contactsWithMethods.filter(c => c !== null) as Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>;
+      
+      console.log(`[ServiceTitan CRM] Successfully fetched ${validContacts.length} contacts with methods for customer ${customerId}`);
+      
+      return validContacts;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error fetching contacts for customer ${customerId}:`, error);
       throw error;
     }
   }
