@@ -205,7 +205,7 @@ export function SchedulerDialog({
                 <div className="flex gap-3">
                   <Button 
                     size="sm"
-                    onClick={() => window.location.href = '/vip-membership'}
+                    onClick={() => window.location.href = '/membership-benefits'}
                     data-testid="button-join-vip"
                   >
                     Learn More About VIP

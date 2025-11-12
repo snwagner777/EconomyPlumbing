@@ -25,7 +25,7 @@ export async function GET(req: NextRequest) {
       { url: '/services', changefreq: 'weekly', priority: 0.9 },
       { url: '/blog', changefreq: 'daily', priority: 0.9 },
       { url: '/service-areas', changefreq: 'weekly', priority: 0.8 },
-      { url: '/vip-membership', changefreq: 'monthly', priority: 0.8 },
+      { url: '/membership-benefits', changefreq: 'monthly', priority: 0.8 },
       { url: '/faq', changefreq: 'monthly', priority: 0.7 },
     ];
 

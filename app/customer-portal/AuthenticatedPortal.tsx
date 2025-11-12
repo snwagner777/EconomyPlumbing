@@ -667,7 +667,7 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                                   )}
                                   <Button size="sm" variant="default" className="text-xs mt-1" onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open('/vip-membership', '_blank');
+                                    window.open('/membership-benefits', '_blank');
                                   }}>
                                     Renew Now
                                   </Button>
@@ -682,7 +682,7 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                                   </p>
                                   <Button size="sm" variant="default" className="text-xs" onClick={(e) => {
                                     e.stopPropagation();
-                                    window.open('/vip-membership', '_blank');
+                                    window.open('/membership-benefits', '_blank');
                                   }}>
                                     Start Membership
                                   </Button>
@@ -1104,7 +1104,7 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                             className="w-full"
                             data-testid="button-vip-membership"
                           >
-                            <a href="/vip-membership">
+                            <a href="/membership-benefits">
                               <Crown className="w-4 h-4 mr-2" />
                               Learn About VIP Membership
                             </a>

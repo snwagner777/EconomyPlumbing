@@ -133,7 +133,7 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-primary" data-testid="footer-link-about">About Us</Link></li>
               <li><Link href="/blog" className="hover:text-primary" data-testid="footer-link-blog">Blog</Link></li>
               <li><Link href="/success-stories" className="hover:text-primary" data-testid="footer-link-success-stories">Success Stories</Link></li>
-              <li><Link href="/vip-membership" className="hover:text-primary" data-testid="footer-link-vip">VIP Membership</Link></li>
+              <li><Link href="/membership-benefits" className="hover:text-primary" data-testid="footer-link-vip">VIP Membership</Link></li>
               <li><Link href="/referral" className="hover:text-primary" data-testid="footer-link-referral">Referral Program</Link></li>
               <li><Link href="/customer-portal" className="hover:text-primary" data-testid="footer-link-portal">Customer Portal</Link></li>
               <li><Link href="/store" className="hover:text-primary" data-testid="footer-link-store">Store</Link></li>

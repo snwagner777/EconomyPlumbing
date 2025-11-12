@@ -252,7 +252,7 @@ export function SchedulerFlow({
               <div className="flex gap-3">
                 <Button 
                   size="sm"
-                  onClick={() => router.push('/vip-membership')}
+                  onClick={() => router.push('/membership-benefits')}
                   data-testid="button-join-vip"
                 >
                   Learn About VIP Membership

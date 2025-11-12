@@ -237,7 +237,7 @@ export function SchedulerWizard({ open, onClose, preselectedService }: Scheduler
                           size="sm"
                           className="bg-red-600 hover:bg-red-700 text-white"
                           onClick={() => {
-                            window.open('/vip-membership', '_blank');
+                            window.open('/membership-benefits', '_blank');
                           }}
                           data-testid="button-learn-vip"
                         >

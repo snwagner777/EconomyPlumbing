@@ -134,7 +134,12 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       
-      // Note: Both /membership-benefits (sales page) and /vip-membership (purchase page) kept separate
+      // Redirect old VIP membership page to benefits page
+      {
+        source: '/vip-membership',
+        destination: '/membership-benefits',
+        permanent: true,
+      },
       
       // Referral page consolidation
       {

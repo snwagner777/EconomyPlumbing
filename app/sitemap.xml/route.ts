@@ -33,7 +33,7 @@ export async function GET() {
     { url: '/blog', priority: 0.9, changefreq: 'daily' },
     { url: '/store', priority: 0.8, changefreq: 'weekly' },
     { url: '/faq', priority: 0.7, changefreq: 'monthly' },
-    { url: '/vip-membership', priority: 0.8, changefreq: 'monthly' },
+    { url: '/membership-benefits', priority: 0.8, changefreq: 'monthly' },
     { url: '/customer-portal', priority: 0.7, changefreq: 'monthly' },
     
     // Service pages (canonical URLs only)

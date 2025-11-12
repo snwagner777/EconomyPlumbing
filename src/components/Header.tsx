@@ -223,7 +223,7 @@ export default function Header({
                       Blog
                     </Link>
                     <Link
-                      href="/vip-membership"
+                      href="/membership-benefits"
                       className="block px-4 py-2 text-sm hover-elevate"
                       data-testid="link-membership"
                     >

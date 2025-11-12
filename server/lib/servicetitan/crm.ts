@@ -340,11 +340,11 @@ export class ServiceTitanCRM {
       console.log(`[ServiceTitan CRM] Fetching all contacts for customer ${customerId}`);
       
       // Step 1: Get all contact person IDs linked to customer
-      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ id: string }> }>(
+      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ contactId: string }> }>(
         `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts`
       );
 
-      const contactIds = contactLinksResponse.data?.map(link => link.id) || [];
+      const contactIds = contactLinksResponse.data?.map(link => link.contactId) || [];
       
       if (contactIds.length === 0) {
         console.log(`[ServiceTitan CRM] No contacts found for customer ${customerId}`);
