@@ -14,8 +14,12 @@ import { validateSchedulerSession } from '@/server/lib/schedulerSession';
 import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
 
 /**
- * GET /api/scheduler/customer-contacts?customerId=123
- * Retrieve contacts for a customer
+ * GET /api/scheduler/customer-contacts?customerId=123&locationId=456
+ * Retrieve contacts for a customer (optionally filtered by location)
+ * 
+ * Query Parameters:
+ * - customerId: Required - ServiceTitan customer ID
+ * - locationId: Optional - Filter to only show contacts linked to this location
  * 
  * Security: 
  * - Public mode (no Authorization): Returns masked contacts for privacy
@@ -26,6 +30,7 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const customerIdParam = searchParams.get('customerId');
+    const locationIdParam = searchParams.get('locationId');
     
     // SECURITY: Refuse tokens in query string (would leak into logs/history)
     if (searchParams.get('token')) {
@@ -49,6 +54,18 @@ export async function GET(req: NextRequest) {
         { error: 'Invalid customerId' },
         { status: 400 }
       );
+    }
+
+    // Optional locationId filtering
+    let locationId: number | undefined;
+    if (locationIdParam) {
+      locationId = parseInt(locationIdParam);
+      if (isNaN(locationId) || locationId <= 0) {
+        return NextResponse.json(
+          { error: 'Invalid locationId' },
+          { status: 400 }
+        );
+      }
     }
 
     // Check if authenticated request via Authorization header
@@ -87,8 +104,10 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Fetch contacts from ServiceTitan
-    const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    // Fetch contacts from ServiceTitan (use location-specific API when locationId provided)
+    const contacts = locationId
+      ? await serviceTitanCRM.getLocationContacts(locationId)
+      : await serviceTitanCRM.getCustomerContacts(customerId);
 
     // Filter to only show MobilePhone and Email (hide Fax/Landline)
     const displayContacts = contacts

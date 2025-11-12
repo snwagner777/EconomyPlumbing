@@ -391,6 +391,65 @@ export class ServiceTitanCRM {
   }
 
   /**
+   * Get all contacts linked to a specific location with their contact methods
+   * Uses ServiceTitan's native location filtering for efficiency
+   */
+  async getLocationContacts(locationId: number): Promise<Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>> {
+    try {
+      console.log(`[ServiceTitan CRM] Fetching all contacts for location ${locationId}`);
+      
+      // Step 1: Get all contact person IDs linked to this location
+      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ contactId: string }> }>(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts`
+      );
+
+      const contactIds = contactLinksResponse.data?.map(link => link.contactId) || [];
+      
+      if (contactIds.length === 0) {
+        console.log(`[ServiceTitan CRM] No contacts found for location ${locationId}`);
+        return [];
+      }
+
+      console.log(`[ServiceTitan CRM] Found ${contactIds.length} contact links for location ${locationId}`);
+
+      // Step 2: Fetch details for each contact person (reuse same logic as getCustomerContacts)
+      const contactsWithMethods = await Promise.all(
+        contactIds.map(async (contactId) => {
+          try {
+            // Get contact person details
+            const contact = await serviceTitanAuth.makeRequest<ServiceTitanContact>(
+              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}`
+            );
+
+            // Get contact methods (phone, email, etc.)
+            const methodsResponse = await serviceTitanAuth.makeRequest<{ data: ServiceTitanContactMethod[] }>(
+              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}/contact-methods`
+            );
+
+            return {
+              ...contact,
+              methods: methodsResponse.data || [],
+            };
+          } catch (error) {
+            console.error(`[ServiceTitan CRM] Error fetching contact ${contactId}:`, error);
+            return null;
+          }
+        })
+      );
+
+      // Filter out any null results from failed fetches
+      const validContacts = contactsWithMethods.filter(c => c !== null) as Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>;
+      
+      console.log(`[ServiceTitan CRM] Successfully fetched ${validContacts.length} contacts with methods for location ${locationId}`);
+      
+      return validContacts;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error fetching contacts for location ${locationId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Find location for customer by address
    */
   async findLocation(customerId: number, address: string): Promise<ServiceTitanLocation | null> {

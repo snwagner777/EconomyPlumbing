@@ -39,6 +39,7 @@ interface ContactsManagerProps {
   onOpenChange: (open: boolean) => void;
   sessionToken?: string | null; // Optional - when provided, shows full CRUD; when null, shows read-only masked view
   customerId: number;
+  locationId?: number; // Optional - when provided, filters to location-specific contacts and links new contacts to this location
 }
 
 interface Contact {
@@ -57,6 +58,7 @@ export function ContactsManager({
   onOpenChange,
   sessionToken,
   customerId,
+  locationId,
 }: ContactsManagerProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ contactId: string; methodId: string; value: string } | null>(null);
@@ -64,8 +66,9 @@ export function ContactsManager({
   const [editValue, setEditValue] = useState('');
   
   // Fetch contacts (authenticated - shows full unmasked contacts via Authorization header)
+  // Location-aware: when locationId provided, only shows contacts linked to that location
   const { data, isLoading, isError, refetch } = useQuery<{ success: boolean; contacts: Contact[] }>({
-    queryKey: ['/api/scheduler/customer-contacts', { customerId, authenticated: !!sessionToken }],
+    queryKey: ['/api/scheduler/customer-contacts', { customerId, locationId, authenticated: !!sessionToken }],
     queryFn: async () => {
       const headers: HeadersInit = { 'Content-Type': 'application/json' };
       
@@ -74,7 +77,13 @@ export function ContactsManager({
         headers['Authorization'] = `Bearer ${sessionToken}`;
       }
       
-      const response = await fetch(`/api/scheduler/customer-contacts?customerId=${customerId}`, {
+      // Build query params (locationId is optional for location-specific filtering)
+      const params = new URLSearchParams({ customerId: String(customerId) });
+      if (locationId) {
+        params.append('locationId', String(locationId));
+      }
+      
+      const response = await fetch(`/api/scheduler/customer-contacts?${params}`, {
         headers,
       });
       if (!response.ok) throw new Error('Failed to fetch contacts');
@@ -101,6 +110,7 @@ export function ContactsManager({
       phone: formData.type === 'Phone' ? formData.value : '',
       email: formData.type === 'Email' ? formData.value : '',
       name: formData.name,
+      locationId, // Link to location when provided (location-aware mode)
     });
     
     setShowAddForm(false);

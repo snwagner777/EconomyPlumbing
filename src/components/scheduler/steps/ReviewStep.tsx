@@ -18,6 +18,7 @@ import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key, 
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
+import { LocationContactsSummary } from '../LocationContactsSummary';
 import type { JobType, CustomerInfo, TimeSlot } from '@shared/types/scheduler';
 
 interface SchedulerSession {
@@ -218,6 +219,15 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
 
         </div>
       </Card>
+
+      {/* Location-Specific Contacts (with optional CRUD if authenticated) */}
+      {customer.serviceTitanId && (
+        <LocationContactsSummary
+          customerId={customer.serviceTitanId}
+          locationId={customer.locationId}
+          sessionToken={session?.token}
+        />
+      )}
 
       {/* Problem Description */}
       <Card className="p-6">

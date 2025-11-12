@@ -360,6 +360,7 @@ export function SchedulerFlow({
               utmMedium={initialUtmMedium}
               utmCampaign={initialUtmCampaign}
               referralCode={initialReferralCode}
+              session={state.session}
               data-testid="step-review"
             />
           </div>
