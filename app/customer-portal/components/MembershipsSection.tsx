@@ -19,8 +19,32 @@ import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import type { CustomerMembership } from "../hooks/useCustomerMemberships";
 
+interface MembershipType {
+  id: number;
+  name: string;
+  description: string;
+  discounts: any[];
+  recurringServices: any[];
+  billingOptions: Array<{
+    id: number;
+    name: string;
+    billingFrequency: string;
+    initialBillingDelay: number;
+  }>;
+}
+
 export function MembershipsSection() {
   const { data, isLoading, error } = useCustomerMemberships();
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [selectedMembership, setSelectedMembership] = useState<MembershipType | null>(null);
+  const [purchasing, setPurchasing] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch available membership types from ServiceTitan
+  const { data: membershipTypesData, isLoading: loadingTypes } = useQuery<{ success: boolean; membershipTypes: MembershipType[] }>({
+    queryKey: ['/api/memberships/types', { includeDetails: true }],
+    enabled: showPurchaseModal, // Only fetch when modal opens
+  });
 
   if (isLoading) {
     return (
@@ -78,7 +102,10 @@ export function MembershipsSection() {
             </div>
           </div>
           {!hasAnyMemberships && (
-            <Button data-testid="button-join-membership">
+            <Button 
+              onClick={() => setShowPurchaseModal(true)}
+              data-testid="button-join-membership"
+            >
               <Crown className="w-4 h-4 mr-2" />
               Join Now
             </Button>
@@ -119,8 +146,105 @@ export function MembershipsSection() {
           </div>
         )}
       </CardContent>
+
+      {/* Purchase Membership Modal */}
+      <Dialog open={showPurchaseModal} onOpenChange={setShowPurchaseModal}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Purchase VIP Membership</DialogTitle>
+            <DialogDescription>
+              Choose a membership plan for your property. Your membership benefits will activate immediately after purchase.
+            </DialogDescription>
+          </DialogHeader>
+
+          {loadingTypes ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {membershipTypesData?.membershipTypes.map((membershipType) => (
+                <Card key={membershipType.id} className="p-4 hover-elevate">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg mb-1">{membershipType.name}</h3>
+                      <p className="text-sm text-muted-foreground mb-3">{membershipType.description}</p>
+                      
+                      {/* Benefits Preview */}
+                      <div className="flex gap-4 text-xs text-muted-foreground">
+                        {membershipType.discounts.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <DollarSign className="w-3 h-3" />
+                            <span>{membershipType.discounts.length} Discount{membershipType.discounts.length > 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                        {membershipType.recurringServices.length > 0 && (
+                          <div className="flex items-center gap-1">
+                            <Gift className="w-3 h-3" />
+                            <span>{membershipType.recurringServices.length} Service{membershipType.recurringServices.length > 1 ? 's' : ''}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => {
+                        setSelectedMembership(membershipType);
+                        handlePurchase(membershipType);
+                      }}
+                      disabled={purchasing}
+                      data-testid={`button-purchase-${membershipType.id}`}
+                    >
+                      {purchasing && selectedMembership?.id === membershipType.id ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          Purchase
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
+
+  async function handlePurchase(membershipType: MembershipType) {
+    setPurchasing(true);
+    try {
+      const response = await fetch('/api/customer-portal/membership-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          membershipTypeId: membershipType.id,
+          membershipTypeName: membershipType.name,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create checkout session');
+      }
+
+      const { checkoutUrl } = await response.json();
+      window.location.href = checkoutUrl;
+    } catch (error: any) {
+      toast({
+        title: "Purchase Failed",
+        description: error.message || "Unable to start checkout. Please try again.",
+        variant: "destructive",
+      });
+      setPurchasing(false);
+    }
+  }
 }
 
 function MembershipCard({ membership, isExpired = false }: { membership: CustomerMembership; isExpired?: boolean }) {
