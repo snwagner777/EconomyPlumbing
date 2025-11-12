@@ -7,12 +7,16 @@
 
 'use client';
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Crown, Calendar, DollarSign, Gift, AlertCircle } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Crown, Calendar, DollarSign, Gift, AlertCircle, ShoppingCart, Loader2 } from "lucide-react";
 import { useCustomerMemberships } from "../hooks/useCustomerMemberships";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import type { CustomerMembership } from "../hooks/useCustomerMemberships";
 
 export function MembershipsSection() {

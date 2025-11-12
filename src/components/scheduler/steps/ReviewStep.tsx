@@ -4,7 +4,7 @@
  * Final confirmation before booking the appointment in ServiceTitan.
  */
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Card } from "@/components/ui/card";
@@ -54,6 +54,19 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
   const { toast} = useToast();
   const meta = getJobTypeMeta(jobType.name);
   const Icon = meta.icon;
+
+  // Prevent tab closure during file upload
+  useEffect(() => {
+    if (!uploadingFiles) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = ''; // Required for Chrome
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [uploadingFiles]);
 
   const handleProblemChange = (value: string) => {
     setProblem(value);
