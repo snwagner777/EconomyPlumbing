@@ -43,8 +43,8 @@ export default function Header({
   
   const location = usePathname() || '/';
   
-  // Use server-provided phone numbers (required - pulled from admin panel tracking numbers)
-  // If not provided, phone numbers will be fetched client-side via PhoneConfigContext
+  // Phone numbers MUST be passed from server-side getPhoneNumbers() for UTM tracking
+  // Each page.tsx should fetch and pass these props for proper SEO and tracking
   const phoneConfig = austinPhone || { display: 'Loading...', tel: '#' };
   const marbleFallsPhoneConfig = marbleFallsPhone || { display: 'Loading...', tel: '#' };
 
