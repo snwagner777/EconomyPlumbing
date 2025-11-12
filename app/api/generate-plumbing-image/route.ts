@@ -3,11 +3,17 @@ import { db } from '@/server/db';
 import { generatedPlumbingImages } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
+import { ObjectStorageService } from '@/server/objectStorage';
+import { randomBytes } from 'crypto';
+import sharp from 'sharp';
+import path from 'path';
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY!,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL!,
 });
+
+const objectStorage = new ObjectStorageService();
 
 const dogPrompts = [
   "Professional product photography of a friendly golden retriever dog wearing a blue plumber's cap and work vest, carefully fixing a modern kitchen sink with chrome faucet, holding a wrench in paw, bright clean kitchen background, warm natural lighting, highly detailed, photorealistic",
@@ -62,10 +68,53 @@ export async function POST(request: NextRequest) {
     // Handle both URL and base64 formats
     let imageUrl: string;
     if (response.data[0].url) {
+      // Direct URL from API (rare)
       imageUrl = response.data[0].url;
     } else if (response.data[0].b64_json) {
-      // Convert base64 to data URL for storage
-      imageUrl = `data:image/png;base64,${response.data[0].b64_json}`;
+      // Convert base64 to buffer
+      const base64Data = response.data[0].b64_json;
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+      
+      // Add watermark using sharp
+      const logoPath = path.join(process.cwd(), 'attached_assets', 'Economy Plumbing Services logo_1759801055079.jpg');
+      
+      // Resize logo to 150px wide (maintain aspect ratio)
+      const watermarkBuffer = await sharp(logoPath)
+        .resize(150, null, { fit: 'inside' })
+        .toBuffer();
+      
+      // Get watermark dimensions
+      const watermarkMetadata = await sharp(watermarkBuffer).metadata();
+      const watermarkWidth = watermarkMetadata.width || 150;
+      const watermarkHeight = watermarkMetadata.height || 50;
+      
+      // Composite watermark in bottom-right corner with 20px padding
+      const watermarkedImage = await sharp(imageBuffer)
+        .composite([{
+          input: watermarkBuffer,
+          gravity: 'southeast',
+          blend: 'over'
+        }])
+        .toBuffer();
+      
+      // Generate unique filename
+      const timestamp = Date.now();
+      const randomId = randomBytes(4).toString('hex');
+      const filename = `${animal}-plumber-${timestamp}-${randomId}.png`;
+      
+      // Upload to object storage in public directory
+      const publicPaths = objectStorage.getPublicObjectSearchPaths();
+      const bucketPath = publicPaths[0]; // Use first public path
+      const destinationPath = `${bucketPath}/${animal}s-plumbing/${filename}`;
+      
+      console.log(`[Generate Plumbing Image] Uploading ${filename} with watermark to ${destinationPath}`);
+      
+      await objectStorage.uploadBuffer(watermarkedImage, destinationPath, 'image/png');
+      
+      // Store the public path (proxy will rewrite this to a public URL)
+      imageUrl = destinationPath;
+      
+      console.log(`[Generate Plumbing Image] Saved watermarked image to object storage: ${imageUrl}`);
     } else {
       console.error('[Generate Plumbing Image] No URL or base64 data in response');
       return NextResponse.json(
@@ -87,13 +136,22 @@ export async function POST(request: NextRequest) {
       .where(eq(generatedPlumbingImages.animalType, animal))
       .orderBy(desc(generatedPlumbingImages.createdAt));
 
-    // If more than 12, delete the oldest ones
+    // If more than 12, delete the oldest ones (both from DB and object storage)
     if (allImages.length > 12) {
       const toDelete = allImages.slice(12);
-      const idsToDelete = toDelete.map((img: any) => img.id);
       
-      for (const id of idsToDelete) {
-        await db.delete(generatedPlumbingImages).where(eq(generatedPlumbingImages.id, id));
+      for (const img of toDelete) {
+        // Delete from object storage first
+        try {
+          await objectStorage.deleteFile(img.imageUrl);
+          console.log(`[Generate Plumbing Image] Deleted old image from storage: ${img.imageUrl}`);
+        } catch (error) {
+          console.error(`[Generate Plumbing Image] Error deleting from storage: ${img.imageUrl}`, error);
+          // Continue even if storage deletion fails
+        }
+        
+        // Delete from database
+        await db.delete(generatedPlumbingImages).where(eq(generatedPlumbingImages.id, img.id));
       }
     }
 

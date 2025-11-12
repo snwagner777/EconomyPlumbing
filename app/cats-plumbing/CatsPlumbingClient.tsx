@@ -138,9 +138,10 @@ export default function CatsPlumbingClient({ phoneConfig }: CatsPlumbingClientPr
                     <div className="aspect-[4/3] relative overflow-hidden">
                       <img
                         src={image.imageUrl}
-                        alt={`AI generated cat plumber ${index + 1}`}
+                        alt={`Professional cat plumber AI-generated image - adorable cat wearing work clothes fixing plumbing - image ${index + 1}`}
                         className="w-full h-full object-cover"
                         loading={index < 3 ? 'eager' : 'lazy'}
+                        title="AI Generated Cat Plumber - Economy Plumbing Services"
                       />
                     </div>
                   </Card>

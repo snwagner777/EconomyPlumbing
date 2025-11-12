@@ -138,9 +138,10 @@ export default function DogsPlumbingClient({ phoneConfig }: DogsPlumbingClientPr
                     <div className="aspect-[4/3] relative overflow-hidden">
                       <img
                         src={image.imageUrl}
-                        alt={`AI generated dog plumber ${index + 1}`}
+                        alt={`Professional dog plumber AI-generated image - cute dog wearing work clothes fixing plumbing - image ${index + 1}`}
                         className="w-full h-full object-cover"
                         loading={index < 3 ? 'eager' : 'lazy'}
+                        title="AI Generated Dog Plumber - Economy Plumbing Services"
                       />
                     </div>
                   </Card>
