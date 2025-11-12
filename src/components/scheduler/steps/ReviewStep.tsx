@@ -20,6 +20,14 @@ import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
 import type { JobType, CustomerInfo, TimeSlot } from '@shared/types/scheduler';
 
+interface SchedulerSession {
+  token: string | null;
+  verificationMethod: 'phone' | 'email' | null;
+  verifiedAt: number | null;
+  customerId: number | null;
+  expiresAt: number | null;
+}
+
 interface ReviewStepProps {
   jobType: JobType;
   customer: CustomerInfo;
@@ -32,9 +40,10 @@ interface ReviewStepProps {
   utmMedium?: string;
   utmCampaign?: string;
   referralCode?: string;
+  session?: SchedulerSession; // Session for contact management
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode }: ReviewStepProps) {
+export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode, session }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
   const [problem, setProblem] = useState(problemDescription || '');
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
