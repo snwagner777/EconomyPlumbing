@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Metadata } from 'next';
 import './globals.css';
 import { ClientProviders } from '@/components/ClientProviders';
+import { PhoneConfigProvider } from '@/providers/PhoneConfigProvider';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://plumbersthatcare.com'),
@@ -75,9 +76,11 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
-        <ClientProviders>
-          {children}
-        </ClientProviders>
+        <PhoneConfigProvider>
+          <ClientProviders>
+            {children}
+          </ClientProviders>
+        </PhoneConfigProvider>
       </body>
     </html>
   );
