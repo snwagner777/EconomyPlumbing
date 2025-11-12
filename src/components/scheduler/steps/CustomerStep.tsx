@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { useToast } from '@/hooks/use-toast';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +19,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info, Phone, Mail, User } from 'lucide-react';
+import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info, Phone, Mail, User, AlertCircle } from 'lucide-react';
 import { NewCustomerWizard } from '../NewCustomerWizard';
 import { NewLocationWizard } from '../NewLocationWizard';
 
@@ -89,8 +90,14 @@ const normalizeState = (state: string): string => {
 };
 
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError }: CustomerStepProps) {
+  const { toast } = useToast();
   const [lookupValue, setLookupValue] = useState('');
   const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
+  const [showVerification, setShowVerification] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [isVerified, setIsVerified] = useState(false);
+  const [verifiedContact, setVerifiedContact] = useState('');
+  const [sendError, setSendError] = useState<string | null>(null);
   const [customersFound, setCustomersFound] = useState<any[]>([]);
   const [customerFound, setCustomerFound] = useState<any>(null);
   const [locations, setLocations] = useState<STLocation[]>([]);
@@ -138,7 +145,89 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     },
   });
 
-  // Lookup customer in local DB
+  // Send OTP for verification (SMS or Email)
+  const sendOTPMutation = useMutation({
+    mutationFn: async ({ contact, type }: { contact: string; type: 'phone' | 'email' }) => {
+      const response = await apiRequest('POST', '/api/scheduler/otp/send', { contact, type });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to send verification code');
+      }
+      return await response.json();
+    },
+    onSuccess: (data) => {
+      setShowVerification(true);
+      setVerificationCode('');
+      setSendError(null);
+      toast({
+        title: "Verification code sent!",
+        description: data.method === 'sms' 
+          ? "Check your phone for the SMS code" 
+          : "Check your email inbox for the verification code",
+      });
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message;
+      setSendError(errorMessage);
+      
+      // Show different toast messages based on error type
+      if (errorMessage.includes('wait a minute')) {
+        toast({
+          title: "Too many requests",
+          description: "Please wait a minute before requesting another code",
+          variant: "destructive"
+        });
+      } else if (errorMessage.includes('not available')) {
+        toast({
+          title: "Service unavailable",
+          description: lookupMode === 'phone' 
+            ? "SMS service is temporarily unavailable. Try using email instead." 
+            : "Email service is temporarily unavailable. Try using phone instead.",
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Error sending code",
+          description: errorMessage,
+          variant: "destructive"
+        });
+      }
+    },
+  });
+
+  // Verify OTP code
+  const verifyOTPMutation = useMutation({
+    mutationFn: async ({ contact, code }: { contact: string; code: string }) => {
+      const response = await apiRequest('POST', '/api/scheduler/otp/verify', { contact, code });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Verification failed');
+      }
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.verified) {
+        setIsVerified(true);
+        setVerifiedContact(data.contact);
+        setShowVerification(false);
+        toast({
+          title: "Verified!",
+          description: "Your contact has been verified successfully",
+        });
+        // Now proceed with customer lookup
+        lookupMutation.mutate(lookupValue);
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Verification failed",
+        description: error.message || "Invalid or expired code. Please try again.",
+        variant: "destructive"
+      });
+    },
+  });
+
+  // Lookup customer in local DB (called AFTER verification)
   const lookupMutation = useMutation({
     mutationFn: async (value: string) => {
       const response = await apiRequest('POST', '/api/scheduler/lookup-customer', {
@@ -245,8 +334,29 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
 
   const handleLookup = () => {
     if (lookupValue.trim()) {
-      lookupMutation.mutate(lookupValue.trim());
+      // Send OTP for verification first
+      sendOTPMutation.mutate({
+        contact: lookupValue.trim(),
+        type: lookupMode
+      });
     }
+  };
+
+  const handleVerifyCode = () => {
+    if (verificationCode.trim().length === 6) {
+      verifyOTPMutation.mutate({
+        contact: lookupValue.trim(),
+        code: verificationCode.trim()
+      });
+    }
+  };
+
+  const handleResendCode = () => {
+    setVerificationCode('');
+    sendOTPMutation.mutate({
+      contact: lookupValue.trim(),
+      type: lookupMode
+    });
   };
 
   const handleLocationSelect = (location: STLocation) => {
@@ -352,6 +462,108 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       createCustomerMutation.mutate(data);
     }
   };
+
+  // Show verification code input if OTP was sent
+  if (showVerification && !isVerified) {
+    return (
+      <div className="space-y-6">
+        {showFreeEstimateBanner && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm text-blue-900 dark:text-blue-100">
+                  Free Estimate Included
+                </h3>
+                <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                  This service includes a complimentary estimate. We'll assess your needs and provide transparent pricing before any work begins.
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
+        
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <h3 className="text-base font-semibold text-center">Enter Verification Code</h3>
+            <p className="text-sm text-muted-foreground text-center">
+              We sent a 6-digit code to{' '}
+              <span className="font-medium text-foreground">
+                {lookupMode === 'phone' 
+                  ? lookupValue 
+                  : lookupValue
+                }
+              </span>
+            </p>
+          </div>
+
+          <div className="flex gap-2 max-w-md mx-auto">
+            <Input
+              type="text"
+              placeholder="000000"
+              value={verificationCode}
+              maxLength={6}
+              className="text-center text-lg tracking-widest font-mono"
+              onChange={(e) => {
+                const value = e.target.value.replace(/\D/g, ''); // Only digits
+                setVerificationCode(value);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && verificationCode.length === 6) {
+                  handleVerifyCode();
+                }
+              }}
+              data-testid="input-verification-code"
+            />
+            <Button
+              onClick={handleVerifyCode}
+              disabled={verifyOTPMutation.isPending || verificationCode.length !== 6}
+              data-testid="button-verify"
+            >
+              {verifyOTPMutation.isPending ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                'Verify'
+              )}
+            </Button>
+          </div>
+
+          {verifyOTPMutation.isError && (
+            <Card className="p-3 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-700 dark:text-red-300 text-center">
+                Invalid or expired code. Please try again.
+              </p>
+            </Card>
+          )}
+
+          <div className="flex flex-col items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResendCode}
+              disabled={sendOTPMutation.isPending}
+              className="text-xs"
+              data-testid="button-resend-code"
+            >
+              {sendOTPMutation.isPending ? 'Sending...' : 'Resend Code'}
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setShowVerification(false);
+                setVerificationCode('');
+              }}
+              className="text-xs"
+              data-testid="button-change-contact"
+            >
+              Change {lookupMode === 'phone' ? 'Phone Number' : 'Email Address'}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show customer selection if multiple customers found (check this FIRST)
   if (customersFound.length > 1 && !customerFound) {
@@ -462,13 +674,39 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         )}
         
         <div className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-center block">
-              {lookupMode === 'phone' 
-                ? 'What\'s your cell phone number?' 
-                : 'What\'s your email address?'
-              }
-            </label>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-center">How should we reach you?</h3>
+            
+            {/* Toggle buttons for phone/email selection */}
+            <div className="flex gap-2 justify-center">
+              <Button
+                variant={lookupMode === 'phone' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setLookupMode('phone');
+                  setLookupValue('');
+                }}
+                className="flex items-center gap-2"
+                data-testid="button-mode-phone"
+              >
+                <Phone className="w-4 h-4" />
+                Cell Phone
+              </Button>
+              <Button
+                variant={lookupMode === 'email' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setLookupMode('email');
+                  setLookupValue('');
+                }}
+                className="flex items-center gap-2"
+                data-testid="button-mode-email"
+              >
+                <Mail className="w-4 h-4" />
+                Email
+              </Button>
+            </div>
+
             <div className="flex gap-2 max-w-md mx-auto">
               <Input
                 type={lookupMode === 'phone' ? 'tel' : 'email'}
@@ -489,12 +727,14 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
                     }
                     
                     setLookupValue(value);
+                    setSendError(null); // Clear error when typing
                   } else {
                     setLookupValue(e.target.value);
+                    setSendError(null); // Clear error when typing
                   }
                 }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && lookupValue.trim()) {
+                  if (e.key === 'Enter' && lookupValue.trim() && !sendOTPMutation.isPending) {
                     handleLookup();
                   }
                 }}
@@ -502,39 +742,32 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               />
               <Button
                 onClick={handleLookup}
-                disabled={lookupMutation.isPending || !lookupValue.trim()}
+                disabled={sendOTPMutation.isPending || !lookupValue.trim()}
                 data-testid="button-continue"
               >
-                {lookupMutation.isPending ? (
+                {sendOTPMutation.isPending ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   'Continue'
                 )}
               </Button>
             </div>
+            
+            {sendError && (
+              <Card className="p-3 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+                <div className="flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+                  <p className="text-sm text-red-700 dark:text-red-300">{sendError}</p>
+                </div>
+              </Card>
+            )}
+            
             <p className="text-xs text-muted-foreground text-center">
               {lookupMode === 'phone' 
                 ? 'We need a cell phone to send SMS verification codes and appointment reminders'
-                : 'We\'ll use this to send email verification and appointment confirmations'
+                : 'We\'ll send an email verification code and appointment confirmations'
               }
             </p>
-            <div className="text-center">
-              <Button
-                variant="link"
-                size="sm"
-                onClick={() => {
-                  setLookupMode(lookupMode === 'phone' ? 'email' : 'phone');
-                  setLookupValue('');
-                }}
-                className="text-xs"
-                data-testid="button-toggle-lookup-mode"
-              >
-                {lookupMode === 'phone' 
-                  ? 'Use email instead (for landlines/offices)'
-                  : 'Use cell phone instead'
-                }
-              </Button>
-            </div>
           </div>
         </div>
       </div>
