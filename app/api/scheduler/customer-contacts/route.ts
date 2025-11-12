@@ -229,9 +229,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { phone, email, locationId, name } = body;
 
+    // By this point, customer should exist from lookup/creation during CustomerStep
     if (!session.customerId) {
+      console.error('[Scheduler] Session has no customer ID - this should not happen after customer lookup/creation');
       return NextResponse.json(
-        { code: 'BAD_REQUEST', message: 'No customer associated with session' },
+        { code: 'BAD_REQUEST', message: 'No customer associated with session. Please complete customer information first.' },
         { status: 400 }
       );
     }

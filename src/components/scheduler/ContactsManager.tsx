@@ -105,9 +105,12 @@ export function ContactsManager({
       return;
     }
     
+    // BUGFIX: Handle both 'Phone' and 'MobilePhone' types
+    const isPhone = formData.type === 'Phone' || formData.type === 'MobilePhone';
+    
     await addContactMutation.mutateAsync({
       token: sessionToken,
-      phone: formData.type === 'Phone' ? formData.value : '',
+      phone: isPhone ? formData.value : '',
       email: formData.type === 'Email' ? formData.value : '',
       name: formData.name,
       locationId, // Link to location when provided (location-aware mode)

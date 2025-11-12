@@ -180,6 +180,21 @@ export function invalidateSchedulerSession(token: string): boolean {
 }
 
 /**
+ * Update session with customer ID after creating customer in ServiceTitan
+ * This is called when a new customer fills out the form and we create them in ST
+ */
+export function updateSessionCustomerId(token: string, customerId: number): boolean {
+  const session = validateSchedulerSession(token);
+  if (!session) return false;
+  
+  session.customerId = customerId;
+  sessionStore.set(session.sessionId, session);
+  
+  console.log(`[Scheduler Session] Updated session ${session.sessionId} with customer ID ${customerId}`);
+  return true;
+}
+
+/**
  * Get session data for a customer ID (used by booking API to enrich requests)
  */
 export function getSchedulerSessionByCustomerId(customerId: number): SchedulerSessionData | null {

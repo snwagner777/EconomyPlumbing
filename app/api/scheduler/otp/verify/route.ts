@@ -35,15 +35,19 @@ export async function POST(req: NextRequest) {
     try {
       if (method === 'phone') {
         const normalizedPhone = verifiedContact.replace(/\D/g, '');
+        console.log(`[Scheduler OTP] Looking up customer by phone: ${normalizedPhone}`);
         const customer = await db.query.customersXlsx.findFirst({
           where: eq(customersXlsx.phone, normalizedPhone)
         });
         customerId = customer?.id || null; // id is the ServiceTitan customer ID
+        console.log(`[Scheduler OTP] Customer lookup result: ${customerId ? `Found customer ${customerId}` : 'No customer found'}`);
       } else {
+        console.log(`[Scheduler OTP] Looking up customer by email: ${verifiedContact.toLowerCase()}`);
         const customer = await db.query.customersXlsx.findFirst({
           where: eq(customersXlsx.email, verifiedContact.toLowerCase())
         });
         customerId = customer?.id || null; // id is the ServiceTitan customer ID
+        console.log(`[Scheduler OTP] Customer lookup result: ${customerId ? `Found customer ${customerId}` : 'No customer found'}`);
       }
     } catch (error) {
       console.error('[Scheduler OTP] Error looking up customer:', error);

@@ -98,6 +98,8 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
     isLoadingSwitcher,
     setCustomerId,
     setAddContactOpen,
+    addLocationOpen,
+    setAddLocationOpen,
     handleEditContacts,
     formatPhoneNumber: formatPhoneNumberProp,
     handleEditAddress,

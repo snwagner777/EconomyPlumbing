@@ -94,6 +94,7 @@ export function ContactForm({
       type: 'Phone',
       value: '',
       memo: '',
+      name: '', // Fix controlled/uncontrolled warning for optional name field
       ...defaultValues,
     },
   });
