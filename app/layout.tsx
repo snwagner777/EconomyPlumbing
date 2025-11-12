@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { ClientProviders } from '@/components/ClientProviders';
 import { PhoneConfigProvider } from '@/providers/PhoneConfigProvider';
+import { LocalBusinessSchema } from '@/components/JsonLdSchemas';
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://plumbersthatcare.com'),
@@ -74,6 +75,9 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://www.facebook.com" />
         <link rel="dns-prefetch" href="https://connect.facebook.net" />
         <link rel="dns-prefetch" href="https://www.clarity.ms" />
+        
+        {/* Structured Data: LocalBusiness Schema */}
+        <LocalBusinessSchema />
       </head>
       <body className="min-h-screen bg-background font-sans antialiased">
         <PhoneConfigProvider>
