@@ -30,13 +30,17 @@ export async function PhoneConfigProvider({ children }: { children: React.ReactN
     try {
       const paramsObject = JSON.parse(searchParamsJson);
       searchParams = new URLSearchParams(paramsObject);
+      console.log('[PhoneConfigProvider] UTM params detected:', Object.fromEntries(searchParams));
     } catch (error) {
       console.error('[PhoneConfigProvider] Error parsing search params:', error);
     }
+  } else {
+    console.log('[PhoneConfigProvider] No UTM params - using default phone number');
   }
   
   // Fetch phone numbers with UTM tracking (server-side)
   const phoneConfig = await getPhoneNumbers(searchParams);
+  console.log('[PhoneConfigProvider] Resolved phone:', phoneConfig.austin.display);
   
   // Pass data to client provider component
   return (
