@@ -17,7 +17,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChevronRight, Search, Loader2, CheckCircle, MapPin, Plus, ArrowLeft, Info, Phone, Mail, User } from 'lucide-react';
 import { NewCustomerWizard } from '../NewCustomerWizard';
 import { NewLocationWizard } from '../NewLocationWizard';
 
@@ -95,6 +96,8 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const [selectedLocation, setSelectedLocation] = useState<STLocation | null>(null);
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [showContactsDialog, setShowContactsDialog] = useState(false);
+  const [customerContacts, setCustomerContacts] = useState<any[]>([]);
 
   // Check if service qualifies for free estimate message
   const showFreeEstimateBanner = selectedService && (() => {
@@ -166,9 +169,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const handleCustomerSelect = (customer: any) => {
     setCustomerFound(customer);
     
-    // Immediately fetch locations from ServiceTitan
+    // Immediately fetch locations and contacts from ServiceTitan
     if (customer.serviceTitanId) {
       fetchLocationsMutation.mutate(customer.serviceTitanId);
+      fetchContactsMutation.mutate(customer.serviceTitanId);
     }
     
     // Pre-fill form with customer data
@@ -201,6 +205,20 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       if (data.success && data.locations) {
         console.log('[CustomerStep] Fetched ServiceTitan locations:', data.locations);
         setLocations(data.locations);
+      }
+    },
+  });
+
+  // Fetch contacts from ServiceTitan (read-only)
+  const fetchContactsMutation = useMutation({
+    mutationFn: async (serviceTitanCustomerId: number) => {
+      const response = await fetch(`/api/scheduler/customer-contacts?customerId=${serviceTitanCustomerId}`);
+      return await response.json();
+    },
+    onSuccess: (data: any) => {
+      if (data.success && data.contacts) {
+        console.log('[CustomerStep] Fetched customer contacts:', data.contacts);
+        setCustomerContacts(data.contacts);
       }
     },
   });
@@ -569,15 +587,25 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => setShowAddLocation(true)}
-              data-testid="button-add-location"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add New Service Location
-            </Button>
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowAddLocation(true)}
+                data-testid="button-add-location"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Location
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setShowContactsDialog(true)}
+                disabled={customerContacts.length === 0 && !fetchContactsMutation.isPending}
+                data-testid="button-view-contacts"
+              >
+                <User className="w-4 h-4 mr-2" />
+                View Contacts
+              </Button>
+            </div>
           </>
         )}
 
@@ -586,6 +614,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           onClick={() => {
             setCustomerFound(null);
             setLocations([]);
+            setCustomerContacts([]);
             setShowForm(false);
           }}
           data-testid="button-back-lookup"
@@ -593,6 +622,66 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Lookup
         </Button>
+
+        {/* Contacts Dialog */}
+        <Dialog open={showContactsDialog} onOpenChange={setShowContactsDialog}>
+          <DialogContent className="max-w-md" data-testid="dialog-customer-contacts">
+            <DialogHeader>
+              <DialogTitle>Contact Information</DialogTitle>
+              <DialogDescription>
+                Review your contact information on file. To update, please visit the customer portal.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              {fetchContactsMutation.isPending ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : customerContacts.length > 0 ? (
+                customerContacts.map((contact) => (
+                  <div key={contact.id} className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      {contact.name}
+                    </div>
+                    {contact.methods.map((method: any) => (
+                      <div
+                        key={method.id}
+                        className="flex items-start gap-3 p-3 rounded-md bg-muted/50"
+                        data-testid={`contact-method-${method.id}`}
+                      >
+                        {method.type === 'Email' ? (
+                          <Mail className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        ) : (
+                          <Phone className="w-4 h-4 text-muted-foreground mt-0.5" />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm">{method.value}</div>
+                          {method.memo && (
+                            <div className="text-xs text-muted-foreground mt-0.5">
+                              {method.memo}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8 text-muted-foreground text-sm">
+                  No contact information on file
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button onClick={() => setShowContactsDialog(false)} data-testid="button-close-contacts">
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
