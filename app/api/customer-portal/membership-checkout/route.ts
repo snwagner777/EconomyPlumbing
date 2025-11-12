@@ -20,6 +20,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const checkoutSchema = z.object({
   membershipTypeId: z.number(),
   membershipTypeName: z.string(),
+  saleTaskId: z.number(),
+  durationBillingId: z.number(),
 });
 
 export async function POST(req: NextRequest) {
@@ -47,7 +49,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { membershipTypeId, membershipTypeName } = result.data;
+    const { membershipTypeId, membershipTypeName, saleTaskId, durationBillingId } = result.data;
 
     // Fetch customer and location details from ServiceTitan
     const customer = await serviceTitanCRM.getCustomer(customerId);
@@ -103,8 +105,15 @@ export async function POST(req: NextRequest) {
         locationId: primaryLocation.id.toString(),
         membershipTypeId: membershipTypeId.toString(),
         membershipTypeName,
+        saleTaskId: saleTaskId.toString(),
+        durationBillingId: durationBillingId.toString(),
         customerName: customer.name,
         customerPhone: phoneNumber,
+        customerEmail: phoneContact?.methods.find(m => m.type === 'Email')?.value || '',
+        address: primaryLocation.address?.street || '',
+        city: primaryLocation.address?.city || '',
+        state: primaryLocation.address?.state || '',
+        zip: primaryLocation.address?.zip || '',
       },
     });
 

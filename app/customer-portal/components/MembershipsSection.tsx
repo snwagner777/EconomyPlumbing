@@ -220,12 +220,21 @@ export function MembershipsSection() {
   async function handlePurchase(membershipType: MembershipType) {
     setPurchasing(true);
     try {
+      // Get the first billing option for this membership
+      const billingOption = membershipType.billingOptions[0];
+      
+      if (!billingOption) {
+        throw new Error('No billing options available for this membership');
+      }
+
       const response = await fetch('/api/customer-portal/membership-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           membershipTypeId: membershipType.id,
           membershipTypeName: membershipType.name,
+          saleTaskId: membershipType.id, // Membership type ID is the sale task
+          durationBillingId: billingOption.id,
         }),
       });
 
