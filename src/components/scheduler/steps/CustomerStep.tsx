@@ -599,7 +599,6 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               <Button
                 variant="outline"
                 onClick={() => setShowContactsDialog(true)}
-                disabled={customerContacts.length === 0 && !fetchContactsMutation.isPending}
                 data-testid="button-view-contacts"
               >
                 <User className="w-4 h-4 mr-2" />
@@ -637,6 +636,17 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
               {fetchContactsMutation.isPending ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : fetchContactsMutation.isError ? (
+                <div className="text-center py-8">
+                  <p className="text-sm text-destructive mb-2">Failed to load contact information</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => fetchContactsMutation.mutate(customerFound.serviceTitanId)}
+                  >
+                    Retry
+                  </Button>
                 </div>
               ) : customerContacts.length > 0 ? (
                 customerContacts.map((contact) => (

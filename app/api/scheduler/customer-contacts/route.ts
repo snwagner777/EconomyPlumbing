@@ -4,10 +4,13 @@
  * PUBLIC ENDPOINT - No authentication required
  * Allows viewing existing contacts for a customer during booking flow
  * Does NOT allow mutations (add/edit/delete - those require portal authentication)
+ * 
+ * Security: Rate-limited to prevent enumeration attacks
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { checkRateLimit } from '@/server/lib/rateLimit';
 
 /**
  * GET /api/scheduler/customer-contacts?customerId=123
@@ -18,6 +21,29 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
  */
 export async function GET(req: NextRequest) {
   try {
+    // Rate limiting to prevent enumeration attacks (use IP as key for public endpoint)
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0] || 
+                     req.headers.get('x-real-ip') || 
+                     'unknown';
+    
+    const rateLimit = checkRateLimit(`scheduler-contacts:${clientIp}`, {
+      maxRequests: 20, // 20 lookups per 5 minutes (more generous than portal since public)
+      windowMs: 5 * 60 * 1000,
+    });
+
+    if (!rateLimit.allowed) {
+      console.warn(`[Scheduler] Rate limit exceeded for IP: ${clientIp}`);
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { 
+          status: 429,
+          headers: {
+            'Retry-After': Math.ceil((rateLimit.resetAt - Date.now()) / 1000).toString(),
+          },
+        }
+      );
+    }
+
     const { searchParams } = new URL(req.url);
     const customerIdParam = searchParams.get('customerId');
 
@@ -36,7 +62,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    console.log(`[Scheduler] Fetching contacts for customer ${customerId}`);
+    console.log(`[Scheduler] Fetching contacts for customer ${customerId} (IP: ${clientIp})`);
 
     // Fetch contacts from ServiceTitan
     const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
@@ -73,28 +99,50 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * Mask contact values for privacy
- * Phone: (512) ***-**34
+ * Mask contact values for privacy (HARDENED for security)
+ * Phone: (512) ***-**34 (always masks, regardless of format)
  * Email: j***@example.com
  */
 function maskContactValue(value: string, type: string): string {
   if (type === 'Email') {
-    const [localPart, domain] = value.split('@');
-    if (!localPart || !domain) return value;
-    
-    // Show first character and domain
-    const maskedLocal = localPart[0] + '***';
-    return `${maskedLocal}@${domain}`;
-  }
-  
-  if (type === 'MobilePhone' || type === 'Phone') {
-    // Extract digits only
-    const digits = value.replace(/\D/g, '');
-    if (digits.length === 10) {
-      // Show area code and last 2 digits: (512) ***-**34
-      return `(${digits.slice(0, 3)}) ***-**${digits.slice(-2)}`;
+    try {
+      const [localPart, domain] = value.split('@');
+      if (!localPart || !domain) {
+        // Invalid email format - return generic placeholder
+        return '***@***.com';
+      }
+      
+      // Show first character and domain
+      const maskedLocal = (localPart[0] || '*') + '***';
+      return `${maskedLocal}@${domain}`;
+    } catch {
+      return '***@***.com';
     }
   }
   
-  return value; // Return as-is if format doesn't match
+  if (type === 'MobilePhone' || type === 'Phone') {
+    try {
+      // Extract digits only (handles country codes, extensions, any format)
+      const digits = value.replace(/\D/g, '');
+      
+      // SECURITY: Always mask, never return raw value
+      if (digits.length >= 10) {
+        // Standard US format: Show area code and last 2 digits
+        const areaCode = digits.slice(-10, -7); // Last 10 digits, first 3 = area code
+        const lastTwo = digits.slice(-2);
+        return `(${areaCode}) ***-**${lastTwo}`;
+      } else if (digits.length >= 4) {
+        // Short numbers: Show first digit and last 2
+        return `${digits[0]}***${digits.slice(-2)}`;
+      } else {
+        // Too short - generic placeholder
+        return '(***) ***-****';
+      }
+    } catch {
+      return '(***) ***-****';
+    }
+  }
+  
+  // Fallback for unknown types - NEVER return raw value
+  return '***';
 }
