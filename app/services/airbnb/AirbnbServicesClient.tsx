@@ -21,33 +21,60 @@ export default function AirbnbServicesClient({ phoneConfig }: AirbnbServicesClie
   const services = [
     {
       icon: Clock,
-      title: 'Priority Emergency Service',
-      description: 'Get to the front of the line when plumbing emergencies threaten your bookings',
+      title: '24/7 Emergency Response',
+      description: 'Burst pipes, leaks, or backups between guests? We respond immediately to protect your property and booking calendar.',
     },
     {
       icon: Shield,
-      title: 'Preventive Maintenance',
-      description: 'Regular inspections to catch problems before they impact your guests',
+      title: 'Preventive Maintenance Plans',
+      description: 'Regular inspections catch problems before they impact your 5-star reviews and revenue.',
     },
     {
       icon: Wrench,
-      title: 'Guest-Friendly Service',
-      description: 'Professional, courteous service that respects your guests\' experience',
+      title: 'Turnover-Ready Service',
+      description: 'Fast repairs timed between bookings. We coordinate with your cleaning schedule to minimize property downtime.',
     },
     {
       icon: DollarSign,
-      title: 'Member Savings',
-      description: 'VIP pricing on all services helps protect your rental income',
+      title: 'VIP Membership Savings',
+      description: 'Discounted rates and priority scheduling for rental property owners and property managers.',
+    },
+  ];
+
+  const rentalServices = [
+    {
+      title: 'Emergency Plumbing Response',
+      description: 'Burst pipes, water leaks, toilet backups, or drainage issues can cost you bookings. Our 24/7 emergency service gets your property guest-ready fast.',
+    },
+    {
+      title: 'Pre-Guest Inspections',
+      description: 'Proactive plumbing checks before new guests arrive prevent mid-stay emergencies and negative reviews.',
+    },
+    {
+      title: 'Water Heater Services',
+      description: 'Reliable hot water is non-negotiable for Airbnb guests. We repair, maintain, and replace water heaters with minimal property downtime.',
+    },
+    {
+      title: 'Drain Cleaning & Maintenance',
+      description: 'High guest turnover means higher drain usage. Regular maintenance prevents clogs and keeps your reviews spotless.',
+    },
+    {
+      title: 'Fixture Upgrades',
+      description: 'Modern faucets, showerheads, and toilets improve guest experience and boost your property value.',
+    },
+    {
+      title: 'Sewer Line & Main Line Service',
+      description: 'Protect your investment with professional sewer inspections and rooter services to prevent catastrophic failures.',
     },
   ];
 
   const benefits = [
-    'Priority scheduling for emergency repairs',
-    'Discounted rates on all plumbing services',
-    'Annual plumbing inspection included',
-    'Coverage for all rental properties in our area',
-    '24/7 emergency support',
+    'Priority scheduling - we work around your booking calendar',
+    'VIP membership discounts on all plumbing services',
+    'Annual plumbing inspection for each covered property',
     'Fast response times to minimize guest disruption',
+    'Professional, courteous service that respects your guests',
+    'Coordination with your property management schedule',
   ];
 
   function handleVIPPurchase(data: { customerId: number; customerName: string; phone: string }) {
@@ -64,7 +91,7 @@ export default function AirbnbServicesClient({ phoneConfig }: AirbnbServicesClie
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header phoneConfig={phoneConfig} />
+      <Header austinPhone={{ display: phoneConfig.display, tel: phoneConfig.tel }} />
       
       <main className="flex-1">
         <section className="bg-gradient-to-b from-primary/10 to-background py-16 lg:py-24">
@@ -107,12 +134,47 @@ export default function AirbnbServicesClient({ phoneConfig }: AirbnbServicesClie
           </div>
         </section>
 
-        <section className="py-16 lg:py-20">
+        <section className="py-16 lg:py-20 bg-background">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl lg:text-4xl font-bold mb-4">
+                Comprehensive Plumbing Services for Rental Properties
+              </h2>
+              <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
+                From emergency repairs to preventive maintenance, we keep your Airbnb, VRBO, and rental properties in perfect condition.
+              </p>
+            </div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {rentalServices.map((service, index) => (
+                <Card key={index} className="p-6 hover-elevate" data-testid={`card-rental-service-${index}`}>
+                  <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
+                  <p className="text-muted-foreground">{service.description}</p>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-12 text-center">
+              <p className="text-lg text-muted-foreground mb-6">
+                Managing multiple rental properties? Our VIP membership covers all your properties in our service area with priority scheduling and discounted rates.
+              </p>
+              <Button
+                size="lg"
+                onClick={() => setLookupModalOpen(true)}
+                data-testid="button-learn-more-vip"
+              >
+                Learn More About VIP Membership
+              </Button>
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 lg:py-20 bg-muted/30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h2 className="text-3xl font-bold mb-6">
-                  Why Airbnb Hosts Choose Our VIP Program
+                  Why Rental Property Owners Choose Our VIP Program
                 </h2>
                 <p className="text-lg text-muted-foreground mb-8">
                   Running a successful rental property means minimizing downtime and keeping guests happy. 
@@ -177,17 +239,17 @@ export default function AirbnbServicesClient({ phoneConfig }: AirbnbServicesClie
               and keep your guests happy. Call us today to learn more!
             </p>
             <a
-              href={`tel:${phoneConfig.phoneNumber}`}
+              href={phoneConfig.tel}
               className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary hover-elevate active-elevate-2"
               data-testid="button-call-for-info"
             >
-              Call Now: {phoneConfig.displayNumber}
+              Call Now: {phoneConfig.display}
             </a>
           </div>
         </section>
       </main>
 
-      <Footer phoneConfig={phoneConfig} />
+      <Footer />
 
       <PhoneLookupModal
         open={lookupModalOpen}
