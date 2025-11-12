@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getPageMetadata } from '@/server/lib/metadata';
-import { MarketingPageShell } from '@/components/MarketingPageShell';
+import { getPhoneNumbers } from '@/server/lib/phoneNumbers';
 import HomeClient from './HomeClient';
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -12,10 +12,16 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function Home({ searchParams }: { searchParams: Promise<{[key: string]: string | string[] | undefined}> }) {
   const search = await searchParams;
-  
+  const urlParams = new URLSearchParams();
+  Object.entries(search).forEach(([key, value]) => {
+    if (value) urlParams.set(key, Array.isArray(value) ? value[0] : value);
+  });
+  const { austin: phoneConfig, marbleFalls: marbleFallsPhoneConfig } = await getPhoneNumbers(urlParams);
+
   return (
-    <MarketingPageShell searchParams={search}>
-      <HomeClient />
-    </MarketingPageShell>
+    <HomeClient 
+      phoneConfig={phoneConfig}
+      marbleFallsPhoneConfig={marbleFallsPhoneConfig}
+    />
   );
 }
