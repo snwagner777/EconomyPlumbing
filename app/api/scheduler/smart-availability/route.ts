@@ -171,27 +171,34 @@ export async function POST(req: NextRequest) {
     // Customer sees 4-hour window (e.g., "8am-12pm"), we book 2-hour slots internally
     const allSlots: ScoredSlot[] = [];
     
-    // Fetch customer zone info for proximity scoring
+    // Fetch customer zone info for proximity scoring (check ZIP first, then city for Hill Country)
     const serviceLocationZone = customerZip ? await getZoneForZip(customerZip) : null;
     const serviceLocationZoneNumber = serviceLocationZone ? parseZoneNumber(serviceLocationZone) : null;
     console.log(`[Smart Scheduler] Customer ZIP: ${customerZip}, Zone: ${serviceLocationZone} (#${serviceLocationZoneNumber || 'unknown'})`);
     
-    // Precompute ZIP-to-zone mapping for existing jobs
+    // Precompute ZIP-to-zone and city-to-zone mappings for existing jobs
     const normalizeZip = (zip: string | null | undefined): string | null => {
       if (!zip) return null;
       const digits = zip.replace(/\D/g, '').substring(0, 5);
       return digits.length === 5 ? digits : null;
     };
     
-    const uniqueZips = [...new Set(existingJobs.map(j => normalizeZip(j.locationZip)).filter((z): z is string => z !== null))];
-    const zipToZone: Record<string, string> = {};
+    const normalizeCity = (city: string | null | undefined): string | null => {
+      if (!city) return null;
+      return city.toLowerCase().trim();
+    };
     
+    const uniqueZips = [...new Set(existingJobs.map(j => normalizeZip(j.locationZip)).filter((z): z is string => z !== null))];
+    const uniqueCities = [...new Set(existingJobs.map(j => normalizeCity(j.locationCity)).filter((c): c is string => c !== null))];
+    const zipToZone: Record<string, string> = {};
+    const cityToZone: Record<string, string> = {};
+    
+    // Fetch all zones for mapping
+    const allZones = await db.query.serviceTitanZones.findMany();
+    
+    // Build ZIP-to-zone mapping
     if (uniqueZips.length > 0) {
-      const zones = await db.query.serviceTitanZones.findMany({
-        where: (zones) => sql`${zones.zipCodes} && ARRAY[${sql.join(uniqueZips.map(z => sql`${z}`), sql`, `)}]::text[]`,
-      });
-      
-      for (const zone of zones) {
+      for (const zone of allZones) {
         for (const zip of zone.zipCodes) {
           const normalized = normalizeZip(zip);
           if (normalized && uniqueZips.includes(normalized)) {
@@ -200,6 +207,21 @@ export async function POST(req: NextRequest) {
         }
       }
       console.log(`[Smart Scheduler] Mapped ${Object.keys(zipToZone).length} ZIPs to zones`);
+    }
+    
+    // Build city-to-zone mapping (CRITICAL for Hill Country which uses city names)
+    if (uniqueCities.length > 0) {
+      for (const zone of allZones) {
+        if (zone.cities && zone.cities.length > 0) {
+          for (const city of zone.cities) {
+            const normalized = normalizeCity(city);
+            if (normalized && uniqueCities.includes(normalized)) {
+              cityToZone[normalized] = zone.name;
+            }
+          }
+        }
+      }
+      console.log(`[Smart Scheduler] Mapped ${Object.keys(cityToZone).length} cities to zones`);
     }
     
     // Generate 2-hour slots for each arrival window
@@ -252,8 +274,10 @@ export async function POST(req: NextRequest) {
           
           if (isBlockedWindow) {
             const hcJobsToday = sameDayJobs.filter(job => {
+              // Check ZIP first, then city (Hill Country uses city names)
               const jobZip = normalizeZip(job.locationZip);
-              const jobZone = jobZip ? zipToZone[jobZip] : null;
+              const jobCity = normalizeCity(job.locationCity);
+              const jobZone = (jobZip && zipToZone[jobZip]) || (jobCity && cityToZone[jobCity]) || null;
               return jobZone?.toLowerCase().includes('hill country');
             });
             
@@ -264,21 +288,27 @@ export async function POST(req: NextRequest) {
           }
         }
         
-        // Calculate proximity score
+        // Calculate proximity score and assign technician
+        // Pass available techs from capacity API for fallback assignment
         const proximityResult = calculateProximityScoreV2(
           slot.start,
           slot.end,
           serviceLocationZoneNumber,
+          serviceLocationZone, // Pass zone name for name-based matching (Hill Country, etc.)
           sameDayJobs,
           zipToZone,
+          cityToZone, // Pass city-to-zone mapping for Hill Country
           normalizeZip,
-          parseZoneNumber
+          normalizeCity,
+          parseZoneNumber,
+          window.technicianIds || [] // Available techs for this time slot from capacity API
         );
         
-        // Count nearby jobs
+        // Count nearby jobs (check both ZIP and city for zone matching)
         const nearbyJobCount = sameDayJobs.filter(job => {
           const jobZip = normalizeZip(job.locationZip);
-          const jobZone = jobZip ? zipToZone[jobZip] : null;
+          const jobCity = normalizeCity(job.locationCity);
+          const jobZone = (jobZip && zipToZone[jobZip]) || (jobCity && cityToZone[jobCity]) || null;
           const jobZoneNum = parseZoneNumber(jobZone);
           if (!serviceLocationZoneNumber || !jobZoneNum) return false;
           return Math.abs(serviceLocationZoneNumber - jobZoneNum) <= 1;
@@ -424,10 +454,40 @@ function parseZoneNumber(zoneName: string | null): number | null {
 
 /**
  * Calculate zone adjacency score
+ * Handles both numbered zones (1-6) and named zones (Hill Country)
  * Same zone: 95, Adjacent (±1): 80, Two away (±2): 65, Far (±3+): 45
  */
-function getZoneAdjacencyScore(customerZoneNum: number | null, jobZoneNum: number | null): number {
-  if (!customerZoneNum || !jobZoneNum) return 0;
+function getZoneAdjacencyScore(
+  customerZoneNum: number | null, 
+  jobZoneNum: number | null,
+  customerZoneName: string | null = null,
+  jobZoneName: string | null = null
+): number {
+  if (!customerZoneNum || !jobZoneNum) {
+    // Fallback to name-based matching for zones without numbers (e.g., Hill Country)
+    if (customerZoneName && jobZoneName) {
+      const customerLower = customerZoneName.toLowerCase();
+      const jobLower = jobZoneName.toLowerCase();
+      
+      // Exact name match = same zone
+      if (customerLower === jobLower) {
+        return 95;
+      }
+      
+      // Hill Country adjacency: geographically close to Bee Cave/Lake Travis (zone 6)
+      const isHillCountry = (name: string) => name.includes('hill country');
+      const isBeeCave = (name: string) => name.includes('bee cave') || name.includes('lake travis');
+      
+      if ((isHillCountry(customerLower) && isBeeCave(jobLower)) ||
+          (isBeeCave(customerLower) && isHillCountry(jobLower))) {
+        return 80; // Adjacent zones
+      }
+      
+      // Different named zones = far
+      return 45;
+    }
+    return 0; // No zone info available
+  }
   
   const distance = Math.abs(customerZoneNum - jobZoneNum);
   if (distance === 0) return 95; // Same zone
@@ -449,14 +509,22 @@ function calculateProximityScoreV2(
   slotStart: Date,
   slotEnd: Date,
   customerZoneNumber: number | null,
+  customerZoneName: string | null,
   sameDayJobs: any[],
   zipToZone: Record<string, string>,
+  cityToZone: Record<string, string>,
   normalizeZip: (zip: string | null | undefined) => string | null,
-  parseZoneNumber: (zoneName: string | null) => number | null
+  normalizeCity: (city: string | null | undefined) => string | null,
+  parseZoneNumber: (zoneName: string | null) => number | null,
+  availableTechnicianIds: number[] = [] // Technicians available from capacity API
 ): { score: number; technicianId: number | null } {
   if (!customerZoneNumber) {
-    // No zone info = neutral score, no tech assignment
-    return { score: 50, technicianId: null };
+    // No zone info = neutral score, but still assign an available tech
+    const techId = availableTechnicianIds.length > 0 ? availableTechnicianIds[0] : null;
+    if (techId && process.env.NODE_ENV === 'development') {
+      console.log(`[Proximity] No zone info for customer - assigning available tech ${techId}`);
+    }
+    return { score: 50, technicianId: techId };
   }
 
   // Group jobs by technician
@@ -496,7 +564,9 @@ function calculateProximityScoreV2(
       const jobStart = new Date(job.appointmentStart);
       const jobEnd = new Date(job.appointmentEnd);
       const jobZip = normalizeZip(job.locationZip);
-      const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+      const jobCity = normalizeCity(job.locationCity);
+      // Check ZIP first, then city (Hill Country uses city names)
+      const jobZoneName = (jobZip && zipToZone[jobZip]) || (jobCity && cityToZone[jobCity]) || null;
       const jobZoneNum = parseZoneNumber(jobZoneName);
 
       // Check if job is within contiguity window
@@ -509,14 +579,14 @@ function calculateProximityScoreV2(
       );
 
       if (isContiguous) {
-        // Calculate zone adjacency score
-        const zoneScore = getZoneAdjacencyScore(customerZoneNumber, jobZoneNum);
+        // Calculate zone adjacency score (with name-based fallback for zones like Hill Country)
+        const zoneScore = getZoneAdjacencyScore(customerZoneNumber, jobZoneNum, customerZoneName, jobZoneName);
         
         // Debug logging
         if (process.env.NODE_ENV === 'development') {
           const slotTime = format(slotStart, 'h:mm a');
           const jobTime = format(jobStart, 'h:mm a');
-          console.log(`[Proximity] ${slotTime} slot near ${jobTime} job: zone score ${zoneScore} (customer zone ${customerZoneNumber}, job zone ${jobZoneNum}) - Tech ${techId}`);
+          console.log(`[Proximity] ${slotTime} slot near ${jobTime} job: zone score ${zoneScore} (customer: ${customerZoneName || customerZoneNumber}, job: ${jobZoneName || jobZoneNum}) - Tech ${techId}`);
         }
         
         // Track best technician for this slot
@@ -531,7 +601,9 @@ function calculateProximityScoreV2(
   // Boost score if there are multiple jobs in same/adjacent zones that day (even if not contiguous)
   const jobsInNearbyZones = sameDayJobs.filter(job => {
     const jobZip = normalizeZip(job.locationZip);
-    const jobZoneName = jobZip ? zipToZone[jobZip] : null;
+    const jobCity = normalizeCity(job.locationCity);
+    // Check ZIP first, then city (Hill Country uses city names)
+    const jobZoneName = (jobZip && zipToZone[jobZip]) || (jobCity && cityToZone[jobCity]) || null;
     const jobZoneNum = parseZoneNumber(jobZoneName);
     
     if (!jobZoneNum) return false;
@@ -556,18 +628,13 @@ function calculateProximityScoreV2(
     }
   }
 
-  // FALLBACK: If no proximity match found, assign any technician working that day
-  // This ensures we have a tech assignment even when routing optimization doesn't apply
-  if (bestTechnicianId === null && sameDayJobs.length > 0) {
-    // Find first technician with jobs that day
-    const firstTech = sameDayJobs.find(job => job.technicianId)?.technicianId;
-    if (firstTech) {
-      bestTechnicianId = firstTech;
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[Proximity] No proximity match - assigning fallback tech ${firstTech} for same-day coverage`);
-      }
-    } else if (process.env.NODE_ENV === 'development') {
-      console.warn(`[Proximity] No technicians available - all ${sameDayJobs.length} same-day jobs lack tech assignments`);
+  // FALLBACK: If no proximity match found, assign any available technician from capacity API
+  // This ensures we use techs who are actually available for this time slot
+  if (bestTechnicianId === null && availableTechnicianIds.length > 0) {
+    // Pick first available technician from capacity API for this time slot
+    bestTechnicianId = availableTechnicianIds[0];
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Proximity] No proximity match - assigning available tech ${bestTechnicianId} from capacity API (${availableTechnicianIds.length} available)`);
     }
   }
 
