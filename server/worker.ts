@@ -10,11 +10,9 @@
  * - Google Drive photo monitoring (every 5 min)
  * - Auto blog generation (weekly)
  * - Photo cleanup (daily at 3am)
- * - Membership sync (every 30 sec)
  */
 
 import { storage } from "./storage";
-import { startMembershipSyncJob } from "./lib/membershipSyncJob";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
 import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
@@ -28,9 +26,8 @@ import { startCustomCampaignScheduler } from "./lib/customCampaignScheduler";
 
 console.log('[Worker] Starting background job worker process...');
 
-// Start membership sync background job
-console.log('[Worker] Starting membership sync job...');
-startMembershipSyncJob();
+// Membership sync removed - now using live ServiceTitan API calls instead of database cache
+// Customer Portal fetches memberships directly from /api/customer-portal/memberships
 
 // Start automated blog generation (checks weekly for unused photos)
 console.log('[Worker] Starting auto blog generation...');

@@ -274,6 +274,14 @@ export async function POST(req: NextRequest) {
         email: validated.customerEmail || undefined,
       });
 
+      // TODO: Migrate to serviceTitanMemberships.createMembershipSale() for proper membership invoicing
+      // Current implementation uses generic createJob() which works but doesn't create proper membership records
+      // To use createMembershipSale(), we need to:
+      // 1. Store ServiceTitan membershipTypeId, durationBillingId, saleTaskId in Stripe checkout metadata
+      // 2. Fetch these from membership types API when building checkout session
+      // 3. Pass saleTaskId and durationBillingId to createMembershipSale() here
+      // Reference: server/lib/servicetitan/memberships.ts - createMembershipSale()
+      
       // Step 6: Create ServiceTitan job with membership details
       const paymentAmount = session.amount_total! / 100; // Convert cents to dollars
       const specialInstructions = [

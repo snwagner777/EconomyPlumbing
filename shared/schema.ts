@@ -895,65 +895,8 @@ export const pendingPurchases = pgTable("pending_purchases", {
   paymentIntentIdIdx: index("pending_purchases_payment_intent_id_idx").on(table.paymentIntentId),
 }));
 
-export const serviceTitanMemberships = pgTable("service_titan_memberships", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  customerType: text("customer_type").notNull(), // 'residential' or 'commercial'
-  
-  // Residential customer fields
-  customerName: text("customer_name"),
-  
-  // Commercial customer fields
-  companyName: text("company_name"),
-  contactPersonName: text("contact_person_name"),
-  locationPhone: text("location_phone"),
-  extension: text("extension"),
-  
-  // Location address (both types)
-  locationName: text("location_name"),
-  street: text("street").notNull(),
-  city: text("city").notNull(),
-  state: text("state").notNull(),
-  zip: text("zip").notNull(),
-  
-  // Billing address (both types)
-  billingName: text("billing_name"),
-  billingStreet: text("billing_street"),
-  billingCity: text("billing_city"),
-  billingState: text("billing_state"),
-  billingZip: text("billing_zip"),
-  
-  // Contact info
-  phone: text("phone").notNull(),
-  email: text("email").notNull(),
-  
-  // ServiceTitan configuration
-  serviceTitanMembershipTypeId: text("service_titan_membership_type_id").notNull(), // ST membership type from product
-  
-  // ServiceTitan IDs (populated after sync)
-  serviceTitanCustomerId: text("service_titan_customer_id"), // ST customer ID
-  serviceTitanMembershipId: text("service_titan_membership_id"), // ST membership ID
-  serviceTitanInvoiceId: text("service_titan_invoice_id"), // ST invoice ID
-  
-  // Product and payment info
-  productId: varchar("product_id").notNull(), // Links to products table
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
-  stripeCustomerId: text("stripe_customer_id"),
-  amount: integer("amount").notNull(), // Amount in cents
-  
-  // Sync status
-  syncStatus: text("sync_status").notNull().default('pending'), // 'pending', 'syncing', 'synced', 'failed'
-  syncError: text("sync_error"),
-  lastSyncAttempt: timestamp("last_sync_attempt"),
-  syncedAt: timestamp("synced_at"),
-  
-  // Timestamps
-  purchasedAt: timestamp("purchased_at").notNull().defaultNow(),
-}, (table) => ({
-  customerTypeIdx: index("st_memberships_customer_type_idx").on(table.customerType),
-  syncStatusIdx: index("st_memberships_sync_status_idx").on(table.syncStatus),
-  serviceTitanCustomerIdIdx: index("st_memberships_st_customer_id_idx").on(table.serviceTitanCustomerId),
-  productIdIdx: index("st_memberships_product_id_idx").on(table.productId),
-}));
+// REMOVED: serviceTitanMemberships table - now using live API calls via server/lib/servicetitan/memberships.ts
+// Customer Portal fetches memberships directly from ServiceTitan API instead of database cache
 
 // ServiceTitan Customers Cache - synced from ServiceTitan API for fast local search
 export const serviceTitanCustomers = pgTable("service_titan_customers", {
@@ -1325,12 +1268,7 @@ export const insertPendingPurchaseSchema = createInsertSchema(pendingPurchases).
   createdAt: true,
 });
 
-export const insertServiceTitanMembershipSchema = createInsertSchema(serviceTitanMemberships).omit({
-  id: true,
-  purchasedAt: true,
-  lastSyncAttempt: true,
-  syncedAt: true,
-});
+// REMOVED: insertServiceTitanMembershipSchema - table deleted (now using live API)
 
 export const companyCamPhotos = pgTable("companycam_photos", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -1889,8 +1827,7 @@ export type ZoomOAuthToken = typeof zoomOAuthTokens.$inferSelect;
 export type InsertZoomOAuthToken = z.infer<typeof insertZoomOAuthTokenSchema>;
 export type PendingPurchase = typeof pendingPurchases.$inferSelect;
 export type InsertPendingPurchase = z.infer<typeof insertPendingPurchaseSchema>;
-export type ServiceTitanMembership = typeof serviceTitanMemberships.$inferSelect;
-export type InsertServiceTitanMembership = z.infer<typeof insertServiceTitanMembershipSchema>;
+// REMOVED: ServiceTitanMembership types - table deleted (now using live API)
 export type CompanyCamPhoto = typeof companyCamPhotos.$inferSelect;
 export type InsertCompanyCamPhoto = z.infer<typeof insertCompanyCamPhotoSchema>;
 export type BeforeAfterComposite = typeof beforeAfterComposites.$inferSelect;
