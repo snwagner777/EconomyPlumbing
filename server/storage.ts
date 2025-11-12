@@ -19,8 +19,6 @@ import {
   type InsertZoomOAuthToken,
   type PendingPurchase,
   type InsertPendingPurchase,
-  type ServiceTitanMembership,
-  type InsertServiceTitanMembership,
   type CompanyCamPhoto,
   type InsertCompanyCamPhoto,
   type BeforeAfterComposite,
@@ -53,7 +51,6 @@ import {
   googleOAuthTokens,
   zoomOAuthTokens,
   pendingPurchases,
-  serviceTitanMemberships,
   companyCamPhotos,
   beforeAfterComposites,
   notFoundErrors,
@@ -140,12 +137,6 @@ export interface IStorage {
   getZoomOAuthToken(): Promise<ZoomOAuthToken | undefined>;
   saveZoomOAuthToken(token: InsertZoomOAuthToken): Promise<ZoomOAuthToken>;
   updateZoomOAuthToken(id: string, token: Partial<InsertZoomOAuthToken>): Promise<ZoomOAuthToken>;
-  
-  // ServiceTitan memberships
-  createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership>;
-  updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership>;
-  getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined>;
-  getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]>;
   
   // Pending purchases
   createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase>;
@@ -307,7 +298,6 @@ export class MemStorage implements IStorage {
   private customerSuccessStories: Map<string, CustomerSuccessStory>;
   private serviceAreas: Map<string, ServiceArea>;
   private googleReviews: Map<string, GoogleReview>;
-  private serviceTitanMemberships: Map<string, ServiceTitanMembership>;
 
   constructor() {
     this.users = new Map();
@@ -317,7 +307,6 @@ export class MemStorage implements IStorage {
     this.customerSuccessStories = new Map();
     this.serviceAreas = new Map();
     this.googleReviews = new Map();
-    this.serviceTitanMemberships = new Map();
     
     // Seed with some blog posts
     this.seedBlogPosts();
@@ -2323,49 +2312,6 @@ Call (512) 368-9159 or schedule service online.`,
     throw new Error('Zoom OAuth not supported in MemStorage');
   }
 
-  async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
-    const id = randomUUID();
-    const newMembership: ServiceTitanMembership = {
-      ...membership,
-      id,
-      customerName: membership.customerName ?? null,
-      companyName: membership.companyName ?? null,
-      contactPersonName: membership.contactPersonName ?? null,
-      serviceTitanCustomerId: membership.serviceTitanCustomerId ?? null,
-      serviceTitanMembershipId: membership.serviceTitanMembershipId ?? null,
-      serviceTitanInvoiceId: membership.serviceTitanInvoiceId ?? null,
-      stripePaymentIntentId: membership.stripePaymentIntentId ?? null,
-      stripeCustomerId: membership.stripeCustomerId ?? null,
-      syncStatus: membership.syncStatus ?? 'pending',
-      syncError: membership.syncError ?? null,
-      purchasedAt: new Date(),
-      lastSyncAttempt: null,
-      syncedAt: null,
-    };
-    this.serviceTitanMemberships.set(id, newMembership);
-    return newMembership;
-  }
-
-  async updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership> {
-    const existing = this.serviceTitanMemberships.get(id);
-    if (!existing) {
-      throw new Error('ServiceTitan membership not found');
-    }
-    const updated = { ...existing, ...updates };
-    this.serviceTitanMemberships.set(id, updated);
-    return updated;
-  }
-
-  async getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined> {
-    return this.serviceTitanMemberships.get(id);
-  }
-
-  async getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]> {
-    return Array.from(this.serviceTitanMemberships.values()).filter(
-      m => m.syncStatus === 'pending' || m.syncStatus === 'failed'
-    );
-  }
-
   async createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase> {
     const id = randomUUID();
     const newPurchase: PendingPurchase = {
@@ -2817,39 +2763,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(zoomOAuthTokens.id, id))
       .returning();
     return updatedToken;
-  }
-
-  async createServiceTitanMembership(membership: InsertServiceTitanMembership): Promise<ServiceTitanMembership> {
-    const [created] = await db
-      .insert(serviceTitanMemberships)
-      .values(membership)
-      .returning();
-    return created;
-  }
-
-  async updateServiceTitanMembership(id: string, updates: Partial<ServiceTitanMembership>): Promise<ServiceTitanMembership> {
-    const [updated] = await db
-      .update(serviceTitanMemberships)
-      .set(updates)
-      .where(eq(serviceTitanMemberships.id, id))
-      .returning();
-    return updated;
-  }
-
-  async getServiceTitanMembershipById(id: string): Promise<ServiceTitanMembership | undefined> {
-    const [membership] = await db
-      .select()
-      .from(serviceTitanMemberships)
-      .where(eq(serviceTitanMemberships.id, id))
-      .limit(1);
-    return membership || undefined;
-  }
-
-  async getPendingServiceTitanMemberships(): Promise<ServiceTitanMembership[]> {
-    return await db
-      .select()
-      .from(serviceTitanMemberships)
-      .where(sql`${serviceTitanMemberships.syncStatus} IN ('pending', 'failed')`);
   }
 
   async createPendingPurchase(purchase: InsertPendingPurchase): Promise<PendingPurchase> {
