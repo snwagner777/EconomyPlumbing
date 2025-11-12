@@ -133,19 +133,75 @@ export default function CatsPlumbingClient({ phoneConfig }: CatsPlumbingClientPr
                 </a>
               </div>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {images.map((image, index) => (
-                  <Card key={image.id} className="overflow-hidden hover-elevate" data-testid={`card-cat-${index}`}>
-                    <div className="aspect-[4/3] relative overflow-hidden">
-                      <img
-                        src={image.imageUrl}
-                        alt={`Professional cat plumber AI-generated image - adorable cat wearing work clothes fixing plumbing - image ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        loading={index < 3 ? 'eager' : 'lazy'}
-                        title="AI Generated Cat Plumber - Economy Plumbing Services"
-                      />
-                    </div>
-                  </Card>
-                ))}
+                {images.map((image, index) => {
+                  const shareUrl = `https://www.plumbersthatcare.com/cats-plumbing?image=${image.id}`;
+                  const shareText = `Check out this adorable AI-generated cat plumber from Economy Plumbing Services! 🐱🔧`;
+                  const imageFullUrl = image.imageUrl.startsWith('http') ? image.imageUrl : `https://www.plumbersthatcare.com${image.imageUrl}`;
+                  
+                  return (
+                    <Card key={image.id} className="overflow-hidden hover-elevate" data-testid={`card-cat-${index}`}>
+                      <div className="aspect-[4/3] relative overflow-hidden">
+                        <img
+                          src={image.imageUrl}
+                          alt={`Professional cat plumber AI-generated image - adorable cat wearing work clothes fixing plumbing - image ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          loading={index < 3 ? 'eager' : 'lazy'}
+                          title="AI Generated Cat Plumber - Economy Plumbing Services"
+                        />
+                      </div>
+                      <div className="p-3 flex flex-wrap gap-2 border-t bg-muted/30">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+                            window.open(fbUrl, '_blank', 'width=600,height=400');
+                          }}
+                          data-testid={`button-share-facebook-${index}`}
+                          className="text-xs"
+                        >
+                          Facebook
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+                            window.open(twitterUrl, '_blank', 'width=600,height=400');
+                          }}
+                          data-testid={`button-share-twitter-${index}`}
+                          className="text-xs"
+                        >
+                          Twitter
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const smsUrl = `sms:?&body=${encodeURIComponent(shareText + ' ' + shareUrl)}`;
+                            window.location.href = smsUrl;
+                          }}
+                          data-testid={`button-share-sms-${index}`}
+                          className="text-xs"
+                        >
+                          Text
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            navigator.clipboard.writeText(shareUrl);
+                            alert('Link copied to clipboard!');
+                          }}
+                          data-testid={`button-copy-link-${index}`}
+                          className="text-xs"
+                        >
+                          Copy Link
+                        </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </section>
