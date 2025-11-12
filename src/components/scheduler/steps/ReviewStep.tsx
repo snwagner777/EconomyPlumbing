@@ -4,7 +4,7 @@
  * Final confirmation before booking the appointment in ServiceTitan.
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Card } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key, Wrench } from 'lucide-react';
+import { Loader2, CheckCircle, Calendar, Clock, MapPin, User, Mail, Phone, Key, Wrench, Camera, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { getJobTypeMeta } from '@/lib/schedulerJobCatalog';
 import { formatPhoneNumber } from '@/lib/phoneUtils';
@@ -48,6 +48,9 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
   const [isBooked, setIsBooked] = useState(false);
   const [problem, setProblem] = useState(problemDescription || '');
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast} = useToast();
   const meta = getJobTypeMeta(jobType.name);
   const Icon = meta.icon;
@@ -55,6 +58,78 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
   const handleProblemChange = (value: string) => {
     setProblem(value);
     onProblemDescriptionChange?.(value);
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => {
+      const isValidType = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'].includes(file.type);
+      const isValidSize = file.size <= 10 * 1024 * 1024; // 10MB
+      
+      if (!isValidType) {
+        toast({
+          title: "Invalid File Type",
+          description: `${file.name} is not a supported format. Please use JPG, PNG, WebP, or PDF.`,
+          variant: "destructive",
+        });
+      }
+      if (!isValidSize) {
+        toast({
+          title: "File Too Large",
+          description: `${file.name} is too large. Maximum size is 10MB.`,
+          variant: "destructive",
+        });
+      }
+      
+      return isValidType && isValidSize;
+    });
+    
+    setSelectedFiles(prev => [...prev, ...validFiles].slice(0, 5)); // Max 5 files
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadFiles = async (jobId: number) => {
+    if (selectedFiles.length === 0) return;
+    
+    setUploadingFiles(true);
+    try {
+      const formData = new FormData();
+      formData.append('jobId', jobId.toString());
+      
+      selectedFiles.forEach((file, index) => {
+        formData.append(`file${index}`, file);
+      });
+      
+      const response = await fetch('/api/scheduler/upload-attachments', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload photos');
+      }
+      
+      const result = await response.json();
+      console.log(`Uploaded ${result.filesUploaded} photo(s) to job ${jobId}`);
+      
+      // Show success toast ONLY on successful upload
+      toast({
+        title: "Photos Uploaded!",
+        description: `${result.filesUploaded} photo(s) successfully attached to your appointment.`,
+      });
+    } catch (error) {
+      console.error('File upload failed:', error);
+      toast({
+        title: "Photo Upload Failed",
+        description: "Your appointment is booked, but we couldn't upload the photos. You can add them later.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingFiles(false);
+    }
   };
 
   const bookMutation = useMutation({
@@ -107,15 +182,25 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
 
       return await response.json();
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       setIsBooked(true);
       toast({
         title: "Appointment Booked!",
         description: data.message || `Your ${jobType.name} appointment is confirmed. Job #${data.jobNumber || ''}`,
       });
-      setTimeout(() => {
-        onSuccess();
-      }, 2000);
+      
+      // Upload files if selected, then navigate
+      if (selectedFiles.length > 0 && data.jobId) {
+        await uploadFiles(data.jobId); // Wait for upload to complete
+        setTimeout(() => {
+          onSuccess();
+        }, 1000); // Brief delay after upload
+      } else {
+        // No files - navigate after 2 seconds
+        setTimeout(() => {
+          onSuccess();
+        }, 2000);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -138,6 +223,23 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
             We'll send you a confirmation email shortly.
           </p>
         </div>
+        
+        {/* Show upload progress in success view */}
+        {uploadingFiles && selectedFiles.length > 0 && (
+          <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800 max-w-md">
+            <div className="flex items-center gap-3">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+              <div className="text-left">
+                <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                  Uploading {selectedFiles.length} photo(s)...
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  This may take a moment for larger files
+                </p>
+              </div>
+            </div>
+          </Card>
+        )}
       </div>
     );
   }
@@ -293,6 +395,86 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
           </p>
         </div>
       </Card>
+
+      {/* Photo Upload */}
+      <Card className="p-6">
+        <div className="space-y-4">
+          <Label className="flex items-center gap-2 text-base font-semibold">
+            <Camera className="w-5 h-5" />
+            Add Photos (Optional)
+          </Label>
+          <p className="text-sm text-muted-foreground">
+            Help us understand the issue better by uploading photos. Max 5 files, 10MB each.
+          </p>
+          
+          {/* File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+            multiple
+            onChange={handleFileSelect}
+            className="hidden"
+            data-testid="input-file-upload"
+          />
+          
+          {/* Selected Files Preview */}
+          {selectedFiles.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {selectedFiles.map((file, index) => (
+                <div
+                  key={index}
+                  className="relative group bg-muted rounded-lg p-3 flex items-center gap-2"
+                >
+                  <Camera className="w-4 h-4 text-muted-foreground flex-shrink-0" />
+                  <p className="text-sm truncate flex-1">{file.name}</p>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={() => removeFile(index)}
+                    data-testid={`button-remove-file-${index}`}
+                  >
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          {/* Add Photos Button */}
+          {selectedFiles.length < 5 && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full"
+              data-testid="button-add-photos"
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              {selectedFiles.length > 0 ? 'Add More Photos' : 'Add Photos'}
+            </Button>
+          )}
+        </div>
+      </Card>
+
+      {/* Upload Progress Indicator */}
+      {uploadingFiles && (
+        <Card className="p-4 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
+          <div className="flex items-center gap-3">
+            <Loader2 className="w-4 h-4 animate-spin text-blue-600 dark:text-blue-400" />
+            <div>
+              <p className="text-sm font-medium text-blue-900 dark:text-blue-100">
+                Uploading {selectedFiles.length} photo(s)...
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                This may take a moment for larger files
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Confirm Button */}
       <Button
