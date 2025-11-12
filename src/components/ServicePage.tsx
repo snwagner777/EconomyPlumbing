@@ -17,6 +17,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
+import { ServiceSchema } from "@/components/JsonLdSchemas";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
@@ -113,6 +114,15 @@ export default function ServicePage({
   return (
     <div className="min-h-screen">
       <Header />
+      
+      {/* Service JSON-LD Schema */}
+      <ServiceSchema
+        name={heroTitle}
+        description={overviewDescription}
+        canonical={canonical}
+        image={heroImage}
+        serviceType={title}
+      />
 
       {/* Breadcrumbs */}
       <div className="bg-muted/30 border-b">
