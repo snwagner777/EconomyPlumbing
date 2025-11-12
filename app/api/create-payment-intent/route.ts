@@ -59,7 +59,9 @@ export async function POST(req: NextRequest) {
         enabled: true,
       },
       metadata: {
+        type: 'public_membership_purchase',
         productId: product.id,
+        productSlug: product.slug,
         productName: product.name,
         customerEmail: customerInfo?.email || '',
         customerName: customerInfo?.name || '',
