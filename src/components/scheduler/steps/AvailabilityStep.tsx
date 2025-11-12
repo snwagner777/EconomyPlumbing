@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { authenticatedApiRequest } from '@/lib/queryClient';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -52,7 +52,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   const { data, isLoading, isFetching } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
     queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip, daysToLoad],
     queryFn: async () => {
-      const response = await apiRequest('POST', '/api/scheduler/smart-availability', {
+      const response = await authenticatedApiRequest('POST', '/api/scheduler/smart-availability', 'scheduler', {
         jobTypeId,
         customerZip,
         startDate,

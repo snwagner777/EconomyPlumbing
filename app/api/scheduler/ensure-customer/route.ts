@@ -3,17 +3,41 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
-import { updateSessionCustomerId } from '@/server/lib/schedulerSession';
+import { validateSchedulerSession, updateSessionCustomerId } from '@/server/lib/schedulerSession';
 
 export async function POST(req: NextRequest) {
   try {
-    // Extract session token from Authorization header
+    // SECURITY: Require valid session token for customer creation
     const authHeader = req.headers.get('authorization');
-    let sessionToken: string | null = null;
     
-    if (authHeader?.startsWith('Bearer ')) {
-      sessionToken = authHeader.substring(7);
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Session token required. Please complete 2FA verification first.' },
+        { status: 401 }
+      );
     }
+    
+    const sessionToken = authHeader.substring(7);
+    
+    if (!sessionToken) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Invalid session token' },
+        { status: 401 }
+      );
+    }
+    
+    // CRITICAL: Validate session BEFORE any database mutations
+    const session = validateSchedulerSession(sessionToken);
+    
+    if (!session) {
+      console.warn(`[Scheduler] ⚠️ Invalid or expired session token for customer creation`);
+      return NextResponse.json(
+        { error: 'Session expired or invalid. Please complete 2FA verification again.' },
+        { status: 401 }
+      );
+    }
+    
+    console.log(`[Scheduler] ✅ Session validated - verified via ${session.verificationMethod}`);
     
     const body = await req.json();
     const { 
@@ -120,15 +144,16 @@ export async function POST(req: NextRequest) {
     console.log(`[Scheduler] ✅ Customer ${customer.id} synced to customers_xlsx (immediate access)`);
 
     // CRITICAL FIX: Update session with customerId so future requests (contact creation, booking) work
-    if (sessionToken) {
-      const updated = updateSessionCustomerId(sessionToken, customer.id);
-      if (updated) {
-        console.log(`[Scheduler] ✅ Session updated with customerId ${customer.id}`);
-      } else {
-        console.warn(`[Scheduler] ⚠️ Failed to update session with customerId (session may be invalid)`);
-      }
+    const updated = updateSessionCustomerId(sessionToken, customer.id);
+    if (updated) {
+      console.log(`[Scheduler] ✅ Session updated with customerId ${customer.id}`);
     } else {
-      console.warn(`[Scheduler] ⚠️ No session token provided - session not linked to customer ${customer.id}`);
+      // Session token validation failed - this shouldn't happen since we validated above
+      console.error(`[Scheduler] ❌ Failed to update session with customerId ${customer.id} - invalid session`);
+      return NextResponse.json(
+        { error: 'Session validation failed. Please refresh and try again.' },
+        { status: 401 }
+      );
     }
 
     return NextResponse.json({
