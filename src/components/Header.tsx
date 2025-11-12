@@ -241,24 +241,6 @@ export default function Header({
                     </Link>
                     <div className="border-t border-border my-2"></div>
                     <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                      Just For Fun
-                    </div>
-                    <Link
-                      href="/dogs-plumbing"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-dogs-plumbing"
-                    >
-                      Dogs Doing Plumbing
-                    </Link>
-                    <Link
-                      href="/cats-plumbing"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-cats-plumbing"
-                    >
-                      Cats Doing Plumbing
-                    </Link>
-                    <div className="border-t border-border my-2"></div>
-                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
                       Service Areas
                     </div>
                     {serviceAreas.map((area) => (
@@ -383,6 +365,24 @@ export default function Header({
                       data-testid="link-store"
                     >
                       Products
+                    </Link>
+                    <div className="border-t border-border my-2"></div>
+                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                      Just For Fun
+                    </div>
+                    <Link
+                      href="/dogs-plumbing"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-dogs-plumbing"
+                    >
+                      Dogs Doing Plumbing
+                    </Link>
+                    <Link
+                      href="/cats-plumbing"
+                      className="block px-4 py-2 text-sm hover-elevate"
+                      data-testid="link-cats-plumbing"
+                    >
+                      Cats Doing Plumbing
                     </Link>
                     <div className="border-t border-border my-2"></div>
                     <Link
@@ -517,16 +517,6 @@ export default function Header({
                   </Link>
                   <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
                     Membership Benefits
-                  </Link>
-                  <div className="border-t border-border my-2 mx-4"></div>
-                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                    Just For Fun
-                  </div>
-                  <Link href="/dogs-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-dogs-plumbing" onClick={() => setMobileMenuOpen(false)}>
-                    Dogs Doing Plumbing
-                  </Link>
-                  <Link href="/cats-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cats-plumbing" onClick={() => setMobileMenuOpen(false)}>
-                    Cats Doing Plumbing
                   </Link>
                   <div className="border-t border-border my-2 mx-4"></div>
                   <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
