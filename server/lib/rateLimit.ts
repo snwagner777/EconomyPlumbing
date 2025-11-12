@@ -35,8 +35,8 @@ export interface RateLimitConfig {
 export function checkRateLimit(
   sessionId: string,
   config: RateLimitConfig = {
-    maxRequests: 10, // Default: 10 mutations per minute
-    windowMs: 60 * 1000, // 1 minute
+    maxRequests: 10, // Default: 10 mutations per 5 minutes
+    windowMs: 5 * 60 * 1000, // 5 minutes
   }
 ): { allowed: boolean; remaining: number; resetAt: number } {
   const now = Date.now();

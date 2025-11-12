@@ -13,6 +13,8 @@ import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { SessionData, sessionOptions } from '@/lib/session';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { checkRateLimit } from '@/server/lib/rateLimit';
+import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
 
 interface RouteParams {
   params: Promise<{
@@ -33,7 +35,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
 
     if (isNaN(locationId)) {
       return NextResponse.json(
-        { error: 'Invalid location ID' },
+        { code: 'VALIDATION_ERROR', message: 'Invalid location ID' },
         { status: 400 }
       );
     }
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
@@ -57,7 +59,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
 
     if (!location) {
       return NextResponse.json(
-        { error: 'Location not found' },
+        { code: 'NOT_FOUND', message: 'Location not found' },
         { status: 404 }
       );
     }
@@ -66,7 +68,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
     if (location.customerId !== customerId) {
       console.warn(`[Customer Portal] Unauthorized access attempt: customer ${customerId} tried to access location ${locationId} (belongs to customer ${location.customerId})`);
       return NextResponse.json(
-        { error: 'Unauthorized: You do not own this location' },
+        { code: 'FORBIDDEN', message: 'Unauthorized: You do not own this location' },
         { status: 403 }
       );
     }
@@ -84,7 +86,7 @@ export async function GET(req: NextRequest, context: RouteParams) {
   } catch (error: any) {
     console.error('[Customer Portal] Get location error:', error);
     return NextResponse.json(
-      { error: 'Failed to retrieve location' },
+      { code: 'FETCH_FAILED', message: 'Failed to retrieve location', traceId: extractTraceId(error) },
       { status: 500 }
     );
   }
@@ -103,7 +105,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
     if (isNaN(locationId)) {
       return NextResponse.json(
-        { error: 'Invalid location ID' },
+        { code: 'VALIDATION_ERROR', message: 'Invalid location ID' },
         { status: 400 }
       );
     }
@@ -114,26 +116,37 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
 
     const customerId = session.customerPortalAuth.customerId;
+    const sessionId = session.customerPortalAuth.phone;
+
+    // Rate limiting
+    const rateLimit = checkRateLimit(sessionId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.', retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000) },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { name } = body;
 
     // Validation
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       return NextResponse.json(
-        { error: 'Location name is required' },
+        { code: 'VALIDATION_ERROR', message: 'Location name is required' },
         { status: 400 }
       );
     }
 
     if (name.trim().length > 100) {
       return NextResponse.json(
-        { error: 'Location name must be 100 characters or less' },
+        { code: 'VALIDATION_ERROR', message: 'Location name must be 100 characters or less' },
         { status: 400 }
       );
     }
@@ -145,7 +158,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
     if (!existingLocation) {
       return NextResponse.json(
-        { error: 'Location not found' },
+        { code: 'NOT_FOUND', message: 'Location not found' },
         { status: 404 }
       );
     }
@@ -153,7 +166,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
     if (existingLocation.customerId !== customerId) {
       console.warn(`[Customer Portal] Unauthorized update attempt: customer ${customerId} tried to update location ${locationId} (belongs to customer ${existingLocation.customerId})`);
       return NextResponse.json(
-        { error: 'Unauthorized: You do not own this location' },
+        { code: 'FORBIDDEN', message: 'Unauthorized: You do not own this location' },
         { status: 403 }
       );
     }
@@ -164,6 +177,15 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
     });
 
     console.log(`[Customer Portal] ✅ Location ${locationId} renamed to "${name.trim()}" for customer ${customerId}`);
+
+    // Audit log
+    await logCustomerAction({
+      customerId,
+      action: 'update',
+      entityType: 'location',
+      entityId: locationId,
+      payloadSummary: `Renamed location to: ${name.trim()}`,
+    });
 
     return NextResponse.json({
       success: true,
@@ -178,16 +200,17 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
   } catch (error: any) {
     console.error('[Customer Portal] Update location error:', error);
-    
-    // Parse ServiceTitan RFC7807 error if present
-    if (error.response?.data?.traceId) {
-      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    const traceId = extractTraceId(error);
+    if (traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${traceId}`);
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to rename location', 
-        details: error.message || 'Unknown error'
+        code: 'UPDATE_FAILED',
+        message: 'Failed to rename location', 
+        details: error.message || 'Unknown error',
+        traceId
       },
       { status: 500 }
     );

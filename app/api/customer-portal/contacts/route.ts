@@ -14,6 +14,8 @@ import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { SessionData, sessionOptions } from '@/lib/session';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { checkRateLimit } from '@/server/lib/rateLimit';
+import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
 
 /**
  * GET /api/customer-portal/contacts
@@ -29,7 +31,7 @@ export async function GET(req: NextRequest) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
@@ -52,9 +54,10 @@ export async function GET(req: NextRequest) {
     });
 
   } catch (error: any) {
-    console.error('[Customer Portal] Get contacts error:', error);
+    console.error('[Customer Portal] Error:', error);
+    const traceId = extractTraceId(error);
     return NextResponse.json(
-      { error: 'Failed to retrieve contacts' },
+      { code: 'OPERATION_FAILED', message: 'Operation failed', traceId },
       { status: 500 }
     );
   }
@@ -75,19 +78,30 @@ export async function POST(req: NextRequest) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
 
     const customerId = session.customerPortalAuth.customerId;
+    const sessionId = session.customerPortalAuth.phone;
+
+    // Rate limiting
+    const rateLimit = checkRateLimit(sessionId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.', retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000) },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { phone, email, locationId } = body;
 
     // Validation
     if (!phone || typeof phone !== 'string') {
       return NextResponse.json(
-        { error: 'Phone number is required' },
+        { code: 'VALIDATION_ERROR', message: 'Phone number is required' },
         { status: 400 }
       );
     }
@@ -96,7 +110,7 @@ export async function POST(req: NextRequest) {
     const phoneDigits = phone.replace(/\D/g, '');
     if (phoneDigits.length !== 10) {
       return NextResponse.json(
-        { error: 'Phone number must be 10 digits' },
+        { code: 'VALIDATION_ERROR', message: 'Phone number must be 10 digits' },
         { status: 400 }
       );
     }
@@ -106,7 +120,7 @@ export async function POST(req: NextRequest) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email.trim())) {
         return NextResponse.json(
-          { error: 'Invalid email format' },
+          { code: 'VALIDATION_ERROR', message: 'Invalid email format' },
           { status: 400 }
         );
       }
@@ -117,7 +131,7 @@ export async function POST(req: NextRequest) {
       const location = await serviceTitanCRM.getLocation(locationId);
       if (!location || location.customerId !== customerId) {
         return NextResponse.json(
-          { error: 'Unauthorized: Location does not belong to your account' },
+          { code: 'FORBIDDEN', message: 'Unauthorized: Location does not belong to your account' },
           { status: 403 }
         );
       }
@@ -139,6 +153,15 @@ export async function POST(req: NextRequest) {
 
     console.log(`[Customer Portal] ✅ Contact created: ${newContact.id}`);
 
+    // Audit log
+    await logCustomerAction({
+      customerId,
+      action: 'create',
+      entityType: 'contact',
+      entityId: newContact.id,
+      payloadSummary: `Created contact: phone ${phoneDigits}${email ? ', email ' + email.trim() : ''}`,
+    });
+
     return NextResponse.json({
       success: true,
       contact: newContact,
@@ -147,16 +170,17 @@ export async function POST(req: NextRequest) {
 
   } catch (error: any) {
     console.error('[Customer Portal] Create contact error:', error);
-    
-    // Parse ServiceTitan RFC7807 error if present
-    if (error.response?.data?.traceId) {
-      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    const traceId = extractTraceId(error);
+    if (traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${traceId}`);
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to create contact', 
-        details: error.message || 'Unknown error'
+        code: 'CREATE_FAILED',
+        message: 'Failed to create contact', 
+        details: error.message || 'Unknown error',
+        traceId
       },
       { status: 500 }
     );

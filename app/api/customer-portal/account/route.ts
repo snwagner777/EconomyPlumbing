@@ -16,6 +16,8 @@ import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { checkRateLimit } from '@/server/lib/rateLimit';
+import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
 
 /**
  * GET /api/customer-portal/account
@@ -31,7 +33,7 @@ export async function GET(req: NextRequest) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
@@ -44,7 +46,7 @@ export async function GET(req: NextRequest) {
 
     if (!customer) {
       return NextResponse.json(
-        { error: 'Customer not found' },
+        { code: 'NOT_FOUND', message: 'Customer not found' },
         { status: 404 }
       );
     }
@@ -62,8 +64,9 @@ export async function GET(req: NextRequest) {
 
   } catch (error: any) {
     console.error('[Customer Portal] Get account error:', error);
+    const traceId = extractTraceId(error);
     return NextResponse.json(
-      { error: 'Failed to retrieve account information' },
+      { code: 'FETCH_FAILED', message: 'Failed to retrieve account information', traceId },
       { status: 500 }
     );
   }
@@ -83,19 +86,34 @@ export async function PATCH(req: NextRequest) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
 
     const customerId = session.customerPortalAuth.customerId;
+    const sessionId = session.customerPortalAuth.phone; // Use phone as session identifier
+
+    // Rate limiting: 10 mutations per minute
+    const rateLimit = checkRateLimit(sessionId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { 
+          code: 'RATE_LIMIT_EXCEEDED', 
+          message: 'Too many requests. Please try again later.',
+          retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+        },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { street, unit, city, state, zip } = body;
 
     // Validation
     if (!street || !city || !state || !zip) {
       return NextResponse.json(
-        { error: 'Complete billing address required (street, city, state, zip)' },
+        { code: 'VALIDATION_ERROR', message: 'Complete billing address required (street, city, state, zip)' },
         { status: 400 }
       );
     }
@@ -103,7 +121,7 @@ export async function PATCH(req: NextRequest) {
     // Validate ZIP format (5 digits)
     if (!/^\d{5}$/.test(zip)) {
       return NextResponse.json(
-        { error: 'ZIP code must be 5 digits' },
+        { code: 'VALIDATION_ERROR', message: 'ZIP code must be 5 digits' },
         { status: 400 }
       );
     }
@@ -111,7 +129,7 @@ export async function PATCH(req: NextRequest) {
     // Validate state (2-letter code)
     if (!/^[A-Z]{2}$/i.test(state)) {
       return NextResponse.json(
-        { error: 'State must be 2-letter code (e.g., TX)' },
+        { code: 'VALIDATION_ERROR', message: 'State must be 2-letter code (e.g., TX)' },
         { status: 400 }
       );
     }
@@ -141,6 +159,15 @@ export async function PATCH(req: NextRequest) {
 
     console.log(`[Customer Portal] ✅ Billing address updated for customer ${customerId}`);
 
+    // Audit log
+    await logCustomerAction({
+      customerId,
+      action: 'update',
+      entityType: 'customer',
+      entityId: customerId,
+      payloadSummary: `Updated billing address: ${street}, ${city}, ${state} ${zip}`,
+    });
+
     return NextResponse.json({
       success: true,
       customer: {
@@ -154,15 +181,17 @@ export async function PATCH(req: NextRequest) {
   } catch (error: any) {
     console.error('[Customer Portal] Update account error:', error);
     
-    // Parse ServiceTitan RFC7807 error if present
-    if (error.response?.data?.traceId) {
-      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    const traceId = extractTraceId(error);
+    if (traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${traceId}`);
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to update billing address', 
-        details: error.message || 'Unknown error'
+        code: 'UPDATE_FAILED',
+        message: 'Failed to update billing address', 
+        details: error.message || 'Unknown error',
+        traceId
       },
       { status: 500 }
     );

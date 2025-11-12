@@ -13,6 +13,8 @@ import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { SessionData, sessionOptions } from '@/lib/session';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { checkRateLimit } from '@/server/lib/rateLimit';
+import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
 
 interface RouteParams {
   params: Promise<{
@@ -42,19 +44,30 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
 
     const customerId = session.customerPortalAuth.customerId;
+    const sessionId = session.customerPortalAuth.phone;
+
+    // Rate limiting
+    const rateLimit = checkRateLimit(sessionId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.', retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000) },
+        { status: 429 }
+      );
+    }
+
     const body = await req.json();
     const { name, phone, email, phoneMethodId, emailMethodId } = body;
 
     // Validation
     if (!name && !phone && !email) {
       return NextResponse.json(
-        { error: 'At least one field (name, phone, or email) must be provided' },
+        { code: 'VALIDATION_ERROR', message: 'At least one field (name, phone, or email) must be provided' },
         { status: 400 }
       );
     }
@@ -64,7 +77,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
       const phoneDigits = phone.replace(/\D/g, '');
       if (phoneDigits.length !== 10) {
         return NextResponse.json(
-          { error: 'Phone number must be 10 digits' },
+          { code: 'VALIDATION_ERROR', message: 'Phone number must be 10 digits' },
           { status: 400 }
         );
       }
@@ -75,7 +88,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email.trim())) {
         return NextResponse.json(
-          { error: 'Invalid email format' },
+          { code: 'VALIDATION_ERROR', message: 'Invalid email format' },
           { status: 400 }
         );
       }
@@ -88,7 +101,7 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
     if (!contactToUpdate) {
       console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to update contact ${contactId}`);
       return NextResponse.json(
-        { error: 'Unauthorized: Contact does not belong to your account' },
+        { code: 'FORBIDDEN', message: 'Unauthorized: Contact does not belong to your account' },
         { status: 403 }
       );
     }
@@ -116,6 +129,19 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
     console.log(`[Customer Portal] ✅ Contact ${contactId} updated for customer ${customerId}`);
 
+    // Audit log
+    const changes = [];
+    if (name) changes.push(`name: ${name}`);
+    if (phone) changes.push(`phone: ${phone.replace(/\D/g, '')}`);
+    if (email) changes.push(`email: ${email.trim()}`);
+    await logCustomerAction({
+      customerId,
+      action: 'update',
+      entityType: 'contact',
+      entityId: contactId,
+      payloadSummary: `Updated contact: ${changes.join(', ')}`,
+    });
+
     // Fetch updated contact
     const updatedContacts = await serviceTitanCRM.getCustomerContacts(customerId);
     const updatedContact = updatedContacts.find(c => c.id === contactId);
@@ -128,16 +154,17 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
   } catch (error: any) {
     console.error('[Customer Portal] Update contact error:', error);
-    
-    // Parse ServiceTitan RFC7807 error if present
-    if (error.response?.data?.traceId) {
-      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    const traceId = extractTraceId(error);
+    if (traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${traceId}`);
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to update contact', 
-        details: error.message || 'Unknown error'
+        code: 'UPDATE_FAILED',
+        message: 'Failed to update contact', 
+        details: error.message || 'Unknown error',
+        traceId
       },
       { status: 500 }
     );
@@ -162,12 +189,23 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
     
     if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
-        { error: 'Authentication required' },
+        { code: 'UNAUTHORIZED', message: 'Authentication required' },
         { status: 401 }
       );
     }
 
     const customerId = session.customerPortalAuth.customerId;
+    const sessionId = session.customerPortalAuth.phone;
+
+    // Rate limiting
+    const rateLimit = checkRateLimit(sessionId);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: 'RATE_LIMIT_EXCEEDED', message: 'Too many requests. Please try again later.', retryAfter: Math.ceil((rateLimit.resetAt - Date.now()) / 1000) },
+        { status: 429 }
+      );
+    }
+
     console.log(`[Customer Portal] Deleting contact ${contactId} for customer ${customerId}`);
 
     // Verify ownership: contact must belong to authenticated customer
@@ -177,7 +215,7 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
     if (!contactToDelete) {
       console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to delete contact ${contactId}`);
       return NextResponse.json(
-        { error: 'Unauthorized: Contact does not belong to your account' },
+        { code: 'FORBIDDEN', message: 'Unauthorized: Contact does not belong to your account' },
         { status: 403 }
       );
     }
@@ -190,7 +228,7 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
 
     if (customerFacingContacts.length <= 1) {
       return NextResponse.json(
-        { error: 'Cannot delete the last contact. Your account must have at least one contact method.' },
+        { code: 'BUSINESS_RULE_VIOLATION', message: 'Cannot delete the last contact. Your account must have at least one contact method.' },
         { status: 400 }
       );
     }
@@ -200,6 +238,15 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
 
     console.log(`[Customer Portal] ✅ Contact ${contactId} deleted for customer ${customerId}`);
 
+    // Audit log
+    await logCustomerAction({
+      customerId,
+      action: 'delete',
+      entityType: 'contact',
+      entityId: contactId,
+      payloadSummary: 'Deleted contact',
+    });
+
     return NextResponse.json({
       success: true,
       message: 'Contact deleted successfully',
@@ -207,16 +254,17 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
 
   } catch (error: any) {
     console.error('[Customer Portal] Delete contact error:', error);
-    
-    // Parse ServiceTitan RFC7807 error if present
-    if (error.response?.data?.traceId) {
-      console.error(`[Customer Portal] ServiceTitan error traceId: ${error.response.data.traceId}`);
+    const traceId = extractTraceId(error);
+    if (traceId) {
+      console.error(`[Customer Portal] ServiceTitan error traceId: ${traceId}`);
     }
 
     return NextResponse.json(
       { 
-        error: 'Failed to delete contact', 
-        details: error.message || 'Unknown error'
+        code: 'DELETE_FAILED',
+        message: 'Failed to delete contact', 
+        details: error.message || 'Unknown error',
+        traceId
       },
       { status: 500 }
     );
