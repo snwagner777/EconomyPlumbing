@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       size: '1024x1024',
     });
 
-    if (!response.data || !response.data[0] || !response.data[0].url) {
+    if (!response.data || !response.data[0]) {
       console.error('[Generate Plumbing Image] Invalid response:', response);
       return NextResponse.json(
         { error: 'No image returned from service' },
@@ -59,7 +59,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const imageUrl = response.data[0].url;
+    // Handle both URL and base64 formats
+    let imageUrl: string;
+    if (response.data[0].url) {
+      imageUrl = response.data[0].url;
+    } else if (response.data[0].b64_json) {
+      // Convert base64 to data URL for storage
+      imageUrl = `data:image/png;base64,${response.data[0].b64_json}`;
+    } else {
+      console.error('[Generate Plumbing Image] No URL or base64 data in response');
+      return NextResponse.json(
+        { error: 'No image data in response' },
+        { status: 500 }
+      );
+    }
 
     // Save to database
     await db.insert(generatedPlumbingImages).values({
