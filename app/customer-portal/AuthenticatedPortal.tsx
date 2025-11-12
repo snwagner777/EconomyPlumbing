@@ -58,6 +58,7 @@ import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
+import { queryClient } from "@/lib/queryClient";
 import { ReferralModal } from "@/components/ReferralModal";
 import { VouchersSection } from "./VouchersSection";
 import { MembershipsSection } from "./components/MembershipsSection";
@@ -219,6 +220,16 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
     showAccountSelection,
     setShowAccountSelection,
     availableAccounts,
+    newLocationData,
+    setNewLocationData,
+    isAddingLocation,
+    setIsAddingLocation,
+    showReferralModal,
+    setIsAcceptingEstimate,
+    setIsSendingEmail,
+    setIsSubmittingReview,
+    handleAddLocation,
+    addContactOpen,
   } = props;
 
   return (
