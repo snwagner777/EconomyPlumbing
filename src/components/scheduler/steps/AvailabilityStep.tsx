@@ -5,7 +5,7 @@
  * Highlights best times based on proximity to other jobs in the customer's zone.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { authenticatedApiRequest } from '@/lib/queryClient';
 import { Card } from "@/components/ui/card";
@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Loader2, Clock, Zap, MapPin, TrendingUp } from 'lucide-react';
-import { format, addDays } from 'date-fns';
+import { format, addDays, differenceInDays } from 'date-fns';
 import { toZonedTime, formatInTimeZone } from 'date-fns-tz';
 import type { TimeSlot } from '@shared/types/scheduler';
 
@@ -37,18 +37,28 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
   
   const [selectedDate, setSelectedDate] = useState<Date>(today);
   const [showCalendar, setShowCalendar] = useState(false);
-  const [loadExtendedRange, setLoadExtendedRange] = useState(false);
+  const [daysToLoad, setDaysToLoad] = useState(14); // Adaptive progressive loading: start with 14 days
   
-  // Progressive loading: Start with 10 days, extend to 45 days if user clicks "Show More Dates"
-  const initialDays = 10;
-  const extendedDays = 45;
-  const daysToLoad = loadExtendedRange ? extendedDays : initialDays;
+  // Adaptive Progressive Loading: Auto-expand when user navigates beyond loaded range
+  // Keeps initial load fast (14 days) while preventing "No availability" errors
+  useEffect(() => {
+    const daysDiff = differenceInDays(selectedDate, today);
+    
+    // If user selected a date beyond 80% of loaded range, expand by 14 days
+    if (daysDiff > daysToLoad * 0.8) {
+      const newDaysToLoad = Math.min(daysToLoad + 14, 45); // Cap at 45 days max
+      if (newDaysToLoad > daysToLoad) {
+        console.log(`[Scheduler] Auto-expanding availability window: ${daysToLoad} → ${newDaysToLoad} days`);
+        setDaysToLoad(newDaysToLoad);
+      }
+    }
+  }, [selectedDate, today, daysToLoad]);
   
   const fetchStartDate = today;
   const startDate = format(fetchStartDate, 'yyyy-MM-dd');
   const endDate = format(addDays(fetchStartDate, daysToLoad - 1), 'yyyy-MM-dd');
 
-  // Fetch smart availability (fuel-optimized) - progressive loading strategy
+  // Fetch smart availability (fuel-optimized) - adaptive progressive loading
   const { data, isLoading, isFetching } = useQuery<{ success: boolean; slots: TimeSlot[]; optimization: any }>({
     queryKey: ['/api/scheduler/smart-availability', jobTypeId, customerZip, daysToLoad],
     queryFn: async () => {
@@ -56,7 +66,7 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
         jobTypeId,
         customerZip,
         startDate,
-        endDate,
+        daysToLoad, // Pass daysToLoad so API knows how many days to fetch
       });
       return await response.json();
     },
@@ -363,33 +373,10 @@ export function AvailabilityStep({ jobTypeId, customerZip, onSelect, selectedSlo
               </div>
             </div>
             
-            {/* Show More Dates Button - only if not already loaded extended range */}
-            {!loadExtendedRange && (
-              <div className="mt-4 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => setLoadExtendedRange(true)}
-                  disabled={isFetching}
-                  data-testid="button-show-more-dates"
-                >
-                  {isFetching ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-2 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    `View Next ${extendedDays} Days`
-                  )}
-                </Button>
-              </div>
-            )}
-            {loadExtendedRange && (
-              <p className="text-xs text-muted-foreground text-center mt-3">
-                Showing next {extendedDays} days
-              </p>
-            )}
+            {/* REMOVED: "View Next 45 Days" button - now always loads 45 days upfront */}
+            <p className="text-xs text-muted-foreground text-center mt-3">
+              Showing next {daysToLoad} days
+            </p>
           </Card>
         </div>
 
