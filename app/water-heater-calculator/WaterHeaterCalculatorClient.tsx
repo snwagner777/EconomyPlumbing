@@ -33,15 +33,18 @@ export default function WaterHeaterCalculatorClient({ phoneConfig }: WaterHeater
     
     // Base cost by heater type and fuel
     if (heaterType === 'tank') {
+      // All tank water heaters start at $2,400
       if (fuelType === 'electric') {
-        baseCost = capacity === '40' ? 1200 : capacity === '50' ? 1400 : 1600;
+        baseCost = capacity === '40' ? 2400 : capacity === '50' ? 2600 : 2800;
       } else if (fuelType === 'gas') {
-        baseCost = capacity === '40' ? 1400 : capacity === '50' ? 1600 : 1800;
+        baseCost = capacity === '40' ? 2400 : capacity === '50' ? 2600 : 2800;
       }
     } else if (heaterType === 'tankless') {
-      baseCost = fuelType === 'electric' ? 2500 : 3000;
+      // Tankless gas only - starts at $4,300
+      baseCost = 4300;
     } else if (heaterType === 'hybrid') {
-      baseCost = 3500;
+      // Hybrid/Heat Pump starts at $6,500
+      baseCost = 6500;
     }
     
     // Installation complexity
@@ -97,20 +100,22 @@ export default function WaterHeaterCalculatorClient({ phoneConfig }: WaterHeater
                   </RadioGroup>
                 </div>
 
-                {/* Fuel Type */}
-                <div className="space-y-3">
-                  <Label data-testid="label-fuel-type">Fuel Type</Label>
-                  <RadioGroup value={fuelType} onValueChange={setFuelType}>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="electric" id="electric" data-testid="radio-electric" />
-                      <Label htmlFor="electric" className="font-normal">Electric</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="gas" id="gas" data-testid="radio-gas" />
-                      <Label htmlFor="gas" className="font-normal">Natural Gas</Label>
-                    </div>
-                  </RadioGroup>
-                </div>
+                {/* Fuel Type - Only show for tank water heaters */}
+                {heaterType === 'tank' && (
+                  <div className="space-y-3">
+                    <Label data-testid="label-fuel-type">Fuel Type</Label>
+                    <RadioGroup value={fuelType} onValueChange={setFuelType}>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="electric" id="electric" data-testid="radio-electric" />
+                        <Label htmlFor="electric" className="font-normal">Electric</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="gas" id="gas" data-testid="radio-gas" />
+                        <Label htmlFor="gas" className="font-normal">Natural Gas</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                )}
 
                 {/* Capacity (only for tank) */}
                 {heaterType === 'tank' && (
