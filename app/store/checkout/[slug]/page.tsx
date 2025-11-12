@@ -251,6 +251,28 @@ export default function MembershipCheckout() {
     };
     
     checkPortalSession();
+    
+    // Also check for phone lookup customer context
+    const checkLookupContext = () => {
+      const contextData = sessionStorage.getItem('membership_checkout_customer');
+      if (contextData) {
+        try {
+          const context = JSON.parse(contextData);
+          // Verify it's not stale (5 minutes)
+          if (Date.now() - context.timestamp < 5 * 60 * 1000) {
+            // Set portal customer ID from lookup context
+            setPortalCustomerId(context.customerId.toString());
+            console.log('[Checkout] Using phone lookup customer context');
+          } else {
+            sessionStorage.removeItem('membership_checkout_customer');
+          }
+        } catch (e) {
+          sessionStorage.removeItem('membership_checkout_customer');
+        }
+      }
+    };
+    
+    checkLookupContext();
   }, []);
 
   // Pre-fill form with portal customer data

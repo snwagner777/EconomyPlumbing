@@ -1,6 +1,8 @@
 'use client';
 
 import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Star, Shield, Clock, Phone } from "lucide-react";
+import { PhoneLookupModal } from "@/components/PhoneLookupModal";
 import type { Product } from "@shared/schema";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 
@@ -16,11 +19,33 @@ interface MembershipBenefitsClientProps {
 }
 
 export default function MembershipBenefitsClient({ phoneConfig }: MembershipBenefitsClientProps) {
+  const router = useRouter();
+  const [lookupModalOpen, setLookupModalOpen] = useState(false);
+  const [selectedMembershipSlug, setSelectedMembershipSlug] = useState<string>('');
+  
   const { data } = useQuery<{ products: Product[]; count: number }>({
     queryKey: ['/api/products'],
   });
 
   const memberships = data?.products?.filter(p => p.category === 'membership') || [];
+
+  function handlePurchaseClick(slug: string) {
+    setSelectedMembershipSlug(slug);
+    setLookupModalOpen(true);
+  }
+
+  function handleLookupSuccess(data: { customerId: number; customerName: string; phone: string }) {
+    // Store customer context and redirect to checkout
+    sessionStorage.setItem('membership_checkout_customer', JSON.stringify({
+      customerId: data.customerId,
+      customerName: data.customerName,
+      phone: data.phone,
+      timestamp: Date.now(),
+    }));
+    
+    setLookupModalOpen(false);
+    router.push(`/store/checkout/${selectedMembershipSlug}`);
+  }
 
   const benefits = [
     {
@@ -139,11 +164,11 @@ export default function MembershipBenefitsClient({ phoneConfig }: MembershipBene
                   ))}
                 </ul>
                 <Button 
-                  asChild 
+                  onClick={() => handlePurchaseClick(tier.slug)}
                   className="w-full"
                   data-testid={`button-purchase-${tier.slug}`}
                 >
-                  <Link href={`/store/checkout/${tier.slug}`}>Purchase Now</Link>
+                  Purchase Now
                 </Button>
               </Card>
             ))}
@@ -182,6 +207,14 @@ export default function MembershipBenefitsClient({ phoneConfig }: MembershipBene
       </section>
 
       <Footer />
+
+      <PhoneLookupModal
+        open={lookupModalOpen}
+        onOpenChange={setLookupModalOpen}
+        onSuccess={handleLookupSuccess}
+        title="Enter Your Phone Number"
+        description="We'll look up your account to complete your VIP membership purchase."
+      />
     </div>
   );
 }
