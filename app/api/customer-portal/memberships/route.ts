@@ -37,7 +37,20 @@ export async function GET(req: NextRequest) {
     console.log(`[Customer Portal] Fetching memberships for customer ${customerId}`);
 
     // Fetch all memberships for this customer (active + expired)
-    const allMemberships = await serviceTitanMemberships.getCustomerMemberships(customerId);
+    // Handle case where customer has no memberships (404 or empty response)
+    let allMemberships = [];
+    try {
+      allMemberships = await serviceTitanMemberships.getCustomerMemberships(customerId);
+    } catch (error: any) {
+      // If customer has no memberships, ServiceTitan may return 404 - this is OK
+      if (error.statusCode === 404 || error.message?.includes('404') || error.message?.includes('not found')) {
+        console.log(`[Customer Portal] Customer ${customerId} has no memberships (404) - returning empty arrays`);
+        allMemberships = [];
+      } else {
+        // Other errors should be thrown
+        throw error;
+      }
+    }
 
     // Separate active and expired
     const activeMemberships = allMemberships.filter(m => m.status === 'Active');
