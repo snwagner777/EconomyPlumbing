@@ -17,7 +17,7 @@ import ContactFormSection from "@/components/ContactFormSection";
 import ReviewsSection from "@/components/ReviewsSection";
 import InlineBlogCard from "@/components/InlineBlogCard";
 import RelatedBlogPosts from "@/components/RelatedBlogPosts";
-import { ServiceSchema } from "@/components/JsonLdSchemas";
+import { ServiceSchema, FAQPageSchema } from "@/components/JsonLdSchemas";
 import { openScheduler } from "@/lib/scheduler";
 import { usePhoneConfig, useMarbleFallsPhone } from "@/hooks/usePhoneConfig";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
@@ -123,6 +123,11 @@ export default function ServicePage({
         image={heroImage}
         serviceType={title}
       />
+      
+      {/* FAQ JSON-LD Schema */}
+      {faqs && faqs.length > 0 && (
+        <FAQPageSchema faqs={faqs} />
+      )}
 
       {/* Breadcrumbs */}
       <div className="bg-muted/30 border-b">

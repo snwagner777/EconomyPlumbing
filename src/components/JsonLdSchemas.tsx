@@ -35,20 +35,20 @@ export function LocalBusinessSchema({ telephone }: LocalBusinessSchemaProps) {
     "image": "https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "logo": "https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "url": "https://plumbersthatcare.com",
-    "telephone": telephone || "(512) 263-0581",
-    "email": "info@plumbersthatcare.com",
+    "telephone": telephone || "(512) 368-9159",
+    "email": "hello@plumbersthatcare.com",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "8868 Research Blvd #402",
+      "streetAddress": "701 Tillery St #12",
       "addressLocality": "Austin",
       "addressRegion": "TX",
-      "postalCode": "78758",
+      "postalCode": "78702",
       "addressCountry": "US"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": "30.3668",
-      "longitude": "-97.7389"
+      "latitude": "30.2672",
+      "longitude": "-97.7431"
     },
     "openingHoursSpecification": [
       {

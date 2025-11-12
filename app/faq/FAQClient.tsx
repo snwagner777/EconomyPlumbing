@@ -200,7 +200,7 @@ export default function FAQClient({ phoneConfig }: FAQClientProps) {
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Button 
-              onClick={openScheduler}
+              onClick={() => openScheduler()}
               size="lg"
               data-testid="button-schedule"
             >
