@@ -79,26 +79,40 @@ export class ServiceTitanEstimates {
 
       console.log(`[ServiceTitan Estimates] Found ${response.data.length} estimates for customer ${customerId}`);
 
-      return response.data.map((est: any) => ({
-        id: est.id,
-        jobId: est.jobId,
-        projectId: est.projectId,
-        name: est.name || est.summary || `Estimate #${est.id}`,
-        estimateNumber: est.estimateNumber || est.number || `EST-${est.id}`,
-        summary: est.summary || est.name,
-        jobNumber: est.jobNumber || est.job?.number,
-        expiresOn: est.expiresOn || est.expirationDate,
-        status: est.status || 'Open',
-        soldBy: est.soldBy,
-        soldOn: est.soldOn,
-        items: this.parseEstimateItems(est.items || []),
-        subtotal: est.subtotal || 0,
-        total: est.total || 0,
-        active: est.active ?? true,
-        createdOn: est.createdOn,
-        modifiedOn: est.modifiedOn,
-        customerId: customerId,
-      }));
+      const estimates = response.data.map((est: any) => {
+        const normalized = {
+          id: est.id,
+          jobId: est.jobId,
+          projectId: est.projectId,
+          name: est.name || est.summary || `Estimate #${est.id}`,
+          estimateNumber: est.estimateNumber || est.number || `EST-${est.id}`,
+          summary: est.summary || est.name,
+          jobNumber: est.jobNumber || est.job?.number,
+          expiresOn: est.expiresOn || est.expirationDate,
+          status: this.normalizeStatus(est.status),
+          soldBy: est.soldBy,
+          soldOn: est.soldOn,
+          items: this.parseEstimateItems(est.items || []),
+          subtotal: this.extractNumericValue(est.subtotal, `estimate[${est.id}].subtotal`),
+          total: this.extractNumericValue(est.total, `estimate[${est.id}].total`),
+          active: est.active ?? true,
+          createdOn: est.createdOn,
+          modifiedOn: est.modifiedOn,
+          customerId: customerId,
+        };
+
+        // Validate top-level monetary fields
+        if (typeof normalized.subtotal !== 'number' || !Number.isFinite(normalized.subtotal)) {
+          console.error(`[ServiceTitan Estimates] Invalid subtotal for estimate ${est.id}:`, normalized.subtotal);
+        }
+        if (typeof normalized.total !== 'number' || !Number.isFinite(normalized.total)) {
+          console.error(`[ServiceTitan Estimates] Invalid total for estimate ${est.id}:`, normalized.total);
+        }
+
+        return normalized;
+      });
+
+      return estimates;
     } catch (error) {
       console.error(`[ServiceTitan Estimates] Error fetching estimates for customer ${customerId}:`, error);
       return [];
@@ -133,12 +147,12 @@ export class ServiceTitanEstimates {
         summary: response.summary || response.name,
         jobNumber: response.jobNumber || response.job?.number,
         expiresOn: response.expiresOn || response.expirationDate,
-        status: response.status || 'Open',
+        status: this.normalizeStatus(response.status),
         soldBy: response.soldBy,
         soldOn: response.soldOn,
         items: this.parseEstimateItems(response.items || []),
-        subtotal: response.subtotal || 0,
-        total: response.total || 0,
+        subtotal: this.extractNumericValue(response.subtotal), // Extract from nested object
+        total: this.extractNumericValue(response.total),       // Extract from nested object
         active: response.active ?? true,
         createdOn: response.createdOn,
         modifiedOn: response.modifiedOn,
@@ -171,23 +185,136 @@ export class ServiceTitanEstimates {
   }
 
   /**
+   * Extract numeric value from potentially nested ServiceTitan monetary object
+   * ServiceTitan can return:
+   * - Flat: 100
+   * - Single nest: { amount: 100 }
+   * - Double nest: { amount: { value: 100 } }
+   * - With unit: { unitPrice: 100 } or { unitPrice: { amount: 100 } }
+   * 
+   * VALIDATION: Returns 0 if extraction fails, logs warning if unexpected structure
+   */
+  private extractNumericValue(value: any, fieldContext?: string): number {
+    if (value === null || value === undefined) return 0;
+    if (typeof value === 'number') {
+      // Validate it's a finite number
+      if (!Number.isFinite(value)) {
+        console.warn(`[ServiceTitan Estimates] Non-finite number in ${fieldContext || 'monetary field'}:`, value);
+        return 0;
+      }
+      return value;
+    }
+    if (typeof value !== 'object') return 0;
+
+    // Try common ServiceTitan nested structures
+    const attempts = [
+      value.amount,
+      value.unitPrice,
+      value.total,
+      value.value,
+      value.price,
+      value.unitCost,
+    ];
+
+    for (const attempt of attempts) {
+      if (attempt !== null && attempt !== undefined) {
+        // Recursively extract if still nested
+        if (typeof attempt === 'number') {
+          if (!Number.isFinite(attempt)) {
+            console.warn(`[ServiceTitan Estimates] Non-finite number in ${fieldContext || 'nested monetary field'}:`, attempt);
+            return 0;
+          }
+          return attempt;
+        }
+        if (typeof attempt === 'object') {
+          return this.extractNumericValue(attempt, fieldContext);
+        }
+      }
+    }
+
+    // No valid numeric value found in nested structure
+    console.warn(`[ServiceTitan Estimates] Could not extract numeric value from ${fieldContext || 'monetary field'}:`, JSON.stringify(value));
+    return 0;
+  }
+
+  /**
+   * Normalize ServiceTitan status to canonical values
+   * ServiceTitan may return: "OPEN", "SOLD", "Dismissed", etc.
+   * Frontend expects: "Open" | "Sold" | "Dismissed"
+   */
+  private normalizeStatus(status: string | undefined): 'Open' | 'Sold' | 'Dismissed' {
+    if (!status) return 'Open';
+    
+    const statusUpper = status.toUpperCase();
+    
+    if (statusUpper === 'SOLD' || statusUpper.includes('SOLD')) {
+      return 'Sold';
+    }
+    
+    if (statusUpper === 'DISMISSED' || statusUpper.includes('DISMISS')) {
+      return 'Dismissed';
+    }
+    
+    // Default to Open for any other status (OPEN, PENDING, etc.)
+    return 'Open';
+  }
+
+  /**
    * Parse estimate items from API response
    * Extracts soldHours from service items for scheduler integration
+   * CRITICAL: ServiceTitan returns nested price objects, not flat numbers
    */
   private parseEstimateItems(items: any[]): EstimateItem[] {
-    return items.map((item: any) => ({
-      id: item.id,
-      type: item.type || 'Service',
-      skuId: item.skuId || item.sku?.id,
-      skuName: item.skuName || item.sku?.displayName || item.sku?.code || 'Unknown',
-      description: item.description || item.sku?.description || '',
-      quantity: item.quantity || 1,
-      cost: item.cost || 0,
-      price: item.price || item.total || 0,
-      total: item.total || (item.price * item.quantity) || 0,
-      memberPrice: item.memberPrice,
-      soldHours: item.soldHours || item.sku?.soldHours, // Critical for scheduler
-    }));
+    return items.map((item: any, index: number) => {
+      const quantity = item.quantity || 1;
+      
+      // Use recursive extraction for all monetary fields with context
+      const unitPrice = this.extractNumericValue(item.price, `item[${index}].price`);
+      const itemTotal = this.extractNumericValue(item.total, `item[${index}].total`) || (unitPrice * quantity);
+      const itemCost = this.extractNumericValue(item.cost, `item[${index}].cost`);
+      const memberUnitPrice = item.memberPrice 
+        ? this.extractNumericValue(item.memberPrice, `item[${index}].memberPrice`) 
+        : undefined;
+
+      const parsedItem = {
+        id: item.id,
+        type: item.type || 'Service',
+        skuId: item.skuId || item.sku?.id,
+        skuName: item.skuName || item.sku?.displayName || item.sku?.code || 'Unknown',
+        description: item.description || item.sku?.description || '',
+        quantity,
+        cost: itemCost,
+        price: unitPrice,
+        total: itemTotal,
+        memberPrice: memberUnitPrice,
+        soldHours: item.soldHours || item.sku?.soldHours,
+      };
+
+      // Runtime validation - ensure all numbers are finite
+      this.validateEstimateItem(parsedItem, index);
+
+      return parsedItem;
+    });
+  }
+
+  /**
+   * Runtime validation for estimate items
+   * Logs warnings if monetary fields are invalid
+   */
+  private validateEstimateItem(item: EstimateItem, index: number): void {
+    const numericFields = ['cost', 'price', 'total', 'memberPrice'];
+    
+    for (const field of numericFields) {
+      const value = (item as any)[field];
+      if (value !== undefined && value !== null) {
+        if (typeof value !== 'number' || !Number.isFinite(value)) {
+          console.error(
+            `[ServiceTitan Estimates] VALIDATION FAILED: item[${index}].${field} is not a finite number:`,
+            { itemId: item.id, field, value, type: typeof value }
+          );
+        }
+      }
+    }
   }
 
   /**
