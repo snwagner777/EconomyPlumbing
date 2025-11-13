@@ -48,6 +48,28 @@ Preferred communication style: Simple, everyday language.
 - This ensures SEO, performance, UTM tracking, and type safety.
 - Use 'use client' only for interactive components requiring client-side state.
 
+**CRITICAL RULE: ServiceTitan API Testing Protocol**
+- ALWAYS test API endpoints with real customer data (ID: 27881198) BEFORE implementing features.
+- Verify actual response structures, field names, and data types using test customer.
+- Document field availability and response formats in comments.
+- Never assume API structure - always verify first.
+
+**CRITICAL RULE: Referral System Architecture - STANDALONE System**
+- Referral system is 100% PostgreSQL - NEVER touches ServiceTitan.
+- Database tables: `referral_codes`, `referrals`, `vouchers`, `pending_referrals`.
+- Referrals table stores: `referrerName`, `referrerPhone`, `referrerCustomerId` (NO referrerEmail field).
+- Referrals table stores: `refereeName`, `refereePhone`, `refereeEmail`.
+- To send referrer reward emails: Fetch email from ServiceTitan using `getCustomerContacts()` or `getCustomer()`.
+- Background workers: `referralProcessor.ts`, `referralNurtureScheduler.ts`.
+- Workflow: Submit referral → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
+
+**CRITICAL RULE: Customer Contact Management - Dual API System**
+- **Customer-level contacts:** Use `serviceTitanCRM.getCustomerContacts(customerId)` - Returns contacts with methods array.
+- **Location-level contacts:** Use `serviceTitanCRM.getLocationContacts(locationId)` - Returns contacts linked to specific location.
+- Contacts can exist at customer level, location level, or both - must check both sources.
+- Email lookup pattern: Filter `contact.methods ?? []` for `type === 'Email'`, prefer primary email via memo/referenceId.
+- Always add safeguards for missing `methods` array in contact objects.
+
 ## System Architecture
 
 ### Frontend
@@ -91,6 +113,20 @@ Preferred communication style: Simple, everyday language.
 - **SEO Data:** DataForSEO API.
 - **Social Media:** Meta Graph API.
 - **Review Fetching:** SerpAPI.
+
+## Recent Bug Fixes & Improvements
+
+### November 2025 - LSP Errors & Type Safety
+**Fixed Issues:**
+1. **vouchers.ts** - Removed references to non-existent `referral.referrerEmail` field. Implemented proper email lookup via ServiceTitan `getCustomerContacts()` with fallback to `getCustomer()`. Added safeguards for missing contact methods array.
+2. **memberships/route.ts** - Fixed type annotation using `Awaited<ReturnType<typeof serviceTitanMemberships.getCustomerMemberships>>` instead of unsafe `any[]`.
+3. **estimates.ts** - Added type guard `typeof status !== 'string'` to handle null/number status values in `normalizeStatus()` method.
+
+**Key Learnings:**
+- Referrals table schema does NOT have `referrerEmail` field (only `refereeEmail` exists).
+- Must fetch referrer email from ServiceTitan at voucher redemption time for notifications.
+- Email lookup pattern: Active contacts → Primary email (via memo/referenceId) → First email → Customer record email.
+- Always add safeguards: `contact.methods ?? []` to prevent runtime errors.
 
 ## Testing Checklists
 
