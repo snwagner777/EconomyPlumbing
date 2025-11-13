@@ -16,7 +16,7 @@ import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 interface CompactPortalProps {
-  customerId?: number;
+  customerId?: string | null;
   customerData?: any;
   onSchedule?: () => void;
   onPayInvoice?: () => void;
@@ -77,7 +77,7 @@ export function CompactPortal({
         return (
           <div className="space-y-6">
             <MembershipsSection />
-            {customerId && <VouchersSection customerId={customerId} />}
+            {customerId && <VouchersSection customerId={parseInt(customerId)} />}
           </div>
         );
         

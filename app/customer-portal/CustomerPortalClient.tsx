@@ -1227,6 +1227,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 toast({ title: "Authentication failed", description: message, variant: "destructive" })
               }
             />
+          ) : USE_COMPACT_PORTAL ? (
+            <CompactPortal
+              customerId={customerId}
+              customerData={customerData}
+              onSchedule={() => setSchedulerOpen(true)}
+              onPayInvoice={() => {
+                toast({
+                  title: "Pay Invoice",
+                  description: "This feature is coming soon!",
+                });
+              }}
+              onShareReferral={() => setShowReferralModal(true)}
+            />
           ) : (
             <AuthenticatedPortal
               customerId={customerId}
