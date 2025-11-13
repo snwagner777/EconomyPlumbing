@@ -4,13 +4,14 @@
  * Lookup existing customers, poll ServiceTitan for their locations, or create new customer.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { apiRequest, authenticatedApiRequest } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
+import { useCustomerContext } from '@/hooks/useCustomerContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -101,6 +102,7 @@ const normalizeState = (state: string): string => {
 
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError, onSessionUpdate }: CustomerStepProps) {
   const { toast } = useToast();
+  const { context: sharedContext, setContext, isStale } = useCustomerContext();
   const [lookupValue, setLookupValue] = useState('');
   const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
   const [showVerification, setShowVerification] = useState(false);
@@ -155,6 +157,63 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       notes: initialData?.notes || '',
     },
   });
+
+  // Hydrate form with shared customer context (field-by-field, only empty fields)
+  useEffect(() => {
+    if (!sharedContext || isStale()) {
+      console.log('[Scheduler] No valid shared context for pre-fill');
+      return;
+    }
+
+    console.log('[Scheduler] Hydrating form from shared context (source:', sharedContext.source + ')');
+    
+    // Only fill empty fields, preserve initialData and user edits
+    const currentValues = form.getValues();
+    const updates: Partial<CustomerFormData> = {};
+    
+    // Parse customer name if available
+    if (sharedContext.customerName && !currentValues.firstName && !currentValues.lastName) {
+      const nameParts = sharedContext.customerName.split(' ');
+      if (nameParts.length >= 2) {
+        updates.firstName = nameParts[0];
+        updates.lastName = nameParts.slice(1).join(' ');
+      } else {
+        updates.firstName = sharedContext.customerName;
+      }
+    }
+    
+    if (sharedContext.email && !currentValues.email) {
+      updates.email = sharedContext.email;
+    }
+    
+    if (sharedContext.phone && !currentValues.phone) {
+      updates.phone = sharedContext.phone;
+    }
+    
+    // Address fields (guard against missing address)
+    if (sharedContext.address) {
+      if (sharedContext.address.street && !currentValues.address) {
+        updates.address = sharedContext.address.street;
+      }
+      if (sharedContext.address.city && !currentValues.city) {
+        updates.city = sharedContext.address.city;
+      }
+      if (sharedContext.address.state && !currentValues.state) {
+        updates.state = sharedContext.address.state;
+      }
+      if (sharedContext.address.zip && !currentValues.zip) {
+        updates.zip = sharedContext.address.zip;
+      }
+    }
+    
+    // Apply updates if any
+    if (Object.keys(updates).length > 0) {
+      Object.entries(updates).forEach(([key, value]) => {
+        form.setValue(key as keyof CustomerFormData, value);
+      });
+      console.log('[Scheduler] Hydrated fields:', Object.keys(updates).join(', '));
+    }
+  }, [sharedContext, isStale, form]);
 
   // Send OTP for verification (SMS or Email)
   const sendOTPMutation = useMutation({
@@ -409,6 +468,24 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         serviceTitanId: customerFound.serviceTitanId,
         customerTags: customerFound.customerTags || [],
       };
+      
+      // Write customer data to shared context for cross-flow pre-fill
+      setContext({
+        customerId: customerFound.id?.toString(),
+        customerName: `${submitData.firstName} ${submitData.lastName}`,
+        phone: submitData.phone,
+        email: submitData.email,
+        address: {
+          street: submitData.address,
+          city: submitData.city,
+          state: submitData.state,
+          zip: submitData.zip,
+        },
+        serviceTitanId: submitData.serviceTitanId,
+        source: 'scheduler',
+      });
+      console.log('[Scheduler] Updated shared context with customer selection');
+      
       onSubmit(submitData);
     } else {
       setShowForm(true);
@@ -449,6 +526,24 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           serviceTitanId: data.customer.id,
           customerTags: [],
         };
+        
+        // Write new customer data to shared context for cross-flow pre-fill
+        setContext({
+          customerId: data.customer.id?.toString(),
+          customerName: `${variables.firstName} ${variables.lastName}`,
+          phone: variables.phone,
+          email: variables.email,
+          address: {
+            street: variables.address,
+            city: variables.city,
+            state: variables.state,
+            zip: variables.zip,
+          },
+          serviceTitanId: data.customer.id,
+          source: 'scheduler',
+        });
+        console.log('[Scheduler] Updated shared context with new customer');
+        
         onSubmit(submitData);
       }
     },

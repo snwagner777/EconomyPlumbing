@@ -183,6 +183,7 @@ export default function MembershipCheckout() {
   const params = useParams();
   const slug = params?.slug as string;
   const { toast } = useToast();
+  const { context: sharedContext } = useCustomerContext();
   const [step, setStep] = useState<'info' | 'payment'>('info');
   const [clientSecret, setClientSecret] = useState("");
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
@@ -237,8 +238,36 @@ export default function MembershipCheckout() {
     },
   });
 
-  // Check for active portal session on mount
+  // Check for customer context on mount (shared context, legacy migration, portal session)
   useEffect(() => {
+    // PRIORITY 1: Check shared customer context (new system)
+    if (sharedContext) {
+      console.log('[Checkout] Using shared customer context from', sharedContext.source);
+      if (sharedContext.serviceTitanId) {
+        setPortalCustomerId(sharedContext.serviceTitanId.toString());
+        return;
+      }
+    }
+    
+    // PRIORITY 2: Migrate from legacy membership_checkout_customer (old system)
+    const legacyData = sessionStorage.getItem('membership_checkout_customer');
+    if (legacyData) {
+      try {
+        const legacy = JSON.parse(legacyData);
+        if (Date.now() - legacy.timestamp < 5 * 60 * 1000) {
+          console.log('[Checkout] Migrating from legacy phone lookup context');
+          setPortalCustomerId(legacy.customerId.toString());
+          sessionStorage.removeItem('membership_checkout_customer');
+          return;
+        } else {
+          sessionStorage.removeItem('membership_checkout_customer');
+        }
+      } catch (e) {
+        sessionStorage.removeItem('membership_checkout_customer');
+      }
+    }
+    
+    // PRIORITY 3: Check portal session API (fallback)
     const checkPortalSession = async () => {
       try {
         const response = await fetch('/api/portal/session');
@@ -246,6 +275,7 @@ export default function MembershipCheckout() {
           const data = await response.json();
           if (data.customerId) {
             setPortalCustomerId(data.customerId.toString());
+            console.log('[Checkout] Using portal session API');
           }
         }
       } catch (error) {
@@ -254,29 +284,7 @@ export default function MembershipCheckout() {
     };
     
     checkPortalSession();
-    
-    // Also check for phone lookup customer context
-    const checkLookupContext = () => {
-      const contextData = sessionStorage.getItem('membership_checkout_customer');
-      if (contextData) {
-        try {
-          const context = JSON.parse(contextData);
-          // Verify it's not stale (5 minutes)
-          if (Date.now() - context.timestamp < 5 * 60 * 1000) {
-            // Set portal customer ID from lookup context
-            setPortalCustomerId(context.customerId.toString());
-            console.log('[Checkout] Using phone lookup customer context');
-          } else {
-            sessionStorage.removeItem('membership_checkout_customer');
-          }
-        } catch (e) {
-          sessionStorage.removeItem('membership_checkout_customer');
-        }
-      }
-    };
-    
-    checkLookupContext();
-  }, []);
+  }, [sharedContext]);
 
   // Pre-fill form with portal customer data
   useEffect(() => {

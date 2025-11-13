@@ -187,7 +187,7 @@ export function useCustomerContext() {
     context,
     setContext,
     clearContext,
-    isStale: isStale(),
+    isStale,
     refreshContext,
   };
 }
