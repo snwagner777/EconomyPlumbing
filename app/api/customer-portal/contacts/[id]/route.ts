@@ -115,14 +115,14 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
 
     // Update phone number if provided
     if (phone && phoneMethodId) {
-      await serviceTitanCRM.updateContactMethod(phoneMethodId, {
+      await serviceTitanCRM.updateContactMethod(contactId, phoneMethodId, {
         value: phone.replace(/\D/g, ''),
       });
     }
 
     // Update email if provided
     if (email && emailMethodId) {
-      await serviceTitanCRM.updateContactMethod(emailMethodId, {
+      await serviceTitanCRM.updateContactMethod(contactId, emailMethodId, {
         value: email.trim(),
       });
     }
