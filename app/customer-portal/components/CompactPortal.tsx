@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { DashboardOverview } from './DashboardOverview';
 import { PortalSidebar, type PortalSection } from './PortalSidebar';
+import { BottomNav } from './BottomNav';
 import { MembershipsSection } from './MembershipsSection';
 import { VouchersSection } from '../VouchersSection';
 import { ServicesSection } from './sections/ServicesSection';
@@ -17,6 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
 
 interface CompactPortalProps {
   customerId?: string | null;
@@ -62,19 +64,13 @@ export function CompactPortal({
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Calculate dashboard data from customerData
-  const dashboardData = customerData ? {
-    memberships: {
-      activeCount: customerData.memberships?.filter((m: any) => m.status === 'Active').length || 0,
-      nextRenewalDate: customerData.memberships?.[0]?.nextBillingDate 
-        ? new Date(customerData.memberships[0].nextBillingDate).toLocaleDateString()
-        : undefined,
-    },
-    vouchers: {
-      activeCount: customerData.vouchers?.filter((v: any) => v.status === 'active').length || 0,
-      totalValue: customerData.vouchers?.reduce((sum: number, v: any) => 
-        v.status === 'active' ? sum + (v.discountAmount || 0) : sum, 0) || 0,
-    },
+  // Transform customer data using mappers
+  const transformedData = transformCustomerData(customerData);
+
+  // Calculate dashboard data from transformed customerData
+  const dashboardData = transformedData ? {
+    memberships: mapMemberships(transformedData.memberships || []),
+    vouchers: mapVouchers(transformedData.vouchers || []),
     referrals: {
       totalSent: 0, // TODO: Add referral data
       creditsEarned: 0,
@@ -84,7 +80,7 @@ export function CompactPortal({
       onSchedule,
       onPayInvoice: () => {
         // Find the first open invoice to pass to the payment handler
-        const openInvoices = customerData?.invoices?.filter((inv: any) => 
+        const openInvoices = transformedData.invoices?.filter((inv: any) => 
           inv.status !== 'Paid' && inv.balance > 0
         ) || [];
         if (openInvoices.length > 0 && onPayInvoice) {
@@ -123,7 +119,7 @@ export function CompactPortal({
       case 'services':
         return (
           <ServicesSection
-            customerData={customerData}
+            customerData={transformedData}
             upcomingAppointments={upcomingAppointments}
             completedAppointments={completedAppointments}
             onReschedule={onRescheduleAppointment}
@@ -140,7 +136,7 @@ export function CompactPortal({
       case 'billing':
         return (
           <BillingSection
-            customerData={customerData}
+            customerData={transformedData}
             onPayInvoice={onPayInvoice}
             formatDate={formatDate}
           />
@@ -149,7 +145,7 @@ export function CompactPortal({
       case 'settings':
         return (
           <SettingsSection
-            customerData={customerData}
+            customerData={transformedData}
             onEditContacts={onEditContacts}
             onAddLocation={onAddLocation}
             onEditLocation={onEditLocation}
@@ -195,10 +191,16 @@ export function CompactPortal({
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto">
-        <div className="container max-w-6xl py-6 md:py-8 mt-16 md:mt-0">
+        <div className="container max-w-6xl py-6 md:py-8 mt-16 md:mt-0 pb-24 md:pb-8">
           {renderSection()}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation */}
+      <BottomNav
+        currentSection={currentSection}
+        onSectionChange={setCurrentSection}
+      />
     </div>
   );
 }

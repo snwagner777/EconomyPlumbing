@@ -26,13 +26,13 @@ export function BillingSection({
 }: BillingSectionProps) {
   const [paidHistoryOpen, setPaidHistoryOpen] = useState(false);
 
-  // Extract invoices from customer data
-  const invoices = customerData?.invoices || [];
+  // Extract invoices from customer data with null safety
+  const invoices = (customerData?.invoices || []).filter((inv: any) => inv && inv.id);
   const openInvoices = invoices.filter((inv: any) => 
-    inv.status === 'Open' || inv.balance > 0
+    inv && (inv.status === 'Open' || (typeof inv.balance === 'number' && inv.balance > 0))
   );
   const paidInvoices = invoices.filter((inv: any) => 
-    inv.status === 'Paid' || inv.balance === 0
+    inv && (inv.status === 'Paid' || inv.balance === 0)
   );
 
   // Calculate total balance - only sum actual balance due

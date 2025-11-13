@@ -40,9 +40,9 @@ export function SettingsSection({
 }: SettingsSectionProps) {
   const [activeSection, setActiveSection] = useState<string>('contacts');
 
-  // Extract data
-  const contacts = customerData?.contacts || [];
-  const locations = customerData?.locations || [];
+  // Extract data with null safety
+  const contacts = (customerData?.contacts || []).filter((c: any) => c && (c.name || c.phone || c.email));
+  const locations = (customerData?.locations || []).filter((l: any) => l && (l.address || l.street));
   const primaryContact = contacts.find((c: any) => c.isPrimary) || contacts[0];
 
   return (

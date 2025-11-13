@@ -42,12 +42,12 @@ export function ServicesSection({
 }: ServicesSectionProps) {
   const [activeTab, setActiveTab] = useState('appointments');
 
-  // Extract estimates from customer data
+  // Extract estimates from customer data with null safety
   const estimates = customerData?.estimates || [];
-  const openEstimates = estimates.filter((e: any) => e.status !== 'Sold');
+  const openEstimates = estimates.filter((e: any) => e && e.status !== 'Sold');
 
-  // Extract job history
-  const recentJobs = customerData?.recentJobs || [];
+  // Extract job history with null safety
+  const recentJobs = (customerData?.recentJobs || customerData?.jobs || []).filter((job: any) => job);
 
   return (
     <div className="space-y-6">
