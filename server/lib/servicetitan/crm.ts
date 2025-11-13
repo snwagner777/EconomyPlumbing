@@ -279,13 +279,14 @@ export class ServiceTitanCRM {
 
       console.log(`[ServiceTitan CRM] Created new customer: ${response.id}`);
       
-      // Add contact using v2 workflow - link to both customer AND default location
+      // Add contact using v2 workflow with deduplication - link to both customer AND default location
       if (data.phone) {
         // Fetch the newly created location ID
         const locations = await this.getCustomerLocations(response.id);
         const defaultLocationId = locations.length > 0 ? locations[0].id : undefined;
         
-        await this.createCompleteContact(response.id, {
+        // Use findOrCreateCompleteContact to prevent duplicates
+        await this.findOrCreateCompleteContact(response.id, {
           phone: data.phone,
           email: data.email ? data.email.split(',')[0].trim() : undefined, // Only use first email
         }, defaultLocationId); // Link to default location
@@ -514,9 +515,10 @@ export class ServiceTitanCRM {
 
       console.log(`[ServiceTitan CRM] Created new location: ${response.id}`);
       
-      // Add contact using v2 workflow (link to location)
+      // Add contact using v2 workflow with deduplication (link to location)
       if (data.phone) {
-        await this.createCompleteContact(data.customerId, {
+        // Use findOrCreateCompleteContact to prevent duplicates
+        await this.findOrCreateCompleteContact(data.customerId, {
           phone: data.phone,
           email: data.email ? data.email.split(',')[0].trim() : undefined, // Only use first email
         }, response.id); // Pass locationId to link contact to location
@@ -798,6 +800,134 @@ export class ServiceTitanCRM {
       return contact;
     } catch (error) {
       console.error('[ServiceTitan CRM] Error in complete contact creation workflow:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find or create contact with deduplication (PREVENTS DUPLICATE CONTACTS)
+   * 
+   * Searches for existing contact with matching phone/email BEFORE creating new one.
+   * This prevents the duplicate contact bug where every login/booking creates new contacts.
+   * 
+   * @param customerId - Customer to link contact to
+   * @param contactData - Contact phone/email to search for
+   * @param locationId - Optional location to link contact to
+   * @returns Existing contact if found, new contact if not
+   */
+  /**
+   * Normalize phone number to canonical 10-digit format for deduplication
+   * Handles U.S. phone numbers with various formats:
+   * - (512) 755-5037 → 5127555037
+   * - +1-512-755-5037 → 5127555037
+   * - 15127555037 → 5127555037
+   */
+  private normalizePhoneForDedup(phone: string): string {
+    // Remove all non-digit characters
+    let normalized = phone.replace(/\D/g, '');
+    
+    // If 11 digits starting with '1' (U.S. country code), remove leading '1'
+    if (normalized.length === 11 && normalized.startsWith('1')) {
+      normalized = normalized.substring(1);
+    }
+    
+    return normalized;
+  }
+
+  async findOrCreateCompleteContact(
+    customerId: number,
+    contactData: {
+      name?: string;
+      title?: string;
+      phone: string;
+      email?: string;
+      phoneMemo?: string;
+      emailMemo?: string;
+    },
+    locationId?: number
+  ): Promise<ServiceTitanContact> {
+    try {
+      // Normalize phone (remove non-digits and handle country code)
+      const normalizedPhone = this.normalizePhoneForDedup(contactData.phone);
+      const normalizedEmail = contactData.email?.toLowerCase().trim();
+
+      // Validate phone is 10 digits after normalization
+      if (normalizedPhone.length !== 10) {
+        console.warn(`[ServiceTitan CRM] Warning: Normalized phone ${normalizedPhone} is not 10 digits - proceeding anyway`);
+      }
+
+      console.log(`[ServiceTitan CRM] Searching for existing contact - Phone: ${normalizedPhone}, Email: ${normalizedEmail || 'none'}`);
+
+      // Get all contacts for this customer
+      const existingContacts = await this.getCustomerContacts(customerId);
+
+      // Search for matching contact by phone or email
+      for (const contact of existingContacts) {
+        // Check if any contact method matches
+        for (const method of contact.methods) {
+          // Match phone (normalize both sides with canonical format)
+          if (method.type === 'MobilePhone' || method.type === 'Phone') {
+            const existingNormalizedPhone = this.normalizePhoneForDedup(method.value);
+            if (existingNormalizedPhone === normalizedPhone) {
+              console.log(`[ServiceTitan CRM] ✅ Found existing contact ${contact.id} with matching phone (${method.value} → ${existingNormalizedPhone})`);
+              
+              // If locationId provided, ensure contact is linked to it
+              if (locationId) {
+                try {
+                  await this.linkContactToLocation(locationId, contact.id);
+                  console.log(`[ServiceTitan CRM] Linked existing contact ${contact.id} to location ${locationId}`);
+                } catch (error: any) {
+                  // Only suppress "already linked" errors (409 conflict or specific message)
+                  const errorMessage = error?.message || String(error);
+                  if (errorMessage.includes('409') || errorMessage.toLowerCase().includes('already') || errorMessage.toLowerCase().includes('exists')) {
+                    console.log(`[ServiceTitan CRM] Contact ${contact.id} already linked to location ${locationId} (conflict suppressed)`);
+                  } else {
+                    // Rethrow all other errors - these are real failures!
+                    console.error(`[ServiceTitan CRM] Failed to link contact ${contact.id} to location ${locationId}:`, error);
+                    throw error;
+                  }
+                }
+              }
+              
+              return contact;
+            }
+          }
+
+          // Match email (case-insensitive)
+          if (normalizedEmail && method.type === 'Email') {
+            const existingNormalizedEmail = method.value.toLowerCase().trim();
+            if (existingNormalizedEmail === normalizedEmail) {
+              console.log(`[ServiceTitan CRM] ✅ Found existing contact ${contact.id} with matching email`);
+              
+              // If locationId provided, ensure contact is linked to it
+              if (locationId) {
+                try {
+                  await this.linkContactToLocation(locationId, contact.id);
+                  console.log(`[ServiceTitan CRM] Linked existing contact ${contact.id} to location ${locationId}`);
+                } catch (error: any) {
+                  // Only suppress "already linked" errors (409 conflict or specific message)
+                  const errorMessage = error?.message || String(error);
+                  if (errorMessage.includes('409') || errorMessage.toLowerCase().includes('already') || errorMessage.toLowerCase().includes('exists')) {
+                    console.log(`[ServiceTitan CRM] Contact ${contact.id} already linked to location ${locationId} (conflict suppressed)`);
+                  } else {
+                    // Rethrow all other errors - these are real failures!
+                    console.error(`[ServiceTitan CRM] Failed to link contact ${contact.id} to location ${locationId}:`, error);
+                    throw error;
+                  }
+                }
+              }
+              
+              return contact;
+            }
+          }
+        }
+      }
+
+      // No match found - create new contact
+      console.log(`[ServiceTitan CRM] ❌ No existing contact found - creating new one`);
+      return await this.createCompleteContact(customerId, contactData, locationId);
+    } catch (error) {
+      console.error('[ServiceTitan CRM] Error in find or create contact:', error);
       throw error;
     }
   }
