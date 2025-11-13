@@ -60,6 +60,10 @@ import {
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
+import { CompactPortal } from "./components/CompactPortal";
+
+// Feature flag for new compact portal design
+const USE_COMPACT_PORTAL = true;
 
 interface ServiceTitanContact {
   id: number;
