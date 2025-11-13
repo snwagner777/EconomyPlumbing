@@ -132,7 +132,7 @@ export function mapJobs(jobs: any[] = []) {
 
 /**
  * Map individual membership to expected format
- * Build explicit shape - UI needs: id, membershipTypeName, status, from, to, benefits
+ * Build explicit shape - UI + aggregators need: id, membershipTypeName, status, from, to, benefits, recurringCharge, nextBillingDate
  */
 export function mapMembership(membership: any) {
   return {
@@ -142,6 +142,8 @@ export function mapMembership(membership: any) {
     from: membership.from || membership.startDate,
     to: membership.to || membership.endDate || membership.expirationDate,
     benefits: membership.benefits || { discounts: [], recurringServices: [] },
+    recurringCharge: membership.recurringCharge || membership.totalValue || 0,
+    nextBillingDate: membership.nextBillingDate || membership.renewalDate,
   };
 }
 
@@ -181,6 +183,7 @@ export function mapMemberships(memberships: any[] = []) {
 
 /**
  * Aggregate vouchers for dashboard
+ * Now consumes sanitized voucher shapes (use expiresAt and discountAmount)
  */
 export function mapVouchers(vouchers: any[] = []) {
   const active = vouchers.filter((v) => 
@@ -189,9 +192,9 @@ export function mapVouchers(vouchers: any[] = []) {
   
   return {
     activeCount: active.length,
-    totalValue: active.reduce((sum, v) => sum + (v.discountAmount || v.amount || v.value || 0), 0),
+    totalValue: active.reduce((sum, v) => sum + (v.discountAmount || 0), 0),
     nearestExpiry: active.reduce((nearest: string | null, v) => {
-      const expiry = v.expiresOn || v.expirationDate || v.expiry;
+      const expiry = v.expiresAt;
       if (!expiry) return nearest;
       if (!nearest) return expiry;
       return new Date(expiry) < new Date(nearest) ? expiry : nearest;
