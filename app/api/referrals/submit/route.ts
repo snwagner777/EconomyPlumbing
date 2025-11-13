@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/server/db';
-import { referrals, serviceTitanCustomers, customersXlsx } from '@shared/schema';
+import { referrals, serviceTitanCustomers, customersXlsx, referralFormSchema, type ReferralFormData } from '@shared/schema';
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
 import { sendRefereeWelcomeEmail, sendReferrerThankYouEmail } from '@/server/lib/resendClient';
@@ -14,20 +14,20 @@ import { sendReferralSms } from '@/server/lib/simpletexting';
 import { normalizePhone } from '@/server/lib/serviceTitan';
 import { eq, or, sql } from 'drizzle-orm';
 
-const referralSchema = z.object({
-  referrerName: z.string().min(1).max(200),
-  referrerEmail: z.string().email().optional().or(z.literal('')),
-  referrerPhone: z.string().min(1),
-  refereeName: z.string().min(1).max(200),
-  refereeEmail: z.string().email().optional().or(z.literal('')),
-  refereePhone: z.string().min(1),
-  refereeAddress: z.string().optional(),
-  refereeCity: z.string().optional(),
-  refereeState: z.string().optional(),
-  refereeZip: z.string().optional(),
-  serviceNeeded: z.string().optional(),
-  notes: z.string().optional(),
-});
+/**
+ * Normalize form data for database insertion
+ * Converts empty strings to null for optional contact fields
+ */
+function normalizeReferralData(data: ReferralFormData) {
+  return {
+    referrerName: data.referrerName,
+    referrerEmail: data.referrerEmail || null,
+    referrerPhone: data.referrerPhone || null,
+    refereeName: data.refereeName,
+    refereeEmail: data.refereeEmail || null,
+    refereePhone: data.refereePhone || null,
+  };
+}
 
 // Rate limiting
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
@@ -67,8 +67,8 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     
-    // Validate input
-    const result = referralSchema.safeParse(body);
+    // Validate input using shared referralFormSchema
+    const result = referralFormSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: 'Invalid input', details: result.error.errors },
@@ -78,67 +78,80 @@ export async function POST(req: NextRequest) {
 
     // Check if referee is already an existing customer (reject if so)
     // Normalize phone number for comparison (strip formatting)
-    const normalizedRefereePhone = normalizePhone(result.data.refereePhone);
+    // Note: refereePhone may be null if only email was provided
+    const normalizedRefereePhone = result.data.refereePhone ? normalizePhone(result.data.refereePhone) : null;
     
-    // Validate that normalized phone is valid (not empty and has minimum length)
-    if (!normalizedRefereePhone || normalizedRefereePhone.length < 10) {
+    // Validate that normalized phone is valid if provided (not empty and has minimum length)
+    if (normalizedRefereePhone && normalizedRefereePhone.length < 10) {
       return NextResponse.json(
         { error: 'Invalid phone number format. Please provide a valid 10-digit phone number.' },
         { status: 400 }
       );
     }
     
-    // Check XLSX table first (primary source) - using SQL normalization for accurate matching
-    const existingRefereeXlsx = await db
-      .select()
-      .from(customersXlsx)
-      .where(
-        or(
-          sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
-          sql`regexp_replace(${customersXlsx.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
-        )
-      )
-      .limit(1);
-    
-    if (existingRefereeXlsx.length > 0) {
+    // If phone not provided, must have email (already validated by referralFormSchema)
+    // Skip existing customer phone check if no phone provided
+    if (!normalizedRefereePhone && !result.data.refereeEmail) {
       return NextResponse.json(
-        { 
-          error: 'This person is already a customer! Referral rewards are for bringing in new customers only.',
-          isExistingCustomer: true
-        },
+        { error: 'Must provide either phone or email for referee' },
         { status: 400 }
       );
     }
     
-    // Also check legacy ServiceTitan table (in case XLSX import hasn't synced yet)
-    // Check BOTH phone and mobilePhone columns
-    const existingRefereeST = await db
-      .select()
-      .from(serviceTitanCustomers)
-      .where(
-        or(
-          sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
-          sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
+    // Check if referee is already a customer (only if phone provided)
+    if (normalizedRefereePhone) {
+      // Check XLSX table first (primary source) - using SQL normalization for accurate matching
+      const existingRefereeXlsx = await db
+        .select()
+        .from(customersXlsx)
+        .where(
+          or(
+            sql`regexp_replace(${customersXlsx.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
+            sql`regexp_replace(${customersXlsx.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
+          )
         )
-      )
-      .limit(1);
-    
-    if (existingRefereeST.length > 0) {
-      return NextResponse.json(
-        { 
-          error: 'This person is already a customer! Referral rewards are for bringing in new customers only.',
-          isExistingCustomer: true
-        },
-        { status: 400 }
-      );
+        .limit(1);
+      
+      if (existingRefereeXlsx.length > 0) {
+        return NextResponse.json(
+          { 
+            error: 'This person is already a customer! Referral rewards are for bringing in new customers only.',
+            isExistingCustomer: true
+          },
+          { status: 400 }
+        );
+      }
+      
+      // Also check legacy ServiceTitan table (in case XLSX import hasn't synced yet)
+      // Check BOTH phone and mobilePhone columns
+      const existingRefereeST = await db
+        .select()
+        .from(serviceTitanCustomers)
+        .where(
+          or(
+            sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
+            sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
+          )
+        )
+        .limit(1);
+      
+      if (existingRefereeST.length > 0) {
+        return NextResponse.json(
+          { 
+            error: 'This person is already a customer! Referral rewards are for bringing in new customers only.',
+            isExistingCustomer: true
+          },
+          { status: 400 }
+        );
+      }
     }
     
     // Look up referrer customer ID from ServiceTitan by phone (using normalized comparison)
     // Check BOTH phone and mobilePhone columns for complete coverage
-    const normalizedReferrerPhone = normalizePhone(result.data.referrerPhone);
+    const normalizedReferrerPhone = result.data.referrerPhone ? normalizePhone(result.data.referrerPhone) : null;
     
-    // Validate referrer phone (must be valid to process referral)
-    if (!normalizedReferrerPhone || normalizedReferrerPhone.length < 10) {
+    // Validate referrer phone if provided
+    if (normalizedReferrerPhone && normalizedReferrerPhone.length < 10) {
       return NextResponse.json(
         { error: 'Invalid referrer phone number format. Please provide a valid 10-digit phone number.' },
         { status: 400 }
@@ -146,46 +159,53 @@ export async function POST(req: NextRequest) {
     }
     
     let referrerCustomerId: number | undefined;
-    const [referrerCustomer] = await db
-      .select()
-      .from(serviceTitanCustomers)
-      .where(
-        or(
-          sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedReferrerPhone}`,
-          sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedReferrerPhone}`
+    if (normalizedReferrerPhone) {
+      const [referrerCustomer] = await db
+        .select()
+        .from(serviceTitanCustomers)
+        .where(
+          or(
+            sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedReferrerPhone}`,
+            sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedReferrerPhone}`
+          )
         )
-      )
-      .limit(1);
-    
-    if (referrerCustomer) {
-      referrerCustomerId = referrerCustomer.id; // id is the ServiceTitan customer ID
+        .limit(1);
+      
+      if (referrerCustomer) {
+        referrerCustomerId = referrerCustomer.id; // id is the ServiceTitan customer ID
+      }
     }
     
     // Look up referee customer ID if they already exist (shouldn't happen after check above)
     // Using normalized comparison for consistency, checking BOTH phone columns
     let refereeCustomerId: number | undefined;
-    const [refereeCustomer] = await db
-      .select()
-      .from(serviceTitanCustomers)
-      .where(
-        or(
-          sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
-          sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
+    if (normalizedRefereePhone) {
+      const [refereeCustomer] = await db
+        .select()
+        .from(serviceTitanCustomers)
+        .where(
+          or(
+            sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
+            sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
+          )
         )
-      )
-      .limit(1);
-    
-    if (refereeCustomer) {
-      refereeCustomerId = refereeCustomer.id;
+        .limit(1);
+      
+      if (refereeCustomer) {
+        refereeCustomerId = refereeCustomer.id;
+      }
     }
+
+    // Normalize form data before database insertion (convert empty strings to null)
+    const normalizedData = normalizeReferralData(result.data);
 
     // Create referral record
     const [referral] = await db
       .insert(referrals)
       .values({
-        ...result.data,
+        ...normalizedData,
         referrerCustomerId,
-        submittedAt: new Date(),
+        refereeCustomerId,
         status: 'pending',
       })
       .returning();

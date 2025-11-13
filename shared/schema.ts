@@ -206,13 +206,14 @@ export const referrals = pgTable("referrals", {
   // Referrer info (existing customer)
   referralCode: text("referral_code"), // The code used (e.g., "JOHN-SMITH") - links to referralCodes table
   referrerName: text("referrer_name").notNull(),
-  referrerPhone: text("referrer_phone").notNull(),
+  referrerPhone: text("referrer_phone"), // Nullable - either phone OR email required (validated in form)
+  referrerEmail: text("referrer_email"), // Nullable - either phone OR email required (validated in form)
   referrerCustomerId: integer("referrer_customer_id"), // ServiceTitan customer ID (null if not found yet)
   
   // Referee info (person being referred)
   refereeName: text("referee_name").notNull(),
-  refereePhone: text("referee_phone").notNull(),
-  refereeEmail: text("referee_email"),
+  refereePhone: text("referee_phone"), // Nullable - either phone OR email required (validated in form)
+  refereeEmail: text("referee_email"), // Nullable - either phone OR email required (validated in form)
   refereeCustomerId: integer("referee_customer_id"), // ServiceTitan customer ID (null until they become a customer)
   
   // Status tracking
@@ -2497,6 +2498,56 @@ export const insertPendingReferralSchema = createInsertSchema(pendingReferrals).
   convertedAt: true,
 });
 
+// Referral Codes
+export const insertReferralCodeSchema = createInsertSchema(referralCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Referrals - Main referral submissions
+export const insertReferralSchema = createInsertSchema(referrals).omit({
+  id: true,
+  submittedAt: true,
+  updatedAt: true,
+  contactedAt: true,
+  firstJobDate: true,
+  creditedAt: true,
+  expiresAt: true,
+}).extend({
+  // Override contact fields to allow missing values (not just null)
+  // Form sends empty strings, API should convert to null before validation
+  referrerEmail: z.string().optional().nullable(),
+  referrerPhone: z.string().optional().nullable(),
+  refereeEmail: z.string().optional().nullable(),
+  refereePhone: z.string().optional().nullable(),
+});
+
+// Referral form submission schema for public/portal forms
+// Validates user input before database insertion
+export const referralFormSchema = z.object({
+  // Referrer info
+  referrerName: z.string().min(2, "Your name must be at least 2 characters"),
+  referrerEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  referrerPhone: z.string().min(10, "Please enter a valid phone number").optional().or(z.literal("")),
+  
+  // Referee info  
+  refereeName: z.string().min(2, "Friend's name must be at least 2 characters"),
+  refereeEmail: z.string().email("Please enter a valid email").optional().or(z.literal("")),
+  refereePhone: z.string().min(10, "Please enter a valid phone number").optional().or(z.literal("")),
+}).refine(
+  (data) => data.referrerEmail || data.referrerPhone,
+  {
+    message: "Please provide either your email or phone number",
+    path: ["referrerEmail"],
+  }
+).refine(
+  (data) => data.refereeEmail || data.refereePhone,
+  {
+    message: "Please provide either your friend's email or phone number",
+    path: ["refereeEmail"],
+  }
+);
+
 export const insertConversionEventSchema = createInsertSchema(conversionEvents).omit({
   id: true,
   createdAt: true,
@@ -2626,6 +2677,11 @@ export type EmailPreference = typeof emailPreferences.$inferSelect;
 export type InsertEmailPreference = z.infer<typeof insertEmailPreferencesSchema>;
 export type PendingReferral = typeof pendingReferrals.$inferSelect;
 export type InsertPendingReferral = z.infer<typeof insertPendingReferralSchema>;
+export type ReferralCode = typeof referralCodes.$inferSelect;
+export type InsertReferralCode = z.infer<typeof insertReferralCodeSchema>;
+export type Referral = typeof referrals.$inferSelect;
+export type InsertReferral = z.infer<typeof insertReferralSchema>;
+export type ReferralFormData = z.infer<typeof referralFormSchema>;
 export type ConversionEvent = typeof conversionEvents.$inferSelect;
 export type InsertConversionEvent = z.infer<typeof insertConversionEventSchema>;
 export type CustomerSegment = typeof customerSegments.$inferSelect;
