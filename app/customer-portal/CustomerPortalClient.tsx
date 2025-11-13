@@ -1261,6 +1261,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               onEditContacts={handleEditContacts}
               onAddLocation={() => setAddLocationOpen(true)}
               onEditLocation={handleEditAddress}
+              onLogout={handleLogout}
               formatDate={formatDate}
               formatTime={formatTime}
               formatPhoneNumber={formatPhoneNumber}

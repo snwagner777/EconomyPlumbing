@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
+import Header from "@/components/Header";
 
 interface CompactPortalProps {
   customerId?: string | null;
@@ -35,6 +36,7 @@ interface CompactPortalProps {
   onEditContacts?: () => void;
   onAddLocation?: () => void;
   onEditLocation?: (location: any) => void;
+  onLogout?: () => void;
   formatDate?: (date: string) => string;
   formatTime?: (time: string) => string;
   formatPhoneNumber?: (phone: string) => string;
@@ -56,6 +58,7 @@ export function CompactPortal({
   onEditContacts,
   onAddLocation,
   onEditLocation,
+  onLogout,
   formatDate,
   formatTime,
   formatPhoneNumber,
@@ -159,40 +162,28 @@ export function CompactPortal({
   };
 
   return (
-    <div className="flex h-full">
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 flex-shrink-0">
-        <PortalSidebar
-          currentSection={currentSection}
-          onSectionChange={setCurrentSection}
-        />
-      </div>
+    <div className="flex flex-col h-screen">
+      {/* Site Header */}
+      <Header 
+        isPortalAuthenticated={true}
+        onPortalLogout={onLogout}
+      />
 
-      {/* Mobile Header + Menu */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-card border-b p-4 flex items-center justify-between">
-        <h1 className="font-semibold">Customer Portal</h1>
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" data-testid="button-mobile-menu">
-              <Menu className="w-5 h-5" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
-            <PortalSidebar
-              currentSection={currentSection}
-              onSectionChange={(section) => {
-                setCurrentSection(section);
-                setMobileMenuOpen(false);
-              }}
-            />
-          </SheetContent>
-        </Sheet>
-      </div>
+      {/* Portal Content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <PortalSidebar
+            currentSection={currentSection}
+            onSectionChange={setCurrentSection}
+          />
+        </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-auto">
-        <div className="container max-w-6xl py-6 md:py-8 mt-16 md:mt-0 pb-24 md:pb-8">
-          {renderSection()}
+        {/* Main Content */}
+        <div className="flex-1 overflow-auto">
+          <div className="container max-w-6xl py-6 md:py-8 pb-24 md:pb-8">
+            {renderSection()}
+          </div>
         </div>
       </div>
 
