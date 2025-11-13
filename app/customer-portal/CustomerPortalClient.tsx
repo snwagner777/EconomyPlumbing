@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useCustomerContext } from "@/hooks/useCustomerContext";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -169,6 +170,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const [customerId, setCustomerId] = useState<string | null>(null);
   const [availableCustomerIds, setAvailableCustomerIds] = useState<number[]>([]);
   
+  // Shared customer context for cross-flow pre-fill
+  const { setContext, clearContext } = useCustomerContext();
+  
   // Tab state for accounts and locations
   const [activeAccountTab, setActiveAccountTab] = useState<string>("");
   const [activeLocationTab, setActiveLocationTab] = useState<string>("");
@@ -277,6 +281,27 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     queryKey: ['/api/servicetitan/customer', customerId],
     enabled: !!customerId,
   });
+
+  // Persist customer data to shared context when loaded (for pre-fill in checkout/scheduler)
+  useEffect(() => {
+    if (customerData?.customer && customerId) {
+      setContext({
+        source: 'portal',
+        customerId: customerData.customer.id,
+        customerName: customerData.customer.name,
+        phone: customerData.customer.phoneNumber || undefined,
+        email: customerData.customer.email || undefined,
+        address: customerData.customer.address ? {
+          street: customerData.customer.address.street || undefined,
+          city: customerData.customer.address.city || undefined,
+          state: customerData.customer.address.state || undefined,
+          zip: customerData.customer.address.zip || undefined,
+        } : undefined,
+        serviceTitanId: customerData.customer.id,
+      });
+      console.log('[CustomerPortal] Persisted customer context for cross-flow pre-fill');
+    }
+  }, [customerId, customerData, setContext]);
 
   // Fetch referrals for this customer
   const { data: referralsData } = useQuery<{ referrals: any[] }>({
@@ -412,14 +437,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     const clearSession = async () => {
       try {
         await fetch('/api/portal/logout', { method: 'POST' });
-        console.log('[Portal] Session cleared on page load');
+        clearContext(); // Clear shared customer context
+        console.log('[Portal] Session and context cleared on page load');
       } catch (error) {
         console.error('[Portal] Error clearing session:', error);
       }
     };
     
     clearSession();
-  }, []);
+  }, [clearContext]);
 
   // Initialize active tabs when customer ID or locations change
   useEffect(() => {
@@ -447,6 +473,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         throw new Error('Failed to switch account');
       }
 
+      // Clear old context before switching - new context will be set when customerData loads
+      clearContext();
       setCustomerId(accountId.toString());
       setShowAccountSelection(false);
       
@@ -844,6 +872,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         throw new Error('Failed to logout');
       }
 
+      // CRITICAL: Clear shared customer context to prevent PII leakage
+      clearContext();
+      
       // Clear state
       setCustomerId(null);
       setAvailableCustomerIds([]);
@@ -857,6 +888,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         description: "You have been successfully signed out.",
       });
     } catch (error) {
+      // Clear context even on failure to avoid partial logout states
+      clearContext();
+      
       console.error('Logout error:', error);
       toast({
         title: "Error",

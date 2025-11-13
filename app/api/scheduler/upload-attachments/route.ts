@@ -8,6 +8,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 
+// Force Node.js runtime for proper file/buffer handling
+export const runtime = 'nodejs';
+
 // Max file size: 10MB per file
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
