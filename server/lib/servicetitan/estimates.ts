@@ -239,11 +239,11 @@ export class ServiceTitanEstimates {
 
   /**
    * Normalize ServiceTitan status to canonical values
-   * ServiceTitan may return: "OPEN", "SOLD", "Dismissed", etc.
+   * ServiceTitan may return: "OPEN", "SOLD", "Dismissed", etc., or null/number
    * Frontend expects: "Open" | "Sold" | "Dismissed"
    */
-  private normalizeStatus(status: string | undefined): 'Open' | 'Sold' | 'Dismissed' {
-    if (!status) return 'Open';
+  private normalizeStatus(status: string | undefined | null | number): 'Open' | 'Sold' | 'Dismissed' {
+    if (!status || typeof status !== 'string') return 'Open';
     
     const statusUpper = status.toUpperCase();
     

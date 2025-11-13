@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
 
     // Fetch all memberships for this customer (active + expired)
     // Handle case where customer has no memberships (404 or empty response)
-    let allMemberships = [];
+    let allMemberships: Awaited<ReturnType<typeof serviceTitanMemberships.getCustomerMemberships>> = [];
     try {
       allMemberships = await serviceTitanMemberships.getCustomerMemberships(customerId);
     } catch (error: any) {

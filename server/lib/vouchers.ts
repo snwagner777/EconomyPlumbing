@@ -273,11 +273,62 @@ export async function redeemVoucher(params: {
       .limit(1);
     
     if (referral) {
+      // Fetch referrer's email from ServiceTitan for notification
+      // NOTE: referrals table does NOT store referrerEmail (only refereeEmail exists)
+      // Must fetch from ServiceTitan or voucher will be created without email notification
+      let referrerEmail: string | undefined;
+      if (voucher.referrerCustomerId) {
+        try {
+          const { serviceTitanCRM } = await import('./serviceTitan');
+          
+          // Primary: Get email from customer contacts (respects primary/active flags)
+          const contacts = await serviceTitanCRM.getCustomerContacts(voucher.referrerCustomerId);
+          
+          // Filter active (non-archived) contacts with email methods
+          const activeContacts = contacts.filter(c => !c.isArchived);
+          for (const contact of activeContacts) {
+            // Safeguard: some contacts may not have methods array
+            const emailMethods = (contact.methods ?? []).filter(m => m.type === 'Email');
+            
+            // Prefer primary email (check memo/referenceId for "Primary")
+            const primaryEmail = emailMethods.find(m => 
+              m.memo?.toLowerCase().includes('primary') || 
+              m.referenceId?.toLowerCase().includes('primary')
+            );
+            
+            if (primaryEmail) {
+              referrerEmail = primaryEmail.value;
+              break;
+            }
+            
+            // Fall back to first email found
+            if (!referrerEmail && emailMethods.length > 0) {
+              referrerEmail = emailMethods[0].value;
+            }
+          }
+          
+          // Fallback: Get email from customer record if no contact-level email
+          if (!referrerEmail) {
+            const customer = await serviceTitanCRM.getCustomer(voucher.referrerCustomerId);
+            // Customer contacts array contains simplified type/value entries
+            const customerEmail = customer?.contacts?.find(c => c.type === 'Email');
+            referrerEmail = customerEmail?.value;
+          }
+          
+          if (!referrerEmail) {
+            console.warn(`[Voucher] No email found for referrer customer ${voucher.referrerCustomerId} - reward voucher created but notification cannot be sent. Customer can view voucher in portal.`);
+          }
+        } catch (emailLookupError) {
+          console.error('[Voucher] Failed to fetch referrer email from ServiceTitan:', emailLookupError);
+          console.warn('[Voucher] Proceeding with reward voucher creation - referrer can view in customer portal');
+        }
+      }
+      
       // Create reward voucher for referrer
       const reward = await createVoucher({
         voucherType: 'referral_reward',
         customerName: referral.referrerName,
-        customerEmail: referral.referrerEmail ?? undefined,
+        customerEmail: referrerEmail,
         customerPhone: referral.referrerPhone,
         customerId: voucher.referrerCustomerId,
         referralId: voucher.referralId ?? undefined,
@@ -297,13 +348,13 @@ export async function redeemVoucher(params: {
         })
         .where(eq(referrals.id, voucher.referralId!));
       
-      // Send reward email to referrer
-      if (referral.referrerEmail) {
+      // Send reward email to referrer (if email found)
+      if (referrerEmail) {
         try {
           const { sendReferrerRewardEmail } = await import('./resendClient');
           await sendReferrerRewardEmail({
             referrerName: referral.referrerName,
-            referrerEmail: referral.referrerEmail,
+            referrerEmail: referrerEmail,
             refereeName: referral.refereeName,
             voucherCode: reward.code,
             voucherQRCode: reward.qrCode,
@@ -315,6 +366,8 @@ export async function redeemVoucher(params: {
           console.error('[Voucher] Failed to send referrer reward email:', emailError);
           // Don't fail the redemption if email fails
         }
+      } else {
+        console.log(`[Voucher] Created reward voucher for referrer ${referral.referrerName} - email not found, customer can view in portal`);
       }
     }
   }
