@@ -1231,6 +1231,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             <CompactPortal
               customerId={customerId}
               customerData={customerData}
+              upcomingAppointments={upcomingAppointments}
+              completedAppointments={completedAppointments}
               onSchedule={() => setSchedulerOpen(true)}
               onPayInvoice={() => {
                 toast({
@@ -1239,6 +1241,23 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 });
               }}
               onShareReferral={() => setShowReferralModal(true)}
+              onRescheduleAppointment={handleOpenRescheduleDialog}
+              onCancelAppointment={handleOpenCancelDialog}
+              onViewEstimate={(estimate) => {
+                setSelectedEstimate(estimate);
+                setEstimateDetailOpen(true);
+              }}
+              onAcceptEstimate={(estimate) => {
+                setSelectedEstimate(estimate);
+                setShowAcceptanceDialog(true);
+              }}
+              onEditContacts={handleEditContacts}
+              onAddLocation={() => setAddLocationOpen(true)}
+              onEditLocation={handleEditAddress}
+              formatDate={formatDate}
+              formatTime={formatTime}
+              formatPhoneNumber={formatPhoneNumber}
+              getStatusBadge={getStatusBadge}
             />
           ) : (
             <AuthenticatedPortal

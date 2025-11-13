@@ -10,6 +10,9 @@ import { DashboardOverview } from './DashboardOverview';
 import { PortalSidebar, type PortalSection } from './PortalSidebar';
 import { MembershipsSection } from './MembershipsSection';
 import { VouchersSection } from '../VouchersSection';
+import { ServicesSection } from './sections/ServicesSection';
+import { BillingSection } from './sections/BillingSection';
+import { SettingsSection } from './sections/SettingsSection';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -18,17 +21,43 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 interface CompactPortalProps {
   customerId?: string | null;
   customerData?: any;
+  upcomingAppointments?: any[];
+  completedAppointments?: any[];
   onSchedule?: () => void;
   onPayInvoice?: () => void;
   onShareReferral?: () => void;
+  onRescheduleAppointment?: (appointment: any) => void;
+  onCancelAppointment?: (appointment: any) => void;
+  onViewEstimate?: (estimate: any) => void;
+  onAcceptEstimate?: (estimate: any) => void;
+  onEditContacts?: () => void;
+  onAddLocation?: () => void;
+  onEditLocation?: (location: any) => void;
+  formatDate?: (date: string) => string;
+  formatTime?: (time: string) => string;
+  formatPhoneNumber?: (phone: string) => string;
+  getStatusBadge?: (status: string) => React.ReactNode;
 }
 
 export function CompactPortal({
   customerId,
   customerData,
+  upcomingAppointments = [],
+  completedAppointments = [],
   onSchedule,
   onPayInvoice,
   onShareReferral,
+  onRescheduleAppointment,
+  onCancelAppointment,
+  onViewEstimate,
+  onAcceptEstimate,
+  onEditContacts,
+  onAddLocation,
+  onEditLocation,
+  formatDate,
+  formatTime,
+  formatPhoneNumber,
+  getStatusBadge,
 }: CompactPortalProps) {
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -82,31 +111,40 @@ export function CompactPortal({
         );
         
       case 'services':
+        return (
+          <ServicesSection
+            customerData={customerData}
+            upcomingAppointments={upcomingAppointments}
+            completedAppointments={completedAppointments}
+            onReschedule={onRescheduleAppointment}
+            onCancel={onCancelAppointment}
+            onViewEstimate={onViewEstimate}
+            onAcceptEstimate={onAcceptEstimate}
+            onSchedule={onSchedule}
+            formatDate={formatDate}
+            formatTime={formatTime}
+            getStatusBadge={getStatusBadge}
+          />
+        );
+        
       case 'billing':
+        return (
+          <BillingSection
+            customerData={customerData}
+            onPayInvoice={onPayInvoice}
+            formatDate={formatDate}
+          />
+        );
+        
       case 'settings':
         return (
-          <Card>
-            <CardHeader>
-              <CardTitle className="capitalize">{currentSection}</CardTitle>
-              <CardDescription>This section is coming soon in the redesign</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                The {currentSection} section will display your {
-                  currentSection === 'services' ? 'appointments, estimates, and job history' :
-                  currentSection === 'billing' ? 'invoices and payment methods' :
-                  'account settings and preferences'
-                }.
-              </p>
-              <Button
-                variant="outline"
-                onClick={() => setCurrentSection('overview')}
-                className="mt-4"
-              >
-                Back to Overview
-              </Button>
-            </CardContent>
-          </Card>
+          <SettingsSection
+            customerData={customerData}
+            onEditContacts={onEditContacts}
+            onAddLocation={onAddLocation}
+            onEditLocation={onEditLocation}
+            formatPhoneNumber={formatPhoneNumber}
+          />
         );
         
       default:
