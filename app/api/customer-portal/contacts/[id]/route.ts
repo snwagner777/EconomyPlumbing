@@ -94,9 +94,25 @@ export async function PATCH(req: NextRequest, context: RouteParams) {
       }
     }
 
-    // Verify ownership: contact must belong to authenticated customer
-    const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
-    const contactToUpdate = contacts.find(c => c.id === contactId);
+    // Verify ownership: contact must belong to authenticated customer OR their locations
+    // First check customer-level contacts
+    const customerIdNum = parseInt(customerId, 10); // ServiceTitan API requires numeric ID
+    const customerContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    let contactToUpdate = customerContacts.find(c => c.id === contactId);
+    
+    // If not found at customer level, check all location contacts
+    if (!contactToUpdate) {
+      const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      const locations = await serviceTitan.getAllCustomerLocations(customerIdNum);
+      
+      // Check each location's contacts
+      for (const location of locations) {
+        const locationContacts = await serviceTitanCRM.getLocationContacts(location.id);
+        contactToUpdate = locationContacts.find(c => c.id === contactId);
+        if (contactToUpdate) break; // Found it!
+      }
+    }
 
     if (!contactToUpdate) {
       console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to update contact ${contactId}`);
@@ -208,9 +224,28 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
 
     console.log(`[Customer Portal] Deleting contact ${contactId} for customer ${customerId}`);
 
-    // Verify ownership: contact must belong to authenticated customer
-    const contacts = await serviceTitanCRM.getCustomerContacts(customerId);
-    const contactToDelete = contacts.find(c => c.id === contactId);
+    // Verify ownership: contact must belong to authenticated customer OR their locations
+    // First check customer-level contacts
+    const customerIdNum = parseInt(customerId, 10); // ServiceTitan API requires numeric ID
+    const customerContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+    let contactToDelete = customerContacts.find(c => c.id === contactId);
+    let allContacts = [...customerContacts];
+    
+    // If not found at customer level, check all location contacts
+    if (!contactToDelete) {
+      const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
+      const serviceTitan = getServiceTitanAPI();
+      const locations = await serviceTitan.getAllCustomerLocations(customerIdNum);
+      
+      // Check each location's contacts and aggregate for count
+      for (const location of locations) {
+        const locationContacts = await serviceTitanCRM.getLocationContacts(location.id);
+        allContacts.push(...locationContacts);
+        if (!contactToDelete) {
+          contactToDelete = locationContacts.find(c => c.id === contactId);
+        }
+      }
+    }
 
     if (!contactToDelete) {
       console.warn(`[Customer Portal] Unauthorized access: customer ${customerId} tried to delete contact ${contactId}`);
@@ -221,9 +256,13 @@ export async function DELETE(req: NextRequest, context: RouteParams) {
     }
 
     // Enforce minimum 1 contact rule
-    // Count contacts with mobile phone or email (customer-facing contacts)
-    const customerFacingContacts = contacts.filter(contact => 
-      contact.methods?.some(m => m.type === 'MobilePhone' || m.type === 'Email')
+    // Count unique contacts with mobile phone or email (customer-facing contacts)
+    // Deduplicate by contact ID since same contact can appear in multiple locations
+    const uniqueContacts = Array.from(
+      new Map(allContacts.map(c => [c.id, c])).values()
+    );
+    const customerFacingContacts = uniqueContacts.filter(contact => 
+      contact.methods?.some(m => m.type.includes('Phone') || m.type === 'Email')
     );
 
     if (customerFacingContacts.length <= 1) {

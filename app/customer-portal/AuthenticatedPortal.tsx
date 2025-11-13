@@ -7,6 +7,7 @@
 
 'use client';
 
+import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 import type { UseMutationResult } from "@tanstack/react-query";
@@ -56,12 +57,324 @@ import {
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
-import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
+import { ContactForm, useAddCustomerContact, useAddLocationContact, useUpdateContact, useDeleteContact } from "@/modules/contacts";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import { queryClient } from "@/lib/queryClient";
 import { ReferralModal } from "@/components/ReferralModal";
 import { VouchersSection } from "./VouchersSection";
 import { MembershipsSection } from "./components/MembershipsSection";
+
+/**
+ * Manage Location Contacts Dialog Component
+ * Extracted for better organization and to handle enriched contact data with Edit/Delete
+ */
+interface ManageLocationContactsDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedLocation: any;
+  onClose: () => void;
+}
+
+function ManageLocationContactsDialog({
+  open,
+  onOpenChange,
+  selectedLocation,
+  onClose,
+}: ManageLocationContactsDialogProps) {
+  const [editContactOpen, setEditContactOpen] = useState(false);
+  const [deleteContactOpen, setDeleteContactOpen] = useState(false);
+  const [contactToEdit, setContactToEdit] = useState<any>(null);
+  const [contactToDelete, setContactToDelete] = useState<any>(null);
+  
+  const [editName, setEditName] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  
+  const addLocationContact = useAddLocationContact();
+  const updateContact = useUpdateContact();
+  const deleteContact = useDeleteContact();
+
+  // Helper to check if a contact method is a phone type (covers all phone variants)
+  const isPhoneType = (type: string) => {
+    return type.includes('Phone'); // Matches: MobilePhone, Phone, HomePhone, WorkPhone, etc.
+  };
+
+  const handleEditContact = (contact: any) => {
+    setContactToEdit(contact);
+    setEditName(contact.name || '');
+    
+    // Extract phone and email from methods - support ALL phone types
+    const phoneMethod = contact.methods?.find((m: any) => isPhoneType(m.type));
+    const emailMethod = contact.methods?.find((m: any) => m.type === 'Email');
+    
+    setEditPhone(phoneMethod?.value || '');
+    setEditEmail(emailMethod?.value || '');
+    setEditContactOpen(true);
+  };
+
+  const handleUpdateContact = async () => {
+    if (!contactToEdit) return;
+
+    const phoneMethod = contactToEdit.methods?.find((m: any) => isPhoneType(m.type));
+    const emailMethod = contactToEdit.methods?.find((m: any) => m.type === 'Email');
+
+    await updateContact.mutateAsync({
+      contactId: contactToEdit.id,
+      name: editName || undefined,
+      phone: editPhone || undefined,
+      phoneMethodId: phoneMethod?.id,
+      email: editEmail || undefined,
+      emailMethodId: emailMethod?.id,
+    });
+
+    setEditContactOpen(false);
+    setContactToEdit(null);
+  };
+
+  const handleDeleteContact = async () => {
+    if (!contactToDelete) return;
+
+    await deleteContact.mutateAsync(contactToDelete.id);
+    setDeleteContactOpen(false);
+    setContactToDelete(null);
+  };
+
+  return (
+    <>
+      {/* Main Manage Dialog */}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl" data-testid="dialog-manage-location-contacts">
+          <DialogHeader>
+            <DialogTitle>Manage Location Contacts</DialogTitle>
+            <DialogDescription>
+              {selectedLocation?.name || 'Location'} - Add or manage contacts specific to this location
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            {/* Existing contacts - now with Edit/Delete */}
+            {selectedLocation?.contacts && selectedLocation.contacts.length > 0 && (
+              <div className="space-y-3">
+                <Label>Current Contacts</Label>
+                {selectedLocation.contacts.map((contact: any) => (
+                  <Card key={contact.id}>
+                    <CardContent className="p-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 space-y-2">
+                          {contact.name && (
+                            <p className="font-medium text-sm">{contact.name}</p>
+                          )}
+                          {contact.title && (
+                            <p className="text-xs text-muted-foreground">{contact.title}</p>
+                          )}
+                          
+                          {/* Display all contact methods */}
+                          <div className="space-y-1">
+                            {contact.methods?.map((method: any) => {
+                              const isEmail = method.type === 'Email';
+                              const isPhone = method.type.includes('Phone'); // Support ALL phone types
+                              
+                              if (!isEmail && !isPhone) return null;
+                              
+                              return (
+                                <div key={method.id} className="flex items-center gap-2 text-sm">
+                                  {isEmail ? (
+                                    <Mail className="w-3 h-3 text-muted-foreground" />
+                                  ) : (
+                                    <PhoneIcon className="w-3 h-3 text-muted-foreground" />
+                                  )}
+                                  <span>
+                                    {isEmail ? method.value : formatPhoneNumber(method.value)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Edit/Delete Buttons */}
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEditContact(contact)}
+                            data-testid={`button-edit-contact-${contact.id}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setContactToDelete(contact);
+                              setDeleteContactOpen(true);
+                            }}
+                            data-testid={`button-delete-contact-${contact.id}`}
+                          >
+                            <AlertCircle className="w-4 h-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
+            {/* Add new contact form */}
+            <div className="border-t pt-4">
+              <Label className="mb-3 block">Add New Contact</Label>
+              <ContactForm
+                showNameField={true}
+                onSubmit={async (data) => {
+                  if (!selectedLocation?.id) return;
+                  await addLocationContact.mutateAsync({
+                    locationId: selectedLocation.id,
+                    ...data,
+                  });
+                }}
+                isSubmitting={addLocationContact.isPending}
+                submitText="Add Contact"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={onClose}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Contact Dialog */}
+      <Dialog open={editContactOpen} onOpenChange={setEditContactOpen}>
+        <DialogContent data-testid="dialog-edit-contact">
+          <DialogHeader>
+            <DialogTitle>Edit Contact</DialogTitle>
+            <DialogDescription>
+              Update contact information for this location
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div>
+              <Label htmlFor="edit-contact-name">Name</Label>
+              <Input
+                id="edit-contact-name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Contact name"
+                data-testid="input-edit-contact-name"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-contact-phone">Phone Number</Label>
+              <Input
+                id="edit-contact-phone"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                placeholder="(555) 123-4567"
+                data-testid="input-edit-contact-phone"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-contact-email">Email</Label>
+              <Input
+                id="edit-contact-email"
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                placeholder="contact@example.com"
+                data-testid="input-edit-contact-email"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEditContactOpen(false)}
+              disabled={updateContact.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleUpdateContact}
+              disabled={updateContact.isPending}
+              data-testid="button-save-contact"
+            >
+              {updateContact.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteContactOpen} onOpenChange={setDeleteContactOpen}>
+        <DialogContent data-testid="dialog-delete-contact">
+          <DialogHeader>
+            <DialogTitle>Delete Contact?</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this contact? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+
+          {contactToDelete && (
+            <div className="py-4">
+              <Card>
+                <CardContent className="p-3">
+                  {contactToDelete.name && (
+                    <p className="font-medium mb-2">{contactToDelete.name}</p>
+                  )}
+                  {contactToDelete.methods?.map((method: any) => (
+                    <p key={method.id} className="text-sm text-muted-foreground">
+                      {method.type === 'Email' ? method.value : formatPhoneNumber(method.value)}
+                    </p>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteContactOpen(false)}
+              disabled={deleteContact.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteContact}
+              disabled={deleteContact.isPending}
+              data-testid="button-confirm-delete-contact"
+            >
+              {deleteContact.isPending ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                'Delete Contact'
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
 
 /**
  * Props for AuthenticatedPortal component
@@ -3059,68 +3372,16 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Manage Location Contacts Dialog */}
-      <Dialog open={manageLocationContactsOpen} onOpenChange={setManageLocationContactsOpen}>
-        <DialogContent className="max-w-2xl" data-testid="dialog-manage-location-contacts">
-          <DialogHeader>
-            <DialogTitle>Manage Location Contacts</DialogTitle>
-            <DialogDescription>
-              {selectedLocationForContacts?.name || 'Location'} - Add or manage contacts specific to this location
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            {/* Existing contacts */}
-            {selectedLocationForContacts?.contacts && selectedLocationForContacts.contacts.length > 0 && (
-              <div className="space-y-2">
-                <Label>Current Contacts</Label>
-                {selectedLocationForContacts.contacts.map((contact: any, idx: number) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-muted/30 rounded">
-                    {contact.type === 'Email' ? (
-                      <Mail className="w-4 h-4 text-primary" />
-                    ) : (
-                      <PhoneIcon className="w-4 h-4 text-primary" />
-                    )}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium">{contact.type === 'Email' ? contact.value : formatPhoneNumber(contact.value)}</p>
-                      {contact.name && <p className="text-xs text-muted-foreground">{contact.name}</p>}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Add new contact form */}
-            <div className="border-t pt-4">
-              <Label className="mb-3 block">Add New Contact</Label>
-              <ContactForm
-                showNameField={true}
-                onSubmit={async (data) => {
-                  if (!selectedLocationForContacts?.id) return;
-                  await addLocationContact.mutateAsync({
-                    locationId: selectedLocationForContacts.id,
-                    ...data,
-                  });
-                }}
-                isSubmitting={addLocationContact.isPending}
-                submitText="Add Contact"
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setManageLocationContactsOpen(false);
-                setSelectedLocationForContacts(null);
-              }}
-            >
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Manage Location Contacts Dialog - WITH EDIT/DELETE */}
+      <ManageLocationContactsDialog
+        open={manageLocationContactsOpen}
+        onOpenChange={setManageLocationContactsOpen}
+        selectedLocation={selectedLocationForContacts}
+        onClose={() => {
+          setManageLocationContactsOpen(false);
+          setSelectedLocationForContacts(null);
+        }}
+      />
 
       {/* Account Switcher Dialog */}
       <Dialog open={showAccountSelection && !!customerId} onOpenChange={setShowAccountSelection}>

@@ -28,4 +28,6 @@ export {
 export {
   useAddCustomerContact,
   useAddLocationContact,
+  useUpdateContact,
+  useDeleteContact,
 } from './hooks/useContactMutation';
