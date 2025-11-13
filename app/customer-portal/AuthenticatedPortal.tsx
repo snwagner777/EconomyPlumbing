@@ -1824,21 +1824,6 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                                     </p>
                                   )}
                                 </div>
-                                <div className="mt-3 pt-3 border-t">
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleRequestPDF('invoice', invoice.invoiceNumber, invoice.id, {
-                                      customerId: customerData.customer.id,
-                                      customerName: customerData.customer.name,
-                                      customerEmail: customerData.customer.email
-                                    })}
-                                    data-testid={`button-request-invoice-pdf-${invoice.id}`}
-                                  >
-                                    <FileText className="w-4 h-4 mr-2" />
-                                    Request PDF Copy
-                                  </Button>
-                                </div>
                               </div>
                             </div>
                           ))}
@@ -2329,32 +2314,14 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                     Accept This Estimate
                   </Button>
                 )}
-                <div className="flex gap-3">
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="w-full"
                     onClick={() => setEstimateDetailOpen(false)}
                     data-testid="button-close-estimate-detail"
                   >
                     Close
                   </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => {
-                      handleRequestPDF('estimate', selectedEstimate.estimateNumber, selectedEstimate.id, {
-                        customerId: customerData!.customer.id,
-                        customerName: customerData!.customer.name,
-                        customerEmail: customerData!.customer.email
-                      });
-                      setEstimateDetailOpen(false);
-                    }}
-                    data-testid="button-request-estimate-pdf-modal"
-                  >
-                    <FileText className="w-4 h-4 mr-2" />
-                    Request PDF
-                  </Button>
-                </div>
               </div>
             </div>
           )}

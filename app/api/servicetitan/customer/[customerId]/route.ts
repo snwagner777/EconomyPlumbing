@@ -104,7 +104,10 @@ export async function GET(
     );
     
     // Enrich estimates with pricebook data (images, descriptions, etc.)
-    const estimates = await serviceTitanEstimates.enrichEstimatesWithPricebook(enrichedEstimates);
+    const allEstimates = await serviceTitanEstimates.enrichEstimatesWithPricebook(enrichedEstimates);
+    
+    // CRITICAL: Filter out sold estimates - only show Open estimates in portal
+    const estimates = allEstimates.filter(est => est.status === 'Open');
     
     // Enrich invoices with locationId (try to extract from jobNumber or query per-location)
     // For now, invoices will remain without locationId since they don't have jobId

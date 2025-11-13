@@ -75,10 +75,12 @@ export async function GET(request: NextRequest) {
       customerId: est.customerId,
     }));
 
-    // Apply status filter if provided
-    let filteredEstimates = estimates;
+    // CRITICAL: Filter out sold estimates - only show Open and Dismissed
+    let filteredEstimates = estimates.filter(est => est.status !== 'Sold');
+    
+    // Apply additional status filter if provided
     if (status) {
-      filteredEstimates = estimates.filter(est => est.status === status);
+      filteredEstimates = filteredEstimates.filter(est => est.status === status);
     }
 
     // Apply pagination
