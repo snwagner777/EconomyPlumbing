@@ -24,7 +24,7 @@ interface CompactPortalProps {
   upcomingAppointments?: any[];
   completedAppointments?: any[];
   onSchedule?: () => void;
-  onPayInvoice?: () => void;
+  onPayInvoice?: (invoice?: any) => void;
   onShareReferral?: () => void;
   onRescheduleAppointment?: (appointment: any) => void;
   onCancelAppointment?: (appointment: any) => void;
@@ -82,7 +82,17 @@ export function CompactPortal({
     },
     quickActions: {
       onSchedule,
-      onPayInvoice,
+      onPayInvoice: () => {
+        // Find the first open invoice to pass to the payment handler
+        const openInvoices = customerData?.invoices?.filter((inv: any) => 
+          inv.status !== 'Paid' && inv.balance > 0
+        ) || [];
+        if (openInvoices.length > 0 && onPayInvoice) {
+          onPayInvoice(openInvoices[0]);
+        } else {
+          setCurrentSection('billing');
+        }
+      },
       onShareReferral,
     },
     alerts: [] as any[],

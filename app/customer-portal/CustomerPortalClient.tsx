@@ -1234,11 +1234,18 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               upcomingAppointments={upcomingAppointments}
               completedAppointments={completedAppointments}
               onSchedule={() => setSchedulerOpen(true)}
-              onPayInvoice={() => {
-                toast({
-                  title: "Pay Invoice",
-                  description: "This feature is coming soon!",
-                });
+              onPayInvoice={(invoice) => {
+                if (invoice) {
+                  toast({
+                    title: "Pay Invoice",
+                    description: `Payment for invoice #${invoice.id || 'N/A'} - This feature is coming soon!`,
+                  });
+                } else {
+                  toast({
+                    title: "Pay Invoice",
+                    description: "This feature is coming soon!",
+                  });
+                }
               }}
               onShareReferral={() => setShowReferralModal(true)}
               onRescheduleAppointment={handleOpenRescheduleDialog}
