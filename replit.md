@@ -91,3 +91,80 @@ Preferred communication style: Simple, everyday language.
 - **SEO Data:** DataForSEO API.
 - **Social Media:** Meta Graph API.
 - **Review Fetching:** SerpAPI.
+
+## Testing Checklists
+
+### Contact Management Testing (Customer Portal)
+**Status:** Completed implementation, pending user testing
+
+**Implementation Details:**
+- Full Edit/Delete functionality for location contacts via `ManageLocationContactsDialog`
+- Support for ALL phone types (MobilePhone, HomePhone, WorkPhone, etc.) using `type.includes('Phone')`
+- Validation against both customer-level AND location-level contacts
+- Type conversion for ServiceTitan API (numeric customer IDs)
+- Contact deduplication across multiple locations
+- Minimum 1 contact business rule enforcement
+
+**Setup & Access:**
+- Log into Customer Portal at `/customer-portal`
+- Navigate to a location with existing contacts
+- Click "Manage Contacts" button on a location card
+- Verify "Manage Location Contacts" dialog opens
+
+**View Contacts (Basic Display):**
+- Confirm all existing contacts are displayed
+- Verify contact names, titles, phone numbers (formatted), and email addresses display correctly
+- Verify icons show correctly (phone icon for phones, envelope for emails)
+
+**Phone Type Support (CRITICAL - Fixed Bug):**
+- Test contact with MobilePhone, HomePhone, WorkPhone - all should display and be editable
+- Test contact with any other phone type variant
+
+**Edit Contact Flow:**
+- Click Edit button (pencil icon), verify dialog opens with pre-filled data
+- Modify name/phone/email and save, verify success toast and UI refresh
+- Test Cancel button
+- Test editing all fields at once
+
+**Delete Contact Flow:**
+- Click Delete button (alert icon), verify confirmation dialog
+- Test Cancel and Delete actions
+- Verify success toast and contact removal from list
+
+**Business Rules:**
+- Try to delete the last contact - should see error "Cannot delete the last contact"
+- Delete a contact when multiple exist - should succeed
+- Add new contact, then delete it - should work
+
+**Multi-Location Scenarios (CRITICAL - Fixed Bug):**
+- Test editing a contact that appears on multiple locations
+- Test deleting a contact linked to multiple locations
+- Test editing a location-only contact (not at customer level)
+- Test deleting a location-only contact
+
+**Add New Contact (Existing Feature):**
+- Add new contact with name, phone, and email
+- Verify it appears and can be edited/deleted
+
+**Loading States:**
+- Verify "Updating..." and "Deleting..." text with spinners
+- Verify buttons disabled during mutations
+- Verify no duplicate submissions on rapid clicking
+
+**Error Handling:**
+- Test with poor network (if possible)
+- Verify error toast on API failures
+- Verify dialog recovery after errors
+
+**Edge Cases:**
+- Contact with name but no phone/email
+- Contact with phone but no name
+- Contact with email but no phone
+- Multiple phone numbers or emails
+- Very long contact names
+- International phone numbers
+
+**Most Critical Tests:**
+1. Phone Type Support (HomePhone, WorkPhone, etc.)
+2. Multi-Location Scenarios (contacts across multiple locations)
+3. Location-Only Contacts (linked to location but not customer)
