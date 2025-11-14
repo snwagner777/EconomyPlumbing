@@ -5,6 +5,7 @@
  */
 
 import { serviceTitanAuth } from './auth';
+import pLimit from 'p-limit';
 
 interface CreateJobData {
   customerId: number;
@@ -567,6 +568,136 @@ export class ServiceTitanJobs {
       return uploadedFileNames;
     } catch (error) {
       console.error(`[ServiceTitan Jobs] Error uploading attachments to job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all jobs for a customer (for customer portal)
+   * MODULAR - Use from customer portal, chatbot, or any context
+   * 
+   * Handles pagination automatically - fetches ALL jobs across all pages
+   * 
+   * @param customerId - ServiceTitan customer ID
+   * @param pageSize - Number of jobs per page (default 50)
+   * @returns Array of ALL jobs for the customer
+   */
+  async getCustomerJobs(customerId: number, pageSize: number = 50): Promise<ServiceTitanJob[]> {
+    try {
+      console.log(`[ServiceTitan Jobs] Fetching all jobs for customer ${customerId} (with pagination)`);
+      
+      const allJobs: ServiceTitanJob[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const queryParams = new URLSearchParams({
+          customerId: customerId.toString(),
+          page: currentPage.toString(),
+          pageSize: pageSize.toString(),
+        });
+
+        const response = await serviceTitanAuth.makeRequest<{ data: ServiceTitanJob[]; hasMore: boolean }>(
+          `jpm/v2/tenant/${this.tenantId}/jobs?${queryParams.toString()}`
+        );
+
+        allJobs.push(...response.data);
+        hasMore = response.hasMore;
+        
+        console.log(`[ServiceTitan Jobs] Page ${currentPage}: ${response.data.length} jobs, hasMore: ${hasMore}`);
+        
+        if (hasMore) {
+          currentPage++;
+        }
+      }
+
+      console.log(`[ServiceTitan Jobs] Total: ${allJobs.length} jobs for customer ${customerId}`);
+      return allJobs;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error fetching jobs for customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get appointments for a specific job
+   * MODULAR - Use from customer portal, chatbot, or any context
+   * 
+   * Handles pagination automatically - fetches ALL appointments for the job
+   * 
+   * @param jobId - ServiceTitan job ID
+   * @returns Array of ALL appointments for the job
+   */
+  async getJobAppointments(jobId: number): Promise<ServiceTitanAppointment[]> {
+    try {
+      const allAppointments: ServiceTitanAppointment[] = [];
+      let currentPage = 1;
+      let hasMore = true;
+      const pageSize = 50;
+
+      while (hasMore) {
+        const queryParams = new URLSearchParams({
+          jobId: jobId.toString(),
+          page: currentPage.toString(),
+          pageSize: pageSize.toString(),
+        });
+
+        const response = await serviceTitanAuth.makeRequest<{ data: ServiceTitanAppointment[]; hasMore?: boolean }>(
+          `jpm/v2/tenant/${this.tenantId}/appointments?${queryParams.toString()}`
+        );
+
+        allAppointments.push(...response.data);
+        
+        // Check if there are more pages
+        hasMore = response.hasMore || false;
+        
+        if (hasMore) {
+          currentPage++;
+        }
+      }
+
+      return allAppointments;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error fetching appointments for job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all appointments for a customer with job details
+   * MODULAR - Use from customer portal to display appointment history
+   * 
+   * Uses concurrency limiting (5 parallel requests) to avoid overwhelming ServiceTitan API
+   * 
+   * @param customerId - ServiceTitan customer ID
+   * @returns Array of jobs with their appointments embedded
+   */
+  async getCustomerAppointments(customerId: number): Promise<Array<ServiceTitanJob & { appointments: ServiceTitanAppointment[] }>> {
+    try {
+      console.log(`[ServiceTitan Jobs] Fetching appointments for customer ${customerId}`);
+      
+      // Step 1: Get all jobs for the customer (handles pagination internally)
+      const jobs = await this.getCustomerJobs(customerId);
+
+      // Step 2: Fetch appointments for each job with concurrency limit (5 parallel requests max)
+      const limit = pLimit(5);
+      
+      const jobsWithAppointments = await Promise.all(
+        jobs.map((job) =>
+          limit(async () => {
+            const appointments = await this.getJobAppointments(job.id);
+            return {
+              ...job,
+              appointments,
+            };
+          })
+        )
+      );
+
+      console.log(`[ServiceTitan Jobs] Fetched ${jobsWithAppointments.length} jobs with appointments for customer ${customerId}`);
+      return jobsWithAppointments;
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error fetching customer appointments:`, error);
       throw error;
     }
   }
