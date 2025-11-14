@@ -12,6 +12,7 @@ import { createReferralVouchers } from '@/server/lib/vouchers';
 import { sendRefereeWelcomeEmail, sendReferrerThankYouEmail } from '@/server/lib/resendClient';
 import { sendReferralSms } from '@/server/lib/simpletexting';
 import { normalizePhone } from '@/server/lib/serviceTitan';
+import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { eq, or, sql } from 'drizzle-orm';
 
 /**
@@ -176,24 +177,32 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // Look up referee customer ID if they already exist (shouldn't happen after check above)
-    // Using normalized comparison for consistency, checking BOTH phone columns
+    // Look up referee in ServiceTitan API (more reliable than local DB which may be out of sync)
+    // If found, link to existing customer. If not found, leave null - scheduler creates customer when they book.
+    // NOTE: ServiceTitan findCustomer requires phone, so we only look up when phone is provided
     let refereeCustomerId: number | undefined;
-    if (normalizedRefereePhone) {
-      const [refereeCustomer] = await db
-        .select()
-        .from(serviceTitanCustomers)
-        .where(
-          or(
-            sql`regexp_replace(${serviceTitanCustomers.phone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`,
-            sql`regexp_replace(${serviceTitanCustomers.mobilePhone}, '[^0-9]', '', 'g') = ${normalizedRefereePhone}`
-          )
-        )
-        .limit(1);
-      
-      if (refereeCustomer) {
-        refereeCustomerId = refereeCustomer.id;
+    if (result.data.refereePhone) {
+      try {
+        console.log('[Referral] Looking up referee in ServiceTitan API by phone...');
+        const existingCustomer = await serviceTitanCRM.findCustomer(
+          result.data.refereePhone,
+          result.data.refereeEmail || undefined
+        );
+        
+        if (existingCustomer) {
+          refereeCustomerId = existingCustomer.id;
+          console.log(`[Referral] Found existing ServiceTitan customer ${refereeCustomerId} for referee`);
+        } else {
+          console.log('[Referral] Referee not found in ServiceTitan - will create customer when they schedule');
+        }
+      } catch (error) {
+        console.error('[Referral] Error looking up referee in ServiceTitan:', error);
+        // Continue without refereeCustomerId - background processor will handle it
       }
+    } else {
+      // Email-only referrals: skip ServiceTitan lookup (phone required for search)
+      // Background processor will create customer when they schedule with full contact info
+      console.log('[Referral] Email-only referral - skipping ServiceTitan lookup (will create customer on booking)');
     }
 
     // Normalize form data before database insertion (convert empty strings to null)
@@ -218,7 +227,7 @@ export async function POST(req: NextRequest) {
           referralId: referral.id,
           refereeName: referral.refereeName,
           refereeEmail: referral.refereeEmail ?? undefined,
-          refereePhone: referral.refereePhone,
+          refereePhone: referral.refereePhone ?? undefined,
           refereeCustomerId, // Link to existing customer if found
           referrerCustomerId,
           referrerName: referral.referrerName,
