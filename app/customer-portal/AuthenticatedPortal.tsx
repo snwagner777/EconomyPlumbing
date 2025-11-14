@@ -60,7 +60,7 @@ import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact, useUpdateContact, useDeleteContact } from "@/modules/contacts";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import { queryClient } from "@/lib/queryClient";
-import { ReferralModal } from "@/components/ReferralModal";
+import { PortalReferralForm } from "@/components/referral";
 import { VouchersSection } from "./VouchersSection";
 import { MembershipsSection } from "./components/MembershipsSection";
 
@@ -544,6 +544,51 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
     handleAddLocation,
     addContactOpen,
   } = props;
+
+  // Local state for inline referral form toggle
+  const [showReferralForm, setShowReferralForm] = useState(false);
+
+  // Helper: Extract customer contact info for referral form pre-fill
+  const getCustomerContactInfo = () => {
+    if (!customerData?.customer) return { name: '', phone: '', email: '' };
+    
+    const customer = customerData.customer;
+    const contacts = customer.contacts || [];
+    
+    // Find primary phone: prioritize MobilePhone → Phone → first phone-like method
+    let phone = '';
+    const phoneContact = contacts.find((c: any) => 
+      c.methods?.some((m: any) => m.type === 'MobilePhone')
+    ) || contacts.find((c: any) => 
+      c.methods?.some((m: any) => m.type === 'Phone')
+    ) || contacts.find((c: any) => 
+      c.methods?.some((m: any) => m.type?.includes('Phone'))
+    );
+    
+    if (phoneContact) {
+      const phoneMethod = phoneContact.methods?.find((m: any) => 
+        m.type === 'MobilePhone' || m.type === 'Phone' || m.type?.includes('Phone')
+      );
+      phone = phoneMethod?.value || '';
+    }
+    
+    // Find email contact
+    let email = '';
+    const emailContact = contacts.find((c: any) => 
+      c.methods?.some((m: any) => m.type === 'Email')
+    );
+    
+    if (emailContact) {
+      const emailMethod = emailContact.methods?.find((m: any) => m.type === 'Email');
+      email = emailMethod?.value || '';
+    }
+    
+    return {
+      name: customer.name || '',
+      phone,
+      email,
+    };
+  };
 
   return (
             <>
@@ -2051,16 +2096,33 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                           </div>
                         </div>
 
-                        {/* Quick Refer Button */}
+                        {/* Toggle Referral Form */}
                         <Button
-                          onClick={() => setShowReferralModal(true)}
+                          onClick={() => setShowReferralForm(!showReferralForm)}
                           className="w-full"
+                          variant={showReferralForm ? "outline" : "default"}
                           size="lg"
-                          data-testid="button-share-referral"
+                          data-testid="button-toggle-referral-form"
                         >
                           <User className="w-4 h-4 mr-2" />
-                          Refer Someone New
+                          {showReferralForm ? 'Hide Referral Form' : 'Refer Someone New'}
                         </Button>
+
+                        {/* Inline Referral Form */}
+                        {showReferralForm && (() => {
+                          const { name, phone, email } = getCustomerContactInfo();
+                          return (
+                            <PortalReferralForm
+                              referrerName={name}
+                              referrerPhone={phone}
+                              referrerEmail={email}
+                              onSuccess={() => {
+                                setShowReferralForm(false);
+                                queryClient.invalidateQueries({ queryKey: ['/api/referrals'] });
+                              }}
+                            />
+                          );
+                        })()}
                       </CardContent>
                     </Card>
                   )}
@@ -2154,17 +2216,6 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
         );
       })()}
       
-      {/* Referral Modal */}
-      {customerData && referralLinkData && (
-        <ReferralModal
-          open={showReferralModal}
-          onOpenChange={setShowReferralModal}
-          customerName={customerData.customer.name}
-          customerPhone={formatPhoneNumber(customerData.customer.phoneNumber)}
-          customerId={customerId!}
-          referralCode={referralLinkData.code}
-        />
-      )}
 
       {/* Estimate Detail Modal */}
       <Dialog open={estimateDetailOpen} onOpenChange={setEstimateDetailOpen}>

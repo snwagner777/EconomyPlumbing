@@ -6,7 +6,7 @@
  */
 
 import type { Metadata } from 'next';
-import { ReferralForm } from './referral-form';
+import { PublicReferralForm } from '@/components/referral';
 import ReferralLandingClient from './ReferralLandingClient';
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -92,10 +92,9 @@ export default async function ReferralPage({ searchParams }: ReferralPageProps) 
             </div>
           </section>
 
-          <section className="bg-card p-8 rounded-lg mb-12">
-            <h2 className="text-2xl font-semibold mb-6 text-center">Submit a Referral</h2>
-            <ReferralForm />
-          </section>
+          <PublicReferralForm 
+            showCard={false}
+          />
 
           <section className="bg-muted/30 p-8 rounded-lg">
             <h2 className="text-2xl font-semibold mb-4">Program Details</h2>

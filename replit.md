@@ -17,7 +17,10 @@ Preferred communication style: Simple, everyday language.
 - All displayed phone numbers must come from the `tracking_numbers` table, environment variables, or user input via the admin panel.
 - Test data and documentation may use (512) 555-XXXX format ONLY.
 
-**CRITICAL RULE: Always check existing functionality before creating new pages/features**
+**CRITICAL RULE: Always check existing functionality before creating new components/pages/features**
+- NEVER create a new component/page/feature without first searching the codebase for existing implementations.
+- ALWAYS modify and refactor existing code rather than creating duplicates.
+- Use grep/search tools to find existing implementations before writing new code.
 - Before adding new admin features, check if a route already exists and add new routes to the `AdminSidebar` menu.
 - Consolidate features: one implementation per feature, accessible via sidebar.
 

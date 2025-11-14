@@ -47,8 +47,9 @@ export function PortalReferralForm({
   onSuccess,
   showSuccessMessage = true,
 }: PortalReferralFormProps) {
-  // Only hide referrer contact fields if they're actually provided
-  // This ensures users without phone/email can still submit by filling them in
+  // Only hide referrer fields if they're actually provided and valid
+  // This ensures users without required data can still submit by filling them in
+  const hasName = Boolean(referrerName && referrerName.trim().length >= 2); // Min 2 chars required by schema
   const hasPhone = Boolean(referrerPhone && referrerPhone.trim());
   const hasEmail = Boolean(referrerEmail && referrerEmail.trim());
   
@@ -73,7 +74,7 @@ export function PortalReferralForm({
     // Only hide fields that have valid default values
     // At least one contact method must be visible or pre-filled for schema validation
     hiddenFields: {
-      referrerName: true, // Always hide name (always provided)
+      referrerName: hasName, // Only hide if we have a valid name (≥2 chars)
       referrerPhone: canHidePhone, // Only hide if we have BOTH phone AND email
       referrerEmail: canHideEmail, // Only hide if we have BOTH phone AND email
     },
