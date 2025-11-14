@@ -46,10 +46,13 @@ Preferred communication style: Simple, everyday language.
 - ALWAYS test API endpoints with real customer data (ID: 27881198) BEFORE implementing features.
 - Verify actual response structures, field names, and data types using test customer.
 
-**CRITICAL RULE: Referral System Architecture - STANDALONE System**
-- Referral system is 100% PostgreSQL - NEVER touches ServiceTitan.
-- To send referrer reward emails: Fetch email from ServiceTitan using `getCustomerContacts()` or `getCustomer()`.
-- Workflow: Submit referral → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
+**CRITICAL RULE: Referral System Architecture - Modular Hybrid System**
+- **Frontend:** Modular architecture with `useReferralForm` hook (headless logic) + `ReferralFormView` (presentation) + context wrappers (`PublicReferralForm` for public pages, `PortalReferralForm` for customer portal with pre-fill).
+- **Defensive Field Visibility:** Only hide fields if valid default values exist (≥2 chars for name, valid phone/email for contacts).
+- **API Integration:** Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, defers new customer creation to scheduler when address data is collected.
+- **Email-only referrals:** Skip ServiceTitan lookup (phone required for API), defer customer creation to booking flow.
+- **Workflow:** Submit referral → Look up existing customer → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
+- **Customer Portal:** Inline toggle form (not modal) with pre-filled referrer data extracted from customer contacts.
 
 **CRITICAL RULE: Customer Contact Management - Dual API System**
 - Customer-level contacts: Use `serviceTitanCRM.getCustomerContacts(customerId)` - Returns contacts with methods array.
@@ -81,7 +84,7 @@ Preferred communication style: Simple, everyday language.
 - **Marketing Automation:** AI-powered personalized email campaigns using OpenAI GPT-4o with admin approval.
 - **SMS Marketing System:** Integration with SimpleTexting API for contact/list management, campaign creation/scheduling, and messaging.
 - **Reputation Management System:** Webhook-triggered review request automation via Mailgun.
-- **Referral System:** Instant voucher generation with QR codes.
+- **Referral System:** Modular form architecture (`useReferralForm` + `ReferralFormView` + context wrappers), instant voucher generation with QR codes, ServiceTitan customer lookup for existing referees, inline portal form with pre-fill.
 - **Email Preference Center:** Granular subscription management.
 - **Production Infrastructure:** Automated schedulers, database transactions, idempotency, health monitoring, admin alerting, webhook signature verification.
 - **Analytics & Third-Party Script Management:** Google Analytics 4, Meta Pixel, Google Tag Manager, Microsoft Clarity, with aggressive deferral and cookie consent integration.
