@@ -279,6 +279,39 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   
   const { toast } = useToast();
   
+  // Session hydration on mount - restore session from server
+  useEffect(() => {
+    let isMounted = true;
+
+    async function checkSession() {
+      try {
+        const response = await fetch('/api/customer-portal/session', {
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          console.log('[Portal] Session check failed');
+          return;
+        }
+
+        const data = await response.json();
+
+        if (isMounted && data.authenticated && data.customerId) {
+          console.log(`[Portal] Restored session for customer ${data.customerId}`);
+          setCustomerId(data.customerId);
+        }
+      } catch (error) {
+        console.error('[Portal] Session check error:', error);
+      }
+    }
+
+    checkSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+  
   // Contact mutation hooks
   const addCustomerContact = useAddCustomerContact();
   const addLocationContact = useAddLocationContact();
