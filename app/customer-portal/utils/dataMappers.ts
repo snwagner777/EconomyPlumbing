@@ -310,7 +310,7 @@ export function transformCustomerData(customerData: any) {
  * MODULAR - Flattens nested job/appointment structure for portal UI
  * 
  * @param jobs - Array of ServiceTitan jobs with embedded appointments
- * @returns Flat array of normalized appointments with job metadata
+ * @returns Flat array of normalized appointments matching UI contract
  */
 export function transformCustomerAppointments(jobs: Array<{
   id: number;
@@ -329,27 +329,40 @@ export function transformCustomerAppointments(jobs: Array<{
     specialInstructions?: string;
   }>;
 }>) {
+  if (!jobs || !Array.isArray(jobs)) {
+    console.warn('[transformCustomerAppointments] Invalid jobs input:', jobs);
+    return [];
+  }
+
   return jobs.flatMap((job) => {
-    // Skip jobs with no appointments
-    if (!job.appointments || job.appointments.length === 0) {
+    // Skip jobs with no appointments or invalid data
+    if (!job || !job.appointments || !Array.isArray(job.appointments) || job.appointments.length === 0) {
+      return [];
+    }
+
+    // Skip jobs without locationId - they can't be filtered properly
+    if (!job.locationId) {
+      console.warn(`[transformCustomerAppointments] Skipping job ${job.id} - missing locationId`);
       return [];
     }
 
     // Create one entry per appointment, embedding job metadata
-    return job.appointments.map((appointment) => ({
-      id: appointment.id.toString(),
-      jobId: job.id,
-      jobNumber: job.jobNumber,
-      jobType: job.summary || `Job #${job.jobNumber}`,
-      summary: job.summary,
-      status: appointment.status,
-      start: appointment.start,
-      end: appointment.end,
-      arrivalWindowStart: appointment.arrivalWindowStart,
-      arrivalWindowEnd: appointment.arrivalWindowEnd,
-      locationId: job.locationId,
-      specialInstructions: appointment.specialInstructions,
-      completedDate: job.jobStatus === 'Completed' ? job.completedOn : undefined,
-    }));
+    return job.appointments.map((appointment) => {
+      return {
+        id: appointment.id?.toString() || `${job.id}-${appointment.start}`,
+        jobId: job.id,
+        jobNumber: job.jobNumber || job.id.toString(),
+        jobType: job.summary || `Job #${job.jobNumber || job.id}`,
+        summary: job.summary || '',
+        status: appointment.status || 'Unknown',
+        start: appointment.start,
+        end: appointment.end,
+        arrivalWindowStart: appointment.arrivalWindowStart || appointment.start,
+        arrivalWindowEnd: appointment.arrivalWindowEnd || appointment.end,
+        locationId: job.locationId, // Guaranteed to exist due to check above
+        specialInstructions: appointment.specialInstructions || '',
+        completedDate: job.jobStatus === 'Completed' ? job.completedOn : undefined,
+      };
+    });
   });
 }

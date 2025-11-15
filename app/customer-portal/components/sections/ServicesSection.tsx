@@ -10,13 +10,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, User } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, User, AlertTriangle, RefreshCw } from "lucide-react";
 import { formatCurrency } from "../../utils/currency";
 
 interface ServicesSectionProps {
   customerData?: any;
   upcomingAppointments?: any[];
   completedAppointments?: any[];
+  isLoadingAppointments?: boolean;
+  appointmentsError?: Error | null;
+  usingFallbackData?: boolean;
+  onRetryAppointments?: () => void;
   onReschedule?: (appointment: any) => void;
   onCancel?: (appointment: any) => void;
   onViewEstimate?: (estimate: any) => void;
@@ -27,10 +33,35 @@ interface ServicesSectionProps {
   getStatusBadge?: (status: string) => React.ReactNode;
 }
 
+// Skeleton loader for appointment cards
+const AppointmentSkeleton = () => (
+  <Card>
+    <CardHeader>
+      <div className="flex items-start justify-between">
+        <div className="flex-1">
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-6 w-20" />
+      </div>
+    </CardHeader>
+    <CardContent>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+      </div>
+    </CardContent>
+  </Card>
+);
+
 export function ServicesSection({
   customerData,
   upcomingAppointments = [],
   completedAppointments = [],
+  isLoadingAppointments = false,
+  appointmentsError,
+  usingFallbackData = false,
+  onRetryAppointments,
   onReschedule,
   onCancel,
   onViewEstimate,
@@ -94,7 +125,49 @@ export function ServicesSection({
 
         {/* Appointments Tab */}
         <TabsContent value="appointments" className="space-y-4">
-          {upcomingAppointments.length === 0 ? (
+          {/* Error Alert */}
+          {appointmentsError && !usingFallbackData && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error Loading Appointments</AlertTitle>
+              <AlertDescription className="flex items-center justify-between">
+                <span>
+                  {appointmentsError.message || 'Failed to load appointments. Please try again.'}
+                </span>
+                {onRetryAppointments && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onRetryAppointments}
+                    className="ml-4"
+                    data-testid="button-retry-appointments"
+                  >
+                    <RefreshCw className="w-4 h-4 mr-2" />
+                    Retry
+                  </Button>
+                )}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Info Banner - Using Fallback Data */}
+          {usingFallbackData && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Displaying cached appointment data. Some information may be delayed.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Loading Skeletons */}
+          {isLoadingAppointments ? (
+            <>
+              <AppointmentSkeleton />
+              <AppointmentSkeleton />
+              <AppointmentSkeleton />
+            </>
+          ) : upcomingAppointments.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8">
@@ -169,7 +242,15 @@ export function ServicesSection({
           )}
 
           {/* Completed Appointments Section */}
-          {completedAppointments.length > 0 && (
+          {isLoadingAppointments ? (
+            <>
+              <div className="pt-4">
+                <h3 className="text-lg font-semibold mb-3">Recently Completed</h3>
+              </div>
+              <AppointmentSkeleton />
+              <AppointmentSkeleton />
+            </>
+          ) : completedAppointments.length > 0 && (
             <>
               <div className="pt-4">
                 <h3 className="text-lg font-semibold mb-3">Recently Completed</h3>

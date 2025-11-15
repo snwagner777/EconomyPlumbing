@@ -26,6 +26,10 @@ interface CompactPortalProps {
   customerData?: any;
   upcomingAppointments?: any[];
   completedAppointments?: any[];
+  isLoadingAppointments?: boolean;
+  appointmentsError?: Error | null;
+  usingFallbackData?: boolean;
+  onRetryAppointments?: () => void;
   onSchedule?: () => void;
   onPayInvoice?: (invoice?: any) => void;
   onShareReferral?: () => void;
@@ -48,6 +52,10 @@ export function CompactPortal({
   customerData,
   upcomingAppointments = [],
   completedAppointments = [],
+  isLoadingAppointments = false,
+  appointmentsError,
+  usingFallbackData = false,
+  onRetryAppointments,
   onSchedule,
   onPayInvoice,
   onShareReferral,
@@ -125,6 +133,10 @@ export function CompactPortal({
             customerData={transformedData}
             upcomingAppointments={upcomingAppointments}
             completedAppointments={completedAppointments}
+            isLoadingAppointments={isLoadingAppointments}
+            appointmentsError={appointmentsError}
+            usingFallbackData={usingFallbackData}
+            onRetryAppointments={onRetryAppointments}
             onReschedule={onRescheduleAppointment}
             onCancel={onCancelAppointment}
             onViewEstimate={onViewEstimate}

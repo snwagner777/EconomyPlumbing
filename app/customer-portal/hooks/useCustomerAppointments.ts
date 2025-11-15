@@ -54,10 +54,31 @@ export interface AppointmentsResponse {
   data: ServiceTitanJob[];
 }
 
-export function useCustomerAppointments() {
+/**
+ * Fetch customer appointments from ServiceTitan API
+ * @param customerId - ServiceTitan customer ID (null prevents query from running)
+ */
+export function useCustomerAppointments(customerId: number | null) {
   return useQuery<AppointmentsResponse>({
-    queryKey: ['/api/customer-portal/appointments'],
-    enabled: true, // Only fetch when authenticated (session validates in API)
+    queryKey: ['/api/customer-portal/appointments', customerId],
+    enabled: !!customerId, // Only fetch when customerId is available
+    queryFn: async () => {
+      const response = await fetch('/api/customer-portal/appointments', {
+        credentials: 'include', // Send session cookie for authentication
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Session expired. Please log in again.');
+        }
+        throw new Error(`Failed to fetch appointments: ${response.statusText}`);
+      }
+      
+      return response.json();
+    },
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 }

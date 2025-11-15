@@ -62,6 +62,7 @@ import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
 import { CompactPortal } from "./components/CompactPortal";
+import { transformCustomerAppointments } from "./utils/dataMappers";
 
 // Feature flag for new compact portal design
 const USE_COMPACT_PORTAL = true;
@@ -358,6 +359,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     enabled: !!customerId,
   });
 
+  // Fetch customer appointments from ServiceTitan (jobs + appointments)
+  const { 
+    data: appointmentsData, 
+    isLoading: isLoadingAppointments,
+    error: appointmentsError 
+  } = useCustomerAppointments(customerId ? parseInt(customerId) : null);
+
   // Fetch ALL locations for this customer (multi-location support)
   const { data: locationsData } = useQuery<{
     locations: Array<{
@@ -421,21 +429,63 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const customerLocations = locationsData?.locations || [];
   const accountSummaries = accountSummariesData?.accounts || [];
 
-  // Separate upcoming and completed appointments
-  // Filter by location - backend now enriches appointments with locationId from jobs
-  const upcomingAppointments = (customerData?.appointments || []).filter(apt => {
-    const isUpcoming = new Date(apt.start) > new Date();
-    const isNotCompleted = !['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
-    return isUpcoming && isNotCompleted && matchesLocation;
-  });
+  // Transform and split appointments using new ServiceTitan API
+  const { upcomingAppointments, completedAppointments, usingFallbackData } = useMemo(() => {
+    let allAppointments: any[] = [];
+    let usedFallback = false;
 
-  const completedAppointments = (customerData?.appointments || []).filter(apt => {
-    const isPast = new Date(apt.start) <= new Date();
-    const isCompleted = ['Done', 'Completed', 'Cancelled'].includes(apt.status);
-    const matchesLocation = !activeLocationTab || apt.locationId?.toString() === activeLocationTab;
-    return (isPast || isCompleted) && matchesLocation;
-  });
+    // Try new ServiceTitan appointments API first
+    if (appointmentsData?.success && appointmentsData?.data && Array.isArray(appointmentsData.data)) {
+      const transformed = transformCustomerAppointments(appointmentsData.data);
+      if (transformed.length > 0) {
+        console.log(`[Portal] Using new appointments API: ${transformed.length} appointments from ${appointmentsData.data.length} jobs`);
+        allAppointments = transformed;
+      }
+    }
+
+    // Fallback to legacy appointments if new API didn't return data
+    if (allAppointments.length === 0 && customerData?.appointments) {
+      console.log(`[Portal] Falling back to legacy appointments: ${customerData.appointments.length} appointments`);
+      allAppointments = customerData.appointments;
+      usedFallback = true;
+    }
+
+    const now = new Date();
+
+    // Filter by active location (only if location tab is set)
+    const filtered = allAppointments.filter(apt => {
+      if (!activeLocationTab) {
+        return true; // Show all if no location filter
+      }
+      const matchesLocation = apt.locationId?.toString() === activeLocationTab;
+      return matchesLocation;
+    });
+
+    console.log(`[Portal] Filtered appointments by location ${activeLocationTab}: ${filtered.length}/${allAppointments.length}`);
+
+    // Split into upcoming vs completed
+    const upcoming = filtered.filter(apt => {
+      if (!apt.start) return false;
+      const isUpcoming = new Date(apt.start) > now;
+      const isNotCompleted = !['Done', 'Completed', 'Cancelled', 'Canceled'].includes(apt.status);
+      return isUpcoming && isNotCompleted;
+    });
+
+    const completed = filtered.filter(apt => {
+      if (!apt.start) return false;
+      const isPast = new Date(apt.start) <= now;
+      const isCompleted = ['Done', 'Completed', 'Cancelled', 'Canceled'].includes(apt.status);
+      return isPast || isCompleted;
+    });
+
+    console.log(`[Portal] Split appointments: ${upcoming.length} upcoming, ${completed.length} completed`);
+
+    return { 
+      upcomingAppointments: upcoming, 
+      completedAppointments: completed,
+      usingFallbackData: usedFallback 
+    };
+  }, [appointmentsData?.success, appointmentsData?.data, customerData?.appointments, activeLocationTab]);
 
   // Clear session on page load/refresh
   useEffect(() => {
@@ -1234,6 +1284,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               customerData={customerData}
               upcomingAppointments={upcomingAppointments}
               completedAppointments={completedAppointments}
+              isLoadingAppointments={isLoadingAppointments}
+              appointmentsError={appointmentsError}
+              usingFallbackData={usingFallbackData}
+              onRetryAppointments={() => {
+                const numericId = customerId ? parseInt(customerId) : null;
+                queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });
+              }}
               onSchedule={() => setSchedulerOpen(true)}
               onPayInvoice={(invoice) => {
                 if (invoice) {
