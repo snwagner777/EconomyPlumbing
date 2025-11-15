@@ -487,21 +487,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     };
   }, [appointmentsData?.success, appointmentsData?.data, customerData?.appointments, activeLocationTab]);
 
-  // Clear session on page load/refresh
-  useEffect(() => {
-    const clearSession = async () => {
-      try {
-        await fetch('/api/portal/logout', { method: 'POST' });
-        clearContext(); // Clear shared customer context
-        console.log('[Portal] Session and context cleared on page load');
-      } catch (error) {
-        console.error('[Portal] Error clearing session:', error);
-      }
-    };
-    
-    clearSession();
-  }, [clearContext]);
-
   // Initialize active tabs when customer ID or locations change
   useEffect(() => {
     if (customerId && !activeAccountTab) {
