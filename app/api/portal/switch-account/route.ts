@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session'; // Unified session
 
 interface SessionData {
   customerId?: number;
@@ -50,11 +51,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Switch to the new account
+    // DUAL-UPDATE: Update both session systems when switching accounts
+    
+    // 1. Update legacy session
     session.customerId = targetCustomerId;
     await session.save();
+    
+    // 2. Update unified session
+    try {
+      const unifiedSession = await getSession();
+      if (unifiedSession.customerPortalAuth) {
+        unifiedSession.customerPortalAuth.customerId = targetCustomerId;
+        await unifiedSession.save();
+      }
+    } catch (err) {
+      console.error('[Portal] Failed to update unified session during account switch:', err);
+      // Continue anyway - legacy session is updated
+    }
 
-    console.log(`[Portal] Account switched to customer ${targetCustomerId}`);
+    console.log(`[Portal] Account switched to customer ${targetCustomerId} in both sessions`);
 
     return NextResponse.json({
       success: true,

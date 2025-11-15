@@ -4,13 +4,14 @@ import { portalVerifications, customersXlsx } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session'; // Unified session
 
 interface SessionData {
   customerId?: number;
   availableCustomerIds?: number[];
 }
 
-const sessionOptions = {
+const legacySessionOptions = {
   password: process.env.SESSION_SECRET!,
   cookieName: 'customer_portal_session',
   cookieOptions: {
@@ -147,14 +148,27 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Create portal session
+    // DUAL-WRITE BRIDGE: Write to both session systems for compatibility
     const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-    session.customerId = customers[0].id;
-    session.availableCustomerIds = verification.customerIds;
-    await session.save();
     
-    console.log('[Portal Verify] Session created for customer:', customers[0].id);
+    // 1. Write to legacy session (backward compatibility with old /api/portal/* routes)
+    const legacySession = await getIronSession<SessionData>(cookieStore, legacySessionOptions);
+    legacySession.customerId = customers[0].id;
+    legacySession.availableCustomerIds = verification.customerIds;
+    await legacySession.save();
+    
+    // 2. Write to unified session (for new /api/customer-portal/* routes)
+    const unifiedSession = await getSession();
+    unifiedSession.customerPortalAuth = {
+      customerId: customers[0].id,
+      email: customers[0].email || '',
+      phone: customers[0].phone || '',
+      verifiedAt: Date.now(),
+      availableCustomerIds: verification.customerIds,
+    };
+    await unifiedSession.save();
+    
+    console.log('[Portal Verify] Dual sessions created for customer:', customers[0].id);
     
     // Delete used verification code
     await db.delete(portalVerifications).where(eq(portalVerifications.id, verification.id));

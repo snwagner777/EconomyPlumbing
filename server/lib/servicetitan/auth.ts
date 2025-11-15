@@ -102,14 +102,24 @@ class ServiceTitanAuth {
       ? endpoint 
       : `https://api.servicetitan.io/${endpoint}`;
 
+    // Build headers - only set Content-Type if not FormData (let fetch set multipart boundary)
+    const headers: HeadersInit = {
+      'Authorization': `Bearer ${token}`,
+      'ST-App-Key': this.appKey,
+      ...(typeof options.headers === 'object' && !Array.isArray(options.headers) && !(options.headers instanceof Headers)
+        ? options.headers 
+        : {}),
+    };
+    
+    // Only add Content-Type: application/json if not uploading files
+    // FormData uploads need the browser to set the Content-Type with boundary
+    if (!(options.body instanceof FormData)) {
+      (headers as Record<string, string>)['Content-Type'] = 'application/json';
+    }
+
     const response = await fetch(url, {
       ...options,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'ST-App-Key': this.appKey,
-        ...options.headers,
-      },
+      headers,
     });
 
     if (!response.ok) {
