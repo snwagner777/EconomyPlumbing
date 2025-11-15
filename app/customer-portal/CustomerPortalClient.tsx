@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -8,6 +8,7 @@ import { useCustomerContext } from "@/hooks/useCustomerContext";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useCustomerAppointments } from "./hooks/useCustomerAppointments";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
