@@ -19,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
-import Header from "@/components/Header";
 
 interface CompactPortalProps {
   customerId?: string | null;
@@ -175,12 +174,6 @@ export function CompactPortal({
 
   return (
     <div className="flex flex-col h-screen">
-      {/* Site Header */}
-      <Header 
-        isPortalAuthenticated={true}
-        onPortalLogout={onLogout}
-      />
-
       {/* Portal Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Desktop Sidebar */}
