@@ -110,7 +110,7 @@ Preferred communication style: Simple, everyday language.
   - **Error Handling:** Try/catch wrappers around processors to prevent 500 errors and ensure webhook acknowledgment
   - **Use Cases:** Receiving invoices/estimates (PDFs) triggers photo fetch jobs; customer data exports (XLSX) are logged
 - **CompanyCam:** Photo management integration
-- **Google Drive:** Photo import automation
+- **Google Drive:** Photo import automation (uses Replit native connector)
 - **SerpAPI:** Google review fetching
 - **Ecwid:** E-commerce platform (Printful, Spocket integrations)
 - **Google Analytics 4:** Website analytics
@@ -120,4 +120,4 @@ Preferred communication style: Simple, everyday language.
 - **Google Places API:** For location services (needs API key setup)
 - **Google Maps:** For service area mapping (needs API key setup)
 - **DataForSEO API:** For SEO data (optional, needs API key if required)
-- **Meta Graph API:** For social media posting (needs OAuth if required)
+- **Google My Business OAuth:** Custom OAuth setup guide exists (GOOGLE_OAUTH_SETUP_GUIDE.md) but GMB automation not yet implemented - placeholder only
