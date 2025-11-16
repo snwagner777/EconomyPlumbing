@@ -128,10 +128,14 @@ async function fetchAttachments(
   const MAX_TOTAL_SIZE = 100 * 1024 * 1024; // 100MB total
   let totalSize = 0;
 
-  // Get API key from Replit connector
-  const apiKey = process.env.REPLIT_CONNECTOR_RESEND_API_KEY;
-  if (!apiKey) {
-    console.error('[Resend Inbound] REPLIT_CONNECTOR_RESEND_API_KEY not found');
+  // Get API key from Replit connector (same as email sending)
+  let apiKey: string;
+  try {
+    const { client } = await getUncachableResendClient();
+    // Extract API key from the client (it's in the client's config)
+    apiKey = (client as any).key;
+  } catch (error) {
+    console.error('[Resend Inbound] Failed to get Resend credentials from connector:', error);
     return attachments;
   }
 
