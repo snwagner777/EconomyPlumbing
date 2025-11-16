@@ -1,28 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-};
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const session = await getSession();
     
-    if (!session.customerId) {
+    if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
         { error: 'Unauthorized - please log in' },
         { status: 401 }
       );
     }
+
+    const customerId = session.customerPortalAuth.customerId;
 
     const { estimateId, estimateNumber } = await req.json();
 
@@ -33,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(`[Estimate Acceptance] Customer ${session.customerId} accepting estimate ${estimateNumber}`);
+    console.log(`[Estimate Acceptance] Customer ${customerId} accepting estimate ${estimateNumber}`);
 
     // Get ServiceTitan API
     const { getServiceTitanAPI } = await import('@/server/lib/serviceTitan');
@@ -42,11 +32,11 @@ export async function POST(req: NextRequest) {
     // CRITICAL SECURITY CHECK: Verify estimate belongs to authenticated customer
     let estimate;
     try {
-      const customerEstimates = await serviceTitan.getCustomerEstimates(session.customerId);
+      const customerEstimates = await serviceTitan.getCustomerEstimates(customerId);
       estimate = customerEstimates.find((e: any) => e.id === estimateId);
       
       if (!estimate) {
-        console.warn(`[Estimate Acceptance] Unauthorized attempt: Customer ${session.customerId} tried to accept estimate ${estimateId} which doesn't belong to them`);
+        console.warn(`[Estimate Acceptance] Unauthorized attempt: Customer ${customerId} tried to accept estimate ${estimateId} which doesn't belong to them`);
         return NextResponse.json(
           { error: 'Estimate not found or does not belong to you' },
           { status: 403 }
@@ -89,7 +79,7 @@ export async function POST(req: NextRequest) {
       const resend = new Resend(process.env.RESEND_API_KEY);
 
       // Get customer data for email
-      const customer = await serviceTitan.getCustomer(session.customerId);
+      const customer = await serviceTitan.getCustomer(customerId);
       
       await resend.emails.send({
         from: 'Economy Plumbing <noreply@plumbersthatcare.com>',

@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session';
 import { serviceTitanEstimates } from '@/server/lib/servicetitan/estimates';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
 
 /**
  * GET /api/portal/estimates
@@ -31,15 +14,16 @@ interface SessionData {
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const session = await getSession();
 
-    if (!session.customerId) {
+    if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
         { error: 'Unauthorized - Please log in' },
         { status: 401 }
       );
     }
+
+    const customerId = session.customerPortalAuth.customerId;
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -48,10 +32,10 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const pageSize = parseInt(searchParams.get('pageSize') || '50', 10);
 
-    console.log(`[Portal Estimates] Fetching estimates for customer ${session.customerId}`);
+    console.log(`[Portal Estimates] Fetching estimates for customer ${customerId}`);
 
     // Fetch estimates from ServiceTitan
-    const rawEstimates = await serviceTitanEstimates.getEstimates(session.customerId, includeInactive);
+    const rawEstimates = await serviceTitanEstimates.getEstimates(customerId, includeInactive);
 
     // Normalize estimates to consistent format for frontend
     const estimates = rawEstimates.map(est => ({
@@ -88,7 +72,7 @@ export async function GET(request: NextRequest) {
     const endIndex = startIndex + pageSize;
     const paginatedEstimates = filteredEstimates.slice(startIndex, endIndex);
 
-    console.log(`[Portal Estimates] Found ${filteredEstimates.length} estimates for customer ${session.customerId}`);
+    console.log(`[Portal Estimates] Found ${filteredEstimates.length} estimates for customer ${customerId}`);
 
     return NextResponse.json({
       data: paginatedEstimates,

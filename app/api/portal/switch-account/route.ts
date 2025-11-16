@@ -1,23 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-import { getSession } from '@/lib/session'; // Unified session
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET || 'complex_password_at_least_32_characters_long',
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 1 week
-  },
-};
+import { getSession } from '@/lib/session';
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,22 +10,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Customer ID required' }, { status: 400 });
     }
 
-    // Get session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    // Get unified session
+    const session = await getSession();
 
     // Check if user has an active session
-    if (!session.customerId || !session.availableCustomerIds) {
+    if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
     const targetCustomerId = parseInt(customerId);
+    const availableCustomerIds = session.customerPortalAuth.availableCustomerIds || [session.customerPortalAuth.customerId];
 
     // Validate that user has access to this account
-    if (!session.availableCustomerIds.includes(targetCustomerId)) {
+    if (!availableCustomerIds.includes(targetCustomerId)) {
       console.log(
         `[Portal] Account switch denied - Customer ${targetCustomerId} not in available accounts:`,
-        session.availableCustomerIds
+        availableCustomerIds
       );
       return NextResponse.json(
         { error: 'Access denied to this account' },
@@ -51,25 +33,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // DUAL-UPDATE: Update both session systems when switching accounts
-    
-    // 1. Update legacy session
-    session.customerId = targetCustomerId;
+    // Update unified session
+    session.customerPortalAuth.customerId = targetCustomerId;
     await session.save();
-    
-    // 2. Update unified session
-    try {
-      const unifiedSession = await getSession();
-      if (unifiedSession.customerPortalAuth) {
-        unifiedSession.customerPortalAuth.customerId = targetCustomerId;
-        await unifiedSession.save();
-      }
-    } catch (err) {
-      console.error('[Portal] Failed to update unified session during account switch:', err);
-      // Continue anyway - legacy session is updated
-    }
 
-    console.log(`[Portal] Account switched to customer ${targetCustomerId} in both sessions`);
+    console.log(`[Portal] Account switched to customer ${targetCustomerId}`);
 
     return NextResponse.json({
       success: true,

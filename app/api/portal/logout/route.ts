@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { destroyAllPortalSessions } from '@/server/lib/customer-portal/session-utils';
+import { getSession } from '@/lib/session';
 
 export async function POST(req: NextRequest) {
   try {
-    await destroyAllPortalSessions();
+    const session = await getSession();
+    await session.destroy();
+    console.log('[Portal] Session destroyed successfully');
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("[Portal] Logout error:", error);
