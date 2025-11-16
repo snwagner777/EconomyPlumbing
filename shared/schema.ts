@@ -2726,6 +2726,101 @@ export type InsertCustomCampaignSendLog = z.infer<typeof insertCustomCampaignSen
 export type SchedulerRequest = typeof schedulerRequests.$inferSelect;
 export type InsertSchedulerRequest = z.infer<typeof insertSchedulerRequestSchema>;
 
+// ============================================================================
+// SEO AUDIT SYSTEM - Local testing tools (Lighthouse, site-audit-seo, seo-analyzer)
+// ============================================================================
+
+// Batch definitions for reusable page sets (homepage, service pages, city pages, etc.)
+export const seoAuditBatches = pgTable("seo_audit_batches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  label: text("label").notNull(), // e.g., "Service Pages", "City Pages", "Homepage + Key Pages"
+  description: text("description"),
+  pages: jsonb("pages").notNull(), // Array of { url: string, label: string }
+  createdBy: varchar("created_by"), // Admin user who created this batch
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  createdAtIdx: index("seo_audit_batches_created_at_idx").on(table.createdAt),
+}));
+
+// SEO audit jobs (queued, running, completed, failed)
+export const seoAuditJobs = pgTable("seo_audit_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Tool and scope
+  tool: text("tool").notNull(), // 'lighthouse', 'site-audit-seo', 'seo-analyzer'
+  scope: text("scope").notNull(), // 'single', 'batch', 'full-crawl'
+  targetUrl: text("target_url"), // For single URL audits
+  batchId: varchar("batch_id"), // For batch audits (FK to seo_audit_batches)
+  
+  // Job status
+  status: text("status").notNull().default('queued'), // queued, running, succeeded, failed, cancelled
+  errorMessage: text("error_message"),
+  
+  // Configuration
+  config: jsonb("config"), // Tool-specific config (depth, mobile/desktop, etc.)
+  
+  // Execution tracking
+  queuedAt: timestamp("queued_at").notNull().defaultNow(),
+  startedAt: timestamp("started_at"),
+  finishedAt: timestamp("finished_at"),
+  triggeredBy: varchar("triggered_by"), // Admin user who triggered this audit
+}, (table) => ({
+  statusIdx: index("seo_audit_jobs_status_idx").on(table.status),
+  toolIdx: index("seo_audit_jobs_tool_idx").on(table.tool),
+  queuedAtIdx: index("seo_audit_jobs_queued_at_idx").on(table.queuedAt),
+  batchIdIdx: index("seo_audit_jobs_batch_id_idx").on(table.batchId),
+}));
+
+// SEO audit results (parsed scores, issues, recommendations)
+export const seoAuditResults = pgTable("seo_audit_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").notNull(), // FK to seo_audit_jobs
+  
+  // Summary scores (for Lighthouse)
+  lighthouseScores: jsonb("lighthouse_scores"), // { performance: 95, seo: 88, accessibility: 92, bestPractices: 90 }
+  
+  // SEO findings (for all tools)
+  seoFindings: jsonb("seo_findings"), // Array of { severity: 'critical'|'high'|'medium'|'low', issue, url, recommendation }
+  
+  // Top recommendations
+  topRecommendations: text("top_recommendations").array(), // String array of most important fixes
+  
+  // Stats
+  pageCount: integer("page_count"), // Number of pages audited (for crawls)
+  duration: integer("duration"), // Execution time in seconds
+  
+  // Raw output (compressed)
+  rawOutput: text("raw_output"), // JSON string or CSV output from CLI tool
+  
+  // Timestamps
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  jobIdIdx: index("seo_audit_results_job_id_idx").on(table.jobId),
+  createdAtIdx: index("seo_audit_results_created_at_idx").on(table.createdAt),
+}));
+
+export const insertSeoAuditBatchSchema = createInsertSchema(seoAuditBatches).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertSeoAuditJobSchema = createInsertSchema(seoAuditJobs).omit({
+  id: true,
+  queuedAt: true,
+});
+
+export const insertSeoAuditResultSchema = createInsertSchema(seoAuditResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type SeoAuditBatch = typeof seoAuditBatches.$inferSelect;
+export type InsertSeoAuditBatch = z.infer<typeof insertSeoAuditBatchSchema>;
+export type SeoAuditJob = typeof seoAuditJobs.$inferSelect;
+export type InsertSeoAuditJob = z.infer<typeof insertSeoAuditJobSchema>;
+export type SeoAuditResult = typeof seoAuditResults.$inferSelect;
+export type InsertSeoAuditResult = z.infer<typeof insertSeoAuditResultSchema>;
+
 // Generated plumbing images (dogs/cats doing plumbing - fun marketing pages)
 export const generatedPlumbingImages = pgTable("generated_plumbing_images", {
   id: serial("id").primaryKey(),
