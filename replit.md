@@ -90,7 +90,7 @@ Preferred communication style: Simple, everyday language.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
 - **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage (PostgreSQL/ServiceTitan), and background processing for job completion and auto-crediting.
 - **Email Preference Center:** Granular subscription management with token-based unsubscribe.
-- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos from ServiceTitan API, analyzes quality (AI scoring ≥70), uploads high-quality photos to Google Drive, and stores metadata in database. Replaces Google Drive polling with async queue processing.
+- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos from ServiceTitan API, analyzes quality (AI scoring ≥70 using OpenAI Vision), uploads high-quality photos to Google Drive, and stores metadata in database. Features atomic job claiming (prevents duplicate processing), credential validation (OpenAI/Google Drive), bounded batch processing (10 queued + 5 retrying per minute), and admin UI for queue monitoring/retry. Replaces Google Drive 5-minute polling with async queue processing.
 - **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review request emails, referral nurture emails, custom campaign scheduling, and ServiceTitan zone synchronization.
 - **Production Infrastructure:** Database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
 - **Analytics & Third-Party Script Management:** Integrates Google Analytics 4, Meta Pixel, Google Tag Manager, and Microsoft Clarity with aggressive script deferral and cookie consent.
@@ -101,13 +101,14 @@ Preferred communication style: Simple, everyday language.
 - **Stripe:** Payment processing for e-commerce and memberships (webhooks configured)
 - **OpenAI:** GPT-4o and GPT-4o-mini for chatbot, blog generation, email campaigns
 - **SimpleTexting:** SMS marketing, two-way messaging, campaign management
-- **Resend:** Transactional email delivery AND inbound email processing via Replit native connector
+- **Resend:** Transactional email delivery AND inbound email processing via Replit native connector (fully migrated from Mailgun)
   - **Outbound:** Sending emails from `hello@mail.plumbersthatcare.com` (reply-to: `hello@plumbersthatcare.com`)
   - **Inbound:** Receiving emails at `mail.plumbersthatcare.com` domain via webhook at `/api/webhooks/resend/inbound`
   - **Webhook Format:** JSON payload with Svix signature verification, attachments as metadata only (must fetch via Resend Attachments API)
   - **Email Forwarding:** All incoming emails automatically forwarded to `ST-Alerts-828414d7c3d94e90@teamchat.zoom.us`
-  - **Attachment Handling:** Webhook provides attachment IDs, must call `GET /emails/{email_id}/attachments/{attachment_id}` to download files
-  - **Use Cases:** Receiving invoices/estimates (PDFs) and customer data exports (XLSX) from ServiceTitan
+  - **Attachment Handling:** Sequential download with size limits (25MB/file, 100MB total) to prevent memory exhaustion. Webhook provides attachment IDs, must call `GET /emails/{email_id}/attachments/{attachment_id}` to download files
+  - **Error Handling:** Try/catch wrappers around processors to prevent 500 errors and ensure webhook acknowledgment
+  - **Use Cases:** Receiving invoices/estimates (PDFs) triggers photo fetch jobs; customer data exports (XLSX) are logged
 - **Clerk:** Authentication service
 - **CompanyCam:** Photo management integration
 - **Google Drive:** Photo import automation
