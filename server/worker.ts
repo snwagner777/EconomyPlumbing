@@ -7,9 +7,11 @@
  * - GMB automation (reviews every 6 hours, replies every 15 min)
  * - Referral processing (hourly)
  * - Custom campaigns (every 30 min)
+ * - ServiceTitan photo fetch queue (every 1 min)
  * - Google Drive photo monitoring (every 5 min)
  * - Auto blog generation (weekly)
  * - Photo cleanup (daily at 3am)
+ * - ServiceTitan zone sync (daily at 3am CT)
  */
 
 import { storage } from "./storage";
@@ -23,6 +25,7 @@ import { syncZonesFromServiceTitan } from "./lib/zoneSyncService";
 import { getReviewRequestScheduler } from "./lib/reviewRequestScheduler";
 import { getReferralNurtureScheduler } from "./lib/referralNurtureScheduler";
 import { startCustomCampaignScheduler } from "./lib/customCampaignScheduler";
+import { serviceTitanPhotoFetcher } from "./lib/servicetitanPhotoFetcher";
 
 console.log('[Worker] Starting background job worker process...');
 
@@ -79,6 +82,24 @@ setTimeout(() => {
 // Start custom campaign scheduler
 console.log('[Worker] Starting custom campaign scheduler...');
 startCustomCampaignScheduler();
+
+// Start ServiceTitan photo fetch queue processor - runs every minute
+console.log('[Worker] Starting ServiceTitan photo fetch queue processor...');
+
+setInterval(() => {
+  console.log('[Photo Fetcher] Processing photo fetch queue...');
+  serviceTitanPhotoFetcher.processQueue().catch((err: Error) => {
+    console.error('[Photo Fetcher] Error processing queue:', err);
+  });
+}, 60 * 1000); // Every 1 minute
+
+// Run immediately on startup (after 15-second delay for database readiness)
+setTimeout(() => {
+  console.log('[Photo Fetcher] Running initial photo queue processing...');
+  serviceTitanPhotoFetcher.processQueue().catch((err: Error) => {
+    console.error('[Photo Fetcher] Error during initial processing:', err);
+  });
+}, 15000);
 
 // DEPRECATED: Old referral processor replaced by voucher-based QR code system
 // Referrals now use instant voucher creation (app/api/referrals/submit)

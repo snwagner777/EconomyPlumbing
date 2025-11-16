@@ -573,6 +573,74 @@ export class ServiceTitanJobs {
   }
 
   /**
+   * Get attachments/photos for a job
+   * MODULAR - Use for photo fetch automation, admin panel display
+   * 
+   * Returns array of job attachments with download URLs
+   * 
+   * @param jobId - ServiceTitan job ID
+   * @returns Array of attachments with file info and download URLs
+   */
+  async getJobAttachments(jobId: number): Promise<Array<{
+    fileName: string;
+    originalFileName: string;
+    createdFrom: string;
+    thumbnail?: string;
+    downloadUrl: string;
+  }>> {
+    try {
+      const response = await serviceTitanAuth.makeRequest<{ 
+        data: Array<{
+          fileName: string;
+          originalFileName: string;
+          createdFrom: string;
+          thumbnail?: string;
+          downloadUrl: string;
+        }>
+      }>(
+        `forms/v2/tenant/${this.tenantId}/jobs/${jobId}/attachments`
+      );
+
+      console.log(`[ServiceTitan Jobs] Fetched ${response.data?.length || 0} attachments for job ${jobId}`);
+      return response.data || [];
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error fetching attachments for job ${jobId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Download a job attachment file
+   * MODULAR - Use for photo fetch automation
+   * 
+   * Downloads the actual file content from ServiceTitan
+   * 
+   * @param downloadUrl - The downloadUrl from getJobAttachments()
+   * @returns File buffer
+   */
+  async downloadAttachment(downloadUrl: string): Promise<Buffer> {
+    try {
+      // ServiceTitan download URLs are full URLs, not relative paths
+      const token = await serviceTitanAuth.getAccessToken();
+      const response = await fetch(downloadUrl, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const arrayBuffer = await response.arrayBuffer();
+      return Buffer.from(arrayBuffer);
+    } catch (error) {
+      console.error(`[ServiceTitan Jobs] Error downloading attachment from ${downloadUrl}:`, error);
+      throw error;
+    }
+  }
+
+  /**
    * Get all jobs for a customer (for customer portal)
    * MODULAR - Use from customer portal, chatbot, or any context
    * 
