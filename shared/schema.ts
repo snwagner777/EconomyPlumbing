@@ -1418,6 +1418,35 @@ export const insertImportedPhotoSchema = createInsertSchema(importedPhotos).omit
   fetchedAt: true,
 });
 
+// ServiceTitan Photo Fetch Job Queue
+export const serviceTitanPhotoJobs = pgTable("servicetitan_photo_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: bigint("job_id", { mode: "number" }).notNull(), // ServiceTitan Job ID
+  invoiceNumber: text("invoice_number").notNull(), // Invoice number from webhook
+  customerId: bigint("customer_id", { mode: "number" }), // ServiceTitan Customer ID
+  status: text("status").notNull().default('queued'), // queued, processing, completed, failed, retrying
+  errorMessage: text("error_message"),
+  retryCount: integer("retry_count").notNull().default(0),
+  maxRetries: integer("max_retries").notNull().default(3),
+  photosFound: integer("photos_found"), // Number of photos found
+  photosImported: integer("photos_imported"), // Number of quality photos imported
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  lastProcessedAt: timestamp("last_processed_at"),
+  completedAt: timestamp("completed_at"),
+}, (table) => ({
+  statusIdx: index("servicetitan_photo_jobs_status_idx").on(table.status),
+  jobIdIdx: index("servicetitan_photo_jobs_job_id_idx").on(table.jobId),
+  createdAtIdx: index("servicetitan_photo_jobs_created_at_idx").on(table.createdAt),
+}));
+
+export const insertServiceTitanPhotoJobSchema = createInsertSchema(serviceTitanPhotoJobs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type ServiceTitanPhotoJob = typeof serviceTitanPhotoJobs.$inferSelect;
+export type InsertServiceTitanPhotoJob = z.infer<typeof insertServiceTitanPhotoJobSchema>;
+
 // Commercial customers/clients for trust signal display
 export const commercialCustomers = pgTable("commercial_customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
