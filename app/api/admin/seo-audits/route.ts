@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
 import { seoAuditJobs, seoAuditResults } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
@@ -17,6 +18,11 @@ const createJobSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  const isAuth = await isAuthenticated();
+  if (!isAuth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const validatedData = createJobSchema.parse(body);
@@ -62,6 +68,11 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const isAuth = await isAuthenticated();
+  if (!isAuth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get('limit') || '50');
