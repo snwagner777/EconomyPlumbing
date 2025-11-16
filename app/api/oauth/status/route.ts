@@ -1,8 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from 'src/lib/session';
-import { storage } from '@/server/storage';
-import { GoogleMyBusinessAuth } from '@/server/lib/googleMyBusinessAuth';
 
+/**
+ * Google My Business OAuth Status Check
+ * 
+ * NOTE: Google My Business integration has been removed.
+ * This endpoint is kept for backward compatibility but returns unauthenticated status.
+ */
 export async function GET(req: NextRequest) {
   try {
     // SECURITY: Require admin authentication
@@ -14,58 +18,11 @@ export async function GET(req: NextRequest) {
       );
     }
     
-    const token = await storage.getGoogleOAuthToken('google_my_business');
-    
-    if (!token) {
-      return NextResponse.json({ 
-        isAuthenticated: false,
-        hasAccountId: false,
-        hasLocationId: false,
-      });
-    }
-    
-    // Check if token is expired and refresh if needed
-    const now = new Date();
-    const isExpired = new Date(token.expiryDate) <= now;
-    
-    if (isExpired && token.refreshToken) {
-      try {
-        console.log('[OAuth Status] Token expired, refreshing...');
-        const auth = GoogleMyBusinessAuth.getInstance();
-        const newTokens = await auth.refreshAccessToken(token.refreshToken);
-        
-        if (newTokens.access_token && newTokens.expiry_date) {
-          await storage.updateGoogleOAuthToken(token.id, {
-            accessToken: newTokens.access_token,
-            expiryDate: new Date(newTokens.expiry_date),
-          });
-          
-          console.log('[OAuth Status] Token refreshed successfully');
-          return NextResponse.json({
-            isAuthenticated: true,
-            hasAccountId: !!token.accountId,
-            hasLocationId: !!token.locationId,
-            accountId: token.accountId || null,
-            locationId: token.locationId || null,
-          });
-        }
-      } catch (refreshError) {
-        console.error('[OAuth Status] Token refresh failed:', refreshError);
-        return NextResponse.json({
-          isAuthenticated: false,
-          hasAccountId: false,
-          hasLocationId: false,
-          error: 'Token refresh failed'
-        });
-      }
-    }
-    
-    return NextResponse.json({
-      isAuthenticated: !isExpired,
-      hasAccountId: !!token.accountId,
-      hasLocationId: !!token.locationId,
-      accountId: token.accountId || null,
-      locationId: token.locationId || null,
+    // Google My Business integration removed - return not authenticated
+    return NextResponse.json({ 
+      isAuthenticated: false,
+      hasAccountId: false,
+      hasLocationId: false,
     });
   } catch (error: any) {
     console.error('[OAuth Status] Error:', error);

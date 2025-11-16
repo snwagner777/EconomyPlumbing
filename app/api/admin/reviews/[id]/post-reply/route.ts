@@ -53,17 +53,13 @@ export async function POST(
         );
       }
       
-      // Post to Google My Business if this is a Google review with reviewId
+      // NOTE: Google My Business reply posting has been removed
+      // Reviews are saved to database only
       let postedToGoogle = false;
       const isGoogleReview = review.source === 'gmb_api';
       
       if (isGoogleReview && review.reviewId) {
-        const { postReplyToGoogleReview } = await import("@/server/lib/googleMyBusinessReviews");
-        postedToGoogle = await postReplyToGoogleReview(review.reviewId, replyText);
-        
-        if (!postedToGoogle) {
-          console.warn(`[Review Reply] Failed to post reply to Google for review ${id}`);
-        }
+        console.log(`[Review Reply] Google My Business integration removed - saving reply to database only for review ${id}`);
       }
       
       // Update database with reply

@@ -52,39 +52,64 @@ export async function GET(req: NextRequest) {
       
       // If not in customers_xlsx, fetch from ServiceTitan as fallback
       if (!customer) {
-        const { getServiceTitanClient } = await import('@/server/lib/serviceTitanClient');
-        const st = await getServiceTitanClient();
+        const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
         
         try {
-          const stCustomer = await st.getCustomer(customerId);
-          customer = {
-            id: stCustomer.id,
-            name: stCustomer.name,
-            phone: stCustomer.phoneNumber || '',
-            email: stCustomer.email || '',
-          };
+          const stCustomer = await serviceTitanCRM.getCustomer(customerId);
+          
+          if (!stCustomer) {
+            console.error(`[Referral Code API] Customer ${customerId} not found in customers_xlsx or ServiceTitan`);
+            return NextResponse.json(
+              { error: 'Customer not found' },
+              { status: 404 }
+            );
+          }
+          
+          // Extract phone and email from contacts array
+          const phoneContact = stCustomer.contacts?.find(c => c.type === 'Phone');
+          const emailContact = stCustomer.contacts?.find(c => c.type === 'Email');
+          
+          // Create a simple customer object for code generation
+          const customerName = stCustomer.name;
+          const customerPhone = phoneContact?.value || '';
+          const customerEmail = emailContact?.value || '';
+          
+          const code = generateReferralCode(customerName, customerId);
+          
+          // Insert new referral code
+          [existingCode] = await db
+            .insert(referralCodes)
+            .values({
+              code,
+              customerId,
+              customerName,
+              customerPhone,
+              createdAt: new Date(),
+            })
+            .returning();
         } catch (error) {
-          console.error(`[Referral Code API] Customer ${customerId} not found in customers_xlsx or ServiceTitan:`, error);
+          console.error(`[Referral Code API] Error fetching customer ${customerId} from ServiceTitan:`, error);
           return NextResponse.json(
             { error: 'Customer not found' },
             { status: 404 }
           );
         }
+      } else {
+        // Customer found in customers_xlsx table
+        const code = generateReferralCode(customer.name, customerId);
+        
+        // Insert new referral code
+        [existingCode] = await db
+          .insert(referralCodes)
+          .values({
+            code,
+            customerId,
+            customerName: customer.name,
+            customerPhone: customer.phone || '',
+            createdAt: new Date(),
+          })
+          .returning();
       }
-      
-      const code = generateReferralCode(customer.name, customerId);
-      
-      // Insert new referral code
-      [existingCode] = await db
-        .insert(referralCodes)
-        .values({
-          code,
-          customerId,
-          customerName: customer.name,
-          customerPhone: customer.phone || '',
-          createdAt: new Date(),
-        })
-        .returning();
     }
     
     // Calculate statistics from referrals table

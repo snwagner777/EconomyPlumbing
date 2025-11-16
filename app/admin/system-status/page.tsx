@@ -19,6 +19,7 @@ import {
   Send,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { HealthCheckPanel } from './HealthCheckPanel';
 
 interface CronJob {
   name: string;
@@ -149,6 +150,8 @@ export default function SystemStatusPage() {
           Use the setup instructions below to configure your service.
         </AlertDescription>
       </Alert>
+
+      <HealthCheckPanel />
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>

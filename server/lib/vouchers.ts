@@ -279,19 +279,19 @@ export async function redeemVoucher(params: {
       let referrerEmail: string | undefined;
       if (voucher.referrerCustomerId) {
         try {
-          const { serviceTitanCRM } = await import('./serviceTitan');
+          const { serviceTitanCRM } = await import('./servicetitan/crm');
           
           // Primary: Get email from customer contacts (respects primary/active flags)
           const contacts = await serviceTitanCRM.getCustomerContacts(voucher.referrerCustomerId);
           
           // Filter active (non-archived) contacts with email methods
-          const activeContacts = contacts.filter(c => !c.isArchived);
+          const activeContacts = contacts.filter((c: any) => !c.isArchived);
           for (const contact of activeContacts) {
             // Safeguard: some contacts may not have methods array
-            const emailMethods = (contact.methods ?? []).filter(m => m.type === 'Email');
+            const emailMethods = ((contact as any).methods ?? []).filter((m: any) => m.type === 'Email');
             
             // Prefer primary email (check memo/referenceId for "Primary")
-            const primaryEmail = emailMethods.find(m => 
+            const primaryEmail = emailMethods.find((m: any) => 
               m.memo?.toLowerCase().includes('primary') || 
               m.referenceId?.toLowerCase().includes('primary')
             );
@@ -311,7 +311,7 @@ export async function redeemVoucher(params: {
           if (!referrerEmail) {
             const customer = await serviceTitanCRM.getCustomer(voucher.referrerCustomerId);
             // Customer contacts array contains simplified type/value entries
-            const customerEmail = customer?.contacts?.find(c => c.type === 'Email');
+            const customerEmail = customer?.contacts?.find((c: any) => c.type === 'Email');
             referrerEmail = customerEmail?.value;
           }
           
@@ -328,7 +328,7 @@ export async function redeemVoucher(params: {
       const reward = await createVoucher({
         voucherType: 'referral_reward',
         customerName: referral.referrerName,
-        customerEmail: referrerEmail,
+        customerEmail: referrerEmail || undefined,
         customerPhone: referral.referrerPhone,
         customerId: voucher.referrerCustomerId,
         referralId: voucher.referralId ?? undefined,
