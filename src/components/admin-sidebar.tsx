@@ -44,6 +44,7 @@ import {
   BarChart3,
   Sparkles,
   TrendingUp,
+  Activity,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -172,6 +173,12 @@ const menuSections: MenuSection[] = [
   {
     label: 'Site Configuration',
     items: [
+      {
+        title: 'System Status',
+        icon: Activity,
+        href: '/admin/system-status',
+        description: 'Workers & cron',
+      },
       {
         title: 'Tracking Numbers',
         icon: Phone,
