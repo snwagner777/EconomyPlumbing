@@ -1,24 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
 import { db } from '@/server/db';
 import { jobCompletions } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
-    const session = await getSession();
-
-    if (!session.customerPortalAuth?.customerId) {
-      return NextResponse.json({ error: 'Unauthorized - no session' }, { status: 401 });
-    }
-
-    const customerId = session.customerPortalAuth.customerId;
-    const availableCustomerIds = session.customerPortalAuth.availableCustomerIds || [customerId];
-
-    // Verify this customer is in the authorized list
-    if (!availableCustomerIds.includes(customerId)) {
-      return NextResponse.json({ error: 'Unauthorized customer access' }, { status: 403 });
-    }
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
     // Fetch recent job completions for this customer (last 6 months)
     const sixMonthsAgo = new Date();
@@ -37,8 +25,24 @@ export async function GET(request: Request) {
     );
 
     return NextResponse.json({ jobs: filteredJobs });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Portal] Error fetching recent jobs:', error);
+    
+    // Handle session errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - This account does not belong to you' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to fetch recent jobs' },
       { status: 500 }

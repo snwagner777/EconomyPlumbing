@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +22,10 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // SECURITY: Validate session and customer ownership
+    const { availableCustomerIds } = await getPortalSession();
+    assertCustomerOwnership(parseInt(customerId), availableCustomerIds);
 
     console.log(`[Portal] Adding location for customer ${customerId}`);
 
@@ -63,6 +68,22 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('[Portal] Add location error:', error);
+    
+    // Handle authentication/authorization errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { success: false, error: 'Access denied to this customer account' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       {
         success: false,

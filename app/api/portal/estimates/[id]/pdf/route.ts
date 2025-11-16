@@ -1,25 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { serviceTitanEstimates } from '@/server/lib/servicetitan/estimates';
 import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 /**
  * POST /api/portal/estimates/[id]/pdf
@@ -41,15 +24,7 @@ export async function POST(
     }
 
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
-      );
-    }
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
     // Fetch estimate to verify ownership and get details
     const estimate = await serviceTitanEstimates.getEstimateById(estimateId);
@@ -61,18 +36,12 @@ export async function POST(
       );
     }
 
-    // SECURITY: Verify estimate belongs to customer
-    if (estimate.customerId !== session.customerId) {
-      console.error(`[Portal Estimate PDF] Security violation: Customer ${session.customerId} attempted to access estimate PDF ${estimateId} for customer ${estimate.customerId}`);
-      return NextResponse.json(
-        { error: 'Unauthorized - This estimate does not belong to you' },
-        { status: 403 }
-      );
-    }
+    // SECURITY: Verify estimate belongs to authorized customer
+    assertCustomerOwnership(estimate.customerId, availableCustomerIds);
 
     const estimateNumber = estimate.estimateNumber;
 
-    console.log(`[Portal Estimate PDF] PDF request for estimate ${estimateNumber} from customer ${session.customerId}`);
+    console.log(`[Portal Estimate PDF] PDF request for estimate ${estimateNumber} from customer ${customerId}`);
 
     // Parse customer details from request body
     const body = await request.json();
@@ -84,7 +53,7 @@ export async function POST(
       phone: 'PDF Request',
       email: customerEmail || 'no-email',
       service: `PDF Request: Estimate ${estimateNumber}`,
-      message: `Customer ID: ${session.customerId}\nType: Estimate\nNumber: ${estimateNumber}\nID: ${estimateId}\n\nPDF requested via Customer Portal`,
+      message: `Customer ID: ${customerId}\nType: Estimate\nNumber: ${estimateNumber}\nID: ${estimateId}\n\nPDF requested via Customer Portal`,
       pageContext: 'Customer Portal - Estimate PDF',
     });
 
@@ -109,7 +78,7 @@ export async function POST(
 
           <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
             <h3 style="color: #1d4ed8; margin-top: 0;">Customer Information</h3>
-            <p><strong>Customer ID:</strong> ${session.customerId}</p>
+            <p><strong>Customer ID:</strong> ${customerId}</p>
             <p><strong>Name:</strong> ${customerName || 'Not provided'}</p>
             <p><strong>Email:</strong> ${customerEmail || 'Not provided'}</p>
           </div>
@@ -137,6 +106,21 @@ export async function POST(
     });
   } catch (error: any) {
     console.error('[Portal Estimate PDF] Error:', error);
+    
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - This estimate does not belong to you' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Failed to request estimate PDF' },
       { status: 500 }

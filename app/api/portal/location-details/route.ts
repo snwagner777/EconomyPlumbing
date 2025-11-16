@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { serviceTitanPortalService } from '@/server/lib/servicetitan/portal-service';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 export async function GET(request: NextRequest) {
   try {
@@ -39,26 +22,9 @@ export async function GET(request: NextRequest) {
       );
     }
     
-    // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
-      );
-    }
-
-    // SECURITY: Verify this customer is in the authorized list
-    const availableCustomerIds = session.availableCustomerIds || [session.customerId];
-    if (!availableCustomerIds.includes(customerId)) {
-      console.error(`[Portal] Security violation: Customer ${session.customerId} attempted to access location data for customer ${customerId}`);
-      return NextResponse.json(
-        { error: 'Unauthorized - This account does not belong to you' },
-        { status: 403 }
-      );
-    }
+    // SECURITY: Validate session and customer ownership
+    const { availableCustomerIds } = await getPortalSession();
+    assertCustomerOwnership(customerId, availableCustomerIds);
     
     // Fetch location details from ServiceTitan
     const locationDetails = await serviceTitanPortalService.getLocationDetails(customerId, locationId);
@@ -66,6 +32,21 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(locationDetails);
   } catch (error: any) {
     console.error('[Portal Location Details] Error:', error);
+    
+    // Handle authentication/authorization errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - This account does not belong to you' },
+        { status: 403 }
+      );
+    }
     
     // Return 403 for authorization errors (location doesn't belong to customer)
     if (error.message && error.message.includes('Unauthorized')) {

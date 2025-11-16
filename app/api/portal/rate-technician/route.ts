@@ -1,42 +1,13 @@
 import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
 import { db } from '@/server/db';
 import { jobCompletions } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
 
-interface PortalSessionData {
-  customerId?: string;
-  availableCustomerIds?: number[];
-}
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-  },
-};
-
 export async function POST(request: Request) {
   try {
-    const cookieStore = await cookies();
-    const session = await getIronSession<PortalSessionData>(cookieStore, sessionOptions);
-
-    const { customerId, availableCustomerIds } = session;
-
-    if (!customerId) {
-      return NextResponse.json({ error: 'Unauthorized - no session' }, { status: 401 });
-    }
-
-    // Verify this customer is in the authorized list
-    if (!availableCustomerIds || !availableCustomerIds.includes(parseInt(customerId))) {
-      return NextResponse.json({ error: 'Unauthorized customer access' }, { status: 403 });
-    }
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
     const { jobCompletionId, rating } = await request.json();
 
@@ -58,7 +29,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Job completion not found' }, { status: 404 });
     }
 
-    if (jobCompletion.customerId !== parseInt(customerId)) {
+    if (jobCompletion.customerId !== customerId) {
       return NextResponse.json(
         { error: 'Unauthorized - job does not belong to this customer' },
         { status: 403 }
@@ -76,9 +47,11 @@ export async function POST(request: Request) {
 
     // Submit rating to ServiceTitan (don't fail if this errors)
     try {
-      const serviceTitan = getServiceTitanAPI();
-      await serviceTitan.submitTechnicianRating(jobCompletion.jobId, rating);
-      console.log(`[Portal] Submitted rating ${rating} to ServiceTitan for job ${jobCompletion.jobId}`);
+      if (jobCompletion.jobId) {
+        const serviceTitan = getServiceTitanAPI();
+        await serviceTitan.submitTechnicianRating(jobCompletion.jobId, rating);
+        console.log(`[Portal] Submitted rating ${rating} to ServiceTitan for job ${jobCompletion.jobId}`);
+      }
     } catch (stError) {
       console.error('[Portal] Error submitting rating to ServiceTitan:', stError);
       // Continue anyway - we've saved the rating locally
@@ -89,8 +62,24 @@ export async function POST(request: Request) {
       message: 'Rating submitted successfully',
       rating,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('[Portal] Error rating technician:', error);
+    
+    // Handle session errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - This job does not belong to you' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: 'Failed to submit rating' },
       { status: 500 }

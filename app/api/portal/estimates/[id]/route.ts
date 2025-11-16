@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { serviceTitanEstimates } from '@/server/lib/servicetitan/estimates';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 /**
  * GET /api/portal/estimates/[id]
@@ -39,17 +22,9 @@ export async function GET(
     }
 
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
-      );
-    }
-
-    console.log(`[Portal Estimate Detail] Fetching estimate ${estimateId} for customer ${session.customerId}`);
+    console.log(`[Portal Estimate Detail] Fetching estimate ${estimateId} for customer ${customerId}`);
 
     // Fetch estimate details from ServiceTitan
     const estimate = await serviceTitanEstimates.getEstimateById(estimateId);
@@ -61,14 +36,8 @@ export async function GET(
       );
     }
 
-    // SECURITY: Verify estimate belongs to customer
-    if (estimate.customerId !== session.customerId) {
-      console.error(`[Portal Estimate Detail] Security violation: Customer ${session.customerId} attempted to access estimate ${estimateId} for customer ${estimate.customerId}`);
-      return NextResponse.json(
-        { error: 'Unauthorized - This estimate does not belong to you' },
-        { status: 403 }
-      );
-    }
+    // SECURITY: Verify estimate belongs to authorized customer
+    assertCustomerOwnership(estimate.customerId, availableCustomerIds);
 
     // Calculate sold hours for scheduler integration
     const soldHours = serviceTitanEstimates.calculateSoldHours(estimate);
@@ -81,6 +50,21 @@ export async function GET(
     });
   } catch (error: any) {
     console.error('[Portal Estimate Detail] Error:', error);
+    
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Unauthorized - This estimate does not belong to you' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Failed to load estimate details' },
       { status: 500 }

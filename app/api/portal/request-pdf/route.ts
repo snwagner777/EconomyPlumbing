@@ -1,20 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
 
 export async function POST(req: NextRequest) {
   try {
+    // SECURITY: Validate session first
+    const { customerId: sessionCustomerId, availableCustomerIds } = await getPortalSession();
+    
     const { type, number, id, customerId, customerName, customerEmail } = await req.json();
 
-    if (!type || !number || !id) {
+    if (!type || !number || !id || !customerId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
+    // SECURITY: Verify customer owns this resource
+    const requestedCustomerId = parseInt(customerId);
+    assertCustomerOwnership(requestedCustomerId, availableCustomerIds);
+
     console.log(`[Portal] PDF request received: ${type} #${number} for customer ${customerId}`);
     console.log(`[Portal] Customer details - Name: ${customerName}, Email: ${customerEmail}`);
+    console.log(`[Portal] Request authorized for customer ${sessionCustomerId}`);
 
     // Create a simple log entry in the database
     await db.insert(contactSubmissions).values({
@@ -74,6 +83,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("[Portal] PDF request error:", error);
+    
+    // Handle session errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: "Unauthorized - Please log in" },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: "Unauthorized - This document does not belong to you" },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: "Failed to process PDF request" },
       { status: 500 }

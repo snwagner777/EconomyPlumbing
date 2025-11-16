@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 export async function GET(
   req: NextRequest,
@@ -14,6 +15,10 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // SECURITY: Validate session and customer ownership
+    const { availableCustomerIds } = await getPortalSession();
+    assertCustomerOwnership(parseInt(customerId), availableCustomerIds);
 
     console.log(`[Portal] Fetching location for customer ${customerId}...`);
 
@@ -30,6 +35,22 @@ export async function GET(
     return NextResponse.json({ location });
   } catch (error: any) {
     console.error("[Portal] Get location error:", error);
+    
+    // Handle authentication/authorization errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Access denied to this customer account' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: "Failed to fetch customer location" },
       { status: 500 }

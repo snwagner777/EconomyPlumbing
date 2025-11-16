@@ -1,36 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
 
 export async function POST(req: NextRequest) {
   try {
     // SECURITY: Validate session first
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: "Unauthorized - Please log in" },
-        { status: 401 }
-      );
-    }
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
     const { appointmentId, jobId, newStart, newEnd, technicianId } = await req.json();
 
@@ -47,10 +22,10 @@ export async function POST(req: NextRequest) {
       newStart, 
       newEnd, 
       technicianId,
-      customerId: session.customerId 
+      customerId 
     });
 
-    console.log(`[Portal] Reschedule request for appointment ${appointmentId} by customer ${session.customerId}`);
+    console.log(`[Portal] Reschedule request for appointment ${appointmentId} by customer ${customerId}`);
 
     // SECURITY: Fetch appointment details to verify ownership
     const { serviceTitanAuth } = await import('@/server/lib/servicetitan/auth');
@@ -80,9 +55,8 @@ export async function POST(req: NextRequest) {
     }
 
     // SECURITY: Verify this customer owns this job
-    const availableCustomerIds = session.availableCustomerIds || [session.customerId];
     if (!availableCustomerIds.includes(job.customerId)) {
-      console.error(`[Portal] Security violation: Customer ${session.customerId} attempted to reschedule appointment ${appointmentId} owned by customer ${job.customerId}`);
+      console.error(`[Portal] Security violation: Customer ${customerId} attempted to reschedule appointment ${appointmentId} owned by customer ${job.customerId}`);
       return NextResponse.json(
         { error: "Unauthorized - This appointment does not belong to you" },
         { status: 403 }
@@ -107,15 +81,14 @@ export async function POST(req: NextRequest) {
       appKey: process.env.SERVICETITAN_APP_KEY!,
     });
 
-    // Reschedule the appointment with optional technician assignment
+    // Reschedule the appointment
     const updatedAppointment = await serviceTitan.rescheduleAppointment(
       parseInt(appointmentId),
       newStart,
-      newEnd,
-      technicianId ? parseInt(technicianId) : undefined
+      newEnd
     );
 
-    console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully for customer ${session.customerId}`, {
+    console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully for customer ${customerId}`, {
       newStart,
       newEnd,
       technicianId
@@ -128,6 +101,21 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error("[Portal] Reschedule appointment error:", error);
+    
+    // Handle session errors
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: "Unauthorized - Please log in" },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: "Unauthorized - This appointment does not belong to you" },
+        { status: 403 }
+      );
+    }
     
     // Check if it's an invoiced appointment error
     if (error.message && error.message.includes('invoice')) {
