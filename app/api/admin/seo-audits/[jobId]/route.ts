@@ -1,17 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
 import { seoAuditJobs, seoAuditResults } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { jobId: string } }
 ) {
+  const isAuth = await isAuthenticated();
+  if (!isAuth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const [job] = await db
       .select()
       .from(seoAuditJobs)
-      .where(eq(seoAuditJobs.id, params.id))
+      .where(eq(seoAuditJobs.id, params.jobId))
       .limit(1);
 
     if (!job) {
@@ -24,7 +30,7 @@ export async function GET(
     const [result] = await db
       .select()
       .from(seoAuditResults)
-      .where(eq(seoAuditResults.jobId, params.id))
+      .where(eq(seoAuditResults.jobId, params.jobId))
       .limit(1);
 
     return NextResponse.json({
