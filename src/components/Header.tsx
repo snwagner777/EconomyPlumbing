@@ -104,6 +104,36 @@ export default function Header({
     { name: "Spicewood", path: "/plumber-spicewood", region: "Marble Falls Area" },
   ];
 
+  // Single source of truth for ALL menus - desktop and mobile use the same data
+  const menuConfig = {
+    contact: [
+      { name: "Contact Form", path: "/contact" },
+      { name: "Schedule Appointment", path: "/schedule-appointment" },
+      { name: "FAQ", path: "/faq" },
+    ],
+    about: [
+      { name: "About Us", path: "/about" },
+      { name: "Success Stories", path: "/success-stories" },
+      { name: "Blog", path: "/blog" },
+      { name: "Referral Program", path: "/refer-a-friend" },
+      { name: "Plumbing Cost Estimator", path: "/plumbing-cost-estimator" },
+      { name: "Water Heater Calculator", path: "/water-heater-calculator" },
+      { name: "VIP Membership", path: "/membership-benefits" },
+      { name: "Products", path: "/store" },
+      { name: "divider", path: "" },
+      { name: "Just For Fun", path: "", section: true },
+      { name: "Dogs Doing Plumbing", path: "/dogs-plumbing" },
+      { name: "Cats Doing Plumbing", path: "/cats-plumbing" },
+      { name: "divider", path: "" },
+      { name: "Privacy Policy", path: "/privacy-policy", muted: true },
+      { name: "Refund & Returns", path: "/refund_returns", muted: true },
+    ],
+    portal: [
+      { name: "Store", path: "/store" },
+      { name: "Customer Portal", path: "/customer-portal" },
+    ]
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-background border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -154,27 +184,16 @@ export default function Header({
                   className="absolute top-full left-0 pt-2 w-56"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
-                    <Link
-                      href="/contact"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-contact"
-                    >
-                      Contact Form
-                    </Link>
-                    <Link
-                      href="/schedule-appointment"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-schedule"
-                    >
-                      Schedule Appointment
-                    </Link>
-                    <Link
-                      href="/faq"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-faq-contact"
-                    >
-                      FAQ
-                    </Link>
+                    {menuConfig.contact.map((item) => (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        className="block px-4 py-2 text-sm hover-elevate"
+                        data-testid={`link-${item.path.slice(1)}`}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -204,55 +223,28 @@ export default function Header({
                   className="absolute top-full left-0 pt-2 w-64"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2 max-h-[80vh] overflow-y-auto">
-                    <Link
-                      href="/about"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-about"
-                    >
-                      About Us
-                    </Link>
-                    <Link
-                      href="/success-stories"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-success-stories"
-                    >
-                      Success Stories
-                    </Link>
-                    <Link
-                      href="/blog"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-blog"
-                    >
-                      Blog
-                    </Link>
-                    <Link
-                      href="/membership-benefits"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-membership"
-                    >
-                      VIP Membership
-                    </Link>
-                    <Link
-                      href="/customer-portal"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-portal"
-                    >
-                      Customer Portal
-                    </Link>
-                    <div className="border-t border-border my-2"></div>
-                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                      Service Areas
-                    </div>
-                    {serviceAreas.map((area) => (
-                      <Link
-                        key={area.path}
-                        href={area.path}
-                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold' : ''}`}
-                        data-testid={`link-area-${area.path.slice(1)}`}
-                      >
-                        {area.name}
-                      </Link>
-                    ))}
+                    {menuConfig.about.map((item, index) => {
+                      if (item.name === "divider") {
+                        return <div key={`divider-${index}`} className="border-t border-border my-2"></div>;
+                      }
+                      if (item.section) {
+                        return (
+                          <div key={item.name} className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                            {item.name}
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={item.path}
+                          href={item.path}
+                          className={`block px-4 py-2 text-sm hover-elevate ${item.muted ? 'text-muted-foreground' : ''}`}
+                          data-testid={`link-${item.path.slice(1)}`}
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -321,84 +313,19 @@ export default function Header({
                 <div
                   onMouseEnter={() => setStoreOpen(true)}
                   onMouseLeave={() => setStoreOpen(false)}
-                  className="absolute top-full left-0 pt-2 w-64"
+                  className="absolute top-full left-0 pt-2 w-56"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
-                    <Link
-                      href="/customer-portal"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-customer-portal"
-                    >
-                      Customer Portal
-                    </Link>
-                    <Link
-                      href="/refer-a-friend"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-referral-program"
-                    >
-                      Referral Program
-                    </Link>
-                    <Link
-                      href="/plumbing-cost-estimator"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-cost-estimator"
-                    >
-                      Plumbing Cost Estimator
-                    </Link>
-                    <Link
-                      href="/water-heater-calculator"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-water-heater-calc"
-                    >
-                      Water Heater Calculator
-                    </Link>
-                    <Link
-                      href="/membership-benefits"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-vip-membership"
-                    >
-                      VIP Membership
-                    </Link>
-                    <Link
-                      href="/store"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-store"
-                    >
-                      Products
-                    </Link>
-                    <div className="border-t border-border my-2"></div>
-                    <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                      Just For Fun
-                    </div>
-                    <Link
-                      href="/dogs-plumbing"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-dogs-plumbing"
-                    >
-                      Dogs Doing Plumbing
-                    </Link>
-                    <Link
-                      href="/cats-plumbing"
-                      className="block px-4 py-2 text-sm hover-elevate"
-                      data-testid="link-cats-plumbing"
-                    >
-                      Cats Doing Plumbing
-                    </Link>
-                    <div className="border-t border-border my-2"></div>
-                    <Link
-                      href="/privacy-policy"
-                      className="block px-4 py-2 text-sm hover-elevate text-muted-foreground"
-                      data-testid="link-privacy"
-                    >
-                      Privacy Policy
-                    </Link>
-                    <Link
-                      href="/refund_returns"
-                      className="block px-4 py-2 text-sm hover-elevate text-muted-foreground"
-                      data-testid="link-refunds"
-                    >
-                      Refund & Returns
-                    </Link>
+                    {menuConfig.portal.map((item) => (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        className="block px-4 py-2 text-sm hover-elevate"
+                        data-testid={`link-${item.path.slice(1)}`}
+                      >
+                        {item.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -480,15 +407,17 @@ export default function Header({
               </button>
               {mobileContactOpen && (
                 <div className="pb-2 space-y-1">
-                  <Link href="/contact" className="block py-2 pl-4 text-sm" data-testid="mobile-link-contact" onClick={() => setMobileMenuOpen(false)}>
-                    Contact Form
-                  </Link>
-                  <Link href="/schedule-appointment" className="block py-2 pl-4 text-sm" data-testid="mobile-link-schedule" onClick={() => setMobileMenuOpen(false)}>
-                    Schedule Appointment
-                  </Link>
-                  <Link href="/faq" className="block py-2 pl-4 text-sm" data-testid="mobile-link-faq" onClick={() => setMobileMenuOpen(false)}>
-                    FAQ
-                  </Link>
+                  {menuConfig.contact.map((item) => (
+                    <Link 
+                      key={item.path}
+                      href={item.path} 
+                      className="block py-2 pl-4 text-sm" 
+                      data-testid={`mobile-link-${item.path.slice(1)}`} 
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -506,55 +435,29 @@ export default function Header({
               </button>
               {mobileAboutOpen && (
                 <div className="pb-2 space-y-1">
-                  <Link href="/about" className="block py-2 pl-4 text-sm" data-testid="mobile-link-about" onClick={() => setMobileMenuOpen(false)}>
-                    About Us
-                  </Link>
-                  <Link href="/success-stories" className="block py-2 pl-4 text-sm" data-testid="mobile-link-success-stories" onClick={() => setMobileMenuOpen(false)}>
-                    Success Stories
-                  </Link>
-                  <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog" onClick={() => setMobileMenuOpen(false)}>
-                    Blog
-                  </Link>
-                  <Link href="/refer-a-friend" className="block py-2 pl-4 text-sm" data-testid="mobile-link-referral" onClick={() => setMobileMenuOpen(false)}>
-                    Referral Program
-                  </Link>
-                  <Link href="/plumbing-cost-estimator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cost-estimator" onClick={() => setMobileMenuOpen(false)}>
-                    Plumbing Cost Estimator
-                  </Link>
-                  <Link href="/water-heater-calculator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-water-heater-calc" onClick={() => setMobileMenuOpen(false)}>
-                    Water Heater Calculator
-                  </Link>
-                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
-                    VIP Membership
-                  </Link>
-                  <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
-                    Products
-                  </Link>
-                  <div className="border-t border-border my-2 mx-4"></div>
-                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                    Just For Fun
-                  </div>
-                  <Link href="/dogs-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-dogs-plumbing" onClick={() => setMobileMenuOpen(false)}>
-                    Dogs Doing Plumbing
-                  </Link>
-                  <Link href="/cats-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cats-plumbing" onClick={() => setMobileMenuOpen(false)}>
-                    Cats Doing Plumbing
-                  </Link>
-                  <div className="border-t border-border my-2 mx-4"></div>
-                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
-                    Service Areas
-                  </div>
-                  {serviceAreas.map((area) => (
-                    <Link
-                      key={area.path}
-                      href={area.path}
-                      className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
-                      data-testid={`mobile-link-area-${area.path.slice(1)}`}
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {area.name}
-                    </Link>
-                  ))}
+                  {menuConfig.about.map((item, index) => {
+                    if (item.name === "divider") {
+                      return <div key={`divider-${index}`} className="border-t border-border my-2 mx-4"></div>;
+                    }
+                    if (item.section) {
+                      return (
+                        <div key={item.name} className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                          {item.name}
+                        </div>
+                      );
+                    }
+                    return (
+                      <Link
+                        key={item.path}
+                        href={item.path}
+                        className={`block py-2 pl-4 text-sm ${item.muted ? 'text-muted-foreground' : ''}`}
+                        data-testid={`mobile-link-${item.path.slice(1)}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -600,31 +503,17 @@ export default function Header({
               </button>
               {mobileStoreOpen && (
                 <div className="pb-2 space-y-1">
-                  <Link href="/customer-portal" className="block py-2 pl-4 text-sm" data-testid="mobile-link-customer-portal" onClick={() => setMobileMenuOpen(false)}>
-                    Customer Portal
-                  </Link>
-                  <Link href="/refer-a-friend" className="block py-2 pl-4 text-sm" data-testid="mobile-link-referral-program" onClick={() => setMobileMenuOpen(false)}>
-                    Referral Program
-                  </Link>
-                  <Link href="/plumbing-cost-estimator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cost-estimator" onClick={() => setMobileMenuOpen(false)}>
-                    Plumbing Cost Estimator
-                  </Link>
-                  <Link href="/water-heater-calculator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-water-heater-calc" onClick={() => setMobileMenuOpen(false)}>
-                    Water Heater Calculator
-                  </Link>
-                  <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-vip-membership" onClick={() => setMobileMenuOpen(false)}>
-                    VIP Membership
-                  </Link>
-                  <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
-                    Products
-                  </Link>
-                  <div className="border-t border-border my-2 mx-4"></div>
-                  <Link href="/privacy-policy" className="block py-2 pl-4 text-sm text-muted-foreground" data-testid="mobile-link-privacy" onClick={() => setMobileMenuOpen(false)}>
-                    Privacy Policy
-                  </Link>
-                  <Link href="/refund_returns" className="block py-2 pl-4 text-sm text-muted-foreground" data-testid="mobile-link-refunds" onClick={() => setMobileMenuOpen(false)}>
-                    Refund & Returns
-                  </Link>
+                  {menuConfig.portal.map((item) => (
+                    <Link 
+                      key={item.path}
+                      href={item.path} 
+                      className="block py-2 pl-4 text-sm" 
+                      data-testid={`mobile-link-${item.path.slice(1)}`} 
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
