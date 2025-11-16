@@ -677,6 +677,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
                   handleVerifyCode();
                 }
               }}
+              autoFocus
               data-testid="input-verification-code"
             />
             <Button

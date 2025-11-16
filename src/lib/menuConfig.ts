@@ -49,6 +49,7 @@ export const portalItems: MenuItem[] = [
   { name: "Cats Doing Plumbing", path: "/cats-plumbing" },
   { name: "divider", path: "" },
   { name: "Privacy Policy", path: "/privacy-policy", muted: true },
+  { name: "Terms of Service", path: "/terms-of-service", muted: true },
   { name: "Refund & Returns", path: "/refund_returns", muted: true },
 ];
 
