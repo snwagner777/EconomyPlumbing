@@ -67,6 +67,14 @@ Preferred communication style: Simple, everyday language.
 - **Migration Plan:** Gradually migrate all `/api/portal/*` routes to unified session, then remove legacy session and dual-write bridge.
 - **Session Utility Location:** `server/lib/customer-portal/session-utils.ts` - Use this for all session destruction to maintain consistency.
 
+## Recent Fixes & Maintenance
+
+**Database Schema Sync (Latest Session)**
+- Fixed schema drift: Created 7 missing tables that existed in schema but not in database
+- SMS System: `simpletexting_contacts`, `sms_campaigns`, `sms_campaign_events`, `sms_conversations`, `sms_messages`
+- ServiceTitan Estimates: `service_titan_estimates`, `service_titan_line_items`
+- Database now fully synced with schema.ts (87 total tables)
+
 ## System Architecture
 
 ### Frontend
