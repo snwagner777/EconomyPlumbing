@@ -100,6 +100,8 @@ const normalizeState = (state: string): string => {
   return normalized || state.substring(0, 2).toUpperCase();
 };
 
+const SCHEDULER_SESSION_KEY = 'scheduler_session';
+
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError, onSessionUpdate }: CustomerStepProps) {
   const { toast } = useToast();
   const { context: sharedContext, setContext, isStale } = useCustomerContext();
@@ -119,6 +121,44 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const [showForm, setShowForm] = useState(false);
   const [showContactsDialog, setShowContactsDialog] = useState(false);
   const [customerContacts, setCustomerContacts] = useState<any[]>([]);
+
+  // Load session from localStorage on mount
+  useEffect(() => {
+    try {
+      const savedSession = localStorage.getItem(SCHEDULER_SESSION_KEY);
+      if (savedSession) {
+        const session = JSON.parse(savedSession);
+        
+        // Check if session is still valid (not expired)
+        if (session.expiresAt && session.expiresAt > Date.now()) {
+          setSessionToken(session.token);
+          setIsVerified(true);
+          setVerifiedContact(session.verifiedContact || '');
+          setLookupValue(session.verifiedContact || '');
+          setLookupMode(session.verificationMethod || 'phone');
+          
+          // Notify parent about restored session
+          onSessionUpdate?.(session);
+          
+          console.log('[Scheduler] Restored session from localStorage');
+          
+          // Auto-trigger lookup if we have verified contact
+          if (session.verifiedContact) {
+            setTimeout(() => {
+              lookupMutation.mutate(session.verifiedContact);
+            }, 100);
+          }
+        } else {
+          // Session expired, clear it
+          console.log('[Scheduler] Session expired, clearing');
+          localStorage.removeItem(SCHEDULER_SESSION_KEY);
+        }
+      }
+    } catch (error) {
+      console.error('[Scheduler] Error loading session:', error);
+      localStorage.removeItem(SCHEDULER_SESSION_KEY);
+    }
+  }, []);
 
   // Check if service qualifies for free estimate message
   const showFreeEstimateBanner = selectedService && (() => {
@@ -277,6 +317,18 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     },
     onSuccess: (data: any) => {
       if (data.verified && data.session) {
+        // Save session to localStorage for persistence across re-renders
+        try {
+          const sessionData = {
+            ...data.session,
+            verifiedContact: lookupValue,
+          };
+          localStorage.setItem(SCHEDULER_SESSION_KEY, JSON.stringify(sessionData));
+          console.log('[Scheduler] Session saved to localStorage');
+        } catch (error) {
+          console.error('[Scheduler] Error saving session:', error);
+        }
+
         // Update session state in parent
         onSessionUpdate?.(data.session);
         
@@ -978,10 +1030,19 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         <Button
           variant="ghost"
           onClick={() => {
+            // Clear customer data
             setCustomerFound(null);
             setLocations([]);
             setCustomerContacts([]);
             setShowForm(false);
+            
+            // Clear session and start over
+            setIsVerified(false);
+            setVerifiedContact('');
+            setSessionToken(null);
+            setLookupValue('');
+            localStorage.removeItem(SCHEDULER_SESSION_KEY);
+            console.log('[Scheduler] Session cleared - back to lookup');
           }}
           data-testid="button-back-lookup"
         >
