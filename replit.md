@@ -61,17 +61,24 @@ Preferred communication style: Simple, everyday language.
 
 **CRITICAL RULE: Unified Session Architecture (Migration Complete)**
 - The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
-- **Session Pattern:** All portal routes access session via `session.customerPortalAuth?.customerId` and `session.customerPortalAuth?.availableCustomerIds`
-- **All Routes Migrated:** 37 portal routes in `/api/portal/*` now use unified session (legacy `customer_portal_session` cookie completely removed)
+- **Centralized Helper:** All portal routes MUST use `getPortalSession()` and `assertCustomerOwnership()` from `server/lib/customer-portal/portal-session.ts`
+- **Session Pattern:** Routes call `const { customerId, availableCustomerIds } = await getPortalSession()` for validation
+- **Ownership Validation:** Use `assertCustomerOwnership(requestedId, availableCustomerIds)` before accessing customer data
+- **All Routes Migrated:** 37 portal routes in `/api/portal/*` now use unified session helper (legacy `customer_portal_session` cookie completely removed)
+- **Security:** Never trust request body customer IDs - always validate against `availableCustomerIds` from session
 - **Session Management:** Authentication endpoints (verify-code, logout, switch-account) use `session.destroy()` for cleanup
 
 ## Recent Fixes & Maintenance
 
-**Portal Session Migration Complete (Latest Session)**
-- **COMPLETED:** All 37 portal routes migrated from legacy `customer_portal_session` to unified `plumbing_session`
-- **Removed:** Dual-session bridge, `session-utils.ts`, and all dual-write code
+**Portal Session Migration Complete - Architect Approved**
+- **COMPLETED:** All 37 portal routes migrated from legacy `customer_portal_session` to unified `plumbing_session` with centralized helper
+- **Centralized Helper Created:** `server/lib/customer-portal/portal-session.ts` provides `getPortalSession()`, `assertCustomerOwnership()`, and `getPortalSessionWithOwnership()` for consistent validation
+- **Security Fixes:** Fixed critical vulnerabilities - 3 routes (`delete-contact`, `update-contacts`, `request-pdf`) previously had NO authentication
+- **Pattern Enforced:** All routes now use helper functions instead of direct session access for consistency and security
+- **Removed:** Dual-session bridge, `session-utils.ts`, all dual-write code, and all legacy `customer_portal_session` references
 - **Invoice Payments Disabled:** No "Pay Now" buttons in billing section (ServiceTitan has no payment reporting API)
 - **Membership Purchasing Active:** Stripe integration for memberships remains fully functional
+- **Architect Status:** Migration reviewed and approved with PASS - zero LSP errors, no legacy code remaining
 
 **Database Schema Sync**
 - Fixed schema drift: Created 7 missing tables that existed in schema but not in database
@@ -96,7 +103,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables managing core, content, customer, e-commerce, marketing, referral, review, communications, ServiceTitan sync, portal, and analytics data.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for various ServiceTitan modules, OAuth authentication, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration. Includes CRM v2 refactor for contact management and live membership data.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) for authentication, appointments, jobs, memberships, contacts, and account management. Features phone-first SMS 2FA and self-service permissions. Invoice viewing is read-only (no payment processing); membership purchasing via Stripe remains active.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation helper at `server/lib/customer-portal/portal-session.ts`. All routes use `getPortalSession()` for authentication, appointments, jobs, memberships, contacts, and account management. Features phone-first SMS 2FA, self-service permissions, and ownership validation via `assertCustomerOwnership()`. Invoice viewing is read-only (no payment processing); membership purchasing via Stripe remains active.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
