@@ -36,12 +36,21 @@ export async function GET(req: NextRequest) {
     ]);
 
     // Check OAuth connection (all required env vars present)
-    const oauthConnected = !!(
-      process.env.SERVICETITAN_CLIENT_ID &&
-      process.env.SERVICETITAN_CLIENT_SECRET &&
-      process.env.SERVICETITAN_TENANT_ID &&
-      process.env.SERVICETITAN_APP_KEY
-    );
+    const hasClientId = !!process.env.SERVICETITAN_CLIENT_ID;
+    const hasClientSecret = !!process.env.SERVICETITAN_CLIENT_SECRET;
+    const hasTenantId = !!process.env.SERVICETITAN_TENANT_ID;
+    const hasAppKey = !!process.env.SERVICETITAN_APP_KEY;
+    
+    console.log('[Sync Status] ServiceTitan OAuth check:', {
+      hasClientId,
+      hasClientSecret,
+      hasTenantId,
+      hasAppKey,
+      clientIdLength: process.env.SERVICETITAN_CLIENT_ID?.length || 0,
+      tenantIdLength: process.env.SERVICETITAN_TENANT_ID?.length || 0
+    });
+    
+    const oauthConnected = hasClientId && hasClientSecret && hasTenantId && hasAppKey;
 
     return NextResponse.json({
       totalCustomers: Number(customerCount[0]?.count || 0),
