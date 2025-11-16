@@ -322,7 +322,7 @@ export function ServiceTitanDashboard() {
             <Alert data-testid="info-recent-activity">
               <Activity className="h-4 w-4" />
               <AlertDescription>
-                Customer data synced via Mailgun XLSX webhooks. Jobs synced via ServiceTitan API. 
+                Customer data synced via Resend XLSX webhooks. Jobs synced via ServiceTitan API. 
                 Last customer sync: {syncData?.lastSyncTime ? new Date(syncData.lastSyncTime).toLocaleString() : 'Never'}
               </AlertDescription>
             </Alert>

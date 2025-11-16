@@ -137,7 +137,7 @@ export default function DashboardOverviewClient() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Customer Database</CardTitle>
-                <CardDescription>XLSX-based customer data (hourly Mailgun imports)</CardDescription>
+                <CardDescription>XLSX-based customer data (hourly Resend imports)</CardDescription>
               </div>
               <Button
                 onClick={() => syncMutation.mutate()}

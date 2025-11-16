@@ -94,13 +94,13 @@ export function CustomersDashboard() {
                 <h3 className="font-semibold text-lg mb-2">XLSX-Based Customer Management</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Customer data managed via ServiceTitan XLSX exports (replacing API-based sync). 
-                  Automated Mailgun webhook imports with data safety measures and search/login security fixes.
+                  Automated Resend webhook imports with data safety measures and search/login security fixes.
                 </p>
                 <div className="grid md:grid-cols-2 gap-4 text-sm">
                   <div>
                     <div className="font-medium mb-1">Import Methods:</div>
                     <ul className="text-muted-foreground space-y-1">
-                      <li>• Email XLSX to Mailgun (automated import)</li>
+                      <li>• Email XLSX to Resend (automated import)</li>
                       <li>• Manual upload via admin panel</li>
                       <li>• Automatic duplicate detection</li>
                       <li>• Customer upsert (create/update)</li>
