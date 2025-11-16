@@ -8,7 +8,6 @@
  * - Referral processing (hourly)
  * - Custom campaigns (every 30 min)
  * - ServiceTitan photo fetch queue (every 1 min)
- * - Google Drive photo monitoring (every 5 min)
  * - Auto blog generation (weekly)
  * - Photo cleanup (daily at 3am)
  * - ServiceTitan zone sync (daily at 3am CT)
@@ -16,7 +15,6 @@
 
 import { storage } from "./storage";
 import { startAutoBlogGeneration } from "./lib/autoBlogGenerator";
-import { startGoogleDriveMonitoring } from "./lib/googleDriveMonitor";
 import { startPhotoCleanupJob } from "./lib/photoCleanupJob";
 import { syncZonesFromServiceTitan } from "./lib/zoneSyncService";
 // DEPRECATED: Old ServiceTitan job scanning system - replaced by voucher-based QR code system
@@ -35,10 +33,6 @@ console.log('[Worker] Starting background job worker process...');
 // Start automated blog generation (checks weekly for unused photos)
 console.log('[Worker] Starting auto blog generation...');
 startAutoBlogGeneration(storage as any);
-
-// Start Google Drive monitoring (checks every 5 minutes for new photos)
-console.log('[Worker] Starting Google Drive monitoring...');
-startGoogleDriveMonitoring();
 
 // Start photo cleanup job (runs daily at 3am to delete unused photos older than 60 days)
 console.log('[Worker] Starting photo cleanup job...');
