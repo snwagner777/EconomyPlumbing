@@ -75,14 +75,14 @@ export async function POST(req: NextRequest) {
 
     // Send email notification to admin/team
     try {
-      const { Resend } = await import('resend');
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { getUncachableResendClient } = await import('@/server/email');
+      const { client, fromEmail } = await getUncachableResendClient();
 
       // Get customer data for email
       const customer = await serviceTitan.getCustomer(customerId);
       
-      await resend.emails.send({
-        from: 'Economy Plumbing <noreply@plumbersthatcare.com>',
+      await client.emails.send({
+        from: fromEmail,
         to: process.env.ADMIN_EMAIL || 'admin@plumbersthatcare.com',
         subject: `Estimate Accepted: #${estimateNumber}`,
         html: `
@@ -123,13 +123,13 @@ export async function POST(req: NextRequest) {
 
     // Send confirmation email to customer
     try {
-      const { Resend } = await import('resend');
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { getUncachableResendClient } = await import('@/server/email');
+      const { client, fromEmail } = await getUncachableResendClient();
       const customer = await serviceTitan.getCustomer(customerId);
       
       if (customer?.email) {
-        await resend.emails.send({
-          from: 'Economy Plumbing <noreply@plumbersthatcare.com>',
+        await client.emails.send({
+          from: fromEmail,
           to: customer.email,
           subject: `Estimate #${estimateNumber} Accepted - We'll Be In Touch!`,
           html: `

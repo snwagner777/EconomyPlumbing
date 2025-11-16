@@ -77,6 +77,15 @@ Preferred communication style: Simple, everyday language.
 - **CI-Ready:** Tests run against development server and use mock data to avoid affecting real customer data or ServiceTitan API
 - **Data Safety:** Tests use test customer ID (27881198) and mock phone numbers (512-555-XXXX format) - never touch production data
 
+**CRITICAL RULE: Resend Email Integration - ALWAYS Use Replit Native Connector**
+- ALL Resend API calls MUST use the Replit Native Connector via `getUncachableResendClient()` from `server/email.ts`
+- NEVER use direct environment variables like `RESEND_API_KEY` or `REPLIT_CONNECTOR_RESEND_API_KEY`
+- The connector provides both API key and from_email dynamically - credentials rotate automatically for security
+- Pattern: `const { client, fromEmail } = await getUncachableResendClient()` then use `client.emails.send()`
+- Webhook signature verification uses `RESEND_WEBHOOK_SIGNING_SECRET` environment variable (this is correct)
+- Attachment fetching extracts API key from connector client: `apiKey = (client as any).key`
+- Benefits: Automatic credential rotation, centralized configuration, no manual secret management
+
 ## System Architecture
 
 ### Frontend

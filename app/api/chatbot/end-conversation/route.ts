@@ -9,7 +9,7 @@ import { db } from '@/server/db';
 import { chatbotConversations, chatbotMessages } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
-import { Resend } from 'resend';
+import { getUncachableResendClient } from '@/server/email';
 
 const endConversationSchema = z.object({
   conversationId: z.string(),
@@ -58,12 +58,11 @@ export async function POST(req: NextRequest) {
       .where(eq(chatbotConversations.id, conversationId));
 
     // Send email to admin if configured
-    const resendApiKey = process.env.RESEND_API_KEY;
     const adminEmail = process.env.ADMIN_EMAIL;
 
-    if (resendApiKey && adminEmail && messages.length > 0) {
+    if (adminEmail && messages.length > 0) {
       try {
-        const resend = new Resend(resendApiKey);
+        const { client, fromEmail } = await getUncachableResendClient();
 
         // Format conversation for email
         const conversationHtml = messages.map(msg => `
@@ -88,8 +87,8 @@ export async function POST(req: NextRequest) {
           ${conversationHtml}
         `;
 
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || 'notifications@economyplumbing.com',
+        await client.emails.send({
+          from: fromEmail,
           to: adminEmail,
           subject: `Chatbot Conversation ${conversation.handoffRequested ? '- HANDOFF NEEDED' : ''}`,
           html: emailHtml,
