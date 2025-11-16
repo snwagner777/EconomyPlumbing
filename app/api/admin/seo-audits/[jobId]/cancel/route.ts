@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
-import { seoAuditJobs } from '@/shared/schema';
+import { seoAuditJobs } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function PATCH(
