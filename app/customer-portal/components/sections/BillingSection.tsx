@@ -15,13 +15,11 @@ import { formatCurrency } from "../../utils/currency";
 
 interface BillingSectionProps {
   customerData?: any;
-  onPayInvoice?: (invoice: any) => void;
   formatDate?: (date: string) => string;
 }
 
 export function BillingSection({
   customerData,
-  onPayInvoice,
   formatDate,
 }: BillingSectionProps) {
   const [paidHistoryOpen, setPaidHistoryOpen] = useState(false);

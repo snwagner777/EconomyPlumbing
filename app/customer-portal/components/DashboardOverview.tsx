@@ -42,7 +42,6 @@ interface DashboardOverviewProps {
   };
   quickActions?: {
     onSchedule?: () => void;
-    onPayInvoice?: () => void;
     onShareReferral?: () => void;
   };
   alerts?: Array<{
@@ -182,16 +181,6 @@ export function DashboardOverview({
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   Schedule Service
-                </Button>
-              )}
-              {quickActions.onPayInvoice && (
-                <Button
-                  variant="outline"
-                  onClick={quickActions.onPayInvoice}
-                  data-testid="button-quick-pay"
-                >
-                  <DollarSign className="w-4 h-4 mr-2" />
-                  Pay Invoice
                 </Button>
               )}
               {quickActions.onShareReferral && (

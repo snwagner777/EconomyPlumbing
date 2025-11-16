@@ -1325,19 +1325,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });
               }}
               onSchedule={() => setSchedulerOpen(true)}
-              onPayInvoice={(invoice) => {
-                if (invoice) {
-                  toast({
-                    title: "Pay Invoice",
-                    description: `Payment for invoice #${invoice.id || 'N/A'} - This feature is coming soon!`,
-                  });
-                } else {
-                  toast({
-                    title: "Pay Invoice",
-                    description: "This feature is coming soon!",
-                  });
-                }
-              }}
               onShareReferral={() => setShowReferralModal(true)}
               onRescheduleAppointment={handleOpenRescheduleDialog}
               onCancelAppointment={handleOpenCancelDialog}

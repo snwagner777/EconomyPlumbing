@@ -59,17 +59,21 @@ Preferred communication style: Simple, everyday language.
 - Location-level contacts: Use `serviceTitanCRM.getLocationContacts(locationId)` - Returns contacts linked to specific location.
 - Contacts can exist at customer level, location level, or both - must check both sources.
 
-**CRITICAL RULE: Dual-Session Bridge Architecture (Phased Migration)**
-- The customer portal uses TWO session systems during migration:
-  - **Legacy Session** (`customer_portal_session` cookie): Used by `/api/portal/*` routes
-  - **Unified Session** (`plumbing_session` cookie): Used by `/api/customer-portal/*` routes
-- **Dual-Write Pattern:** All authentication endpoints (verify-code, logout, switch-account) write to BOTH sessions via `destroyAllPortalSessions()` utility in `server/lib/customer-portal/session-utils.ts`
-- **Migration Plan:** Gradually migrate all `/api/portal/*` routes to unified session, then remove legacy session and dual-write bridge.
-- **Session Utility Location:** `server/lib/customer-portal/session-utils.ts` - Use this for all session destruction to maintain consistency.
+**CRITICAL RULE: Unified Session Architecture (Migration Complete)**
+- The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
+- **Session Pattern:** All portal routes access session via `session.customerPortalAuth?.customerId` and `session.customerPortalAuth?.availableCustomerIds`
+- **All Routes Migrated:** 37 portal routes in `/api/portal/*` now use unified session (legacy `customer_portal_session` cookie completely removed)
+- **Session Management:** Authentication endpoints (verify-code, logout, switch-account) use `session.destroy()` for cleanup
 
 ## Recent Fixes & Maintenance
 
-**Database Schema Sync (Latest Session)**
+**Portal Session Migration Complete (Latest Session)**
+- **COMPLETED:** All 37 portal routes migrated from legacy `customer_portal_session` to unified `plumbing_session`
+- **Removed:** Dual-session bridge, `session-utils.ts`, and all dual-write code
+- **Invoice Payments Disabled:** No "Pay Now" buttons in billing section (ServiceTitan has no payment reporting API)
+- **Membership Purchasing Active:** Stripe integration for memberships remains fully functional
+
+**Database Schema Sync**
 - Fixed schema drift: Created 7 missing tables that existed in schema but not in database
 - SMS System: `simpletexting_contacts`, `sms_campaigns`, `sms_campaign_events`, `sms_conversations`, `sms_messages`
 - ServiceTitan Estimates: `service_titan_estimates`, `service_titan_line_items`
@@ -92,7 +96,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables managing core, content, customer, e-commerce, marketing, referral, review, communications, ServiceTitan sync, portal, and analytics data.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for various ServiceTitan modules, OAuth authentication, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration. Includes CRM v2 refactor for contact management and live membership data.
-- **Customer Portal Backend API:** Routes for `/api/customer-portal/*` (unified session) and `/api/portal/*` (legacy session) handling authentication, appointments, jobs, memberships, contacts, and account management. Features phone-first SMS 2FA, dual-session bridge, and self-service permissions.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) for authentication, appointments, jobs, memberships, contacts, and account management. Features phone-first SMS 2FA and self-service permissions. Invoice viewing is read-only (no payment processing); membership purchasing via Stripe remains active.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.

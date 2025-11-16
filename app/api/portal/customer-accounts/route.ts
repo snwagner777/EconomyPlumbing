@@ -1,18 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
+import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    const { customerIds } = await request.json();
+    // Verify session
+    const session = await getSession();
+    const availableCustomerIds = session.customerPortalAuth?.availableCustomerIds;
 
-    if (!Array.isArray(customerIds) || customerIds.length === 0) {
+    if (!availableCustomerIds || availableCustomerIds.length === 0) {
       return NextResponse.json(
-        { error: 'customerIds array is required' },
-        { status: 400 }
+        { error: 'Not authenticated' },
+        { status: 401 }
       );
     }
+
+    // Use session customer IDs instead of trusting request body
+    const customerIds = availableCustomerIds;
 
     console.log(`[Portal] Fetching account summaries for ${customerIds.length} customers`);
 
