@@ -2731,6 +2731,13 @@ export const generatedPlumbingImages = pgTable("generated_plumbing_images", {
   id: serial("id").primaryKey(),
   animalType: varchar("animal_type", { length: 10 }).notNull(), // 'dog' or 'cat'
   imageUrl: text("image_url").notNull(),
+  breed: text("breed"), // e.g., "Border Collie", "Russian Blue"
+  scenario: text("scenario"), // e.g., "precision pipe fitting", "blueprint review"
+  location: text("location"), // e.g., "Downtown Austin loft"
+  season: text("season"), // "winter", "spring", "summer", "fall"
+  alt: text("alt"), // SEO-friendly alt text
+  caption: text("caption"), // Social media caption
+  hashtags: text("hashtags").array(), // Platform-specific hashtags
   createdAt: timestamp("created_at").notNull().defaultNow(),
 }, (table) => ({
   createdAtIdx: index("generated_plumbing_images_created_at_idx").on(table.createdAt),

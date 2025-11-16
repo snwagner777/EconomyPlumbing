@@ -7,6 +7,7 @@ import { ObjectStorageService } from '@/server/objectStorage';
 import { randomBytes } from 'crypto';
 import sharp from 'sharp';
 import path from 'path';
+import { generateContextualPrompt } from '@/server/lib/plumbingImagePrompts';
 
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY!,
@@ -53,9 +54,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get random prompt
-    const prompts = animal === 'dog' ? dogPrompts : catPrompts;
-    const randomPrompt = prompts[Math.floor(Math.random() * prompts.length)];
+    // Generate contextual prompt with Austin landmarks and seasonal context
+    const { prompt: randomPrompt, metadata } = generateContextualPrompt(animal);
+    
+    console.log('[Generate Plumbing Image] Using contextual prompt:', randomPrompt);
 
     // Generate image using OpenAI via Replit AI Integrations
     const response = await openai.images.generate({
@@ -132,10 +134,17 @@ export async function POST(request: NextRequest) {
     
     console.log(`[Generate Plumbing Image] Saved watermarked image to object storage: ${imageUrl}`);
 
-    // Save to database
+    // Save to database with rich metadata
     await db.insert(generatedPlumbingImages).values({
       animalType: animal,
       imageUrl,
+      breed: metadata.breed,
+      scenario: metadata.scenario,
+      location: metadata.location,
+      season: metadata.season,
+      alt: metadata.alt,
+      caption: metadata.caption,
+      hashtags: metadata.hashtags,
     });
 
     // Get all images for this animal type (newest first)
