@@ -5,6 +5,19 @@ let connectionSettings: ResendConnectionSettings | undefined;
 
 // Email configuration
 const REPLY_TO_EMAIL = 'hello@plumbersthatcare.com';
+const COMPANY_NAME = 'Economy Plumbing Services';
+
+/**
+ * Format email address with display name
+ * Example: formatEmailAddress('customer@example.com', 'John Smith') 
+ * Returns: "John Smith <customer@example.com>"
+ */
+export function formatEmailAddress(email: string, name?: string): string {
+  if (name) {
+    return `"${name}" <${email}>`;
+  }
+  return email;
+}
 
 async function getCredentials(): Promise<ResendCredentials> {
   console.log('[Email] Getting Resend credentials via Replit Connector...');
@@ -54,9 +67,12 @@ async function getCredentials(): Promise<ResendCredentials> {
 
 export async function getUncachableResendClient() {
   const credentials = await getCredentials();
+  // Always use company name in FROM field
+  const fromEmail = `"${COMPANY_NAME}" <${credentials.fromEmail}>`;
+  
   return {
     client: new Resend(credentials.apiKey),
-    fromEmail: credentials.fromEmail
+    fromEmail: fromEmail,
   };
 }
 
@@ -65,15 +81,19 @@ export async function sendEmail(params: {
   subject: string;
   html: string;
   tags?: { name: string; value: string }[];
+  toName?: string; // Optional: adds customer name to TO field
 }) {
   console.log('[Email] Sending generic email to:', params.to);
   
   try {
     const { client, fromEmail } = await getUncachableResendClient();
     
+    // Format TO field with customer name if provided
+    const toAddress = formatEmailAddress(params.to, params.toName);
+    
     const result = await client.emails.send({
       from: fromEmail,
-      to: params.to,
+      to: toAddress,
       replyTo: REPLY_TO_EMAIL,
       subject: params.subject,
       html: params.html,
