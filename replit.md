@@ -97,12 +97,17 @@ Preferred communication style: Simple, everyday language.
 
 ## External Dependencies
 
-- **ServiceTitan:** OAuth configured, full API integration (CRM, Jobs, Scheduler, Memberships, Estimates, Invoices)
+- **ServiceTitan:** OAuth configured, full API integration (CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments via Forms API)
 - **Stripe:** Payment processing for e-commerce and memberships (webhooks configured)
 - **OpenAI:** GPT-4o and GPT-4o-mini for chatbot, blog generation, email campaigns
 - **SimpleTexting:** SMS marketing, two-way messaging, campaign management
-- **Mailgun:** Webhook receiver for PDF documents (estimates/invoices from ServiceTitan)
-- **Resend:** Transactional email delivery via Replit native connector
+- **Resend:** Transactional email delivery AND inbound email processing via Replit native connector
+  - **Outbound:** Sending emails from `hello@mail.plumbersthatcare.com` (reply-to: `hello@plumbersthatcare.com`)
+  - **Inbound:** Receiving emails at `mail.plumbersthatcare.com` domain via webhook at `/api/webhooks/resend/inbound`
+  - **Webhook Format:** JSON payload with Svix signature verification, attachments as metadata only (must fetch via Resend Attachments API)
+  - **Email Forwarding:** All incoming emails automatically forwarded to `ST-Alerts-828414d7c3d94e90@teamchat.zoom.us`
+  - **Attachment Handling:** Webhook provides attachment IDs, must call `GET /emails/{email_id}/attachments/{attachment_id}` to download files
+  - **Use Cases:** Receiving invoices/estimates (PDFs) and customer data exports (XLSX) from ServiceTitan
 - **Clerk:** Authentication service
 - **CompanyCam:** Photo management integration
 - **Google Drive:** Photo import automation
