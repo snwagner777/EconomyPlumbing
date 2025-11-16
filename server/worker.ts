@@ -24,6 +24,7 @@ import { getReviewRequestScheduler } from "./lib/reviewRequestScheduler";
 import { getReferralNurtureScheduler } from "./lib/referralNurtureScheduler";
 import { startCustomCampaignScheduler } from "./lib/customCampaignScheduler";
 import { serviceTitanPhotoFetcher } from "./lib/servicetitanPhotoFetcher";
+import { seoAuditProcessor } from "./lib/seoAuditProcessor";
 
 console.log('[Worker] Starting background job worker process...');
 
@@ -94,6 +95,24 @@ setTimeout(() => {
     console.error('[Photo Fetcher] Error during initial processing:', err);
   });
 }, 15000);
+
+// Start SEO audit processor - runs every 2 minutes
+console.log('[Worker] Starting SEO audit processor...');
+
+setInterval(() => {
+  console.log('[SEO Audit Processor] Processing audit queue...');
+  seoAuditProcessor.processQueue().catch((err: Error) => {
+    console.error('[SEO Audit Processor] Error processing queue:', err);
+  });
+}, 120 * 1000); // Every 2 minutes
+
+// Run immediately on startup (after 20-second delay for database readiness)
+setTimeout(() => {
+  console.log('[SEO Audit Processor] Running initial audit queue processing...');
+  seoAuditProcessor.processQueue().catch((err: Error) => {
+    console.error('[SEO Audit Processor] Error during initial processing:', err);
+  });
+}, 20000);
 
 // DEPRECATED: Old referral processor replaced by voucher-based QR code system
 // Referrals now use instant voucher creation (app/api/referrals/submit)
