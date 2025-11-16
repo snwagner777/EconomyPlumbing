@@ -68,6 +68,15 @@ Preferred communication style: Simple, everyday language.
 - **Security:** Never trust request body customer IDs - always validate against `availableCustomerIds` from session
 - **Session Management:** Authentication endpoints (verify-code, logout, switch-account) use `session.destroy()` for cleanup
 
+**CRITICAL RULE: Automated Testing with Playwright**
+- Comprehensive end-to-end testing using Playwright for public website, customer portal, and admin panel
+- **Test Structure:** Organized in `tests/` directory with subdirectories for public/, portal/, and admin/ tests
+- **Test Helpers:** Reusable utilities in `tests/helpers/` for authentication, navigation, and assertions
+- **Coverage:** Tests verify critical user flows without manual clicking - login, appointments, invoices, booking, referrals, admin operations
+- **Commands:** `npm test` runs full suite, `npm test:public`, `npm test:portal`, `npm test:admin` run specific sections
+- **CI-Ready:** Tests run against development server and use mock data to avoid affecting real customer data or ServiceTitan API
+- **Data Safety:** Tests use test customer ID (27881198) and mock phone numbers (512-555-XXXX format) - never touch production data
+
 ## System Architecture
 
 ### Frontend
