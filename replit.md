@@ -103,45 +103,45 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts` - single source of truth for all navigation. Desktop and mobile menus use identical data, just styled differently. Includes Contact, About (with service areas), Services, and Portal menus.
-- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters.
-- **Key Pages:** Home, About, Contact, Services (15+ service pages), Service Areas (16+ city pages), Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages.
-- **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload support, and feedback collection.
-- **Customer Portal:** Full-featured portal with ServiceTitan integration including phone/email 2FA, dual-session management, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service options.
-- **Scheduler Architecture:** Implemented at `src/components/scheduler/` with Service, Availability, Customer, and Review steps. Features smart availability, dynamic arrival windows, proximity scoring, and photo upload support.
+- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts` for consistent navigation across desktop and mobile.
+- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
+- **Key Pages:** Home, About, Contact, Services (15+ pages), Service Areas (16+ city pages), Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
+- **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
+- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service.
+- **Scheduler Architecture:** Implemented at `src/components/scheduler/` with Service, Availability, Customer, and Review steps, smart availability, dynamic arrival windows, proximity scoring, and photo upload.
 - **Admin Panel:** Features 23 sections including Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (100+ API routes) and a `worker.ts` process for background jobs.
-- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables across core, content, customer, e-commerce, marketing, referral, review, communications, ServiceTitan sync, portal, and analytics data.
+- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables across various domains.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
-- **ServiceTitan Integration:** Modular API wrappers for various ServiceTitan modules, OAuth authentication, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration. Includes CRM v2 refactor for contact management and live membership data.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation via `server/lib/customer-portal/portal-session.ts`. Features phone-first SMS 2FA, self-service permissions, and ownership validation. Invoice viewing is read-only.
+- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments. Includes OAuth, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation. Features phone-first SMS 2FA, self-service permissions, and ownership validation.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
-- **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage, and background processing for job completion and auto-crediting.
+- **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage, and background processing.
 - **Email Preference Center:** Granular subscription management with token-based unsubscribe.
-- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos, analyzes quality (AI scoring), uploads high-quality photos to Google Drive, and stores metadata.
-- **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review request emails, referral nurture emails, custom campaign scheduling, ServiceTitan zone synchronization, and SEO audit processing.
-- **SEO Audit System:** Local performance and SEO testing using Lighthouse, site-audit-seo, and seo-analyzer. Features job queue management, worker processing, and an Admin UI for monitoring and managing audits.
+- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval, AI quality analysis, Google Drive upload, and metadata storage.
+- **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review requests, referral nurturing, custom campaigns, ServiceTitan zone synchronization, and SEO audit processing.
+- **SEO Audit System:** Local performance and SEO testing using Lighthouse, site-audit-seo, and seo-analyzer, with job queue management and an Admin UI.
 - **Production Infrastructure:** Database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
-- **Analytics & Third-Party Script Management:** Integrates Google Analytics 4, Meta Pixel, Google Tag Manager, and Microsoft Clarity with aggressive script deferral and cookie consent.
+- **Analytics & Third-Party Script Management:** Integrates GA4, Meta Pixel, GTM, and Microsoft Clarity with script deferral and cookie consent.
 
 ## External Dependencies
 
-- **ServiceTitan:** Full API integration (CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments)
-- **Stripe:** Payment processing for e-commerce and memberships
-- **OpenAI:** GPT-4o and GPT-4o-mini for chatbot, blog generation, email campaigns
-- **SimpleTexting:** SMS marketing, two-way messaging
-- **Resend:** Transactional email delivery and inbound email processing (via Replit native connector)
-- **CompanyCam:** Photo management integration
-- **Google Drive:** Photo import automation (via Replit native connector)
+- **ServiceTitan:** CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments APIs
+- **Stripe:** Payment processing
+- **OpenAI:** GPT-4o and GPT-4o-mini for AI features
+- **SimpleTexting:** SMS marketing
+- **Resend:** Transactional email delivery and inbound email processing
+- **CompanyCam:** Photo management
+- **Google Drive:** Photo import automation
 - **SerpAPI:** Google review fetching
 - **Ecwid:** E-commerce platform
 - **Google Analytics 4:** Website analytics
-- **Meta Pixel:** Facebook/Instagram ad tracking
+- **Meta Pixel:** Ad tracking
 - **Google Tag Manager:** Tag management
-- **Microsoft Clarity:** Session recording and heatmaps
+- **Microsoft Clarity:** Session recording
 - **Google Places API:** Location services
-- **Google Maps:** Service area mapping
+- **Google Maps:** Mapping
