@@ -87,10 +87,11 @@ Preferred communication style: Simple, everyday language.
 - **Customer Portal Backend API:** Routes for `/api/customer-portal/*` (unified session) and `/api/portal/*` (legacy session) handling authentication, appointments, jobs, memberships, contacts, and account management. Features phone-first SMS 2FA, dual-session bridge, and self-service permissions.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
-- **Reputation Management System:** Webhook-triggered review requests via Mailgun and multi-platform review tracking.
+- **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
 - **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage (PostgreSQL/ServiceTitan), and background processing for job completion and auto-crediting.
 - **Email Preference Center:** Granular subscription management with token-based unsubscribe.
-- **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, Google Drive monitoring, photo cleanup, review request emails, referral nurture emails, custom campaign scheduling, and ServiceTitan zone synchronization.
+- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos from ServiceTitan API, analyzes quality (AI scoring ≥70), uploads high-quality photos to Google Drive, and stores metadata in database. Replaces Google Drive polling with async queue processing.
+- **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review request emails, referral nurture emails, custom campaign scheduling, and ServiceTitan zone synchronization.
 - **Production Infrastructure:** Database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
 - **Analytics & Third-Party Script Management:** Integrates Google Analytics 4, Meta Pixel, Google Tag Manager, and Microsoft Clarity with aggressive script deferral and cookie consent.
 
