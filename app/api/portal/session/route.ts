@@ -1,30 +1,12 @@
 import { NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getSession } from '@/lib/session';
 
 export async function GET() {
   try {
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const session = await getSession();
     
-    // Check if there's an active session
-    if (session.customerId) {
+    // Check if there's an active portal session
+    if (session.customerPortalAuth?.customerId) {
       // SECURITY: Verify customer still exists and is active in local database
       const { db } = await import('@/server/db');
       const { customersXlsx } = await import('@shared/schema');
@@ -33,20 +15,20 @@ export async function GET() {
       const customer = await db
         .select({ id: customersXlsx.id, active: customersXlsx.active })
         .from(customersXlsx)
-        .where(eq(customersXlsx.id, session.customerId))
+        .where(eq(customersXlsx.id, session.customerPortalAuth.customerId))
         .limit(1);
 
-      // If customer doesn't exist or is inactive, destroy session
+      // If customer doesn't exist or is inactive, destroy portal session
       if (!customer.length || !customer[0].active) {
-        console.log(`[Portal Session] Customer ${session.customerId} not found or inactive - destroying session`);
-        session.destroy();
+        console.log(`[Portal Session] Customer ${session.customerPortalAuth.customerId} not found or inactive - destroying portal session`);
+        delete session.customerPortalAuth;
         await session.save();
         return NextResponse.json({ customerId: null }, { status: 200 });
       }
 
       return NextResponse.json({ 
-        customerId: session.customerId,
-        availableCustomerIds: session.availableCustomerIds || [session.customerId],
+        customerId: session.customerPortalAuth.customerId,
+        availableCustomerIds: session.customerPortalAuth.availableCustomerIds || [session.customerPortalAuth.customerId],
       }, { status: 200 });
     }
     

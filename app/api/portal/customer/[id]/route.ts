@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
+import { getSession } from '@/lib/session';
 import { serviceTitanPortalService } from '@/server/lib/servicetitan/portal-service';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
 
 export async function GET(
   request: NextRequest,
@@ -35,10 +18,9 @@ export async function GET(
     }
     
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const session = await getSession();
 
-    if (!session.customerId) {
+    if (!session.customerPortalAuth?.customerId) {
       return NextResponse.json(
         { error: 'Unauthorized - Please log in' },
         { status: 401 }
@@ -46,9 +28,9 @@ export async function GET(
     }
 
     // SECURITY: Verify this customer is in the authorized list
-    const availableCustomerIds = session.availableCustomerIds || [session.customerId];
+    const availableCustomerIds = session.customerPortalAuth.availableCustomerIds || [session.customerPortalAuth.customerId];
     if (!availableCustomerIds.includes(customerId)) {
-      console.error(`[Portal] Security violation: Customer ${session.customerId} attempted to access data for customer ${customerId}`);
+      console.error(`[Portal] Security violation: Customer ${session.customerPortalAuth.customerId} attempted to access data for customer ${customerId}`);
       return NextResponse.json(
         { error: 'Unauthorized - This account does not belong to you' },
         { status: 403 }
