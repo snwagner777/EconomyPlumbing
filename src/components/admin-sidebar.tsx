@@ -45,6 +45,7 @@ import {
   Sparkles,
   TrendingUp,
   Activity,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -132,6 +133,12 @@ const menuSections: MenuSection[] = [
         icon: Star,
         href: '/admin/reputation',
         description: 'Review automation',
+      },
+      {
+        title: 'SEO Audits',
+        icon: Search,
+        href: '/admin/seo-audits',
+        description: 'Lighthouse & SEO',
       },
     ],
   },
