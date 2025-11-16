@@ -32,13 +32,18 @@ test.describe('Admin Login', () => {
   });
 
   test('should accept valid credentials and redirect to dashboard', async ({ page }) => {
+    // Skip if credentials not configured
+    if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+      test.skip();
+    }
+    
     await page.goto('/admin/login');
     
     const usernameInput = page.locator('input[name="username"], input[type="text"]').first();
     const passwordInput = page.locator('input[type="password"]').first();
     const submitButton = page.locator('button[type="submit"]').first();
     
-    // Login with correct credentials
+    // Login with correct credentials from environment
     await usernameInput.fill(ADMIN_USERNAME);
     await passwordInput.fill(ADMIN_PASSWORD);
     await submitButton.click();

@@ -1,0 +1,256 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e6]:
+      - link "Admin Portal Economy Plumbing" [ref=e8] [cursor=pointer]:
+        - /url: /admin
+        - img [ref=e9]
+        - generic [ref=e14]:
+          - generic [ref=e15]: Admin Portal
+          - generic [ref=e16]: Economy Plumbing
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]: Overview
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link "Dashboard" [ref=e23] [cursor=pointer]:
+                - /url: /admin
+                - img [ref=e24]
+                - generic [ref=e29]: Dashboard
+        - generic [ref=e30]:
+          - generic [ref=e31]: AI Marketing
+          - list [ref=e33]:
+            - listitem [ref=e34]:
+              - link "AI Campaigns" [ref=e35] [cursor=pointer]:
+                - /url: /admin/ai-campaigns
+                - img [ref=e36]
+                - generic [ref=e38]: AI Campaigns
+        - generic [ref=e39]:
+          - generic [ref=e40]: Communications
+          - list [ref=e42]:
+            - listitem [ref=e43]:
+              - link "SMS" [ref=e44] [cursor=pointer]:
+                - /url: /admin/sms
+                - img [ref=e45]
+                - generic [ref=e47]: SMS
+            - listitem [ref=e48]:
+              - link "Email Marketing" [ref=e49] [cursor=pointer]:
+                - /url: /admin/email-marketing
+                - img [ref=e50]
+                - generic [ref=e53]: Email Marketing
+            - listitem [ref=e54]:
+              - link "Referrals" [ref=e55] [cursor=pointer]:
+                - /url: /admin/referrals
+                - img [ref=e56]
+                - generic [ref=e59]: Referrals
+        - generic [ref=e60]:
+          - generic [ref=e61]: Content
+          - list [ref=e63]:
+            - listitem [ref=e64]:
+              - link "Photos" [ref=e65] [cursor=pointer]:
+                - /url: /admin/photos
+                - img [ref=e66]
+                - generic [ref=e70]: Photos
+            - listitem [ref=e71]:
+              - link "Blog" [ref=e72] [cursor=pointer]:
+                - /url: /admin/blog
+                - img [ref=e73]
+                - generic [ref=e76]: Blog
+            - listitem [ref=e77]:
+              - link "Success Stories" [ref=e78] [cursor=pointer]:
+                - /url: /admin/success-stories
+                - img [ref=e79]
+                - generic [ref=e85]: Success Stories
+            - listitem [ref=e86]:
+              - link "Reputation" [ref=e87] [cursor=pointer]:
+                - /url: /admin/reputation
+                - img [ref=e88]
+                - generic [ref=e90]: Reputation
+        - generic [ref=e91]:
+          - generic [ref=e92]: Customers
+          - list [ref=e94]:
+            - listitem [ref=e95]:
+              - link "Customers" [ref=e96] [cursor=pointer]:
+                - /url: /admin/customers
+                - img [ref=e97]
+                - generic [ref=e102]: Customers
+            - listitem [ref=e103]:
+              - link "Contacts" [ref=e104] [cursor=pointer]:
+                - /url: /admin/contacts
+                - img [ref=e105]
+                - generic [ref=e108]: Contacts
+            - listitem [ref=e109]:
+              - link "Commercial" [ref=e110] [cursor=pointer]:
+                - /url: /admin/commercial
+                - img [ref=e111]
+                - generic [ref=e115]: Commercial
+            - listitem [ref=e116]:
+              - link "Customer Data" [ref=e117] [cursor=pointer]:
+                - /url: /admin/customer-data
+                - img [ref=e118]
+                - generic [ref=e122]: Customer Data
+            - listitem [ref=e123]:
+              - link "Portal Analytics" [ref=e124] [cursor=pointer]:
+                - /url: /admin/portal-analytics
+                - img [ref=e125]
+                - generic [ref=e128]: Portal Analytics
+        - generic [ref=e129]:
+          - generic [ref=e130]: Site Configuration
+          - list [ref=e132]:
+            - listitem [ref=e133]:
+              - link "System Status" [ref=e134] [cursor=pointer]:
+                - /url: /admin/system-status
+                - img [ref=e135]
+                - generic [ref=e137]: System Status
+            - listitem [ref=e138]:
+              - link "Tracking Numbers" [ref=e139] [cursor=pointer]:
+                - /url: /admin/tracking-numbers
+                - img [ref=e140]
+                - generic [ref=e142]: Tracking Numbers
+            - listitem [ref=e143]:
+              - link "Page Metadata" [ref=e144] [cursor=pointer]:
+                - /url: /admin/page-metadata
+                - img [ref=e145]
+                - generic [ref=e149]: Page Metadata
+            - listitem [ref=e150]:
+              - link "VIP Memberships" [ref=e151] [cursor=pointer]:
+                - /url: /admin/products
+                - img [ref=e152]
+                - generic [ref=e156]: VIP Memberships
+            - listitem [ref=e157]:
+              - link "ServiceTitan" [ref=e158] [cursor=pointer]:
+                - /url: /admin/servicetitan
+                - img [ref=e159]
+                - generic [ref=e161]: ServiceTitan
+            - listitem [ref=e162]:
+              - link "AI Chatbot" [ref=e163] [cursor=pointer]:
+                - /url: /admin/chatbot
+                - img [ref=e164]
+                - generic [ref=e167]: AI Chatbot
+            - listitem [ref=e168]:
+              - link "Settings" [ref=e169] [cursor=pointer]:
+                - /url: /admin/settings
+                - img [ref=e170]
+                - generic [ref=e173]: Settings
+      - link "Logout" [ref=e175] [cursor=pointer]:
+        - /url: /api/auth/logout
+        - img
+        - text: Logout
+    - generic [ref=e176]:
+      - banner [ref=e177]:
+        - button "Toggle Sidebar" [ref=e178] [cursor=pointer]:
+          - img
+          - generic [ref=e179]: Toggle Sidebar
+        - button "Logout" [ref=e180] [cursor=pointer]:
+          - img
+          - text: Logout
+      - main [ref=e181]:
+        - generic [ref=e182]:
+          - generic [ref=e183]:
+            - heading "Dashboard Overview" [level=1] [ref=e184]
+            - paragraph [ref=e185]: System status, analytics, and key metrics at a glance
+          - generic [ref=e186]:
+            - generic [ref=e187]:
+              - generic [ref=e189]:
+                - generic [ref=e190]:
+                  - generic [ref=e191]: Customer Database
+                  - generic [ref=e192]: XLSX-based customer data (hourly Mailgun imports)
+                - button "Refresh Stats" [ref=e193] [cursor=pointer]:
+                  - img
+                  - text: Refresh Stats
+              - generic [ref=e195]:
+                - paragraph [ref=e197]: Customers
+                - paragraph [ref=e201]: Contacts
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic [ref=e206]: Customer Portal
+                - generic [ref=e207]: Portal usage analytics
+              - generic [ref=e209]:
+                - paragraph [ref=e211]: Total Searches
+                - paragraph [ref=e215]: Customers Found
+          - generic [ref=e218]:
+            - generic [ref=e219]:
+              - generic [ref=e221]: Total Photos
+              - generic [ref=e225]:
+                - img [ref=e226]
+                - generic [ref=e230]: All sources
+            - generic [ref=e231]:
+              - generic [ref=e233]: Unused Photos
+              - generic [ref=e237]:
+                - img [ref=e238]
+                - generic [ref=e241]: Ready for blogs
+            - generic [ref=e242]:
+              - generic [ref=e244]: Used Photos
+              - generic [ref=e248]:
+                - img [ref=e249]
+                - generic [ref=e252]: In blog posts
+            - generic [ref=e253]:
+              - generic [ref=e255]: Good Quality
+              - generic [ref=e259]:
+                - img [ref=e260]
+                - generic [ref=e262]: High quality unused
+          - generic [ref=e263]:
+            - generic [ref=e264]:
+              - generic [ref=e265]: System Status
+              - generic [ref=e266]: Current system health and background tasks
+            - generic [ref=e268]:
+              - generic [ref=e269]:
+                - generic [ref=e272]:
+                  - paragraph [ref=e273]: ServiceTitan Sync
+                  - paragraph [ref=e274]: Customer data synchronization
+                - generic [ref=e275]: Idle
+              - generic [ref=e276]:
+                - generic [ref=e279]:
+                  - paragraph [ref=e280]: Photo Import System
+                  - paragraph [ref=e281]: Monitoring Google Drive & CompanyCam
+                - generic [ref=e282]: Active
+              - generic [ref=e283]:
+                - generic [ref=e286]:
+                  - paragraph [ref=e287]: Auto Blog Generator
+                  - paragraph [ref=e288]: Weekly content creation
+                - generic [ref=e289]: Active
+              - generic [ref=e290]:
+                - generic [ref=e293]:
+                  - paragraph [ref=e294]: Review Sync
+                  - paragraph [ref=e295]: Google Places API integration
+                - generic [ref=e296]: Active
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - generic [ref=e299]:
+                - img [ref=e300]
+                - generic [ref=e303]: Conversion Tracking Overview
+              - generic [ref=e304]: Monitor key conversion events across the website
+            - generic [ref=e305]:
+              - generic [ref=e306]:
+                - generic [ref=e307]:
+                  - generic [ref=e308]:
+                    - img [ref=e309]
+                    - paragraph [ref=e311]: Scheduler Opens
+                  - paragraph [ref=e314]: ServiceTitan scheduler clicks
+                - generic [ref=e315]:
+                  - generic [ref=e316]:
+                    - img [ref=e317]
+                    - paragraph [ref=e319]: Phone Clicks
+                  - paragraph [ref=e322]: Click-to-call conversions
+                - generic [ref=e323]:
+                  - generic [ref=e324]:
+                    - img [ref=e325]
+                    - paragraph [ref=e328]: Form Submissions
+                  - paragraph [ref=e331]: Contact form completions
+                - generic [ref=e332]:
+                  - generic [ref=e333]:
+                    - img [ref=e334]
+                    - paragraph [ref=e337]: Portal Searches
+                  - generic [ref=e338]: "0"
+                  - paragraph [ref=e339]: Customer portal lookups
+              - paragraph [ref=e341]:
+                - strong [ref=e342]: "Note:"
+                - text: Full conversion tracking with Google Analytics, Meta Pixel, and Microsoft Clarity is active. Advanced analytics available in your Google Analytics dashboard.
+  - region "Notifications (F8)":
+    - list
+  - button "Open Next.js Dev Tools" [ref=e348] [cursor=pointer]:
+    - img [ref=e349]
+  - alert [ref=e354]
+```

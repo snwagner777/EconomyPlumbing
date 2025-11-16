@@ -11,10 +11,15 @@ export const TEST_PHONE = '5125551234';
 export const TEST_CUSTOMER_ID = 27881198;
 
 /**
- * Test admin credentials
+ * Test admin credentials - MUST match actual environment variables
+ * Set these in your .env file or Replit Secrets
  */
-export const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+export const ADMIN_USERNAME = process.env.ADMIN_USERNAME!;
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD!;
+
+if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+  console.warn('WARNING: ADMIN_USERNAME and ADMIN_PASSWORD must be set for admin tests to pass');
+}
 
 /**
  * Login to customer portal using phone verification
