@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates, aiming to become a leading service provider through technology. The business vision is to become a leading service provider in the plumbing industry by leveraging technology for operational efficiency and customer engagement.
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates. The business vision is to become a leading service provider in the plumbing industry by leveraging technology for operational efficiency and customer engagement.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -85,6 +85,12 @@ Preferred communication style: Simple, everyday language.
 - Webhook signature verification uses `RESEND_WEBHOOK_SIGNING_SECRET` environment variable (this is correct)
 - Attachment fetching extracts API key from connector client: `apiKey = (client as any).key`
 - Benefits: Automatic credential rotation, centralized configuration, no manual secret management
+- **Email Address Formatting:**
+  - FROM field always shows: `"Economy Plumbing Services" <hello@plumbersthatcare.com>`
+  - TO field can include customer names using `formatEmailAddress(email, name)` helper: `"John Smith <customer@email.com>"`
+  - Pattern: `await sendEmail({ to: email, toName: customerName, subject, html })` for personalized recipient display
+  - Use `toName` parameter to add customer names to TO field for better inbox display and engagement
+  - Full documentation available at `docs/email-from-formatting.md`
 
 ## System Architecture
 
@@ -132,5 +138,3 @@ Preferred communication style: Simple, everyday language.
 - **Microsoft Clarity:** Session recording and heatmaps
 - **Google Places API:** Location services
 - **Google Maps:** Service area mapping
-- **DataForSEO API:** For SEO data (optional)
-- **Google My Business OAuth:** Custom OAuth setup guide
