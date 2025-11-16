@@ -29,8 +29,8 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '100', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
 
-    // Build query
-    let query = db.select().from(customersXlsx);
+    // Build base query
+    const baseQuery = db.select().from(customersXlsx);
 
     // Apply filters
     const conditions = [];
@@ -51,26 +51,22 @@ export async function GET(req: NextRequest) {
       conditions.push(eq(customersXlsx.active, active === 'true'));
     }
 
-    if (conditions.length > 0) {
-      query = query.where(sql`${sql.join(conditions, sql` AND `)}`);
-    }
-
-    // Execute with pagination
-    const customers = await query
+    // Execute query with filters and pagination
+    const customers = await (conditions.length > 0
+      ? baseQuery.where(sql`${sql.join(conditions, sql` AND `)}`)
+      : baseQuery)
       .orderBy(desc(customersXlsx.lastSyncedAt))
       .limit(limit)
       .offset(offset);
 
     // Get total count WITH SAME FILTERS
-    let countQuery = db
+    const baseCountQuery = db
       .select({ count: sql<number>`count(*)` })
       .from(customersXlsx);
     
-    if (conditions.length > 0) {
-      countQuery = countQuery.where(sql`${sql.join(conditions, sql` AND `)}`);
-    }
-    
-    const [{ count }] = await countQuery;
+    const [{ count }] = await (conditions.length > 0
+      ? baseCountQuery.where(sql`${sql.join(conditions, sql` AND `)}`)
+      : baseCountQuery);
 
     return NextResponse.json({
       customers,
