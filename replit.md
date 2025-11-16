@@ -68,24 +68,6 @@ Preferred communication style: Simple, everyday language.
 - **Security:** Never trust request body customer IDs - always validate against `availableCustomerIds` from session
 - **Session Management:** Authentication endpoints (verify-code, logout, switch-account) use `session.destroy()` for cleanup
 
-## Recent Fixes & Maintenance
-
-**Portal Session Migration Complete - Architect Approved**
-- **COMPLETED:** All 37 portal routes migrated from legacy `customer_portal_session` to unified `plumbing_session` with centralized helper
-- **Centralized Helper Created:** `server/lib/customer-portal/portal-session.ts` provides `getPortalSession()`, `assertCustomerOwnership()`, and `getPortalSessionWithOwnership()` for consistent validation
-- **Security Fixes:** Fixed critical vulnerabilities - 3 routes (`delete-contact`, `update-contacts`, `request-pdf`) previously had NO authentication
-- **Pattern Enforced:** All routes now use helper functions instead of direct session access for consistency and security
-- **Removed:** Dual-session bridge, `session-utils.ts`, all dual-write code, and all legacy `customer_portal_session` references
-- **Invoice Payments Disabled:** No "Pay Now" buttons in billing section (ServiceTitan has no payment reporting API)
-- **Membership Purchasing Active:** Stripe integration for memberships remains fully functional
-- **Architect Status:** Migration reviewed and approved with PASS - zero LSP errors, no legacy code remaining
-
-**Database Schema Sync**
-- Fixed schema drift: Created 7 missing tables that existed in schema but not in database
-- SMS System: `simpletexting_contacts`, `sms_campaigns`, `sms_campaign_events`, `sms_conversations`, `sms_messages`
-- ServiceTitan Estimates: `service_titan_estimates`, `service_titan_line_items`
-- Database now fully synced with schema.ts (87 total tables)
-
 ## System Architecture
 
 ### Frontend
@@ -109,7 +91,7 @@ Preferred communication style: Simple, everyday language.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
 - **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage (PostgreSQL/ServiceTitan), and background processing for job completion and auto-crediting.
 - **Email Preference Center:** Granular subscription management with token-based unsubscribe.
-- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos from ServiceTitan API, analyzes quality (AI scoring ≥70 using OpenAI Vision), uploads high-quality photos to Google Drive, and stores metadata in database. Features atomic job claiming (prevents duplicate processing), credential validation (OpenAI/Google Drive), bounded batch processing (10 queued + 5 retrying per minute), and admin UI for queue monitoring/retry. Replaces Google Drive 5-minute polling with async queue processing.
+- **ServiceTitan Photo Fetch System:** Event-driven photo retrieval triggered by invoice webhooks. Fetches job photos from ServiceTitan API, analyzes quality (AI scoring ≥70 using OpenAI Vision), uploads high-quality photos to Google Drive, and stores metadata in database. Features atomic job claiming, credential validation, bounded batch processing, and admin UI for queue monitoring/retry.
 - **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review request emails, referral nurture emails, custom campaign scheduling, and ServiceTitan zone synchronization.
 - **Production Infrastructure:** Database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
 - **Analytics & Third-Party Script Management:** Integrates Google Analytics 4, Meta Pixel, Google Tag Manager, and Microsoft Clarity with aggressive script deferral and cookie consent.
@@ -120,14 +102,7 @@ Preferred communication style: Simple, everyday language.
 - **Stripe:** Payment processing for e-commerce and memberships (webhooks configured)
 - **OpenAI:** GPT-4o and GPT-4o-mini for chatbot, blog generation, email campaigns
 - **SimpleTexting:** SMS marketing, two-way messaging, campaign management
-- **Resend:** Transactional email delivery AND inbound email processing via Replit native connector (fully migrated from Mailgun)
-  - **Outbound:** Sending emails from `hello@mail.plumbersthatcare.com` (reply-to: `hello@plumbersthatcare.com`)
-  - **Inbound:** Receiving emails at `mail.plumbersthatcare.com` domain via webhook at `/api/webhooks/resend/inbound`
-  - **Webhook Format:** JSON payload with Svix signature verification, attachments as metadata only (must fetch via Resend Attachments API)
-  - **Email Forwarding:** All incoming emails automatically forwarded to `ST-Alerts-828414d7c3d94e90@teamchat.zoom.us`
-  - **Attachment Handling:** Sequential download with size limits (25MB/file, 100MB total) to prevent memory exhaustion. Webhook provides attachment IDs, must call `GET /emails/{email_id}/attachments/{attachment_id}` to download files
-  - **Error Handling:** Try/catch wrappers around processors to prevent 500 errors and ensure webhook acknowledgment
-  - **Use Cases:** Receiving invoices/estimates (PDFs) triggers photo fetch jobs; customer data exports (XLSX) are logged
+- **Resend:** Transactional email delivery AND inbound email processing via Replit native connector (fully migrated from Mailgun). Includes attachment handling and email forwarding to `ST-Alerts-828414d7c3d94e90@teamchat.zoom.us`.
 - **CompanyCam:** Photo management integration
 - **Google Drive:** Photo import automation (uses Replit native connector)
 - **SerpAPI:** Google review fetching
@@ -136,7 +111,7 @@ Preferred communication style: Simple, everyday language.
 - **Meta Pixel:** Facebook/Instagram ad tracking
 - **Google Tag Manager:** Tag management
 - **Microsoft Clarity:** Session recording and heatmaps
-- **Google Places API:** For location services (needs API key setup)
-- **Google Maps:** For service area mapping (needs API key setup)
-- **DataForSEO API:** For SEO data (optional, needs API key if required)
-- **Google My Business OAuth:** Custom OAuth setup guide exists (GOOGLE_OAUTH_SETUP_GUIDE.md) but GMB automation not yet implemented - placeholder only
+- **Google Places API:** For location services
+- **Google Maps:** For service area mapping
+- **DataForSEO API:** For SEO data (optional)
+- **Google My Business OAuth:** Custom OAuth setup guide exists (placeholder)
