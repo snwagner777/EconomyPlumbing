@@ -25,11 +25,23 @@ import {
   CheckCircle, 
   FileEdit, 
   Star, 
-  Loader2 
+  Loader2,
+  RefreshCw,
+  AlertCircle,
+  Clock,
+  CheckCircle2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { FocalPointEditor } from '@/components/FocalPointEditor';
+import { 
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface Photo {
   id: string;
@@ -41,6 +53,19 @@ interface Photo {
   usedInPageUrl: string | null;
   focalPointX: number | null;
   focalPointY: number | null;
+}
+
+interface PhotoFetchJob {
+  id: string;
+  jobId: string;
+  status: 'queued' | 'processing' | 'completed' | 'failed' | 'retrying';
+  totalPhotos: number | null;
+  processedPhotos: number | null;
+  errorMessage: string | null;
+  retryCount: number;
+  createdAt: string;
+  lastProcessedAt: string | null;
+  completedAt: string | null;
 }
 
 function ManualSuccessStoryDialog({ photos, onClose }: { photos: Photo[], onClose: () => void }) {
@@ -397,6 +422,21 @@ export default function PhotosAdminPage() {
   const [focalPointPhoto, setFocalPointPhoto] = useState<Photo | null>(null);
   const [focalPoint, setFocalPoint] = useState<{ x: number; y: number } | null>(null);
 
+  // Photo fetch jobs query
+  const { data: jobsData, isLoading: jobsLoading } = useQuery({
+    queryKey: ['/api/admin/photo-fetch-jobs'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/photo-fetch-jobs', {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch jobs');
+      return response.json();
+    },
+    refetchInterval: 10000, // Refresh every 10 seconds
+  });
+
+  const jobs: PhotoFetchJob[] = jobsData?.jobs || [];
+
   const { data: photosData, isLoading: photosLoading } = useQuery({
     queryKey: ['/api/admin/photos', categoryFilter, qualityFilter, statusFilter],
     queryFn: async () => {
@@ -500,12 +540,150 @@ export default function PhotosAdminPage() {
     });
   };
 
+  const retryJobMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      return await apiRequest("POST", "/api/admin/photo-fetch-jobs/retry", { jobId });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Job Retried",
+        description: "The photo fetch job has been queued for retry.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-fetch-jobs'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Retry Failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { variant: "default" | "secondary" | "destructive" | "outline", icon: any }> = {
+      queued: { variant: "secondary", icon: Clock },
+      processing: { variant: "default", icon: Loader2 },
+      completed: { variant: "outline", icon: CheckCircle2 },
+      failed: { variant: "destructive", icon: AlertCircle },
+      retrying: { variant: "secondary", icon: RefreshCw },
+    };
+
+    const config = statusMap[status] || statusMap.queued;
+    const Icon = config.icon;
+
+    return (
+      <Badge variant={config.variant}>
+        <Icon className="h-3 w-3 mr-1" />
+        {status.charAt(0).toUpperCase() + status.slice(1)}
+      </Badge>
+    );
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
     <div className="space-y-6 p-6">
       <div>
         <h1 className="text-3xl font-bold" data-testid="heading-photos">Photo Management</h1>
         <p className="text-muted-foreground mt-1">Manage all photos from CompanyCam, Google Drive, and ServiceTitan</p>
       </div>
+
+      {/* ServiceTitan Photo Fetch Jobs */}
+      <Card>
+        <CardHeader>
+          <CardTitle>ServiceTitan Photo Fetch Queue</CardTitle>
+          <CardDescription>
+            Automatic photo fetching from ServiceTitan invoices - triggered by email webhooks
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {jobsLoading ? (
+            <div className="space-y-2">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : jobs.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Clock className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">No photo fetch jobs yet</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Jobs are created automatically when invoices are received via email
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Job #</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Progress</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead>Last Processed</TableHead>
+                    <TableHead>Error</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {jobs.map((job) => (
+                    <TableRow key={job.id}>
+                      <TableCell className="font-mono text-sm">
+                        {job.jobId}
+                      </TableCell>
+                      <TableCell>
+                        {getStatusBadge(job.status)}
+                      </TableCell>
+                      <TableCell>
+                        {job.totalPhotos !== null ? (
+                          <span className="text-sm">
+                            {job.processedPhotos || 0} / {job.totalPhotos}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(job.createdAt)}
+                      </TableCell>
+                      <TableCell className="text-sm text-muted-foreground">
+                        {formatDate(job.lastProcessedAt)}
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        {job.errorMessage ? (
+                          <p className="text-xs text-destructive truncate" title={job.errorMessage}>
+                            {job.errorMessage}
+                          </p>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {job.status === 'failed' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => retryJobMutation.mutate(job.id)}
+                            disabled={retryJobMutation.isPending}
+                            data-testid={`button-retry-${job.id}`}
+                          >
+                            <RefreshCw className="h-3 w-3 mr-1" />
+                            Retry
+                          </Button>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
