@@ -515,8 +515,30 @@ export default function Header({
                   <Link href="/blog" className="block py-2 pl-4 text-sm" data-testid="mobile-link-blog" onClick={() => setMobileMenuOpen(false)}>
                     Blog
                   </Link>
+                  <Link href="/refer-a-friend" className="block py-2 pl-4 text-sm" data-testid="mobile-link-referral" onClick={() => setMobileMenuOpen(false)}>
+                    Referral Program
+                  </Link>
+                  <Link href="/plumbing-cost-estimator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cost-estimator" onClick={() => setMobileMenuOpen(false)}>
+                    Plumbing Cost Estimator
+                  </Link>
+                  <Link href="/water-heater-calculator" className="block py-2 pl-4 text-sm" data-testid="mobile-link-water-heater-calc" onClick={() => setMobileMenuOpen(false)}>
+                    Water Heater Calculator
+                  </Link>
                   <Link href="/membership-benefits" className="block py-2 pl-4 text-sm" data-testid="mobile-link-membership" onClick={() => setMobileMenuOpen(false)}>
-                    Membership Benefits
+                    VIP Membership
+                  </Link>
+                  <Link href="/store" className="block py-2 pl-4 text-sm" data-testid="mobile-link-store" onClick={() => setMobileMenuOpen(false)}>
+                    Products
+                  </Link>
+                  <div className="border-t border-border my-2 mx-4"></div>
+                  <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                    Just For Fun
+                  </div>
+                  <Link href="/dogs-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-dogs-plumbing" onClick={() => setMobileMenuOpen(false)}>
+                    Dogs Doing Plumbing
+                  </Link>
+                  <Link href="/cats-plumbing" className="block py-2 pl-4 text-sm" data-testid="mobile-link-cats-plumbing" onClick={() => setMobileMenuOpen(false)}>
+                    Cats Doing Plumbing
                   </Link>
                   <div className="border-t border-border my-2 mx-4"></div>
                   <div className="px-4 py-1 text-xs font-semibold text-muted-foreground">
