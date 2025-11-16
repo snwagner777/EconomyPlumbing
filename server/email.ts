@@ -3,10 +3,13 @@ import type { ResendConnectionSettings, ResendCredentials } from './types/resend
 
 let connectionSettings: ResendConnectionSettings | undefined;
 
+// Email configuration
+const REPLY_TO_EMAIL = 'hello@plumbersthatcare.com';
+
 async function getCredentials(): Promise<ResendCredentials> {
-  console.log('[Email Debug] Getting Resend credentials...');
+  console.log('[Email] Getting Resend credentials via Replit Connector...');
   
-  // Try Replit Connector first
+  // Use Replit Connector exclusively
   const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
   const xReplitToken = process.env.REPL_IDENTITY 
     ? 'repl ' + process.env.REPL_IDENTITY 
@@ -14,65 +17,39 @@ async function getCredentials(): Promise<ResendCredentials> {
     ? 'depl ' + process.env.WEB_REPL_RENEWAL 
     : null;
 
-  console.log('[Email Debug] Connector hostname:', hostname ? 'set' : 'NOT SET');
-  console.log('[Email Debug] REPL_IDENTITY:', process.env.REPL_IDENTITY ? 'set' : 'NOT SET');
-  console.log('[Email Debug] WEB_REPL_RENEWAL:', process.env.WEB_REPL_RENEWAL ? 'set' : 'NOT SET');
+  if (!xReplitToken || !hostname) {
+    throw new Error('Resend not configured: Replit Connector not available. Please set up the Resend connector in your Replit project.');
+  }
 
-  // Try connector if available
-  if (xReplitToken && hostname) {
-    try {
-      const response = await fetch(
-        'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
-        {
-          headers: {
-            'Accept': 'application/json',
-            'X_REPLIT_TOKEN': xReplitToken
-          }
+  try {
+    const response = await fetch(
+      'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=resend',
+      {
+        headers: {
+          'Accept': 'application/json',
+          'X_REPLIT_TOKEN': xReplitToken
         }
-      );
-      
-      const data: ResendConnectionSettings = await response.json();
-      connectionSettings = data;
-
-      const settings = data.items?.[0]?.settings;
-      
-      console.log('[Email Debug] Connector settings retrieved:', settings ? 'yes' : 'NO');
-      console.log('[Email Debug] Connector API key exists:', settings?.api_key ? 'yes' : 'NO');
-      console.log('[Email Debug] Connector from email:', settings?.from_email || 'NOT SET');
-
-      if (settings?.api_key && settings?.from_email) {
-        console.log('[Email] Using Replit Connector credentials');
-        return {
-          apiKey: settings.api_key, 
-          fromEmail: settings.from_email
-        };
-      } else {
-        console.warn('[Email] Connector available but not configured, falling back to environment secrets');
       }
-    } catch (error) {
-      console.warn('[Email] Connector fetch failed, falling back to environment secrets:', error);
+    );
+    
+    const data: ResendConnectionSettings = await response.json();
+    connectionSettings = data;
+
+    const settings = data.items?.[0]?.settings;
+
+    if (!settings?.api_key || !settings?.from_email) {
+      throw new Error('Resend connector not configured properly. Please configure the Resend connector in your Replit project.');
     }
-  } else {
-    console.log('[Email Debug] Connector not available, using environment secrets');
-  }
 
-  // Fallback to environment secrets
-  const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL;
-  
-  console.log('[Email Debug] Env RESEND_API_KEY:', apiKey ? 'set' : 'NOT SET');
-  console.log('[Email Debug] Env RESEND_FROM_EMAIL:', fromEmail || 'NOT SET');
-
-  if (!apiKey || !fromEmail) {
-    console.error('[Email Error] Neither Replit Connector nor environment secrets are configured');
-    throw new Error('Resend not configured: Please set up Resend connector or provide RESEND_API_KEY and RESEND_FROM_EMAIL environment secrets');
+    console.log('[Email] Using Replit Connector (from:', settings.from_email + ')');
+    return {
+      apiKey: settings.api_key, 
+      fromEmail: settings.from_email
+    };
+  } catch (error) {
+    console.error('[Email] Failed to get Resend credentials:', error);
+    throw new Error('Resend connector failed. Please check your Resend connector configuration.');
   }
-  
-  console.log('[Email] Using environment secret credentials');
-  return {
-    apiKey, 
-    fromEmail
-  };
 }
 
 export async function getUncachableResendClient() {
@@ -97,6 +74,7 @@ export async function sendEmail(params: {
     const result = await client.emails.send({
       from: fromEmail,
       to: params.to,
+      replyTo: REPLY_TO_EMAIL,
       subject: params.subject,
       html: params.html,
       tags: params.tags
@@ -176,6 +154,7 @@ export async function sendContactFormEmail(data: {
     const result = await client.emails.send({
       from: fromEmail,
       to: contactEmail,
+      replyTo: REPLY_TO_EMAIL,
       subject: `New Contact: ${data.name} - ${data.service || 'Inquiry'}`,
       html: emailHtml,
     });
@@ -261,6 +240,7 @@ export async function sendSalesNotificationEmail(data: {
     const result = await client.emails.send({
       from: fromEmail,
       to: contactEmail,
+      replyTo: REPLY_TO_EMAIL,
       subject: `New Sale: ${data.productName} - $${(data.productPrice / 100).toFixed(2)}`,
       html: emailHtml,
     });
@@ -347,6 +327,7 @@ export async function sendSuccessStoryNotificationEmail(data: {
     const result = await client.emails.send({
       from: fromEmail,
       to: contactEmail,
+      replyTo: REPLY_TO_EMAIL,
       subject: `New Success Story: ${data.customerName} - ${data.serviceCategory}`,
       html: emailHtml,
     });
@@ -496,6 +477,7 @@ export async function sendMembershipPurchaseNotification(data: {
     const result = await client.emails.send({
       from: fromEmail,
       to: contactEmail,
+      replyTo: REPLY_TO_EMAIL,
       subject: `${data.testMode ? '[TEST] ' : ''}New VIP Membership: ${displayName} - ${priceDisplay}`,
       html: emailHtml,
     });

@@ -19,7 +19,7 @@ import { db } from "../db";
 import { reviewRequests, reviewEmailTemplates, jobCompletions, reviewFeedback, customersXlsx, contactsXlsx, systemSettings, emailSendLog } from "../../shared/schema";
 import { eq, and, lt, gte, isNull, or, sql } from "drizzle-orm";
 import { generateEmail } from "./aiEmailGenerator";
-import { Resend } from "resend";
+import { getUncachableResendClient } from '../email';
 import { sendReviewRequestSms } from "./simpletexting";
 
 // ServiceTitan API polling removed - system is webhook-only
@@ -297,12 +297,7 @@ class ReviewRequestScheduler {
       );
 
       // Send email via Resend
-      if (!process.env.RESEND_API_KEY) {
-        console.error('[Review Request Scheduler] RESEND_API_KEY not configured');
-        return false;
-      }
-
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { client: resend, fromEmail } = await getUncachableResendClient();
       
       // Add unsubscribe footer to email content
       const htmlWithFooter = addUnsubscribeFooter(emailContent.htmlContent, prefCheck.unsubscribeUrl!);
@@ -311,8 +306,9 @@ class ReviewRequestScheduler {
       console.log(`[Review Request Scheduler] Sending email ${emailNumber} to ${reviewRequest.customerEmail}`);
       
       const emailResult = await resend.emails.send({
-        from: 'Economy Plumbing Services <reviews@economyplumbing.com>',
+        from: fromEmail,
         to: reviewRequest.customerEmail,
+        replyTo: 'hello@plumbersthatcare.com',
         subject: emailContent.subject,
         html: htmlWithFooter,
         text: plainWithFooter,

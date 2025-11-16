@@ -18,7 +18,7 @@ import { db } from "../db";
 import { referralNurtureCampaigns, reviewEmailTemplates, systemSettings, emailSendLog } from "../../shared/schema";
 import { eq, and, lt, or } from "drizzle-orm";
 import { generateEmail, type GeneratedEmail } from "./aiEmailGenerator";
-import { Resend } from "resend";
+import { getUncachableResendClient } from '../email';
 
 interface EmailSettings {
   masterEmailEnabled: boolean;
@@ -342,12 +342,7 @@ Copy and share this link via text, email, Facebook, Instagram, or Nextdoor!
       );
 
       // Send email via Resend
-      if (!process.env.RESEND_API_KEY) {
-        console.error('[Referral Nurture] RESEND_API_KEY not configured');
-        return false;
-      }
-
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const { client: resend, fromEmail } = await getUncachableResendClient();
 
       // Add unsubscribe footer to email content
       const htmlWithFooter = addUnsubscribeFooter(emailContent.htmlContent, prefCheck.unsubscribeUrl!);
@@ -356,8 +351,9 @@ Copy and share this link via text, email, Facebook, Instagram, or Nextdoor!
       console.log(`[Referral Nurture] Sending email ${emailNumber} to ${campaign.customerEmail}`);
 
       const emailResult = await resend.emails.send({
-        from: 'Economy Plumbing Services <reviews@economyplumbing.com>',
+        from: fromEmail,
         to: campaign.customerEmail,
+        replyTo: 'hello@plumbersthatcare.com',
         subject: emailContent.subject,
         html: htmlWithFooter,
         text: plainWithFooter,

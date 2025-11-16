@@ -24,23 +24,11 @@ import {
   emailSendLog
 } from "../../shared/schema";
 import { eq, and, isNull, desc, sql } from "drizzle-orm";
-import { Resend } from "resend";
+import { getUncachableResendClient } from '../email';
 
 export class CustomCampaignScheduler {
-  private resend: Resend | null = null;
-
   constructor() {
-    const apiKey = process.env.RESEND_API_KEY;
-    if (apiKey) {
-      this.resend = new Resend(apiKey);
-    }
-  }
-
-  private getResend(): Resend {
-    if (!this.resend) {
-      throw new Error("RESEND_API_KEY is not configured");
-    }
-    return this.resend;
+    // Email client now obtained via getUncachableResendClient()
   }
 
   /**
@@ -120,9 +108,12 @@ export class CustomCampaignScheduler {
       }
 
       // Send email via Resend
-      const result = await this.getResend().emails.send({
-        from: 'Economy Plumbing Services <noreply@plumbersthatcare.com>',
+      const { client: resend, fromEmail } = await getUncachableResendClient();
+      
+      const result = await resend.emails.send({
+        from: fromEmail,
         to: customer.email,
+        replyTo: 'hello@plumbersthatcare.com',
         subject: email.subject,
         html: finalHtmlContent,
         text: finalPlainTextContent || undefined,
