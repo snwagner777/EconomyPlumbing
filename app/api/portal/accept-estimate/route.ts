@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
           <h3>Customer Information:</h3>
           <ul>
             <li><strong>Name:</strong> ${customer?.name || 'Unknown'}</li>
-            <li><strong>Customer ID:</strong> ${session.customerId}</li>
+            <li><strong>Customer ID:</strong> ${customerId}</li>
             <li><strong>Phone:</strong> ${customer?.phoneNumber || 'N/A'}</li>
             <li><strong>Email:</strong> ${customer?.email || 'N/A'}</li>
           </ul>
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     try {
       const { Resend } = await import('resend');
       const resend = new Resend(process.env.RESEND_API_KEY);
-      const customer = await serviceTitan.getCustomer(session.customerId);
+      const customer = await serviceTitan.getCustomer(customerId);
       
       if (customer?.email) {
         await resend.emails.send({

@@ -115,14 +115,11 @@ export function BillingSection({
                       </p>
                     )}
 
-                    <Button
-                      className="w-full"
-                      onClick={() => onPayInvoice && onPayInvoice(invoice)}
-                      data-testid={`button-pay-invoice-${invoice.id}`}
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Pay Now
-                    </Button>
+                    <div className="space-y-2">
+                      <p className="text-xs text-muted-foreground text-center">
+                        To pay this invoice, please call us or use your preferred payment method
+                      </p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

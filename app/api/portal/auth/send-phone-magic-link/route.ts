@@ -43,7 +43,15 @@ export async function POST(req: NextRequest) {
     }
 
     const lookup = lookups[0];
-    const { email, customerId } = lookup;
+    const email = lookup.email || '';
+    const customerId = lookup.customerId;
+
+    if (!email || !customerId) {
+      return NextResponse.json(
+        { error: "Invalid lookup data" },
+        { status: 400 }
+      );
+    }
 
     // Generate magic link token
     const uuid = crypto.randomUUID();
@@ -51,9 +59,8 @@ export async function POST(req: NextRequest) {
 
     // Store verification
     await db.insert(portalVerifications).values({
-      customerIds: [customerId],
-      contactValue: email,
       verificationType: 'email',
+      contactValue: email,
       code: uuid,
       expiresAt,
     });

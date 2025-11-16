@@ -20,14 +20,32 @@ export async function POST(request: NextRequest) {
     const accountPromises = customerIds.map(async (id) => {
       try {
         const customer = await serviceTitanCRM.getCustomer(id);
+        
+        if (!customer) {
+          return {
+            id,
+            name: `Account #${id}`,
+            type: 'Unknown',
+            email: null,
+            phoneNumber: null,
+            locationCount: 0,
+            primaryLocationId: null,
+          };
+        }
+        
         const locations = await serviceTitanCRM.getCustomerLocations(id);
+        const contacts = await serviceTitanCRM.getCustomerContacts(id);
+        
+        // Extract email and phone from contacts
+        const emailContact = contacts.find(c => c.type === 'Email');
+        const phoneContact = contacts.find(c => c.type === 'Phone' || c.type === 'MobilePhone');
         
         return {
           id: customer.id,
           name: customer.name,
           type: customer.type || 'Residential',
-          email: customer.email,
-          phoneNumber: customer.phoneNumber,
+          email: emailContact?.value || null,
+          phoneNumber: phoneContact?.value || null,
           locationCount: locations.length,
           primaryLocationId: locations[0]?.id || null,
         };
