@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/server/lib/session';
+import { getSession } from '@/lib/session';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
 
 /**
@@ -26,7 +26,9 @@ export async function GET(
 ) {
   try {
     const session = await getSession();
-    if (!session?.customerId) {
+    const customerId = session.customerPortalAuth?.customerId;
+    
+    if (!customerId) {
       return NextResponse.json(
         { error: 'Unauthorized - please log in' },
         { status: 401 }
@@ -62,9 +64,9 @@ export async function GET(
     }
 
     // CRITICAL: Verify the estimate belongs to the logged-in customer
-    if (normalized.customerId !== session.customerId) {
+    if (normalized.customerId !== customerId) {
       console.warn(
-        `[Estimates Debug] Customer ${session.customerId} attempted to access estimate ${estimateId} belonging to customer ${normalized.customerId}`
+        `[Estimates Debug] Customer ${customerId} attempted to access estimate ${estimateId} belonging to customer ${normalized.customerId}`
       );
       return NextResponse.json(
         { error: 'Unauthorized - estimate belongs to another customer' },
