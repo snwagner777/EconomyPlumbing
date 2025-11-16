@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/session';
+import { isAuthenticated } from '@/lib/auth';
 import { db } from '@/server/db';
 import { seoAuditJobs } from '@/shared/schema';
 import { eq } from 'drizzle-orm';
@@ -8,9 +8,8 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: { jobId: string } }
 ) {
-  const session = await getSession();
-
-  if (!session.isAdmin) {
+  const isAuth = await isAuthenticated();
+  if (!isAuth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
