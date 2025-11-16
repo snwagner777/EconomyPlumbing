@@ -109,7 +109,6 @@ Preferred communication style: Simple, everyday language.
   - **Attachment Handling:** Sequential download with size limits (25MB/file, 100MB total) to prevent memory exhaustion. Webhook provides attachment IDs, must call `GET /emails/{email_id}/attachments/{attachment_id}` to download files
   - **Error Handling:** Try/catch wrappers around processors to prevent 500 errors and ensure webhook acknowledgment
   - **Use Cases:** Receiving invoices/estimates (PDFs) triggers photo fetch jobs; customer data exports (XLSX) are logged
-- **Clerk:** Authentication service
 - **CompanyCam:** Photo management integration
 - **Google Drive:** Photo import automation
 - **SerpAPI:** Google review fetching

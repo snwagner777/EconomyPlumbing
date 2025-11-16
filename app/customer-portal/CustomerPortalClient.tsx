@@ -19,6 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { openScheduler } from "@/lib/scheduler";
 import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 import { ReferralModal } from "@/components/ReferralModal";
@@ -56,7 +57,8 @@ import {
   Building2,
   Briefcase,
   Receipt,
-  Loader2
+  Loader2,
+  Construction
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
@@ -1190,6 +1192,19 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         austinPhone={phoneConfig}
         marbleFallsPhone={marbleFallsPhoneConfig}
       />
+
+      {/* Under Construction Banner */}
+      <div className="bg-yellow-50 dark:bg-yellow-950 border-b border-yellow-200 dark:border-yellow-800">
+        <div className="max-w-6xl mx-auto px-4 py-3">
+          <Alert className="border-yellow-400 bg-transparent">
+            <Construction className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            <AlertTitle className="text-yellow-800 dark:text-yellow-200">Under Construction</AlertTitle>
+            <AlertDescription className="text-yellow-700 dark:text-yellow-300">
+              We're currently improving the customer portal to serve you better. Some features may be limited during this time.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </div>
 
       <main className="min-h-screen py-12 px-4">
         <div className="max-w-6xl mx-auto">
