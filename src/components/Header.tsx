@@ -154,13 +154,23 @@ export default function Header({
                         <Link
                           key={item.path}
                           href={item.path}
-                          className={`block px-4 py-2 text-sm hover-elevate ${item.muted ? 'text-muted-foreground' : ''}`}
+                          className="block px-4 py-2 text-sm hover-elevate"
                           data-testid={`link-${item.path.slice(1)}`}
                         >
                           {item.name}
                         </Link>
                       );
                     })}
+                    {menuConfig.serviceAreas.map((area) => (
+                      <Link
+                        key={area.path}
+                        href={area.path}
+                        className={`block px-4 py-2 text-sm hover-elevate ${area.featured ? 'font-semibold' : ''}`}
+                        data-testid={`link-area-${area.path.slice(1)}`}
+                      >
+                        {area.name}
+                      </Link>
+                    ))}
                   </div>
                 </div>
               )}
@@ -232,16 +242,28 @@ export default function Header({
                   className="absolute top-full left-0 pt-2 w-56"
                 >
                   <div className="bg-card border border-card-border rounded-md shadow-lg py-2">
-                    {menuConfig.portal.map((item) => (
-                      <Link
-                        key={item.path}
-                        href={item.path}
-                        className="block px-4 py-2 text-sm hover-elevate"
-                        data-testid={`link-${item.path.slice(1)}`}
-                      >
-                        {item.name}
-                      </Link>
-                    ))}
+                    {menuConfig.portal.map((item, index) => {
+                      if (item.name === "divider") {
+                        return <div key={`divider-${index}`} className="border-t border-border my-2"></div>;
+                      }
+                      if (item.section) {
+                        return (
+                          <div key={item.name} className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                            {item.name}
+                          </div>
+                        );
+                      }
+                      return (
+                        <Link
+                          key={item.path}
+                          href={item.path}
+                          className={`block px-4 py-2 text-sm hover-elevate ${item.muted ? 'text-muted-foreground' : ''}`}
+                          data-testid={`link-${item.path.slice(1)}`}
+                        >
+                          {item.name}
+                        </Link>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -374,6 +396,17 @@ export default function Header({
                       </Link>
                     );
                   })}
+                  {menuConfig.serviceAreas.map((area) => (
+                    <Link
+                      key={area.path}
+                      href={area.path}
+                      className={`block py-2 pl-4 text-sm ${area.featured ? 'font-semibold' : ''}`}
+                      data-testid={`mobile-link-area-${area.path.slice(1)}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {area.name}
+                    </Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -419,17 +452,29 @@ export default function Header({
               </button>
               {mobileStoreOpen && (
                 <div className="pb-2 space-y-1">
-                  {menuConfig.portal.map((item) => (
-                    <Link 
-                      key={item.path}
-                      href={item.path} 
-                      className="block py-2 pl-4 text-sm" 
-                      data-testid={`mobile-link-${item.path.slice(1)}`} 
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      {item.name}
-                    </Link>
-                  ))}
+                  {menuConfig.portal.map((item, index) => {
+                    if (item.name === "divider") {
+                      return <div key={`divider-${index}`} className="border-t border-border my-2 mx-4"></div>;
+                    }
+                    if (item.section) {
+                      return (
+                        <div key={item.name} className="px-4 py-1 text-xs font-semibold text-muted-foreground">
+                          {item.name}
+                        </div>
+                      );
+                    }
+                    return (
+                      <Link 
+                        key={item.path}
+                        href={item.path} 
+                        className={`block py-2 pl-4 text-sm ${item.muted ? 'text-muted-foreground' : ''}`}
+                        data-testid={`mobile-link-${item.path.slice(1)}`} 
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        {item.name}
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>

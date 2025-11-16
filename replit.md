@@ -6,6 +6,12 @@ Economy Plumbing Services is a full-stack web application designed to enhance a 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+**CRITICAL RULE: Single Module Pattern - DRY (Don't Repeat Yourself)**
+- ANY functionality used in more than one place MUST be a single reusable module called differently, never duplicated.
+- Examples: Menu configuration (`src/lib/menuConfig.ts`), email utilities (`server/email.ts`), session helpers (`server/lib/customer-portal/portal-session.ts`).
+- Pattern: Create shared module → Import and use in multiple places → Both desktop and mobile use same data, just styled differently.
+- Red Flags - NEVER do this: Duplicate menu definitions, copy-paste code between components, hardcode same data in multiple files.
+
 **CRITICAL RULE: Modular, Reusable API Architecture**
 - Develop in modules for bug fixes, new features, code reusability, consistency, and faster testing/debugging.
 - Architecture Pattern: Core Business Logic (pure functions, no auth/route concerns), API Routes (thin authentication wrappers), React Hooks & Components (accept auth context as parameters).
@@ -97,6 +103,7 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
+- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts` - single source of truth for all navigation. Desktop and mobile menus use identical data, just styled differently. Includes Contact, About (with service areas), Services, and Portal menus.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking based on UTM parameters.
 - **Key Pages:** Home, About, Contact, Services (15+ service pages), Service Areas (16+ city pages), Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload support, and feedback collection.

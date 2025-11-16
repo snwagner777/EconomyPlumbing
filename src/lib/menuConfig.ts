@@ -24,11 +24,20 @@ export const contactItems: MenuItem[] = [
   { name: "FAQ", path: "/faq" },
 ];
 
-// About menu items
+// About menu items (includes service areas at bottom)
 export const aboutItems: MenuItem[] = [
   { name: "About Us", path: "/about" },
   { name: "Success Stories", path: "/success-stories" },
   { name: "Blog", path: "/blog" },
+  { name: "VIP Membership", path: "/membership-benefits" },
+  { name: "Customer Portal", path: "/customer-portal" },
+  { name: "divider", path: "" },
+  { name: "Service Areas", path: "", section: true },
+];
+
+// Portal/Store menu items
+export const portalItems: MenuItem[] = [
+  { name: "Customer Portal", path: "/customer-portal" },
   { name: "Referral Program", path: "/refer-a-friend" },
   { name: "Plumbing Cost Estimator", path: "/plumbing-cost-estimator" },
   { name: "Water Heater Calculator", path: "/water-heater-calculator" },
@@ -40,7 +49,6 @@ export const aboutItems: MenuItem[] = [
   { name: "Cats Doing Plumbing", path: "/cats-plumbing" },
   { name: "divider", path: "" },
   { name: "Privacy Policy", path: "/privacy-policy", muted: true },
-  { name: "Terms of Service", path: "/terms-of-service", muted: true },
   { name: "Refund & Returns", path: "/refund_returns", muted: true },
 ];
 
@@ -97,12 +105,6 @@ export const serviceAreasItems: MenuItem[] = [
   { name: "Granite Shoals", path: "/plumber-granite-shoals", region: "Marble Falls Area" },
   { name: "Bertram", path: "/plumber-bertram", region: "Marble Falls Area" },
   { name: "Spicewood", path: "/plumber-spicewood", region: "Marble Falls Area" },
-];
-
-// Portal menu items
-export const portalItems: MenuItem[] = [
-  { name: "Store", path: "/store" },
-  { name: "Customer Portal", path: "/customer-portal" },
 ];
 
 // Combined menu configuration object
