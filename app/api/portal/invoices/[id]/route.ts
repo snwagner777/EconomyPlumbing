@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
 /**
  * GET /api/portal/invoices/[id]
@@ -39,17 +22,9 @@ export async function GET(
     }
 
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
+    const { customerId, availableCustomerIds } = await getPortalSession();
 
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
-      );
-    }
-
-    console.log(`[Portal Invoice Detail] Fetching invoice ${invoiceId} for customer ${session.customerId}`);
+    console.log(`[Portal Invoice Detail] Fetching invoice ${invoiceId} for customer ${customerId}`);
 
     // Fetch invoice details from ServiceTitan
     const tenantId = serviceTitanAuth.getTenantId();
@@ -65,13 +40,7 @@ export async function GET(
     }
 
     // SECURITY: Verify invoice belongs to customer
-    if (invoice.customerId !== session.customerId) {
-      console.error(`[Portal Invoice Detail] Security violation: Customer ${session.customerId} attempted to access invoice ${invoiceId} for customer ${invoice.customerId}`);
-      return NextResponse.json(
-        { error: 'Unauthorized - This invoice does not belong to you' },
-        { status: 403 }
-      );
-    }
+    assertCustomerOwnership(invoice.customerId, availableCustomerIds);
 
     // Transform invoice to consistent format with line items
     const invoiceDetail = {
@@ -106,6 +75,21 @@ export async function GET(
     return NextResponse.json(invoiceDetail);
   } catch (error: any) {
     console.error('[Portal Invoice Detail] Error:', error);
+    
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
+    if (error.message === 'FORBIDDEN') {
+      return NextResponse.json(
+        { error: 'Forbidden - This invoice does not belong to you' },
+        { status: 403 }
+      );
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Failed to load invoice details' },
       { status: 500 }

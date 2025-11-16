@@ -1,23 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getIronSession } from 'iron-session';
-import { cookies } from 'next/headers';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
-
-const sessionOptions = {
-  password: process.env.SESSION_SECRET!,
-  cookieName: 'customer_portal_session',
-  cookieOptions: {
-    secure: process.env.NODE_ENV === 'production',
-    httpOnly: true,
-    sameSite: 'lax' as const,
-    maxAge: 60 * 60 * 24 * 7, // 7 days
-  },
-};
-
-interface SessionData {
-  customerId?: number;
-  availableCustomerIds?: number[];
-}
+import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
 
 /**
  * GET /api/portal/invoices
@@ -31,15 +14,7 @@ interface SessionData {
 export async function GET(request: NextRequest) {
   try {
     // SECURITY: Validate session
-    const cookieStore = await cookies();
-    const session = await getIronSession<SessionData>(cookieStore, sessionOptions);
-
-    if (!session.customerId) {
-      return NextResponse.json(
-        { error: 'Unauthorized - Please log in' },
-        { status: 401 }
-      );
-    }
+    const { customerId } = await getPortalSession();
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -51,7 +26,7 @@ export async function GET(request: NextRequest) {
     // Build ServiceTitan API query
     const tenantId = serviceTitanAuth.getTenantId();
     const queryParams = new URLSearchParams({
-      customerId: session.customerId.toString(),
+      customerId: customerId.toString(),
       page: page.toString(),
       pageSize: pageSize.toString(),
     });
@@ -64,7 +39,7 @@ export async function GET(request: NextRequest) {
       queryParams.append('status', status);
     }
 
-    console.log(`[Portal Invoices] Fetching invoices for customer ${session.customerId}`);
+    console.log(`[Portal Invoices] Fetching invoices for customer ${customerId}`);
 
     const response = await serviceTitanAuth.makeRequest<any>(
       `accounting/v2/tenant/${tenantId}/invoices?${queryParams.toString()}`
@@ -97,7 +72,7 @@ export async function GET(request: NextRequest) {
       summary: inv.summary || inv.job?.summary,
     }));
 
-    console.log(`[Portal Invoices] Found ${invoices.length} invoices for customer ${session.customerId}`);
+    console.log(`[Portal Invoices] Found ${invoices.length} invoices for customer ${customerId}`);
 
     return NextResponse.json({
       data: invoices,
@@ -107,6 +82,14 @@ export async function GET(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('[Portal Invoices] Error:', error);
+    
+    if (error.message === 'UNAUTHORIZED') {
+      return NextResponse.json(
+        { error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+    
     return NextResponse.json(
       { error: error.message || 'Failed to load invoices' },
       { status: 500 }
