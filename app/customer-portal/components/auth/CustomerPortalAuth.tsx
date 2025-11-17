@@ -164,6 +164,11 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
 
       const result = await response.json();
       
+      // Check if no account was found
+      if (result.found === false) {
+        throw new Error(result.message || 'No account found with this phone number');
+      }
+      
       if (result.requiresAccountSelection && result.customers) {
         // Store accounts but DON'T show selector yet - verify 2FA first
         const normalizedPhone = result.phone || phoneLoginNumber;
