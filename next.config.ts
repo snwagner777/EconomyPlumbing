@@ -159,6 +159,13 @@ const nextConfig: NextConfig = {
         destination: '/service-areas/leander',
         permanent: true,
       },
+      
+      // Customer portal legacy URL redirect
+      {
+        source: '/customer-portal/auth',
+        destination: '/customer-portal',
+        permanent: true,
+      },
     ];
   },
 };
