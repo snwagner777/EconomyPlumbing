@@ -4,7 +4,7 @@
  * Lookup existing customers, poll ServiceTitan for their locations, or create new customer.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -111,11 +111,15 @@ const normalizeContact = (contact: string, mode: 'phone' | 'email'): string => {
 const SCHEDULER_SESSION_KEY = 'scheduler_session';
 
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError, onSessionUpdate }: CustomerStepProps) {
-  const { toast } = useToast();
+  const { toast} = useToast();
   const { context: sharedContext, setContext, isStale } = useCustomerContext();
   const [lookupValue, setLookupValue] = useState('');
-  const [normalizedContact, setNormalizedContact] = useState(''); // Normalized version for API calls
   const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
+  
+  // Derive normalized contact from lookupValue - always in sync, no extra state
+  const normalizedContact = useMemo(() => {
+    return lookupValue ? normalizeContact(lookupValue, lookupMode) : '';
+  }, [lookupValue, lookupMode]);
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
   const [isVerified, setIsVerified] = useState(false);
@@ -145,22 +149,22 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           const mode = session.verificationMethod || 'phone';
           setLookupMode(mode);
           
-          // Restore both display and normalized contact
+          // Restore display contact (normalized version derived automatically via useMemo)
           const displayContact = session.verifiedContact || '';
-          const normalized = normalizeContact(displayContact, mode);
           setVerifiedContact(displayContact);
           setLookupValue(displayContact);
-          setNormalizedContact(normalized);
           
           // Notify parent about restored session
           onSessionUpdate?.(session);
           
           console.log('[Scheduler] Restored session from localStorage');
           
-          // Auto-trigger lookup with NORMALIZED contact
-          if (normalized) {
+          // Auto-trigger lookup with contact (will use normalized version)
+          if (displayContact) {
             setTimeout(() => {
-              lookupMutation.mutate(normalized);
+              // normalizedContact will be derived from lookupValue via useMemo
+              const normalized = normalizeContact(displayContact, mode);
+              lookupMutation.mutate({ contact: normalized, type: mode });
             }, 100);
           }
         } else {
@@ -358,7 +362,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
           description: "Your contact has been verified successfully",
         });
         // Now proceed with customer lookup using NORMALIZED contact
-        lookupMutation.mutate(normalizedContact || lookupValue);
+        lookupMutation.mutate({ contact: normalizedContact || lookupValue, type: lookupMode });
       }
     },
     onError: (error: Error) => {
@@ -372,10 +376,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
 
   // Lookup customer in local DB (called AFTER verification)
   const lookupMutation = useMutation({
-    mutationFn: async (value: string) => {
+    mutationFn: async ({ contact, type }: { contact: string; type: 'phone' | 'email' }) => {
       const response = await apiRequest('POST', '/api/scheduler/lookup-customer', {
-        phone: value.match(/\d/) ? value : undefined,
-        email: value.includes('@') ? value : undefined,
+        phone: type === 'phone' ? contact : undefined,
+        email: type === 'email' ? contact : undefined,
       });
       return await response.json();
     },
@@ -417,7 +421,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
       firstName,
       lastName,
       email: customer.email || '',
-      phone: customer.phoneNumber || lookupValue,
+      // Always normalize phone numbers to prevent formatted values from leaking into API calls
+      phone: customer.phoneNumber 
+        ? normalizeContact(customer.phoneNumber, 'phone')
+        : (normalizedContact || lookupValue),
       address: customer.locations?.[0]?.street || '',
       city: customer.locations?.[0]?.city || 'Austin',
       state: normalizeState(customer.locations?.[0]?.state || 'TX'),
@@ -476,16 +483,10 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   });
 
   const handleLookup = () => {
-    if (lookupValue.trim()) {
-      // Normalize contact using helper function
-      const normalized = normalizeContact(lookupValue, lookupMode);
-      
-      // Store normalized contact for use in verify/resend
-      setNormalizedContact(normalized);
-      
-      // Send OTP for verification first
+    if (lookupValue.trim() && normalizedContact) {
+      // Send OTP for verification using derived normalized contact
       sendOTPMutation.mutate({
-        contact: normalized,
+        contact: normalizedContact,
         type: lookupMode
       });
     }
