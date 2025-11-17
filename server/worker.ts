@@ -76,7 +76,12 @@ setTimeout(() => {
 
 // Start custom campaign scheduler
 console.log('[Worker] Starting custom campaign scheduler...');
-startCustomCampaignScheduler();
+try {
+  startCustomCampaignScheduler();
+} catch (error) {
+  console.error('[Worker] WARNING: Custom campaign scheduler failed to start:', error);
+  console.error('[Worker] This is non-fatal - worker will continue with other schedulers');
+}
 
 // Start ServiceTitan photo fetch queue processor - runs every minute
 console.log('[Worker] Starting ServiceTitan photo fetch queue processor...');
