@@ -110,10 +110,11 @@ export async function processJobCompletion(options: ProcessJobCompletionOptions)
       }
     }
 
-    // Invoice data might not be in the basic job object - we'll default to 0
-    // This will be updated later when we have invoice webhook support
-    const invoiceTotal = 0;
-    const isQuoteOnly = false; // Default assumption - job was completed
+    // Detect if this is a quote-only job (no actual work performed)
+    // ServiceTitan sends $0 invoices for estimates/quotes
+    // This will be refined when invoice processor updates the record
+    const invoiceTotal = 0; // Will be updated by invoice processor
+    const isQuoteOnly = false; // Conservative default - assume paid work
 
     // Create job completion record
     const [jobCompletion] = await db
@@ -126,8 +127,8 @@ export async function processJobCompletion(options: ProcessJobCompletionOptions)
         customerEmail: primaryEmail,
         customerPhone: primaryPhone,
         serviceName: job.summary || 'Plumbing Service',
-        invoiceTotal: Math.round(invoiceTotal * 100), // Convert to cents (0 for now)
-        completionDate: new Date(), // Use current time as job completion notification time
+        invoiceTotal: Math.round(invoiceTotal * 100), // Convert to cents (updated by invoice processor)
+        completionDate: new Date(), // Webhook notification time (when we learned about completion)
         technicianName: null, // Not available in basic job object
         jobNotes: null, // Not available in basic job object
         isQuoteOnly: isQuoteOnly,
@@ -150,11 +151,16 @@ export async function processJobCompletion(options: ProcessJobCompletionOptions)
           jobCompletionId: jobCompletion.id,
           customerId: job.customerId,
           customerEmail: primaryEmail,
-          status: 'queued', // Will be picked up by review request scheduler
+          status: 'queued',
+          // Scheduler will send emails based on jobCompletion.completionDate:
+          // Email 1: 1 day after completion
+          // Email 2: 7 days after completion
+          // Email 3: 14 days after completion
+          // Email 4: 21 days after completion
         })
         .returning();
 
-      console.log(`[Job Completion Processor] Created review request ${reviewRequest.id}`);
+      console.log(`[Job Completion Processor] Created review request ${reviewRequest.id} (drip campaign will start 24 hours after job completion)`);
     } else {
       console.log(`[Job Completion Processor] Skipping review request - ${!primaryEmail ? 'no email' : 'quote only'}`);
     }
