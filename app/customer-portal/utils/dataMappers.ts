@@ -340,10 +340,9 @@ export function transformCustomerAppointments(jobs: Array<{
       return [];
     }
 
-    // Skip jobs without locationId - they can't be filtered properly
+    // Warn about jobs without locationId but still include them
     if (!job.locationId) {
-      console.warn(`[transformCustomerAppointments] Skipping job ${job.id} - missing locationId`);
-      return [];
+      console.warn(`[transformCustomerAppointments] Job ${job.id} missing locationId - appointments will show in all locations view`);
     }
 
     // Create one entry per appointment, embedding job metadata
@@ -359,7 +358,7 @@ export function transformCustomerAppointments(jobs: Array<{
         end: appointment.end,
         arrivalWindowStart: appointment.arrivalWindowStart || appointment.start,
         arrivalWindowEnd: appointment.arrivalWindowEnd || appointment.end,
-        locationId: job.locationId, // Guaranteed to exist due to check above
+        locationId: job.locationId || null, // Allow null locationId
         specialInstructions: appointment.specialInstructions || '',
         completedDate: job.jobStatus === 'Completed' ? job.completedOn : undefined,
       };

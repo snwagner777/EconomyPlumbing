@@ -94,8 +94,10 @@ export function CompactPortal({
     })).filter((c: any) => c.id && c.type && c.value);
   };
 
-  // Use contactMethods from ServiceTitan v2 API (not contacts)
-  const normalizedCustomerContacts = normalizeContacts(customerData?.customer?.contactMethods);
+  // Use contacts from API response (handles both v1 'contacts' and v2 'contactMethods')
+  const normalizedCustomerContacts = normalizeContacts(
+    customerData?.customer?.contactMethods || customerData?.customer?.contacts
+  );
 
   // Normalize location contacts as well
   const normalizedLocations = (transformedData?.locations || []).map((location: any) => ({
