@@ -7,16 +7,19 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Star, Mail, MessageSquare, ThumbsUp, Globe } from 'lucide-react';
+import { AlertCircle, Star, Mail, MessageSquare, ThumbsUp, Globe, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { ProfilesSection } from './profiles-section';
+import { ShareReviewDialog } from './ShareReviewDialog';
 
 export default function ReputationDashboard() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'overview');
+  const [shareReviewDialogOpen, setShareReviewDialogOpen] = useState(false);
+  const [reviewToShare, setReviewToShare] = useState<any>(null);
 
   // Fetch review request campaigns
   const {
@@ -489,6 +492,20 @@ export default function ReputationDashboard() {
                             {new Date(review.createTime).toLocaleDateString()}
                           </div>
                         </div>
+                        <div className="ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setReviewToShare(review);
+                              setShareReviewDialogOpen(true);
+                            }}
+                            data-testid={`button-share-review-${review.id}`}
+                          >
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Share
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -517,6 +534,20 @@ export default function ReputationDashboard() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Share Review Dialog */}
+      {reviewToShare && (
+        <ShareReviewDialog
+          review={{
+            id: reviewToShare.id,
+            authorName: reviewToShare.authorName,
+            text: reviewToShare.text,
+            rating: reviewToShare.rating,
+          }}
+          open={shareReviewDialogOpen}
+          onOpenChange={setShareReviewDialogOpen}
+        />
+      )}
     </div>
   );
 }
