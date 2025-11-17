@@ -100,12 +100,21 @@ const normalizeState = (state: string): string => {
   return normalized || state.substring(0, 2).toUpperCase();
 };
 
+// Helper to normalize contact for API calls (strip formatting from phones)
+const normalizeContact = (contact: string, mode: 'phone' | 'email'): string => {
+  if (mode === 'phone') {
+    return contact.replace(/\D/g, ''); // Strip all non-digits for phone
+  }
+  return contact.trim(); // Keep email as-is
+};
+
 const SCHEDULER_SESSION_KEY = 'scheduler_session';
 
 export function CustomerStep({ onSubmit, initialData, selectedService, onVipError, onSessionUpdate }: CustomerStepProps) {
   const { toast } = useToast();
   const { context: sharedContext, setContext, isStale } = useCustomerContext();
   const [lookupValue, setLookupValue] = useState('');
+  const [normalizedContact, setNormalizedContact] = useState(''); // Normalized version for API calls
   const [lookupMode, setLookupMode] = useState<'phone' | 'email'>('phone'); // Toggle between phone and email
   const [showVerification, setShowVerification] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
@@ -133,19 +142,25 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         if (session.expiresAt && session.expiresAt > Date.now()) {
           setSessionToken(session.token);
           setIsVerified(true);
-          setVerifiedContact(session.verifiedContact || '');
-          setLookupValue(session.verifiedContact || '');
-          setLookupMode(session.verificationMethod || 'phone');
+          const mode = session.verificationMethod || 'phone';
+          setLookupMode(mode);
+          
+          // Restore both display and normalized contact
+          const displayContact = session.verifiedContact || '';
+          const normalized = normalizeContact(displayContact, mode);
+          setVerifiedContact(displayContact);
+          setLookupValue(displayContact);
+          setNormalizedContact(normalized);
           
           // Notify parent about restored session
           onSessionUpdate?.(session);
           
           console.log('[Scheduler] Restored session from localStorage');
           
-          // Auto-trigger lookup if we have verified contact
-          if (session.verifiedContact) {
+          // Auto-trigger lookup with NORMALIZED contact
+          if (normalized) {
             setTimeout(() => {
-              lookupMutation.mutate(session.verifiedContact);
+              lookupMutation.mutate(normalized);
             }, 100);
           }
         } else {
@@ -318,10 +333,11 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     onSuccess: (data: any) => {
       if (data.verified && data.session) {
         // Save session to localStorage for persistence across re-renders
+        // Use normalized contact for consistency
         try {
           const sessionData = {
             ...data.session,
-            verifiedContact: lookupValue,
+            verifiedContact: normalizedContact || lookupValue,
           };
           localStorage.setItem(SCHEDULER_SESSION_KEY, JSON.stringify(sessionData));
           console.log('[Scheduler] Session saved to localStorage');
@@ -335,14 +351,14 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
         // Store session token for contact CRUD operations
         setSessionToken(data.session.token);
         setIsVerified(true);
-        setVerifiedContact(data.session.verificationMethod === 'phone' ? lookupValue : lookupValue);
+        setVerifiedContact(normalizedContact || lookupValue);
         setShowVerification(false);
         toast({
           title: "Verified!",
           description: "Your contact has been verified successfully",
         });
-        // Now proceed with customer lookup
-        lookupMutation.mutate(lookupValue);
+        // Now proceed with customer lookup using NORMALIZED contact
+        lookupMutation.mutate(normalizedContact || lookupValue);
       }
     },
     onError: (error: Error) => {
@@ -461,9 +477,15 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
 
   const handleLookup = () => {
     if (lookupValue.trim()) {
+      // Normalize contact using helper function
+      const normalized = normalizeContact(lookupValue, lookupMode);
+      
+      // Store normalized contact for use in verify/resend
+      setNormalizedContact(normalized);
+      
       // Send OTP for verification first
       sendOTPMutation.mutate({
-        contact: lookupValue.trim(),
+        contact: normalized,
         type: lookupMode
       });
     }
@@ -472,7 +494,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const handleVerifyCode = () => {
     if (verificationCode.trim().length === 6) {
       verifyOTPMutation.mutate({
-        contact: lookupValue.trim(),
+        contact: normalizedContact || lookupValue.trim(), // Use normalized contact
         code: verificationCode.trim()
       });
     }
@@ -481,7 +503,7 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
   const handleResendCode = () => {
     setVerificationCode('');
     sendOTPMutation.mutate({
-      contact: lookupValue.trim(),
+      contact: normalizedContact || lookupValue.trim(), // Use normalized contact
       type: lookupMode
     });
   };
