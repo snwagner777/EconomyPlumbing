@@ -29,7 +29,15 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ContactForm, useAddCustomerContact, useUpdateCustomerContact, useDeleteCustomerContact } from '@/modules/contacts';
+import { 
+  ContactForm, 
+  useAddCustomerContact, 
+  useUpdateCustomerContact, 
+  useDeleteCustomerContact,
+  useAddLocationContact,
+  useUpdateLocationContact,
+  useDeleteLocationContact,
+} from '@/modules/contacts';
 import { Phone, Mail, Plus, Edit2, Trash2, MapPin } from 'lucide-react';
 
 interface Contact {
@@ -67,17 +75,25 @@ export function ContactManagementDialog({
 }: ContactManagementDialogProps) {
   const [mode, setMode] = useState<DialogMode>('list');
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
+  const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
   const [deleteConfirmContact, setDeleteConfirmContact] = useState<Contact | null>(null);
 
+  // Customer contact hooks
   const addContact = useAddCustomerContact();
   const updateContact = useUpdateCustomerContact();
   const deleteContact = useDeleteCustomerContact();
+
+  // Location contact hooks
+  const addLocationContact = useAddLocationContact();
+  const updateLocationContact = useUpdateLocationContact();
+  const deleteLocationContact = useDeleteLocationContact();
 
   // Reset dialog state when closed
   useEffect(() => {
     if (!open) {
       setMode('list');
       setEditingContact(null);
+      setEditingLocationId(null);
       setDeleteConfirmContact(null);
     }
   }, [open]);
@@ -137,13 +153,67 @@ export function ContactManagementDialog({
     }
     
     try {
-      await deleteContact.mutateAsync({
-        customerId,
-        contactId: deleteConfirmContact.id,
-      });
+      // Delete customer contact or location contact based on editing context
+      if (editingLocationId) {
+        await deleteLocationContact.mutateAsync({
+          customerId,
+          locationId: editingLocationId,
+          contactId: deleteConfirmContact.id,
+        });
+      } else {
+        await deleteContact.mutateAsync({
+          customerId,
+          contactId: deleteConfirmContact.id,
+        });
+      }
       setDeleteConfirmContact(null);
+      setEditingLocationId(null);
     } catch (error) {
       console.error('[ContactDialog] Delete contact failed:', error);
+    }
+  };
+
+  const handleAddLocationContact = async (locationId: number, data: any) => {
+    if (!customerId) {
+      console.error('[ContactDialog] Missing customerId for location contact');
+      return;
+    }
+    
+    try {
+      await addLocationContact.mutateAsync({
+        customerId,
+        locationId,
+        type: data.type,
+        value: data.value,
+        memo: data.memo,
+      });
+      setMode('list');
+      setEditingLocationId(null);
+    } catch (error) {
+      console.error('[ContactDialog] Add location contact failed:', error);
+    }
+  };
+
+  const handleUpdateLocationContact = async (data: any) => {
+    if (!customerId || !editingLocationId || !editingContact) {
+      console.error('[ContactDialog] Missing required IDs for location contact update');
+      return;
+    }
+    
+    try {
+      await updateLocationContact.mutateAsync({
+        customerId,
+        locationId: editingLocationId,
+        contactId: editingContact.id,
+        type: data.type,
+        value: data.value,
+        memo: data.memo,
+      });
+      setMode('list');
+      setEditingContact(null);
+      setEditingLocationId(null);
+    } catch (error) {
+      console.error('[ContactDialog] Update location contact failed:', error);
     }
   };
 
@@ -161,7 +231,10 @@ export function ContactManagementDialog({
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setMode('add')}
+            onClick={() => {
+              setEditingLocationId(null); // Clear location context for customer add
+              setMode('add');
+            }}
             data-testid="button-add-customer-contact"
           >
             <Plus className="w-4 h-4 mr-2" />
@@ -211,6 +284,7 @@ export function ContactManagementDialog({
                         size="sm"
                         onClick={() => {
                           setEditingContact(contact);
+                          setEditingLocationId(null); // Clear location context for customer edit
                           setMode('edit');
                         }}
                         data-testid={`button-edit-contact-${contact.id}`}
@@ -220,7 +294,10 @@ export function ContactManagementDialog({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setDeleteConfirmContact(contact)}
+                        onClick={() => {
+                          setDeleteConfirmContact(contact);
+                          setEditingLocationId(null); // Clear location context for customer delete
+                        }}
                         data-testid={`button-delete-contact-${contact.id}`}
                       >
                         <Trash2 className="w-4 h-4" />
@@ -234,24 +311,89 @@ export function ContactManagementDialog({
         )}
       </div>
 
-      {/* Locations Summary */}
+      {/* Location Contacts */}
       {locations.length > 0 && (
         <div className="pt-4 border-t">
           <h3 className="text-sm font-semibold mb-3">Location Contacts</h3>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {locations.map((location) => (
               <Card key={location.id} data-testid={`card-location-${location.id}`}>
                 <CardHeader className="py-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-muted-foreground" />
-                    <CardTitle className="text-sm">{location.name}</CardTitle>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <CardTitle className="text-sm">{location.name}</CardTitle>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingLocationId(location.id);
+                        setMode('add');
+                      }}
+                      data-testid={`button-add-location-contact-${location.id}`}
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
                   </div>
-                  {location.contacts && location.contacts.length > 0 && (
+                  {location.address && (
                     <CardDescription className="text-xs">
-                      {location.contacts.length} contact{location.contacts.length !== 1 ? 's' : ''}
+                      {location.address.street}, {location.address.city}
                     </CardDescription>
                   )}
                 </CardHeader>
+                {location.contacts && location.contacts.length > 0 && (
+                  <CardContent className="pt-0 space-y-2">
+                    {location.contacts.map((contact) => (
+                      <div key={contact.id} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
+                        <div className="flex items-center gap-3">
+                          {renderContactIcon(contact.type)}
+                          <div>
+                            <p className="text-sm font-medium">
+                              {contact.type === 'Email' 
+                                ? contact.value 
+                                : formatPhoneNumber 
+                                  ? formatPhoneNumber(contact.value) 
+                                  : contact.value
+                              }
+                            </p>
+                            {contact.memo && (
+                              <p className="text-xs text-muted-foreground">{contact.memo}</p>
+                            )}
+                          </div>
+                          <Badge variant="secondary" className="text-xs">
+                            {contact.type}
+                          </Badge>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingContact(contact);
+                              setEditingLocationId(location.id);
+                              setMode('edit');
+                            }}
+                            data-testid={`button-edit-location-contact-${location.id}-${contact.id}`}
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setDeleteConfirmContact(contact);
+                              setEditingLocationId(location.id);
+                            }}
+                            data-testid={`button-delete-location-contact-${location.id}-${contact.id}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                )}
               </Card>
             ))}
           </div>
@@ -260,25 +402,46 @@ export function ContactManagementDialog({
     </div>
   );
 
-  const renderAddForm = () => (
-    <div>
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => setMode('list')}
-        className="mb-4"
-        data-testid="button-back-to-list"
-      >
-        ← Back to Contacts
-      </Button>
-      <ContactForm
-        onSubmit={handleAddContact}
-        onCancel={() => setMode('list')}
-        isSubmitting={addContact.isPending}
-        submitText="Add Contact"
-      />
-    </div>
-  );
+  const renderAddForm = () => {
+    // Determine if we're adding to a location or customer
+    const isLocationAdd = editingLocationId !== null;
+    
+    return (
+      <div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            setMode('list');
+            setEditingLocationId(null);
+          }}
+          className="mb-4"
+          data-testid="button-back-to-list"
+        >
+          ← Back to Contacts
+        </Button>
+        {isLocationAdd && (
+          <div className="mb-3 p-3 bg-muted rounded-md">
+            <p className="text-sm text-muted-foreground">
+              Adding contact to location: {locations.find(l => l.id === editingLocationId)?.name}
+            </p>
+          </div>
+        )}
+        <ContactForm
+          onSubmit={isLocationAdd 
+            ? (data) => handleAddLocationContact(editingLocationId!, data)
+            : handleAddContact
+          }
+          onCancel={() => {
+            setMode('list');
+            setEditingLocationId(null);
+          }}
+          isSubmitting={isLocationAdd ? addLocationContact.isPending : addContact.isPending}
+          submitText="Add Contact"
+        />
+      </div>
+    );
+  };
 
   const renderEditForm = () => {
     if (!editingContact) return null;
@@ -303,12 +466,13 @@ export function ContactManagementDialog({
             value: editingContact.value,
             memo: editingContact.memo || '',
           }}
-          onSubmit={handleUpdateContact}
+          onSubmit={editingLocationId ? handleUpdateLocationContact : handleUpdateContact}
           onCancel={() => {
             setMode('list');
             setEditingContact(null);
+            setEditingLocationId(null);
           }}
-          isSubmitting={updateContact.isPending}
+          isSubmitting={editingLocationId ? updateLocationContact.isPending : updateContact.isPending}
           submitText="Update Contact"
         />
       </div>
@@ -341,7 +505,12 @@ export function ContactManagementDialog({
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteConfirmContact} onOpenChange={(open) => !open && setDeleteConfirmContact(null)}>
+      <AlertDialog open={!!deleteConfirmContact} onOpenChange={(open) => {
+        if (!open) {
+          setDeleteConfirmContact(null);
+          setEditingLocationId(null); // Clear location context when cancel is clicked
+        }
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Contact?</AlertDialogTitle>
