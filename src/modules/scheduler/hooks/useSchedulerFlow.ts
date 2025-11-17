@@ -1,28 +1,30 @@
 /**
  * useSchedulerFlow Hook
  * 
- * Manages simple 3-step scheduler flow state for customer portal dialog.
- * Lightweight alternative to full SchedulerProvider context.
+ * Manages 4-step scheduler flow state for customer portal dialog.
+ * Steps: Service -> Customer/Verification -> Availability -> Review
  * 
- * Can later be adapted to consume SchedulerProvider context when advanced features are needed.
+ * Lightweight alternative to full SchedulerProvider context.
  */
 
 import { useReducer, useCallback, useMemo } from 'react';
 import type { JobType, TimeSlot } from '@shared/types/scheduler';
-import { Wrench, Calendar, CheckCircle2 } from 'lucide-react';
+import { Wrench, User, Calendar, CheckCircle2 } from 'lucide-react';
 
 // ============================================================================
 // Types
 // ============================================================================
 
 interface SchedulerFlowState {
-  step: number; // 1 = service, 2 = availability, 3 = review
+  step: number; // 1 = service, 2 = customer/verification, 3 = availability, 4 = review
   jobType: JobType | null;
+  customerData: any | null;
   timeSlot: TimeSlot | null;
 }
 
 type SchedulerFlowAction =
   | { type: 'SELECT_JOB_TYPE'; payload: JobType }
+  | { type: 'SET_CUSTOMER_DATA'; payload: any }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
   | { type: 'NEXT_STEP' }
   | { type: 'PREV_STEP' }
@@ -38,6 +40,11 @@ export const SCHEDULER_STEP_CONFIG = [
     icon: Wrench, 
     title: "What can we help you with?",
     subtitle: "Choose the service you need"
+  },
+  { 
+    icon: User, 
+    title: "Confirm your information",
+    subtitle: "We'll send a verification code to get started"
   },
   { 
     icon: Calendar, 
@@ -59,14 +66,16 @@ function schedulerFlowReducer(state: SchedulerFlowState, action: SchedulerFlowAc
   switch (action.type) {
     case 'SELECT_JOB_TYPE':
       return { ...state, jobType: action.payload, step: 2 };
+    case 'SET_CUSTOMER_DATA':
+      return { ...state, customerData: action.payload, step: 3 };
     case 'SELECT_TIME_SLOT':
-      return { ...state, timeSlot: action.payload, step: 3 };
+      return { ...state, timeSlot: action.payload, step: 4 };
     case 'NEXT_STEP':
-      return { ...state, step: Math.min(state.step + 1, 3) };
+      return { ...state, step: Math.min(state.step + 1, 4) };
     case 'PREV_STEP':
       return { ...state, step: Math.max(state.step - 1, 1) };
     case 'RESET':
-      return { step: 1, jobType: null, timeSlot: null };
+      return { step: 1, jobType: null, customerData: null, timeSlot: null };
     default:
       return state;
   }
@@ -88,6 +97,7 @@ export interface UseSchedulerFlowReturn {
   
   // Actions
   selectJobType: (jobType: JobType) => void;
+  setCustomerData: (data: any) => void;
   selectTimeSlot: (slot: TimeSlot) => void;
   nextStep: () => void;
   prevStep: () => void;
@@ -95,14 +105,17 @@ export interface UseSchedulerFlowReturn {
 }
 
 /**
- * Manages scheduler flow state for simple 3-step booking dialog.
+ * Manages scheduler flow state for 4-step booking dialog.
+ * Steps: Service -> Customer/Verification -> Availability -> Review
  * 
  * @example
  * ```tsx
- * const { state, selectJobType, selectTimeSlot, prevStep } = useSchedulerFlow();
+ * const { state, selectJobType, setCustomerData, selectTimeSlot, prevStep } = useSchedulerFlow();
  * 
  * if (state.step === 1) {
  *   return <ServiceStep onSelect={selectJobType} />;
+ * } else if (state.step === 2) {
+ *   return <CustomerStep onSubmit={setCustomerData} />;
  * }
  * ```
  */
@@ -110,12 +123,17 @@ export function useSchedulerFlow(): UseSchedulerFlowReturn {
   const [state, dispatch] = useReducer(schedulerFlowReducer, {
     step: 1,
     jobType: null,
+    customerData: null,
     timeSlot: null,
   });
 
   // Actions
   const selectJobType = useCallback((jobType: JobType) => {
     dispatch({ type: 'SELECT_JOB_TYPE', payload: jobType });
+  }, []);
+
+  const setCustomerData = useCallback((data: any) => {
+    dispatch({ type: 'SET_CUSTOMER_DATA', payload: data });
   }, []);
 
   const selectTimeSlot = useCallback((slot: TimeSlot) => {
@@ -141,12 +159,12 @@ export function useSchedulerFlow(): UseSchedulerFlowReturn {
   );
 
   const isComplete = useMemo(
-    () => state.step === 3 && !!state.jobType && !!state.timeSlot,
-    [state.step, state.jobType, state.timeSlot]
+    () => state.step === 4 && !!state.jobType && !!state.customerData && !!state.timeSlot,
+    [state.step, state.jobType, state.customerData, state.timeSlot]
   );
 
   const canGoBack = useMemo(() => state.step > 1, [state.step]);
-  const canGoForward = useMemo(() => state.step < 3, [state.step]);
+  const canGoForward = useMemo(() => state.step < 4, [state.step]);
 
   return {
     state,
@@ -155,6 +173,7 @@ export function useSchedulerFlow(): UseSchedulerFlowReturn {
     canGoBack,
     canGoForward,
     selectJobType,
+    setCustomerData,
     selectTimeSlot,
     nextStep,
     prevStep,
