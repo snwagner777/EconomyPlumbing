@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { db } from '@/server/db';
 import { referrals } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { getServiceTitanAPI } from '@/server/lib/serviceTitan';
@@ -9,6 +8,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { referralCodes, customersXlsx } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 
@@ -13,6 +12,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ customerId: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { customerId } = await params;
     const customerIdNum = parseInt(customerId);

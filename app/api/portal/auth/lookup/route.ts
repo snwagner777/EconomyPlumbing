@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customersXlsx, portalVerifications } from '@shared/schema';
 import { or, eq, and, gt, sql } from 'drizzle-orm';
 import { generateOTP, sendOTP } from '@/server/lib/sms';
@@ -31,6 +30,7 @@ function checkRateLimit(contactValue: string): boolean {
 }
 
 export async function POST(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await request.json();
     const { lookupType, lookupValue } = body;

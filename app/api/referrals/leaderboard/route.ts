@@ -5,11 +5,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { referrals } from '@shared/schema';
 import { eq, sql, count } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get top referrers by counting successful referrals
     const leaderboard = await db

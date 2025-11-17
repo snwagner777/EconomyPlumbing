@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
-import { db } from '@/server/db';
 import { systemSettings } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -35,6 +34,7 @@ const ALLOWED_SETTING_KEYS = [
 ];
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const isAdminUser = await isAdmin();
     if (!isAdminUser) {
@@ -57,6 +57,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const isAdminUser = await isAdmin();
     if (!isAdminUser) {

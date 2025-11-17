@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { vouchers } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -8,6 +7,7 @@ import { eq } from 'drizzle-orm';
  * No authentication required - techs scan QR codes with phone camera
  */
 export async function GET(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const searchParams = request.nextUrl.searchParams;
     const code = searchParams.get('code');

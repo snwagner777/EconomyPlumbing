@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema, pendingReferrals, referrals, referralCodes } from '@shared/schema';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
@@ -14,6 +13,7 @@ import { validateSchedulerSession } from '@/server/lib/schedulerSession';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Optional: Check for authenticated session (for audit trail)
     let authenticatedCustomerId: number | null = null;

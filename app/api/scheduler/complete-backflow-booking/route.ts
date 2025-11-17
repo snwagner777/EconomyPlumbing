@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { db } from '@/server/db';
 import { schedulerRequests, trackingNumbers, insertSchedulerRequestSchema } from '@shared/schema';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
@@ -23,6 +22,7 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
     const { sessionId } = requestSchema.parse(body);

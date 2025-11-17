@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { portalVerifications } from '@shared/schema';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await request.json();
     const { contactValue, verificationType } = body;

@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { chatbotMessages } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -13,6 +12,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { conversationId } = await params;
 

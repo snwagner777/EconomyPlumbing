@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { db } from '@/server/db';
 import { reviewEmailTemplates } from '@shared/schema';
 import { and, eq } from 'drizzle-orm';
 
@@ -8,6 +7,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ campaignType: string; emailNumber: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

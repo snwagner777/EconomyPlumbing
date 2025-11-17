@@ -6,7 +6,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
-import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -17,6 +16,7 @@ const submissionUpdateSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const isAdminUser = await isAdmin();
     if (!isAdminUser) {
@@ -59,6 +59,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const isAdminUser = await isAdmin();
     if (!isAdminUser) {

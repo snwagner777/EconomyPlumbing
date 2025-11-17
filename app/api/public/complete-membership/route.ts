@@ -11,7 +11,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { z } from 'zod';
 import { createMembershipSale } from '@/server/lib/membershipSales';
-import { db } from '@/server/db';
 import { products } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -24,6 +23,7 @@ const requestSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
     const result = requestSchema.safeParse(body);

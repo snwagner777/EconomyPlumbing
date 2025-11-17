@@ -6,7 +6,6 @@
 import { NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { db } from '@/server/db';
 import { chatbotQuickResponses } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
 
@@ -28,6 +27,7 @@ async function checkAdmin() {
 }
 
 export async function GET() {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
@@ -47,6 +47,7 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
@@ -67,6 +68,7 @@ export async function POST(request: Request) {
 }
 
 export async function PUT(request: Request) {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
@@ -90,6 +92,7 @@ export async function PUT(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {

@@ -7,7 +7,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
 import { z } from 'zod';
 
@@ -42,6 +41,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get IP for rate limiting
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
-import { db } from '@/server/db';
 import { googleReviews } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -15,6 +14,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

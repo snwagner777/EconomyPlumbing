@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { generatedPlumbingImages } from '@shared/schema';
 import { desc, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
@@ -43,6 +42,7 @@ const catPrompts = [
 ];
 
 export async function POST(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await request.json();
     const { animal } = body;
@@ -193,6 +193,7 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { searchParams } = new URL(request.url);
     const animal = searchParams.get('animal');

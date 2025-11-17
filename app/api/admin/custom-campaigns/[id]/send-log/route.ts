@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { db } from '@/server/db';
 import { customCampaignSendLog } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const session = await getIronSession(cookies(), sessionOptions);
     

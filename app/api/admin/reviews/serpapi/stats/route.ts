@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { googleReviews } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get review counts by source
     const reviewCounts = await db

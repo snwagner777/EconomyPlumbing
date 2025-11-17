@@ -5,11 +5,11 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { emailPreferences, emailSuppressionList } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get('token');
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   // Support GET for email client compatibility
   return POST(req);
 }

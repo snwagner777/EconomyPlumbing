@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { conversionEvents } from '@shared/schema';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { eventType, source, utm, metadata, customerId, email } = await req.json();
     

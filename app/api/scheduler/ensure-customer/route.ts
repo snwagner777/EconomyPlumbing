@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { validateSchedulerSession, updateSessionCustomerId } from '@/server/lib/schedulerSession';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // SECURITY: Require valid session token for customer creation
     const authHeader = req.headers.get('authorization');

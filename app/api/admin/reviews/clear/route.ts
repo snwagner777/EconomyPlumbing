@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { googleReviews } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json().catch(() => ({}));
     const source = body.source; // Optional: clear specific source only

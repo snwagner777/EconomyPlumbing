@@ -6,7 +6,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { referralCodes, referrals } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 
@@ -19,6 +18,7 @@ function generateReferralCode(customerName: string, customerId: number): string 
 }
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { searchParams } = new URL(req.url);
     const customerIdParam = searchParams.get('customerId');

@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { storage } from '@/server/storage';
 import { analyzePhotoQuality } from '@/server/lib/photoQualityAnalyzer';
-import { db } from '@/server/db';
 import { companyCamPhotos } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

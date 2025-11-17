@@ -13,7 +13,6 @@ import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
 import { SessionData, sessionOptions } from '@/lib/session';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { checkRateLimit } from '@/server/lib/rateLimit';
@@ -26,6 +25,7 @@ import { logCustomerAction, extractTraceId } from '@/server/lib/auditLog';
  * Security: Validates session, returns only the authenticated user's data
  */
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get session
     const cookieStore = await cookies();
@@ -79,6 +79,7 @@ export async function GET(req: NextRequest) {
  * Security: Validates session, ensures user owns the customer account
  */
 export async function PATCH(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get session
     const cookieStore = await cookies();

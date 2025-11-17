@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
-import { db } from '@/server/db';
 import { jobCompletions } from '@shared/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function GET(request: Request) {
+  const { db } = await import('@/server/db');
   try {
     const { customerId, availableCustomerIds } = await getPortalSession();
 

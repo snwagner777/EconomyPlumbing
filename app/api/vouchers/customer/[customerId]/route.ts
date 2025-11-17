@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getCustomerVoucherTotals } from '@/server/lib/vouchers';
-import { db } from '@/server/db';
 import { vouchers, serviceTitanCustomers } from '@shared/schema';
 import { and, eq, isNull, or } from 'drizzle-orm';
 
@@ -8,6 +7,7 @@ export async function GET(
   request: NextRequest,
   context: { params: Promise<{ customerId: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { customerId } = await context.params;
     const customerIdNum = parseInt(customerId);

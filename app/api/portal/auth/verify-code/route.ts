@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { portalVerifications, customersXlsx } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import { getSession } from '@/lib/session';
@@ -7,6 +6,7 @@ import { getSession } from '@/lib/session';
 const MAX_VERIFICATION_ATTEMPTS = 5;
 
 export async function POST(request: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await request.json();
     const { contactValue, code, lookupType } = body;

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { phoneLoginLookups, portalVerifications } from '@shared/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import crypto from 'crypto';
@@ -11,6 +10,7 @@ function maskEmail(email: string): string {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { lookupToken } = await req.json();
 

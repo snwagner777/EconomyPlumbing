@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
 import { generateReferrerThankYouEmail, generateReferrerSuccessEmail } from '@/server/lib/aiEmailGenerator';
 import { addUnsubscribeFooter, addUnsubscribeFooterPlainText } from '@/server/lib/emailPreferenceEnforcer';
-import { db } from '@/server/db';
 import { systemSettings } from '@shared/schema';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

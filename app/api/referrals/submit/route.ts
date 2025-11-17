@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { referrals, serviceTitanCustomers, customersXlsx, referralFormSchema, type ReferralFormData } from '@shared/schema';
 import { z } from 'zod';
 import { createReferralVouchers } from '@/server/lib/vouchers';
@@ -54,6 +53,7 @@ function checkRateLimit(ip: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get IP for rate limiting
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';

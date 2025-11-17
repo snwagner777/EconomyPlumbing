@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { portalVerifications } from '@shared/schema';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { customerId } = await req.json();
 

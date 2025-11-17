@@ -7,7 +7,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSession } from '@/lib/session';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
-import { db } from '@/server/db';
 import { schedulerRequests } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -23,6 +22,7 @@ const rescheduleSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const session = await getSession();
     

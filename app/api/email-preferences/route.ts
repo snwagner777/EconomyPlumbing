@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { emailPreferences } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -20,6 +19,7 @@ const preferencesSchema = z.object({
 });
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { searchParams } = new URL(req.url);
     const token = searchParams.get('token');
@@ -64,6 +64,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
     

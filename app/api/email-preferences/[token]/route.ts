@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { emailPreferences, emailSuppressionList } from '@shared/schema';
 import { sql, eq } from 'drizzle-orm';
 
@@ -7,6 +6,7 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { token } = await params;
     
@@ -37,6 +37,7 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { token } = await params;
     const { marketingEmails, reviewRequests, referralEmails, serviceReminders, transactionalOnly } = await req.json();

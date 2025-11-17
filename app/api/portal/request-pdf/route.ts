@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
-import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // SECURITY: Validate session first
     const { customerId: sessionCustomerId, availableCustomerIds } = await getPortalSession();

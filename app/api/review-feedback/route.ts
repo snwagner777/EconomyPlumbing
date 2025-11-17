@@ -6,7 +6,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { reviewFeedback } from '@shared/schema';
 import { z } from 'zod';
 
@@ -19,6 +18,7 @@ const feedbackSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
 

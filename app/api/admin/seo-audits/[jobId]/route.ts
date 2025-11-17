@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { db } from '@/server/db';
 import { seoAuditJobs, seoAuditResults } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -8,6 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: { jobId: string } }
 ) {
+  const { db } = await import('@/server/db');
   const isAuth = await isAuthenticated();
   if (!isAuth) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

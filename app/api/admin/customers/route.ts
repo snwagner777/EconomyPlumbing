@@ -7,11 +7,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdmin } from '@/lib/session';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { desc, sql, eq } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Check admin authentication
     const isAdminUser = await isAdmin();

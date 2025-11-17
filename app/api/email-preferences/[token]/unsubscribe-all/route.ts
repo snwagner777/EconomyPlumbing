@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { emailPreferences } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
@@ -7,6 +6,7 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { token } = await params;
     

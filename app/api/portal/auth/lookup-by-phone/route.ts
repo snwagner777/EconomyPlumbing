@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customersXlsx, phoneLoginLookups } from '@shared/schema';
 import { and, eq, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     console.log("[Portal Phone Auth] === PHONE LOOKUP REQUEST RECEIVED ===");
     const body = await req.json();

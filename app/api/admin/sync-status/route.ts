@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { db } from '@/server/db';
 import { customersXlsx, contactsXlsx, serviceTitanJobs } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

@@ -12,7 +12,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanJobs } from '@/server/lib/servicetitan/jobs';
 import { serviceTitanSettings } from '@/server/lib/servicetitan/settings';
-import { db } from '@/server/db';
 import { serviceTitanZones } from '@shared/schema';
 import { sql } from 'drizzle-orm';
 import { format, addDays, addHours } from 'date-fns';
@@ -60,6 +59,7 @@ interface CapacityWindow {
 const availabilityCache = new Map<string, { data: any; timestamp: number }>();
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body: SmartAvailabilityRequest = await req.json();
     const { jobTypeId, businessUnitId, customerZip, customerAddress, startDate, daysToLoad = 7 } = body;

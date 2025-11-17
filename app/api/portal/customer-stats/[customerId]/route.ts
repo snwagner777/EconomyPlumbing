@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { gt, count } from 'drizzle-orm';
 import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
@@ -8,6 +7,7 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ customerId: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { customerId: customerIdParam } = await params;
 

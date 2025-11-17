@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { pendingReferrals, referralCodes } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { z } from 'zod';
@@ -19,6 +18,7 @@ const captureLandingSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
     const data = captureLandingSchema.parse(body);

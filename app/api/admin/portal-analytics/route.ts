@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAuthenticated } from '@/lib/auth';
-import { db } from '@/server/db';
 import { portalAnalytics } from '@shared/schema';
 import { sql, and, gte } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Check admin authentication
     const authenticated = await isAuthenticated();

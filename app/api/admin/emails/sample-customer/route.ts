@@ -6,11 +6,11 @@
  */
 
 import { NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { jobCompletions } from '@shared/schema';
 import { sql, desc } from 'drizzle-orm';
 
 export async function GET() {
+  const { db } = await import('@/server/db');
   try {
     // Get a recent completed job with full customer and service details
     const [jobCompletion] = await db

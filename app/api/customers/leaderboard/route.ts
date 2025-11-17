@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { desc, gt } from 'drizzle-orm';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const limit = Math.min(parseInt(req.nextUrl.searchParams.get('limit') || '10'), 50);
 

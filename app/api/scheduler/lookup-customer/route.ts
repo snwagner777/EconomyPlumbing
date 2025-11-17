@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { or, sql, eq, and } from 'drizzle-orm';
 
@@ -14,6 +13,7 @@ function normalizeContact(value: string, type: 'phone' | 'email'): string {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
     const { phone, email } = body;

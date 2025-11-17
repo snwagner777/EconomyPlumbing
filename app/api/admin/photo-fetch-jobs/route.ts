@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
-import { db } from '../../../../server/db';
 import { serviceTitanPhotoJobs } from '../../../../shared/schema';
 import { desc, eq } from 'drizzle-orm';
 
 export async function GET(request: Request) {
+  const { db } = await import('@/server/db');
   try {
     // Fetch recent photo fetch jobs (last 50)
     const jobs = await db

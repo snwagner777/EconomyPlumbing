@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { mintSchedulerSession } from '@/server/lib/schedulerSession';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { contact, code } = await req.json();
     

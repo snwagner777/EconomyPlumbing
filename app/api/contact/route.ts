@@ -20,7 +20,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '@/server/storage';
 import { z } from 'zod';
 import { serviceTitanCRM } from '@/server/lib/servicetitan/crm';
-import { db } from '@/server/db';
 import { customersXlsx } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -80,6 +79,7 @@ function normalizeContact(value: string, type: 'phone' | 'email'): string {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     // Get IP for rate limiting
     const ip = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';

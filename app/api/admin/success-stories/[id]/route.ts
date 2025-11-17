@@ -6,7 +6,6 @@
 import { NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
-import { db } from '@/server/db';
 import { customerSuccessStories } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
@@ -31,6 +30,7 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {
@@ -61,6 +61,7 @@ export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const isAdmin = await checkAdmin();
     if (!isAdmin) {

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { customerSegments, segmentMembership, insertCustomerSegmentSchema } from '@shared/schema';
 import { desc, eq, sql } from 'drizzle-orm';
 import { requireAdmin } from '@/server/lib/nextAuth';
 
 export async function GET(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {
@@ -40,6 +40,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const auth = await requireAdmin();
     if (!auth.authorized) {

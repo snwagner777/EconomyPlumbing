@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '@/server/storage';
-import { db } from '@/server/db';
 import { blogPosts } from '@shared/schema';
 import { ObjectStorageService } from '@/server/objectStorage';
 import { generateH1FromTitle } from '@/server/lib/generateH1';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { category, postsPerCategory = 9 } = await req.json();
     

@@ -5,7 +5,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/server/db';
 import { referralCodes, referrals, customersXlsx, contactsXlsx } from '@shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import { z } from 'zod';
@@ -18,6 +17,7 @@ const captureRefereeSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const body = await req.json();
 

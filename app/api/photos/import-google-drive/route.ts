@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getImagesFromFolder, downloadFileAsBuffer } from '@/server/lib/googleDriveClient';
 import { analyzePhotoQuality } from '@/server/lib/photoQualityAnalyzer';
-import { db } from '@/server/db';
 import { companyCamPhotos } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { folderId } = await req.json();
 

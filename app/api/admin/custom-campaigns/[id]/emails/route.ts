@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdmin } from '@/server/lib/nextAuth';
-import { db } from '@/server/db';
 import { customCampaignEmails, insertCustomCampaignEmailSchema } from '@shared/schema';
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const session = await getIronSession(cookies(), sessionOptions);
     

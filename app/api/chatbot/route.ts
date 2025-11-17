@@ -7,7 +7,6 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { db } from '@/server/db';
 import { chatbotConversations, chatbotMessages, chatbotAnalytics } from '@shared/schema';
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
@@ -119,6 +118,7 @@ Handoff to Human:
 Tone: Friendly, professional, helpful. Use conversational language. Be concise but thorough.`;
 
 export async function POST(req: NextRequest) {
+  const { db } = await import('@/server/db');
   try {
     const { messages, sessionId, conversationId, pageContext, customerEmail, customerPhone } = await req.json();
 

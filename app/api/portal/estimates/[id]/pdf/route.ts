@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanEstimates } from '@/server/lib/servicetitan/estimates';
-import { db } from '@/server/db';
 import { contactSubmissions } from '@shared/schema';
 import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
 
@@ -12,6 +11,7 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { db } = await import('@/server/db');
   try {
     const { id } = await params;
     const estimateId = parseInt(id, 10);
