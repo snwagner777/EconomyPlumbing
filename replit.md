@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It offers service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management to boost local SEO, user engagement, and conversion rates. The business vision is to become a leading service provider in the plumbing industry by leveraging technology for operational efficiency and customer engagement.
+Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence, streamlining operations, and driving growth. It provides service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, focusing on boosting local SEO, user engagement, and conversion rates. The vision is to become a leading service provider through technological leverage for operational efficiency and customer engagement.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -108,16 +108,16 @@ Preferred communication style: Simple, everyday language.
   - Alternative getters: `getDb()` and `getPool()` for code that needs concrete instances (e.g., `instanceof` checks)
 - **Pattern:** All existing code continues to work: `import { db } from '@/server/db'` - no changes required to 120+ API routes
 - **Production-Ready:** Architect-approved solution that preserves Pool/Drizzle semantics while avoiding module-load connection attempts
-- **Red Flags - NEVER do this:** Revert to eager initialization (`const pool = new Pool()` at top level), bypass lazy loading, or modify 100+ routes when a single-file fix exists
+- **Red Flags - NEVER do this:** Revert to eager initialization (`const pool = new Pool()` at top level), bypass lazy loading, or modify 100+ routes when a single-file fix exists>
 
 ## System Architecture
 
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts` for consistent navigation across desktop and mobile.
+- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts`.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, resource preconnect, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
-- **Key Pages:** Home, About, Contact, Services (15+ pages), Service Areas (16+ city pages), Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
+- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
 - **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service.
 - **Scheduler Architecture:** Implemented at `src/components/scheduler/` with Service, Availability, Customer, and Review steps, smart availability, dynamic arrival windows, proximity scoring, and photo upload.
@@ -125,7 +125,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router (100+ API routes) and a `worker.ts` process for background jobs.
-- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables across various domains.
+- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments. Includes OAuth, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
 - **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation. Features phone-first SMS 2FA, self-service permissions, and ownership validation.
