@@ -13,6 +13,7 @@
 import { db } from '../../db';
 import { serviceTitanPhotoJobs } from '../../../shared/schema';
 import { eq } from 'drizzle-orm';
+import pdfParse from 'pdf-parse';
 
 export interface ProcessInvoiceOptions {
   invoiceNumber: string;
@@ -85,25 +86,64 @@ export async function processInvoice(options: ProcessInvoiceOptions): Promise<vo
 }
 
 /**
- * Extract invoice number from email subject or PDF
+ * Extract invoice number from email subject, PDF filename, or PDF content
  * ServiceTitan invoice emails typically have format: "Invoice #12345 from Economy Plumbing"
+ * But also sends: "Your $0.00 Invoice from Economy Plumbing Services, LLC"
  */
-export function extractInvoiceNumber(subject: string, pdfBuffer?: Buffer): string | null {
+export async function extractInvoiceNumber(subject: string, pdfBuffer?: Buffer, filename?: string): Promise<string | null> {
   // Try to extract from subject line
   const subjectMatch = subject.match(/Invoice\s*#?\s*(\d+)/i);
   if (subjectMatch) {
     return subjectMatch[1];
   }
 
-  // Try alternative formats
+  // Try alternative formats in subject
   const altMatch = subject.match(/#(\d{5,})/); // Match any 5+ digit number with #
   if (altMatch) {
     return altMatch[1];
   }
 
-  // TODO: If needed, could parse PDF to extract invoice number
-  // For now, subject line matching is sufficient
+  // Try to extract from PDF filename (e.g., "Invoice 12345.pdf", "Invoice-12345.pdf", "Invoice #12345.pdf")
+  if (filename) {
+    const filenameMatch = filename.match(/Invoice[^0-9]*(\d{3,})/i);
+    if (filenameMatch) {
+      console.log(`[Invoice Processor] Extracted invoice number from filename: ${filenameMatch[1]}`);
+      return filenameMatch[1];
+    }
+  }
 
-  console.warn('[Invoice Processor] Could not extract invoice number from subject:', subject);
+  // Try to parse PDF content if available using pdf-parse
+  if (pdfBuffer) {
+    try {
+      console.log(`[Invoice Processor] Parsing PDF content (${pdfBuffer.length} bytes)`);
+      
+      const pdfData = await pdfParse(pdfBuffer);
+      const pdfText = pdfData.text;
+      
+      console.log(`[Invoice Processor] Extracted ${pdfText.length} chars from PDF`);
+      
+      // Look for common invoice number patterns in PDF
+      const pdfPatterns = [
+        /Invoice\s*#?\s*(\d{3,})/i,
+        /Invoice\s*Number:?\s*(\d{3,})/i,
+        /Invoice\s*ID:?\s*(\d{3,})/i,
+        /#(\d{5,})/, // Match 5+ digit numbers with # (conservative)
+      ];
+      
+      for (const pattern of pdfPatterns) {
+        const match = pdfText.match(pattern);
+        if (match) {
+          console.log(`[Invoice Processor] Extracted invoice number from PDF content: ${match[1]}`);
+          return match[1];
+        }
+      }
+      
+      console.warn(`[Invoice Processor] PDF parsed but no invoice number found in ${pdfText.length} chars`);
+    } catch (error) {
+      console.error('[Invoice Processor] Error parsing PDF:', error);
+    }
+  }
+
+  console.warn('[Invoice Processor] Could not extract invoice number from subject, filename, or PDF:', subject);
   return null;
 }

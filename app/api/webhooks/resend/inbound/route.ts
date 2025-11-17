@@ -207,7 +207,7 @@ async function routeEmail(
     );
 
     if (invoicePdf) {
-      const invoiceNumber = extractInvoiceNumber(subject, invoicePdf.content);
+      const invoiceNumber = await extractInvoiceNumber(subject, invoicePdf.content, invoicePdf.filename);
       if (invoiceNumber) {
         console.log(`[Resend Inbound] Processing invoice: ${invoiceNumber}`);
         await processInvoice({
@@ -217,6 +217,8 @@ async function routeEmail(
           subject,
         });
         return;
+      } else {
+        console.warn(`[Resend Inbound] Found invoice PDF (${invoicePdf.filename}) but could not extract invoice number`);
       }
     }
 
@@ -267,11 +269,12 @@ async function routeEmail(
  */
 async function forwardToZoom(emailData: any): Promise<void> {
   try {
+    console.log(`[Resend Inbound] Starting Zoom forward for: ${emailData.subject}`);
+    
     const { client: resend, fromEmail } = await getUncachableResendClient();
+    console.log(`[Resend Inbound] Got Resend client, from: ${fromEmail}, to: ${ZOOM_FORWARD_EMAIL}`);
 
-    console.log(`[Resend Inbound] Forwarding to Zoom: ${emailData.subject}`);
-
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: fromEmail,
       to: ZOOM_FORWARD_EMAIL,
       subject: `FWD: ${emailData.subject}`,
@@ -285,9 +288,10 @@ async function forwardToZoom(emailData: any): Promise<void> {
       `,
     });
 
-    console.log('[Resend Inbound] Forwarded to Zoom successfully');
+    console.log('[Resend Inbound] Forwarded to Zoom successfully, result:', JSON.stringify(result));
   } catch (error) {
     console.error('[Resend Inbound] Error forwarding to Zoom:', error);
+    console.error('[Resend Inbound] Error details:', error instanceof Error ? error.message : JSON.stringify(error));
     // Don't throw - forwarding failure shouldn't block webhook processing
   }
 }

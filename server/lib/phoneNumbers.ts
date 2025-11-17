@@ -147,7 +147,10 @@ export async function getPhoneNumberForSSR(searchParams?: URLSearchParams): Prom
       };
     }
   } catch (error) {
-    console.error('[PhoneNumbers SSR] Error fetching tracking numbers:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : String(error);
+    console.error('[PhoneNumbers SSR] Error fetching tracking numbers:', errorMessage);
+    console.error('[PhoneNumbers SSR] Error stack:', errorStack);
   }
   
   // Ultimate fallback
