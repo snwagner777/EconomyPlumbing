@@ -364,20 +364,9 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
         throw new Error('Selected account not found');
       }
 
-      // CRITICAL FIX: If we're at select-account step, user already verified
-      // Just complete login immediately - NO second verification code!
-      if (verificationStep === 'select-account') {
-        const allIds = availableAccounts.map(a => a.id);
-        onAuthenticated(accountId.toString(), allIds);
-        return;
-      }
-
-      // If this is post-auth account switching, just notify parent immediately
-      if (verificationStep !== 'select-account') {
-        const allIds = availableAccounts.map(a => a.id);
-        onAuthenticated(accountId.toString(), allIds);
-        return;
-      }
+      // User selected account after verification - complete login immediately
+      const allIds = availableAccounts.map(a => a.id);
+      onAuthenticated(accountId.toString(), allIds);
     } catch (error: any) {
       console.error('Account select error:', error);
       const errorMsg = 'Failed to select account. Please try again.';
