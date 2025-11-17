@@ -186,19 +186,19 @@ export function CustomerPortalAuth({ onAuthenticated, onError }: CustomerPortalA
         // Go straight to verification step - selector shows AFTER 2FA
         setVerificationStep('phone-email-found');
         setLookupSuccess(`We found ${accounts.length} accounts. We'll send a verification code via SMS to ${normalizedPhone}`);
-      } else if (result.requiresSelection && result.emailOptions) {
-        setAvailableEmails(result.emailOptions);
+      } else if (result.requiresEmailSelection && result.emails) {
+        setAvailableEmails(result.emails);
         setLookupToken(result.lookupToken);
         setVerificationStep('select-email');
         setLookupSuccess('We found your account! Please select which email to use for verification.');
-      } else if (result.requiresSms) {
+      } else if (result.verificationType === 'sms') {
         setLookupToken(result.lookupToken || '');
         setLookupValue(result.phone || phoneLoginNumber);
         setLookupType('phone');
         setVerificationStep('phone-email-found');
         setLookupSuccess(`We found your account! We'll send a verification code via SMS to ${result.phone || phoneLoginNumber}`);
       } else {
-        setMaskedEmail(result.maskedEmail);
+        setMaskedEmail(result.maskedEmail || result.maskedContact);
         setActualEmail(result.email);
         setLookupToken(result.lookupToken);
         setLookupValue(result.phone || phoneLoginNumber);
