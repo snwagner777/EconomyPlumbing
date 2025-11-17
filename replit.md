@@ -3,6 +3,12 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence, streamlining operations, and driving growth. It provides comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, with a focus on boosting local SEO, user engagement, and conversion rates. The overarching goal is to leverage technology for operational efficiency and superior customer engagement to establish the business as a leading service provider.
 
+## Recent Changes (November 17, 2025)
+- **Multi-Account Management System**: Completed full implementation for customer portal with account switcher in sidebar, account management section in settings, and new account creation dialog with residential/commercial selection.
+- **AI Chatbot Residential/Commercial Support**: Updated chatbot to ask customers "Is this for your home or a business?" when creating new accounts, properly passing customerType parameter to ServiceTitan API.
+- **Account Switcher Component**: Added dropdown in PortalSidebar showing current account with type badge (Residential/Commercial) and quick switching between all customer accounts.
+- **Settings Account Management**: New accordion section with "Create New Account" button and informative cards explaining multi-account benefits and switching process.
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
