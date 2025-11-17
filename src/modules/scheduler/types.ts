@@ -141,7 +141,7 @@ export interface SchedulerConfig {
   maxDaysOut: number; // Maximum days in advance to show (default: 45)
   
   // Feature flags
-  allowBackflowBooking: boolean; // Enable backflow testing
+  // REMOVED: allowBackflowBooking (payment integration disabled)
   enableAISuggestions: boolean; // Show AI problem diagnosis step
   requireSmsConsent: boolean; // Enforce SMS opt-in checkbox
   requireEmailConsent: boolean; // Enforce email opt-in checkbox
@@ -165,7 +165,7 @@ export const DEFAULT_SCHEDULER_CONFIG: SchedulerConfig = {
   businessUnitId: 140551181, // Default business unit
   minDaysOut: 0, // Allow same-day booking
   maxDaysOut: 45, // 45 days out
-  allowBackflowBooking: true,
+  // REMOVED: allowBackflowBooking: true (payment integration disabled)
   enableAISuggestions: false, // AI step optional/hidden by default
   requireSmsConsent: true, // A2P 10DLC compliance
   requireEmailConsent: false, // Email consent optional

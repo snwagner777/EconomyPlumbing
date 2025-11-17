@@ -230,6 +230,6 @@ export interface SchedulerConfig {
   businessUnitId: number; // ServiceTitan business unit
   minDaysOut: number; // Minimum days in advance for booking
   maxDaysOut: number; // Maximum days in advance to show
-  allowBackflowBooking: boolean; // Enable backflow testing
+  // REMOVED: allowBackflowBooking (payment integration disabled)
   requireSmsConsent: boolean; // Enforce SMS opt-in
 }
