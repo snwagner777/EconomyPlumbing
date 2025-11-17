@@ -486,6 +486,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     }
 
     const now = new Date();
+    console.log(`[Portal] Current time: ${now.toISOString()}`);
 
     // Filter by active location (only if location tab is set)
     const filtered = allAppointments.filter(apt => {
@@ -497,6 +498,20 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     });
 
     console.log(`[Portal] Filtered appointments by location ${activeLocationTab}: ${filtered.length}/${allAppointments.length}`);
+    
+    // Debug: Log each appointment details
+    filtered.forEach((apt, idx) => {
+      const startDate = new Date(apt.start);
+      console.log(`[Portal] Appointment ${idx + 1}:`, {
+        id: apt.id,
+        start: apt.start,
+        startParsed: startDate.toISOString(),
+        status: apt.status,
+        isFuture: startDate > now,
+        isNotCompleted: !['Done', 'Completed', 'Cancelled', 'Canceled'].includes(apt.status),
+        jobType: apt.jobType,
+      });
+    });
 
     // Split into upcoming vs completed
     const upcoming = filtered.filter(apt => {
