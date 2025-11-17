@@ -1,7 +1,8 @@
 /**
  * SchedulerDialog Component - Modular Version
  * 
- * Reusable 3-step appointment booking dialog using modular hooks.
+ * Reusable 4-step appointment booking dialog using modular hooks.
+ * Steps: Service -> Customer/Verification -> Availability -> Review
  * Can be used in customer portal, admin, or AI chatbot.
  */
 
@@ -15,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ServiceStep } from '@/components/scheduler/steps/ServiceStep';
+import { CustomerStep } from '@/components/scheduler/steps/CustomerStep';
 import { AvailabilityStep } from '@/components/scheduler/steps/AvailabilityStep';
 import { ReviewStep } from '@/components/scheduler/steps/ReviewStep';
 
@@ -57,12 +59,13 @@ export interface SchedulerDialogProps {
 // ============================================================================
 
 /**
- * Modular 3-step scheduler dialog with VIP validation and location selection.
+ * Modular 4-step scheduler dialog with verification, VIP validation, and location selection.
  * 
  * Features:
  * - Service selection (Step 1)
- * - Time slot selection (Step 2)
- * - Booking review and confirmation (Step 3)
+ * - Customer information and SMS verification (Step 2)
+ * - Time slot selection (Step 3)
+ * - Booking review and confirmation (Step 4)
  * - VIP service validation
  * - Multi-location support with smart ZIP selection
  * - Enforces "no billing address fallback" rule
@@ -89,7 +92,7 @@ export function SchedulerDialog({
   onComplete,
 }: SchedulerDialogProps) {
   // Modular hooks
-  const { state, currentStepConfig, canGoBack, selectJobType, selectTimeSlot, prevStep, reset } = useSchedulerFlow();
+  const { state, currentStepConfig, canGoBack, selectJobType, setCustomerData, selectTimeSlot, prevStep, reset } = useSchedulerFlow();
   
   const { 
     selectedLocationId, 
@@ -115,8 +118,8 @@ export function SchedulerDialog({
   }, [open, reset, clearError]);
 
   // Handlers
-  const handleSelectJobType = (jobType: import('@shared/types/scheduler').JobType) => {
-    guardedSelect(jobType, selectJobType);
+  const handleSelectJobType = (data: { jobType: import('@shared/types/scheduler').JobType; voucherCode?: string }) => {
+    guardedSelect(data.jobType, selectJobType);
   };
 
   const handleSelectTimeSlot = (slot: import('@shared/types/scheduler').TimeSlot) => {
@@ -226,13 +229,46 @@ export function SchedulerDialog({
 
         {/* Step Content */}
         <div className="mt-4">
+          {/* Step 1: Service Selection */}
           {state.step === 1 && (
             <ServiceStep
               onSelect={handleSelectJobType}
             />
           )}
 
+          {/* Step 2: Customer Information & Verification */}
           {state.step === 2 && state.jobType && (
+            <div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleBack}
+                className="mb-6 gap-2 -ml-2"
+                data-testid="button-back"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back
+              </Button>
+              <CustomerStep
+                onSubmit={setCustomerData}
+                initialData={{
+                  firstName: customerInfo.firstName || '',
+                  lastName: customerInfo.lastName || '',
+                  email: customerInfo.email || '',
+                  phone: customerInfo.phone || '',
+                  address: (typeof selectedLocation?.address === 'string' ? selectedLocation.address : selectedLocation?.address.street) || customerInfo.address || '',
+                  city: selectedLocation?.address?.city || customerInfo.city || '',
+                  state: selectedLocation?.address?.state || customerInfo.state || 'TX',
+                  zip: selectedLocation?.address?.zip || customerInfo.zip || '',
+                }}
+                selectedService={state.jobType}
+                onVipError={clearError}
+              />
+            </div>
+          )}
+
+          {/* Step 3: Availability Selection */}
+          {state.step === 3 && state.jobType && state.customerData && (
             <div>
               <Button
                 variant="ghost"
@@ -246,14 +282,15 @@ export function SchedulerDialog({
               </Button>
               <AvailabilityStep
                 jobTypeId={state.jobType.id}
-                customerZip={serviceZip}
+                customerZip={state.customerData.zip || serviceZip}
                 onSelect={handleSelectTimeSlot}
                 selectedSlot={state.timeSlot || undefined}
               />
             </div>
           )}
 
-          {state.step === 3 && state.jobType && state.timeSlot && (
+          {/* Step 4: Review & Confirmation */}
+          {state.step === 4 && state.jobType && state.customerData && state.timeSlot && (
             <div>
               <Button
                 variant="ghost"
@@ -267,7 +304,17 @@ export function SchedulerDialog({
               </Button>
               <ReviewStep
                 jobType={state.jobType}
-                customer={customerInfo}
+                customer={{
+                  firstName: state.customerData.firstName,
+                  lastName: state.customerData.lastName,
+                  email: state.customerData.email,
+                  phone: state.customerData.phone,
+                  address: state.customerData.address,
+                  city: state.customerData.city,
+                  state: state.customerData.state,
+                  zip: state.customerData.zip,
+                  serviceTitanId: state.customerData.serviceTitanId,
+                }}
                 timeSlot={state.timeSlot}
                 onSuccess={handleComplete}
               />
