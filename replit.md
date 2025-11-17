@@ -121,10 +121,9 @@ Preferred communication style: Simple, everyday language.
 - **Stripe:** Payment processing
 - **OpenAI:** GPT-4o and GPT-4o-mini for AI features
 - **SimpleTexting:** SMS marketing
-- **Resend:** Transactional email delivery and inbound email processing
+- **Resend:** Transactional and promotional email delivery, inbound email processing
 - **Late API:** Social media scheduling and posting (Facebook, Instagram, LinkedIn, Twitter/X, Threads, TikTok, YouTube, Pinterest, Reddit, Bluesky)
-- **CompanyCam:** Photo management
-- **Google Drive:** Photo import automation
+- **Google Drive:** Photo storage and archiving (photos pushed from ServiceTitan)
 - **SerpAPI:** Google review fetching
 - **Ecwid:** E-commerce platform
 - **Google Analytics 4:** Website analytics
