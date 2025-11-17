@@ -279,17 +279,60 @@ export class ServiceTitanCRM {
 
       console.log(`[ServiceTitan CRM] Created new customer: ${response.id}`);
       
-      // Add contact using v2 workflow with deduplication - link to both customer AND default location
-      if (data.phone) {
-        // Fetch the newly created location ID
+      // Add contact methods using v2 API to both customer AND default location
+      if (data.phone || data.email) {
+        // Fetch the default location ID
         const locations = await this.getCustomerLocations(response.id);
         const defaultLocationId = locations.length > 0 ? locations[0].id : undefined;
         
-        // Use findOrCreateCompleteContact to prevent duplicates
-        await this.findOrCreateCompleteContact(response.id, {
-          phone: data.phone,
-          email: data.email ? data.email.split(',')[0].trim() : undefined, // Only use first email
-        }, defaultLocationId); // Link to default location
+        // Add phone contact
+        if (data.phone) {
+          try {
+            await this.createCustomerContact(response.id, {
+              type: 'MobilePhone',
+              value: data.phone,
+              memo: 'Primary contact',
+            });
+            console.log(`[ServiceTitan CRM] Added phone contact to customer ${response.id}`);
+            
+            // Also add to default location
+            if (defaultLocationId) {
+              await this.createLocationContact(defaultLocationId, {
+                type: 'MobilePhone',
+                value: data.phone,
+                memo: 'Primary contact',
+              });
+              console.log(`[ServiceTitan CRM] Added phone contact to location ${defaultLocationId}`);
+            }
+          } catch (error: any) {
+            console.error(`[ServiceTitan CRM] Failed to add phone contact: ${error.message}`);
+          }
+        }
+        
+        // Add email contact
+        if (data.email) {
+          try {
+            const firstEmail = data.email.split(',')[0].trim();
+            await this.createCustomerContact(response.id, {
+              type: 'Email',
+              value: firstEmail,
+              memo: 'Primary email',
+            });
+            console.log(`[ServiceTitan CRM] Added email contact to customer ${response.id}`);
+            
+            // Also add to default location
+            if (defaultLocationId) {
+              await this.createLocationContact(defaultLocationId, {
+                type: 'Email',
+                value: firstEmail,
+                memo: 'Primary email',
+              });
+              console.log(`[ServiceTitan CRM] Added email contact to location ${defaultLocationId}`);
+            }
+          } catch (error: any) {
+            console.error(`[ServiceTitan CRM] Failed to add email contact: ${error.message}`);
+          }
+        }
       }
 
       return response;
@@ -335,57 +378,57 @@ export class ServiceTitanCRM {
   }
 
   /**
-   * Get all contacts for a customer with their contact methods
+   * Get all contacts for a customer
+   * NOTE: Customer contacts API returns contact method objects directly (same as locations)
+   * Response structure: { id, type, value, memo, phoneSettings, modifiedOn, createdOn, preferences }
    */
-  async getCustomerContacts(customerId: number): Promise<Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>> {
+  async getCustomerContacts(customerId: number): Promise<Array<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }>> {
     try {
       console.log(`[ServiceTitan CRM] Fetching all contacts for customer ${customerId}`);
       
-      // Step 1: Get all contact person IDs linked to customer
-      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ contactId: string }> }>(
+      // Get customer contacts - returns contact method objects directly
+      const response = await serviceTitanAuth.makeRequest<{ 
+        data: Array<{
+          id: number;
+          type: string;
+          value: string;
+          memo?: string;
+          phoneSettings?: {
+            phoneNumber: string;
+            doNotText: boolean;
+          };
+          modifiedOn: string;
+          createdOn: string;
+          preferences?: {
+            jobRemindersEnabled: boolean;
+            marketingUpdatesEnabled: boolean;
+            invoiceStatementNotification: boolean;
+          };
+        }> 
+      }>(
         `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts`
       );
 
-      const contactIds = contactLinksResponse.data?.map(link => link.contactId) || [];
+      const contacts = response.data || [];
+      console.log(`[ServiceTitan CRM] Found ${contacts.length} contacts for customer ${customerId}`);
       
-      if (contactIds.length === 0) {
-        console.log(`[ServiceTitan CRM] No contacts found for customer ${customerId}`);
-        return [];
-      }
-
-      console.log(`[ServiceTitan CRM] Found ${contactIds.length} contact links for customer ${customerId}`);
-
-      // Step 2: Fetch details for each contact person
-      const contactsWithMethods = await Promise.all(
-        contactIds.map(async (contactId) => {
-          try {
-            // Get contact person details
-            const contact = await serviceTitanAuth.makeRequest<ServiceTitanContact>(
-              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}`
-            );
-
-            // Get contact methods (phone, email, etc.)
-            const methodsResponse = await serviceTitanAuth.makeRequest<{ data: ServiceTitanContactMethod[] }>(
-              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}/contact-methods`
-            );
-
-            return {
-              ...contact,
-              methods: methodsResponse.data || [],
-            };
-          } catch (error) {
-            console.error(`[ServiceTitan CRM] Error fetching contact ${contactId}:`, error);
-            return null;
-          }
-        })
-      );
-
-      // Filter out any null results from failed fetches
-      const validContacts = contactsWithMethods.filter(c => c !== null) as Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>;
-      
-      console.log(`[ServiceTitan CRM] Successfully fetched ${validContacts.length} contacts with methods for customer ${customerId}`);
-      
-      return validContacts;
+      return contacts;
     } catch (error) {
       console.error(`[ServiceTitan CRM] Error fetching contacts for customer ${customerId}:`, error);
       throw error;
@@ -393,60 +436,397 @@ export class ServiceTitanCRM {
   }
 
   /**
-   * Get all contacts linked to a specific location with their contact methods
-   * Uses ServiceTitan's native location filtering for efficiency
+   * Create a contact on a customer
+   * Uses ServiceTitan's documented POST /customers/{id}/contacts endpoint
    */
-  async getLocationContacts(locationId: number): Promise<Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>> {
+  async createCustomerContact(
+    customerId: number,
+    contactData: {
+      type: 'MobilePhone' | 'Phone' | 'Email' | 'Fax';
+      value: string;
+      memo?: string;
+    }
+  ): Promise<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }> {
+    try {
+      const payload = {
+        type: contactData.type,
+        value: contactData.value,
+        memo: contactData.memo || undefined,
+      };
+
+      const response = await serviceTitanAuth.makeRequest<{
+        id: number;
+        type: string;
+        value: string;
+        memo?: string;
+        phoneSettings?: {
+          phoneNumber: string;
+          doNotText: boolean;
+        };
+        modifiedOn: string;
+        createdOn: string;
+        preferences?: {
+          jobRemindersEnabled: boolean;
+          marketingUpdatesEnabled: boolean;
+          invoiceStatementNotification: boolean;
+        };
+      }>(
+        `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Created ${contactData.type} contact on customer ${customerId}: ${response.id}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error creating contact on customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a contact on a customer
+   * Uses ServiceTitan's documented PATCH /customers/{id}/contacts/{contactId} endpoint
+   */
+  async updateCustomerContact(
+    customerId: number,
+    contactId: number,
+    updateData: {
+      type?: 'MobilePhone' | 'Phone' | 'Email' | 'Fax';
+      value?: string;
+      memo?: string;
+      preferences?: {
+        jobRemindersEnabled?: boolean;
+        marketingUpdatesEnabled?: boolean;
+        invoiceStatementNotification?: boolean;
+      };
+    }
+  ): Promise<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }> {
+    try {
+      const payload: any = {};
+      
+      if (updateData.type !== undefined) {
+        payload.type = updateData.type;
+      }
+      if (updateData.value !== undefined) {
+        payload.value = updateData.value;
+      }
+      if (updateData.memo !== undefined) {
+        payload.memo = updateData.memo;
+      }
+      if (updateData.preferences !== undefined) {
+        payload.preferences = updateData.preferences;
+      }
+
+      const response = await serviceTitanAuth.makeRequest<{
+        id: number;
+        type: string;
+        value: string;
+        memo?: string;
+        phoneSettings?: {
+          phoneNumber: string;
+          doNotText: boolean;
+        };
+        modifiedOn: string;
+        createdOn: string;
+        preferences?: {
+          jobRemindersEnabled: boolean;
+          marketingUpdatesEnabled: boolean;
+          invoiceStatementNotification: boolean;
+        };
+      }>(
+        `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts/${contactId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Updated contact ${contactId} on customer ${customerId}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error updating contact ${contactId} on customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a contact from a customer
+   * Uses ServiceTitan's documented DELETE /customers/{id}/contacts/{contactId} endpoint
+   */
+  async deleteCustomerContact(customerId: number, contactId: number): Promise<void> {
+    try {
+      await serviceTitanAuth.makeRequest(
+        `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts/${contactId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Deleted contact ${contactId} from customer ${customerId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error deleting contact ${contactId} from customer ${customerId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all contacts linked to a specific location
+   * NOTE: Location contacts API returns contact method objects directly (not contact person IDs)
+   * Response structure: { id, type, value, memo, phoneSettings, modifiedOn, createdOn, preferences }
+   */
+  async getLocationContacts(locationId: number): Promise<Array<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }>> {
     try {
       console.log(`[ServiceTitan CRM] Fetching all contacts for location ${locationId}`);
       
-      // Step 1: Get all contact person IDs linked to this location
-      const contactLinksResponse = await serviceTitanAuth.makeRequest<{ data: Array<{ contactId: string }> }>(
+      // Get location contacts - returns contact method objects directly
+      const response = await serviceTitanAuth.makeRequest<{ 
+        data: Array<{
+          id: number;
+          type: string;
+          value: string;
+          memo?: string;
+          phoneSettings?: {
+            phoneNumber: string;
+            doNotText: boolean;
+          };
+          modifiedOn: string;
+          createdOn: string;
+          preferences?: {
+            jobRemindersEnabled: boolean;
+            marketingUpdatesEnabled: boolean;
+            invoiceStatementNotification: boolean;
+          };
+        }> 
+      }>(
         `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts`
       );
 
-      const contactIds = contactLinksResponse.data?.map(link => link.contactId) || [];
+      const contacts = response.data || [];
+      console.log(`[ServiceTitan CRM] Found ${contacts.length} contacts for location ${locationId}`);
       
-      if (contactIds.length === 0) {
-        console.log(`[ServiceTitan CRM] No contacts found for location ${locationId}`);
-        return [];
-      }
-
-      console.log(`[ServiceTitan CRM] Found ${contactIds.length} contact links for location ${locationId}`);
-
-      // Step 2: Fetch details for each contact person (reuse same logic as getCustomerContacts)
-      const contactsWithMethods = await Promise.all(
-        contactIds.map(async (contactId) => {
-          try {
-            // Get contact person details
-            const contact = await serviceTitanAuth.makeRequest<ServiceTitanContact>(
-              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}`
-            );
-
-            // Get contact methods (phone, email, etc.)
-            const methodsResponse = await serviceTitanAuth.makeRequest<{ data: ServiceTitanContactMethod[] }>(
-              `crm/v2/tenant/${this.tenantId}/contacts/${contactId}/contact-methods`
-            );
-
-            return {
-              ...contact,
-              methods: methodsResponse.data || [],
-            };
-          } catch (error) {
-            console.error(`[ServiceTitan CRM] Error fetching contact ${contactId}:`, error);
-            return null;
-          }
-        })
-      );
-
-      // Filter out any null results from failed fetches
-      const validContacts = contactsWithMethods.filter(c => c !== null) as Array<ServiceTitanContact & { methods: ServiceTitanContactMethod[] }>;
-      
-      console.log(`[ServiceTitan CRM] Successfully fetched ${validContacts.length} contacts with methods for location ${locationId}`);
-      
-      return validContacts;
+      return contacts;
     } catch (error) {
       console.error(`[ServiceTitan CRM] Error fetching contacts for location ${locationId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a contact on a location
+   * Uses ServiceTitan's documented POST /locations/{id}/contacts endpoint
+   */
+  async createLocationContact(
+    locationId: number,
+    contactData: {
+      type: 'MobilePhone' | 'Phone' | 'Email' | 'Fax';
+      value: string;
+      memo?: string;
+    }
+  ): Promise<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }> {
+    try {
+      const payload = {
+        type: contactData.type,
+        value: contactData.value,
+        memo: contactData.memo || undefined,
+      };
+
+      const response = await serviceTitanAuth.makeRequest<{
+        id: number;
+        type: string;
+        value: string;
+        memo?: string;
+        phoneSettings?: {
+          phoneNumber: string;
+          doNotText: boolean;
+        };
+        modifiedOn: string;
+        createdOn: string;
+        preferences?: {
+          jobRemindersEnabled: boolean;
+          marketingUpdatesEnabled: boolean;
+          invoiceStatementNotification: boolean;
+        };
+      }>(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts`,
+        {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Created ${contactData.type} contact on location ${locationId}: ${response.id}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error creating contact on location ${locationId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a contact on a location
+   * Uses ServiceTitan's documented PATCH /locations/{id}/contacts/{contactId} endpoint
+   */
+  async updateLocationContact(
+    locationId: number,
+    contactId: number,
+    updateData: {
+      type?: 'MobilePhone' | 'Phone' | 'Email' | 'Fax';
+      value?: string;
+      memo?: string;
+      preferences?: {
+        jobRemindersEnabled?: boolean;
+        marketingUpdatesEnabled?: boolean;
+        invoiceStatementNotification?: boolean;
+      };
+    }
+  ): Promise<{
+    id: number;
+    type: string;
+    value: string;
+    memo?: string;
+    phoneSettings?: {
+      phoneNumber: string;
+      doNotText: boolean;
+    };
+    modifiedOn: string;
+    createdOn: string;
+    preferences?: {
+      jobRemindersEnabled: boolean;
+      marketingUpdatesEnabled: boolean;
+      invoiceStatementNotification: boolean;
+    };
+  }> {
+    try {
+      const payload: any = {};
+      
+      if (updateData.type !== undefined) {
+        payload.type = updateData.type;
+      }
+      if (updateData.value !== undefined) {
+        payload.value = updateData.value;
+      }
+      if (updateData.memo !== undefined) {
+        payload.memo = updateData.memo;
+      }
+      if (updateData.preferences !== undefined) {
+        payload.preferences = updateData.preferences;
+      }
+
+      const response = await serviceTitanAuth.makeRequest<{
+        id: number;
+        type: string;
+        value: string;
+        memo?: string;
+        phoneSettings?: {
+          phoneNumber: string;
+          doNotText: boolean;
+        };
+        modifiedOn: string;
+        createdOn: string;
+        preferences?: {
+          jobRemindersEnabled: boolean;
+          marketingUpdatesEnabled: boolean;
+          invoiceStatementNotification: boolean;
+        };
+      }>(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts/${contactId}`,
+        {
+          method: 'PATCH',
+          body: JSON.stringify(payload),
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Updated contact ${contactId} on location ${locationId}`);
+      return response;
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error updating contact ${contactId} on location ${locationId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a contact from a location
+   * Uses ServiceTitan's documented DELETE /locations/{id}/contacts/{contactId} endpoint
+   */
+  async deleteLocationContact(locationId: number, contactId: number): Promise<void> {
+    try {
+      await serviceTitanAuth.makeRequest(
+        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts/${contactId}`,
+        {
+          method: 'DELETE',
+        }
+      );
+
+      console.log(`[ServiceTitan CRM] Deleted contact ${contactId} from location ${locationId}`);
+    } catch (error) {
+      console.error(`[ServiceTitan CRM] Error deleting contact ${contactId} from location ${locationId}:`, error);
       throw error;
     }
   }
@@ -515,13 +895,36 @@ export class ServiceTitanCRM {
 
       console.log(`[ServiceTitan CRM] Created new location: ${response.id}`);
       
-      // Add contact using v2 workflow with deduplication (link to location)
+      // Add contact methods to location using v2 API
       if (data.phone) {
-        // Use findOrCreateCompleteContact to prevent duplicates
-        await this.findOrCreateCompleteContact(data.customerId, {
-          phone: data.phone,
-          email: data.email ? data.email.split(',')[0].trim() : undefined, // Only use first email
-        }, response.id); // Pass locationId to link contact to location
+        try {
+          // Create phone contact on location
+          await this.createLocationContact(response.id, {
+            type: 'MobilePhone',
+            value: data.phone,
+            memo: 'Primary contact',
+          });
+          console.log(`[ServiceTitan CRM] Added phone contact to location ${response.id}`);
+        } catch (error: any) {
+          // Log but don't fail location creation if contact fails
+          console.error(`[ServiceTitan CRM] Failed to add phone contact to location: ${error.message}`);
+        }
+      }
+      
+      if (data.email) {
+        try {
+          // Create email contact on location
+          const firstEmail = data.email.split(',')[0].trim();
+          await this.createLocationContact(response.id, {
+            type: 'Email',
+            value: firstEmail,
+            memo: 'Primary email',
+          });
+          console.log(`[ServiceTitan CRM] Added email contact to location ${response.id}`);
+        } catch (error: any) {
+          // Log but don't fail location creation if contact fails
+          console.error(`[ServiceTitan CRM] Failed to add email contact to location: ${error.message}`);
+        }
       }
 
       return response;
@@ -710,48 +1113,28 @@ export class ServiceTitanCRM {
   }
 
   /**
-   * Link contact to customer (Step 3 of contact creation workflow)
+   * @deprecated Use createCustomerContact() instead - this workflow is incompatible with v2 API
+   * The v2 API expects { type, value, memo } not { contactId }
    */
   async linkContactToCustomer(customerId: number, contactId: string): Promise<void> {
-    try {
-      await serviceTitanAuth.makeRequest(
-        `crm/v2/tenant/${this.tenantId}/customers/${customerId}/contacts`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ contactId }),
-        }
-      );
-
-      console.log(`[ServiceTitan CRM] Linked contact ${contactId} to customer ${customerId}`);
-    } catch (error) {
-      console.error(`[ServiceTitan CRM] Error linking contact ${contactId} to customer ${customerId}:`, error);
-      throw error;
-    }
+    console.warn('[ServiceTitan CRM] DEPRECATED: linkContactToCustomer uses incompatible v2 workflow. Use createCustomerContact() instead.');
+    throw new Error('linkContactToCustomer is deprecated - use createCustomerContact() with { type, value, memo } payload');
   }
 
   /**
-   * Link contact to location (Optional step 4 of contact creation workflow)
+   * @deprecated Use createLocationContact() instead - this workflow is incompatible with v2 API
+   * The v2 API expects { type, value, memo } not { contactId }
    */
   async linkContactToLocation(locationId: number, contactId: string): Promise<void> {
-    try {
-      await serviceTitanAuth.makeRequest(
-        `crm/v2/tenant/${this.tenantId}/locations/${locationId}/contacts`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ contactId }),
-        }
-      );
-
-      console.log(`[ServiceTitan CRM] Linked contact ${contactId} to location ${locationId}`);
-    } catch (error) {
-      console.error(`[ServiceTitan CRM] Error linking contact ${contactId} to location ${locationId}:`, error);
-      throw error;
-    }
+    console.warn('[ServiceTitan CRM] DEPRECATED: linkContactToLocation uses incompatible v2 workflow. Use createLocationContact() instead.');
+    throw new Error('linkContactToLocation is deprecated - use createLocationContact() with { type, value, memo } payload');
   }
 
   /**
+   * @deprecated Use createCustomerContact()/createLocationContact() directly - simpler v2 API
    * Complete contact creation workflow (all steps combined)
-   * Creates person → adds phone → adds email → links to customer
+   * 
+   * REFACTORED: Now uses the simpler v2 contact methods API instead of complex person workflow
    */
   async createCompleteContact(
     customerId: number,
@@ -764,42 +1147,51 @@ export class ServiceTitanCRM {
       emailMemo?: string;
     },
     locationId?: number
-  ): Promise<ServiceTitanContact> {
+  ): Promise<any> {
     try {
-      // Step 1: Create contact person
-      const contact = await this.createContactPerson({
-        name: contactData.name,
-        title: contactData.title,
-      });
-
-      // Step 2: Add phone contact method
-      await this.createContactMethod(contact.id, {
+      console.log(`[ServiceTitan CRM] Creating contact for customer ${customerId} using v2 API`);
+      
+      const createdContacts: any[] = [];
+      
+      // Create phone contact on customer
+      const phoneContact = await this.createCustomerContact(customerId, {
         type: 'MobilePhone',
         value: contactData.phone,
         memo: contactData.phoneMemo || 'Primary contact',
       });
-
-      // Step 3: Add email contact method (if provided)
+      createdContacts.push(phoneContact);
+      
+      // Create email contact on customer (if provided)
       if (contactData.email) {
-        await this.createContactMethod(contact.id, {
+        const emailContact = await this.createCustomerContact(customerId, {
           type: 'Email',
           value: contactData.email,
           memo: contactData.emailMemo || 'Primary email',
         });
+        createdContacts.push(emailContact);
       }
-
-      // Step 4: Link to customer
-      await this.linkContactToCustomer(customerId, contact.id);
-
-      // Step 5: Link to location (if provided)
+      
+      // Also create on location if provided
       if (locationId) {
-        await this.linkContactToLocation(locationId, contact.id);
+        await this.createLocationContact(locationId, {
+          type: 'MobilePhone',
+          value: contactData.phone,
+          memo: contactData.phoneMemo || 'Primary contact',
+        });
+        
+        if (contactData.email) {
+          await this.createLocationContact(locationId, {
+            type: 'Email',
+            value: contactData.email,
+            memo: contactData.emailMemo || 'Primary email',
+          });
+        }
       }
-
-      console.log(`[ServiceTitan CRM] Created complete contact ${contact.id} for customer ${customerId}`);
-      return contact;
+      
+      console.log(`[ServiceTitan CRM] Created ${createdContacts.length} contact methods for customer ${customerId}`);
+      return phoneContact; // Return first contact for backwards compat
     } catch (error) {
-      console.error('[ServiceTitan CRM] Error in complete contact creation workflow:', error);
+      console.error('[ServiceTitan CRM] Error in contact creation:', error);
       throw error;
     }
   }
@@ -845,7 +1237,7 @@ export class ServiceTitanCRM {
       emailMemo?: string;
     },
     locationId?: number
-  ): Promise<ServiceTitanContact> {
+  ): Promise<any> {
     try {
       // Normalize phone (remove non-digits and handle country code)
       const normalizedPhone = this.normalizePhoneForDedup(contactData.phone);
@@ -858,72 +1250,79 @@ export class ServiceTitanCRM {
 
       console.log(`[ServiceTitan CRM] Searching for existing contact - Phone: ${normalizedPhone}, Email: ${normalizedEmail || 'none'}`);
 
-      // Get all contacts for this customer
+      // Get all contact methods for this customer (v2 API returns contact methods directly)
       const existingContacts = await this.getCustomerContacts(customerId);
 
-      // Search for matching contact by phone or email
-      for (const contact of existingContacts) {
-        // Check if any contact method matches
-        for (const method of contact.methods) {
-          // Match phone (normalize both sides with canonical format)
-          if (method.type === 'MobilePhone' || method.type === 'Phone') {
-            const existingNormalizedPhone = this.normalizePhoneForDedup(method.value);
-            if (existingNormalizedPhone === normalizedPhone) {
-              console.log(`[ServiceTitan CRM] ✅ Found existing contact ${contact.id} with matching phone (${method.value} → ${existingNormalizedPhone})`);
-              
-              // If locationId provided, ensure contact is linked to it
-              if (locationId) {
-                try {
-                  await this.linkContactToLocation(locationId, contact.id);
-                  console.log(`[ServiceTitan CRM] Linked existing contact ${contact.id} to location ${locationId}`);
-                } catch (error: any) {
-                  // Only suppress "already linked" errors (409 conflict or specific message)
-                  const errorMessage = error?.message || String(error);
-                  if (errorMessage.includes('409') || errorMessage.toLowerCase().includes('already') || errorMessage.toLowerCase().includes('exists')) {
-                    console.log(`[ServiceTitan CRM] Contact ${contact.id} already linked to location ${locationId} (conflict suppressed)`);
-                  } else {
-                    // Rethrow all other errors - these are real failures!
-                    console.error(`[ServiceTitan CRM] Failed to link contact ${contact.id} to location ${locationId}:`, error);
-                    throw error;
+      // Search for matching contact method by phone or email
+      for (const contactMethod of existingContacts) {
+        // Match phone (normalize both sides with canonical format)
+        if (contactMethod.type === 'MobilePhone' || contactMethod.type === 'Phone') {
+          const existingNormalizedPhone = this.normalizePhoneForDedup(contactMethod.value);
+          if (existingNormalizedPhone === normalizedPhone) {
+            console.log(`[ServiceTitan CRM] ✅ Found existing contact method ${contactMethod.id} with matching phone`);
+            
+            // If locationId provided, also create on location if it doesn't exist
+            if (locationId) {
+              try {
+                // Check if location already has this contact
+                const locationContacts = await this.getLocationContacts(locationId);
+                const phoneExistsOnLocation = locationContacts.some(lc => {
+                  if (lc.type === 'MobilePhone' || lc.type === 'Phone') {
+                    return this.normalizePhoneForDedup(lc.value) === normalizedPhone;
                   }
+                  return false;
+                });
+                
+                if (!phoneExistsOnLocation) {
+                  await this.createLocationContact(locationId, {
+                    type: 'MobilePhone',
+                    value: contactData.phone,
+                    memo: contactData.phoneMemo || 'Primary contact',
+                  });
+                  console.log(`[ServiceTitan CRM] Added phone contact to location ${locationId}`);
                 }
+              } catch (error: any) {
+                console.error(`[ServiceTitan CRM] Failed to add contact to location: ${error.message}`);
               }
-              
-              return contact;
             }
+            
+            return contactMethod;
           }
+        }
 
-          // Match email (case-insensitive)
-          if (normalizedEmail && method.type === 'Email') {
-            const existingNormalizedEmail = method.value.toLowerCase().trim();
-            if (existingNormalizedEmail === normalizedEmail) {
-              console.log(`[ServiceTitan CRM] ✅ Found existing contact ${contact.id} with matching email`);
-              
-              // If locationId provided, ensure contact is linked to it
-              if (locationId) {
-                try {
-                  await this.linkContactToLocation(locationId, contact.id);
-                  console.log(`[ServiceTitan CRM] Linked existing contact ${contact.id} to location ${locationId}`);
-                } catch (error: any) {
-                  // Only suppress "already linked" errors (409 conflict or specific message)
-                  const errorMessage = error?.message || String(error);
-                  if (errorMessage.includes('409') || errorMessage.toLowerCase().includes('already') || errorMessage.toLowerCase().includes('exists')) {
-                    console.log(`[ServiceTitan CRM] Contact ${contact.id} already linked to location ${locationId} (conflict suppressed)`);
-                  } else {
-                    // Rethrow all other errors - these are real failures!
-                    console.error(`[ServiceTitan CRM] Failed to link contact ${contact.id} to location ${locationId}:`, error);
-                    throw error;
-                  }
+        // Match email (case-insensitive)
+        if (normalizedEmail && contactMethod.type === 'Email') {
+          const existingNormalizedEmail = contactMethod.value.toLowerCase().trim();
+          if (existingNormalizedEmail === normalizedEmail) {
+            console.log(`[ServiceTitan CRM] ✅ Found existing contact method ${contactMethod.id} with matching email`);
+            
+            // If locationId provided, also create on location if it doesn't exist
+            if (locationId && contactData.email) {
+              try {
+                const locationContacts = await this.getLocationContacts(locationId);
+                const emailExistsOnLocation = locationContacts.some(lc => 
+                  lc.type === 'Email' && lc.value.toLowerCase().trim() === normalizedEmail
+                );
+                
+                if (!emailExistsOnLocation) {
+                  await this.createLocationContact(locationId, {
+                    type: 'Email',
+                    value: contactData.email,
+                    memo: contactData.emailMemo || 'Primary email',
+                  });
+                  console.log(`[ServiceTitan CRM] Added email contact to location ${locationId}`);
                 }
+              } catch (error: any) {
+                console.error(`[ServiceTitan CRM] Failed to add email to location: ${error.message}`);
               }
-              
-              return contact;
             }
+            
+            return contactMethod;
           }
         }
       }
 
-      // No match found - create new contact
+      // No match found - create new contact using v2 API
       console.log(`[ServiceTitan CRM] ❌ No existing contact found - creating new one`);
       return await this.createCompleteContact(customerId, contactData, locationId);
     } catch (error) {
