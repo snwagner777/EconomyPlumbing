@@ -1,13 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence, streamlining operations, and driving growth. It provides comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, with a focus on boosting local SEO, user engagement, and conversion rates. The overarching goal is to leverage technology for operational efficiency and superior customer engagement to establish the business as a leading service provider.
-
-## Recent Changes (November 17, 2025)
-- **Multi-Account Management System**: Completed full implementation for customer portal with account switcher in sidebar, account management section in settings, and new account creation dialog with residential/commercial selection.
-- **AI Chatbot Residential/Commercial Support**: Updated chatbot to ask customers "Is this for your home or a business?" when creating new accounts, properly passing customerType parameter to ServiceTitan API.
-- **Account Switcher Component**: Added dropdown in PortalSidebar showing current account with type badge (Residential/Commercial) and quick switching between all customer accounts.
-- **Settings Account Management**: New accordion section with "Create New Account" button and informative cards explaining multi-account benefits and switching process.
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It offers comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, with a focus on boosting local SEO, user engagement, and conversion rates. The goal is to leverage technology for operational efficiency and superior customer engagement, establishing the business as a leading service provider.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -100,8 +94,7 @@ Preferred communication style: Simple, everyday language.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
-- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service.
-- **Scheduler Architecture:** Implemented at `src/components/scheduler/` with Service, Availability, Customer, and Review steps, smart availability, dynamic arrival windows, proximity scoring, and photo upload.
+- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service. The scheduler implements a 4-step flow (Service → Customer/Verification → Availability → Review) with SMS verification.
 - **Admin Panel:** Features 23 sections including Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
@@ -109,7 +102,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments. Includes OAuth, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation. Features phone-first SMS 2FA, self-service permissions, and ownership validation.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation. Features phone-first SMS 2FA, self-service permissions, and ownership validation, including multi-account management.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
@@ -138,12 +131,3 @@ Preferred communication style: Simple, everyday language.
 - **Microsoft Clarity:** Session recording
 - **Google Places API:** Location services
 - **Google Maps:** Mapping
-
-**CRITICAL RULE: Late API Social Media Integration - Modular Architecture**
-- **Modular Design:** All Late API functionality lives in `server/lib/late-api.ts` as a reusable module that can be called from anywhere.
-- **Use Cases:** Share reviews to social media, post blog articles, schedule promotional content, cross-post announcements.
-- **API Key:** Stored in environment variable `Late_API_Key` - never hardcode or expose.
-- **Database Schema:** `late_profiles` table stores connected social media profiles with platform-specific account IDs.
-- **Supported Platforms:** Facebook, Instagram, LinkedIn, Twitter/X, Threads, TikTok, YouTube, Pinterest, Reddit, Bluesky.
-- **Admin UI:** Manage connected social accounts at `/admin/social-media` with profile creation, account connection invites, and posting interface.
-- **Review Sharing:** Share Google reviews to social media from admin panel with customizable templates and platform selection.
