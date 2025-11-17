@@ -10,7 +10,6 @@ packages = ["chromium"]
 deploymentTarget = "cloudrun"
 build = ["npx", "next", "build"]
 run = ["sh", "-c", "./start-production.sh"]
-publicDir = "dist"
 
 [[ports]]
 localPort = 5000

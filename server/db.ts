@@ -8,21 +8,33 @@ neonConfig.webSocketConstructor = ws;
 
 // Get DATABASE_URL from either /tmp/replitdb (production) or environment variable (development)
 function getDatabaseUrl(): string {
+  console.log('[DB Init] getDatabaseUrl called');
+  
   // Check production database file first
   try {
+    console.log('[DB Init] Checking /tmp/replitdb...');
     if (fs.existsSync('/tmp/replitdb')) {
+      console.log('[DB Init] /tmp/replitdb exists, reading...');
       const url = fs.readFileSync('/tmp/replitdb', 'utf-8').trim();
-      if (url) return url;
+      if (url) {
+        console.log('[DB Init] Using DATABASE_URL from /tmp/replitdb');
+        return url;
+      }
+      console.log('[DB Init] /tmp/replitdb exists but is empty');
+    } else {
+      console.log('[DB Init] /tmp/replitdb does not exist');
     }
   } catch (err) {
-    // File doesn't exist or can't be read, fall back to env var
+    console.error('[DB Init] Error reading /tmp/replitdb:', err);
   }
   
   // Fall back to environment variable for development
   if (process.env.DATABASE_URL) {
+    console.log('[DB Init] Using DATABASE_URL from environment variable');
     return process.env.DATABASE_URL;
   }
   
+  console.error('[DB Init] FATAL: No DATABASE_URL found in /tmp/replitdb or environment');
   throw new Error(
     "DATABASE_URL must be set. Did you forget to provision a database?",
   );
@@ -34,9 +46,20 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 function initializeDatabase() {
   if (!_db) {
-    const databaseUrl = getDatabaseUrl();
-    _pool = new Pool({ connectionString: databaseUrl });
-    _db = drizzle({ client: _pool, schema });
+    try {
+      console.log('[DB Init] Starting database initialization...');
+      const databaseUrl = getDatabaseUrl();
+      console.log('[DB Init] Got database URL, creating pool...');
+      _pool = new Pool({ connectionString: databaseUrl });
+      console.log('[DB Init] Pool created, initializing drizzle...');
+      _db = drizzle({ client: _pool, schema });
+      console.log('[DB Init] Database initialized successfully');
+    } catch (error) {
+      console.error('[DB Init] FATAL ERROR during initialization:', error);
+      console.error('[DB Init] Error message:', error instanceof Error ? error.message : String(error));
+      console.error('[DB Init] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      throw error;
+    }
   }
   return { pool: _pool!, db: _db! };
 }
