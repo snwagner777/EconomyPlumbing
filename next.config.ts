@@ -160,9 +160,14 @@ const nextConfig: NextConfig = {
         permanent: true,
       },
       
-      // Customer portal legacy URL redirect
+      // Customer portal legacy URL redirects
       {
         source: '/customer-portal/auth',
+        destination: '/customer-portal',
+        permanent: true,
+      },
+      {
+        source: '/portal',
         destination: '/customer-portal',
         permanent: true,
       },

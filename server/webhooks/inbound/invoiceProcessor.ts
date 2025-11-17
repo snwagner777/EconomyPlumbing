@@ -7,13 +7,15 @@
  * 1. Receive invoice PDF via Resend webhook
  * 2. Extract invoice number from PDF or email subject
  * 3. Create serviceTitanPhotoJobs record (invoice number = job number)
- * 4. Background worker processes photo fetch queue
+ * 4. Create jobCompletions record (triggers review requests & referrals)
+ * 5. Background workers process photo fetch queue and drip campaigns
  */
 
 import { db } from '../../db';
 import { serviceTitanPhotoJobs } from '../../../shared/schema';
 import { eq } from 'drizzle-orm';
-import pdfParse from 'pdf-parse';
+import * as pdfParse from 'pdf-parse';
+import { processJobCompletion } from './jobCompletionProcessor';
 
 export interface ProcessInvoiceOptions {
   invoiceNumber: string;
@@ -47,8 +49,11 @@ export async function processInvoice(options: ProcessInvoiceOptions): Promise<vo
       .where(eq(serviceTitanPhotoJobs.jobId, jobId))
       .limit(1);
 
+    let photoJobExists = false;
+
     if (existing.length > 0) {
       console.log(`[Invoice Processor] Photo fetch job already exists for job ${jobId}`);
+      photoJobExists = true;
       
       // If existing job failed, reset it to queued for retry
       if (existing[0].status === 'failed') {
@@ -63,22 +68,34 @@ export async function processInvoice(options: ProcessInvoiceOptions): Promise<vo
         
         console.log(`[Invoice Processor] Reset failed job ${existing[0].id} to queued`);
       }
-      
-      return;
+    } else {
+      // Create photo fetch job
+      const [newJob] = await db
+        .insert(serviceTitanPhotoJobs)
+        .values({
+          jobId,
+          invoiceNumber,
+          customerId: customerId || null,
+          status: 'queued',
+        })
+        .returning();
+
+      console.log(`[Invoice Processor] Created photo fetch job ${newJob.id} for job ${jobId}`);
     }
 
-    // Create photo fetch job
-    const [newJob] = await db
-      .insert(serviceTitanPhotoJobs)
-      .values({
+    // ALWAYS create job completion record to trigger review requests & referrals
+    // This runs even if photo job exists to support backfill scenario
+    try {
+      console.log(`[Invoice Processor] Creating job completion record for job ${jobId}`);
+      await processJobCompletion({
         jobId,
-        invoiceNumber,
-        customerId: customerId || null,
-        status: 'queued',
-      })
-      .returning();
-
-    console.log(`[Invoice Processor] Created photo fetch job ${newJob.id} for job ${jobId}`);
+        from,
+        subject,
+      });
+    } catch (completionError) {
+      // Don't fail the whole process if job completion fails
+      console.error(`[Invoice Processor] Failed to create job completion:`, completionError);
+    }
   } catch (error) {
     console.error(`[Invoice Processor] Error processing invoice ${invoiceNumber}:`, error);
     throw error;
@@ -117,7 +134,7 @@ export async function extractInvoiceNumber(subject: string, pdfBuffer?: Buffer, 
     try {
       console.log(`[Invoice Processor] Parsing PDF content (${pdfBuffer.length} bytes)`);
       
-      const pdfData = await pdfParse(pdfBuffer);
+      const pdfData = await (pdfParse as any)(pdfBuffer);
       const pdfText = pdfData.text;
       
       console.log(`[Invoice Processor] Extracted ${pdfText.length} chars from PDF`);

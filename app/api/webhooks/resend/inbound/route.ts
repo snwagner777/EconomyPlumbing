@@ -20,6 +20,7 @@ import { getUncachableResendClient } from '@/server/email';
 import { processInvoice, extractInvoiceNumber } from '@/server/webhooks/inbound/invoiceProcessor';
 import { processEstimate, extractEstimateNumber } from '@/server/webhooks/inbound/estimateProcessor';
 import { processCustomerData, isCustomerDataExport } from '@/server/webhooks/inbound/customerDataProcessor';
+import { processJobCompletion, extractJobId } from '@/server/webhooks/inbound/jobCompletionProcessor';
 
 const webhookSecret = process.env.RESEND_WEBHOOK_SIGNING_SECRET;
 const ZOOM_FORWARD_EMAIL = 'ST-Alerts-828414d7c3d94e90@teamchat.zoom.us';
@@ -97,7 +98,8 @@ export async function POST(req: NextRequest) {
 
     // Route to appropriate processor (wrap in try/catch to prevent 500 errors)
     try {
-      await routeEmail(from, subject, attachments);
+      const emailText = emailData.text || emailData.html || '';
+      await routeEmail(from, subject, attachments, emailText);
     } catch (routeError) {
       console.error('[Resend Inbound] Error routing email:', routeError);
       // Log error but still return 200 to prevent Resend retries
@@ -198,10 +200,24 @@ async function fetchAttachments(
 async function routeEmail(
   from: string,
   subject: string,
-  attachments: Array<{ filename: string; content: Buffer; contentType: string }>
+  attachments: Array<{ filename: string; content: Buffer; contentType: string }>,
+  emailText?: string
 ): Promise<void> {
   try {
-    // Check for invoice PDFs
+    // PRIORITY 1: Check for job completion alerts (plain text from ServiceTitan automation)
+    // These should be processed BEFORE invoices to trigger all workflows
+    const jobId = extractJobId(subject, emailText);
+    if (jobId) {
+      console.log(`[Resend Inbound] Processing job completion: ${jobId}`);
+      await processJobCompletion({
+        jobId,
+        from,
+        subject,
+      });
+      // Don't return - continue to check for invoice/photo processing
+    }
+
+    // PRIORITY 2: Check for invoice PDFs
     const invoicePdf = attachments.find(att => 
       /invoice.*\.pdf$/i.test(att.filename) && att.contentType === 'application/pdf'
     );
