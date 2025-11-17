@@ -20,9 +20,11 @@ import { getUncachableResendClient } from '@/server/email';
 import { processInvoice, extractInvoiceNumber } from '@/server/webhooks/inbound/invoiceProcessor';
 import { processEstimate, extractEstimateNumber } from '@/server/webhooks/inbound/estimateProcessor';
 import { processCustomerData, isCustomerDataExport } from '@/server/webhooks/inbound/customerDataProcessor';
+import { rateLimiter } from '@/server/lib/rateLimiter';
 
 const webhookSecret = process.env.RESEND_WEBHOOK_SIGNING_SECRET;
 const ZOOM_FORWARD_EMAIL = 'ST-Alerts-828414d7c3d94e90@teamchat.zoom.us';
+const RESEND_RATE_LIMIT = 1.5; // 1.5 requests/second to stay safely under 2/sec limit
 
 export async function POST(req: NextRequest) {
   console.log('[Resend Inbound] Webhook received');
@@ -145,15 +147,19 @@ async function fetchAttachments(
     try {
       console.log(`[Resend Inbound] Fetching attachment: ${meta.filename}`);
 
-      // Call Resend API to get attachment content
+      // Call Resend API to get attachment content (rate-limited)
       // API: GET /emails/{email_id}/attachments/{attachment_id}
-      const response = await fetch(
-        `https://api.resend.com/emails/${emailId}/attachments/${meta.id}`,
-        {
-          headers: {
-            'Authorization': `Bearer ${apiKey}`,
-          },
-        }
+      const response = await rateLimiter.enqueue(
+        'resend',
+        async () => fetch(
+          `https://api.resend.com/emails/${emailId}/attachments/${meta.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+            },
+          }
+        ),
+        RESEND_RATE_LIMIT
       );
 
       if (!response.ok) {
@@ -290,19 +296,24 @@ async function forwardToZoom(emailData: any): Promise<void> {
     const { client: resend, fromEmail } = await getUncachableResendClient();
     console.log(`[Resend Inbound] Got Resend client, from: ${fromEmail}, to: ${ZOOM_FORWARD_EMAIL}`);
 
-    const result = await resend.emails.send({
-      from: fromEmail,
-      to: ZOOM_FORWARD_EMAIL,
-      subject: `FWD: ${emailData.subject}`,
-      html: `
-        <p><strong>Forwarded from ServiceTitan</strong></p>
-        <p><strong>From:</strong> ${emailData.from}</p>
-        <p><strong>Subject:</strong> ${emailData.subject}</p>
-        <p><strong>Date:</strong> ${new Date().toISOString()}</p>
-        <hr>
-        ${emailData.html || emailData.text || '(No content)'}
-      `,
-    });
+    // Rate-limit the email send to prevent 429 errors
+    const result = await rateLimiter.enqueue(
+      'resend',
+      async () => resend.emails.send({
+        from: fromEmail,
+        to: ZOOM_FORWARD_EMAIL,
+        subject: `FWD: ${emailData.subject}`,
+        html: `
+          <p><strong>Forwarded from ServiceTitan</strong></p>
+          <p><strong>From:</strong> ${emailData.from}</p>
+          <p><strong>Subject:</strong> ${emailData.subject}</p>
+          <p><strong>Date:</strong> ${new Date().toISOString()}</p>
+          <hr>
+          ${emailData.html || emailData.text || '(No content)'}
+        `,
+      }),
+      RESEND_RATE_LIMIT
+    );
 
     console.log('[Resend Inbound] Forwarded to Zoom successfully, result:', JSON.stringify(result));
   } catch (error) {

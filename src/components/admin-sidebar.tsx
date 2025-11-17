@@ -46,6 +46,7 @@ import {
   TrendingUp,
   Activity,
   Search,
+  FileCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -185,6 +186,12 @@ const menuSections: MenuSection[] = [
         icon: Activity,
         href: '/admin/system-status',
         description: 'Workers & cron',
+      },
+      {
+        title: 'Logs',
+        icon: FileCode,
+        href: '/admin/logs',
+        description: 'System logs',
       },
       {
         title: 'Tracking Numbers',
