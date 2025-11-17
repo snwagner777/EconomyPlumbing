@@ -24,7 +24,7 @@ import { rateLimiter } from '@/server/lib/rateLimiter';
 
 const webhookSecret = process.env.RESEND_WEBHOOK_SIGNING_SECRET;
 const ZOOM_FORWARD_EMAIL = 'ST-Alerts-828414d7c3d94e90@teamchat.zoom.us';
-const RESEND_RATE_LIMIT = 1.5; // 1.5 requests/second to stay safely under 2/sec limit
+const RESEND_RATE_LIMIT = 1; // 1 request/second to stay safely under 2/sec limit and avoid 429 errors
 
 export async function POST(req: NextRequest) {
   console.log('[Resend Inbound] Webhook received');
@@ -117,10 +117,44 @@ export async function POST(req: NextRequest) {
 }
 
 /**
+ * Retry a fetch request with exponential backoff for 429 errors
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  maxRetries = 3
+): Promise<Response> {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    const response = await fetch(url, options);
+    
+    if (response.status === 429) {
+      if (attempt < maxRetries) {
+        const retryAfter = response.headers.get('retry-after');
+        const delayMs = retryAfter 
+          ? parseInt(retryAfter) * 1000 
+          : Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s, 4s
+        
+        console.warn(`[Resend Inbound] Rate limit hit (429), retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      } else {
+        console.error(`[Resend Inbound] Rate limit hit (429) after ${maxRetries} retries, giving up`);
+        return response;
+      }
+    }
+    
+    return response;
+  }
+  
+  throw new Error('Unexpected retry logic error');
+}
+
+/**
  * Fetch email attachments via Resend API
  * Resend webhook only includes attachment metadata, not content
  * 
  * Downloads sequentially with size limits to prevent memory exhaustion
+ * Includes retry logic with exponential backoff for 429 rate limit errors
  */
 async function fetchAttachments(
   emailId: string,
@@ -147,11 +181,11 @@ async function fetchAttachments(
     try {
       console.log(`[Resend Inbound] Fetching attachment: ${meta.filename}`);
 
-      // Call Resend API to get attachment content (rate-limited)
+      // Call Resend API to get attachment content (rate-limited with retry logic)
       // API: GET /emails/{email_id}/attachments/{attachment_id}
       const response = await rateLimiter.enqueue(
         'resend',
-        async () => fetch(
+        async () => fetchWithRetry(
           `https://api.resend.com/emails/${emailId}/attachments/${meta.id}`,
           {
             headers: {
@@ -288,37 +322,55 @@ async function routeEmail(
 
 /**
  * Forward all incoming emails to Zoom chat for monitoring
+ * Includes retry logic with exponential backoff for 429 rate limit errors
  */
 async function forwardToZoom(emailData: any): Promise<void> {
-  try {
-    console.log(`[Resend Inbound] Starting Zoom forward for: ${emailData.subject}`);
-    
-    const { client: resend, fromEmail } = await getUncachableResendClient();
-    console.log(`[Resend Inbound] Got Resend client, from: ${fromEmail}, to: ${ZOOM_FORWARD_EMAIL}`);
+  const maxRetries = 3;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Resend Inbound] Starting Zoom forward for: ${emailData.subject} (attempt ${attempt + 1}/${maxRetries + 1})`);
+      
+      const { client: resend, fromEmail } = await getUncachableResendClient();
 
-    // Rate-limit the email send to prevent 429 errors
-    const result = await rateLimiter.enqueue(
-      'resend',
-      async () => resend.emails.send({
-        from: fromEmail,
-        to: ZOOM_FORWARD_EMAIL,
-        subject: `FWD: ${emailData.subject}`,
-        html: `
-          <p><strong>Forwarded from ServiceTitan</strong></p>
-          <p><strong>From:</strong> ${emailData.from}</p>
-          <p><strong>Subject:</strong> ${emailData.subject}</p>
-          <p><strong>Date:</strong> ${new Date().toISOString()}</p>
-          <hr>
-          ${emailData.html || emailData.text || '(No content)'}
-        `,
-      }),
-      RESEND_RATE_LIMIT
-    );
+      // Rate-limit the email send to prevent 429 errors
+      const result = await rateLimiter.enqueue(
+        'resend',
+        async () => resend.emails.send({
+          from: fromEmail,
+          to: ZOOM_FORWARD_EMAIL,
+          subject: `FWD: ${emailData.subject}`,
+          html: `
+            <p><strong>Forwarded from ServiceTitan</strong></p>
+            <p><strong>From:</strong> ${emailData.from}</p>
+            <p><strong>Subject:</strong> ${emailData.subject}</p>
+            <p><strong>Date:</strong> ${new Date().toISOString()}</p>
+            <hr>
+            ${emailData.html || emailData.text || '(No content)'}
+          `,
+        }),
+        RESEND_RATE_LIMIT
+      );
 
-    console.log('[Resend Inbound] Forwarded to Zoom successfully, result:', JSON.stringify(result));
-  } catch (error) {
-    console.error('[Resend Inbound] Error forwarding to Zoom:', error);
-    console.error('[Resend Inbound] Error details:', error instanceof Error ? error.message : JSON.stringify(error));
-    // Don't throw - forwarding failure shouldn't block webhook processing
+      console.log('[Resend Inbound] Forwarded to Zoom successfully, result:', JSON.stringify(result));
+      return; // Success - exit retry loop
+    } catch (error: any) {
+      // Check if it's a rate limit error (429)
+      const is429Error = error?.message?.includes('429') || 
+                        error?.statusCode === 429 || 
+                        error?.status === 429;
+      
+      if (is429Error && attempt < maxRetries) {
+        const delayMs = Math.pow(2, attempt) * 1000; // Exponential backoff: 1s, 2s, 4s
+        console.warn(`[Resend Inbound] Rate limit hit (429) on Zoom forward, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        continue;
+      }
+      
+      console.error('[Resend Inbound] Error forwarding to Zoom:', error);
+      console.error('[Resend Inbound] Error details:', error instanceof Error ? error.message : JSON.stringify(error));
+      // Don't throw - forwarding failure shouldn't block webhook processing
+      return;
+    }
   }
 }
