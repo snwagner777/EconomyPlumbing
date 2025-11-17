@@ -1525,6 +1525,23 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           )}
         </div>
       </main>
+
+      {/* Scheduler Dialog - Available across all portal modes */}
+      {customerId && customerData?.customer && (
+        <SchedulerDialog
+          open={schedulerOpen}
+          onOpenChange={setSchedulerOpen}
+          customerInfo={customerData.customer}
+          locations={customerLocations}
+          utmSource="customer-portal"
+          onComplete={() => {
+            setSchedulerOpen(false);
+            // Refresh appointments after booking
+            const numericId = customerId ? parseInt(customerId) : null;
+            queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });
+          }}
+        />
+      )}
       
       <Footer />
     </>
