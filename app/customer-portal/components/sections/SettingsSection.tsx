@@ -28,6 +28,7 @@ interface SettingsSectionProps {
   onEditContacts?: () => void;
   onAddLocation?: () => void;
   onEditLocation?: (location: any) => void;
+  onAddAccount?: () => void;
   formatPhoneNumber?: (phone: string) => string;
 }
 
@@ -36,6 +37,7 @@ export function SettingsSection({
   onEditContacts,
   onAddLocation,
   onEditLocation,
+  onAddAccount,
   formatPhoneNumber,
 }: SettingsSectionProps) {
   const [activeSection, setActiveSection] = useState<string>('contacts');
@@ -272,6 +274,62 @@ export function SettingsSection({
                   ))}
                 </>
               )}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+
+        {/* Account Management Section */}
+        <AccordionItem value="account-management" data-testid="accordion-account-management">
+          <AccordionTrigger>
+            <div className="flex items-center gap-2">
+              <Building2 className="w-5 h-5" />
+              <span className="font-semibold">Account Management</span>
+            </div>
+          </AccordionTrigger>
+          <AccordionContent>
+            <div className="space-y-4 pt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-base">Manage Accounts</CardTitle>
+                  <CardDescription>
+                    Create new accounts for additional properties or businesses
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                      <Building2 className="w-5 h-5 text-primary mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">Multiple Accounts</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Manage residential and commercial properties from one portal. Each account has its own service history and locations.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                      <Home className="w-5 h-5 text-primary mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm">Easy Switching</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Switch between accounts using the account switcher at the top of the sidebar.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {onAddAccount && (
+                    <Button
+                      onClick={onAddAccount}
+                      className="w-full"
+                      data-testid="button-create-account"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create New Account
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </AccordionContent>
         </AccordionItem>

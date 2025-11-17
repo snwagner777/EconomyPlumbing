@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Home, Wrench, DollarSign, Gift, Settings as SettingsIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AccountSwitcher } from './header/AccountSwitcher';
 
 export type PortalSection = 'overview' | 'services' | 'billing' | 'rewards' | 'settings';
 
@@ -22,6 +23,8 @@ interface NavItem {
 interface PortalSidebarProps {
   currentSection: PortalSection;
   onSectionChange: (section: PortalSection) => void;
+  customerId: number;
+  onAddAccount?: () => void;
   className?: string;
 }
 
@@ -36,12 +39,22 @@ const NAV_ITEMS: NavItem[] = [
 export function PortalSidebar({
   currentSection,
   onSectionChange,
+  customerId,
+  onAddAccount,
   className,
 }: PortalSidebarProps) {
   return (
     <div className={cn("pb-12 border-r bg-card", className)}>
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
+          {/* Account Switcher */}
+          <div className="mb-4 px-4">
+            <AccountSwitcher
+              currentCustomerId={customerId}
+              onAddAccount={onAddAccount}
+            />
+          </div>
+          
           <h2 className="mb-2 px-4 text-lg font-semibold">
             Customer Portal
           </h2>

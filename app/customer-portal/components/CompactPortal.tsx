@@ -15,6 +15,8 @@ import { ServicesSection } from './sections/ServicesSection';
 import { BillingSection } from './sections/BillingSection';
 import { SettingsSection } from './sections/SettingsSection';
 import { ContactManagementDialog } from './sections/ContactManagementDialog';
+import { AddLocationDialog } from './settings/AddLocationDialog';
+import { AddAccountDialog } from './settings/AddAccountDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -73,6 +75,8 @@ export function CompactPortal({
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [addLocationDialogOpen, setAddLocationDialogOpen] = useState(false);
+  const [addAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
 
   // Transform customer data using mappers
   const transformedData = transformCustomerData(customerData);
@@ -170,8 +174,9 @@ export function CompactPortal({
           <SettingsSection
             customerData={transformedData}
             onEditContacts={() => setContactDialogOpen(true)}
-            onAddLocation={onAddLocation}
+            onAddLocation={() => setAddLocationDialogOpen(true)}
             onEditLocation={onEditLocation}
+            onAddAccount={() => setAddAccountDialogOpen(true)}
             formatPhoneNumber={formatPhoneNumber}
           />
         );
@@ -190,6 +195,8 @@ export function CompactPortal({
           <PortalSidebar
             currentSection={currentSection}
             onSectionChange={setCurrentSection}
+            customerId={customerId ? parseInt(customerId) : 0}
+            onAddAccount={() => setAddAccountDialogOpen(true)}
           />
         </div>
 
@@ -215,6 +222,21 @@ export function CompactPortal({
         customerContacts={normalizedCustomerContacts}
         locations={normalizedLocations}
         formatPhoneNumber={formatPhoneNumber}
+      />
+
+      {/* Add Location Dialog */}
+      {customerId && (
+        <AddLocationDialog
+          open={addLocationDialogOpen}
+          onOpenChange={setAddLocationDialogOpen}
+          customerId={parseInt(customerId)}
+        />
+      )}
+
+      {/* Add Account Dialog */}
+      <AddAccountDialog
+        open={addAccountDialogOpen}
+        onOpenChange={setAddAccountDialogOpen}
       />
     </div>
   );

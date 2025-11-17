@@ -4,7 +4,10 @@ import { getSession } from '@/lib/session';
 
 export const dynamic = 'force-dynamic';
 
-export async function POST(request: NextRequest) {
+/**
+ * GET - Fetch all customer accounts for logged-in user
+ */
+export async function GET(request: NextRequest) {
   try {
     // Verify session
     const session = await getSession();
@@ -76,6 +79,84 @@ export async function POST(request: NextRequest) {
     console.error('[Portal] Error fetching customer accounts:', error);
     return NextResponse.json(
       { error: 'Failed to fetch customer accounts' },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * POST - Create new customer account and add to session
+ */
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getSession();
+    
+    if (!session.customerPortalAuth?.customerId) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const { name, customerType, phone, email, address } = body;
+
+    // Validate required fields
+    if (!name || !customerType || !phone || !address?.street || !address?.city || !address?.state || !address?.zip) {
+      return NextResponse.json(
+        { error: 'Missing required fields: name, customerType, phone, address (street, city, state, zip)' },
+        { status: 400 }
+      );
+    }
+
+    // Validate customer type
+    if (customerType !== 'Residential' && customerType !== 'Commercial') {
+      return NextResponse.json(
+        { error: 'Invalid customerType. Must be "Residential" or "Commercial"' },
+        { status: 400 }
+      );
+    }
+
+    console.log(`[Portal] Creating new ${customerType} account for ${name}`);
+
+    // Create customer in ServiceTitan
+    const customer = await serviceTitanCRM.createCustomer({
+      name,
+      customerType,
+      phone,
+      email,
+      address: {
+        street: address.street,
+        unit: address.unit,
+        city: address.city,
+        state: address.state,
+        zip: address.zip,
+      },
+    });
+
+    console.log(`[Portal] Created customer ${customer.id}, adding to session`);
+
+    // Add new customer ID to session's availableCustomerIds
+    const currentCustomerIds = session.customerPortalAuth.availableCustomerIds || [session.customerPortalAuth.customerId];
+    
+    if (!currentCustomerIds.includes(customer.id)) {
+      session.customerPortalAuth.availableCustomerIds = [...currentCustomerIds, customer.id];
+      await session.save();
+      console.log(`[Portal] Added customer ${customer.id} to session. Total accounts: ${session.customerPortalAuth.availableCustomerIds.length}`);
+    }
+
+    return NextResponse.json({
+      success: true,
+      customer: {
+        id: customer.id,
+        name: customer.name,
+        type: customer.type,
+      },
+    });
+  } catch (error: any) {
+    console.error('[Portal] Create account error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to create account' },
       { status: 500 }
     );
   }
