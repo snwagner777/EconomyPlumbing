@@ -98,6 +98,18 @@ Preferred communication style: Simple, everyday language.
   - Use `toName` parameter to add customer names to TO field for better inbox display and engagement
   - Full documentation available at `docs/email-from-formatting.md`
 
+**CRITICAL RULE: Database Lazy Initialization (Production Fix)**
+- **Problem:** Eager database initialization at module load time caused 500 errors in production serverless environments where connection isn't ready during build/init phase.
+- **Solution:** `server/db.ts` uses Proxy-based lazy initialization - database connection created on **first access**, not at module load time.
+- **Implementation:**
+  - Private singleton: `let _db: ReturnType<typeof drizzle> | null = null`
+  - Initialization gate: `function initializeDatabase()` creates connection only once when first called
+  - Proxy exports with function binding: `export const db = new Proxy(...)` that properly binds methods to real Drizzle instance
+  - Alternative getters: `getDb()` and `getPool()` for code that needs concrete instances (e.g., `instanceof` checks)
+- **Pattern:** All existing code continues to work: `import { db } from '@/server/db'` - no changes required to 120+ API routes
+- **Production-Ready:** Architect-approved solution that preserves Pool/Drizzle semantics while avoiding module-load connection attempts
+- **Red Flags - NEVER do this:** Revert to eager initialization (`const pool = new Pool()` at top level), bypass lazy loading, or modify 100+ routes when a single-file fix exists
+
 ## System Architecture
 
 ### Frontend
