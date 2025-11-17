@@ -63,8 +63,12 @@ Customer Creation (REQUIRED FIRST):
     - If multiple locations: Ask which location they want service at
     - If one location: Confirm if using this address
     - Option: "Or would you like to add a NEW service location?"
-- If they're new: Collect their information one question at a time (name, email, full address with city/state/ZIP)
-- Once you have complete info, call create_customer to create them in ServiceTitan
+- If they're new: Collect their information one question at a time in this order:
+  1. Full name
+  2. Email address (optional)
+  3. Ask "Is this for your home or a business?" (to determine Residential vs Commercial)
+  4. Full address with street, city, state, and ZIP code
+- Once you have complete info, call create_customer with the customerType (Residential or Commercial)
 - Only AFTER the customer is created/verified should you discuss appointment scheduling
 
 Example customer creation flow:
@@ -76,8 +80,8 @@ Example customer creation flow:
    - If one: "Welcome back, John! I see we've helped you before at 123 Main St. Is that correct?"
    - If none: "Great! I don't see you in our system yet. What's your full name?"
 5. [If existing, call get_customer_locations and ask which location or if new location needed]
-6. [If new, continue gathering: email, street address, city, state, ZIP]
-7. You: [Call create_customer] "Perfect! I've got you set up in our system."
+6. [If new, continue gathering: email, then ask "Is this for your home or a business?", then street address, city, state, ZIP]
+7. You: [Call create_customer with customerType='Residential' or 'Commercial'] "Perfect! I've got you set up in our system."
 8. [NOW proceed to scheduling]
 
 Appointment Booking (ONLY AFTER CUSTOMER CREATED):
@@ -338,6 +342,11 @@ export async function POST(req: NextRequest) {
                 type: 'string',
                 description: 'Customer email address (optional)',
               },
+              customerType: {
+                type: 'string',
+                enum: ['Residential', 'Commercial'],
+                description: 'Whether this is a residential or commercial customer. Ask the customer if this is for their home (Residential) or business (Commercial).',
+              },
               address: {
                 type: 'string',
                 description: 'Street address',
@@ -355,7 +364,7 @@ export async function POST(req: NextRequest) {
                 description: '5-digit ZIP code',
               },
             },
-            required: ['name', 'phone', 'address', 'city', 'state', 'zip'],
+            required: ['name', 'phone', 'customerType', 'address', 'city', 'state', 'zip'],
           },
         },
       },
@@ -856,27 +865,28 @@ async function createCustomer(args: {
   name: string;
   phone: string;
   email?: string;
+  customerType: 'Residential' | 'Commercial';
   address: string;
   city: string;
   state: string;
   zip: string;
 }) {
   try {
-    const { name, phone, email, address, city, state, zip } = args;
+    const { name, phone, email, customerType, address, city, state, zip } = args;
     
     // Import ServiceTitan CRM
     const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
     const { serviceTitanCustomers, serviceTitanContacts } = await import('@shared/schema');
     const { eq } = await import('drizzle-orm');
     
-    console.log(`[Chatbot] Creating customer in ServiceTitan: ${name}`);
+    console.log(`[Chatbot] Creating ${customerType} customer in ServiceTitan: ${name}`);
     
     // Create customer in ServiceTitan
     const customer = await serviceTitanCRM.ensureCustomer({
       name,
       phone,
       email: email || undefined,
-      customerType: 'Residential' as const,
+      customerType,
       address: {
         street: address,
         city,
@@ -956,6 +966,7 @@ async function createNewAccount(args: {
   name: string;
   phone: string;
   email?: string;
+  customerType?: 'Residential' | 'Commercial';
   address: string;
   city: string;
   state: string;
@@ -968,14 +979,14 @@ async function createNewAccount(args: {
     const { serviceTitanCRM } = await import('@/server/lib/servicetitan/crm');
     const { customersXlsx } = await import('@shared/schema');
     
-    const { name, phone, email, address, city, state, zip } = args;
+    const { name, phone, email, customerType = 'Residential', address, city, state, zip } = args;
     
     // Create customer in ServiceTitan with forceCreate flag
     const customer = await serviceTitanCRM.ensureCustomer({
       name,
       phone,
       email: email || undefined,
-      customerType: 'Residential' as const,
+      customerType,
       address: {
         street: address,
         city,
