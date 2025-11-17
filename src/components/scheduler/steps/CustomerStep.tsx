@@ -217,6 +217,47 @@ export function CustomerStep({ onSubmit, initialData, selectedService, onVipErro
     },
   });
 
+  // Auto-verify portal users (they're already authenticated)
+  useEffect(() => {
+    if (!sharedContext || isStale()) {
+      return;
+    }
+
+    // Portal users are pre-authenticated - skip verification
+    if (sharedContext.source === 'portal' && !isVerified) {
+      console.log('[Scheduler] Portal user detected - auto-verifying');
+      
+      const contact = sharedContext.phone || sharedContext.email || '';
+      const mode = sharedContext.phone ? 'phone' : 'email';
+      
+      if (contact) {
+        setIsVerified(true);
+        setVerifiedContact(contact);
+        setLookupValue(contact);
+        setLookupMode(mode);
+        
+        // Create a session for portal users
+        const session: SchedulerSession = {
+          token: `portal_${Date.now()}`,
+          verificationMethod: mode,
+          verifiedAt: Date.now(),
+          customerId: sharedContext.serviceTitanId || null,
+          expiresAt: Date.now() + (60 * 60 * 1000), // 1 hour
+        };
+        
+        setSessionToken(session.token);
+        localStorage.setItem(SCHEDULER_SESSION_KEY, JSON.stringify(session));
+        onSessionUpdate?.(session);
+        
+        // Auto-trigger customer lookup
+        setTimeout(() => {
+          const normalized = normalizeContact(contact, mode);
+          lookupMutation.mutate({ contact: normalized, type: mode });
+        }, 100);
+      }
+    }
+  }, [sharedContext, isStale, isVerified]);
+
   // Hydrate form with shared customer context (field-by-field, only empty fields)
   useEffect(() => {
     if (!sharedContext || isStale()) {
