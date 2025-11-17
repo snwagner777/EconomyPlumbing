@@ -2,41 +2,21 @@ import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
 import * as schema from "@shared/schema";
-import fs from 'fs';
 
 neonConfig.webSocketConstructor = ws;
 
-// Get DATABASE_URL from environment variable (preferred) or /tmp/replitdb (legacy fallback)
+// Get DATABASE_URL from environment variable
 function getDatabaseUrl(): string {
   console.log('[DB Init] getDatabaseUrl called');
   
-  // Check environment variable FIRST (allows deployment secret to override file)
   if (process.env.DATABASE_URL) {
     console.log('[DB Init] Using DATABASE_URL from environment variable');
     return process.env.DATABASE_URL;
   }
   
-  // Fall back to production database file (legacy)
-  try {
-    console.log('[DB Init] Checking /tmp/replitdb...');
-    if (fs.existsSync('/tmp/replitdb')) {
-      console.log('[DB Init] /tmp/replitdb exists, reading...');
-      const url = fs.readFileSync('/tmp/replitdb', 'utf-8').trim();
-      if (url) {
-        console.log('[DB Init] Using DATABASE_URL from /tmp/replitdb (legacy fallback)');
-        return url;
-      }
-      console.log('[DB Init] /tmp/replitdb exists but is empty');
-    } else {
-      console.log('[DB Init] /tmp/replitdb does not exist');
-    }
-  } catch (err) {
-    console.error('[DB Init] Error reading /tmp/replitdb:', err);
-  }
-  
-  console.error('[DB Init] FATAL: No DATABASE_URL found in environment or /tmp/replitdb');
+  console.error('[DB Init] FATAL: DATABASE_URL environment variable not set');
   throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
+    "DATABASE_URL environment variable must be set. Please configure it in your deployment secrets.",
   );
 }
 
