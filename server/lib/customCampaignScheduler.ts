@@ -52,9 +52,11 @@ export class CustomCampaignScheduler {
    * Get customer details from XLSX tables
    */
   private async getCustomerDetails(customerId: number) {
-    const customer = await db.query.customersXlsx.findFirst({
-      where: eq(customersXlsx.id, customerId),
-    });
+    const [customer] = await db
+      .select()
+      .from(customersXlsx)
+      .where(eq(customersXlsx.id, customerId))
+      .limit(1);
 
     if (customer && customer.name && customer.email) {
       return {
@@ -76,9 +78,11 @@ export class CustomCampaignScheduler {
   ): Promise<boolean> {
     try {
       // Check suppression list FIRST
-      const suppressed = await db.query.emailSuppressionList.findFirst({
-        where: eq(emailSuppressionList.email, customer.email),
-      });
+      const [suppressed] = await db
+        .select()
+        .from(emailSuppressionList)
+        .where(eq(emailSuppressionList.email, customer.email))
+        .limit(1);
 
       if (suppressed) {
         console.log(`[Custom Campaign] Email ${customer.email} is suppressed (${suppressed.reason}), skipping`);
@@ -145,11 +149,13 @@ export class CustomCampaignScheduler {
 
       // Also log in main emailSendLog for unified tracking
       await db.insert(emailSendLog).values({
-        email: customer.email,
         campaignType: 'custom_campaign',
+        campaignRecordId: campaign.id,
         emailNumber: email.sequenceNumber,
-        subject: email.subject,
-        resendId,
+        recipientEmail: customer.email,
+        recipientName: customer.name,
+        customerId: customer.id,
+        resendEmailId: resendId,
         sentAt: new Date(),
       });
 
