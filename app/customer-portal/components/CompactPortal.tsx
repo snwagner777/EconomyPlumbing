@@ -12,7 +12,8 @@ import { BottomNav } from './BottomNav';
 import { MembershipsSection } from './MembershipsSection';
 import { VouchersSection } from '../VouchersSection';
 import { ServicesSection } from './sections/ServicesSection';
-import { BillingSection } from './sections/BillingSection';
+// TODO: Uncomment when billing section is ready
+// import { BillingSection } from './sections/BillingSection';
 import { SettingsSection } from './sections/SettingsSection';
 import { ContactManagementDialog } from './sections/ContactManagementDialog';
 import { AddLocationDialog } from './settings/AddLocationDialog';
@@ -161,13 +162,14 @@ export function CompactPortal({
           />
         );
         
-      case 'billing':
-        return (
-          <BillingSection
-            customerData={transformedData}
-            formatDate={formatDate}
-          />
-        );
+      // TODO: Uncomment when billing section is ready
+      // case 'billing':
+      //   return (
+      //     <BillingSection
+      //       customerData={transformedData}
+      //       formatDate={formatDate}
+      //     />
+      //   );
         
       case 'settings':
         return (

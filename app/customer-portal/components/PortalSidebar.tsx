@@ -11,7 +11,8 @@ import { Home, Wrench, DollarSign, Gift, Settings as SettingsIcon } from "lucide
 import { cn } from "@/lib/utils";
 import { AccountSwitcher } from './header/AccountSwitcher';
 
-export type PortalSection = 'overview' | 'services' | 'billing' | 'rewards' | 'settings';
+// TODO: Add 'billing' back when billing section is ready
+export type PortalSection = 'overview' | 'services' | 'rewards' | 'settings';
 
 interface NavItem {
   id: PortalSection;
@@ -31,7 +32,8 @@ interface PortalSidebarProps {
 const NAV_ITEMS: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: Home },
   { id: 'services', label: 'Services', icon: Wrench },
-  { id: 'billing', label: 'Billing', icon: DollarSign },
+  // TODO: Uncomment when billing section is ready
+  // { id: 'billing', label: 'Billing', icon: DollarSign },
   { id: 'rewards', label: 'Rewards', icon: Gift },
   { id: 'settings', label: 'Settings', icon: SettingsIcon },
 ];

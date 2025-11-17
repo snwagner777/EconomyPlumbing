@@ -18,7 +18,8 @@ interface BottomNavProps {
 const NAV_ITEMS = [
   { id: 'overview' as PortalSection, label: 'Overview', icon: Home },
   { id: 'services' as PortalSection, label: 'Services', icon: Wrench },
-  { id: 'billing' as PortalSection, label: 'Billing', icon: CreditCard },
+  // TODO: Uncomment when billing section is ready
+  // { id: 'billing' as PortalSection, label: 'Billing', icon: CreditCard },
   { id: 'rewards' as PortalSection, label: 'Rewards', icon: Gift },
   { id: 'settings' as PortalSection, label: 'Menu', icon: Grid3x3 },
 ];
