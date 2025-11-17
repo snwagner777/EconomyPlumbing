@@ -20,7 +20,6 @@ import { getUncachableResendClient } from '@/server/email';
 import { processInvoice, extractInvoiceNumber } from '@/server/webhooks/inbound/invoiceProcessor';
 import { processEstimate, extractEstimateNumber } from '@/server/webhooks/inbound/estimateProcessor';
 import { processCustomerData, isCustomerDataExport } from '@/server/webhooks/inbound/customerDataProcessor';
-import { processJobCompletion, extractJobId } from '@/server/webhooks/inbound/jobCompletionProcessor';
 
 const webhookSecret = process.env.RESEND_WEBHOOK_SIGNING_SECRET;
 const ZOOM_FORWARD_EMAIL = 'ST-Alerts-828414d7c3d94e90@teamchat.zoom.us';
@@ -206,6 +205,7 @@ async function routeEmail(
   try {
     // PRIORITY 1: Check for job completion alerts (plain text from ServiceTitan automation)
     // These should be processed BEFORE invoices to trigger all workflows
+    const { extractJobId, processJobCompletion } = await import('@/server/webhooks/inbound/jobCompletionProcessor');
     const jobId = extractJobId(subject, emailText);
     if (jobId) {
       console.log(`[Resend Inbound] Processing job completion: ${jobId}`);
