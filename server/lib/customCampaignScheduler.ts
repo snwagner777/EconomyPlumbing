@@ -144,7 +144,6 @@ export class CustomCampaignScheduler {
         recipientName: customer.name,
         sentAt: new Date(),
         resendEmailId: resendId,
-        subject: email.subject,
       });
 
       // Also log in main emailSendLog for unified tracking
