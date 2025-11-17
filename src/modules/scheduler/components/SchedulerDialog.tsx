@@ -139,8 +139,9 @@ export function SchedulerDialog({
     reset();
     onOpenChange(false);
     
-    // Redirect to success page
-    window.location.href = `/scheduler/payment-success?utm_source=${utmSource}`;
+    // Note: Don't redirect to payment-success page for regular appointments
+    // That page is only for paid backflow testing appointments
+    // The ReviewStep already shows a success UI before calling this function
   };
 
   // Get current step icon
