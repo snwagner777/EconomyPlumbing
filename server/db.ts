@@ -28,6 +28,47 @@ function getDatabaseUrl(): string {
   );
 }
 
-const databaseUrl = getDatabaseUrl();
-export const pool = new Pool({ connectionString: databaseUrl });
-export const db = drizzle({ client: pool, schema });
+// Lazy initialization to prevent database connection during module load
+let _pool: Pool | null = null;
+let _db: ReturnType<typeof drizzle> | null = null;
+
+function initializeDatabase() {
+  if (!_db) {
+    const databaseUrl = getDatabaseUrl();
+    _pool = new Pool({ connectionString: databaseUrl });
+    _db = drizzle({ client: _pool, schema });
+  }
+  return { pool: _pool!, db: _db! };
+}
+
+// Export getters that initialize on first call
+export function getPool(): Pool {
+  return initializeDatabase().pool;
+}
+
+export function getDb() {
+  return initializeDatabase().db;
+}
+
+// Backward compatibility: export db that works with existing code
+export const db = new Proxy({} as ReturnType<typeof drizzle>, {
+  get(target, prop, receiver) {
+    const database = initializeDatabase().db;
+    const value = (database as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(database);
+    }
+    return value;
+  }
+});
+
+export const pool = new Proxy({} as Pool, {
+  get(target, prop, receiver) {
+    const poolInstance = initializeDatabase().pool;
+    const value = (poolInstance as any)[prop];
+    if (typeof value === 'function') {
+      return value.bind(poolInstance);
+    }
+    return value;
+  }
+});
