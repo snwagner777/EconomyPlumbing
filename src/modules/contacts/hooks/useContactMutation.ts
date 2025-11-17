@@ -123,44 +123,63 @@ export function useAddLocationContact() {
 }
 
 // ============================================================================
-// Contact Update/Delete Mutations (Customer Portal)
+// Contact Update/Delete Mutations (v2 API - Contact Methods)
 // ============================================================================
 
-interface UpdateContactValues {
-  contactId: string; // Contact person GUID
+interface UpdateCustomerContactValues {
+  customerId: number;
+  contactId: number;
+  type: string;
+  value: string;
+  memo?: string;
+}
+
+interface UpdateLocationContactValues {
+  customerId: number;
+  locationId: number;
+  contactId: number;
+  type: string;
+  value: string;
+  memo?: string;
   name?: string;
-  phone?: string;
-  phoneMethodId?: string; // Contact method GUID for phone
-  email?: string;
-  emailMethodId?: string; // Contact method GUID for email
+}
+
+interface DeleteCustomerContactValues {
+  customerId: number;
+  contactId: number;
+}
+
+interface DeleteLocationContactValues {
+  customerId: number;
+  locationId: number;
+  contactId: number;
 }
 
 /**
- * Update existing contact
+ * Update existing customer contact method
  * 
- * Endpoint: PATCH /api/customer-portal/contacts/[id]
- * Invalidates: Customer location queries
+ * Endpoint: PATCH /api/portal/customer-contacts/[contactId]
+ * Invalidates: Customer data queries
  */
-export function useUpdateContact() {
+export function useUpdateCustomerContact() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (data: UpdateContactValues) => {
-      const response = await fetch(`/api/customer-portal/contacts/${data.contactId}`, {
+    mutationFn: async (data: UpdateCustomerContactValues) => {
+      const response = await fetch(`/api/portal/customer-contacts/${data.contactId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: data.name?.trim() || undefined,
-          phone: data.phone?.trim() || undefined,
-          phoneMethodId: data.phoneMethodId,
-          email: data.email?.trim() || undefined,
-          emailMethodId: data.emailMethodId,
+          customerId: data.customerId,
+          type: data.type,
+          value: data.value.trim(),
+          memo: data.memo?.trim() || undefined,
         }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to update contact' }));
-        throw new Error(error.message || 'Failed to update contact');
+        const error = await response.json().catch(() => ({ error: 'Failed to update contact' }));
+        throw new Error(error.error || 'Failed to update contact');
       }
 
       return response.json();
@@ -171,7 +190,55 @@ export function useUpdateContact() {
         description: 'Contact information has been updated successfully.',
       });
       
-      // Invalidate customer-locations queries to refresh enriched contact data
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+/**
+ * Update existing location contact method
+ * 
+ * Endpoint: PATCH /api/portal/location-contacts/[contactId]
+ * Invalidates: Location data queries
+ */
+export function useUpdateLocationContact() {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: UpdateLocationContactValues) => {
+      const response = await fetch(`/api/portal/location-contacts/${data.contactId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: data.customerId,
+          locationId: data.locationId,
+          type: data.type,
+          value: data.value.trim(),
+          memo: data.memo?.trim() || undefined,
+          name: data.name?.trim() || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Failed to update location contact' }));
+        throw new Error(error.error || 'Failed to update location contact');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Contact Updated',
+        description: 'Location contact has been updated successfully.',
+      });
+      
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
@@ -189,25 +256,25 @@ export function useUpdateContact() {
 }
 
 /**
- * Delete existing contact
+ * Delete customer contact method
  * 
- * Endpoint: DELETE /api/customer-portal/contacts/[id]
- * Invalidates: Customer location queries
- * 
- * Note: Cannot delete if it's the last contact (enforced by API)
+ * Endpoint: DELETE /api/portal/customer-contacts/[contactId]
+ * Invalidates: Customer data queries
  */
-export function useDeleteContact() {
+export function useDeleteCustomerContact() {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (contactId: string) => {
-      const response = await fetch(`/api/customer-portal/contacts/${contactId}`, {
+    mutationFn: async (data: DeleteCustomerContactValues) => {
+      const response = await fetch(`/api/portal/customer-contacts/${data.contactId}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerId: data.customerId }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Failed to delete contact' }));
-        throw new Error(error.message || 'Failed to delete contact');
+        const error = await response.json().catch(() => ({ error: 'Failed to delete contact' }));
+        throw new Error(error.error || 'Failed to delete contact');
       }
 
       return response.json();
@@ -218,7 +285,51 @@ export function useDeleteContact() {
         description: 'Contact has been removed successfully.',
       });
       
-      // Invalidate customer-locations queries to refresh contact list
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Delete Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+}
+
+/**
+ * Delete location contact method
+ * 
+ * Endpoint: DELETE /api/portal/location-contacts/[contactId]
+ * Invalidates: Location data queries
+ */
+export function useDeleteLocationContact() {
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (data: DeleteLocationContactValues) => {
+      const response = await fetch(`/api/portal/location-contacts/${data.contactId}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerId: data.customerId,
+          locationId: data.locationId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Failed to delete location contact' }));
+        throw new Error(error.error || 'Failed to delete location contact');
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Contact Deleted',
+        description: 'Location contact has been removed successfully.',
+      });
+      
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
@@ -234,3 +345,7 @@ export function useDeleteContact() {
     },
   });
 }
+
+// Legacy exports for backwards compatibility
+export const useUpdateContact = useUpdateCustomerContact;
+export const useDeleteContact = useDeleteCustomerContact;

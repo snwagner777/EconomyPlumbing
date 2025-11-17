@@ -14,6 +14,7 @@ import { VouchersSection } from '../VouchersSection';
 import { ServicesSection } from './sections/ServicesSection';
 import { BillingSection } from './sections/BillingSection';
 import { SettingsSection } from './sections/SettingsSection';
+import { ContactManagementDialog } from './sections/ContactManagementDialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
@@ -71,9 +72,31 @@ export function CompactPortal({
 }: CompactPortalProps) {
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
 
   // Transform customer data using mappers
   const transformedData = transformCustomerData(customerData);
+
+  // Normalize customer contacts to v2 API format {id, type, value, memo}
+  const normalizeContacts = (contacts: any[] | undefined) => {
+    if (!contacts || !Array.isArray(contacts)) return [];
+    
+    return contacts.map((contact: any) => ({
+      id: contact.id || contact.contactMethodId,
+      type: contact.type || contact.contactType,
+      value: contact.value,
+      memo: contact.memo,
+    })).filter((c: any) => c.id && c.type && c.value);
+  };
+
+  // Use contactMethods from ServiceTitan v2 API (not contacts)
+  const normalizedCustomerContacts = normalizeContacts(customerData?.customer?.contactMethods);
+
+  // Normalize location contacts as well
+  const normalizedLocations = (transformedData?.locations || []).map((location: any) => ({
+    ...location,
+    contacts: normalizeContacts(location.contactMethods || location.contacts),
+  }));
 
   // Calculate dashboard data from transformed customerData
   const dashboardData = transformedData ? {
@@ -146,7 +169,7 @@ export function CompactPortal({
         return (
           <SettingsSection
             customerData={transformedData}
-            onEditContacts={onEditContacts}
+            onEditContacts={() => setContactDialogOpen(true)}
             onAddLocation={onAddLocation}
             onEditLocation={onEditLocation}
             formatPhoneNumber={formatPhoneNumber}
@@ -182,6 +205,16 @@ export function CompactPortal({
       <BottomNav
         currentSection={currentSection}
         onSectionChange={setCurrentSection}
+      />
+
+      {/* Contact Management Dialog */}
+      <ContactManagementDialog
+        open={contactDialogOpen}
+        onOpenChange={setContactDialogOpen}
+        customerId={customerId ? parseInt(customerId) : undefined}
+        customerContacts={normalizedCustomerContacts}
+        locations={normalizedLocations}
+        formatPhoneNumber={formatPhoneNumber}
       />
     </div>
   );
