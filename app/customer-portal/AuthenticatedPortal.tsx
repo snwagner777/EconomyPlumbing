@@ -1311,15 +1311,25 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                                 *Estimated savings based on typical 15% member discount applied to your historical spending
                               </p>
                               <Button
-                                asChild
+                                onClick={() => {
+                                  const element = document.getElementById('vip-membership-section');
+                                  if (element) {
+                                    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                    // Trigger the Join Now button after scrolling
+                                    setTimeout(() => {
+                                      const joinButton = element.querySelector('[data-testid="button-join-membership"]') as HTMLButtonElement;
+                                      if (joinButton) {
+                                        joinButton.click();
+                                      }
+                                    }, 500);
+                                  }
+                                }}
                                 className="w-full bg-amber-600 hover:bg-amber-700 text-white dark:bg-amber-500 dark:hover:bg-amber-600"
                                 size="lg"
                                 data-testid="button-join-vip-savings"
                               >
-                                <a href="/membership-benefits">
-                                  <Crown className="w-4 h-4 mr-2" />
-                                  Start Saving with VIP Membership
-                                </a>
+                                <Crown className="w-4 h-4 mr-2" />
+                                Start Saving with VIP Membership
                               </Button>
                             </div>
                           )}
