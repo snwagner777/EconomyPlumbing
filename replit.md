@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application aimed at enhancing a plumbing business's online presence, streamlining operations, and driving growth. It offers comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, with a focus on boosting local SEO, user engagement, and conversion rates. The vision is to leverage technology for operational efficiency and superior customer engagement to become a leading service provider.
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It offers comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, focusing on boosting local SEO, user engagement, and conversion rates. The vision is to leverage technology for operational efficiency and superior customer engagement to become a leading service provider.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -108,7 +108,8 @@ Preferred communication style: Simple, everyday language.
   - Alternative getters: `getDb()` and `getPool()` for code that needs concrete instances (e.g., `instanceof` checks)
 - **Pattern:** All existing code continues to work: `import { db } from '@/server/db'` - no changes required to 120+ API routes
 - **Production-Ready:** Architect-approved solution that preserves Pool/Drizzle semantics while avoiding module-load connection attempts
-- **Red Flags - NEVER do this:** Revert to eager initialization (`const pool = new Pool()` at top level), bypass lazy loading, or modify 100+ routes when a single-file fix exists>
+- **CRITICAL: Clear Build Cache After Database Changes:** When modifying `server/db.ts` or any core database files, ALWAYS run `rm -rf .next` to clear Next.js build cache before republishing. Production deployments use cached builds, so changes won't take effect without clearing the cache first.
+- **Red Flags - NEVER do this:** Revert to eager initialization (`const pool = new Pool()` at top level), bypass lazy loading, modify 100+ routes when a single-file fix exists, or republish without clearing `.next` cache after database changes>
 
 ## System Architecture
 
