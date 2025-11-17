@@ -1,11 +1,13 @@
 /**
- * Backflow Testing Stripe Checkout API
+ * DISABLED: Backflow Testing Stripe Checkout API
  * 
- * Creates Stripe checkout session for prepaid backflow testing ($125/device).
- * After payment, customer returns to complete the booking.
+ * Payment integrations have been removed from the scheduler.
+ * This endpoint is no longer available.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+
+/* PAYMENT INTEGRATION DISABLED - Code commented out
 import Stripe from 'stripe';
 import { z } from 'zod';
 
@@ -96,4 +98,13 @@ export async function POST(req: NextRequest) {
       { status: 500 }
     );
   }
+}
+*/
+
+// Return 404 for all requests
+export async function POST(req: NextRequest) {
+  return NextResponse.json(
+    { error: 'Payment integration disabled' },
+    { status: 404 }
+  );
 }

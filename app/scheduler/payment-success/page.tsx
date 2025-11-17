@@ -1,10 +1,25 @@
 /**
- * Backflow Payment Success Page
+ * DISABLED: Backflow Payment Success Page
  * 
- * Handles the Stripe checkout return, completes the booking with payment info.
+ * Payment integrations have been removed from the scheduler.
+ * This page redirects to schedule-appointment.
  */
 
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
+
+export const metadata: Metadata = {
+  title: 'Payment Not Available | Economy Plumbing Services',
+  description: 'Payment integration has been disabled.',
+};
+
+export default async function PaymentSuccessPage() {
+  // Redirect to schedule appointment page
+  redirect('/schedule-appointment');
+}
+
+/* PAYMENT INTEGRATION DISABLED - Original code commented out
+
 import { PaymentSuccessClient } from './PaymentSuccessClient';
 
 export const metadata: Metadata = {
@@ -22,3 +37,5 @@ export default async function PaymentSuccessPage({
 
   return <PaymentSuccessClient sessionId={sessionId} />;
 }
+
+*/
