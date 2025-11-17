@@ -122,6 +122,7 @@ Preferred communication style: Simple, everyday language.
 - **OpenAI:** GPT-4o and GPT-4o-mini for AI features
 - **SimpleTexting:** SMS marketing
 - **Resend:** Transactional email delivery and inbound email processing
+- **Late API:** Social media scheduling and posting (Facebook, Instagram, LinkedIn, Twitter/X, Threads, TikTok, YouTube, Pinterest, Reddit, Bluesky)
 - **CompanyCam:** Photo management
 - **Google Drive:** Photo import automation
 - **SerpAPI:** Google review fetching
@@ -132,3 +133,12 @@ Preferred communication style: Simple, everyday language.
 - **Microsoft Clarity:** Session recording
 - **Google Places API:** Location services
 - **Google Maps:** Mapping
+
+**CRITICAL RULE: Late API Social Media Integration - Modular Architecture**
+- **Modular Design:** All Late API functionality lives in `server/lib/late-api.ts` as a reusable module that can be called from anywhere.
+- **Use Cases:** Share reviews to social media, post blog articles, schedule promotional content, cross-post announcements.
+- **API Key:** Stored in environment variable `Late_API_Key` - never hardcode or expose.
+- **Database Schema:** `late_profiles` table stores connected social media profiles with platform-specific account IDs.
+- **Supported Platforms:** Facebook, Instagram, LinkedIn, Twitter/X, Threads, TikTok, YouTube, Pinterest, Reddit, Bluesky.
+- **Admin UI:** Manage connected social accounts at `/admin/social-media` with profile creation, account connection invites, and posting interface.
+- **Review Sharing:** Share Google reviews to social media from admin panel with customizable templates and platform selection.

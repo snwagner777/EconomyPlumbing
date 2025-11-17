@@ -2842,3 +2842,91 @@ export const generatedPlumbingImages = pgTable("generated_plumbing_images", {
 export const insertGeneratedPlumbingImageSchema = createInsertSchema(generatedPlumbingImages).omit({ id: true, createdAt: true });
 export type GeneratedPlumbingImage = typeof generatedPlumbingImages.$inferSelect;
 export type InsertGeneratedPlumbingImage = z.infer<typeof insertGeneratedPlumbingImageSchema>;
+
+// Late API Social Media Profiles
+// Stores connected social media profiles and accounts for sharing content
+export const lateProfiles = pgTable("late_profiles", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  lateProfileId: text("late_profile_id").notNull().unique(), // ID from Late API
+  name: text("name").notNull(), // Profile name (e.g., "Economy Plumbing Main", "Client: XYZ")
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  lateProfileIdIdx: index("late_profiles_late_profile_id_idx").on(table.lateProfileId),
+  createdAtIdx: index("late_profiles_created_at_idx").on(table.createdAt),
+}));
+
+export const latePlatform = pgEnum("late_platform", [
+  "facebook",
+  "instagram", 
+  "linkedin",
+  "twitter",
+  "threads",
+  "tiktok",
+  "youtube",
+  "pinterest",
+  "reddit",
+  "bluesky"
+]);
+
+export const lateAccounts = pgTable("late_accounts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  profileId: varchar("profile_id").notNull(), // FK to late_profiles
+  lateAccountId: text("late_account_id").notNull().unique(), // Account ID from Late API
+  platform: latePlatform("platform").notNull(),
+  username: text("username"), // Platform username/handle
+  displayName: text("display_name"), // Account display name
+  isActive: boolean("is_active").notNull().default(true), // Can be disabled without deleting
+  connectedAt: timestamp("connected_at").notNull().defaultNow(),
+  lastUsedAt: timestamp("last_used_at"), // Track last time this account was used to post
+}, (table) => ({
+  profileIdIdx: index("late_accounts_profile_id_idx").on(table.profileId),
+  platformIdx: index("late_accounts_platform_idx").on(table.platform),
+  isActiveIdx: index("late_accounts_is_active_idx").on(table.isActive),
+  lateAccountIdIdx: index("late_accounts_late_account_id_idx").on(table.lateAccountId),
+}));
+
+// Track social media posts created via Late API
+export const latePosts = pgTable("late_posts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  latePostId: text("late_post_id").notNull().unique(), // Post ID from Late API
+  sourceType: text("source_type").notNull(), // 'review', 'blog', 'manual', 'announcement'
+  sourceId: varchar("source_id"), // FK to reviews, blog_posts, etc.
+  content: text("content").notNull(),
+  platforms: text("platforms").array().notNull(), // Array of platform names
+  accountIds: text("account_ids").array().notNull(), // Array of late_accounts IDs
+  status: text("status").notNull().default("scheduled"), // 'scheduled', 'published', 'failed'
+  scheduledFor: timestamp("scheduled_for"),
+  publishedAt: timestamp("published_at"),
+  createdBy: varchar("created_by"), // Admin user who created the post
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  sourceTypeIdx: index("late_posts_source_type_idx").on(table.sourceType),
+  sourceIdIdx: index("late_posts_source_id_idx").on(table.sourceId),
+  statusIdx: index("late_posts_status_idx").on(table.status),
+  createdAtIdx: index("late_posts_created_at_idx").on(table.createdAt),
+  latePostIdIdx: index("late_posts_late_post_id_idx").on(table.latePostId),
+}));
+
+export const insertLateProfileSchema = createInsertSchema(lateProfiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLateAccountSchema = createInsertSchema(lateAccounts).omit({
+  id: true,
+  connectedAt: true,
+});
+
+export const insertLatePostSchema = createInsertSchema(latePosts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type LateProfile = typeof lateProfiles.$inferSelect;
+export type InsertLateProfile = z.infer<typeof insertLateProfileSchema>;
+export type LateAccount = typeof lateAccounts.$inferSelect;
+export type InsertLateAccount = z.infer<typeof insertLateAccountSchema>;
+export type LatePost = typeof latePosts.$inferSelect;
+export type InsertLatePost = z.infer<typeof insertLatePostSchema>;
