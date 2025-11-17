@@ -227,7 +227,12 @@ export function ContactManagementDialog({
       {/* Customer Contacts */}
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-semibold">Account Contacts</h3>
+          <div>
+            <h3 className="text-sm font-semibold">Account Contacts</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Primary contact info for this account (applies to all locations)
+            </p>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -314,7 +319,12 @@ export function ContactManagementDialog({
       {/* Location Contacts */}
       {locations.length > 0 && (
         <div className="pt-4 border-t">
-          <h3 className="text-sm font-semibold mb-3">Location Contacts</h3>
+          <div className="mb-3">
+            <h3 className="text-sm font-semibold">Location Contacts</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Specific contacts for each service address (property managers, tenants, etc.)
+            </p>
+          </div>
           <div className="space-y-4">
             {locations.map((location) => (
               <Card key={location.id} data-testid={`card-location-${location.id}`}>
@@ -422,9 +432,20 @@ export function ContactManagementDialog({
         </Button>
         {isLocationAdd && (
           <div className="mb-3 p-3 bg-muted rounded-md">
-            <p className="text-sm text-muted-foreground">
-              Adding contact to location: {locations.find(l => l.id === editingLocationId)?.name}
-            </p>
+            <div className="flex items-start gap-2">
+              <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium">
+                  Adding Location-Specific Contact
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Location: {locations.find(l => l.id === editingLocationId)?.name}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  This contact will only be used for service at this specific address.
+                </p>
+              </div>
+            </div>
           </div>
         )}
         <ContactForm
@@ -489,9 +510,11 @@ export function ContactManagementDialog({
             </DialogTitle>
             <DialogDescription>
               {mode === 'list' 
-                ? 'Add, edit, or remove contact information for your account and locations.'
+                ? 'Account contacts apply to all locations. Location contacts are specific to individual service addresses.'
                 : mode === 'add'
-                  ? 'Add a new phone number or email address to your account.'
+                  ? editingLocationId 
+                    ? 'Add a contact specific to this service location (e.g., property manager, tenant, gate code contact).'
+                    : 'Add a contact for your entire account (applies to all service locations).'
                   : 'Update the contact information.'}
             </DialogDescription>
           </DialogHeader>
