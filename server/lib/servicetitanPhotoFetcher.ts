@@ -25,6 +25,54 @@ const QUALITY_THRESHOLD = 70;
 // Google Drive folder ID (from existing integration)
 const GDRIVE_FOLDER_ID = process.env.GDRIVE_FOLDER_ID || '1PEq7xVQe8vD-8Z9vQ9vQ9vQ9vQ9vQ9vQ';
 
+// Google Drive connection settings (cached)
+let connectionSettings: any;
+
+async function getAccessToken() {
+  if (connectionSettings && connectionSettings.settings.expires_at && new Date(connectionSettings.settings.expires_at).getTime() > Date.now()) {
+    return connectionSettings.settings.access_token;
+  }
+  
+  const hostname = process.env.REPLIT_CONNECTORS_HOSTNAME;
+  const xReplitToken = process.env.REPL_IDENTITY 
+    ? 'repl ' + process.env.REPL_IDENTITY 
+    : process.env.WEB_REPL_RENEWAL 
+    ? 'depl ' + process.env.WEB_REPL_RENEWAL 
+    : null;
+
+  if (!xReplitToken) {
+    throw new Error('X_REPLIT_TOKEN not found for repl/depl');
+  }
+
+  connectionSettings = await fetch(
+    'https://' + hostname + '/api/v2/connection?include_secrets=true&connector_names=google-drive',
+    {
+      headers: {
+        'Accept': 'application/json',
+        'X_REPLIT_TOKEN': xReplitToken
+      }
+    }
+  ).then(res => res.json()).then(data => data.items?.[0]);
+
+  const accessToken = connectionSettings?.settings?.access_token || connectionSettings.settings?.oauth?.credentials?.access_token;
+
+  if (!connectionSettings || !accessToken) {
+    throw new Error('Google Drive not connected');
+  }
+  return accessToken;
+}
+
+async function getUncachableGoogleDriveClient() {
+  const accessToken = await getAccessToken();
+
+  const oauth2Client = new google.auth.OAuth2();
+  oauth2Client.setCredentials({
+    access_token: accessToken
+  });
+
+  return google.drive({ version: 'v3', auth: oauth2Client });
+}
+
 export class ServiceTitanPhotoFetcher {
   private openai: OpenAI;
 
@@ -66,13 +114,16 @@ export class ServiceTitanPhotoFetcher {
       return;
     }
 
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
-      console.error(`[Photo Fetcher] GOOGLE_SERVICE_ACCOUNT_JSON not configured`);
+    // Check if Google Drive connector is available
+    try {
+      await getAccessToken();
+    } catch (error) {
+      console.error(`[Photo Fetcher] Google Drive not configured:`, error);
       await db
         .update(serviceTitanPhotoJobs)
         .set({
           status: 'failed',
-          errorMessage: 'GOOGLE_SERVICE_ACCOUNT_JSON not configured - cannot upload photos',
+          errorMessage: 'Google Drive connector not configured - cannot upload photos',
           completedAt: new Date(),
         })
         .where(eq(serviceTitanPhotoJobs.id, jobId));
@@ -285,7 +336,7 @@ Response must be valid JSON.`,
   }
 
   /**
-   * Upload photo to Google Drive
+   * Upload photo to Google Drive using Replit connector
    */
   private async uploadToGoogleDrive(
     photoBuffer: Buffer,
@@ -293,13 +344,8 @@ Response must be valid JSON.`,
     jobId: number
   ): Promise<string> {
     try {
-      // Initialize Google Drive API
-      const auth = new google.auth.GoogleAuth({
-        credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}'),
-        scopes: ['https://www.googleapis.com/auth/drive.file'],
-      });
-
-      const drive = google.drive({ version: 'v3', auth });
+      // Get Google Drive client via Replit connector
+      const drive = await getUncachableGoogleDriveClient();
 
       // Upload file
       const response = await drive.files.create({

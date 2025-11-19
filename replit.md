@@ -80,6 +80,16 @@ Preferred communication style: Simple, everyday language.
   - TO field can include customer names using `formatEmailAddress(email, name)` helper: `"John Smith <customer@email.com>"`
   - Use `toName` parameter to add customer names to TO field for better inbox display and engagement
 
+**CRITICAL RULE: Google Drive Integration - ALWAYS Use Replit Native Connector**
+- ALL Google Drive API calls MUST use the Replit Native Connector via `getUncachableGoogleDriveClient()` helper functions
+- NEVER use direct environment variables like `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, or `GOOGLE_SERVICE_ACCOUNT_JSON`
+- The connector provides OAuth access tokens dynamically - credentials rotate automatically for security
+- Benefits: Automatic credential rotation, OAuth flow handled by Replit, no manual secret management
+- **Implementation Locations:**
+  - `server/lib/googleDriveMonitor.ts` - Photo monitoring and import from Google Drive folders
+  - `server/lib/servicetitanPhotoFetcher.ts` - ServiceTitan job photos uploaded to Google Drive
+- **Pattern:** Token caching with expiry check, automatic refresh via Replit connector API
+
 **CRITICAL RULE: Database Lazy Initialization (Production Fix)**
 - **Problem:** Eager database initialization at module load time caused 500 errors in production serverless environments.
 - **Solution:** `server/db.ts` uses Proxy-based lazy initialization - database connection created on **first access**.
