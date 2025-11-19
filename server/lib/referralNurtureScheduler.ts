@@ -15,7 +15,15 @@
  */
 
 import { db } from "../db";
-import { referralNurtureCampaigns, reviewEmailTemplates, systemSettings, emailSendLog } from "../../shared/schema";
+import { 
+  referralNurtureCampaigns, 
+  reviewEmailTemplates, 
+  systemSettings, 
+  emailSendLog,
+  referralCodes,
+  customersXlsx,
+  emailSuppressionList
+} from "../../shared/schema";
 import { eq, and, lt, or } from "drizzle-orm";
 import { generateEmail, type GeneratedEmail } from "./aiEmailGenerator";
 import { getUncachableResendClient } from '../email';
@@ -111,8 +119,6 @@ export class ReferralNurtureScheduler {
    */
   private async getReferralLink(customerId: number): Promise<string | null> {
     try {
-      const { referralCodes } = await import('@shared/schema');
-      
       // Check if customer already has a referral code
       let existingCode = await db.query.referralCodes.findFirst({
         where: eq(referralCodes.customerId, customerId),
@@ -292,7 +298,6 @@ Copy and share this link via text, email, Facebook, Instagram, or Nextdoor!
       const settings = await this.getEmailSettings();
 
       // Check suppression list FIRST (hard bounces, spam complaints)
-      const { emailSuppressionList } = await import('@shared/schema');
       const suppressed = await db.query.emailSuppressionList.findFirst({
         where: eq(emailSuppressionList.email, campaign.customerEmail),
       });
