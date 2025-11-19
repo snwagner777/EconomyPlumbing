@@ -353,7 +353,7 @@ Copy and share this link via text, email, Facebook, Instagram, or Nextdoor!
       const emailResult = await resend.emails.send({
         from: fromEmail,
         to: campaign.customerEmail,
-        replyTo: 'hello@plumbersthatcare.com',
+        replyTo: 'hello@mail.plumbersthatcare.com',
         subject: emailContent.subject,
         html: htmlWithFooter,
         text: plainWithFooter,

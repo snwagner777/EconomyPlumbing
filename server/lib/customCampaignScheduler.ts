@@ -117,7 +117,7 @@ export class CustomCampaignScheduler {
       const result = await resend.emails.send({
         from: fromEmail,
         to: customer.email,
-        replyTo: 'hello@plumbersthatcare.com',
+        replyTo: 'hello@mail.plumbersthatcare.com',
         subject: email.subject,
         html: finalHtmlContent,
         text: finalPlainTextContent || undefined,

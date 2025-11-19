@@ -275,11 +275,11 @@ export default function ContactForm({
                   Email
                 </h4>
                 <a 
-                  href="mailto:hello@plumbersthatcare.com" 
+                  href="mailto:hello@mail.plumbersthatcare.com" 
                   className="text-foreground hover-elevate px-2 py-1 rounded-md inline-block"
                   data-testid="contact-email"
                 >
-                  hello@plumbersthatcare.com
+                  hello@mail.plumbersthatcare.com
                 </a>
               </div>
 

@@ -6,7 +6,7 @@
 
 export const BUSINESS_INFO = {
   name: "Economy Plumbing Services",
-  email: "hello@plumbersthatcare.com",
+  email: "hello@mail.plumbersthatcare.com",
   url: "https://plumbersthatcare.com",
   logo: "https://plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
   priceRange: "$$",

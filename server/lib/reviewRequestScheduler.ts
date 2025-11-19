@@ -308,7 +308,7 @@ class ReviewRequestScheduler {
       const emailResult = await resend.emails.send({
         from: fromEmail,
         to: reviewRequest.customerEmail,
-        replyTo: 'hello@plumbersthatcare.com',
+        replyTo: 'hello@mail.plumbersthatcare.com',
         subject: emailContent.subject,
         html: htmlWithFooter,
         text: plainWithFooter,

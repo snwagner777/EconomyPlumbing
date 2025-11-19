@@ -76,7 +76,7 @@ Preferred communication style: Simple, everyday language.
 - The connector provides both API key and from_email dynamically - credentials rotate automatically for security
 - Benefits: Automatic credential rotation, centralized configuration, no manual secret management
 - **Email Address Formatting:**
-  - FROM field always shows: `"Economy Plumbing Services" <hello@plumbersthatcare.com>`
+  - FROM field always shows: `"Economy Plumbing Services" <hello@mail.plumbersthatcare.com>`
   - TO field can include customer names using `formatEmailAddress(email, name)` helper: `"John Smith <customer@email.com>"`
   - Use `toName` parameter to add customer names to TO field for better inbox display and engagement
 

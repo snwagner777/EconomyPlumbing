@@ -4,7 +4,7 @@ import type { ResendConnectionSettings, ResendCredentials } from './types/resend
 let connectionSettings: ResendConnectionSettings | undefined;
 
 // Email configuration
-const REPLY_TO_EMAIL = 'hello@plumbersthatcare.com';
+const REPLY_TO_EMAIL = 'hello@mail.plumbersthatcare.com';
 const COMPANY_NAME = 'Economy Plumbing Services';
 
 /**

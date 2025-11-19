@@ -171,7 +171,7 @@ export function createOrganizationSchema() {
     "url": "https://www.plumbersthatcare.com",
     "logo": "https://www.plumbersthatcare.com/attached_assets/Economy%20Plumbing%20Services%20logo_1759801055079.jpg",
     "description": "Professional plumbing services serving Austin, Marble Falls, and Central Texas since 2012.",
-    "email": "hello@plumbersthatcare.com",
+    "email": "hello@mail.plumbersthatcare.com",
     "sameAs": [
       "https://facebook.com/econoplumbing",
       "https://instagram.com/plumbersthatcare_atx",
