@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance customer engagement and streamline operations for a plumbing business. It offers comprehensive service information, covered areas, blog content, and an online store. The platform integrates AI for content generation, marketing automation, and reputation management, with the goal of improving local SEO, user engagement, and conversion rates, ultimately serving as an all-encompassing digital platform for business growth.
+Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service information, service area coverage, a blog, and an online store. It integrates AI for content generation, marketing automation, and reputation management to enhance local SEO, user engagement, and conversion rates, aiming to be a comprehensive digital solution for business growth.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -57,6 +57,8 @@ CRITICAL RULE: Customer Contact Management - Dual API System
 - Customer-level contacts: Use `serviceTitanCRM.getCustomerContacts(customerId)` - Returns contacts with methods array.
 - Location-level contacts: Use `serviceTitanCRM.getLocationContacts(locationId)` - Returns contacts linked to specific location.
 - Contacts can exist at customer level, location level, or both - must check both sources.
+- Portal Integration: Both `getCustomerPortalData()` and `getLocationDetails()` fetch contacts separately in parallel - customer/location endpoints don't include contacts by default.
+- Contact Creation Errors: `createCustomer()` propagates contact creation errors with structured logging (customer ID, name, contact value, exact error) instead of silent failures.
 
 CRITICAL RULE: Unified Session Architecture (Migration Complete)
 - The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
@@ -137,20 +139,19 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
-- **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **SEO & Performance:** Utilizes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
-- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service, including a 4-step scheduler flow with SMS verification.
-- **Admin Panel:** Features 23 sections including Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
+- **Customer Portal:** Full-featured with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and a 4-step scheduler flow with SMS verification.
+- **Admin Panel:** 23 sections covering Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
-- **Framework & API:** Next.js 15 App Router (100+ API routes) and a `worker.ts` process for background jobs.
-- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables.
+- **Framework & API:** Next.js 15 App Router with over 100 API routes and a `worker.ts` for background jobs.
+- **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) managing over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
-- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments. Includes OAuth, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session with centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation, including multi-account management.
+- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments (v2 API), including OAuth, customer/contact management, job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` with unified session, centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation, supporting multi-account management.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
@@ -164,13 +165,13 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 
 ## External Dependencies
 
-- **ServiceTitan:** CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments APIs
+- **ServiceTitan:** CRM, Jobs, Scheduler, Memberships, Estimates, Invoices APIs
 - **Stripe:** Payment processing
-- **OpenAI:** GPT-4o and GPT-4o-mini for AI features
+- **OpenAI:** GPT-4o and GPT-4o-mini
 - **SimpleTexting:** SMS marketing
-- **Resend:** Transactional and promotional email delivery, inbound email processing
-- **Late API:** Social media scheduling and posting
-- **Google Drive:** Photo storage and archiving
+- **Resend:** Email delivery
+- **Late API:** Social media scheduling
+- **Google Drive:** Photo storage
 - **SerpAPI:** Google review fetching
 - **Ecwid:** E-commerce platform
 - **Google Analytics 4:** Website analytics
