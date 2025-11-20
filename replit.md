@@ -1,7 +1,5 @@
-# Economy Plumbing Services - Project Documentation
-
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to significantly boost customer engagement and streamline operations for a plumbing business. It enhances online presence and operational efficiency by providing comprehensive service information, covered areas, blog content, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, with a focus on improving local SEO, user engagement, and conversion rates.
+Economy Plumbing Services is a full-stack web application designed to enhance customer engagement and streamline operations for a plumbing business. It provides comprehensive service information, covered areas, blog content, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, focusing on improving local SEO, user engagement, and conversion rates. The project aims to provide an all-encompassing digital platform to grow the business.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -50,7 +48,7 @@ CRITICAL RULE: ServiceTitan API Testing Protocol
 CRITICAL RULE: Referral System Architecture - Modular Hybrid System
 - **Frontend:** Modular architecture with `useReferralForm` hook (headless logic) + `ReferralFormView` (presentation) + context wrappers.
 - **Defensive Field Visibility:** Only hide fields if valid default values exist (≥2 chars for name, valid phone/email for contacts).
-- **API Integration:** Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, defers new customer creation to scheduler when address data is collected.
+- **API Integration:** Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, de-fers new customer creation to scheduler when address data is collected.
 - **Workflow:** Submit referral → Look up existing customer → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
 
 CRITICAL RULE: Customer Contact Management - Dual API System
