@@ -1,5 +1,6 @@
 import { serviceTitanAuth } from './auth';
 import { serviceTitanJobs } from './jobs';
+import { serviceTitanCRM } from './crm';
 import pLimit from 'p-limit';
 
 interface CustomerPortalDTO {
@@ -141,17 +142,23 @@ class ServiceTitanPortalService {
         throw new Error('Customer not found');
       }
 
-      // Fetch locations and location-independent data in parallel
-      const [locations, referrals] = await Promise.all([
+      // Fetch contacts, locations, and referrals in parallel
+      // Note: Customer endpoint doesn't include email/phone - must fetch separately
+      const [customerContacts, locations, referrals] = await Promise.all([
+        serviceTitanCRM.getCustomerContacts(customerId),
         this.fetchLocations(customerId),
         this.fetchReferrals(customerId),
       ]);
 
+      // Extract primary email and phone from contacts array
+      const primaryPhone = customerContacts.find((c: any) => c.type === 'MobilePhone')?.value || '';
+      const primaryEmail = customerContacts.find((c: any) => c.type === 'Email')?.value || '';
+
       const portalData: CustomerPortalDTO = {
         id: customer.id,
         name: customer.name || 'Customer',
-        email: customer.email || '',
-        phone: customer.phoneNumber || '',
+        email: primaryEmail,
+        phone: primaryPhone,
         address: this.formatAddress(customer.address),
         locations,
         referrals,
@@ -530,7 +537,7 @@ class ServiceTitanPortalService {
       return referralRecords.map((ref, index) => ({
         id: index + 1, // Use index as numeric ID since DB uses string UUID
         refereeName: ref.refereeName,
-        refereePhone: ref.refereePhone,
+        refereePhone: ref.refereePhone || '',
         status: ref.status,
         createdAt: ref.submittedAt.toISOString(),
       }));

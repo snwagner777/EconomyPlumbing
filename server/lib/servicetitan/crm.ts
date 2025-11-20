@@ -280,6 +280,9 @@ export class ServiceTitanCRM {
       console.log(`[ServiceTitan CRM] Created new customer: ${response.id}`);
       
       // Add contact methods using v2 API to both customer AND default location
+      // Track errors to ensure we know when contacts fail
+      const contactErrors: string[] = [];
+      
       if (data.phone || data.email) {
         // Fetch the default location ID
         const locations = await this.getCustomerLocations(response.id);
@@ -293,7 +296,7 @@ export class ServiceTitanCRM {
               value: data.phone,
               memo: 'Primary contact',
             });
-            console.log(`[ServiceTitan CRM] Added phone contact to customer ${response.id}`);
+            console.log(`[ServiceTitan CRM] ✓ Added phone contact to customer ${response.id}: ${data.phone}`);
             
             // Also add to default location
             if (defaultLocationId) {
@@ -302,10 +305,12 @@ export class ServiceTitanCRM {
                 value: data.phone,
                 memo: 'Primary contact',
               });
-              console.log(`[ServiceTitan CRM] Added phone contact to location ${defaultLocationId}`);
+              console.log(`[ServiceTitan CRM] ✓ Added phone contact to location ${defaultLocationId}: ${data.phone}`);
             }
           } catch (error: any) {
-            console.error(`[ServiceTitan CRM] Failed to add phone contact: ${error.message}`);
+            const errorMsg = `Failed to add phone contact for customer ${response.id} (${data.name}): phone=${data.phone}, error=${error.message}`;
+            console.error(`[ServiceTitan CRM] ❌ ${errorMsg}`);
+            contactErrors.push(`Phone: ${error.message}`);
           }
         }
         
@@ -318,7 +323,7 @@ export class ServiceTitanCRM {
               value: firstEmail,
               memo: 'Primary email',
             });
-            console.log(`[ServiceTitan CRM] Added email contact to customer ${response.id}`);
+            console.log(`[ServiceTitan CRM] ✓ Added email contact to customer ${response.id}: ${firstEmail}`);
             
             // Also add to default location
             if (defaultLocationId) {
@@ -327,11 +332,20 @@ export class ServiceTitanCRM {
                 value: firstEmail,
                 memo: 'Primary email',
               });
-              console.log(`[ServiceTitan CRM] Added email contact to location ${defaultLocationId}`);
+              console.log(`[ServiceTitan CRM] ✓ Added email contact to location ${defaultLocationId}: ${firstEmail}`);
             }
           } catch (error: any) {
-            console.error(`[ServiceTitan CRM] Failed to add email contact: ${error.message}`);
+            const errorMsg = `Failed to add email contact for customer ${response.id} (${data.name}): email=${data.email}, error=${error.message}`;
+            console.error(`[ServiceTitan CRM] ❌ ${errorMsg}`);
+            contactErrors.push(`Email: ${error.message}`);
           }
+        }
+        
+        // If contact creation failed, throw error with details
+        if (contactErrors.length > 0) {
+          const errorMessage = `Customer ${response.id} created but contact creation failed: ${contactErrors.join(', ')}`;
+          console.error(`[ServiceTitan CRM] ⚠️  WARNING: ${errorMessage}`);
+          throw new Error(errorMessage);
         }
       }
 
