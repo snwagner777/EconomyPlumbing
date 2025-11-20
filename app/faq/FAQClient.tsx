@@ -33,7 +33,7 @@ const faqCategories = [
       },
       {
         question: "Do you offer emergency services?",
-        answer: "Yes, we provide 24/7 emergency plumbing service throughout our service area. Call (512) 368-9159 for Austin area or (830) 460-3565 for Marble Falls area for immediate assistance."
+        answer: "Yes, we provide 24/7 emergency plumbing service throughout our service area. Contact us immediately for emergency assistance - our team is standing by to help."
       },
       {
         question: "How quickly can you respond to an emergency?",

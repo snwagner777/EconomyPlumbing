@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { storage } from '@/server/storage';
+import { getFallbackPhoneNumber } from '@/server/lib/phoneNumbers';
 import Stripe from 'stripe';
 
 export async function POST(req: NextRequest) {
@@ -41,9 +42,10 @@ export async function POST(req: NextRequest) {
     // Initialize Stripe with secret key
     const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
     if (!stripeSecretKey) {
+      const fallbackPhone = await getFallbackPhoneNumber();
       return NextResponse.json({ 
         error: "STRIPE_NOT_CONFIGURED",
-        message: "Payment processing is temporarily unavailable. Please contact us at (512) 368-9159." 
+        message: `Payment processing is temporarily unavailable. Please contact us at ${fallbackPhone.display}.` 
       }, { status: 503 });
     }
 

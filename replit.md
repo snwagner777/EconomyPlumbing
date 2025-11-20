@@ -1,7 +1,7 @@
 # Economy Plumbing Services - Project Documentation
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence, streamline operations, and drive growth. It provides comprehensive service information, covered areas, blog content, and an online store. The project integrates AI for content generation, marketing automation, and reputation management, focusing on boosting local SEO, user engagement, and conversion rates. The ultimate goal is to leverage technology for operational efficiency and superior customer engagement, establishing the business as a leading service provider.
+Economy Plumbing Services is a full-stack web application designed to enhance a plumbing business's online presence and operational efficiency. It provides comprehensive service information, covered areas, blog content, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, with a focus on improving local SEO, user engagement, and conversion rates to achieve superior customer engagement.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -139,11 +139,10 @@ Preferred communication style: Simple, everyday language.
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA.
 - **Design System:** Blue/teal color scheme, Inter/Poppins typography, light/dark modes, WCAG AA Compliant.
-- **Navigation System:** Unified menu configuration in `src/lib/menuConfig.ts`.
 - **SEO & Performance:** Centralized `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
-- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service. The scheduler implements a 4-step flow (Service → Customer/Verification → Availability → Review) with SMS verification.
+- **Customer Portal:** Full-featured portal with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and self-service, including a 4-step scheduler flow with SMS verification.
 - **Admin Panel:** Features 23 sections including Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
@@ -151,7 +150,7 @@ Preferred communication style: Simple, everyday language.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) with over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments. Includes OAuth, customer/contact management (v2 API), job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session (`plumbing_session`) with centralized validation. Features phone-first SMS 2FA, self-service permissions, and ownership validation, including multi-account management.
+- **Customer Portal Backend API:** 37 routes in `/api/portal/*` using unified session with centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation, including multi-account management.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
 - **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
@@ -170,8 +169,8 @@ Preferred communication style: Simple, everyday language.
 - **OpenAI:** GPT-4o and GPT-4o-mini for AI features
 - **SimpleTexting:** SMS marketing
 - **Resend:** Transactional and promotional email delivery, inbound email processing
-- **Late API:** Social media scheduling and posting (Facebook, Instagram, LinkedIn, Twitter/X, Threads, TikTok, YouTube, Pinterest, Reddit, Bluesky)
-- **Google Drive:** Photo storage and archiving (photos pushed from ServiceTitan)
+- **Late API:** Social media scheduling and posting
+- **Google Drive:** Photo storage and archiving
 - **SerpAPI:** Google review fetching
 - **Ecwid:** E-commerce platform
 - **Google Analytics 4:** Website analytics

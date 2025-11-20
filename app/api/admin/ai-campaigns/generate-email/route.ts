@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import { getFallbackPhoneNumber } from '@/server/lib/phoneNumbers';
 import { generateEmail } from '@/server/lib/aiEmailGenerator';
 
 const sessionOptions = {
@@ -84,6 +85,9 @@ export async function POST(req: NextRequest) {
         break;
     }
 
+    // Get fallback phone number for AI prompt
+    const fallbackPhone = await getFallbackPhoneNumber();
+
     const prompt = `You are an expert email marketing copywriter for Economy Plumbing Services, a professional plumbing company in Austin, TX.
 
 Campaign Type: ${campaignContext}
@@ -106,7 +110,7 @@ Business Context:
 - Location: Austin, TX (serving Central Texas)
 - Specialties: Residential & commercial plumbing, water heaters, drain cleaning, leak detection
 - Brand Voice: Professional, trustworthy, customer-focused, family-owned for 20+ years
-- Contact: (512) 877-8234, plumbersthatcare.com
+- Contact: ${fallbackPhone.display}, plumbersthatcare.com
 
 Return ONLY a valid JSON object with this exact structure (no markdown, no code blocks):
 {

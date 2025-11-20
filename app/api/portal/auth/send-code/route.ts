@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { portalVerifications } from '@shared/schema';
+import { getFallbackPhoneNumber } from '@/server/lib/phoneNumbers';
 import crypto from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -94,10 +95,11 @@ export async function POST(request: NextRequest) {
 
     if (customers.length === 0) {
       console.log('[Portal Auth] No customer found in synced database');
+      const fallbackPhone = await getFallbackPhoneNumber();
       return NextResponse.json(
         {
           error:
-            "We couldn't find an account with that email or phone number. Please verify your information or contact us at (512) 396-7811 for assistance.",
+            `We couldn't find an account with that email or phone number. Please verify your information or contact us at ${fallbackPhone.display} for assistance.`,
           found: false,
         },
         { status: 404 }
@@ -220,6 +222,7 @@ export async function POST(request: NextRequest) {
       // Send email verification code
       try {
         const { sendEmail } = await import('@/server/email');
+        const fallbackPhone = await getFallbackPhoneNumber();
 
         await sendEmail({
           to: contactValue,
@@ -244,12 +247,12 @@ export async function POST(request: NextRequest) {
                   </div>
                 </div>
                 <p style="color: #666; font-size: 14px;">This code will expire in ${expiryMinutes} minutes.</p>
-                <p style="color: #999; font-size: 12px; margin-top: 30px;">If you didn't request this code, please ignore this email or contact us at (512) 396-7811.</p>
+                <p style="color: #999; font-size: 12px; margin-top: 30px;">If you didn't request this code, please ignore this email or contact us at ${fallbackPhone.display}.</p>
               </div>
               <div style="background-color: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #666;">
                 <p style="margin: 5px 0;">Economy Plumbing Services</p>
                 <p style="margin: 5px 0;">Austin & Marble Falls, TX</p>
-                <p style="margin: 5px 0;">(512) 396-7811</p>
+                <p style="margin: 5px 0;">${fallbackPhone.display}</p>
               </div>
             </body>
             </html>

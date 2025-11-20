@@ -4,6 +4,7 @@
 
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { AUSTIN_LOCATION } from '@/lib/businessMetadata';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -101,7 +102,7 @@ export default function PrivacyPolicyPage() {
                 If you have questions about this Privacy Policy, please contact us at:
               </p>
               <p className="mt-2">
-                Phone: (512) 368-9159<br />
+                Phone: {AUSTIN_LOCATION.phoneDisplay}<br />
                 Email: info@plumbersthatcare.com
               </p>
             </section>

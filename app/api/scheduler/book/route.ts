@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       customerPhone: body.customerPhone,
       address: body.address,
       city: body.city,
-      state: body.state || 'TX',
+      state: body.state,
       zipCode: body.zipCode,
       requestedService: body.requestedService,
       preferredDate: body.preferredDate ? new Date(body.preferredDate) : undefined,
@@ -115,6 +115,11 @@ export async function POST(req: NextRequest) {
         locationId = body.locationId;
         console.log(`[Scheduler] Using existing customer ${customerId} and location ${locationId}`);
       } else {
+        // Validate complete address is provided (NO DEFAULTS ALLOWED)
+        if (!validated.city || !validated.state || !validated.zipCode) {
+          throw new Error('Complete address required. Please provide city, state, and ZIP code.');
+        }
+        
         // Ensure customer exists in ServiceTitan
         console.log(`[Scheduler] Creating/finding customer for ${validated.customerName}`);
         const customer = await serviceTitanCRM.ensureCustomer({
@@ -123,9 +128,9 @@ export async function POST(req: NextRequest) {
           email: validated.customerEmail || undefined,
           address: {
             street: validated.address,
-            city: validated.city || 'Austin',
-            state: validated.state || 'TX',
-            zip: validated.zipCode || '78701',
+            city: validated.city,
+            state: validated.state,
+            zip: validated.zipCode,
           },
         });
         customerId = customer.id;
@@ -136,9 +141,9 @@ export async function POST(req: NextRequest) {
           customerId,
           address: {
             street: validated.address,
-            city: validated.city || 'Austin',
-            state: validated.state || 'TX',
-            zip: validated.zipCode || '78701',
+            city: validated.city,
+            state: validated.state,
+            zip: validated.zipCode,
           },
           phone: validated.customerPhone,
           email: validated.customerEmail || undefined,

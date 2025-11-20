@@ -179,3 +179,38 @@ export async function getPhoneNumbers(searchParams?: URLSearchParams): Promise<{
 export async function getDefaultPhoneNumber(): Promise<PhoneConfig> {
   return getPhoneNumberForSSR();
 }
+
+/**
+ * Get the default/fallback phone number for non-UTM contexts
+ * Use this for:
+ * - Error messages
+ * - Social media posts
+ * - AI prompts
+ * - Any context where UTM tracking is not available
+ * 
+ * Returns the tracking number marked as default (isDefault=true) in database,
+ * or falls back to NEXT_PUBLIC_DEFAULT_AUSTIN_PHONE env var
+ */
+export async function getFallbackPhoneNumber(): Promise<PhoneConfig> {
+  try {
+    // Fetch all active tracking numbers from database
+    const trackingNumbers = await storage.getAllTrackingNumbers();
+    
+    // Find the default tracking number
+    const defaultNumber = trackingNumbers.find(n => n.isDefault && n.isActive);
+    if (defaultNumber) {
+      return {
+        display: defaultNumber.displayNumber,
+        tel: defaultNumber.telLink,
+      };
+    }
+  } catch (error) {
+    // Defensive: If storage/database isn't initialized (e.g., during early error paths),
+    // log the error but don't throw - just fall back to env var
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.warn('[PhoneNumbers] Unable to fetch tracking number from database, using env fallback:', errorMessage);
+  }
+  
+  // Ultimate fallback to env var
+  return DEFAULT_AUSTIN_PHONE;
+}

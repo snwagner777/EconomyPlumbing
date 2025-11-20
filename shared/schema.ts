@@ -2621,9 +2621,9 @@ export const schedulerRequests = pgTable("scheduler_requests", {
   customerEmail: text("customer_email"),
   customerPhone: text("customer_phone").notNull(),
   address: text("address").notNull(),
-  city: text("city"),
-  state: text("state").default("TX"),
-  zipCode: text("zip_code"),
+  city: text("city").notNull(),
+  state: text("state").notNull().default("TX"),
+  zipCode: text("zip_code").notNull(),
   
   // Service details
   requestedService: text("requested_service").notNull(), // Service type requested

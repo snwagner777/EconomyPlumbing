@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getIronSession } from 'iron-session';
 import { cookies } from 'next/headers';
+import { getFallbackPhoneNumber } from '@/server/lib/phoneNumbers';
 import OpenAI from 'openai';
 
 const sessionOptions = {
@@ -33,6 +34,9 @@ export async function POST(req: NextRequest) {
     }
 
     const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+    // Get fallback phone number for AI prompt
+    const fallbackPhone = await getFallbackPhoneNumber();
 
     let strategyGuide = '';
     switch (strategy) {
@@ -86,7 +90,7 @@ Business Context:
 - Location: Austin, TX (serving Central Texas)
 - Specialties: Residential & commercial plumbing, water heaters, drain cleaning, leak detection
 - Brand Voice: Professional, trustworthy, customer-focused, local family business
-- Contact: Website: plumbersthatcare.com, Phone: (512) 877-8234
+- Contact: Website: plumbersthatcare.com, Phone: ${fallbackPhone.display}
 
 Example good SMS:
 "Economy Plumbing: Schedule your annual water heater checkup this month & save $25. Prevent winter breakdowns! Book: plumbersthatcare.com/schedule Reply STOP to opt out"
