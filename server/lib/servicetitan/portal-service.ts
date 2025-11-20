@@ -24,6 +24,7 @@ interface PortalLocationDetails {
   id: number;
   name: string;
   address: string;
+  contacts: any[]; // Contact methods for this location
   appointments: PortalAppointment[];
   invoices: PortalInvoice[];
   memberships: PortalMembership[];
@@ -256,7 +257,10 @@ class ServiceTitanPortalService {
       }
 
       // Fetch all data for this location in parallel
-      const [appointments, invoices, memberships] = await Promise.all([
+      const [contacts, appointments, invoices, memberships] = await Promise.all([
+        locationId === 0
+          ? serviceTitanCRM.getCustomerContacts(customerId)
+          : serviceTitanCRM.getLocationContacts(locationId),
         locationId === 0
           ? this.fetchAppointments(customerId)
           : this.fetchAppointmentsByLocation(customerId, locationId),
@@ -272,6 +276,7 @@ class ServiceTitanPortalService {
         id: locationId,
         name: locationName,
         address: locationAddress,
+        contacts,
         appointments,
         invoices,
         memberships,

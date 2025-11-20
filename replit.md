@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed to enhance customer engagement and streamline operations for a plumbing business. It provides comprehensive service information, covered areas, blog content, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, focusing on improving local SEO, user engagement, and conversion rates, ultimately aiming to provide an all-encompassing digital platform to grow the business.
+Economy Plumbing Services is a full-stack web application designed to enhance customer engagement and streamline operations for a plumbing business. It offers comprehensive service information, covered areas, blog content, and an online store. The platform integrates AI for content generation, marketing automation, and reputation management, with the goal of improving local SEO, user engagement, and conversion rates, ultimately serving as an all-encompassing digital platform for business growth.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -48,10 +48,10 @@ CRITICAL RULE: ServiceTitan API Testing Protocol
 - Verify actual response structures, field names, and data types using test customer.
 
 CRITICAL RULE: Referral System Architecture - Modular Hybrid System
-- **Frontend:** Modular architecture with `useReferralForm` hook (headless logic) + `ReferralFormView` (presentation) + context wrappers.
-- **Defensive Field Visibility:** Only hide fields if valid default values exist (≥2 chars for name, valid phone/email for contacts).
-- **API Integration:** Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, de-fers new customer creation to scheduler when address data is collected.
-- **Workflow:** Submit referral → Look up existing customer → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
+- Frontend: Modular architecture with `useReferralForm` hook (headless logic) + `ReferralFormView` (presentation) + context wrappers.
+- Defensive Field Visibility: Only hide fields if valid default values exist (≥2 chars for name, valid phone/email for contacts).
+- API Integration: Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, de-fers new customer creation to scheduler when address data is collected.
+- Workflow: Submit referral → Look up existing customer → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
 
 CRITICAL RULE: Customer Contact Management - Dual API System
 - Customer-level contacts: Use `serviceTitanCRM.getCustomerContacts(customerId)` - Returns contacts with methods array.
@@ -60,22 +60,22 @@ CRITICAL RULE: Customer Contact Management - Dual API System
 
 CRITICAL RULE: Unified Session Architecture (Migration Complete)
 - The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
-- **Centralized Helper:** All portal routes MUST use `getPortalSession()` and `assertCustomerOwnership()` from `server/lib/customer-portal/portal-session.ts`
-- **Ownership Validation:** Use `assertCustomerOwnership(requestedId, availableCustomerIds)` before accessing customer data
-- **Security:** Never trust request body customer IDs - always validate against `availableCustomerIds` from session
+- Centralized Helper: All portal routes MUST use `getPortalSession()` and `assertCustomerOwnership()` from `server/lib/customer-portal/portal-session.ts`
+- Ownership Validation: Use `assertCustomerOwnership(requestedId, availableCustomerIds)` before accessing customer data
+- Security: Never trust request body customer IDs - always validate against `availableCustomerIds` from session
 
 CRITICAL RULE: Automated Testing with Playwright
 - Comprehensive end-to-end testing using Playwright for public website, customer portal, and admin panel
-- **Test Structure:** Organized in `tests/` directory with subdirectories for public/, portal/, and admin/ tests
-- **Coverage:** Tests verify critical user flows without manual clicking - login, appointments, invoices, booking, referrals, admin operations
-- **Data Safety:** Tests use test customer ID (27881198) and mock phone numbers (512-555-XXXX format) - never touch production data
+- Test Structure: Organized in `tests/` directory with subdirectories for public/, portal/, and admin/ tests
+- Coverage: Tests verify critical user flows without manual clicking - login, appointments, invoices, booking, referrals, admin operations
+- Data Safety: Tests use test customer ID (27881198) and mock phone numbers (512-555-XXXX format) - never touch production data
 
 CRITICAL RULE: Resend Email Integration - ALWAYS Use Replit Native Connector
 - ALL Resend API calls MUST use the Replit Native Connector via `getUncachableResendClient()` from `server/email.ts`
 - NEVER use direct environment variables like `RESEND_API_KEY` or `REPLIT_CONNECTOR_RESEND_API_KEY`
 - The connector provides both API key and from_email dynamically - credentials rotate automatically for security
 - Benefits: Automatic credential rotation, centralized configuration, no manual secret management
-- **Email Address Formatting:**
+- Email Address Formatting:
   - FROM field always shows: `"Economy Plumbing Services" <hello@mail.plumbersthatcare.com>`
   - TO field can include customer names using `formatEmailAddress(email, name)` helper: `"John Smith <customer@email.com>"`
   - Use `toName` parameter to add customer names to TO field for better inbox display and engagement
@@ -85,54 +85,54 @@ CRITICAL RULE: Google Drive Integration - ALWAYS Use Replit Native Connector
 - NEVER use direct environment variables like `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, or `GOOGLE_SERVICE_ACCOUNT_JSON`
 - The connector provides OAuth access tokens dynamically - credentials rotate automatically for security
 - Benefits: Automatic credential rotation, OAuth flow handled by Replit, no manual secret management
-- **Implementation Locations:**
+- Implementation Locations:
   - `server/lib/googleDriveMonitor.ts` - Photo monitoring and import from Google Drive folders
   - `server/lib/servicetitanPhotoFetcher.ts` - ServiceTitan job photos uploaded to Google Drive
-- **Pattern:** Token caching with expiry check, automatic refresh via Replit connector API
+- Pattern: Token caching with expiry check, automatic refresh via Replit connector API
 
 CRITICAL RULE: Database Lazy Initialization (Production Fix)
-- **Problem:** Eager database initialization at module load time caused 500 errors in production serverless environments.
-- **Solution:** `server/db.ts` uses Proxy-based lazy initialization - database connection created on **first access**.
-- **CRITICAL: Clear Build Cache After Database Changes:** When modifying `server/db.ts` or any core database files, ALWAYS run `rm -rf .next` to clear Next.js build cache before republishing.
+- Problem: Eager database initialization at module load time caused 500 errors in production serverless environments.
+- Solution: `server/db.ts` uses Proxy-based lazy initialization - database connection created on **first access**.
+- CRITICAL: Clear Build Cache After Database Changes: When modifying `server/db.ts` or any core database files, ALWAYS run `rm -rf .next` to clear Next.js build cache before republishing.
 
 CRITICAL RULE: Phone Number Architecture - UTM-Driven Tracking System
 - Phone numbers are **NEVER** hardcoded or static in the codebase.
-- **System:** `PhoneConfigProvider` (server-side) → `tracking_numbers` table → displays different numbers based on `utm_source` parameter
-- **Admin UI:** `/admin/tracking-numbers` manages all phone number mappings and UTM source → ServiceTitan Campaign ID associations
-- **DO NOT** create "primary phone" or "default phone" in business metadata files
-- **DO NOT** bypass tracking number system for any phone display (UI, error messages, emails, social media)
-- **Fallback/Default:** Query `tracking_numbers` table for default phone (where `isDefault=true`) - never hardcode
-- **Helper Functions:** Use `getPhoneNumbers(searchParams)` which respects UTM params and returns appropriate phone for visitor's source
-- **Benefits:** Call attribution tracking, campaign performance measurement, automated ServiceTitan job tagging
-- **Files:** `src/providers/PhoneConfigProvider.tsx`, `server/lib/phoneNumbers.ts`, `app/admin/tracking-numbers/`
+- System: `PhoneConfigProvider` (server-side) → `tracking_numbers` table → displays different numbers based on `utm_source` parameter
+- Admin UI: `/admin/tracking-numbers` manages all phone number mappings and UTM source → ServiceTitan Campaign ID associations
+- DO NOT create "primary phone" or "default phone" in business metadata files
+- DO NOT bypass tracking number system for any phone display (UI, error messages, emails, social media)
+- Fallback/Default: Query `tracking_numbers` table for default phone (where `isDefault=true`) - never hardcode
+- Helper Functions: Use `getPhoneNumbers(searchParams)` which respects UTM params and returns appropriate phone for visitor's source
+- Benefits: Call attribution tracking, campaign performance measurement, automated ServiceTitan job tagging
+- Files: `src/providers/PhoneConfigProvider.tsx`, `server/lib/phoneNumbers.ts`, `app/admin/tracking-numbers/`
 
 CRITICAL RULE: Business Metadata - Static for SEO Performance
 - File: `src/lib/businessMetadata.ts` contains static NAP data (Name, Address, Phone) for JSON-LD/SEO
 - Used by: SEO/JSON-LD generation, Open Graph tags, schema.org markup
-- **DO NOT** migrate business metadata to database - static files are FASTER and better for SEO
-- **DO NOT** fetch business metadata from database on every request - degrades page load performance
-- **WHY:** Google/search engines prefer predictable, fast-loading structured data for indexing
+- DO NOT migrate business metadata to database - static files are FASTER and better for SEO
+- DO NOT fetch business metadata from database on every request - degrades page load performance
+- WHY: Google/search engines prefer predictable, fast-loading structured data for indexing
 - Only update when business info actually changes (rare events like address change, new locations)
-- **Future Enhancement:** If admin editability needed, use ISR caching (Next.js revalidation) or build-time generation, NOT per-request database queries
-- **Pattern:** Static export for speed → Import where needed → Consistent data across all pages
+- Future Enhancement: If admin editability needed, use ISR caching (Next.js revalidation) or build-time generation, NOT per-request database queries
+- Pattern: Static export for speed → Import where needed → Consistent data across all pages
 
 CRITICAL RULE: Scheduler Address Validation - NO DEFAULTS
-- **NEVER** use fallback values like `|| 'Austin'`, `|| 'TX'`, or `|| '78701'` in address fields
-- **ALWAYS** require complete address (street, city, state, zip) from user before booking
-- **FAIL** booking request if any required address field is missing - throw validation error
+- NEVER use fallback values like `|| 'Austin'`, `|| 'TX'`, or `|| '78701'` in address fields
+- ALWAYS require complete address (street, city, state, zip) from user before booking
+- FAIL booking request if any required address field is missing - throw validation error
 - Location: `app/api/scheduler/book/route.ts` - Lines 126-128, 139-141 previously had dangerous defaults
-- **Rationale:** Default addresses create incorrect customer records in ServiceTitan, mix up customer data, and cause billing/service location confusion
-- **Correct Pattern:** Validate all fields are present → Throw error if missing → Frontend displays clear validation message
-- **Exception:** If customer is authenticated and has existing location, may prefill from their account (but still validate)
+- Rationale: Default addresses create incorrect customer records in ServiceTitan, mix up customer data, and cause billing/service location confusion
+- Correct Pattern: Validate all fields are present → Throw error if missing → Frontend displays clear validation message
+- Exception: If customer is authenticated and has existing location, may prefill from their account (but still validate)
 
 CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 - Phone numbers: Query `tracking_numbers` table (never hardcode strings like "(512) 368-9159")
 - Business info: Import from `businessMetadata.ts` (never inline company name, address, etc.)
 - Email addresses: Use `businessMetadata.ts` or admin `systemSettings` table
-- **FORBIDDEN:** Inline strings scattered throughout codebase for business contact info
-- **Pattern:** Single source of truth → Import/query where needed → Update in one place, changes everywhere
-- **Benefits:** Consistency, maintainability, prevents outdated contact info in production
-- **Audit:** Regularly grep codebase for phone patterns like `(512)`, `512-`, email patterns to catch violations
+- FORBIDDEN: Inline strings scattered throughout codebase for business contact info
+- Pattern: Single source of truth → Import/query where needed → Update in one place, changes everywhere
+- Benefits: Consistency, maintainability, prevents outdated contact info in production
+- Audit: Regularly grep codebase for phone patterns like `(512)`, `512-`, email patterns to catch violations
 
 ## System Architecture
 
