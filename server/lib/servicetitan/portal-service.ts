@@ -17,7 +17,13 @@ interface CustomerPortalDTO {
 interface LocationSummary {
   id: number;
   name: string;
-  address: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  contacts: any[]; // Contact methods for this location
 }
 
 interface PortalLocationDetails {
@@ -143,11 +149,13 @@ class ServiceTitanPortalService {
         throw new Error('Customer not found');
       }
 
-      // Fetch contacts, locations, and referrals in parallel
+      // Fetch contacts first (may be reused by fetchLocations if no locations exist)
+      const customerContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+      
+      // Fetch locations and referrals in parallel
       // Note: Customer endpoint doesn't include email/phone - must fetch separately
-      const [customerContacts, locations, referrals] = await Promise.all([
-        serviceTitanCRM.getCustomerContacts(customerId),
-        this.fetchLocations(customerId),
+      const [locations, referrals] = await Promise.all([
+        this.fetchLocations(customerId, customerContacts),
         this.fetchReferrals(customerId),
       ]);
 
@@ -177,9 +185,9 @@ class ServiceTitanPortalService {
   }
 
   /**
-   * Fetch lightweight location summaries (no nested data)
+   * Fetch location summaries with full address objects and contacts
    */
-  private async fetchLocations(customerId: number): Promise<LocationSummary[]> {
+  private async fetchLocations(customerId: number, customerContacts?: any[]): Promise<LocationSummary[]> {
     try {
       const tenantId = serviceTitanAuth.getTenantId();
       
@@ -189,27 +197,66 @@ class ServiceTitanPortalService {
       );
 
       if (!locationsResponse?.data || locationsResponse.data.length === 0) {
-        // No locations - return default primary location
+        // No locations - return default primary location with customer contacts
+        // Reuse passed customerContacts to avoid redundant API call
+        const contacts = customerContacts || await serviceTitanCRM.getCustomerContacts(customerId);
         return [{
           id: 0,
           name: 'Primary Location',
-          address: '',
+          address: {
+            street: '',
+            city: '',
+            state: '',
+            zip: '',
+          },
+          contacts,
         }];
       }
 
-      // Map to lightweight summaries only
-      return locationsResponse.data.map((location: any) => ({
-        id: location.id,
-        name: location.name || this.formatAddress(location.address) || 'Unnamed Location',
-        address: this.formatAddress(location.address),
-      }));
+      // Fetch contacts for each location in parallel with concurrency limiting
+      // CRITICAL: Wrap each contact fetch in try/catch so individual failures don't break all locations
+      const locationSummaries = await Promise.all(
+        locationsResponse.data.map((location: any) =>
+          this.limit(async () => {
+            let contacts: any[] = [];
+            
+            // Try to fetch contacts, but don't fail the whole location if this fails
+            try {
+              contacts = await serviceTitanCRM.getLocationContacts(location.id);
+            } catch (contactError: any) {
+              console.error(`[PortalService] Failed to fetch contacts for location ${location.id}:`, contactError.message);
+              // Continue with empty contacts array - don't break the whole location list
+            }
+            
+            return {
+              id: location.id,
+              name: location.name || this.formatAddress(location.address) || 'Unnamed Location',
+              address: {
+                street: location.address?.street || '',
+                city: location.address?.city || '',
+                state: location.address?.state || '',
+                zip: location.address?.zip || '',
+              },
+              contacts,
+            };
+          })
+        )
+      );
+
+      return locationSummaries;
     } catch (error: any) {
       console.error('[PortalService] Error fetching locations:', error);
       // Fallback to default location
       return [{
         id: 0,
         name: 'Primary Location',
-        address: '',
+        address: {
+          street: '',
+          city: '',
+          state: '',
+          zip: '',
+        },
+        contacts: [],
       }];
     }
   }

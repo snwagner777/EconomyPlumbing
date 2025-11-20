@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service information, service area coverage, a blog, and an online store. It integrates AI for content generation, marketing automation, and reputation management to enhance local SEO, user engagement, and conversion rates, aiming to be a comprehensive digital solution for business growth.
+Economy Plumbing Services is a full-stack web application designed for plumbing businesses. It provides a comprehensive digital platform that includes service information, localized service area management, a blog, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, aiming to enhance local SEO, boost user engagement, and increase conversion rates for business growth and operational efficiency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -139,28 +139,28 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** Utilizes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
-- **Key Pages:** Home, About, Contact, Services, Service Areas, Blog, Ecwid Store, FAQ, policy pages, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Utilizes a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
+- **Key Pages:** Standard website pages, Ecwid Store, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
-- **Customer Portal:** Full-featured with ServiceTitan integration, 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and a 4-step scheduler flow with SMS verification.
-- **Admin Panel:** 23 sections covering Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
+- **Customer Portal:** ServiceTitan integrated portal with 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and a 4-step scheduler with SMS verification.
+- **Admin Panel:** Comprehensive administration covering Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router with over 100 API routes and a `worker.ts` for background jobs.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) managing over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
-- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices, Photos/Attachments (v2 API), including OAuth, customer/contact management, job/appointment tracking, estimate/invoice webhooks, membership management, and scheduler integration.
-- **Customer Portal Backend API:** 37 routes in `/api/portal/*` with unified session, centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation, supporting multi-account management.
+- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices (v2 API), including OAuth, customer/contact management, job/appointment tracking, estimate/invoice webhooks, and membership management.
+- **Customer Portal Backend API:** 37 routes under `/api/portal/*` with unified session, centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation, supporting multi-account management.
 - **Marketing Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, and referral nurture emails.
-- **SMS Marketing System:** SimpleTexting API integration for contact/list management, campaign creation, and two-way messaging.
+- **SMS Marketing System:** Integrates with SimpleTexting API for contact/list management, campaign creation, and two-way messaging.
 - **Reputation Management System:** Webhook-triggered review requests and multi-platform review tracking.
 - **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage, and background processing.
 - **Email Preference Center:** Granular subscription management with token-based unsubscribe.
 - **ServiceTitan Photo Fetch System:** Event-driven photo retrieval, AI quality analysis, Google Drive upload, and metadata storage.
-- **Background Worker Schedulers:** `server/worker.ts` handles automated tasks like auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review requests, referral nurturing, custom campaigns, ServiceTitan zone synchronization, and SEO audit processing.
-- **SEO Audit System:** Local performance and SEO testing using Lighthouse, site-audit-seo, and seo-analyzer, with job queue management and an Admin UI.
-- **Production Infrastructure:** Database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
+- **Background Worker Schedulers:** Handles automated tasks such as auto blog generation, photo cleanup, ServiceTitan photo fetch queue processing, review requests, referral nurturing, custom campaigns, ServiceTitan zone synchronization, and SEO audit processing.
+- **SEO Audit System:** Conducts local performance and SEO testing using Lighthouse, site-audit-seo, and seo-analyzer, with job queue management and an Admin UI.
+- **Production Infrastructure:** Supports database transactions with idempotency, health monitoring, webhook signature verification, CRON job endpoints, and error tracking.
 - **Analytics & Third-Party Script Management:** Integrates GA4, Meta Pixel, GTM, and Microsoft Clarity with script deferral and cookie consent.
 
 ## External Dependencies
