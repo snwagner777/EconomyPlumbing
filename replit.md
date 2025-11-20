@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed for plumbing businesses. It provides a comprehensive digital platform that includes service information, localized service area management, a blog, and an online store. The application integrates AI for content generation, marketing automation, and reputation management, aiming to enhance local SEO, boost user engagement, and increase conversion rates for business growth and operational efficiency.
+Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service information, localized area management, a blog, and an online store. It uses AI for content generation, marketing, and reputation management, aiming to improve local SEO, increase engagement, and drive conversions for business growth and efficiency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -59,6 +59,8 @@ CRITICAL RULE: Customer Contact Management - Dual API System
 - Contacts can exist at customer level, location level, or both - must check both sources.
 - Portal Integration: Both `getCustomerPortalData()` and `getLocationDetails()` fetch contacts separately in parallel - customer/location endpoints don't include contacts by default.
 - Contact Creation Errors: `createCustomer()` propagates contact creation errors with structured logging (customer ID, name, contact value, exact error) instead of silent failures.
+- Location Summaries: `fetchLocations()` returns full address objects (street, city, state, zip) and contacts array for each location, with per-location error handling to prevent single failures from breaking all locations.
+- Error Resilience: Individual location contact fetch failures log errors and return empty contacts array, preserving all other location data.
 
 CRITICAL RULE: Unified Session Architecture (Migration Complete)
 - The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
@@ -139,7 +141,7 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Utilizes a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
 - **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Standard website pages, Ecwid Store, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
