@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service information, localized area management, a blog, and an online store. It uses AI for content generation, marketing, and reputation management, aiming to improve local SEO, increase engagement, and drive conversions for business growth and efficiency.
+Economy Plumbing Services is a full-stack web application for plumbing businesses. It offers tools for service information, localized area management, blog content publishing, and e-commerce. The platform uses AI for content generation, marketing automation, and reputation management to improve local SEO, customer engagement, and conversion rates, ultimately driving business growth and operational efficiency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -46,27 +46,6 @@ CRITICAL RULE: Next.js Server-Side Rendering (SSR) - NEVER Break It
 CRITICAL RULE: ServiceTitan API Testing Protocol
 - ALWAYS test API endpoints with real customer data (ID: 27881198) BEFORE implementing features.
 - Verify actual response structures, field names, and data types using test customer.
-
-CRITICAL RULE: Referral System Architecture - Modular Hybrid System
-- Frontend: Modular architecture with `useReferralForm` hook (headless logic) + `ReferralFormView` (presentation) + context wrappers.
-- Defensive Field Visibility: Only hide fields if valid default values exist (≥2 chars for name, valid phone/email for contacts).
-- API Integration: Hybrid approach - looks up existing referees in ServiceTitan via `serviceTitanCRM.findCustomer()` (phone-based), links to existing customers, de-fers new customer creation to scheduler when address data is collected.
-- Workflow: Submit referral → Look up existing customer → Create voucher → Background processor tracks job completion → Auto-credit when referee completes job.
-
-CRITICAL RULE: Customer Contact Management - Dual API System
-- Customer-level contacts: Use `serviceTitanCRM.getCustomerContacts(customerId)` - Returns contacts with methods array.
-- Location-level contacts: Use `serviceTitanCRM.getLocationContacts(locationId)` - Returns contacts linked to specific location.
-- Contacts can exist at customer level, location level, or both - must check both sources.
-- Portal Integration: Both `getCustomerPortalData()` and `getLocationDetails()` fetch contacts separately in parallel - customer/location endpoints don't include contacts by default.
-- Contact Creation Errors: `createCustomer()` propagates contact creation errors with structured logging (customer ID, name, contact value, exact error) instead of silent failures.
-- Location Summaries: `fetchLocations()` returns full address objects (street, city, state, zip) and contacts array for each location, with per-location error handling to prevent single failures from breaking all locations.
-- Error Resilience: Individual location contact fetch failures log errors and return empty contacts array, preserving all other location data.
-
-CRITICAL RULE: Unified Session Architecture (Migration Complete)
-- The customer portal uses a SINGLE unified session system (`plumbing_session` cookie) via `getSession()` from `@/lib/session`
-- Centralized Helper: All portal routes MUST use `getPortalSession()` and `assertCustomerOwnership()` from `server/lib/customer-portal/portal-session.ts`
-- Ownership Validation: Use `assertCustomerOwnership(requestedId, availableCustomerIds)` before accessing customer data
-- Security: Never trust request body customer IDs - always validate against `availableCustomerIds` from session
 
 CRITICAL RULE: Automated Testing with Playwright
 - Comprehensive end-to-end testing using Playwright for public website, customer portal, and admin panel
@@ -141,7 +120,7 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18 with TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
 - **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Standard website pages, Ecwid Store, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
