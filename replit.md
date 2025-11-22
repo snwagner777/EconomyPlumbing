@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses, offering integrated service management, local SEO, content publishing, and e-commerce. Its primary goal is to enhance online presence and foster business growth through AI-driven content, marketing automation, and reputation management, thereby improving customer engagement and operational efficiency for plumbing companies.
+Economy Plumbing Services is a full-stack web application for plumbing businesses. It integrates service management, local SEO, content publishing, and e-commerce functionalities to enhance online presence and support business growth. The platform leverages AI for content generation, marketing automation, and reputation management, aiming to improve customer engagement and operational efficiency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -131,8 +131,8 @@ CRITICAL RULE: Customer Portal API - Single Source of Truth
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
+- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Utilizes a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and adheres to WCAG AA Compliance.
+- **SEO & Performance:** Features `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
 - **Key Features:** Marketing pages, Ecwid Store integration, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and an OpenAI GPT-4o-mini powered chatbot.
 - **Customer Portal:** Secure, ServiceTitan-integrated portal with 2FA, appointment management, memberships, vouchers, service history, billing, and a 4-step scheduler with SMS verification.
 - **Admin Panel:** Comprehensive dashboard for managing AI & Marketing, Communications, Content, Customers, Operations, and Settings.
