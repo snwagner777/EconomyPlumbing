@@ -123,6 +123,73 @@ class ServiceTitanPortalService {
   }
 
   /**
+   * Fetch customer data with full details in frontend-expected format
+   * Returns data nested under 'customer' key with proper field mappings
+   */
+  async getCustomerWithFullDetails(customerId: number): Promise<any> {
+    const cacheKey = `customer:${customerId}:full-details`;
+    
+    // Check cache first
+    const cached = this.getCached<any>(cacheKey);
+    if (cached) {
+      console.log(`[PortalService] Cache hit for customer ${customerId}`);
+      return cached;
+    }
+
+    console.log(`[PortalService] Fetching fresh data for customer ${customerId}`);
+
+    try {
+      const tenantId = serviceTitanAuth.getTenantId();
+
+      // Fetch customer details first
+      const customer = await serviceTitanAuth.makeRequest<any>(
+        `crm/v2/tenant/${tenantId}/customers/${customerId}`
+      );
+
+      if (!customer) {
+        throw new Error('Customer not found');
+      }
+
+      // Fetch contacts first
+      const customerContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+      
+      // Fetch locations and referrals in parallel
+      const [locations, referrals] = await Promise.all([
+        this.fetchLocations(customerId, customerContacts),
+        this.fetchReferrals(customerId),
+      ]);
+
+      // Extract primary email and phone from contacts array
+      const primaryPhone = customerContacts.find((c: any) => c.type === 'MobilePhone')?.value || '';
+      const primaryEmail = customerContacts.find((c: any) => c.type === 'Email')?.value || '';
+
+      // Transform to frontend-expected format
+      const response = {
+        customer: {
+          id: customer.id,
+          name: customer.name || 'Customer',
+          email: primaryEmail,
+          phoneNumber: primaryPhone, // Frontend expects 'phoneNumber'
+          address: customer.address || null, // Keep as object
+          contacts: customerContacts, // Customer-level contacts
+          customerTags: customer.tagTypeIds || [],
+        },
+        locations,
+        referrals,
+        credits: 0, // TODO: Fetch from referral credits system
+      };
+
+      // Cache the result
+      this.setCache(cacheKey, response);
+
+      return response;
+    } catch (error: any) {
+      console.error(`[PortalService] Error fetching customer ${customerId} data:`, error);
+      throw new Error(`Failed to load customer data: ${error.message}`);
+    }
+  }
+
+  /**
    * Fetch complete customer portal data
    */
   async getCustomerPortalData(customerId: number): Promise<CustomerPortalDTO> {

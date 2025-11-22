@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses. It provides tools for service information, localized area management, blog content publishing, and e-commerce. The platform utilizes AI for content generation, marketing automation, and reputation management to enhance local SEO, boost customer engagement, and improve conversion rates, driving business growth and operational efficiency.
+Economy Plumbing Services is a full-stack web application designed for plumbing businesses. It offers comprehensive service management, localized operations, content publishing, and e-commerce capabilities. The platform leverages AI for content creation, marketing, and reputation management to enhance local SEO, customer engagement, conversion rates, and operational efficiency, ultimately aiming to streamline business operations and strengthen digital presence.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -131,15 +131,15 @@ CRITICAL RULE: Customer Portal API - Single Source of Truth
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
-- **Key Pages:** Standard website pages, Ecwid Store, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
+- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Utilizes a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **SEO & Performance:** `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, server-side dynamic phone tracking.
+- **Key Features:** Standard website pages, Ecwid Store integration, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
-- **Customer Portal:** ServiceTitan integrated portal with 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and a 4-step scheduler with SMS verification.
-- **Admin Panel:** Comprehensive administration covering Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
+- **Customer Portal:** ServiceTitan integrated portal with 2FA, dashboard, appointment management, memberships, vouchers, service history, billing, settings, and a 4-step scheduler with SMS verification.
+- **Admin Panel:** Comprehensive interface for Dashboard, AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
-- **Framework & API:** Next.js 15 App Router with over 100 API routes and a `worker.ts` for background jobs.
+- **Framework & API:** Next.js 15 App Router with over 100 API routes and a `worker.ts` for background job processing.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted) managing over 60 tables.
 - **Security & Type Safety:** Session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, comprehensive CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
 - **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices (v2 API), including OAuth, customer/contact management, job/appointment tracking, estimate/invoice webhooks, and membership management.

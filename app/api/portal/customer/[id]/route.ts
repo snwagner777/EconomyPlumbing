@@ -21,10 +21,10 @@ export async function GET(
     const { customerId, availableCustomerIds } = await getPortalSession();
     assertCustomerOwnership(requestedCustomerId, availableCustomerIds);
     
-    // Fetch real-time customer data from ServiceTitan
-    const customerData = await serviceTitanPortalService.getCustomerPortalData(requestedCustomerId);
+    // Fetch real-time customer data from ServiceTitan with full details
+    const portalData = await serviceTitanPortalService.getCustomerWithFullDetails(requestedCustomerId);
     
-    return NextResponse.json(customerData);
+    return NextResponse.json(portalData);
   } catch (error: any) {
     console.error('[Portal Customer Data] Error:', error);
     
