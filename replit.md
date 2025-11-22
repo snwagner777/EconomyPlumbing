@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application designed for plumbing businesses. It provides tools for service management, local SEO, content publishing, and e-commerce. The platform aims to enhance online presence, foster business growth, and improve customer engagement and operational efficiency through AI-powered content generation, marketing automation, and reputation management.
+Economy Plumbing Services is a full-stack web application designed to enhance the online presence, drive growth, and improve customer engagement and operational efficiency for plumbing businesses. It integrates service management, local SEO, content publishing, and e-commerce functionalities. The platform uses AI for content generation and marketing automation, and includes a robust reputation management system. Its core ambition is to provide a comprehensive digital solution that streamlines operations and scales plumbing businesses.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -132,7 +132,7 @@ CRITICAL RULE: Customer Portal API - Single Source of Truth
 
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
+- **SEO & Performance:** Implements `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
 - **Key Features:** Marketing pages, Ecwid Store integration, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and an OpenAI GPT-4o-mini powered chatbot.
 - **Customer Portal:** Secure, ServiceTitan-integrated portal with 2FA, appointment management, memberships, vouchers, service history, billing, and a 4-step scheduler with SMS verification.
 - **Admin Panel:** Dashboard for managing AI & Marketing, Communications, Content, Customers, Operations, and Settings.
