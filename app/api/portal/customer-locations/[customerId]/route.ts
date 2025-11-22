@@ -37,7 +37,7 @@ export async function GET(
             id: contact.id, // Contact person ID (GUID)
             name: contact.name,
             title: contact.title,
-            methods: contact.methods.map((method) => ({
+            methods: (contact.methods || []).map((method) => ({
               id: method.id, // Contact method ID (GUID) - needed for updates
               type: method.type,
               value: method.value,

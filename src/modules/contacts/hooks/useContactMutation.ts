@@ -49,9 +49,8 @@ export function useAddCustomerContact() {
         description: 'Your contact information has been updated.',
       });
       
-      // Invalidate customer data to refresh contacts list (both new and legacy keys)
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', variables.customerId] });
+      // Invalidate customer data to refresh contacts list
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
     },
     onError: (error: Error) => {
       toast({
@@ -97,20 +96,24 @@ export function useAddLocationContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Added',
         description: 'Location contact information has been updated.',
       });
       
-      // CRITICAL: Invalidate customer-locations queries (used by portal)
-      // Use predicate to match both array and template string patterns
+      // Invalidate customer-locations queries (used by portal)
       queryClient.invalidateQueries({
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
       });
-      // Also invalidate main customer query to refresh all data
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      
+      // Note: We need to find customer ID from another source since locationId is not enough
+      // For now, invalidate all portal customer queries
+      queryClient.invalidateQueries({
+        predicate: (query) =>
+          query.queryKey[0] === '/api/portal/customer',
+      });
     },
     onError: (error: Error) => {
       toast({
@@ -184,13 +187,13 @@ export function useUpdateCustomerContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Updated',
         description: 'Contact information has been updated successfully.',
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
     },
     onError: (error: Error) => {
       toast({
@@ -233,7 +236,7 @@ export function useUpdateLocationContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Updated',
         description: 'Location contact has been updated successfully.',
@@ -243,7 +246,7 @@ export function useUpdateLocationContact() {
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
     },
     onError: (error: Error) => {
       toast({
@@ -279,13 +282,13 @@ export function useDeleteCustomerContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Deleted',
         description: 'Contact has been removed successfully.',
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
     },
     onError: (error: Error) => {
       toast({
@@ -324,7 +327,7 @@ export function useDeleteLocationContact() {
 
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       toast({
         title: 'Contact Deleted',
         description: 'Location contact has been removed successfully.',
@@ -334,7 +337,7 @@ export function useDeleteLocationContact() {
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
     },
     onError: (error: Error) => {
       toast({

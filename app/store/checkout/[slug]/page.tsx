@@ -223,7 +223,7 @@ export default function MembershipCheckout() {
       };
     };
   }>({
-    queryKey: ['/api/servicetitan/customer', portalCustomerId],
+    queryKey: ['/api/portal/customer', portalCustomerId],
     enabled: !!portalCustomerId,
   });
 
