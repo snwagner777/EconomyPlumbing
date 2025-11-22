@@ -221,8 +221,9 @@ function ManageLocationContactsDialog({
               <ContactForm
                 showNameField={true}
                 onSubmit={async (data) => {
-                  if (!selectedLocation?.id) return;
+                  if (!selectedLocation?.id || !customerId) return;
                   await addLocationContact.mutateAsync({
+                    customerId: parseInt(customerId),
                     locationId: selectedLocation.id,
                     ...data,
                   });

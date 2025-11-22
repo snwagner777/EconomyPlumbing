@@ -82,6 +82,7 @@ export function useAddLocationContact() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          customerId: data.customerId, // Required for cache invalidation
           locationId: data.locationId,
           type: data.type,
           value: data.value.trim(),
