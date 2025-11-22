@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses. It offers tools for service information, localized area management, blog content publishing, and e-commerce. The platform uses AI for content generation, marketing automation, and reputation management to improve local SEO, customer engagement, and conversion rates, ultimately driving business growth and operational efficiency.
+Economy Plumbing Services is a full-stack web application for plumbing businesses. It provides tools for service information, localized area management, blog content publishing, and e-commerce. The platform utilizes AI for content generation, marketing automation, and reputation management to enhance local SEO, boost customer engagement, and improve conversion rates, driving business growth and operational efficiency.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -117,11 +117,22 @@ CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 - Benefits: Consistency, maintainability, prevents outdated contact info in production
 - Audit: Regularly grep codebase for phone patterns like `(512)`, `512-`, email patterns to catch violations
 
+CRITICAL RULE: Customer Portal API - Single Source of Truth
+- ALL portal customer data MUST flow through `/api/portal/customer/[id]/route.ts` - the single source of truth with proper security
+- NEVER create duplicate customer data endpoints without session validation and ownership assertion
+- Security Pattern: Every portal endpoint MUST call `getPortalSession()` and `assertCustomerOwnership()` before returning data
+- Cache Invalidation: React Query keys MUST use numeric customerId format: `['/api/portal/customer', customerId]` (NOT string)
+- Contact Mutations: ALL contact mutation hooks in `src/modules/contacts/hooks/useContactMutation.ts` invalidate cache with numeric customerId
+- Location Contacts: Handle undefined `contact.methods` with fallback `(contact.methods || [])` to prevent crashes
+- Modular Architecture: Portal service uses `server/lib/servicetitan/portal-service.ts` for business logic separation
+- Files: `app/api/portal/customer/[id]/route.ts`, `app/api/portal/customer-locations/[customerId]/route.ts`, `src/modules/contacts/hooks/useContactMutation.ts`
+- Test Customer IDs: 27881198, 3153460 (both have multiple locations and contacts for testing)
+
 ## System Architecture
 
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
+- **SEO & Performance:** `SEOHead`, JSON-LD, 301 redirects, image lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap generation, and server-side dynamic phone tracking.
 - **Key Pages:** Standard website pages, Ecwid Store, VIP Membership, interactive calculators, seasonal landing pages, and commercial industry pages.
 - **AI Chatbot:** Site-wide OpenAI GPT-4o-mini powered chatbot with conversation history, image upload, and feedback.
 - **Customer Portal:** ServiceTitan integrated portal with 2FA, dashboard, appointments, memberships, vouchers, services, billing, settings, and a 4-step scheduler with SMS verification.
