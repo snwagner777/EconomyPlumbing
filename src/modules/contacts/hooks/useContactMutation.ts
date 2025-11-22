@@ -49,8 +49,9 @@ export function useAddCustomerContact() {
         description: 'Your contact information has been updated.',
       });
       
-      // Invalidate customer data to refresh contacts list
+      // Invalidate customer data and contacts to refresh lists
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -194,6 +195,7 @@ export function useUpdateCustomerContact() {
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -289,6 +291,7 @@ export function useDeleteCustomerContact() {
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
