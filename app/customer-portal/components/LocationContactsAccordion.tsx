@@ -54,6 +54,7 @@ export function LocationContactsAccordion({
     if (!selectedLocationId) return;
     
     await addMutation.mutateAsync({
+      customerId,
       locationId: selectedLocationId,
       type: data.type,
       value: data.value,

@@ -34,9 +34,11 @@ export interface CustomerContactFormData extends ContactFormData {
 }
 
 /**
- * Location contact submission (includes locationId + name)
+ * Location contact submission (includes locationId + customerId + name)
+ * Customer ID required for proper cache invalidation
  */
 export interface LocationContactFormData extends ContactFormData {
+  customerId: number; // Parent customer ID for cache invalidation
   locationId: number;
   name?: string; // Contact person name for location
 }
@@ -101,6 +103,7 @@ export const customerContactSchema = z.object({
  * Location contact submission schema
  */
 export const locationContactSchema = z.object({
+  customerId: z.number().positive('Customer ID is required'),
   locationId: z.number().positive('Location ID is required'),
   type: z.enum(CONTACT_TYPES, {
     required_error: 'Contact type is required',

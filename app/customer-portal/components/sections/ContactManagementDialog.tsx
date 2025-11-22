@@ -181,6 +181,7 @@ export function ContactManagementDialog({
     
     try {
       await addLocationContact.mutateAsync({
+        customerId,
         locationId,
         type: data.type,
         value: data.value,

@@ -71,7 +71,7 @@ export function useAddCustomerContact() {
  * Add contact to service location
  * 
  * Endpoint: POST /api/portal/location-contacts
- * Invalidates: Location data queries
+ * Invalidates: Location data queries AND customer data queries
  */
 export function useAddLocationContact() {
   const { toast } = useToast();
@@ -103,18 +103,10 @@ export function useAddLocationContact() {
         description: 'Location contact information has been updated.',
       });
       
-      // Invalidate customer-locations queries (used by portal)
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
-      });
-      
-      // Note: We need to find customer ID from another source since locationId is not enough
-      // For now, invalidate all portal customer queries
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0] === '/api/portal/customer',
-      });
+      // Invalidate both customer-locations and customer-contacts queries with customerId
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -211,7 +203,7 @@ export function useUpdateCustomerContact() {
  * Update existing location contact method
  * 
  * Endpoint: PATCH /api/portal/location-contacts/[contactId]
- * Invalidates: Location data queries
+ * Invalidates: Location data queries AND customer data queries
  */
 export function useUpdateLocationContact() {
   const { toast } = useToast();
@@ -244,10 +236,9 @@ export function useUpdateLocationContact() {
         description: 'Location contact has been updated successfully.',
       });
       
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
-      });
+      // Invalidate both customer-locations and customer-contacts queries with customerId
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
@@ -307,7 +298,7 @@ export function useDeleteCustomerContact() {
  * Delete location contact method
  * 
  * Endpoint: DELETE /api/portal/location-contacts/[contactId]
- * Invalidates: Location data queries
+ * Invalidates: Location data queries AND customer data queries
  */
 export function useDeleteLocationContact() {
   const { toast } = useToast();
@@ -336,10 +327,9 @@ export function useDeleteLocationContact() {
         description: 'Location contact has been removed successfully.',
       });
       
-      queryClient.invalidateQueries({
-        predicate: (query) =>
-          query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
-      });
+      // Invalidate both customer-locations and customer-contacts queries with customerId
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-locations', variables.customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer-contacts', variables.customerId] });
       queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
