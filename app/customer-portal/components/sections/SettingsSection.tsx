@@ -47,6 +47,11 @@ export function SettingsSection({
   // Fetch customer contacts
   const { data: customerContactsData, isLoading: isLoadingContacts } = useQuery<{ contactMethods: ContactMethod[] }>({
     queryKey: ['/api/portal/customer-contacts', customerId],
+    queryFn: async () => {
+      const response = await fetch(`/api/portal/customer-contacts?customerId=${customerId}`);
+      if (!response.ok) throw new Error('Failed to fetch customer contacts');
+      return response.json();
+    },
     enabled: !!customerId,
   });
 
