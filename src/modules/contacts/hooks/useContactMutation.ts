@@ -50,7 +50,7 @@ export function useAddCustomerContact() {
       });
       
       // Invalidate customer data to refresh contacts list
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -193,7 +193,7 @@ export function useUpdateCustomerContact() {
         description: 'Contact information has been updated successfully.',
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -246,7 +246,7 @@ export function useUpdateLocationContact() {
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -288,7 +288,7 @@ export function useDeleteCustomerContact() {
         description: 'Contact has been removed successfully.',
       });
       
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
@@ -337,7 +337,7 @@ export function useDeleteLocationContact() {
         predicate: (query) =>
           query.queryKey[0]?.toString().startsWith('/api/portal/customer-locations') ?? false,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId.toString()] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', variables.customerId] });
     },
     onError: (error: Error) => {
       toast({
