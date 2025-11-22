@@ -150,18 +150,22 @@ class ServiceTitanPortalService {
         throw new Error('Customer not found');
       }
 
-      // Fetch contacts first
-      const customerContacts = await serviceTitanCRM.getCustomerContacts(customerId);
+      // Fetch contacts first (flat contact methods)
+      const customerContactMethods = await serviceTitanCRM.getCustomerContacts(customerId);
       
       // Fetch locations and referrals in parallel
       const [locations, referrals] = await Promise.all([
-        this.fetchLocations(customerId, customerContacts),
+        this.fetchLocations(customerId, customerContactMethods),
         this.fetchReferrals(customerId),
       ]);
 
-      // Extract primary email and phone from contacts array
-      const primaryPhone = customerContacts.find((c: any) => c.type === 'MobilePhone')?.value || '';
-      const primaryEmail = customerContacts.find((c: any) => c.type === 'Email')?.value || '';
+      // Extract primary email and phone from contact methods
+      const primaryPhone = customerContactMethods.find((c: any) => c.type === 'MobilePhone')?.value || '';
+      const primaryEmail = customerContactMethods.find((c: any) => c.type === 'Email')?.value || '';
+
+      // Group contact methods into contact persons for frontend
+      // ServiceTitan returns flat contact methods, but UI expects grouped persons
+      const groupedContacts = this.groupContactMethodsIntoPersons(customerContactMethods, customer.name || 'Customer');
 
       // Transform to frontend-expected format
       const response = {
@@ -171,7 +175,7 @@ class ServiceTitanPortalService {
           email: primaryEmail,
           phoneNumber: primaryPhone, // Frontend expects 'phoneNumber'
           address: customer.address || null, // Keep as object
-          contacts: customerContacts, // Customer-level contacts
+          contacts: groupedContacts, // Customer-level contacts grouped by person
           customerTags: customer.tagTypeIds || [],
         },
         locations,
@@ -266,7 +270,8 @@ class ServiceTitanPortalService {
       if (!locationsResponse?.data || locationsResponse.data.length === 0) {
         // No locations - return default primary location with customer contacts
         // Reuse passed customerContacts to avoid redundant API call
-        const contacts = customerContacts || await serviceTitanCRM.getCustomerContacts(customerId);
+        const contactMethods = customerContacts || await serviceTitanCRM.getCustomerContacts(customerId);
+        const groupedContacts = this.groupContactMethodsIntoPersons(contactMethods, 'Primary Contact');
         return [{
           id: 0,
           name: 'Primary Location',
@@ -276,7 +281,7 @@ class ServiceTitanPortalService {
             state: '',
             zip: '',
           },
-          contacts,
+          contacts: groupedContacts,
         }];
       }
 
@@ -285,15 +290,21 @@ class ServiceTitanPortalService {
       const locationSummaries = await Promise.all(
         locationsResponse.data.map((location: any) =>
           this.limit(async () => {
-            let contacts: any[] = [];
+            let contactMethods: any[] = [];
             
             // Try to fetch contacts, but don't fail the whole location if this fails
             try {
-              contacts = await serviceTitanCRM.getLocationContacts(location.id);
+              contactMethods = await serviceTitanCRM.getLocationContacts(location.id);
             } catch (contactError: any) {
               console.error(`[PortalService] Failed to fetch contacts for location ${location.id}:`, contactError.message);
               // Continue with empty contacts array - don't break the whole location list
             }
+            
+            // Group flat contact methods into contact persons
+            const groupedContacts = this.groupContactMethodsIntoPersons(
+              contactMethods, 
+              location.name || 'Location Contact'
+            );
             
             return {
               id: location.id,
@@ -304,7 +315,7 @@ class ServiceTitanPortalService {
                 state: location.address?.state || '',
                 zip: location.address?.zip || '',
               },
-              contacts,
+              contacts: groupedContacts,
             };
           })
         )
@@ -711,6 +722,31 @@ class ServiceTitanPortalService {
       console.error('[PortalService] Error fetching recent jobs:', error);
       return [];
     }
+  }
+
+  /**
+   * Group flat contact methods into contact persons
+   * ServiceTitan returns flat contact methods, but UI expects grouped persons
+   */
+  private groupContactMethodsIntoPersons(contactMethods: any[], defaultName: string = 'Primary Contact'): any[] {
+    if (!contactMethods || contactMethods.length === 0) {
+      return [];
+    }
+
+    // For now, create a single contact person with all methods
+    // ServiceTitan v2 contact methods don't include person-level data
+    // So we group all methods under one contact
+    return [{
+      id: contactMethods[0].id || 0, // Use first contact method ID
+      name: defaultName,
+      title: undefined,
+      methods: contactMethods.map((method: any) => ({
+        id: method.id,
+        type: method.type,
+        value: method.value,
+        memo: method.memo,
+      })),
+    }];
   }
 
   /**
