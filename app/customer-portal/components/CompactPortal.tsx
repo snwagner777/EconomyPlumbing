@@ -180,13 +180,8 @@ export function CompactPortal({
       case 'settings':
         return (
           <SettingsSection
-            customerData={{
-              ...transformedData,
-              locations: normalizedLocations,
-            }}
-            onEditContacts={() => setContactDialogOpen(true)}
+            customerId={customerId ? parseInt(customerId) : 0}
             onAddLocation={() => setAddLocationDialogOpen(true)}
-            onEditLocation={onEditLocation}
             onAddAccount={() => setAddAccountDialogOpen(true)}
             formatPhoneNumber={formatPhoneNumber}
           />

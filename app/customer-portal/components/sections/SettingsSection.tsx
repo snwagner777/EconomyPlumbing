@@ -1,56 +1,63 @@
 /**
  * Settings Section - Account Settings and Preferences
- * Accordion sections for Contacts, Locations, and Preferences
+ * Displays customer contacts and service locations with contact management
  */
 
 'use client';
 
-import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { 
-  User, 
-  Phone, 
-  Mail, 
-  MapPin, 
-  Settings as SettingsIcon,
-  Edit2,
-  Trash2,
-  Plus,
-  Home,
-  Building2
-} from "lucide-react";
+import { Building2, Plus } from "lucide-react";
+import { CustomerContactMethodsCard } from "../CustomerContactMethodsCard";
+import { LocationContactsAccordion } from "../LocationContactsAccordion";
+import { useQuery } from '@tanstack/react-query';
+
+interface ContactMethod {
+  id: number;
+  type: string;
+  value: string;
+  memo?: string;
+}
+
+interface Location {
+  id: number;
+  name?: string;
+  address: {
+    street: string;
+    city: string;
+    state: string;
+    zip: string;
+  };
+  contactMethods?: ContactMethod[];
+}
 
 interface SettingsSectionProps {
-  customerData?: any;
-  onEditContacts?: () => void;
+  customerId: number;
   onAddLocation?: () => void;
-  onEditLocation?: (location: any) => void;
   onAddAccount?: () => void;
   formatPhoneNumber?: (phone: string) => string;
 }
 
 export function SettingsSection({
-  customerData,
-  onEditContacts,
+  customerId,
   onAddLocation,
-  onEditLocation,
   onAddAccount,
   formatPhoneNumber,
 }: SettingsSectionProps) {
-  const [activeSection, setActiveSection] = useState<string>('contacts');
+  // Fetch customer contacts
+  const { data: customerContactsData, isLoading: isLoadingContacts } = useQuery<{ contactMethods: ContactMethod[] }>({
+    queryKey: ['/api/portal/customer-contacts', customerId],
+    enabled: !!customerId,
+  });
 
-  // Extract data with null safety
-  const contacts = (customerData?.contacts || []).filter((c: any) => c && (c.name || c.phone || c.email));
-  const locations = (customerData?.locations || []).filter((l: any) => l && (l.address || l.street));
-  const primaryContact = contacts.find((c: any) => c.isPrimary) || contacts[0];
+  // Fetch customer locations with contacts
+  const { data: locationsData, isLoading: isLoadingLocations } = useQuery<{ locations: Location[] }>({
+    queryKey: ['/api/portal/customer-locations', customerId],
+    enabled: !!customerId,
+  });
 
-  // DEBUG: Log what we're receiving
-  console.log('[SettingsSection DEBUG] customerData:', customerData);
-  console.log('[SettingsSection DEBUG] customerData?.locations:', customerData?.locations);
-  console.log('[SettingsSection DEBUG] locations after filter:', locations);
+  const customerContacts = customerContactsData?.contactMethods || [];
+  const locations = locationsData?.locations || [];
 
   return (
     <div className="space-y-6">
@@ -63,309 +70,75 @@ export function SettingsSection({
         </div>
       </div>
 
-      <Accordion type="single" collapsible value={activeSection} onValueChange={setActiveSection}>
-        {/* Contacts Section */}
-        <AccordionItem value="contacts" data-testid="accordion-contacts">
-          <AccordionTrigger>
-            <div className="flex items-center gap-2">
-              <User className="w-5 h-5" />
-              <span className="font-semibold">Contact Information</span>
-              {contacts.length > 0 && (
-                <Badge variant="secondary">{contacts.length}</Badge>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-4">
-              {contacts.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-6">
-                      <Phone className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-medium mb-2">No Contact Information</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Add your phone number and email to receive updates.
-                      </p>
-                      {onEditContacts && (
-                        <Button onClick={onEditContacts} data-testid="button-add-first-contact">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Contact Info
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  {primaryContact && (
-                    <Card data-testid="card-primary-contact">
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-base">Primary Contact</CardTitle>
-                            {primaryContact.name && (
-                              <CardDescription>{primaryContact.name}</CardDescription>
-                            )}
-                          </div>
-                          {onEditContacts && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={onEditContacts}
-                              data-testid="button-edit-primary-contact"
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        {primaryContact.phone && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Phone className="w-4 h-4 text-muted-foreground" />
-                            <span>{formatPhoneNumber ? formatPhoneNumber(primaryContact.phone) : primaryContact.phone}</span>
-                          </div>
-                        )}
-                        {primaryContact.email && (
-                          <div className="flex items-center gap-2 text-sm">
-                            <Mail className="w-4 h-4 text-muted-foreground" />
-                            <span>{primaryContact.email}</span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  )}
+      <div className="space-y-6">
+        {/* Customer Contact Methods */}
+        {isLoadingContacts ? (
+          <Card>
+            <CardContent className="py-8">
+              <p className="text-center text-muted-foreground">Loading contacts...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <CustomerContactMethodsCard
+            customerId={customerId}
+            contacts={customerContacts}
+            formatPhoneNumber={formatPhoneNumber}
+          />
+        )}
 
-                  {contacts.length > 1 && (
-                    <div className="space-y-2">
-                      <h4 className="text-sm font-medium text-muted-foreground">
-                        Additional Contacts ({contacts.length - 1})
-                      </h4>
-                      {contacts.filter((c: any) => !c.isPrimary).map((contact: any, index: number) => (
-                        <Card key={contact.id || index} data-testid={`card-contact-${contact.id || index}`}>
-                          <CardContent className="py-3">
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-1">
-                                {contact.name && (
-                                  <p className="text-sm font-medium">{contact.name}</p>
-                                )}
-                                <div className="flex items-center gap-3 text-sm text-muted-foreground">
-                                  {contact.phone && (
-                                    <span className="flex items-center gap-1">
-                                      <Phone className="w-3 h-3" />
-                                      {formatPhoneNumber ? formatPhoneNumber(contact.phone) : contact.phone}
-                                    </span>
-                                  )}
-                                  {contact.email && (
-                                    <span className="flex items-center gap-1">
-                                      <Mail className="w-3 h-3" />
-                                      {contact.email}
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-                              {onEditContacts && (
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={onEditContacts}
-                                  data-testid={`button-edit-contact-${contact.id || index}`}
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
+        {/* Service Locations with Contacts */}
+        {isLoadingLocations ? (
+          <Card>
+            <CardContent className="py-8">
+              <p className="text-center text-muted-foreground">Loading locations...</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <LocationContactsAccordion
+            customerId={customerId}
+            locations={locations}
+            formatPhoneNumber={formatPhoneNumber}
+            onAddLocation={onAddLocation}
+          />
+        )}
 
-        {/* Locations Section */}
-        <AccordionItem value="locations" data-testid="accordion-locations">
-          <AccordionTrigger>
-            <div className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              <span className="font-semibold">Service Locations</span>
-              {locations.length > 0 && (
-                <Badge variant="secondary">{locations.length}</Badge>
-              )}
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-4">
-              {locations.length === 0 ? (
-                <Card>
-                  <CardContent className="pt-6">
-                    <div className="text-center py-6">
-                      <Home className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                      <h3 className="text-lg font-medium mb-2">No Service Locations</h3>
-                      <p className="text-muted-foreground mb-4">
-                        Add a location where you need service.
-                      </p>
-                      {onAddLocation && (
-                        <Button onClick={onAddLocation} data-testid="button-add-first-location">
-                          <Plus className="w-4 h-4 mr-2" />
-                          Add Location
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="text-sm text-muted-foreground">
-                      Manage addresses where you receive service
-                    </p>
-                    {onAddLocation && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onAddLocation}
-                        data-testid="button-add-location"
-                      >
-                        <Plus className="w-4 h-4 mr-2" />
-                        Add Location
-                      </Button>
-                    )}
-                  </div>
-                  {locations.map((location: any, index: number) => (
-                    <Card key={location.id || index} data-testid={`card-location-${location.id || index}`}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-start gap-3">
-                            <div className="p-2 rounded-full bg-primary/10">
-                              {location.type === 'Commercial' ? (
-                                <Building2 className="w-4 h-4 text-primary" />
-                              ) : (
-                                <Home className="w-4 h-4 text-primary" />
-                              )}
-                            </div>
-                            <div>
-                              <CardTitle className="text-base">
-                                {location.name || 'Service Location'}
-                              </CardTitle>
-                              {location.address && (
-                                <CardDescription className="mt-1">
-                                  {typeof location.address === 'string' ? location.address : (
-                                    <>
-                                      {location.address.street}<br />
-                                      {location.address.city}, {location.address.state} {location.address.zip}
-                                    </>
-                                  )}
-                                </CardDescription>
-                              )}
-                            </div>
-                          </div>
-                          {onEditLocation && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => onEditLocation(location)}
-                              data-testid={`button-edit-location-${location.id || index}`}
-                            >
-                              <Edit2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      </CardHeader>
-                    </Card>
-                  ))}
-                </>
-              )}
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Account Management Section */}
-        <AccordionItem value="account-management" data-testid="accordion-account-management">
-          <AccordionTrigger>
+        {/* Account Management */}
+        <Card data-testid="card-account-management">
+          <CardHeader>
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5" />
-              <span className="font-semibold">Account Management</span>
+              <CardTitle>Account Management</CardTitle>
             </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Manage Accounts</CardTitle>
-                  <CardDescription>
-                    Create new accounts for additional properties or businesses
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                      <Building2 className="w-5 h-5 text-primary mt-0.5" />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">Multiple Accounts</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Manage residential and commercial properties from one portal. Each account has its own service history and locations.
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                      <Home className="w-5 h-5 text-primary mt-0.5" />
-                      <div className="flex-1">
-                        <h4 className="font-medium text-sm">Easy Switching</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Switch between accounts using the account switcher at the top of the sidebar.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {onAddAccount && (
-                    <Button
-                      onClick={onAddAccount}
-                      className="w-full"
-                      data-testid="button-create-account"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New Account
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </AccordionContent>
-        </AccordionItem>
-
-        {/* Preferences Section */}
-        <AccordionItem value="preferences" data-testid="accordion-preferences">
-          <AccordionTrigger>
-            <div className="flex items-center gap-2">
-              <SettingsIcon className="w-5 h-5" />
-              <span className="font-semibold">Preferences</span>
-            </div>
-          </AccordionTrigger>
-          <AccordionContent>
-            <div className="space-y-4 pt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-base">Communication Preferences</CardTitle>
-                  <CardDescription>
-                    Manage how you receive updates from us
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
+            <CardDescription>
+              Create new accounts for additional properties or businesses
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/30">
+                <Building2 className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <h4 className="font-medium text-sm">Multiple Accounts</h4>
                   <p className="text-sm text-muted-foreground">
-                    Email and notification preferences coming soon.
+                    Manage residential and commercial properties from one portal. Each account has its own service history and locations.
                   </p>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             </div>
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+            
+            {onAddAccount && (
+              <Button
+                onClick={onAddAccount}
+                className="w-full"
+                data-testid="button-create-account"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create New Account
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

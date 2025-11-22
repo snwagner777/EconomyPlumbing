@@ -4,8 +4,6 @@
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence, drive growth, and improve customer engagement and operational efficiency for plumbing businesses. It integrates service management, local SEO, content publishing, and e-commerce functionalities. The platform uses AI for content generation and marketing automation, and includes a robust reputation management system. Its core ambition is to provide a comprehensive digital solution that streamlines operations and scales plumbing businesses.
 
 ## User Preferences
-Preferred communication style: Simple, everyday language.
-
 CRITICAL RULE: Single Module Pattern - DRY (Don't Repeat Yourself)
 - ANY functionality used in more than one place MUST be a single reusable module called differently, never duplicated.
 - Pattern: Create shared module → Import and use in multiple places → Both desktop and mobile use same data, just styled differently.
