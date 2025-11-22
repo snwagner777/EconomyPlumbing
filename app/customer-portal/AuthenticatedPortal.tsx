@@ -2501,7 +2501,7 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
 
                       // Refresh customer data to remove accepted estimate from list
                       await queryClient.invalidateQueries({ 
-                        queryKey: ['/api/servicetitan/customer', customerId] 
+                        queryKey: ['/api/portal/customer', customerId] 
                       });
 
                     } catch (error: any) {

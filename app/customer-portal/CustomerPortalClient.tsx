@@ -319,7 +319,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   const addLocationContact = useAddLocationContact();
 
   const { data: customerData, isLoading, error } = useQuery<CustomerData>({
-    queryKey: ['/api/servicetitan/customer', customerId],
+    queryKey: ['/api/portal/customer', customerId],
     enabled: !!customerId,
   });
 
@@ -587,7 +587,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       try {
         // Fetch account details for all available customer IDs
         const accountPromises = availableCustomerIds.map(async (id) => {
-          const response = await fetch(`/api/servicetitan/customer/${id}`);
+          const response = await fetch(`/api/portal/customer/${id}`);
           const data = await response.json();
           
           return {
@@ -1020,7 +1020,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       setContactToDelete(null);
 
       // Invalidate customer data query to refresh the UI
-      queryClient.invalidateQueries({ queryKey: ['/api/servicetitan/customer', customerId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/portal/customer', customerId] });
     } catch (error: any) {
       console.error('Delete contact error:', error);
       
