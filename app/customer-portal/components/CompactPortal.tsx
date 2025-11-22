@@ -105,6 +105,10 @@ export function CompactPortal({
     contacts: normalizeContacts(location.contactMethods || location.contacts),
   }));
 
+  // DEBUG: Log location data
+  console.log('[CompactPortal DEBUG] transformedData?.locations:', transformedData?.locations);
+  console.log('[CompactPortal DEBUG] normalizedLocations:', normalizedLocations);
+
   // Calculate dashboard data from transformed customerData
   const dashboardData = transformedData ? {
     memberships: mapMemberships(transformedData.memberships || []),

@@ -47,6 +47,11 @@ export function SettingsSection({
   const locations = (customerData?.locations || []).filter((l: any) => l && (l.address || l.street));
   const primaryContact = contacts.find((c: any) => c.isPrimary) || contacts[0];
 
+  // DEBUG: Log what we're receiving
+  console.log('[SettingsSection DEBUG] customerData:', customerData);
+  console.log('[SettingsSection DEBUG] customerData?.locations:', customerData?.locations);
+  console.log('[SettingsSection DEBUG] locations after filter:', locations);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
