@@ -57,7 +57,7 @@ import {
 } from "lucide-react";
 import { SiFacebook, SiX } from "react-icons/si";
 import { SchedulerDialog } from "@/modules/scheduler";
-import { ContactForm, useAddCustomerContact, useAddLocationContact, useUpdateContact, useDeleteContact } from "@/modules/contacts";
+import { ContactForm, useAddCustomerContact, useAddLocationContact, useUpdateCustomerContact, useUpdateLocationContact, useDeleteCustomerContact, useDeleteLocationContact } from "@/modules/contacts";
 import { formatPhoneNumber } from "@/lib/phoneUtils";
 import { queryClient } from "@/lib/queryClient";
 import { PortalReferralForm } from "@/components/referral";
@@ -72,6 +72,7 @@ interface ManageLocationContactsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   selectedLocation: any;
+  customerId: string;
   onClose: () => void;
 }
 
@@ -79,6 +80,7 @@ function ManageLocationContactsDialog({
   open,
   onOpenChange,
   selectedLocation,
+  customerId,
   onClose,
 }: ManageLocationContactsDialogProps) {
   const [editContactOpen, setEditContactOpen] = useState(false);
@@ -86,55 +88,51 @@ function ManageLocationContactsDialog({
   const [contactToEdit, setContactToEdit] = useState<any>(null);
   const [contactToDelete, setContactToDelete] = useState<any>(null);
   
-  const [editName, setEditName] = useState('');
-  const [editPhone, setEditPhone] = useState('');
-  const [editEmail, setEditEmail] = useState('');
+  const [editValue, setEditValue] = useState('');
+  const [editMemo, setEditMemo] = useState('');
   
   const addLocationContact = useAddLocationContact();
-  const updateContact = useUpdateContact();
-  const deleteContact = useDeleteContact();
+  const updateLocationContact = useUpdateLocationContact();
+  const deleteLocationContact = useDeleteLocationContact();
 
   // Helper to check if a contact method is a phone type (covers all phone variants)
   const isPhoneType = (type: string) => {
     return type.includes('Phone'); // Matches: MobilePhone, Phone, HomePhone, WorkPhone, etc.
   };
 
-  const handleEditContact = (contact: any) => {
-    setContactToEdit(contact);
-    setEditName(contact.name || '');
-    
-    // Extract phone and email from methods - support ALL phone types
-    const phoneMethod = contact.methods?.find((m: any) => isPhoneType(m.type));
-    const emailMethod = contact.methods?.find((m: any) => m.type === 'Email');
-    
-    setEditPhone(phoneMethod?.value || '');
-    setEditEmail(emailMethod?.value || '');
+  const handleEditContact = (contactMethod: any) => {
+    setContactToEdit(contactMethod);
+    setEditValue(contactMethod.value || '');
+    setEditMemo(contactMethod.memo || '');
     setEditContactOpen(true);
   };
 
   const handleUpdateContact = async () => {
-    if (!contactToEdit) return;
+    if (!contactToEdit || !selectedLocation?.id || !editValue.trim()) return;
 
-    const phoneMethod = contactToEdit.methods?.find((m: any) => isPhoneType(m.type));
-    const emailMethod = contactToEdit.methods?.find((m: any) => m.type === 'Email');
-
-    await updateContact.mutateAsync({
+    await updateLocationContact.mutateAsync({
+      customerId: parseInt(customerId),
+      locationId: selectedLocation.id,
       contactId: contactToEdit.id,
-      name: editName || undefined,
-      phone: editPhone || undefined,
-      phoneMethodId: phoneMethod?.id,
-      email: editEmail || undefined,
-      emailMethodId: emailMethod?.id,
+      type: contactToEdit.type,
+      value: editValue.trim(),
+      memo: editMemo.trim() || undefined,
     });
 
     setEditContactOpen(false);
     setContactToEdit(null);
+    setEditValue('');
+    setEditMemo('');
   };
 
   const handleDeleteContact = async () => {
-    if (!contactToDelete) return;
+    if (!contactToDelete || !selectedLocation?.id) return;
 
-    await deleteContact.mutateAsync(contactToDelete.id);
+    await deleteLocationContact.mutateAsync({
+      contactId: contactToDelete.id,
+      customerId: parseInt(customerId),
+      locationId: selectedLocation.id,
+    });
     setDeleteContactOpen(false);
     setContactToDelete(null);
   };
@@ -184,12 +182,7 @@ function ManageLocationContactsDialog({
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => {
-                                  setContactToEdit({ id: method.id, value: method.value, type: method.type, memo: method.memo });
-                                  setEditPhone(isPhone ? method.value : '');
-                                  setEditEmail(isEmail ? method.value : '');
-                                  setEditContactOpen(true);
-                                }}
+                                onClick={() => handleEditContact(method)}
                                 data-testid={`button-edit-contact-${method.id}`}
                               >
                                 <Edit2 className="w-3 h-3" />
@@ -253,55 +246,50 @@ function ManageLocationContactsDialog({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            <div>
-              <Label htmlFor="edit-contact-name">Name</Label>
-              <Input
-                id="edit-contact-name"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="Contact name"
-                data-testid="input-edit-contact-name"
-              />
-            </div>
+            {contactToEdit && (
+              <>
+                <div>
+                  <Label htmlFor="edit-contact-value">
+                    {contactToEdit.type === 'Email' ? 'Email Address' : 'Phone Number'}
+                  </Label>
+                  <Input
+                    id="edit-contact-value"
+                    type={contactToEdit.type === 'Email' ? 'email' : 'tel'}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    placeholder={contactToEdit.type === 'Email' ? 'contact@example.com' : '(555) 123-4567'}
+                    data-testid="input-edit-contact-value"
+                  />
+                </div>
 
-            <div>
-              <Label htmlFor="edit-contact-phone">Phone Number</Label>
-              <Input
-                id="edit-contact-phone"
-                value={editPhone}
-                onChange={(e) => setEditPhone(e.target.value)}
-                placeholder="(555) 123-4567"
-                data-testid="input-edit-contact-phone"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="edit-contact-email">Email</Label>
-              <Input
-                id="edit-contact-email"
-                type="email"
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="contact@example.com"
-                data-testid="input-edit-contact-email"
-              />
-            </div>
+                <div>
+                  <Label htmlFor="edit-contact-memo">Note (Optional)</Label>
+                  <Input
+                    id="edit-contact-memo"
+                    value={editMemo}
+                    onChange={(e) => setEditMemo(e.target.value)}
+                    placeholder="e.g., Work, Home, Mobile"
+                    data-testid="input-edit-contact-memo"
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           <DialogFooter>
             <Button
               variant="outline"
               onClick={() => setEditContactOpen(false)}
-              disabled={updateContact.isPending}
+              disabled={updateLocationContact.isPending}
             >
               Cancel
             </Button>
             <Button
               onClick={handleUpdateContact}
-              disabled={updateContact.isPending}
+              disabled={updateLocationContact.isPending}
               data-testid="button-save-contact"
             >
-              {updateContact.isPending ? (
+              {updateLocationContact.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Updating...
@@ -328,14 +316,17 @@ function ManageLocationContactsDialog({
             <div className="py-4">
               <Card>
                 <CardContent className="p-3">
-                  {contactToDelete.name && (
-                    <p className="font-medium mb-2">{contactToDelete.name}</p>
-                  )}
-                  {contactToDelete.methods?.map((method: any) => (
-                    <p key={method.id} className="text-sm text-muted-foreground">
-                      {method.type === 'Email' ? method.value : formatPhoneNumber(method.value)}
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{contactToDelete.type}</p>
+                    <p className="text-lg">
+                      {contactToDelete.type === 'Email' 
+                        ? contactToDelete.value 
+                        : formatPhoneNumber(contactToDelete.value)}
                     </p>
-                  ))}
+                    {contactToDelete.memo && (
+                      <p className="text-sm text-muted-foreground">{contactToDelete.memo}</p>
+                    )}
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -345,17 +336,17 @@ function ManageLocationContactsDialog({
             <Button
               variant="outline"
               onClick={() => setDeleteContactOpen(false)}
-              disabled={deleteContact.isPending}
+              disabled={deleteLocationContact.isPending}
             >
               Cancel
             </Button>
             <Button
               variant="destructive"
               onClick={handleDeleteContact}
-              disabled={deleteContact.isPending}
+              disabled={deleteLocationContact.isPending}
               data-testid="button-confirm-delete-contact"
             >
-              {deleteContact.isPending ? (
+              {deleteLocationContact.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   Deleting...
@@ -3390,6 +3381,7 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
         open={manageLocationContactsOpen}
         onOpenChange={setManageLocationContactsOpen}
         selectedLocation={selectedLocationForContacts}
+        customerId={customerId}
         onClose={() => {
           setManageLocationContactsOpen(false);
           setSelectedLocationForContacts(null);
