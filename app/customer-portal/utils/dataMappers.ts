@@ -285,27 +285,31 @@ export function mapLocations(locations: any[] = []) {
 export function transformCustomerData(customerData: any) {
   if (!customerData) return null;
 
+  // Handle nested structure - data may be in customerData.customer or flat
+  const data = customerData.customer || customerData;
+
   // DEBUG: Log incoming data
-  console.log('[transformCustomerData DEBUG] customerData.locations:', customerData.locations);
-  console.log('[transformCustomerData DEBUG] Full customerData keys:', Object.keys(customerData));
+  console.log('[transformCustomerData DEBUG] Original customerData keys:', Object.keys(customerData));
+  console.log('[transformCustomerData DEBUG] Using data from:', customerData.customer ? 'customerData.customer' : 'customerData (flat)');
+  console.log('[transformCustomerData DEBUG] data.locations:', data.locations);
 
   // Build explicit shape - no spreading to prevent object leakage
   return {
     // Core customer info (primitives only)
-    id: customerData.id || customerData.customerId,
-    name: customerData.name || `${customerData.firstName || ''} ${customerData.lastName || ''}`.trim(),
-    email: customerData.email || '',
-    phone: customerData.phone || '',
+    id: data.id || data.customerId,
+    name: data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim(),
+    email: data.email || '',
+    phone: data.phone || '',
     
     // Sanitized mapped data (all primitives/curated shapes)
-    appointments: mapAppointments(customerData.appointments || []),
-    invoices: mapInvoices(customerData.invoices || []),
-    estimates: mapEstimates(customerData.estimates || []),
-    jobs: mapJobs(customerData.jobs || customerData.jobHistory || []),
-    memberships: (customerData.memberships || []).map(mapMembership),
-    vouchers: (customerData.vouchers || []).map(mapVoucher),
-    contacts: mapContacts(customerData.contacts || []),
-    locations: mapLocations(customerData.locations || []),
+    appointments: mapAppointments(data.appointments || []),
+    invoices: mapInvoices(data.invoices || []),
+    estimates: mapEstimates(data.estimates || []),
+    jobs: mapJobs(data.jobs || data.jobHistory || []),
+    memberships: (data.memberships || []).map(mapMembership),
+    vouchers: (data.vouchers || []).map(mapVoucher),
+    contacts: mapContacts(data.contacts || []),
+    locations: mapLocations(data.locations || []),
   };
 }
 
