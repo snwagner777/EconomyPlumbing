@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses, offering an all-in-one solution for service management, local SEO, content publishing, and e-commerce. Its purpose is to maximize online presence and growth through AI-powered content generation, marketing automation, and reputation management, enhancing customer engagement and operational efficiency. The project aims to provide an integrated platform to streamline operations and boost market potential for plumbing businesses.
+Economy Plumbing Services is a full-stack web application for plumbing businesses, offering integrated service management, local SEO, content publishing, and e-commerce. Its primary goal is to enhance online presence and foster business growth through AI-driven content, marketing automation, and reputation management, thereby improving customer engagement and operational efficiency for plumbing companies.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -131,18 +131,17 @@ CRITICAL RULE: Customer Portal API - Single Source of Truth
 ## System Architecture
 
 ### Frontend
-- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** Implements `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
+- **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Features blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
+- **SEO & Performance:** Includes `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
 - **Key Features:** Marketing pages, Ecwid Store integration, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and an OpenAI GPT-4o-mini powered chatbot.
-- **Customer Portal:** Secure portal with ServiceTitan integration, 2FA, appointment management, memberships, vouchers, service history, billing, and a 4-step scheduler with SMS verification.
+- **Customer Portal:** Secure, ServiceTitan-integrated portal with 2FA, appointment management, memberships, vouchers, service history, billing, and a 4-step scheduler with SMS verification.
 - **Admin Panel:** Comprehensive dashboard for managing AI & Marketing, Communications, Content, Customers, Operations, and Settings.
 
 ### Backend
 - **Framework & API:** Next.js 15 App Router with API routes and `worker.ts` for background processing.
 - **Data Layer:** Drizzle ORM for PostgreSQL (Neon-hosted).
-- **Security & Type Safety:** Employs session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
-- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices (v2 API), managing OAuth, customer/contact, job/appointment tracking, estimate/invoice webhooks, and membership.
-- **Customer Portal Backend API:** Routes under `/api/portal/*` enforce unified session, centralized validation, phone-first SMS 2FA, self-service permissions, and ownership validation.
+- **Security & Type Safety:** Implements session-based authentication (`iron-session`), rate limiting, secure cookies, CSRF/SSRF protection, CSP, HSTS, 100% type-safe TypeScript with Drizzle Zod schemas, and audit logging.
+- **ServiceTitan Integration:** Modular API wrappers for CRM, Jobs, Scheduler, Memberships, Estimates, Invoices (v2 API), OAuth, customer/contact, job/appointment tracking, estimate/invoice webhooks, and membership management.
 - **Automation:** AI-powered personalized email campaigns, custom campaign scheduler, review request automation, referral nurture emails, and SMS marketing.
 - **Reputation Management System:** Features webhook-triggered review requests and multi-platform review tracking.
 - **Referral System:** Modular form architecture, instant voucher generation, ServiceTitan customer lookup, hybrid data storage, and background processing.
