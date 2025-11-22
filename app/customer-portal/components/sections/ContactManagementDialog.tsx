@@ -51,7 +51,7 @@ interface Location {
   id: number;
   name: string;
   address?: any;
-  contacts?: Contact[];
+  contactMethods?: Contact[];
 }
 
 interface ContactManagementDialogProps {
@@ -181,7 +181,6 @@ export function ContactManagementDialog({
     
     try {
       await addLocationContact.mutateAsync({
-        customerId,
         locationId,
         type: data.type,
         value: data.value,
@@ -352,9 +351,9 @@ export function ContactManagementDialog({
                     </CardDescription>
                   )}
                 </CardHeader>
-                {location.contacts && location.contacts.length > 0 && (
+                {location.contactMethods && location.contactMethods.length > 0 && (
                   <CardContent className="pt-0 space-y-2">
-                    {location.contacts.map((contact) => (
+                    {location.contactMethods.map((contact) => (
                       <div key={contact.id} className="flex items-center justify-between p-2 rounded-md bg-muted/50">
                         <div className="flex items-center gap-3">
                           {renderContactIcon(contact.type)}

@@ -102,7 +102,7 @@ export function CompactPortal({
   // Normalize location contacts as well
   const normalizedLocations = (transformedData?.locations || []).map((location: any) => ({
     ...location,
-    contacts: normalizeContacts(location.contactMethods || location.contacts),
+    contactMethods: normalizeContacts(location.contactMethods || location.contacts),
   }));
 
   // DEBUG: Log location data

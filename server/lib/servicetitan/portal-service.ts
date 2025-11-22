@@ -23,14 +23,14 @@ interface LocationSummary {
     state: string;
     zip: string;
   };
-  contacts: any[]; // Contact methods for this location
+  contactMethods: any[]; // Flat array of contact methods: {id, type, value, memo}
 }
 
 interface PortalLocationDetails {
   id: number;
   name: string;
   address: string;
-  contacts: any[]; // Contact methods for this location
+  contactMethods: any[]; // Flat array of contact methods: {id, type, value, memo}
   appointments: PortalAppointment[];
   invoices: PortalInvoice[];
   memberships: PortalMembership[];
@@ -150,7 +150,7 @@ class ServiceTitanPortalService {
         throw new Error('Customer not found');
       }
 
-      // Fetch contacts first (flat contact methods)
+      // Fetch contacts first (flat contact methods from ServiceTitan)
       const customerContactMethods = await serviceTitanCRM.getCustomerContacts(customerId);
       
       // Fetch locations and referrals in parallel
@@ -163,11 +163,8 @@ class ServiceTitanPortalService {
       const primaryPhone = customerContactMethods.find((c: any) => c.type === 'MobilePhone')?.value || '';
       const primaryEmail = customerContactMethods.find((c: any) => c.type === 'Email')?.value || '';
 
-      // Group contact methods into contact persons for frontend
-      // ServiceTitan returns flat contact methods, but UI expects grouped persons
-      const groupedContacts = this.groupContactMethodsIntoPersons(customerContactMethods, customer.name || 'Customer');
-
-      // Transform to frontend-expected format
+      // ServiceTitan returns flat contact methods - pass them directly to frontend
+      // Frontend will handle grouping/display as needed
       const response = {
         customer: {
           id: customer.id,
@@ -175,7 +172,7 @@ class ServiceTitanPortalService {
           email: primaryEmail,
           phoneNumber: primaryPhone, // Frontend expects 'phoneNumber'
           address: customer.address || null, // Keep as object
-          contacts: groupedContacts, // Customer-level contacts grouped by person
+          contactMethods: customerContactMethods, // Flat contact methods array
           customerTags: customer.tagTypeIds || [],
         },
         locations,
@@ -271,7 +268,6 @@ class ServiceTitanPortalService {
         // No locations - return default primary location with customer contacts
         // Reuse passed customerContacts to avoid redundant API call
         const contactMethods = customerContacts || await serviceTitanCRM.getCustomerContacts(customerId);
-        const groupedContacts = this.groupContactMethodsIntoPersons(contactMethods, 'Primary Contact');
         return [{
           id: 0,
           name: 'Primary Location',
@@ -281,7 +277,7 @@ class ServiceTitanPortalService {
             state: '',
             zip: '',
           },
-          contacts: groupedContacts,
+          contactMethods, // Flat contact methods array
         }];
       }
 
@@ -300,12 +296,7 @@ class ServiceTitanPortalService {
               // Continue with empty contacts array - don't break the whole location list
             }
             
-            // Group flat contact methods into contact persons
-            const groupedContacts = this.groupContactMethodsIntoPersons(
-              contactMethods, 
-              location.name || 'Location Contact'
-            );
-            
+            // Return flat contact methods - frontend handles display
             return {
               id: location.id,
               name: location.name || this.formatAddress(location.address) || 'Unnamed Location',
@@ -315,7 +306,7 @@ class ServiceTitanPortalService {
                 state: location.address?.state || '',
                 zip: location.address?.zip || '',
               },
-              contacts: groupedContacts,
+              contactMethods, // Flat contact methods array
             };
           })
         )
@@ -334,7 +325,7 @@ class ServiceTitanPortalService {
           state: '',
           zip: '',
         },
-        contacts: [],
+        contactMethods: [],
       }];
     }
   }
@@ -722,31 +713,6 @@ class ServiceTitanPortalService {
       console.error('[PortalService] Error fetching recent jobs:', error);
       return [];
     }
-  }
-
-  /**
-   * Group flat contact methods into contact persons
-   * ServiceTitan returns flat contact methods, but UI expects grouped persons
-   */
-  private groupContactMethodsIntoPersons(contactMethods: any[], defaultName: string = 'Primary Contact'): any[] {
-    if (!contactMethods || contactMethods.length === 0) {
-      return [];
-    }
-
-    // For now, create a single contact person with all methods
-    // ServiceTitan v2 contact methods don't include person-level data
-    // So we group all methods under one contact
-    return [{
-      id: contactMethods[0].id || 0, // Use first contact method ID
-      name: defaultName,
-      title: undefined,
-      methods: contactMethods.map((method: any) => ({
-        id: method.id,
-        type: method.type,
-        value: method.value,
-        memo: method.memo,
-      })),
-    }];
   }
 
   /**

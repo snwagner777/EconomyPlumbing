@@ -152,72 +152,66 @@ function ManageLocationContactsDialog({
           </DialogHeader>
 
           <div className="space-y-4 py-4">
-            {/* Existing contacts - now with Edit/Delete */}
-            {selectedLocation?.contacts && selectedLocation.contacts.length > 0 && (
+            {/* Existing contact methods - simple flat display */}
+            {selectedLocation?.contactMethods && selectedLocation.contactMethods.length > 0 && (
               <div className="space-y-3">
-                <Label>Current Contacts</Label>
-                {selectedLocation.contacts.map((contact: any) => (
-                  <Card key={contact.id}>
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1 space-y-2">
-                          {contact.name && (
-                            <p className="font-medium text-sm">{contact.name}</p>
-                          )}
-                          {contact.title && (
-                            <p className="text-xs text-muted-foreground">{contact.title}</p>
-                          )}
-                          
-                          {/* Display all contact methods */}
-                          <div className="space-y-1">
-                            {contact.methods?.map((method: any) => {
-                              const isEmail = method.type === 'Email';
-                              const isPhone = method.type.includes('Phone'); // Support ALL phone types
-                              
-                              if (!isEmail && !isPhone) return null;
-                              
-                              return (
-                                <div key={method.id} className="flex items-center gap-2 text-sm">
-                                  {isEmail ? (
-                                    <Mail className="w-3 h-3 text-muted-foreground" />
-                                  ) : (
-                                    <PhoneIcon className="w-3 h-3 text-muted-foreground" />
-                                  )}
-                                  <span>
-                                    {isEmail ? method.value : formatPhoneNumber(method.value)}
-                                  </span>
-                                </div>
-                              );
-                            })}
+                <Label>Current Contact Information</Label>
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="space-y-2">
+                      {selectedLocation.contactMethods.map((method: any) => {
+                        const isEmail = method.type === 'Email';
+                        const isPhone = method.type.includes('Phone');
+                        
+                        if (!isEmail && !isPhone) return null;
+                        
+                        return (
+                          <div key={method.id} className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 text-sm">
+                              {isEmail ? (
+                                <Mail className="w-4 h-4 text-muted-foreground" />
+                              ) : (
+                                <PhoneIcon className="w-4 h-4 text-muted-foreground" />
+                              )}
+                              <span>
+                                {isEmail ? method.value : formatPhoneNumber(method.value)}
+                              </span>
+                              {method.memo && (
+                                <span className="text-xs text-muted-foreground">({method.memo})</span>
+                              )}
+                            </div>
+                            <div className="flex gap-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setContactToEdit({ id: method.id, value: method.value, type: method.type, memo: method.memo });
+                                  setEditPhone(isPhone ? method.value : '');
+                                  setEditEmail(isEmail ? method.value : '');
+                                  setEditContactOpen(true);
+                                }}
+                                data-testid={`button-edit-contact-${method.id}`}
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setContactToDelete(method);
+                                  setDeleteContactOpen(true);
+                                }}
+                                data-testid={`button-delete-contact-${method.id}`}
+                              >
+                                <AlertCircle className="w-3 h-3 text-destructive" />
+                              </Button>
+                            </div>
                           </div>
-                        </div>
-
-                        {/* Edit/Delete Buttons */}
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleEditContact(contact)}
-                            data-testid={`button-edit-contact-${contact.id}`}
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setContactToDelete(contact);
-                              setDeleteContactOpen(true);
-                            }}
-                            data-testid={`button-delete-contact-${contact.id}`}
-                          >
-                            <AlertCircle className="w-4 h-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             )}
 
@@ -553,34 +547,24 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
     if (!customerData?.customer) return { name: '', phone: '', email: '' };
     
     const customer = customerData.customer;
-    const contacts = customer.contacts || [];
+    const contacts = customer.contactMethods || [];
     
     // Find primary phone: prioritize MobilePhone → Phone → first phone-like method
     let phone = '';
-    const phoneContact = contacts.find((c: any) => 
-      c.methods?.some((m: any) => m.type === 'MobilePhone')
-    ) || contacts.find((c: any) => 
-      c.methods?.some((m: any) => m.type === 'Phone')
-    ) || contacts.find((c: any) => 
-      c.methods?.some((m: any) => m.type?.includes('Phone'))
-    );
+    const phoneContact = contacts.find((c: any) => c.type === 'MobilePhone') 
+      || contacts.find((c: any) => c.type === 'Phone')
+      || contacts.find((c: any) => c.type?.includes('Phone'));
     
     if (phoneContact) {
-      const phoneMethod = phoneContact.methods?.find((m: any) => 
-        m.type === 'MobilePhone' || m.type === 'Phone' || m.type?.includes('Phone')
-      );
-      phone = phoneMethod?.value || '';
+      phone = phoneContact.value || '';
     }
     
     // Find email contact
     let email = '';
-    const emailContact = contacts.find((c: any) => 
-      c.methods?.some((m: any) => m.type === 'Email')
-    );
+    const emailContact = contacts.find((c: any) => c.type === 'Email');
     
     if (emailContact) {
-      const emailMethod = emailContact.methods?.find((m: any) => m.type === 'Email');
-      email = emailMethod?.value || '';
+      email = emailContact.value || '';
     }
     
     return {
@@ -867,9 +851,9 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                             </div>
                           </div>
                           
-                          {customerData.customer.contacts && customerData.customer.contacts.length > 0 ? (
+                          {customerData.customer.contactMethods && customerData.customer.contactMethods.length > 0 ? (
                             <div className="space-y-2">
-                              {customerData.customer.contacts.map((contact, index) => {
+                              {customerData.customer.contactMethods.map((contact, index) => {
                                 const isEmail = contact.type === 'Email';
                                 const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
                                 
@@ -1412,10 +1396,10 @@ export function AuthenticatedPortal(props: AuthenticatedPortalProps) {
                             </div>
                             
                             {/* Location-specific contacts */}
-                            {location.contacts && location.contacts.length > 0 && (
+                            {location.contactMethods && location.contactMethods.length > 0 && (
                               <div className="pl-8 space-y-2 border-l-2 border-primary/20">
                                 <p className="text-xs font-semibold text-muted-foreground">Location Contacts</p>
-                                {location.contacts.map((contact: any, contactIndex: number) => {
+                                {location.contactMethods.map((contact: any, contactIndex: number) => {
                                   const isEmail = contact.type === 'Email';
                                   const isPhone = contact.type === 'Phone' || contact.type === 'MobilePhone';
                                   
