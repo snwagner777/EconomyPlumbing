@@ -412,7 +412,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
         state: string;
         zip: string;
       };
-      contacts?: any[];
+      contactMethods?: any[];
     }>;
   }>({
     queryKey: [`/api/portal/customer-locations/${customerId}`],
