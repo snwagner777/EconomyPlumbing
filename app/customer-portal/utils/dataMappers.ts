@@ -285,6 +285,10 @@ export function mapLocations(locations: any[] = []) {
 export function transformCustomerData(customerData: any) {
   if (!customerData) return null;
 
+  // DEBUG: Log incoming data
+  console.log('[transformCustomerData DEBUG] customerData.locations:', customerData.locations);
+  console.log('[transformCustomerData DEBUG] Full customerData keys:', Object.keys(customerData));
+
   // Build explicit shape - no spreading to prevent object leakage
   return {
     // Core customer info (primitives only)
