@@ -1,7 +1,7 @@
 # Economy Plumbing Services
 
 ## Overview
-Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service management, local SEO, content publishing, and e-commerce. It integrates AI for content generation, marketing automation, and reputation management to improve customer engagement, boost conversions, and streamline operations. The project aims to be an all-in-one solution for maximizing online presence and operational efficiency.
+Economy Plumbing Services is a full-stack web application for plumbing businesses, offering service management, local SEO, content publishing, and e-commerce. It leverages AI for content generation, marketing automation, and reputation management to boost customer engagement, conversions, and operational efficiency, aiming to be an all-in-one solution for maximizing online presence.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -132,7 +132,7 @@ CRITICAL RULE: Customer Portal API - Single Source of Truth
 
 ### Frontend
 - **Framework & UI:** Next.js 15 App Router, React 18, TypeScript, Radix UI, Shadcn UI, Tailwind CSS, CVA. Utilizes a blue/teal color scheme, Inter/Poppins typography, light/dark modes, and WCAG AA Compliance.
-- **SEO & Performance:** Features `SEOHead`, JSON-LD, 301 redirects, lazy loading for images, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
+- **SEO & Performance:** Features `SEOHead`, JSON-LD, 301 redirects, lazy loading, font optimization, code splitting, WebP conversion, dynamic sitemap, and server-side dynamic phone tracking.
 - **Key Features:** Marketing pages, Ecwid Store integration, VIP Membership, interactive calculators, seasonal landing pages, commercial industry pages, and an OpenAI GPT-4o-mini powered chatbot.
 - **Customer Portal:** Secure portal with ServiceTitan integration, 2FA, appointment management, memberships, vouchers, service history, billing, and a 4-step scheduler with SMS verification.
 - **Admin Panel:** Comprehensive dashboard for managing AI & Marketing, Communications, Content, Customers, Operations, and Settings.
