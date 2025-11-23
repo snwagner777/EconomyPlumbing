@@ -92,29 +92,19 @@ export function ServicesSection({
 
   // Helper function to get location address from location ID
   const getLocationAddress = (locationId: string | number) => {
-    const location = customerData?.locations?.find((loc: any) => 
-      (loc.id?.toString() === locationId?.toString()) || 
-      (loc.locationId?.toString() === locationId?.toString())
+    if (!locationId || !customerData?.locations) return null;
+    
+    const location = customerData.locations.find((loc: any) => 
+      loc.id?.toString() === locationId?.toString()
     );
     
-    if (!location) return null;
-    
-    // Build address from location data
-    const addr = location.address || location.serviceLocation?.address;
-    if (!addr) return location.name || location.locationName;
-    
-    if (typeof addr === 'string') {
-      return addr;
+    if (!location) {
+      console.log('[ServicesSection] Location not found for ID:', locationId, 'Available locations:', customerData?.locations?.map((l: any) => l.id));
+      return null;
     }
     
-    const addressParts = [
-      addr.street,
-      addr.city,
-      addr.state,
-      addr.zip
-    ].filter(Boolean);
-    
-    return addressParts.length > 0 ? addressParts.join(', ') : location.name;
+    // mapLocations already converts address to string, just return it
+    return location.address || location.name || null;
   };
 
   // Group completed appointments by location
