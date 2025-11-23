@@ -439,20 +439,13 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     let allAppointments: any[] = [];
     let usedFallback = false;
 
-    // Try new ServiceTitan appointments API first
+    // Use ServiceTitan appointments API
     if (appointmentsData?.success && appointmentsData?.data && Array.isArray(appointmentsData.data)) {
       const transformed = transformCustomerAppointments(appointmentsData.data);
       if (transformed.length > 0) {
-        console.log(`[Portal] Using new appointments API: ${transformed.length} appointments from ${appointmentsData.data.length} jobs`);
+        console.log(`[Portal] Using appointments API: ${transformed.length} appointments from ${appointmentsData.data.length} jobs`);
         allAppointments = transformed;
       }
-    }
-
-    // Fallback to legacy appointments if new API didn't return data
-    if (allAppointments.length === 0 && customerData?.appointments) {
-      console.log(`[Portal] Falling back to legacy appointments: ${customerData.appointments.length} appointments`);
-      allAppointments = customerData.appointments;
-      usedFallback = true;
     }
 
     const now = new Date();
