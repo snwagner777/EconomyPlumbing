@@ -513,9 +513,9 @@ function JobHistoryCard({
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-base">{appointment.jobNumber || appointment.id}</CardTitle>
+            <CardTitle className="text-base">Job #: {appointment.jobNumber || appointment.id}</CardTitle>
             <CardDescription>
-              {formatDate && formatDate(appointment.completedDate || appointment.start)}
+              Completed on: {formatDate && formatDate(appointment.completedDate || appointment.start)}
             </CardDescription>
           </div>
           {appointment.total && (
