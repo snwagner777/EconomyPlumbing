@@ -24,10 +24,8 @@ interface EstimateDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   estimate: Estimate | null;
-  onDownloadPDF: (estimate: Estimate) => void;
   onAcceptEstimate?: (estimate: Estimate) => void;
   onScheduleEstimate?: (estimateId: number, soldHours: number) => void;
-  isDownloading?: boolean;
   isAccepting?: boolean;
 }
 
@@ -45,10 +43,8 @@ export function EstimateDetailModal({
   open,
   onOpenChange,
   estimate,
-  onDownloadPDF,
   onAcceptEstimate,
   onScheduleEstimate,
-  isDownloading = false,
   isAccepting = false,
 }: EstimateDetailModalProps) {
   const {
@@ -128,35 +124,12 @@ export function EstimateDetailModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="dialog-estimate-detail">
           <DialogHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <DialogTitle className="text-2xl">
-                  {estimate?.estimateNumber || 'Estimate Details'}
-                </DialogTitle>
-                <DialogDescription>
-                  {estimate?.name || estimate?.summary || 'View itemized estimate breakdown'}
-                </DialogDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => estimate && onDownloadPDF(estimate)}
-                disabled={isDownloading}
-                data-testid="button-download-estimate-pdf"
-              >
-                {isDownloading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Requesting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download PDF
-                  </>
-                )}
-              </Button>
-            </div>
+            <DialogTitle className="text-2xl">
+              {estimate?.estimateNumber || 'Estimate Details'}
+            </DialogTitle>
+            <DialogDescription>
+              {estimate?.name || estimate?.summary || 'View itemized estimate breakdown'}
+            </DialogDescription>
           </DialogHeader>
 
           {isLoading && (

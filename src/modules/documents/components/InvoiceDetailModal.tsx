@@ -23,8 +23,6 @@ interface InvoiceDetailModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   invoice: Invoice | null;
-  onDownloadPDF: (invoice: Invoice) => void;
-  isDownloading?: boolean;
 }
 
 interface PricebookData {
@@ -41,8 +39,6 @@ export function InvoiceDetailModal({
   open,
   onOpenChange,
   invoice,
-  onDownloadPDF,
-  isDownloading = false,
 }: InvoiceDetailModalProps) {
   const {
     data: invoiceDetail,
@@ -117,35 +113,12 @@ export function InvoiceDetailModal({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="dialog-invoice-detail">
           <DialogHeader>
-            <div className="flex items-start justify-between">
-              <div>
-                <DialogTitle className="text-2xl">
-                  {invoice?.number || 'Invoice Details'}
-                </DialogTitle>
-                <DialogDescription>
-                  {invoice?.summary || 'View itemized invoice breakdown'}
-                </DialogDescription>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => invoice && onDownloadPDF(invoice)}
-                disabled={isDownloading}
-                data-testid="button-download-invoice-pdf"
-              >
-                {isDownloading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Requesting...
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-4 h-4 mr-2" />
-                    Download PDF
-                  </>
-                )}
-              </Button>
-            </div>
+            <DialogTitle className="text-2xl">
+              {invoice?.number || 'Invoice Details'}
+            </DialogTitle>
+            <DialogDescription>
+              {invoice?.summary || 'View itemized invoice breakdown'}
+            </DialogDescription>
           </DialogHeader>
 
           {isLoading && (

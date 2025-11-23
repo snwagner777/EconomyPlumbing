@@ -118,81 +118,6 @@ export function ServicesSection({
     }
   };
 
-  // Handle PDF download for estimates
-  const handleDownloadEstimatePDF = async (estimate: Estimate) => {
-    if (!portalData?.customer || !estimate?.id) return;
-    
-    try {
-      const response = await fetch(`/api/portal/estimates/${estimate.id}/pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: portalData.customer.name,
-          customerEmail: portalData.customer.email,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'PDF Request Submitted',
-          description: result.message || 'You will receive the estimate PDF via email shortly.',
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Request Failed',
-          description: result.error || 'Failed to request PDF. Please try again.',
-        });
-      }
-    } catch (error) {
-      console.error('Error requesting estimate PDF:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Request Failed',
-        description: 'Failed to request PDF. Please try again.',
-      });
-    }
-  };
-
-  // Handle PDF download for invoices
-  const handleDownloadInvoicePDF = async (invoice: Invoice) => {
-    if (!portalData?.customer || !invoice?.id) return;
-    
-    try {
-      const response = await fetch(`/api/portal/invoices/${invoice.id}/pdf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: portalData.customer.name,
-          customerEmail: portalData.customer.email,
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: 'PDF Request Submitted',
-          description: result.message || 'You will receive the invoice PDF via email shortly.',
-        });
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Request Failed',
-          description: result.error || 'Failed to request PDF. Please try again.',
-        });
-      }
-    } catch (error) {
-      console.error('Error requesting invoice PDF:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Request Failed',
-        description: 'Failed to request PDF. Please try again.',
-        });
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -535,7 +460,6 @@ export function ServicesSection({
         open={!!selectedEstimate}
         onOpenChange={(open) => !open && setSelectedEstimate(null)}
         estimate={selectedEstimate}
-        onDownloadPDF={handleDownloadEstimatePDF}
         onAcceptEstimate={handleAcceptEstimate}
         isAccepting={isAcceptingEstimate}
       />
@@ -545,7 +469,6 @@ export function ServicesSection({
         open={!!selectedInvoice}
         onOpenChange={(open) => !open && setSelectedInvoice(null)}
         invoice={selectedInvoice}
-        onDownloadPDF={handleDownloadInvoicePDF}
       />
     </div>
   );
