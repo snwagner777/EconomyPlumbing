@@ -94,10 +94,6 @@ export function BillingSection({
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {invoice.summary && (
-                      <p className="text-sm text-muted-foreground">{invoice.summary}</p>
-                    )}
-                    
                     <div className="flex items-baseline justify-between pt-2 border-t">
                       <span className="text-sm font-medium">Balance Due:</span>
                       <span className="text-2xl font-bold text-amber-600 dark:text-amber-500">

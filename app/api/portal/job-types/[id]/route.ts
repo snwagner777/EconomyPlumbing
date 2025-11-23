@@ -8,13 +8,14 @@ import { getPortalSession } from '@/server/lib/customer-portal/portal-session';
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // SECURITY: Validate session
     await getPortalSession();
 
-    const jobTypeId = parseInt(params.id, 10);
+    const { id } = await params;
+    const jobTypeId = parseInt(id, 10);
     if (isNaN(jobTypeId)) {
       return NextResponse.json({ error: 'Invalid job type ID' }, { status: 400 });
     }

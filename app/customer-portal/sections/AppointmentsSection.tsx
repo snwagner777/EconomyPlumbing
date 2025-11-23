@@ -68,9 +68,6 @@ export function AppointmentsSection({
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
                         <h4 className="font-semibold">{appointment.jobType}</h4>
-                        {appointment.summary && (
-                          <p className="text-sm text-muted-foreground">{appointment.summary}</p>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusBadge(appointment.status)}
