@@ -67,7 +67,7 @@ export function AppointmentsSection({
                   <div className="flex-1">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <div>
-                        <h4 className="font-semibold">{appointment.jobType}</h4>
+                        <h4 className="font-semibold">Job Type: {appointment.jobType}</h4>
                       </div>
                       <div className="flex items-center gap-2">
                         {getStatusBadge(appointment.status)}

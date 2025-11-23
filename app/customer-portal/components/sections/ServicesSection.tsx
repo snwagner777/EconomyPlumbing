@@ -448,7 +448,7 @@ function AppointmentCard({
             </CardTitle>
             <CardDescription>
               <div className="space-y-1 mt-2">
-                <p>{jobTypeName}</p>
+                <p><strong>Job Type:</strong> {jobTypeName}</p>
                 <p>{formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}</p>
                 {locationAddress && (
                   <p className="flex items-center gap-2 mt-2">
