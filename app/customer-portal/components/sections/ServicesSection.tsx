@@ -15,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, User, AlertTriangle, RefreshCw } from "lucide-react";
 import { formatCurrency } from "../../utils/currency";
 import { EstimateDetailModal } from "@/modules/documents/components/EstimateDetailModal";
-import { InvoiceDetailModal } from "@/modules/documents/components/InvoiceDetailModal";
+import { InvoiceViewerModal } from "@/modules/documents/components/InvoiceViewerModal";
 import { useToast } from "@/hooks/use-toast";
 import type { Estimate, Invoice } from "@/modules/documents/types";
 
@@ -77,7 +77,7 @@ export function ServicesSection({
 }: ServicesSectionProps) {
   const [activeTab, setActiveTab] = useState('appointments');
   const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
   const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false);
   const { toast } = useToast();
 
@@ -87,6 +87,30 @@ export function ServicesSection({
 
   // Extract job history with null safety
   const recentJobs = (customerData?.recentJobs || customerData?.jobs || []).filter((job: any) => job);
+
+  // Group appointments by location
+  const upcomingByLocation = upcomingAppointments.reduce((acc: any, apt: any) => {
+    const locationId = apt.locationId || 'unknown';
+    if (!acc[locationId]) acc[locationId] = [];
+    acc[locationId].push(apt);
+    return acc;
+  }, {});
+
+  // Group completed appointments by location
+  const completedByLocation = completedAppointments.reduce((acc: any, apt: any) => {
+    const locationId = apt.locationId || 'unknown';
+    if (!acc[locationId]) acc[locationId] = [];
+    acc[locationId].push(apt);
+    return acc;
+  }, {});
+
+  // Group estimates by location
+  const estimatesByLocation = openEstimates.reduce((acc: any, est: any) => {
+    const locationId = est.locationId || 'unknown';
+    if (!acc[locationId]) acc[locationId] = [];
+    acc[locationId].push(est);
+    return acc;
+  }, {});
 
   // Handle estimate acceptance
   const handleAcceptEstimate = async (estimate: Estimate) => {
@@ -224,59 +248,62 @@ export function ServicesSection({
               </CardContent>
             </Card>
           ) : (
-            upcomingAppointments.map((appointment, index) => (
-              <Card key={appointment.id || index} data-testid={`card-appointment-${appointment.id}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
-                      <CardDescription>
-                        {formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}
-                      </CardDescription>
-                    </div>
-                    {getStatusBadge && getStatusBadge(appointment.status)}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {appointment.location && (
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-3 h-3" />
-                        {appointment.location}
-                      </p>
-                    )}
-                    {appointment.notes && (
-                      <p className="text-sm">
-                        <strong>Notes:</strong> {appointment.notes}
-                      </p>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      {onReschedule && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onReschedule(appointment)}
-                          data-testid={`button-reschedule-${appointment.id}`}
-                        >
-                          <Calendar className="w-4 h-4 mr-2" />
-                          Reschedule
-                        </Button>
-                      )}
-                      {onCancel && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => onCancel(appointment)}
-                          data-testid={`button-cancel-${appointment.id}`}
-                        >
-                          <AlertCircle className="w-4 h-4 mr-2" />
-                          Cancel
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            Object.entries(upcomingByLocation).map(([locationId, appointments]: [string, any]) => (
+              <div key={locationId} className="space-y-3">
+                {locationId !== 'unknown' && (
+                  <h3 className="text-lg font-semibold mt-4 mb-2">
+                    {appointments[0]?.location || `Location ${locationId}`}
+                  </h3>
+                )}
+                {(appointments as any[]).map((appointment: any, index: number) => (
+                  <Card key={appointment.id || index} data-testid={`card-appointment-${appointment.id}`}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
+                          <CardDescription>
+                            {formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}
+                          </CardDescription>
+                        </div>
+                        {getStatusBadge && getStatusBadge(appointment.status)}
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {appointment.specialInstructions && (
+                          <p className="text-sm">
+                            <strong>Notes:</strong> {appointment.specialInstructions}
+                          </p>
+                        )}
+                        <div className="flex gap-2 pt-2 flex-wrap">
+                          {onReschedule && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onReschedule(appointment)}
+                              data-testid={`button-reschedule-${appointment.id}`}
+                            >
+                              <Calendar className="w-4 h-4 mr-2" />
+                              Reschedule
+                            </Button>
+                          )}
+                          {onCancel && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onCancel(appointment)}
+                              data-testid={`button-cancel-${appointment.id}`}
+                            >
+                              <AlertCircle className="w-4 h-4 mr-2" />
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             ))
           )}
 
@@ -297,57 +324,66 @@ export function ServicesSection({
               </CardContent>
             </Card>
           ) : (
-            openEstimates.map((estimate: any, index: number) => (
-              <Card key={estimate.id || index} data-testid={`card-estimate-${estimate.id}`}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-lg">Estimate #{estimate.id}</CardTitle>
-                      <CardDescription>
-                        {estimate.name || 'Service Estimate'}
-                      </CardDescription>
-                    </div>
-                    <Badge variant={estimate.status === 'Open' ? 'default' : 'secondary'}>
-                      {estimate.status}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {estimate.total && (
-                      <p className="text-2xl font-bold">{formatCurrency(estimate.total)}</p>
-                    )}
-                    {estimate.summary && (
-                      <p className="text-sm text-muted-foreground">{estimate.summary}</p>
-                    )}
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => setSelectedEstimate(estimate)}
-                        data-testid={`button-view-estimate-${estimate.id}`}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Details
-                      </Button>
-                      {estimate.status === 'Open' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedEstimate(estimate);
-                            // Accept action will be triggered from the modal
-                          }}
-                          data-testid={`button-accept-estimate-${estimate.id}`}
-                        >
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Accept & Schedule
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            Object.entries(estimatesByLocation).map(([locationId, estimates]: [string, any]) => (
+              <div key={locationId} className="space-y-3">
+                {locationId !== 'unknown' && (
+                  <h3 className="text-lg font-semibold mt-4 mb-2">
+                    {estimates[0]?.locationId ? `Location ${locationId}` : 'All Locations'}
+                  </h3>
+                )}
+                {(estimates as any[]).map((estimate: any, index: number) => (
+                  <Card key={estimate.id || index} data-testid={`card-estimate-${estimate.id}`}>
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <CardTitle className="text-lg">Estimate #{estimate.id}</CardTitle>
+                          <CardDescription>
+                            {estimate.name || 'Service Estimate'}
+                          </CardDescription>
+                        </div>
+                        <Badge variant={estimate.status === 'Open' ? 'default' : 'secondary'}>
+                          {estimate.status}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {estimate.total && (
+                          <p className="text-2xl font-bold">{formatCurrency(estimate.total)}</p>
+                        )}
+                        {estimate.summary && (
+                          <p className="text-sm text-muted-foreground">{estimate.summary}</p>
+                        )}
+                        <div className="flex gap-2 pt-2 flex-wrap">
+                          <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => setSelectedEstimate(estimate)}
+                            data-testid={`button-view-estimate-${estimate.id}`}
+                          >
+                            <FileText className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
+                          {estimate.status === 'Open' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setSelectedEstimate(estimate);
+                                // Accept action will be triggered from the modal
+                              }}
+                              data-testid={`button-accept-estimate-${estimate.id}`}
+                            >
+                              <CheckCircle className="w-4 h-4 mr-2" />
+                              Accept & Schedule
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             ))
           )}
         </TabsContent>
@@ -373,98 +409,72 @@ export function ServicesSection({
             </Card>
           ) : (
             <div className="space-y-4">
-              {/* Show completed appointments from appointments API */}
-              {completedAppointments.map((appointment, index) => (
-                <Card key={appointment.id || `completed-${index}`} data-testid={`card-history-${appointment.id}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
-                        <CardDescription>
-                          {formatDate && formatDate(appointment.completedDate || appointment.start)}
-                        </CardDescription>
-                      </div>
-                      {appointment.total && (
-                        <Badge variant="outline">
-                          {formatCurrency(appointment.total)}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {appointment.summary && (
-                        <p className="text-sm">{appointment.summary}</p>
-                      )}
-                      {appointment.invoiceId && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            // Fetch invoice details and show modal
-                            const invoice = {
-                              id: appointment.invoiceId,
-                              number: `Invoice #${appointment.invoiceId}`,
-                              summary: appointment.summary,
-                              total: appointment.total,
-                            };
-                            setSelectedInvoice(invoice as any);
-                          }}
-                          data-testid={`button-view-invoice-history-${appointment.invoiceId}`}
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          View Invoice
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+              {/* Show completed appointments from appointments API, grouped by location */}
+              {Object.entries(completedByLocation).map(([locationId, appointments]: [string, any]) => (
+                <div key={locationId} className="space-y-3">
+                  {locationId !== 'unknown' && (
+                    <h3 className="text-lg font-semibold mt-4 mb-2">
+                      {appointments[0]?.location || `Location ${locationId}`}
+                    </h3>
+                  )}
+                  {(appointments as any[]).map((appointment: any, index: number) => (
+                    <JobHistoryCard 
+                      key={appointment.id || `completed-${index}`}
+                      appointment={appointment}
+                      formatDate={formatDate}
+                      onViewInvoice={() => setSelectedInvoiceId(appointment.invoiceId)}
+                      data-testid={`card-history-${appointment.id}`}
+                    />
+                  ))}
+                </div>
               ))}
 
               {/* Also show legacy job history if available */}
-              {recentJobs.map((job: any, index: number) => (
-                <Card key={job.id || `job-${index}`} data-testid={`card-job-${job.id}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{job.jobType || 'Service Call'}</CardTitle>
-                        <CardDescription>
-                          {formatDate && formatDate(job.completedDate || job.createdDate)}
-                        </CardDescription>
-                      </div>
-                      {job.invoice && (
-                        <Badge variant="outline">
-                          {formatCurrency(job.invoice.total || 0)}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {job.summary && (
-                        <p className="text-sm">{job.summary}</p>
-                      )}
-                      {job.technician && (
-                        <p className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Wrench className="w-3 h-3" />
-                          Technician: {job.technician}
-                        </p>
-                      )}
-                      {job.invoice && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedInvoice(job.invoice)}
-                          data-testid={`button-view-invoice-${job.invoice.id}`}
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          View Invoice
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {recentJobs.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold mt-4 mb-2">Additional History</h3>
+                  {recentJobs.map((job: any, index: number) => (
+                    <Card key={job.id || `job-${index}`} data-testid={`card-job-${job.id}`}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">{job.jobType || 'Service Call'}</CardTitle>
+                            <CardDescription>
+                              {formatDate && formatDate(job.completedDate || job.createdDate)}
+                            </CardDescription>
+                          </div>
+                          {job.invoice && (
+                            <Badge variant="outline">
+                              {formatCurrency(job.invoice.total || 0)}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {job.technician && (
+                            <p className="text-sm text-muted-foreground flex items-center gap-1">
+                              <Wrench className="w-3 h-3" />
+                              Technician: {job.technician}
+                            </p>
+                          )}
+                          {job.invoice && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedInvoiceId(job.invoice.id)}
+                              data-testid={`button-view-invoice-${job.invoice.id}`}
+                            >
+                              <FileText className="w-4 h-4 mr-2" />
+                              View Invoice
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </TabsContent>
@@ -479,12 +489,57 @@ export function ServicesSection({
         isAccepting={isAcceptingEstimate}
       />
 
-      {/* Invoice Detail Modal */}
-      <InvoiceDetailModal
-        open={!!selectedInvoice}
-        onOpenChange={(open) => !open && setSelectedInvoice(null)}
-        invoice={selectedInvoice}
+      {/* Invoice Viewer Modal */}
+      <InvoiceViewerModal
+        open={!!selectedInvoiceId}
+        onOpenChange={(open) => !open && setSelectedInvoiceId(null)}
+        invoiceId={selectedInvoiceId}
       />
     </div>
+  );
+}
+
+/**
+ * Helper component to display completed job with invoice button
+ */
+function JobHistoryCard({ 
+  appointment, 
+  formatDate, 
+  onViewInvoice,
+  ...props 
+}: any) {
+  return (
+    <Card {...props}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg">{appointment.jobNumber || appointment.id}</CardTitle>
+            <CardDescription>
+              {formatDate && formatDate(appointment.completedDate || appointment.start)}
+            </CardDescription>
+          </div>
+          {appointment.total && (
+            <Badge variant="outline">
+              {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(appointment.total)}
+            </Badge>
+          )}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {appointment.invoiceId && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onViewInvoice}
+              data-testid={`button-view-invoice-history-${appointment.invoiceId}`}
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              View Invoice
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
