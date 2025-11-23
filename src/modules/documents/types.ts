@@ -25,7 +25,8 @@ export interface InvoiceDetail extends Invoice {
 
 export interface InvoiceItem {
   id: number;
-  type: string;
+  type: 'Service' | 'Material' | 'Equipment';
+  skuId: number;
   skuName: string;
   description: string;
   quantity: number;

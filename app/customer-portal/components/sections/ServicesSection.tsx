@@ -14,6 +14,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, User, AlertTriangle, RefreshCw } from "lucide-react";
 import { formatCurrency } from "../../utils/currency";
+import { EstimateDetailModal } from "@/modules/documents/components/EstimateDetailModal";
+import { InvoiceDetailModal } from "@/modules/documents/components/InvoiceDetailModal";
+import { useToast } from "@/hooks/use-toast";
+import type { Estimate, Invoice } from "@/modules/documents/types";
 
 interface ServicesSectionProps {
   customerData?: any;
@@ -72,6 +76,10 @@ export function ServicesSection({
   getStatusBadge,
 }: ServicesSectionProps) {
   const [activeTab, setActiveTab] = useState('appointments');
+  const [selectedEstimate, setSelectedEstimate] = useState<Estimate | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [isAcceptingEstimate, setIsAcceptingEstimate] = useState(false);
+  const { toast } = useToast();
 
   // Extract estimates from customer data with null safety
   const estimates = customerData?.estimates || [];
@@ -79,6 +87,52 @@ export function ServicesSection({
 
   // Extract job history with null safety
   const recentJobs = (customerData?.recentJobs || customerData?.jobs || []).filter((job: any) => job);
+
+  // Handle estimate acceptance
+  const handleAcceptEstimate = async (estimate: Estimate) => {
+    setIsAcceptingEstimate(true);
+    try {
+      const response = await fetch('/api/portal/accept-estimate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estimateId: estimate.id }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Estimate Accepted",
+          description: "Your estimate has been accepted. We'll contact you to schedule the work.",
+        });
+        setSelectedEstimate(null);
+      } else {
+        throw new Error('Failed to accept estimate');
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to accept estimate. Please try again or contact us.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAcceptingEstimate(false);
+    }
+  };
+
+  // Handle PDF download for estimates
+  const handleDownloadEstimatePDF = async (estimate: Estimate) => {
+    toast({
+      title: "PDF Download",
+      description: "PDF download functionality coming soon!",
+    });
+  };
+
+  // Handle PDF download for invoices
+  const handleDownloadInvoicePDF = async (invoice: Invoice) => {
+    toast({
+      title: "PDF Download",
+      description: "PDF download functionality coming soon!",
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -321,22 +375,23 @@ export function ServicesSection({
                       <p className="text-sm text-muted-foreground">{estimate.summary}</p>
                     )}
                     <div className="flex gap-2 pt-2">
-                      {onViewEstimate && (
-                        <Button
-                          variant="default"
-                          size="sm"
-                          onClick={() => onViewEstimate(estimate)}
-                          data-testid={`button-view-estimate-${estimate.id}`}
-                        >
-                          <FileText className="w-4 h-4 mr-2" />
-                          View Details
-                        </Button>
-                      )}
-                      {onAcceptEstimate && (
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setSelectedEstimate(estimate)}
+                        data-testid={`button-view-estimate-${estimate.id}`}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Details
+                      </Button>
+                      {estimate.status === 'Open' && (
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => onAcceptEstimate(estimate)}
+                          onClick={() => {
+                            setSelectedEstimate(estimate);
+                            // Accept action will be triggered from the modal
+                          }}
                           data-testid={`button-accept-estimate-${estimate.id}`}
                         >
                           <CheckCircle className="w-4 h-4 mr-2" />
@@ -385,7 +440,7 @@ export function ServicesSection({
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {job.summary && (
                         <p className="text-sm">{job.summary}</p>
                       )}
@@ -395,6 +450,17 @@ export function ServicesSection({
                           Technician: {job.technician}
                         </p>
                       )}
+                      {job.invoice && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedInvoice(job.invoice)}
+                          data-testid={`button-view-invoice-${job.invoice.id}`}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Invoice
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
@@ -403,6 +469,24 @@ export function ServicesSection({
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Estimate Detail Modal */}
+      <EstimateDetailModal
+        open={!!selectedEstimate}
+        onOpenChange={(open) => !open && setSelectedEstimate(null)}
+        estimate={selectedEstimate}
+        onDownloadPDF={handleDownloadEstimatePDF}
+        onAcceptEstimate={handleAcceptEstimate}
+        isAccepting={isAcceptingEstimate}
+      />
+
+      {/* Invoice Detail Modal */}
+      <InvoiceDetailModal
+        open={!!selectedInvoice}
+        onOpenChange={(open) => !open && setSelectedInvoice(null)}
+        invoice={selectedInvoice}
+        onDownloadPDF={handleDownloadInvoicePDF}
+      />
     </div>
   );
 }
