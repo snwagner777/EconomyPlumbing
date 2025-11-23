@@ -87,6 +87,11 @@ export function CompactPortal({
   accountSummaries = [],
   onSwitchAccount,
 }: CompactPortalProps) {
+  // DEBUG: Log account summaries
+  console.log('[CompactPortal] customerId:', customerId);
+  console.log('[CompactPortal] accountSummaries:', accountSummaries);
+  console.log('[CompactPortal] accountSummaries.length:', accountSummaries.length);
+  
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);

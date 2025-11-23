@@ -59,6 +59,11 @@ export function SettingsSection({
   accountSummaries = [],
   onSwitchAccount,
 }: SettingsSectionProps) {
+  // DEBUG: Log accountSummaries
+  console.log('[SettingsSection] customerId:', customerId);
+  console.log('[SettingsSection] accountSummaries:', accountSummaries);
+  console.log('[SettingsSection] accountSummaries.length:', accountSummaries.length);
+  
   // Fetch customer contacts
   const { data: customerContactsData, isLoading: isLoadingContacts } = useQuery<{ contactMethods: ContactMethod[] }>({
     queryKey: ['/api/portal/customer-contacts', customerId],
