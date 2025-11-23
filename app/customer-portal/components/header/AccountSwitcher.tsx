@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,18 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Building2, Check, ChevronDown, Loader2, Plus } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/hooks/use-toast';
-
-interface CustomerAccount {
-  id: number;
-  name: string;
-  type: string;
-  email: string | null;
-  phoneNumber: string | null;
-  locationCount: number;
-  primaryLocationId: number | null;
-}
+import { useCustomerAccounts } from '../../hooks/useCustomerAccounts';
 
 interface AccountSwitcherProps {
   currentCustomerId: number;
@@ -31,59 +19,7 @@ interface AccountSwitcherProps {
 }
 
 export function AccountSwitcher({ currentCustomerId, onAccountChanged, onAddAccount }: AccountSwitcherProps) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
-  // Fetch all available accounts
-  const { data: accountsData, isLoading } = useQuery<{ accounts: CustomerAccount[] }>({
-    queryKey: ['/api/portal/customer-accounts'],
-    refetchOnWindowFocus: false,
-  });
-
-  const accounts = accountsData?.accounts || [];
-  const currentAccount = accounts.find(a => a.id === currentCustomerId);
-
-  // Switch account mutation
-  const switchAccount = useMutation({
-    mutationFn: async (customerId: number) => {
-      const response = await fetch('/api/portal/switch-account', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to switch account');
-      }
-
-      return response.json();
-    },
-    onSuccess: (_, customerId) => {
-      toast({
-        title: 'Account switched',
-        description: `Switched to ${accounts.find(a => a.id === customerId)?.name}`,
-      });
-      
-      // Invalidate all portal queries to refetch with new account
-      queryClient.invalidateQueries({ queryKey: ['/api/portal'] });
-      
-      // Call parent callback
-      if (onAccountChanged) {
-        onAccountChanged();
-      } else {
-        // Force page reload if no callback provided
-        window.location.reload();
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: 'Switch failed',
-        description: error.message,
-        variant: 'destructive',
-      });
-    },
-  });
+  const { accounts, currentAccount, isLoading, switchAccount } = useCustomerAccounts(currentCustomerId);
 
   if (isLoading) {
     return (
