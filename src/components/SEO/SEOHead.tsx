@@ -127,6 +127,7 @@ export function SEOHead({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [schema])
           }}
+          suppressHydrationWarning
         />
       )}
     </>
