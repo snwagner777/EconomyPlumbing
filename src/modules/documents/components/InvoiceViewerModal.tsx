@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { AlertCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import {
   Dialog,
   DialogContent,
@@ -92,15 +94,43 @@ export function InvoiceViewerModal({
             {/* Invoice Items */}
             <div>
               <h3 className="font-semibold mb-3">Line Items</h3>
-              <div className="space-y-2">
+              <div className="space-y-4">
                 {invoice.items && invoice.items.length > 0 ? (
                   invoice.items.map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-start border-b pb-2">
-                      <div className="flex-1">
-                        <p className="font-medium">{item.description || item.skuName || 'Item'}</p>
-                        <p className="text-sm text-muted-foreground">Qty: {item.quantity || 1}</p>
+                    <div key={idx} className="flex gap-4 border-b pb-4">
+                      {/* Item Image */}
+                      {item.imageUrl && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={item.imageUrl}
+                            alt={item.skuName || 'Item'}
+                            className="w-20 h-20 object-cover rounded border"
+                            data-testid={`img-invoice-item-${idx}`}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Item Details */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">{item.skuName || 'Item'}</p>
+                        
+                        {/* Render HTML description using ReactMarkdown */}
+                        {item.description && (
+                          <div className="text-sm text-muted-foreground prose prose-sm max-w-none mt-1">
+                            <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                              {item.description}
+                            </ReactMarkdown>
+                          </div>
+                        )}
+                        
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Qty: {Number(item.quantity || 1).toFixed(0)}
+                          {item.price > 0 && ` × $${Number(item.price).toFixed(2)}`}
+                        </p>
                       </div>
-                      <div className="text-right">
+                      
+                      {/* Item Total */}
+                      <div className="text-right flex-shrink-0">
                         <p className="font-semibold">${Number(item.total || item.amount || 0).toFixed(2)}</p>
                       </div>
                     </div>

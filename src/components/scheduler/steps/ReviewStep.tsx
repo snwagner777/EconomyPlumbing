@@ -30,6 +30,12 @@ interface SchedulerSession {
 }
 
 interface ReviewStepProps {
+  mode?: 'book' | 'reschedule';
+  rescheduleData?: {
+    appointmentId: number;
+    jobId: number;
+    locationId: number | null;
+  };
   jobType: JobType;
   customer: CustomerInfo;
   timeSlot: TimeSlot;
@@ -44,7 +50,7 @@ interface ReviewStepProps {
   session?: SchedulerSession; // Session for contact management
 }
 
-export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode, session }: ReviewStepProps) {
+export function ReviewStep({ mode = 'book', rescheduleData, jobType, customer, timeSlot, voucherCode, problemDescription, onProblemDescriptionChange, onSuccess, utmSource, utmMedium, utmCampaign, referralCode, session }: ReviewStepProps) {
   const [isBooked, setIsBooked] = useState(false);
   const [problem, setProblem] = useState(problemDescription || '');
   const [specialInstructions, setSpecialInstructions] = useState(customer.notes || '');
@@ -147,59 +153,101 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
 
   const bookMutation = useMutation({
     mutationFn: async () => {
-      const payload = {
-        customerName: `${customer.firstName} ${customer.lastName}`,
-        customerEmail: customer.email || '', // Handle optional email - ServiceTitan may require empty string
-        customerPhone: customer.phone,
-        address: customer.address,
-        city: customer.city,
-        state: customer.state,
-        zipCode: customer.zip,
-        requestedService: jobType.name,
-        preferredDate: new Date(timeSlot.start),
-        // Arrival window = 4-hour customer promise (e.g., 8am-12pm)
-        arrivalWindowStart: timeSlot.arrivalWindowStart,
-        arrivalWindowEnd: timeSlot.arrivalWindowEnd,
-        // Appointment slot = actual 2-hour booking (e.g., 10am-12pm within 8am-12pm window)
-        appointmentStart: timeSlot.start,
-        appointmentEnd: timeSlot.end,
-        specialInstructions: specialInstructions || undefined,
-        problemDescription: problem || undefined, // Customer's description of the issue
-        ...(voucherCode && { grouponVoucher: voucherCode }), // Groupon or promotional voucher code
-        bookingSource: 'scheduler_wizard',
-        utm_source: utmSource || 'website',
-        ...(utmMedium && { utm_medium: utmMedium }),
-        ...(utmCampaign && { utm_campaign: utmCampaign }),
-        ...(referralCode && { referralToken: referralCode }),
-        ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
-        ...(customer.locationId && { locationId: customer.locationId }),
-        ...(timeSlot.technicianId && { technicianId: timeSlot.technicianId }), // Pre-assigned technician from smart slot
-      };
+      // Different endpoint and payload for reschedule vs new booking
+      if (mode === 'reschedule') {
+        // RESCHEDULE MODE: Update existing appointment
+        if (!rescheduleData) {
+          console.error('[ReviewStep] Reschedule mode but no rescheduleData provided!');
+          throw new Error('Internal error: Missing reschedule data. Please refresh and try again.');
+        }
 
-      // Add Authorization header if session token is present (optional - for audit trail)
-      const headers: HeadersInit = { 'Content-Type': 'application/json' };
-      if (session?.token) {
-        headers['Authorization'] = `Bearer ${session.token}`;
+        console.log('[ReviewStep] Rescheduling appointment:', {
+          appointmentId: rescheduleData.appointmentId,
+          jobId: rescheduleData.jobId,
+          locationId: rescheduleData.locationId,
+          newStart: timeSlot.start,
+          newEnd: timeSlot.end,
+        });
+
+        const reschedulePayload = {
+          appointmentId: rescheduleData.appointmentId,
+          jobId: rescheduleData.jobId,
+          start: timeSlot.start,
+          end: timeSlot.end,
+          arrivalWindowStart: timeSlot.arrivalWindowStart,
+          arrivalWindowEnd: timeSlot.arrivalWindowEnd,
+          specialInstructions: specialInstructions || undefined,
+        };
+
+        const response = await fetch('/api/portal/reschedule-appointment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reschedulePayload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ message: 'Reschedule failed' }));
+          throw new Error(error.message || 'Failed to reschedule appointment');
+        }
+
+        return await response.json();
+      } else {
+        // BOOKING MODE: Create new appointment
+        const payload = {
+          customerName: `${customer.firstName} ${customer.lastName}`,
+          customerEmail: customer.email || '', // Handle optional email - ServiceTitan may require empty string
+          customerPhone: customer.phone,
+          address: customer.address,
+          city: customer.city,
+          state: customer.state,
+          zipCode: customer.zip,
+          requestedService: jobType.name,
+          preferredDate: new Date(timeSlot.start),
+          // Arrival window = 4-hour customer promise (e.g., 8am-12pm)
+          arrivalWindowStart: timeSlot.arrivalWindowStart,
+          arrivalWindowEnd: timeSlot.arrivalWindowEnd,
+          // Appointment slot = actual 2-hour booking (e.g., 10am-12pm within 8am-12pm window)
+          appointmentStart: timeSlot.start,
+          appointmentEnd: timeSlot.end,
+          specialInstructions: specialInstructions || undefined,
+          problemDescription: problem || undefined, // Customer's description of the issue
+          ...(voucherCode && { grouponVoucher: voucherCode }), // Groupon or promotional voucher code
+          bookingSource: 'scheduler_wizard',
+          utm_source: utmSource || 'website',
+          ...(utmMedium && { utm_medium: utmMedium }),
+          ...(utmCampaign && { utm_campaign: utmCampaign }),
+          ...(referralCode && { referralToken: referralCode }),
+          ...(customer.serviceTitanId && { serviceTitanId: customer.serviceTitanId }),
+          ...(customer.locationId && { locationId: customer.locationId }),
+          ...(timeSlot.technicianId && { technicianId: timeSlot.technicianId }), // Pre-assigned technician from smart slot
+        };
+
+        // Add Authorization header if session token is present (optional - for audit trail)
+        const headers: HeadersInit = { 'Content-Type': 'application/json' };
+        if (session?.token) {
+          headers['Authorization'] = `Bearer ${session.token}`;
+        }
+
+        const response = await fetch('/api/scheduler/book', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          const error = await response.json().catch(() => ({ message: 'Booking failed' }));
+          throw new Error(error.message || 'Booking failed');
+        }
+
+        return await response.json();
       }
-
-      const response = await fetch('/api/scheduler/book', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'Booking failed' }));
-        throw new Error(error.message || 'Booking failed');
-      }
-
-      return await response.json();
     },
     onSuccess: async (data: any) => {
       setIsBooked(true);
+      const isReschedule = mode === 'reschedule';
       toast({
-        title: "Appointment Booked!",
-        description: data.message || `Your ${jobType.name} appointment is confirmed. Job #${data.jobNumber || ''}`,
+        title: isReschedule ? "Appointment Rescheduled!" : "Appointment Booked!",
+        description: data.message || `Your ${jobType.name} appointment is confirmed. ${!isReschedule ? `Job #${data.jobNumber || ''}` : ''}`,
       });
       
       // Upload files if selected, then navigate
@@ -216,8 +264,9 @@ export function ReviewStep({ jobType, customer, timeSlot, voucherCode, problemDe
       }
     },
     onError: (error: any) => {
+      const isReschedule = mode === 'reschedule';
       toast({
-        title: "Booking Failed",
+        title: isReschedule ? "Reschedule Failed" : "Booking Failed",
         description: error.message || "Please try again or call us directly.",
         variant: "destructive",
       });

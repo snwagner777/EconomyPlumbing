@@ -51,6 +51,13 @@ export interface SchedulerDialogProps {
   /** Job type for reschedule mode (skips service selection) */
   jobType?: import('@shared/types/scheduler').JobType;
   
+  /** Reschedule metadata (ONLY used in reschedule mode) */
+  rescheduleData?: {
+    appointmentId: number;
+    jobId: number;
+    locationId: number | null;
+  };
+  
   /** UTM tracking parameters */
   utmSource?: string;
   utmMedium?: string;
@@ -94,6 +101,7 @@ export function SchedulerDialog({
   locations = [],
   mode = 'book',
   jobType: propsJobType,
+  rescheduleData,
   utmSource = 'customer-portal',
   utmMedium,
   utmCampaign,
@@ -357,6 +365,8 @@ export function SchedulerDialog({
                 Back
               </Button>
               <ReviewStep
+                mode={mode}
+                rescheduleData={rescheduleData}
                 jobType={state.jobType}
                 customer={{
                   firstName: state.customerData.firstName,

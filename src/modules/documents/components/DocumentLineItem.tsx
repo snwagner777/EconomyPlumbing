@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ImageOff } from "lucide-react";
 import { useState } from "react";
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 
 interface PricebookImage {
   url: string;
@@ -96,14 +98,16 @@ export function DocumentLineItem({
             </div>
             
             {(pricebookData?.description || item.description) && (
-              <p className="text-sm text-muted-foreground mb-2 line-clamp-2">
-                {pricebookData?.description || item.description}
-              </p>
+              <div className="text-sm text-muted-foreground mb-2 line-clamp-3 prose prose-sm max-w-none">
+                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                  {pricebookData?.description || item.description}
+                </ReactMarkdown>
+              </div>
             )}
             
             <div className="flex items-center gap-4 flex-wrap text-sm text-muted-foreground">
               <span data-testid={`text-quantity-${item.id}`}>
-                Qty: {item.quantity}
+                Qty: {Number(item.quantity).toFixed(0)}
               </span>
               <span>× {formatCurrency(item.price)}</span>
               {item.soldHours && (

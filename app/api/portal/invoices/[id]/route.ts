@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { serviceTitanAuth } from '@/server/lib/servicetitan/auth';
 import { getPortalSession, assertCustomerOwnership } from '@/server/lib/customer-portal/portal-session';
+import { ServiceTitanPricebook } from '@/server/lib/servicetitan/pricebook';
 
 /**
  * GET /api/portal/invoices/[id]
@@ -57,7 +58,11 @@ export async function GET(
     console.log(`[Portal Invoice Detail] Validating ownership - Invoice customerId: ${invoiceCustomerId}, Available IDs: ${JSON.stringify(availableCustomerIds)}`);
     assertCustomerOwnership(invoiceCustomerId, availableCustomerIds);
     
-    return transformAndReturnInvoice(invoice);
+    // Fetch pricebook images for line items
+    const pricebook = new ServiceTitanPricebook();
+    const itemsWithImages = await enrichInvoiceItemsWithImages(invoice.items || [], pricebook);
+    
+    return transformAndReturnInvoice(invoice, itemsWithImages);
   } catch (error: any) {
     console.error('[Portal Invoice Detail] Error:', error);
     
@@ -82,7 +87,44 @@ export async function GET(
   }
 }
 
-function transformAndReturnInvoice(invoice: any) {
+async function enrichInvoiceItemsWithImages(items: any[], pricebook: ServiceTitanPricebook) {
+  const enrichedItems = [];
+  
+  for (const item of items) {
+    let imageUrl = null;
+    let displayName = item.skuName || item.description || 'Unknown';
+    
+    // Fetch pricebook data if we have a SKU ID and type
+    if (item.skuId && item.type) {
+      try {
+        const pricebookItem = await pricebook.getPricebookItem(
+          item.skuId,
+          item.type as 'Material' | 'Equipment' | 'Service'
+        );
+        
+        if (pricebookItem) {
+          // Use pricebook display name and get first image
+          displayName = pricebookItem.displayName || displayName;
+          if (pricebookItem.images && pricebookItem.images.length > 0) {
+            imageUrl = pricebookItem.images[0].url;
+          }
+        }
+      } catch (error) {
+        console.error(`[Portal Invoice Detail] Error fetching pricebook item ${item.skuId}:`, error);
+      }
+    }
+    
+    enrichedItems.push({
+      ...item,
+      displayName,
+      imageUrl,
+    });
+  }
+  
+  return enrichedItems;
+}
+
+function transformAndReturnInvoice(invoice: any, itemsWithImages: any[]) {
   // Transform invoice to consistent format with line items
   const invoiceDetail = {
     id: invoice.id,
@@ -99,15 +141,16 @@ function transformAndReturnInvoice(invoice: any) {
     locationId: invoice.locationId,
     customerId: invoice.customerId,
     summary: invoice.summary || invoice.job?.summary,
-    items: (invoice.items || []).map((item: any) => ({
+    items: itemsWithImages.map((item: any) => ({
       id: item.id,
       type: item.type || 'Service',
-      skuName: item.skuName || item.description || 'Unknown',
+      skuName: item.displayName || item.skuName || item.description || 'Unknown',
       description: item.description || '',
       quantity: item.quantity || 1,
       price: item.price || item.unitPrice || 0,
       total: item.total || (item.price * item.quantity) || 0,
       memberPrice: item.memberPrice,
+      imageUrl: item.imageUrl || null,
     })),
   };
 

@@ -7,11 +7,15 @@ export async function POST(req: NextRequest) {
     // SECURITY: Validate session first
     const { customerId, availableCustomerIds } = await getPortalSession();
 
-    const { appointmentId, jobId, newStart, newEnd, technicianId } = await req.json();
+    const { appointmentId, jobId, start, end, arrivalWindowStart, arrivalWindowEnd, specialInstructions } = await req.json();
+
+    // Support legacy field names (newStart/newEnd) for backwards compatibility
+    const newStart = start;
+    const newEnd = end;
 
     if (!appointmentId || !newStart || !newEnd) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: "Missing required fields: appointmentId, start, end" },
         { status: 400 }
       );
     }
@@ -20,8 +24,9 @@ export async function POST(req: NextRequest) {
       appointmentId, 
       jobId, 
       newStart, 
-      newEnd, 
-      technicianId,
+      newEnd,
+      arrivalWindowStart,
+      arrivalWindowEnd,
       customerId 
     });
 
@@ -72,26 +77,52 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get ServiceTitan API
-    const { ServiceTitanAPI } = await import("@/server/lib/serviceTitan");
-    const serviceTitan = new ServiceTitanAPI({
-      tenantId: process.env.SERVICETITAN_TENANT_ID!,
-      clientId: process.env.SERVICETITAN_CLIENT_ID!,
-      clientSecret: process.env.SERVICETITAN_CLIENT_SECRET!,
-      appKey: process.env.SERVICETITAN_APP_KEY!,
-    });
+    // Use ServiceTitan PATCH /appointments/{id}/reschedule endpoint
+    const reschedulePayload = {
+      start: newStart,
+      end: newEnd,
+      ...(arrivalWindowStart && { arrivalWindowStart }),
+      ...(arrivalWindowEnd && { arrivalWindowEnd }),
+    };
 
-    // Reschedule the appointment
-    const updatedAppointment = await serviceTitan.rescheduleAppointment(
-      parseInt(appointmentId),
-      newStart,
-      newEnd
+    console.log(`[Portal] Calling ServiceTitan PATCH /appointments/${appointmentId}/reschedule with payload:`, reschedulePayload);
+
+    const updatedAppointment = await serviceTitanAuth.makeRequest<any>(
+      `jpm/v2/tenant/${tenantId}/appointments/${appointmentId}/reschedule`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(reschedulePayload),
+      }
     );
+
+    // Update special instructions if provided (separate API call)
+    if (specialInstructions) {
+      try {
+        await serviceTitanAuth.makeRequest<any>(
+          `jpm/v2/tenant/${tenantId}/appointments/${appointmentId}/special-instructions`,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ specialInstructions }),
+          }
+        );
+        console.log(`[Portal] Updated special instructions for appointment ${appointmentId}`);
+      } catch (error) {
+        console.error(`[Portal] Failed to update special instructions:`, error);
+        // Don't fail the entire reschedule if special instructions update fails
+      }
+    }
 
     console.log(`[Portal] Appointment ${appointmentId} rescheduled successfully for customer ${customerId}`, {
       newStart,
       newEnd,
-      technicianId
+      arrivalWindowStart,
+      arrivalWindowEnd
     });
 
     return NextResponse.json({ 

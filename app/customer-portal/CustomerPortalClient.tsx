@@ -353,10 +353,24 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               }}
               onReschedule={(appointment: any) => {
                 console.log('[Portal] Rescheduling appointment:', {
+                  id: appointment.id,
+                  jobId: appointment.jobId,
                   jobTypeId: appointment.jobTypeId,
                   jobNumber: appointment.jobNumber,
+                  locationId: appointment.locationId,
                   start: appointment.start,
                 });
+                
+                // Validate required fields before opening scheduler
+                if (!appointment.id || !appointment.jobId || !appointment.jobTypeId) {
+                  toast({
+                    title: "Cannot Reschedule",
+                    description: "This appointment is missing required data. Please contact us to reschedule.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
                 setSchedulerMode('reschedule');
                 setReschedulingAppointment(appointment);
                 setSchedulerOpen(true);
@@ -389,6 +403,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                   id: reschedulingAppointment.jobTypeId,
                   name: reschedulingAppointment.jobType || `Service for Job #${reschedulingAppointment.jobNumber}`,
                   code: `RESCHEDULE_${reschedulingAppointment.jobTypeId}`,
+                }
+              : undefined
+          }
+          rescheduleData={
+            schedulerMode === 'reschedule' && reschedulingAppointment
+              ? {
+                  appointmentId: parseInt(reschedulingAppointment.id),
+                  jobId: reschedulingAppointment.jobId,
+                  locationId: reschedulingAppointment.locationId || null,
                 }
               : undefined
           }
