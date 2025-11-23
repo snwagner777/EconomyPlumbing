@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Download, Loader2, X, Calendar, DollarSign, FileText, AlertCircle } from 'lucide-react';
+import { Loader2, X, Calendar, DollarSign, FileText, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
