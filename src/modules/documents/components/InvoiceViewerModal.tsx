@@ -116,23 +116,23 @@ export function InvoiceViewerModal({
               {invoice.subtotal && (
                 <div className="flex justify-between">
                   <p>Subtotal:</p>
-                  <p>${invoice.subtotal.toFixed(2)}</p>
+                  <p>${Number(invoice.subtotal).toFixed(2)}</p>
                 </div>
               )}
               {invoice.tax && (
                 <div className="flex justify-between">
                   <p>Tax:</p>
-                  <p>${invoice.tax.toFixed(2)}</p>
+                  <p>${Number(invoice.tax).toFixed(2)}</p>
                 </div>
               )}
               <div className="flex justify-between text-lg font-bold border-t pt-2">
                 <p>Total:</p>
-                <p>${invoice.total.toFixed(2)}</p>
+                <p>${Number(invoice.total || 0).toFixed(2)}</p>
               </div>
               {invoice.balance && invoice.balance !== 0 && (
                 <div className="flex justify-between text-red-600 font-semibold">
                   <p>Balance Due:</p>
-                  <p>${invoice.balance.toFixed(2)}</p>
+                  <p>${Number(invoice.balance).toFixed(2)}</p>
                 </div>
               )}
             </div>
