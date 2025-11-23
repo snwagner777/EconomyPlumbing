@@ -763,6 +763,21 @@ export class ServiceTitanJobs {
       );
 
       console.log(`[ServiceTitan Jobs] Fetched ${jobsWithAppointments.length} jobs with appointments for customer ${customerId}`);
+      
+      // Log detailed structure for debugging
+      if (jobsWithAppointments.length > 0) {
+        const sampleJob = jobsWithAppointments[0];
+        console.log(`\n[ServiceTitan Jobs] SAMPLE JOB STRUCTURE:`);
+        console.log(`[ServiceTitan Jobs] Job keys: ${Object.keys(sampleJob).sort().join(', ')}`);
+        console.log(`[ServiceTitan Jobs] Full job: ${JSON.stringify(sampleJob, null, 2)}`);
+        
+        if (sampleJob.appointments && sampleJob.appointments.length > 0) {
+          console.log(`\n[ServiceTitan Jobs] SAMPLE APPOINTMENT STRUCTURE:`);
+          console.log(`[ServiceTitan Jobs] Appointment keys: ${Object.keys(sampleJob.appointments[0]).sort().join(', ')}`);
+          console.log(`[ServiceTitan Jobs] Full appointment: ${JSON.stringify(sampleJob.appointments[0], null, 2)}`);
+        }
+      }
+      
       return jobsWithAppointments;
     } catch (error) {
       console.error(`[ServiceTitan Jobs] Error fetching customer appointments:`, error);
