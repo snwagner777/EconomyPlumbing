@@ -3,6 +3,14 @@
 ## Overview
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence, streamline operations, and drive efficiency and scalability for plumbing businesses. It offers comprehensive service management, local SEO, content publishing, e-commerce integration, AI-powered content and marketing automation, and robust reputation management. The project aims to provide a significant competitive advantage in the plumbing industry through a modern, integrated digital platform.
 
+## Recent Changes (November 23, 2025)
+- **Customer Portal Migration Complete**: Removed all legacy AuthenticatedPortal code (169KB file deleted), USE_COMPACT_PORTAL feature flag removed
+- **Massive CustomerPortalClient Cleanup**: Reduced from 1353 lines to ~200 lines by removing 60+ unused state variables and callback handlers
+- **Clean Architecture**: CompactPortal now manages all internal dialogs (ContactManagementDialog, AddLocationDialog, AddAccountDialog, ReferralModal), CustomerPortalClient is minimal wrapper managing only SchedulerDialog
+- **Type System Fixes**: Fixed PortalLocationDetails interface (contacts → contactMethods), proper ServiceTitanCustomer → CustomerInfo mapping for scheduler
+- **Dead Code Removal**: Removed legacy appointments fallback, unused callback props (onRescheduleAppointment, onCancelAppointment, onViewEstimate, onAcceptEstimate, onEditContacts, onAddLocation, onEditLocation, onShareReferral)
+- **Verified Working**: Customer portal loads successfully (HTTP 200), no LSP errors, metadata properly server-rendered
+
 ## User Preferences
 - CRITICAL RULE: Single Module Pattern - DRY (Don't Repeat Yourself)
 - CRITICAL RULE: Modular, Reusable API Architecture
