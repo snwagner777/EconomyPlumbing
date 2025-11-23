@@ -17,6 +17,7 @@ import { Wrench, User, Calendar, CheckCircle2 } from 'lucide-react';
 
 interface SchedulerFlowState {
   step: number; // 1 = service, 2 = customer/verification, 3 = availability, 4 = review
+  minStep: number; // Minimum step (for reschedule mode, prevents going back to service selection)
   jobType: JobType | null;
   customerData: any | null;
   timeSlot: TimeSlot | null;
@@ -27,8 +28,9 @@ type SchedulerFlowAction =
   | { type: 'SET_CUSTOMER_DATA'; payload: any }
   | { type: 'SELECT_TIME_SLOT'; payload: TimeSlot }
   | { type: 'NEXT_STEP' }
-  | { type: 'PREV_STEP' }
-  | { type: 'RESET' };
+  | { type: 'PREV_STEP'; minStep: number }
+  | { type: 'RESET'; minStep: number }
+  | { type: 'INIT_RESCHEDULE'; jobType: JobType; customerData: any };
 
 // ============================================================================
 // Step Configuration
@@ -73,9 +75,11 @@ function schedulerFlowReducer(state: SchedulerFlowState, action: SchedulerFlowAc
     case 'NEXT_STEP':
       return { ...state, step: Math.min(state.step + 1, 4) };
     case 'PREV_STEP':
-      return { ...state, step: Math.max(state.step - 1, 1) };
+      return { ...state, step: Math.max(state.step - 1, action.minStep) };
     case 'RESET':
-      return { step: 1, jobType: null, customerData: null, timeSlot: null };
+      return { step: action.minStep, minStep: action.minStep, jobType: null, customerData: null, timeSlot: null };
+    case 'INIT_RESCHEDULE':
+      return { step: 3, minStep: 3, jobType: action.jobType, customerData: action.customerData, timeSlot: null };
     default:
       return state;
   }
@@ -102,6 +106,7 @@ export interface UseSchedulerFlowReturn {
   nextStep: () => void;
   prevStep: () => void;
   reset: () => void;
+  initReschedule: (jobType: JobType, customerData: any) => void;
 }
 
 /**
@@ -120,12 +125,16 @@ export interface UseSchedulerFlowReturn {
  * ```
  */
 export function useSchedulerFlow(initialState?: Partial<SchedulerFlowState>): UseSchedulerFlowReturn {
+  // Calculate minStep from initialState (defaults to 1 for regular booking)
+  const minStep = initialState?.step || 1;
+  
   const [state, dispatch] = useReducer(schedulerFlowReducer, {
     step: 1,
     jobType: null,
     customerData: null,
     timeSlot: null,
     ...initialState,
+    minStep,
   });
 
   // Actions
@@ -146,11 +155,15 @@ export function useSchedulerFlow(initialState?: Partial<SchedulerFlowState>): Us
   }, []);
 
   const prevStep = useCallback(() => {
-    dispatch({ type: 'PREV_STEP' });
-  }, []);
+    dispatch({ type: 'PREV_STEP', minStep });
+  }, [minStep]);
 
   const reset = useCallback(() => {
-    dispatch({ type: 'RESET' });
+    dispatch({ type: 'RESET', minStep });
+  }, [minStep]);
+
+  const initReschedule = useCallback((jobType: JobType, customerData: any) => {
+    dispatch({ type: 'INIT_RESCHEDULE', jobType, customerData });
   }, []);
 
   // Derived state
@@ -164,7 +177,7 @@ export function useSchedulerFlow(initialState?: Partial<SchedulerFlowState>): Us
     [state.step, state.jobType, state.customerData, state.timeSlot]
   );
 
-  const canGoBack = useMemo(() => state.step > 1, [state.step]);
+  const canGoBack = useMemo(() => state.step > state.minStep, [state.step, state.minStep]);
   const canGoForward = useMemo(() => state.step < 4, [state.step]);
 
   return {
@@ -179,5 +192,6 @@ export function useSchedulerFlow(initialState?: Partial<SchedulerFlowState>): Us
     nextStep,
     prevStep,
     reset,
+    initReschedule,
   };
 }

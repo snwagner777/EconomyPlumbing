@@ -8,7 +8,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { ChevronLeft, AlertCircle, MapPin } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -99,13 +99,26 @@ export function SchedulerDialog({
   utmCampaign,
   onComplete,
 }: SchedulerDialogProps) {
-  // For reschedule mode, skip service selection and pre-fill job type
-  const initialStep = mode === 'reschedule' && propsJobType ? 2 : 1;
+  // For reschedule mode, skip directly to Step 3 (availability selection)
+  const initialStep = mode === 'reschedule' && propsJobType ? 3 : 1;
+  
+  // For reschedule mode, pre-populate customer data from customerInfo
+  const initialCustomerData = mode === 'reschedule' ? {
+    firstName: customerInfo.firstName || '',
+    lastName: customerInfo.lastName || '',
+    email: customerInfo.email || '',
+    phone: customerInfo.phone || '',
+    address: customerInfo.address || '',
+    city: customerInfo.city || '',
+    state: customerInfo.state || 'TX',
+    zip: customerInfo.zip || '',
+  } : null;
   
   // Modular hooks
-  const { state, currentStepConfig, canGoBack, selectJobType, setCustomerData, selectTimeSlot, prevStep, reset } = useSchedulerFlow({
+  const { state, currentStepConfig, canGoBack, selectJobType, setCustomerData, selectTimeSlot, prevStep, reset, initReschedule } = useSchedulerFlow({
     step: initialStep,
     jobType: propsJobType || null,
+    customerData: initialCustomerData,
   });
   
   const { 
@@ -123,11 +136,33 @@ export function SchedulerDialog({
     customerTags: customerInfo.customerTags,
   });
 
+  // Track if we've initialized reschedule mode for this dialog opening
+  const rescheduleInitialized = useRef(false);
+
+  // Initialize reschedule mode when dialog opens with jobType available
+  useEffect(() => {
+    if (open && mode === 'reschedule' && propsJobType && !rescheduleInitialized.current) {
+      const customerData = {
+        firstName: customerInfo.firstName || '',
+        lastName: customerInfo.lastName || '',
+        email: customerInfo.email || '',
+        phone: customerInfo.phone || '',
+        address: customerInfo.address || '',
+        city: customerInfo.city || '',
+        state: customerInfo.state || 'TX',
+        zip: customerInfo.zip || '',
+      };
+      initReschedule(propsJobType, customerData);
+      rescheduleInitialized.current = true;
+    }
+  }, [open, mode, propsJobType, customerInfo, initReschedule]);
+
   // Reset state when dialog is closed
   useEffect(() => {
     if (!open) {
       reset();
       clearError();
+      rescheduleInitialized.current = false; // Reset for next opening
     }
   }, [open, reset, clearError]);
 
@@ -287,16 +322,18 @@ export function SchedulerDialog({
           {/* Step 3: Availability Selection */}
           {state.step === 3 && state.jobType && state.customerData && (
             <div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="mb-6 gap-2 -ml-2"
-                data-testid="button-back"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </Button>
+              {canGoBack && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBack}
+                  className="mb-6 gap-2 -ml-2"
+                  data-testid="button-back"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </Button>
+              )}
               <AvailabilityStep
                 jobTypeId={state.jobType.id}
                 customerZip={state.customerData.zip || serviceZip}
