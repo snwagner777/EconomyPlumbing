@@ -392,7 +392,7 @@ class ServiceTitanPortalService {
         id: locationId,
         name: locationName,
         address: locationAddress,
-        contacts,
+        contactMethods: contacts,
         appointments,
         invoices,
         memberships,
