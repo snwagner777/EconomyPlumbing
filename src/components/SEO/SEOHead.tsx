@@ -118,18 +118,7 @@ export function SEOHead({
     }
   }, [finalTitle, finalDescription, canonicalUrl, ogType, fullOgImage, ogImageAlt, ogImageWidth, ogImageHeight, siteName, twitterCard, articlePublishedTime, articleAuthor]);
 
-  return (
-    <>
-      {/* Schema.org JSON-LD */}
-      {schema && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(Array.isArray(schema) ? schema.filter(Boolean) : [schema])
-          }}
-          suppressHydrationWarning
-        />
-      )}
-    </>
-  );
+  // Note: JSON-LD is handled by server components in page.tsx files
+  // This client component only handles dynamic meta tags
+  return null;
 }
