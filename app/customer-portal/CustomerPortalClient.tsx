@@ -59,6 +59,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
   
   // Scheduler dialog state (managed by CustomerPortalClient, opened by CompactPortal)
   const [schedulerOpen, setSchedulerOpen] = useState(false);
+  const [schedulerMode, setSchedulerMode] = useState<'book' | 'reschedule'>('book');
+  const [reschedulingAppointment, setReschedulingAppointment] = useState<any>(null);
 
   const { toast } = useToast();
   
@@ -330,7 +332,16 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 const numericId = customerId ? parseInt(customerId) : null;
                 queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });
               }}
-              onSchedule={() => setSchedulerOpen(true)}
+              onSchedule={() => {
+                setSchedulerMode('book');
+                setReschedulingAppointment(null);
+                setSchedulerOpen(true);
+              }}
+              onReschedule={(appointment: any) => {
+                setSchedulerMode('reschedule');
+                setReschedulingAppointment(appointment);
+                setSchedulerOpen(true);
+              }}
               onLogout={handleLogout}
               formatDate={formatDate}
               formatTime={formatTime}
@@ -345,7 +356,18 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       {customerId && customerData?.customer && (
         <SchedulerDialog
           open={schedulerOpen}
-          onOpenChange={setSchedulerOpen}
+          onOpenChange={(open) => {
+            setSchedulerOpen(open);
+            if (!open) {
+              setSchedulerMode('book');
+              setReschedulingAppointment(null);
+            }
+          }}
+          mode={schedulerMode}
+          jobType={schedulerMode === 'reschedule' && reschedulingAppointment?.jobType ? {
+            id: reschedulingAppointment.jobType.id,
+            name: reschedulingAppointment.jobType.name,
+          } : undefined}
           customerInfo={{
             firstName: customerData.customer.name?.split(' ')[0] || '',
             lastName: customerData.customer.name?.split(' ').slice(1).join(' ') || '',
@@ -360,6 +382,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           utmSource="customer-portal"
           onComplete={() => {
             setSchedulerOpen(false);
+            setSchedulerMode('book');
+            setReschedulingAppointment(null);
             // Refresh appointments after booking
             const numericId = customerId ? parseInt(customerId) : null;
             queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });

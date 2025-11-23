@@ -1,23 +1,25 @@
 /**
  * Services Section - Appointments, Estimates, Job History
- * Three-panel layout for all service-related information
+ * Accordion-based layout with location grouping and invoice viewing
  */
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, User, AlertTriangle, RefreshCw } from "lucide-react";
+import { Calendar, FileText, Clock, CheckCircle, AlertCircle, Wrench, MapPin, AlertTriangle, RefreshCw } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { formatCurrency } from "../../utils/currency";
 import { EstimateDetailModal } from "@/modules/documents/components/EstimateDetailModal";
 import { InvoiceViewerModal } from "@/modules/documents/components/InvoiceViewerModal";
 import { useToast } from "@/hooks/use-toast";
-import type { Estimate, Invoice } from "@/modules/documents/types";
+import { useJobTypeName } from "../../hooks/useJobTypeName";
+import type { Estimate } from "@/modules/documents/types";
 
 interface ServicesSectionProps {
   customerData?: any;
@@ -88,27 +90,12 @@ export function ServicesSection({
   // Extract job history with null safety
   const recentJobs = (customerData?.recentJobs || customerData?.jobs || []).filter((job: any) => job);
 
-  // Group appointments by location
-  const upcomingByLocation = upcomingAppointments.reduce((acc: any, apt: any) => {
-    const locationId = apt.locationId || 'unknown';
-    if (!acc[locationId]) acc[locationId] = [];
-    acc[locationId].push(apt);
-    return acc;
-  }, {});
-
   // Group completed appointments by location
   const completedByLocation = completedAppointments.reduce((acc: any, apt: any) => {
     const locationId = apt.locationId || 'unknown';
-    if (!acc[locationId]) acc[locationId] = [];
-    acc[locationId].push(apt);
-    return acc;
-  }, {});
-
-  // Group estimates by location
-  const estimatesByLocation = openEstimates.reduce((acc: any, est: any) => {
-    const locationId = est.locationId || 'unknown';
-    if (!acc[locationId]) acc[locationId] = [];
-    acc[locationId].push(est);
+    const locationName = apt.location || `Location ${locationId}`;
+    if (!acc[locationId]) acc[locationId] = { name: locationName, appointments: [] };
+    acc[locationId].appointments.push(apt);
     return acc;
   }, {});
 
@@ -248,66 +235,22 @@ export function ServicesSection({
               </CardContent>
             </Card>
           ) : (
-            Object.entries(upcomingByLocation).map(([locationId, appointments]: [string, any]) => (
-              <div key={locationId} className="space-y-3">
-                {locationId !== 'unknown' && (
-                  <h3 className="text-lg font-semibold mt-4 mb-2">
-                    {appointments[0]?.location || `Location ${locationId}`}
-                  </h3>
-                )}
-                {(appointments as any[]).map((appointment: any, index: number) => (
-                  <Card key={appointment.id || index} data-testid={`card-appointment-${appointment.id}`}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
-                          <CardDescription>
-                            {formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}
-                          </CardDescription>
-                        </div>
-                        {getStatusBadge && getStatusBadge(appointment.status)}
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {appointment.specialInstructions && (
-                          <p className="text-sm">
-                            <strong>Notes:</strong> {appointment.specialInstructions}
-                          </p>
-                        )}
-                        <div className="flex gap-2 pt-2 flex-wrap">
-                          {onReschedule && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onReschedule(appointment)}
-                              data-testid={`button-reschedule-${appointment.id}`}
-                            >
-                              <Calendar className="w-4 h-4 mr-2" />
-                              Reschedule
-                            </Button>
-                          )}
-                          {onCancel && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => onCancel(appointment)}
-                              data-testid={`button-cancel-${appointment.id}`}
-                            >
-                              <AlertCircle className="w-4 h-4 mr-2" />
-                              Cancel
-                            </Button>
-                          )}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ))
+            <div className="space-y-4">
+              {upcomingAppointments.map((appointment, index) => (
+                <AppointmentCard
+                  key={appointment.id || index}
+                  appointment={appointment}
+                  formatDate={formatDate}
+                  formatTime={formatTime}
+                  getStatusBadge={getStatusBadge}
+                  onReschedule={onReschedule ? () => onReschedule(appointment) : undefined}
+                  onCancel={onCancel}
+                  data-testid={`card-appointment-${appointment.id}`}
+                />
+              ))}
+            </div>
           )}
-
-          </TabsContent>
+        </TabsContent>
 
         {/* Estimates Tab */}
         <TabsContent value="estimates" className="space-y-4">
@@ -324,67 +267,59 @@ export function ServicesSection({
               </CardContent>
             </Card>
           ) : (
-            Object.entries(estimatesByLocation).map(([locationId, estimates]: [string, any]) => (
-              <div key={locationId} className="space-y-3">
-                {locationId !== 'unknown' && (
-                  <h3 className="text-lg font-semibold mt-4 mb-2">
-                    {estimates[0]?.locationId ? `Location ${locationId}` : 'All Locations'}
-                  </h3>
-                )}
-                {(estimates as any[]).map((estimate: any, index: number) => (
-                  <Card key={estimate.id || index} data-testid={`card-estimate-${estimate.id}`}>
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <CardTitle className="text-lg">Estimate #{estimate.id}</CardTitle>
-                          <CardDescription>
-                            {estimate.name || 'Service Estimate'}
-                          </CardDescription>
-                        </div>
-                        <Badge variant={estimate.status === 'Open' ? 'default' : 'secondary'}>
-                          {estimate.status}
-                        </Badge>
+            <div className="space-y-3">
+              {openEstimates.map((estimate: any, index: number) => (
+                <Card key={estimate.id || index} data-testid={`card-estimate-${estimate.id}`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">Estimate #{estimate.id}</CardTitle>
+                        <CardDescription>
+                          {estimate.name || 'Service Estimate'}
+                        </CardDescription>
                       </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {estimate.total && (
-                          <p className="text-2xl font-bold">{formatCurrency(estimate.total)}</p>
-                        )}
-                        {estimate.summary && (
-                          <p className="text-sm text-muted-foreground">{estimate.summary}</p>
-                        )}
-                        <div className="flex gap-2 pt-2 flex-wrap">
+                      <Badge variant={estimate.status === 'Open' ? 'default' : 'secondary'}>
+                        {estimate.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {estimate.total && (
+                        <p className="text-2xl font-bold">{formatCurrency(estimate.total)}</p>
+                      )}
+                      {estimate.summary && (
+                        <p className="text-sm text-muted-foreground">{estimate.summary}</p>
+                      )}
+                      <div className="flex gap-2 pt-2 flex-wrap">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => setSelectedEstimate(estimate)}
+                          data-testid={`button-view-estimate-${estimate.id}`}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Details
+                        </Button>
+                        {estimate.status === 'Open' && (
                           <Button
-                            variant="default"
+                            variant="outline"
                             size="sm"
-                            onClick={() => setSelectedEstimate(estimate)}
-                            data-testid={`button-view-estimate-${estimate.id}`}
+                            onClick={() => {
+                              setSelectedEstimate(estimate);
+                            }}
+                            data-testid={`button-accept-estimate-${estimate.id}`}
                           >
-                            <FileText className="w-4 h-4 mr-2" />
-                            View Details
+                            <CheckCircle className="w-4 h-4 mr-2" />
+                            Accept & Schedule
                           </Button>
-                          {estimate.status === 'Open' && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setSelectedEstimate(estimate);
-                                // Accept action will be triggered from the modal
-                              }}
-                              data-testid={`button-accept-estimate-${estimate.id}`}
-                            >
-                              <CheckCircle className="w-4 h-4 mr-2" />
-                              Accept & Schedule
-                            </Button>
-                          )}
-                        </div>
+                        )}
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ))
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
         </TabsContent>
 
@@ -408,74 +343,35 @@ export function ServicesSection({
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-4">
+            <Accordion type="single" collapsible className="w-full space-y-3">
               {/* Show completed appointments from appointments API, grouped by location */}
-              {Object.entries(completedByLocation).map(([locationId, appointments]: [string, any]) => (
-                <div key={locationId} className="space-y-3">
-                  {locationId !== 'unknown' && (
-                    <h3 className="text-lg font-semibold mt-4 mb-2">
-                      {appointments[0]?.location || `Location ${locationId}`}
-                    </h3>
-                  )}
-                  {(appointments as any[]).map((appointment: any, index: number) => (
-                    <JobHistoryCard 
-                      key={appointment.id || `completed-${index}`}
-                      appointment={appointment}
-                      formatDate={formatDate}
-                      onViewInvoice={() => setSelectedInvoiceId(appointment.invoiceId)}
-                      data-testid={`card-history-${appointment.id}`}
-                    />
-                  ))}
-                </div>
+              {Object.entries(completedByLocation).map(([locationId, locationData]: [string, any]) => (
+                <AccordionItem key={locationId} value={locationId} className="border rounded-lg">
+                  <AccordionTrigger className="px-4 py-3 hover:bg-muted/50">
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-4 h-4" />
+                      <div className="text-left">
+                        <h3 className="font-semibold">{locationData.name}</h3>
+                        <p className="text-xs text-muted-foreground">
+                          {locationData.appointments.length} completed service(s)
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-4 py-3 space-y-3">
+                    {locationData.appointments.map((appointment: any, index: number) => (
+                      <JobHistoryCard 
+                        key={appointment.id || `completed-${index}`}
+                        appointment={appointment}
+                        formatDate={formatDate}
+                        onViewInvoice={() => setSelectedInvoiceId(appointment.invoiceId)}
+                        data-testid={`card-history-${appointment.id}`}
+                      />
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-
-              {/* Also show legacy job history if available */}
-              {recentJobs.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold mt-4 mb-2">Additional History</h3>
-                  {recentJobs.map((job: any, index: number) => (
-                    <Card key={job.id || `job-${index}`} data-testid={`card-job-${job.id}`}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <CardTitle className="text-lg">{job.jobType || 'Service Call'}</CardTitle>
-                            <CardDescription>
-                              {formatDate && formatDate(job.completedDate || job.createdDate)}
-                            </CardDescription>
-                          </div>
-                          {job.invoice && (
-                            <Badge variant="outline">
-                              {formatCurrency(job.invoice.total || 0)}
-                            </Badge>
-                          )}
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {job.technician && (
-                            <p className="text-sm text-muted-foreground flex items-center gap-1">
-                              <Wrench className="w-3 h-3" />
-                              Technician: {job.technician}
-                            </p>
-                          )}
-                          {job.invoice && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedInvoiceId(job.invoice.id)}
-                              data-testid={`button-view-invoice-${job.invoice.id}`}
-                            >
-                              <FileText className="w-4 h-4 mr-2" />
-                              View Invoice
-                            </Button>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </div>
+            </Accordion>
           )}
         </TabsContent>
       </Tabs>
@@ -495,12 +391,83 @@ export function ServicesSection({
         onOpenChange={(open) => !open && setSelectedInvoiceId(null)}
         invoiceId={selectedInvoiceId}
       />
+
     </div>
   );
 }
 
 /**
- * Helper component to display completed job with invoice button
+ * Upcoming appointment card with job type name
+ */
+function AppointmentCard({ 
+  appointment, 
+  formatDate, 
+  formatTime,
+  getStatusBadge,
+  onReschedule,
+  onCancel,
+  ...props 
+}: any) {
+  const { data: jobTypeData } = useJobTypeName(appointment.jobTypeId);
+  const jobTypeName = jobTypeData?.name || appointment.jobType || 'Service Call';
+
+  return (
+    <Card {...props}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="text-lg">
+              {appointment.jobNumber ? `Job #${appointment.jobNumber}` : 'Appointment'}
+            </CardTitle>
+            <CardDescription>
+              <div className="space-y-1 mt-2">
+                <p>{jobTypeName}</p>
+                <p>{formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}</p>
+              </div>
+            </CardDescription>
+          </div>
+          {getStatusBadge && getStatusBadge(appointment.status)}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-3">
+          {appointment.specialInstructions && (
+            <p className="text-sm">
+              <strong>Notes:</strong> {appointment.specialInstructions}
+            </p>
+          )}
+          <div className="flex gap-2 pt-2 flex-wrap">
+            {onReschedule && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onReschedule}
+                data-testid={`button-reschedule-${appointment.id}`}
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                Reschedule
+              </Button>
+            )}
+            {onCancel && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => onCancel(appointment)}
+                data-testid={`button-cancel-${appointment.id}`}
+              >
+                <AlertCircle className="w-4 h-4 mr-2" />
+                Cancel
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+/**
+ * Completed job history card with invoice viewer
  */
 function JobHistoryCard({ 
   appointment, 
@@ -509,11 +476,11 @@ function JobHistoryCard({
   ...props 
 }: any) {
   return (
-    <Card {...props}>
+    <Card {...props} className="bg-muted/30">
       <CardHeader>
         <div className="flex items-start justify-between">
           <div>
-            <CardTitle className="text-lg">{appointment.jobNumber || appointment.id}</CardTitle>
+            <CardTitle className="text-base">{appointment.jobNumber || appointment.id}</CardTitle>
             <CardDescription>
               {formatDate && formatDate(appointment.completedDate || appointment.start)}
             </CardDescription>

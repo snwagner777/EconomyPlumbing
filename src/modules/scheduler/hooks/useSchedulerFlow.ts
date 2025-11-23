@@ -119,12 +119,13 @@ export interface UseSchedulerFlowReturn {
  * }
  * ```
  */
-export function useSchedulerFlow(): UseSchedulerFlowReturn {
+export function useSchedulerFlow(initialState?: Partial<SchedulerFlowState>): UseSchedulerFlowReturn {
   const [state, dispatch] = useReducer(schedulerFlowReducer, {
     step: 1,
     jobType: null,
     customerData: null,
     timeSlot: null,
+    ...initialState,
   });
 
   // Actions

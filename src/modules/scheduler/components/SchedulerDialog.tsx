@@ -45,6 +45,12 @@ export interface SchedulerDialogProps {
   /** Available customer locations (optional, for multi-location customers) */
   locations?: CustomerLocation[];
   
+  /** Mode: 'book' for new booking, 'reschedule' to skip service selection */
+  mode?: 'book' | 'reschedule';
+  
+  /** Job type for reschedule mode (skips service selection) */
+  jobType?: import('@shared/types/scheduler').JobType;
+  
   /** UTM tracking parameters */
   utmSource?: string;
   utmMedium?: string;
@@ -86,13 +92,21 @@ export function SchedulerDialog({
   onOpenChange,
   customerInfo,
   locations = [],
+  mode = 'book',
+  jobType: propsJobType,
   utmSource = 'customer-portal',
   utmMedium,
   utmCampaign,
   onComplete,
 }: SchedulerDialogProps) {
+  // For reschedule mode, skip service selection and pre-fill job type
+  const initialStep = mode === 'reschedule' && propsJobType ? 2 : 1;
+  
   // Modular hooks
-  const { state, currentStepConfig, canGoBack, selectJobType, setCustomerData, selectTimeSlot, prevStep, reset } = useSchedulerFlow();
+  const { state, currentStepConfig, canGoBack, selectJobType, setCustomerData, selectTimeSlot, prevStep, reset } = useSchedulerFlow({
+    step: initialStep,
+    jobType: propsJobType || null,
+  });
   
   const { 
     selectedLocationId, 
@@ -230,8 +244,8 @@ export function SchedulerDialog({
 
         {/* Step Content */}
         <div className="mt-4">
-          {/* Step 1: Service Selection */}
-          {state.step === 1 && (
+          {/* Step 1: Service Selection - Skip in reschedule mode */}
+          {state.step === 1 && mode === 'book' && (
             <ServiceStep
               onSelect={handleSelectJobType}
             />
@@ -240,16 +254,18 @@ export function SchedulerDialog({
           {/* Step 2: Customer Information & Verification */}
           {state.step === 2 && state.jobType && (
             <div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="mb-6 gap-2 -ml-2"
-                data-testid="button-back"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Back
-              </Button>
+              {mode === 'book' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleBack}
+                  className="mb-6 gap-2 -ml-2"
+                  data-testid="button-back"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Back
+                </Button>
+              )}
               <CustomerStep
                 onSubmit={setCustomerData}
                 initialData={{

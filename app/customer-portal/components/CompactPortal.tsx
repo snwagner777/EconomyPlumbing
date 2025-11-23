@@ -55,6 +55,7 @@ interface CompactPortalProps {
   referralLinkData?: ReferralLinkData;
   onRetryAppointments?: () => void;
   onSchedule?: () => void;
+  onReschedule?: (appointment: any) => void;
   onLogout?: () => void;
   formatDate?: (date: string) => string;
   formatTime?: (time: string) => string;
@@ -74,6 +75,7 @@ export function CompactPortal({
   referralLinkData,
   onRetryAppointments,
   onSchedule,
+  onReschedule,
   onLogout,
   formatDate,
   formatTime,
@@ -197,6 +199,7 @@ export function CompactPortal({
             usingFallbackData={usingFallbackData}
             onRetryAppointments={onRetryAppointments}
             onSchedule={onSchedule}
+            onReschedule={onReschedule}
             formatDate={formatDate}
             formatTime={formatTime}
             getStatusBadge={getStatusBadge}
