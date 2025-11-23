@@ -11,6 +11,7 @@ import { PortalSidebar, type PortalSection } from './PortalSidebar';
 import { BottomNav } from './BottomNav';
 import { MembershipsSection } from './MembershipsSection';
 import { VouchersSection } from '../VouchersSection';
+import { ReferralsSection } from '../ReferralsSection';
 import { ServicesSection } from './sections/ServicesSection';
 // TODO: Uncomment when billing section is ready
 // import { BillingSection } from './sections/BillingSection';
@@ -185,6 +186,14 @@ export function CompactPortal({
           <div className="space-y-6">
             <MembershipsSection />
             {customerId && <VouchersSection customerId={parseInt(customerId)} />}
+            {customerId && (
+              <ReferralsSection
+                customerId={parseInt(customerId)}
+                referralsData={referralsData}
+                referralLinkData={referralLinkData}
+                onOpenReferralModal={() => setReferralModalOpen(true)}
+              />
+            )}
           </div>
         );
         

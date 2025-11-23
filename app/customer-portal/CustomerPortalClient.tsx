@@ -367,6 +367,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
           jobType={schedulerMode === 'reschedule' && reschedulingAppointment?.jobType ? {
             id: reschedulingAppointment.jobType.id,
             name: reschedulingAppointment.jobType.name,
+            code: reschedulingAppointment.jobType.code || `JOB_${reschedulingAppointment.jobType.id}`,
           } : undefined}
           customerInfo={{
             firstName: customerData.customer.name?.split(' ')[0] || '',
