@@ -1359,6 +1359,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               formatTime={formatTime}
               formatPhoneNumber={formatPhoneNumber}
               getStatusBadge={getStatusBadge}
+              accountSummaries={accountSummaries}
+              onSwitchAccount={handleSelectAccount}
             />
           ) : (
             <AuthenticatedPortal
