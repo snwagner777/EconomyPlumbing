@@ -397,10 +397,10 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             lastName: customerData.customer.name?.split(' ').slice(1).join(' ') || '',
             phone: customerData.customer.phoneNumber || '',
             email: customerData.customer.email || '',
-            address: customerData.customer.address?.street || '',
-            city: customerData.customer.address?.city || '',
-            state: customerData.customer.address?.state || '',
-            zip: customerData.customer.address?.zip || '',
+            address: customerData.customer.address?.street || customerLocations[0]?.address?.street || '',
+            city: customerData.customer.address?.city || customerLocations[0]?.address?.city || '',
+            state: customerData.customer.address?.state || customerLocations[0]?.address?.state || 'TX',
+            zip: customerData.customer.address?.zip || customerLocations[0]?.address?.zip || '',
           }}
           locations={customerLocations}
           utmSource="customer-portal"
