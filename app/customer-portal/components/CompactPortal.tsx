@@ -175,7 +175,7 @@ export function CompactPortal({
       onSchedule,
       onShareReferral: () => {
         setReferralModalOpen(true);
-        // Also call parent callback if provided (for legacy portal compatibility)
+        // Also call parent callback if provided
         if (onShareReferral) {
           onShareReferral();
         }

@@ -160,7 +160,7 @@ export function SettingsSection({
                           
                           <div className="space-y-2">
                             <div className="flex items-center gap-3 flex-wrap">
-                              {account.type && account.type !== 'Residential' && (
+                              {account.type && (
                                 <Badge variant="outline" className="text-xs">
                                   {account.type}
                                 </Badge>
