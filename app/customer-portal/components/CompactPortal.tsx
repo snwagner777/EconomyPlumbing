@@ -240,9 +240,9 @@ export function CompactPortal({
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col">
       {/* Portal Content */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1">
         {/* Desktop Sidebar */}
         <div className="hidden md:block w-64 flex-shrink-0">
           <PortalSidebar
@@ -254,7 +254,7 @@ export function CompactPortal({
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1">
           <div className="container max-w-6xl py-6 md:py-8 pb-24 md:pb-8">
             {renderSection()}
           </div>
