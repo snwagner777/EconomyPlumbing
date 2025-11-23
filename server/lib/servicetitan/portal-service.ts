@@ -153,10 +153,11 @@ class ServiceTitanPortalService {
       // Fetch contacts first (flat contact methods from ServiceTitan)
       const customerContactMethods = await serviceTitanCRM.getCustomerContacts(customerId);
       
-      // Fetch locations and referrals in parallel
-      const [locations, referrals] = await Promise.all([
+      // Fetch locations, referrals, and invoices in parallel
+      const [locations, referrals, invoices] = await Promise.all([
         this.fetchLocations(customerId, customerContactMethods),
         this.fetchReferrals(customerId),
+        this.fetchInvoices(customerId),
       ]);
 
       // Extract primary email and phone from contact methods
@@ -177,6 +178,7 @@ class ServiceTitanPortalService {
         },
         locations,
         referrals,
+        invoices,
         credits: 0, // TODO: Fetch from referral credits system
       };
 

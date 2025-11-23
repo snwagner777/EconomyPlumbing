@@ -49,6 +49,7 @@ export async function GET(
     }
 
     // SECURITY: Verify invoice belongs to one of the customer's accounts
+    console.log(`[Portal Invoice Detail] Validating ownership - Invoice customerId: ${invoice.customerId}, Available IDs: ${JSON.stringify(availableCustomerIds)}`);
     assertCustomerOwnership(invoice.customerId, availableCustomerIds);
     
     return transformAndReturnInvoice(invoice);
