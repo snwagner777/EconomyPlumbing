@@ -25,7 +25,6 @@ import type { PhoneConfig } from "@/server/lib/phoneNumbers";
 import { ReferralModal } from "@/components/ReferralModal";
 import { VouchersSection } from "./VouchersSection";
 import { CustomerPortalAuth } from "./components/auth/CustomerPortalAuth";
-import { AuthenticatedPortal } from "./AuthenticatedPortal";
 import { 
   User,
   Users,
@@ -65,9 +64,6 @@ import { SchedulerDialog } from "@/modules/scheduler";
 import { ContactForm, useAddCustomerContact, useAddLocationContact } from "@/modules/contacts";
 import { CompactPortal } from "./components/CompactPortal";
 import { transformCustomerAppointments } from "./utils/dataMappers";
-
-// Feature flag for new compact portal design
-const USE_COMPACT_PORTAL = true;
 
 interface ServiceTitanContact {
   id: number;
@@ -1300,7 +1296,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 toast({ title: "Authentication failed", description: message, variant: "destructive" })
               }
             />
-          ) : USE_COMPACT_PORTAL ? (
+          ) : (
             <CompactPortal
               customerId={customerId}
               customerData={customerData}
@@ -1335,166 +1331,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               formatTime={formatTime}
               formatPhoneNumber={formatPhoneNumber}
               getStatusBadge={getStatusBadge}
-            />
-          ) : (
-            <AuthenticatedPortal
-              customerId={customerId}
-              availableCustomerIds={availableCustomerIds}
-              customerData={customerData}
-              isLoading={isLoading}
-              error={error}
-              phoneConfig={phoneConfig}
-              marbleFallsPhoneConfig={marbleFallsPhoneConfig}
-              toast={toast}
-              referralsData={referralsData}
-              referralLinkData={referralLinkData}
-              customerStats={customerStats}
-              recentJobsData={recentJobsData}
-              locationsData={locationsData}
-              emailHistoryData={emailHistoryData}
-              arrivalWindowsData={arrivalWindowsData}
-              timeWindows={timeWindows}
-              customerLocations={customerLocations}
-              upcomingAppointments={upcomingAppointments}
-              completedAppointments={completedAppointments}
-              activeAccountTab={activeAccountTab}
-              setActiveAccountTab={setActiveAccountTab}
-              activeLocationTab={activeLocationTab}
-              setActiveLocationTab={setActiveLocationTab}
-              copied={copied}
-              setCopied={setCopied}
-              showReferralModal={showReferralModal}
-              setShowReferralModal={setShowReferralModal}
-              showAccountSelection={showAccountSelection}
-              setShowAccountSelection={setShowAccountSelection}
-              isLoadingSwitcher={isLoadingSwitcher}
-              setIsLoadingSwitcher={setIsLoadingSwitcher}
-              availableAccounts={availableAccounts}
-              setAvailableAccounts={setAvailableAccounts}
-              rescheduleDialogOpen={rescheduleDialogOpen}
-              setRescheduleDialogOpen={setRescheduleDialogOpen}
-              appointmentToReschedule={appointmentToReschedule}
-              setAppointmentToReschedule={setAppointmentToReschedule}
-              newAppointmentDate={newAppointmentDate}
-              setNewAppointmentDate={setNewAppointmentDate}
-              newAppointmentWindow={newAppointmentWindow}
-              setNewAppointmentWindow={setNewAppointmentWindow}
-              rescheduleSpecialInstructions={rescheduleSpecialInstructions}
-              setRescheduleSpecialInstructions={setRescheduleSpecialInstructions}
-              rescheduleGrouponVoucher={rescheduleGrouponVoucher}
-              setRescheduleGrouponVoucher={setRescheduleGrouponVoucher}
-              isRescheduling={isRescheduling}
-              setIsRescheduling={setIsRescheduling}
-              availableSlots={availableSlots}
-              setAvailableSlots={setAvailableSlots}
-              isLoadingSlots={isLoadingSlots}
-              cancelDialogOpen={cancelDialogOpen}
-              setCancelDialogOpen={setCancelDialogOpen}
-              appointmentToCancel={appointmentToCancel}
-              setAppointmentToCancel={setAppointmentToCancel}
-              cancelReason={cancelReason}
-              setCancelReason={setCancelReason}
-              isCanceling={isCanceling}
-              setIsCanceling={setIsCanceling}
-              editContactsOpen={editContactsOpen}
-              setEditContactsOpen={setEditContactsOpen}
-              editEmail={editEmail}
-              setEditEmail={setEditEmail}
-              editPhone={editPhone}
-              setEditPhone={setEditPhone}
-              isUpdatingContacts={isUpdatingContacts}
-              deleteContactDialogOpen={deleteContactDialogOpen}
-              setDeleteContactDialogOpen={setDeleteContactDialogOpen}
-              contactToDelete={contactToDelete}
-              setContactToDelete={setContactToDelete}
-              isDeletingContact={isDeletingContact}
-              editAddressOpen={editAddressOpen}
-              setEditAddressOpen={setEditAddressOpen}
-              editStreet={editStreet}
-              setEditStreet={setEditStreet}
-              editCity={editCity}
-              setEditCity={setEditCity}
-              editState={editState}
-              setEditState={setEditState}
-              editZip={editZip}
-              setEditZip={setEditZip}
-              isUpdatingAddress={isUpdatingAddress}
-              locationId={locationId}
-              emailUsOpen={emailUsOpen}
-              setEmailUsOpen={setEmailUsOpen}
-              emailUsSubject={emailUsSubject}
-              setEmailUsSubject={setEmailUsSubject}
-              emailUsMessage={emailUsMessage}
-              setEmailUsMessage={setEmailUsMessage}
-              emailUsName={emailUsName}
-              setEmailUsName={setEmailUsName}
-              emailUsEmail={emailUsEmail}
-              setEmailUsEmail={setEmailUsEmail}
-              emailUsPhone={emailUsPhone}
-              setEmailUsPhone={setEmailUsPhone}
-              isSendingEmail={isSendingEmail}
-              reviewModalOpen={reviewModalOpen}
-              setReviewModalOpen={setReviewModalOpen}
-              reviewRating={reviewRating}
-              setReviewRating={setReviewRating}
-              reviewFeedback={reviewFeedback}
-              setReviewFeedback={setReviewFeedback}
-              isSubmittingReview={isSubmittingReview}
-              schedulerOpen={schedulerOpen}
-              setSchedulerOpen={setSchedulerOpen}
-              schedulerEstimateId={schedulerEstimateId}
-              setSchedulerEstimateId={setSchedulerEstimateId}
-              schedulerSoldHours={schedulerSoldHours}
-              setSchedulerSoldHours={setSchedulerSoldHours}
-              estimateDetailOpen={estimateDetailOpen}
-              setEstimateDetailOpen={setEstimateDetailOpen}
-              selectedEstimate={selectedEstimate}
-              setSelectedEstimate={setSelectedEstimate}
-              showAcceptanceDialog={showAcceptanceDialog}
-              setShowAcceptanceDialog={setShowAcceptanceDialog}
-              isAcceptingEstimate={isAcceptingEstimate}
-              acceptanceTermsAgreed={acceptanceTermsAgreed}
-              setAcceptanceTermsAgreed={setAcceptanceTermsAgreed}
-              addLocationOpen={addLocationOpen}
-              setAddLocationOpen={setAddLocationOpen}
-              newLocationData={newLocationData}
-              setNewLocationData={setNewLocationData}
-              isAddingLocation={isAddingLocation}
-              addContactOpen={addContactOpen}
-              setAddContactOpen={setAddContactOpen}
-              manageLocationContactsOpen={manageLocationContactsOpen}
-              setManageLocationContactsOpen={setManageLocationContactsOpen}
-              selectedLocationForContacts={selectedLocationForContacts}
-              setSelectedLocationForContacts={setSelectedLocationForContacts}
-              addCustomerContact={addCustomerContact}
-              addLocationContact={addLocationContact}
-              refetchRecentJobs={refetchRecentJobs}
-              handleSelectAccount={handleSelectAccount}
-              handleSwitchAccount={handleSwitchAccount}
-              handleOpenRescheduleDialog={handleOpenRescheduleDialog}
-              handleRescheduleAppointment={handleRescheduleAppointment}
-              handleOpenCancelDialog={handleOpenCancelDialog}
-              handleCancelAppointment={handleCancelAppointment}
-              handleEditContacts={handleEditContacts}
-              handleUpdateContacts={handleUpdateContacts}
-              handleDeleteContact={handleDeleteContact}
-              handleEditAddress={handleEditAddress}
-              handleUpdateAddress={handleUpdateAddress}
-              handleAddLocation={handleAddLocation}
-              handleRequestPDF={handleRequestPDF}
-              fetchCustomerLocation={fetchCustomerLocation}
-              formatCurrency={formatCurrency}
-              formatDate={formatDate}
-              formatTime={formatTime}
-              copyReferralLink={copyReferralLink}
-              shareViaFacebook={shareViaFacebook}
-              shareViaX={shareViaX}
-              shareViaEmail={shareViaEmail}
-              shareViaSMS={shareViaSMS}
-              getStatusBadge={getStatusBadge}
-              getExpirationBadge={getExpirationBadge}
-              formatPhoneNumber={formatPhoneNumber}
-              setCustomerId={setCustomerId}
             />
           )}
         </div>
