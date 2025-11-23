@@ -28,42 +28,27 @@ export async function GET(
 
     // Fetch invoice details from ServiceTitan
     // NOTE: ServiceTitan v2 doesn't support GET /invoices/{id} endpoint
-    // We need to fetch all invoices for the customer and filter by ID
+    // Use the list endpoint with ids query parameter to fetch specific invoice
     const tenantId = serviceTitanAuth.getTenantId();
     
-    // Fetch all customer invoices (will be cached/fast for repeat requests)
-    const endpoint = `accounting/v2/tenant/${tenantId}/invoices?customerId=${customerId}&pageSize=100`;
-    console.log(`[Portal Invoice Detail] Fetching invoices for customer ${customerId} to find invoice ${invoiceId}`);
+    // Fetch specific invoice by ID using ids query parameter
+    const endpoint = `accounting/v2/tenant/${tenantId}/invoices?ids=${invoiceId}`;
+    console.log(`[Portal Invoice Detail] Fetching invoice ${invoiceId} using ids filter`);
     
     const response = await serviceTitanAuth.makeRequest<any>(endpoint);
     const invoices = response?.data || [];
     
-    // Find the specific invoice by ID
-    const invoice = invoices.find((inv: any) => inv.id === invoiceId);
+    // Should return exactly one invoice
+    const invoice = invoices[0];
 
     if (!invoice) {
-      // Check if invoice might belong to a different customer account
-      for (const altCustomerId of availableCustomerIds) {
-        if (altCustomerId === customerId) continue;
-        
-        const altEndpoint = `accounting/v2/tenant/${tenantId}/invoices?customerId=${altCustomerId}&pageSize=100`;
-        const altResponse = await serviceTitanAuth.makeRequest<any>(altEndpoint);
-        const altInvoices = altResponse?.data || [];
-        const foundInvoice = altInvoices.find((inv: any) => inv.id === invoiceId);
-        
-        if (foundInvoice) {
-          assertCustomerOwnership(foundInvoice.customerId, availableCustomerIds);
-          return transformAndReturnInvoice(foundInvoice);
-        }
-      }
-      
       return NextResponse.json(
         { error: 'Invoice not found' },
         { status: 404 }
       );
     }
 
-    // SECURITY: Verify invoice belongs to customer (should already be true from query)
+    // SECURITY: Verify invoice belongs to one of the customer's accounts
     assertCustomerOwnership(invoice.customerId, availableCustomerIds);
     
     return transformAndReturnInvoice(invoice);

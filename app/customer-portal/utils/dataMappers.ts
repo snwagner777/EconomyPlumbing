@@ -326,6 +326,7 @@ export function transformCustomerAppointments(jobs: Array<{
   jobTypeId?: number;
   summary: string;
   locationId: number;
+  locationAddress?: string | null;
   jobStatus: string;
   completedOn: string;
   total?: number;
@@ -364,7 +365,7 @@ export function transformCustomerAppointments(jobs: Array<{
         jobNumber: job.jobNumber || job.id.toString(),
         jobTypeId: job.jobTypeId, // Include job type ID for rescheduling
         jobType: job.summary || `Job #${job.jobNumber || job.id}`,
-        location: 'Address TBD', // Will be looked up via locationId in component
+        location: job.locationAddress || 'Address TBD',
         summary: job.summary || '',
         status: appointment.status || 'Unknown',
         start: appointment.start,
