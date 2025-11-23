@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
+import { ReferralModal } from "@/components/ReferralModal";
 
 interface ReferralData {
   referrals: Array<{
@@ -31,6 +32,7 @@ interface ReferralData {
     creditAmount: number;
     referrerCustomerId: number | null;
     refereeCustomerId: number | null;
+    creditedAt?: Date | null;
   }>;
 }
 
@@ -99,6 +101,7 @@ export function CompactPortal({
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
   const [addLocationDialogOpen, setAddLocationDialogOpen] = useState(false);
   const [addAccountDialogOpen, setAddAccountDialogOpen] = useState(false);
+  const [referralModalOpen, setReferralModalOpen] = useState(false);
 
   // Transform customer data using mappers
   const transformedData = transformCustomerData(customerData);
@@ -137,7 +140,14 @@ export function CompactPortal({
     }
 
     const customerIdNum = parseInt(customerId);
-    const referralsList = referralsData.referrals;
+    const referralsList = referralsData.referrals as Array<{
+      id: string;
+      status: string;
+      creditAmount: number;
+      referrerCustomerId: number | null;
+      refereeCustomerId: number | null;
+      creditedAt?: Date | null;
+    }>;
 
     // Filter referrals where current customer is the referrer
     const asReferrer = referralsList.filter(r => r.referrerCustomerId === customerIdNum);
@@ -145,15 +155,13 @@ export function CompactPortal({
     // Total referrals sent by this customer
     const totalSent = asReferrer.length;
 
-    // Credits earned (credited status only)
+    // Credits earned (check creditedAt field, not status)
     const creditsEarned = asReferrer
-      .filter(r => r.status === 'credited')
+      .filter(r => r.creditedAt != null)
       .reduce((sum, r) => sum + (r.creditAmount || 0), 0) / 100; // Convert cents to dollars
 
-    // Pending referrals (not yet credited)
-    const pending = asReferrer.filter(r => 
-      r.status === 'pending' || r.status === 'contacted' || r.status === 'job_completed'
-    ).length;
+    // Pending referrals (not yet credited - creditedAt is null)
+    const pending = asReferrer.filter(r => r.creditedAt == null).length;
 
     return { totalSent, creditsEarned, pending };
   };
@@ -165,7 +173,13 @@ export function CompactPortal({
     referrals: calculateReferralStats(),
     quickActions: {
       onSchedule,
-      onShareReferral,
+      onShareReferral: () => {
+        setReferralModalOpen(true);
+        // Also call parent callback if provided (for legacy portal compatibility)
+        if (onShareReferral) {
+          onShareReferral();
+        }
+      },
     },
     alerts: [] as any[],
   } : undefined;
@@ -289,6 +303,18 @@ export function CompactPortal({
         open={addAccountDialogOpen}
         onOpenChange={setAddAccountDialogOpen}
       />
+
+      {/* Referral Modal */}
+      {customerId && referralLinkData && (
+        <ReferralModal
+          open={referralModalOpen}
+          onOpenChange={setReferralModalOpen}
+          customerName={customerData?.customer?.name || ''}
+          customerPhone={customerData?.customer?.phoneSettings?.phoneNumber || customerData?.customer?.phone || ''}
+          customerId={customerId}
+          referralCode={referralLinkData.code}
+        />
+      )}
     </div>
   );
 }
