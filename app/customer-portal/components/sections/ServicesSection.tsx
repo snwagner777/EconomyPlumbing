@@ -90,10 +90,38 @@ export function ServicesSection({
   // Extract job history with null safety
   const recentJobs = (customerData?.recentJobs || customerData?.jobs || []).filter((job: any) => job);
 
+  // Helper function to get location address from location ID
+  const getLocationAddress = (locationId: string | number) => {
+    const location = customerData?.locations?.find((loc: any) => 
+      (loc.id?.toString() === locationId?.toString()) || 
+      (loc.locationId?.toString() === locationId?.toString())
+    );
+    
+    if (!location) return null;
+    
+    // Build address from location data
+    const addr = location.address || location.serviceLocation?.address;
+    if (!addr) return location.name || location.locationName;
+    
+    if (typeof addr === 'string') {
+      return addr;
+    }
+    
+    const addressParts = [
+      addr.street,
+      addr.city,
+      addr.state,
+      addr.zip
+    ].filter(Boolean);
+    
+    return addressParts.length > 0 ? addressParts.join(', ') : location.name;
+  };
+
   // Group completed appointments by location
   const completedByLocation = completedAppointments.reduce((acc: any, apt: any) => {
     const locationId = apt.locationId || 'unknown';
-    const locationName = apt.location || `Location ${locationId}`;
+    const locationAddress = getLocationAddress(locationId);
+    const locationName = locationAddress || `Location ${locationId}`;
     if (!acc[locationId]) acc[locationId] = { name: locationName, appointments: [] };
     acc[locationId].appointments.push(apt);
     return acc;
@@ -240,6 +268,7 @@ export function ServicesSection({
                 <AppointmentCard
                   key={appointment.id || index}
                   appointment={appointment}
+                  locationAddress={getLocationAddress(appointment.locationId)}
                   formatDate={formatDate}
                   formatTime={formatTime}
                   getStatusBadge={getStatusBadge}
@@ -287,9 +316,6 @@ export function ServicesSection({
                     <div className="space-y-3">
                       {estimate.total && (
                         <p className="text-2xl font-bold">{formatCurrency(estimate.total)}</p>
-                      )}
-                      {estimate.summary && (
-                        <p className="text-sm text-muted-foreground">{estimate.summary}</p>
                       )}
                       <div className="flex gap-2 pt-2 flex-wrap">
                         <Button
@@ -397,10 +423,11 @@ export function ServicesSection({
 }
 
 /**
- * Upcoming appointment card with job type name
+ * Upcoming appointment card with job type name and location address
  */
 function AppointmentCard({ 
   appointment, 
+  locationAddress,
   formatDate, 
   formatTime,
   getStatusBadge,
@@ -423,6 +450,12 @@ function AppointmentCard({
               <div className="space-y-1 mt-2">
                 <p>{jobTypeName}</p>
                 <p>{formatDate && formatDate(appointment.start)} at {formatTime && formatTime(appointment.start)}</p>
+                {locationAddress && (
+                  <p className="flex items-center gap-2 mt-2">
+                    <MapPin className="w-3 h-3" />
+                    {locationAddress}
+                  </p>
+                )}
               </div>
             </CardDescription>
           </div>

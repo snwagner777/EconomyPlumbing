@@ -39,6 +39,8 @@ Economy Plumbing Services is a full-stack web application designed to enhance th
 - CRITICAL RULE: Scheduler Address Validation - NO DEFAULTS
 - CRITICAL RULE: Hardcoded Values - Centralized Sources Only
 - CRITICAL RULE: Customer Portal API - Single Source of Truth
+- CRITICAL RULE: Customer Portal Location Display - Always show location ADDRESS (street/city/state), NEVER show location ID numbers or "Location 123" format
+- CRITICAL RULE: Customer Portal Summary Fields - NEVER display summary field on any appointments or documents in customer portal
 
 ## System Architecture
 
