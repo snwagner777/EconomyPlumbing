@@ -55,14 +55,6 @@ interface CompactPortalProps {
   referralLinkData?: ReferralLinkData;
   onRetryAppointments?: () => void;
   onSchedule?: () => void;
-  onShareReferral?: () => void;
-  onRescheduleAppointment?: (appointment: any) => void;
-  onCancelAppointment?: (appointment: any) => void;
-  onViewEstimate?: (estimate: any) => void;
-  onAcceptEstimate?: (estimate: any) => void;
-  onEditContacts?: () => void;
-  onAddLocation?: () => void;
-  onEditLocation?: (location: any) => void;
   onLogout?: () => void;
   formatDate?: (date: string) => string;
   formatTime?: (time: string) => string;
@@ -82,14 +74,6 @@ export function CompactPortal({
   referralLinkData,
   onRetryAppointments,
   onSchedule,
-  onShareReferral,
-  onRescheduleAppointment,
-  onCancelAppointment,
-  onViewEstimate,
-  onAcceptEstimate,
-  onEditContacts,
-  onAddLocation,
-  onEditLocation,
   onLogout,
   formatDate,
   formatTime,
@@ -175,10 +159,6 @@ export function CompactPortal({
       onSchedule,
       onShareReferral: () => {
         setReferralModalOpen(true);
-        // Also call parent callback if provided
-        if (onShareReferral) {
-          onShareReferral();
-        }
       },
     },
     alerts: [] as any[],
@@ -216,10 +196,6 @@ export function CompactPortal({
             appointmentsError={appointmentsError}
             usingFallbackData={usingFallbackData}
             onRetryAppointments={onRetryAppointments}
-            onReschedule={onRescheduleAppointment}
-            onCancel={onCancelAppointment}
-            onViewEstimate={onViewEstimate}
-            onAcceptEstimate={onAcceptEstimate}
             onSchedule={onSchedule}
             formatDate={formatDate}
             formatTime={formatTime}
