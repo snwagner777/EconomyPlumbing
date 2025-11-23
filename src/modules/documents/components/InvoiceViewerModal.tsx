@@ -97,11 +97,11 @@ export function InvoiceViewerModal({
                   invoice.items.map((item: any, idx: number) => (
                     <div key={idx} className="flex justify-between items-start border-b pb-2">
                       <div className="flex-1">
-                        <p className="font-medium">{item.description}</p>
+                        <p className="font-medium">{item.description || item.skuName || 'Item'}</p>
                         <p className="text-sm text-muted-foreground">Qty: {item.quantity || 1}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold">${(item.total || item.amount || 0).toFixed(2)}</p>
+                        <p className="font-semibold">${Number(item.total || item.amount || 0).toFixed(2)}</p>
                       </div>
                     </div>
                   ))
