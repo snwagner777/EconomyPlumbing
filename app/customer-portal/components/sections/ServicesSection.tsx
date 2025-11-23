@@ -264,19 +264,25 @@ export function ServicesSection({
             </Card>
           ) : (
             <div className="space-y-4">
-              {upcomingAppointments.map((appointment, index) => (
-                <AppointmentCard
-                  key={appointment.id || index}
-                  appointment={appointment}
-                  locationAddress={getLocationAddress(appointment.locationId)}
-                  formatDate={formatDate}
-                  formatTime={formatTime}
-                  getStatusBadge={getStatusBadge}
-                  onReschedule={onReschedule ? () => onReschedule(appointment) : undefined}
-                  onCancel={onCancel}
-                  data-testid={`card-appointment-${appointment.id}`}
-                />
-              ))}
+              {upcomingAppointments.map((appointment, index) => {
+                // Try to get address from lookup, fallback to appointment.location field
+                const addressLookup = getLocationAddress(appointment.locationId);
+                const locationAddress = addressLookup || appointment.location;
+                
+                return (
+                  <AppointmentCard
+                    key={appointment.id || index}
+                    appointment={appointment}
+                    locationAddress={locationAddress}
+                    formatDate={formatDate}
+                    formatTime={formatTime}
+                    getStatusBadge={getStatusBadge}
+                    onReschedule={onReschedule ? () => onReschedule(appointment) : undefined}
+                    onCancel={onCancel}
+                    data-testid={`card-appointment-${appointment.id}`}
+                  />
+                );
+              })}
             </div>
           )}
         </TabsContent>

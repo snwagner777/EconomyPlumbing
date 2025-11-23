@@ -362,6 +362,7 @@ export function transformCustomerAppointments(jobs: Array<{
         jobNumber: job.jobNumber || job.id.toString(),
         jobTypeId: job.jobTypeId, // Include job type ID for rescheduling
         jobType: job.summary || `Job #${job.jobNumber || job.id}`,
+        location: 'Address TBD', // Will be looked up via locationId in component
         summary: job.summary || '',
         status: appointment.status || 'Unknown',
         start: appointment.start,
