@@ -280,46 +280,7 @@ export function ServicesSection({
             ))
           )}
 
-          {/* Completed Appointments Section */}
-          {isLoadingAppointments ? (
-            <>
-              <div className="pt-4">
-                <h3 className="text-lg font-semibold mb-3">Recently Completed</h3>
-              </div>
-              <AppointmentSkeleton />
-              <AppointmentSkeleton />
-            </>
-          ) : completedAppointments.length > 0 && (
-            <>
-              <div className="pt-4">
-                <h3 className="text-lg font-semibold mb-3">Recently Completed</h3>
-              </div>
-              {completedAppointments.slice(0, 3).map((appointment, index) => (
-                <Card key={appointment.id || index} data-testid={`card-completed-${appointment.id}`}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
-                        <CardDescription>
-                          {formatDate && formatDate(appointment.completedDate || appointment.start)}
-                        </CardDescription>
-                      </div>
-                      <Badge variant="outline" className="bg-green-50 dark:bg-green-950 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Completed
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  {appointment.summary && (
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{appointment.summary}</p>
-                    </CardContent>
-                  )}
-                </Card>
-              ))}
-            </>
-          )}
-        </TabsContent>
+          </TabsContent>
 
         {/* Estimates Tab */}
         <TabsContent value="estimates" className="space-y-4">
@@ -393,7 +354,12 @@ export function ServicesSection({
 
         {/* Job History Tab */}
         <TabsContent value="history" className="space-y-4">
-          {recentJobs.length === 0 ? (
+          {isLoadingAppointments ? (
+            <>
+              <AppointmentSkeleton />
+              <AppointmentSkeleton />
+            </>
+          ) : completedAppointments.length === 0 && recentJobs.length === 0 ? (
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center py-8">
@@ -407,8 +373,57 @@ export function ServicesSection({
             </Card>
           ) : (
             <div className="space-y-4">
+              {/* Show completed appointments from appointments API */}
+              {completedAppointments.map((appointment, index) => (
+                <Card key={appointment.id || `completed-${index}`} data-testid={`card-history-${appointment.id}`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <CardTitle className="text-lg">{appointment.jobType || 'Service Call'}</CardTitle>
+                        <CardDescription>
+                          {formatDate && formatDate(appointment.completedDate || appointment.start)}
+                        </CardDescription>
+                      </div>
+                      {appointment.total && (
+                        <Badge variant="outline">
+                          {formatCurrency(appointment.total)}
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {appointment.summary && (
+                        <p className="text-sm">{appointment.summary}</p>
+                      )}
+                      {appointment.invoiceId && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            // Fetch invoice details and show modal
+                            const invoice = {
+                              id: appointment.invoiceId,
+                              number: `Invoice #${appointment.invoiceId}`,
+                              summary: appointment.summary,
+                              total: appointment.total,
+                            };
+                            setSelectedInvoice(invoice as any);
+                          }}
+                          data-testid={`button-view-invoice-history-${appointment.invoiceId}`}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Invoice
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+
+              {/* Also show legacy job history if available */}
               {recentJobs.map((job: any, index: number) => (
-                <Card key={job.id || index} data-testid={`card-job-${job.id}`}>
+                <Card key={job.id || `job-${index}`} data-testid={`card-job-${job.id}`}>
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div>
