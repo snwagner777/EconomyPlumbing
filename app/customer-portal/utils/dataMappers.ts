@@ -323,6 +323,7 @@ export function transformCustomerData(customerData: any) {
 export function transformCustomerAppointments(jobs: Array<{
   id: number;
   jobNumber: string;
+  jobTypeId?: number;
   summary: string;
   locationId: number;
   jobStatus: string;
@@ -359,6 +360,7 @@ export function transformCustomerAppointments(jobs: Array<{
         id: appointment.id?.toString() || `${job.id}-${appointment.start}`,
         jobId: job.id,
         jobNumber: job.jobNumber || job.id.toString(),
+        jobTypeId: job.jobTypeId, // Include job type ID for rescheduling
         jobType: job.summary || `Job #${job.jobNumber || job.id}`,
         summary: job.summary || '',
         status: appointment.status || 'Unknown',

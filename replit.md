@@ -4,19 +4,21 @@
 Economy Plumbing Services is a full-stack web application designed to enhance the online presence, streamline operations, and drive efficiency and scalability for plumbing businesses. It offers comprehensive service management, local SEO, content publishing, e-commerce integration, AI-powered content and marketing automation, and robust reputation management. The project aims to provide a significant competitive advantage in the plumbing industry through a modern, integrated digital platform.
 
 ## Recent Changes (November 23, 2025)
+- **Appointment Rescheduling with Simplified Flow**: 
+  - Added reschedule mode to SchedulerDialog that skips service selection (Step 1) and goes directly to date/time picker (Step 3)
+  - `mode="reschedule"` prop combined with `jobType` parameter pre-fills the service, allowing customers to quickly reschedule
+  - Updated `useSchedulerFlow` hook to accept initial state for pre-filling job type and starting step
+  - Fixed appointment transformation to include `jobTypeId` for proper reschedule flow
+  - Back button conditionally hidden in Step 2 for reschedule mode (can't go back to service selection)
+- **My Referrals Section on Rewards Page**:
+  - New `ReferralsSection` component displays successful referrals count, earned credits, and referral link management
+  - Shows referral code and full URL with one-click copy functionality
+  - Displays referral history with status (pending/successful) and earned credit amounts
+  - Integrated "Share Referral" button to open referral modal from rewards page
+  - Empty state encourages customers to start referring when they have no referrals yet
 - **Image-Rich Document Viewers**: Estimates and invoices now display product/service images from ServiceTitan Pricebook API for professional visual customer experience
-  - New `/api/pricebook/items` endpoint with batch fetching, deduplication, and 30-minute caching
-  - `DocumentLineItem` component displays product thumbnails with loading states and error handling
-  - `EstimateDetailModal` and `InvoiceDetailModal` fetch pricebook data on mount with visible error alerts
-  - Image lightbox for viewing full-size product images (unique dialog IDs prevent focus conflicts)
-  - Types updated: `InvoiceItem` and `EstimateItem` have `skuId` and typed `type` field for pricebook lookups
-  - Clean architecture: modals manage their own pricebook state, no prop drilling
-- **Customer Portal Migration Complete**: Removed all legacy AuthenticatedPortal code (169KB file deleted), USE_COMPACT_PORTAL feature flag removed
-- **Massive CustomerPortalClient Cleanup**: Reduced from 1353 lines to ~200 lines by removing 60+ unused state variables and callback handlers
-- **Clean Architecture**: CompactPortal now manages all internal dialogs (ContactManagementDialog, AddLocationDialog, AddAccountDialog, ReferralModal), CustomerPortalClient is minimal wrapper managing only SchedulerDialog
-- **Type System Fixes**: Fixed PortalLocationDetails interface (contacts → contactMethods), proper ServiceTitanCustomer → CustomerInfo mapping for scheduler
-- **Dead Code Removal**: Removed legacy appointments fallback, unused callback props (onRescheduleAppointment, onCancelAppointment, onViewEstimate, onAcceptEstimate, onEditContacts, onAddLocation, onEditLocation, onShareReferral)
-- **Verified Working**: Customer portal loads successfully (HTTP 200), no LSP errors, metadata properly server-rendered
+- **Customer Portal Migration Complete**: Removed all legacy AuthenticatedPortal code, USE_COMPACT_PORTAL feature flag removed
+- **Clean Architecture**: CompactPortal manages all internal dialogs, CustomerPortalClient is minimal wrapper
 
 ## User Preferences
 - CRITICAL RULE: Single Module Pattern - DRY (Don't Repeat Yourself)

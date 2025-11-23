@@ -338,6 +338,11 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 setSchedulerOpen(true);
               }}
               onReschedule={(appointment: any) => {
+                console.log('[Portal] Rescheduling appointment:', {
+                  jobTypeId: appointment.jobTypeId,
+                  jobNumber: appointment.jobNumber,
+                  start: appointment.start,
+                });
                 setSchedulerMode('reschedule');
                 setReschedulingAppointment(appointment);
                 setSchedulerOpen(true);
@@ -364,11 +369,15 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
             }
           }}
           mode={schedulerMode}
-          jobType={schedulerMode === 'reschedule' && reschedulingAppointment?.jobType ? {
-            id: reschedulingAppointment.jobType.id,
-            name: reschedulingAppointment.jobType.name,
-            code: reschedulingAppointment.jobType.code || `JOB_${reschedulingAppointment.jobType.id}`,
-          } : undefined}
+          jobType={
+            schedulerMode === 'reschedule' && reschedulingAppointment?.jobTypeId
+              ? {
+                  id: reschedulingAppointment.jobTypeId,
+                  name: reschedulingAppointment.jobType || `Service for Job #${reschedulingAppointment.jobNumber}`,
+                  code: `RESCHEDULE_${reschedulingAppointment.jobTypeId}`,
+                }
+              : undefined
+          }
           customerInfo={{
             firstName: customerData.customer.name?.split(' ')[0] || '',
             lastName: customerData.customer.name?.split(' ').slice(1).join(' ') || '',
