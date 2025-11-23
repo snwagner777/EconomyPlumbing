@@ -41,10 +41,22 @@ export function MembershipsSection() {
   const { toast } = useToast();
 
   // Fetch available membership types from ServiceTitan
-  const { data: membershipTypesData, isLoading: loadingTypes } = useQuery<{ success: boolean; membershipTypes: MembershipType[] }>({
+  const { data: membershipTypesData, isLoading: loadingTypes, error: typesError } = useQuery<{ success: boolean; membershipTypes: MembershipType[] }>({
     queryKey: ['/api/memberships/types', { includeDetails: true }],
     enabled: showPurchaseModal, // Only fetch when modal opens
   });
+
+  // Debug logging
+  if (showPurchaseModal && membershipTypesData) {
+    console.log('[MembershipsSection] Membership types data:', {
+      success: membershipTypesData.success,
+      count: membershipTypesData.membershipTypes?.length || 0,
+      types: membershipTypesData.membershipTypes,
+    });
+  }
+  if (showPurchaseModal && typesError) {
+    console.error('[MembershipsSection] Error fetching membership types:', typesError);
+  }
 
   if (isLoading) {
     return (
@@ -161,9 +173,9 @@ export function MembershipsSection() {
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : (
+          ) : membershipTypesData?.membershipTypes && membershipTypesData.membershipTypes.length > 0 ? (
             <div className="space-y-4">
-              {membershipTypesData?.membershipTypes.map((membershipType) => (
+              {membershipTypesData.membershipTypes.map((membershipType) => (
                 <Card key={membershipType.id} className="p-4 hover-elevate">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
@@ -172,13 +184,13 @@ export function MembershipsSection() {
                       
                       {/* Benefits Preview */}
                       <div className="flex gap-4 text-xs text-muted-foreground">
-                        {membershipType.discounts.length > 0 && (
+                        {membershipType.discounts && membershipType.discounts.length > 0 && (
                           <div className="flex items-center gap-1">
                             <DollarSign className="w-3 h-3" />
                             <span>{membershipType.discounts.length} Discount{membershipType.discounts.length > 1 ? 's' : ''}</span>
                           </div>
                         )}
-                        {membershipType.recurringServices.length > 0 && (
+                        {membershipType.recurringServices && membershipType.recurringServices.length > 0 && (
                           <div className="flex items-center gap-1">
                             <Gift className="w-3 h-3" />
                             <span>{membershipType.recurringServices.length} Service{membershipType.recurringServices.length > 1 ? 's' : ''}</span>
@@ -210,6 +222,14 @@ export function MembershipsSection() {
                   </div>
                 </Card>
               ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <AlertCircle className="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50" />
+              <p className="font-medium mb-1">No Membership Plans Available</p>
+              <p className="text-sm text-muted-foreground">
+                We're currently updating our membership offerings. Please check back soon or contact us for more information.
+              </p>
             </div>
           )}
         </DialogContent>
