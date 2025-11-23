@@ -213,8 +213,8 @@ export function SchedulerDialog({
           )}
         </DialogHeader>
 
-        {/* Location Selector - Show if multiple locations */}
-        {hasMultipleLocations && (
+        {/* Location Selector - Show if multiple locations AND not in reschedule mode */}
+        {hasMultipleLocations && mode !== 'reschedule' && (
           <div className="space-y-2 mb-4 p-4 bg-muted/30 rounded-lg border">
             <Label htmlFor="service-location" className="flex items-center gap-2 text-sm font-medium">
               <MapPin className="w-4 h-4 text-primary" />

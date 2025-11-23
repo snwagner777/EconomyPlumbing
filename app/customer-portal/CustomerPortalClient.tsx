@@ -162,10 +162,24 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
     // Use ServiceTitan appointments API
     if (appointmentsData?.success && appointmentsData?.data && Array.isArray(appointmentsData.data)) {
+      console.log('[Portal] appointmentsData structure:', {
+        success: appointmentsData.success,
+        dataType: typeof appointmentsData.data,
+        isArray: Array.isArray(appointmentsData.data),
+        dataLength: appointmentsData.data?.length,
+        firstItem: appointmentsData.data?.[0] ? {
+          hasAppointments: !!appointmentsData.data[0].appointments,
+          appointmentsLength: appointmentsData.data[0].appointments?.length,
+          jobId: appointmentsData.data[0].id
+        } : null
+      });
       const transformed = transformCustomerAppointments(appointmentsData.data);
+      console.log(`[Portal] Transformed ${appointmentsData.data.length} jobs into ${transformed.length} appointments`);
       if (transformed.length > 0) {
         console.log(`[Portal] Using appointments API: ${transformed.length} appointments from ${appointmentsData.data.length} jobs`);
         allAppointments = transformed;
+      } else {
+        console.warn('[Portal] Transformation resulted in 0 appointments despite having jobs');
       }
     }
 
