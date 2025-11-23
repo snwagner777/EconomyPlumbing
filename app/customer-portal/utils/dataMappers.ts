@@ -328,6 +328,8 @@ export function transformCustomerAppointments(jobs: Array<{
   locationId: number;
   jobStatus: string;
   completedOn: string;
+  total?: number;
+  invoiceId?: number;
   appointments: Array<{
     id: number;
     start: string;
@@ -372,6 +374,8 @@ export function transformCustomerAppointments(jobs: Array<{
         locationId: job.locationId || null, // Allow null locationId
         specialInstructions: appointment.specialInstructions || '',
         completedDate: job.jobStatus === 'Completed' ? job.completedOn : undefined,
+        total: job.total,
+        invoiceId: job.invoiceId,
       };
     });
   });

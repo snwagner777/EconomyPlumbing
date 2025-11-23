@@ -121,7 +121,8 @@ export function ServicesSection({
   const completedByLocation = completedAppointments.reduce((acc: any, apt: any) => {
     const locationId = apt.locationId || 'unknown';
     const locationAddress = getLocationAddress(locationId);
-    const locationName = locationAddress || `Location ${locationId}`;
+    // Use address or fallback to appointment.location, never show "Location ID" format
+    const locationName = locationAddress || apt.location || 'Address not available';
     if (!acc[locationId]) acc[locationId] = { name: locationName, appointments: [] };
     acc[locationId].appointments.push(apt);
     return acc;
@@ -391,15 +392,22 @@ export function ServicesSection({
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-4 py-3 space-y-3">
-                    {locationData.appointments.map((appointment: any, index: number) => (
-                      <JobHistoryCard 
-                        key={appointment.id || `completed-${index}`}
-                        appointment={appointment}
-                        formatDate={formatDate}
-                        onViewInvoice={() => setSelectedInvoiceId(appointment.invoiceId)}
-                        data-testid={`card-history-${appointment.id}`}
-                      />
-                    ))}
+                    {locationData.appointments.map((appointment: any, index: number) => {
+                      // Try to get address from lookup, fallback to appointment.location field
+                      const addressLookup = getLocationAddress(appointment.locationId);
+                      const locationAddress = addressLookup || appointment.location;
+                      
+                      return (
+                        <JobHistoryCard 
+                          key={appointment.id || `completed-${index}`}
+                          appointment={appointment}
+                          locationAddress={locationAddress}
+                          formatDate={formatDate}
+                          onViewInvoice={() => setSelectedInvoiceId(appointment.invoiceId)}
+                          data-testid={`card-history-${appointment.id}`}
+                        />
+                      );
+                    })}
                   </AccordionContent>
                 </AccordionItem>
               ))}
@@ -506,10 +514,11 @@ function AppointmentCard({
 }
 
 /**
- * Completed job history card with invoice viewer
+ * Completed job history card with invoice viewer and location address
  */
 function JobHistoryCard({ 
-  appointment, 
+  appointment,
+  locationAddress,
   formatDate, 
   onViewInvoice,
   ...props 
@@ -518,14 +527,22 @@ function JobHistoryCard({
     <Card {...props} className="bg-muted/30">
       <CardHeader>
         <div className="flex items-start justify-between">
-          <div>
+          <div className="flex-1">
             <CardTitle className="text-base">Job #: {appointment.jobNumber || appointment.id}</CardTitle>
             <CardDescription>
-              Completed on: {formatDate && formatDate(appointment.completedDate || appointment.start)}
+              <div className="space-y-1 mt-1">
+                <p>Completed on: {formatDate && formatDate(appointment.completedDate || appointment.start)}</p>
+                {locationAddress && (
+                  <p className="flex items-center gap-2">
+                    <MapPin className="w-3 h-3" />
+                    {locationAddress}
+                  </p>
+                )}
+              </div>
             </CardDescription>
           </div>
-          {appointment.total && (
-            <Badge variant="outline">
+          {appointment.total != null && appointment.total > 0 && (
+            <Badge variant="outline" className="ml-2">
               {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(appointment.total)}
             </Badge>
           )}
