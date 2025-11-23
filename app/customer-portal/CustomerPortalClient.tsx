@@ -253,7 +253,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
 
       {/* Under Construction Banner */}
       <div className="bg-yellow-50 dark:bg-yellow-950 border-b border-yellow-200 dark:border-yellow-800">
-        <div className="max-w-6xl mx-auto px-4 py-3">
+        <div className="px-4 py-3">
           <Alert className="border-yellow-400 bg-transparent">
             <Construction className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
             <AlertTitle className="text-yellow-800 dark:text-yellow-200">Under Construction</AlertTitle>
@@ -265,7 +265,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
       </div>
 
       <main className="min-h-screen py-12 px-4">
-        <div className="max-w-6xl mx-auto">
+        <div>
           <div className="text-center mb-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               {customerId && customerData ? (() => {
@@ -299,7 +299,7 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
                 return greetings[randomIndex];
               })() : 'Customer Portal'}
             </h1>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground">
               {customerId ? 
                 'Your service history, appointments, and account details' :
                 'Access your service history, appointments, and invoices'
