@@ -1309,6 +1309,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               isLoadingAppointments={isLoadingAppointments}
               appointmentsError={appointmentsError}
               usingFallbackData={usingFallbackData}
+              referralsData={referralsData}
+              referralLinkData={referralLinkData}
               onRetryAppointments={() => {
                 const numericId = customerId ? parseInt(customerId) : null;
                 queryClient.invalidateQueries({ queryKey: ['/api/customer-portal/appointments', numericId] });
