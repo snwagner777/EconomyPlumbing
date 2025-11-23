@@ -435,34 +435,8 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
     enabled: !!customerId,
   });
 
-  // Fetch account summaries for ALL available customer IDs
-  const { data: accountSummariesData } = useQuery<{
-    accounts: Array<{
-      id: number;
-      name: string;
-      type: string;
-      email: string | null;
-      phoneNumber: string | null;
-      locationCount: number;
-      primaryLocationId: number | null;
-    }>;
-  }>({
-    queryKey: ['/api/portal/customer-accounts', availableCustomerIds],
-    enabled: availableCustomerIds.length > 0,
-    queryFn: async () => {
-      const response = await fetch('/api/portal/customer-accounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerIds: availableCustomerIds }),
-      });
-      if (!response.ok) throw new Error('Failed to fetch account summaries');
-      return response.json();
-    },
-  });
-
   const timeWindows = arrivalWindowsData?.windows || [];
   const customerLocations = locationsData?.locations || [];
-  const accountSummaries = accountSummariesData?.accounts || [];
 
   // Transform and split appointments using new ServiceTitan API
   const { upcomingAppointments, completedAppointments, usingFallbackData } = useMemo(() => {
@@ -1359,8 +1333,6 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               formatTime={formatTime}
               formatPhoneNumber={formatPhoneNumber}
               getStatusBadge={getStatusBadge}
-              accountSummaries={accountSummaries}
-              onSwitchAccount={handleSelectAccount}
             />
           ) : (
             <AuthenticatedPortal
@@ -1378,11 +1350,9 @@ export default function CustomerPortalClient({ phoneConfig, marbleFallsPhoneConf
               recentJobsData={recentJobsData}
               locationsData={locationsData}
               emailHistoryData={emailHistoryData}
-              accountSummariesData={accountSummariesData}
               arrivalWindowsData={arrivalWindowsData}
               timeWindows={timeWindows}
               customerLocations={customerLocations}
-              accountSummaries={accountSummaries}
               upcomingAppointments={upcomingAppointments}
               completedAppointments={completedAppointments}
               activeAccountTab={activeAccountTab}

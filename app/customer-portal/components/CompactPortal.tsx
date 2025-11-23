@@ -24,16 +24,6 @@ import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
 
-interface AccountSummary {
-  id: number;
-  name: string;
-  type: string;
-  email: string | null;
-  phoneNumber: string | null;
-  locationCount: number;
-  primaryLocationId: number | null;
-}
-
 interface CompactPortalProps {
   customerId?: string | null;
   customerData?: any;
@@ -57,8 +47,6 @@ interface CompactPortalProps {
   formatTime?: (time: string) => string;
   formatPhoneNumber?: (phone: string) => string;
   getStatusBadge?: (status: string) => React.ReactNode;
-  accountSummaries?: AccountSummary[];
-  onSwitchAccount?: (accountId: number) => void;
 }
 
 export function CompactPortal({
@@ -84,14 +72,7 @@ export function CompactPortal({
   formatTime,
   formatPhoneNumber,
   getStatusBadge,
-  accountSummaries = [],
-  onSwitchAccount,
 }: CompactPortalProps) {
-  // DEBUG: Log account summaries
-  console.log('[CompactPortal] customerId:', customerId);
-  console.log('[CompactPortal] accountSummaries:', accountSummaries);
-  console.log('[CompactPortal] accountSummaries.length:', accountSummaries.length);
-  
   const [currentSection, setCurrentSection] = useState<PortalSection>('overview');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [contactDialogOpen, setContactDialogOpen] = useState(false);
@@ -203,8 +184,6 @@ export function CompactPortal({
             onAddLocation={() => setAddLocationDialogOpen(true)}
             onAddAccount={() => setAddAccountDialogOpen(true)}
             formatPhoneNumber={formatPhoneNumber}
-            accountSummaries={accountSummaries}
-            onSwitchAccount={onSwitchAccount}
           />
         );
         
