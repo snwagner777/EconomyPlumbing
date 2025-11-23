@@ -48,9 +48,14 @@ export async function GET(
       );
     }
 
+    // DEBUG: Log invoice structure to find customer ID field
+    console.log(`[Portal Invoice Detail] Invoice keys:`, Object.keys(invoice));
+    console.log(`[Portal Invoice Detail] Invoice customer info - customerId: ${invoice.customerId}, customer: ${JSON.stringify(invoice.customer)}`);
+
     // SECURITY: Verify invoice belongs to one of the customer's accounts
-    console.log(`[Portal Invoice Detail] Validating ownership - Invoice customerId: ${invoice.customerId}, Available IDs: ${JSON.stringify(availableCustomerIds)}`);
-    assertCustomerOwnership(invoice.customerId, availableCustomerIds);
+    const invoiceCustomerId = invoice.customerId || invoice.customer?.id;
+    console.log(`[Portal Invoice Detail] Validating ownership - Invoice customerId: ${invoiceCustomerId}, Available IDs: ${JSON.stringify(availableCustomerIds)}`);
+    assertCustomerOwnership(invoiceCustomerId, availableCustomerIds);
     
     return transformAndReturnInvoice(invoice);
   } catch (error: any) {
