@@ -24,6 +24,23 @@ import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { transformCustomerData, mapMemberships, mapVouchers } from "../utils/dataMappers";
 
+interface ReferralData {
+  referrals: Array<{
+    id: string;
+    status: string;
+    creditAmount: number;
+    referrerCustomerId: number | null;
+    refereeCustomerId: number | null;
+  }>;
+}
+
+interface ReferralLinkData {
+  code: string;
+  url: string;
+  clicks: number;
+  conversions: number;
+}
+
 interface CompactPortalProps {
   customerId?: string | null;
   customerData?: any;
@@ -32,6 +49,8 @@ interface CompactPortalProps {
   isLoadingAppointments?: boolean;
   appointmentsError?: Error | null;
   usingFallbackData?: boolean;
+  referralsData?: ReferralData;
+  referralLinkData?: ReferralLinkData;
   onRetryAppointments?: () => void;
   onSchedule?: () => void;
   onShareReferral?: () => void;
@@ -57,6 +76,8 @@ export function CompactPortal({
   isLoadingAppointments = false,
   appointmentsError,
   usingFallbackData = false,
+  referralsData,
+  referralLinkData,
   onRetryAppointments,
   onSchedule,
   onShareReferral,
@@ -109,15 +130,39 @@ export function CompactPortal({
   console.log('[CompactPortal DEBUG] transformedData?.locations:', transformedData?.locations);
   console.log('[CompactPortal DEBUG] normalizedLocations:', normalizedLocations);
 
+  // Calculate referral stats
+  const calculateReferralStats = () => {
+    if (!referralsData?.referrals || !customerId) {
+      return { totalSent: 0, creditsEarned: 0, pending: 0 };
+    }
+
+    const customerIdNum = parseInt(customerId);
+    const referralsList = referralsData.referrals;
+
+    // Filter referrals where current customer is the referrer
+    const asReferrer = referralsList.filter(r => r.referrerCustomerId === customerIdNum);
+
+    // Total referrals sent by this customer
+    const totalSent = asReferrer.length;
+
+    // Credits earned (credited status only)
+    const creditsEarned = asReferrer
+      .filter(r => r.status === 'credited')
+      .reduce((sum, r) => sum + (r.creditAmount || 0), 0) / 100; // Convert cents to dollars
+
+    // Pending referrals (not yet credited)
+    const pending = asReferrer.filter(r => 
+      r.status === 'pending' || r.status === 'contacted' || r.status === 'job_completed'
+    ).length;
+
+    return { totalSent, creditsEarned, pending };
+  };
+
   // Calculate dashboard data from transformed customerData
   const dashboardData = transformedData ? {
     memberships: mapMemberships(transformedData.memberships || []),
     vouchers: mapVouchers(transformedData.vouchers || []),
-    referrals: {
-      totalSent: 0, // TODO: Add referral data
-      creditsEarned: 0,
-      pending: 0,
-    },
+    referrals: calculateReferralStats(),
     quickActions: {
       onSchedule,
       onShareReferral,
